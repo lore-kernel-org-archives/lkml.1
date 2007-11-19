@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbXKSUJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbXKSUUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752527AbXKSUJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 15:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXKSUJu
+	id S1752412AbXKSUUf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 15:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXKSUU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 15:09:50 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:56941 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbXKSUJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 15:09:49 -0500
-Subject: Re: [PATCH] Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Mon, 19 Nov 2007 15:20:27 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:46303 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751365AbXKSUU0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 15:20:26 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAKp9QUdMROHU/2dsb2JhbACBWw
+Date: Mon, 19 Nov 2007 15:20:23 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Dave Hansen <haveblue@us.ibm.com>
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, mbligh@google.com
-In-Reply-To: <20071119195257.GA3440@Krystal>
-References: <20071113193349.214098508@polymtl.ca>
-	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
-	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
-	 <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost>
-	 <20071119185258.GA998@Krystal> <1195501381.27759.127.camel@localhost>
-	 <20071119195257.GA3440@Krystal>
-Content-Type: text/plain
-Date: Mon, 19 Nov 2007 12:09:43 -0800
-Message-Id: <1195502983.27759.134.camel@localhost>
+Subject: Re: [PATCH] Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+Message-ID: <20071119202023.GA5086@Krystal>
+References: <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost> <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost> <20071119185258.GA998@Krystal> <1195501381.27759.127.camel@localhost> <20071119195257.GA3440@Krystal> <1195502983.27759.134.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1195502983.27759.134.camel@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:19:28 up 16 days,  1:24,  5 users,  load average: 0.34, 0.61,
+	0.74
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-19 at 14:52 -0500, Mathieu Desnoyers wrote:
-> * Dave Hansen (haveblue@us.ibm.com) wrote:
-> > On Mon, 2007-11-19 at 13:52 -0500, Mathieu Desnoyers wrote:
-> > > > > So I guess the result is a pointer ? Should this be expected ?
-> > > > 
-> > > > Nope.  'pointer - pointer' is an integer.  Just solve this equation for
-> > > > integer:
-> > > > 
-> > > >       'pointer + integer = pointer'
-> > > > 
-> > > 
-> > > Well, using page_to_pfn turns out to be ugly in markers (and in
-> > > printks) then. Depending on the architecture, it will result in either
-> > > an unsigned long (x86_64) or an unsigned int (i386), which corresponds
-> > > to %lu or %u and will print a warning if we don't cast it explicitly. 
-> > 
-> > Casting the i386 one to be an unconditional 'unsigned long' shouldn't be
-> > an issue.  We don't generally expect pfns to fit into ints anyway. 
+* Dave Hansen (haveblue@us.ibm.com) wrote:
+> The only thing I might suggest doing differently is actually using the
+> page_to_pfn() definition itself:
 > 
-> So would this make sense ?
+> memory_model.h:#define page_to_pfn __page_to_pfn
 > 
-> Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+> The full inline function version should do this already, and we
+> shouldn't have any real direct __page_to_pfn() users anyway.    
 > 
-> Make sure the type returned by __page_to_pfn is always unsigned long. If we
-> don't cast it explicitly, it can be int on i386, but long on x86_64. This is
-> especially inelegant for printks.
 
-The only thing I might suggest doing differently is actually using the
-page_to_pfn() definition itself:
+Like this then..
 
-memory_model.h:#define page_to_pfn __page_to_pfn
+Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
 
-The full inline function version should do this already, and we
-shouldn't have any real direct __page_to_pfn() users anyway.    
+Make sure the type returned by page_to_pfn is always unsigned long. If we
+don't cast it explicitly, it can be int on i386, but long on x86_64. This is
+especially inelegant for printks.
 
--- Dave
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Dave Hansen <haveblue@us.ibm.com>
+CC: linux-mm@kvack.org
+CC: linux-kernel@vger.kernel.org
+---
+ include/asm-generic/memory_model.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+Index: linux-2.6-lttng/include/asm-generic/memory_model.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/memory_model.h	2007-11-19 15:06:40.000000000 -0500
++++ linux-2.6-lttng/include/asm-generic/memory_model.h	2007-11-19 15:18:57.000000000 -0500
+@@ -76,7 +76,7 @@ struct page;
+ extern struct page *pfn_to_page(unsigned long pfn);
+ extern unsigned long page_to_pfn(struct page *page);
+ #else
+-#define page_to_pfn __page_to_pfn
++#define page_to_pfn ((unsigned long)__page_to_pfn)
+ #define pfn_to_page __pfn_to_page
+ #endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
+ 
+
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
