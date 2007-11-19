@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbXKSNFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbXKSNG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbXKSNFe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 08:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXKSNF0
+	id S1754627AbXKSNG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 08:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXKSNGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 08:05:26 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:26137 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbXKSNFZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 08:05:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=mVThnXRyUmYke5ZOp5epoheM3tiOrxjicgn9dUYfyxi1c53CBX8PV9Uz28nZ415K5zkMjAi2Gqs9pxtyhB+cLQsnWlSviIg+1euMU+SOaA9do6FE5cFtOMbw9ivpDVbsbyxj1Gm4ZYEQe82uQaerRBTrS0drYiaOlKM+2anm4p4=
-Message-ID: <47418A00.1000704@gmail.com>
-Date: Mon, 19 Nov 2007 14:05:04 +0100
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: apm emulation driver broken ?
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711171346.51363.rjw@sisk.pl> <4740992D.9030906@gmail.com> <200711182322.41354.rjw@sisk.pl>
-In-Reply-To: <200711182322.41354.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Nov 2007 08:06:18 -0500
+Received: from minus.inr.ac.ru ([194.67.69.97]:35652 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752525AbXKSNGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 08:06:17 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=S+dOzx5m+pbwDn3vOey+tipzQUbPa2ATKlSzx5xv0SeSoabl2bEWA9NWbgOMs0OW+jrPxCB1i2NZtURQ7xdNHIjB8XiAl4te7q57k69u4pqm7fMlxazrDsAdqEPo4ApZYa0RWzb2meqG97/dwExLHhvtMEcOGviJZFXl68tjrLg=;
+Date: Mon, 19 Nov 2007 16:06:10 +0300
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: Jonas Danielsson <the.sator@gmail.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, jmorris@namei.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] net/ipv4/arp.c: Fix arp reply when sender ip 0 (was: Strange behavior in arp probe reply, bug or feature?)
+Message-ID: <20071119130610.GB6952@ms2.inr.ac.ru>
+References: <cac0ab7d0711150340p58eda94ah92894072ba328205@mail.gmail.com> <20071115154032.GA30391@ms2.inr.ac.ru> <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cac0ab7d0711151340l1cc91a2dw5ebf36e166d16d7a@mail.gmail.com>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Sunday, 18 of November 2007, Franck Bui-Huu wrote:
->> Rafael J. Wysocki wrote:
->> See the call to wait_even() made by apm_ioctl(). If any processes
->> run this, it will prevent the system to suspend...
-> 
-> True, but does it actually happen in practice?
-> 
+Hello!
 
-when several processes are waiting for a suspend event.
+> Is there a reason that the target hardware address isn't the target
+> hardware address?
 
-> 
-> At this point the second branch of the "if (as->suspend_state == SUSPEND_READ)"
-> can be fixed by replacing wait_event_interruptible() with
-> wait_event_freezable(), 
+It is bound only to the fact that linux uses protocol address
+of the machine, which responds. It would be highly confusing
+(more than confusing :-)), if we used our protocol address and hardware
+address of requestor.
 
-yes
+But if you use zero protocol address as source, you really can use
+any hw address.
 
-> but the fix for the first branch depends on whether or
-> not the wait_event() is really necessary.
+> The dhcp clients I examined, and the implementation of the arpcheck
+> that I use will compare the target hardware field of the arp-reply and
+> match it against its own mac, to verify the reply. And this fails with
+> the current implementation in the kernel.
 
-As I said I don't know. It's probably time to put some people
-on CC but don't know who though.
+1. Do not do this. Mainly, because you already know that this does not work
+   with linux. :-) Logically, target hw address in arp reply is just
+   a nonsensial redundancy, it should not be checked and even looked at.
 
-> 
-> If it can be replaced with an interruptible sleep, we can use
-> wait_event_freezable() in this case too.  Otherwise, the only woking fix would
-> be to reintroduce the PF_NOFREEZE in there.
+2. What's about your suggestion, I thought about this and I am going to agree.
 
-BTW, why not raising PF_NOFREEZE in wait_event(), so thread sleeping
-in UNINTERRUPTIBLE state won't prevent suspend to happen ?
+   Arguments, which convinced me are:
 
+   - arping still works.
+   - any piece of reasonable software should work.
+   - if Windows understands DaD (is it really true? I cannot believe)
+     and it is unhappy about our responce and does not block use
+     of duplicate address only due to this, we _must_ accomodate ASAP.
+   - if we do,we have to use 0 protocol address, no choice.
 
-		Franck
+Alexey
