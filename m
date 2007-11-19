@@ -1,140 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXKSSXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbXKSSYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbXKSSXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXKSSVq
+	id S1753651AbXKSSYE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXKSSVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:21:46 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41909 "EHLO
+	Mon, 19 Nov 2007 13:21:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41918 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbXKSSVo (ORCPT
+	with ESMTP id S1751798AbXKSSVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:21:44 -0500
-Date: Mon, 19 Nov 2007 10:18:43 -0800
+	Mon, 19 Nov 2007 13:21:48 -0500
+Date: Mon, 19 Nov 2007 10:18:46 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 06/26] NETFILTER: nf_conntrack_tcp: fix connection reopening
-Message-ID: <20071119181843.GG15425@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, mingo@elte.hu, jeremy@goop.org
+Subject: [patch 07/26] fix the softlockup watchdog to actually work
+Message-ID: <20071119181846.GH15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-nf_conntrack_tcp-fix-connection-reopening.patch"
+Content-Disposition: inline; filename="fix-the-softlockup-watchdog-to-actually-work.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+From: Ingo Molnar <mingo@elte.hu>
 
-Upstream commits: 17311393 + bc34b841 merged together.  Merge done by
-Patrick McHardy <kaber@trash.net>
+patch a115d5caca1a2905ba7a32b408a6042b20179aaa in mainline.
 
-[NETFILTER]: nf_conntrack_tcp: fix connection reopening
+this Xen related commit:
 
-With your description I could reproduce the bug and actually you were
-completely right: the code above is incorrect. Somehow I was able to
-misread RFC1122 and mixed the roles :-(:
+   commit 966812dc98e6a7fcdf759cbfa0efab77500a8868
+   Author: Jeremy Fitzhardinge <jeremy@goop.org>
+   Date:   Tue May 8 00:28:02 2007 -0700
 
-   When a connection is >>closed actively<<, it MUST linger in
-   TIME-WAIT state for a time 2xMSL (Maximum Segment Lifetime).
-   However, it MAY >>accept<< a new SYN from the remote TCP to
-   reopen the connection directly from TIME-WAIT state, if it:
-   [...]
+       Ignore stolen time in the softlockup watchdog
 
-The fix is as follows: if the receiver initiated an active close, then the
-sender may reopen the connection - otherwise try to figure out if we hold
-a dead connection.
+broke the softlockup watchdog to never report any lockups. (!)
 
-Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+print_timestamp defaults to 0, this makes the following condition
+always true:
+
+	if (print_timestamp < (touch_timestamp + 1) ||
+
+and we'll in essence never report soft lockups.
+
+apparently the functionality of the soft lockup watchdog was never
+actually tested with that patch applied ...
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- net/netfilter/nf_conntrack_proto_tcp.c |   38 ++++++++++++++-------------------
- 1 file changed, 17 insertions(+), 21 deletions(-)
+ kernel/softlockup.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/net/netfilter/nf_conntrack_proto_tcp.c
-+++ b/net/netfilter/nf_conntrack_proto_tcp.c
-@@ -839,6 +839,22 @@ static int tcp_packet(struct nf_conn *co
- 	new_state = tcp_conntracks[dir][index][old_state];
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -79,10 +79,11 @@ void softlockup_tick(void)
+ 	print_timestamp = per_cpu(print_timestamp, this_cpu);
  
- 	switch (new_state) {
-+	case TCP_CONNTRACK_SYN_SENT:
-+		if (old_state < TCP_CONNTRACK_TIME_WAIT)
-+			break;
-+		if ((conntrack->proto.tcp.seen[!dir].flags &
-+			IP_CT_TCP_FLAG_CLOSE_INIT)
-+		    || (conntrack->proto.tcp.last_dir == dir
-+		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
-+			/* Attempt to reopen a closed/aborted connection.
-+			 * Delete this connection and look up again. */
-+			write_unlock_bh(&tcp_lock);
-+			if (del_timer(&conntrack->timeout))
-+				conntrack->timeout.function((unsigned long)
-+							    conntrack);
-+			return -NF_REPEAT;
-+		}
-+		/* Fall through */
- 	case TCP_CONNTRACK_IGNORE:
- 		/* Ignored packets:
- 		 *
-@@ -888,27 +904,6 @@ static int tcp_packet(struct nf_conn *co
- 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
- 				  "nf_ct_tcp: invalid state ");
- 		return -NF_ACCEPT;
--	case TCP_CONNTRACK_SYN_SENT:
--		if (old_state < TCP_CONNTRACK_TIME_WAIT)
--			break;
--		if ((conntrack->proto.tcp.seen[dir].flags &
--			IP_CT_TCP_FLAG_CLOSE_INIT)
--		    || after(ntohl(th->seq),
--			     conntrack->proto.tcp.seen[dir].td_end)) {
--			/* Attempt to reopen a closed connection.
--			* Delete this connection and look up again. */
--			write_unlock_bh(&tcp_lock);
--			if (del_timer(&conntrack->timeout))
--				conntrack->timeout.function((unsigned long)
--							    conntrack);
--			return -NF_REPEAT;
--		} else {
--			write_unlock_bh(&tcp_lock);
--			if (LOG_INVALID(IPPROTO_TCP))
--				nf_log_packet(pf, 0, skb, NULL, NULL,
--					      NULL, "nf_ct_tcp: invalid SYN");
--			return -NF_ACCEPT;
--		}
- 	case TCP_CONNTRACK_CLOSE:
- 		if (index == TCP_RST_SET
- 		    && ((test_bit(IPS_SEEN_REPLY_BIT, &conntrack->status)
-@@ -941,6 +936,7 @@ static int tcp_packet(struct nf_conn *co
-      in_window:
- 	/* From now on we have got in-window packets */
- 	conntrack->proto.tcp.last_index = index;
-+	conntrack->proto.tcp.last_dir = dir;
+ 	/* report at most once a second */
+-	if (print_timestamp < (touch_timestamp + 1) ||
+-		did_panic ||
+-			!per_cpu(watchdog_task, this_cpu))
++	if ((print_timestamp >= touch_timestamp &&
++			print_timestamp < (touch_timestamp + 1)) ||
++			did_panic || !per_cpu(watchdog_task, this_cpu)) {
+ 		return;
++	}
  
- 	DEBUGP("tcp_conntracks: src=%u.%u.%u.%u:%hu dst=%u.%u.%u.%u:%hu "
- 	       "syn=%i ack=%i fin=%i rst=%i old=%i new=%i\n",
+ 	/* do not print during early bootup: */
+ 	if (unlikely(system_state != SYSTEM_RUNNING)) {
 
 -- 
