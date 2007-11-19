@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbXKSSf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbXKSSis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbXKSSf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXKSSfN
+	id S1752818AbXKSSis (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXKSSij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:35:13 -0500
-Received: from mail1.perex.cz ([212.20.107.53]:42886 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750941AbXKSSfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:35:11 -0500
-Date: Mon, 19 Nov 2007 19:35:09 +0100 (CET)
-From: Jaroslav Kysela <perex@perex.cz>
-X-X-Sender: perex@tm8103.perex-int.cz
-To: Linus Torvalds <torvalds@osdl.org>
-cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [ALSA PATCH] alsa-git merge request
-Message-ID: <Pine.LNX.4.61.0711191933210.7813@tm8103.perex-int.cz>
+	Mon, 19 Nov 2007 13:38:39 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:53805 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbXKSSii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 13:38:38 -0500
+Date: Mon, 19 Nov 2007 11:38:35 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       James.Bottomley@steeleye.com, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux@highpoint-tech.com, linux-scsi@vger.kernel.org
+Subject: Re: [patch 16/26] hptiop: avoid buffer overflow when returning sense data
+Message-ID: <20071119183835.GE12494@parisc-linux.org>
+References: <20071119181438.617190424@mini.kroah.org> <20071119181912.GQ15425@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071119181912.GQ15425@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 19, 2007 at 10:19:12AM -0800, Greg Kroah-Hartman wrote:
+> 
+> 2.6.22-stable review patch.  If anyone has any objections, please let us
+> know.
 
-Linus, please pull from [the linus branch at]:
+Makes sense to backport this.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-gitweb interface:
-  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
+Acked-by: Matthew Wilcox <willy@linux.intel.com>
 
-The GNU patch is available at:
-
-  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2007-11-19.patch.gz
-
-Additional notes:
-
-  Just fixes and cleanups.
-
-
-The following files will be updated:
-
- include/sound/version.h            |    2 +-
- sound/drivers/mpu401/mpu401_uart.c |   12 +++++++---
- sound/pci/ca0106/ca0106_mixer.c    |   18 ++++++++++-----
- sound/pci/cmipci.c                 |    5 +--
- sound/pci/hda/hda_codec.c          |   40 +++++++++++++++++++++--------------
- sound/pci/hda/hda_local.h          |    1 +
- sound/pci/hda/patch_analog.c       |    8 +++++++
- 7 files changed, 56 insertions(+), 30 deletions(-)
-
-
-The following things were done:
-
-Clemens Ladisch (2):
-      [ALSA] cmipci: fix FLINKON/OFF bits
-      [ALSA] mpu401: fix recursive locking in timer
-
-Jaroslav Kysela (1):
-      [ALSA] version 1.0.15
-
-Takashi Iwai (4):
-      [ALSA] hda-codec - Disable shared stream on AD1986A
-      [ALSA] hda-codec - Check PINCAP only for PIN widgets
-      [ALSA] ca0106 - Check value range in ctl callbacks
-      [ALSA] hda-codec - Revert volume knob controls in STAC codecs
-
------
-Jaroslav Kysela <perex@suse.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, SUSE Labs
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
