@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbXKSPyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbXKSPzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbXKSPyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbXKSPyL
+	id S1756429AbXKSPzg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXKSPz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:54:11 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:52085 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753529AbXKSPyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:54:09 -0500
-Date: Mon, 19 Nov 2007 21:36:47 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
-       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH 2/2] sched: Improve fairness of cpu allocation for task groups
-Message-ID: <20071119160647.GV3359@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu>
+	Mon, 19 Nov 2007 10:55:28 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41659 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbXKSPz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 10:55:27 -0500
+Date: Mon, 19 Nov 2007 15:55:07 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 21285: Report baud rate back via termios
+Message-ID: <20071119155507.GB30129@flint.arm.linux.org.uk>
+References: <20071119151222.6cfa9c4c@the-village.bc.nu> <20071119154137.GA30129@flint.arm.linux.org.uk> <20071119155007.6cfdce37@the-village.bc.nu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071119152258.GB31426@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071119155007.6cfdce37@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 04:22:58PM +0100, Ingo Molnar wrote:
+On Mon, Nov 19, 2007 at 03:50:07PM +0000, Alan Cox wrote:
+> On Mon, 19 Nov 2007 15:41:37 +0000
+> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 > 
-> * Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> 
-> > - inc/dec_load() takes a load input instead of task pointer input as their
-> >   2nd arg
-> > - inc/dec_nr_running don't call inc/dec_load. Instead,
-> > - enqueue/dequeue_task class callbacks call inc/dec_load
-> > - [Unintended/will-fix change] min/max tunables added in
-> >   /proc/sys/kernel
+> > On Mon, Nov 19, 2007 at 03:12:22PM +0000, Alan Cox wrote:
+> > > Currently reports back the requested rate not the result of the divides
+> > > but thats an easy fix for someone with h/w
+> > > 
+> > > Signed-off-by: Alan Cox <alan@redhat.com>
 > > 
-> > All of above changes (except last, which I will fix) should have zero 
-> > functional+runtime effect for !CONFIG_FAIR_GROUP_SCHED case. So I 
-> > don't see how I can split Patch 2/2 further.
+> > Ack for first hunk.  When can this be merged?  I assume it has to wait
+> > for tty_encode_baud_rate() to appear in mainline?
 > 
-> ok, as long as it's NOP for the CONFIG_FAIR_GROUP_SCHED, we could try 
-> it.
+> tty_termios_encode_baud-rate/tty_encode_baud_rate are now in mainline
 
-Ok ..thx. I was begining to make changes to avoid even the above minor changes 
-for !CONFIG_FAIR_GROUP_SCHED case, but it doesn't look neat, hence will drop
-that effort.
-
-I am fixing other problems observed with Patch 1/2 (usage of a mutex to
-serialize create/destroy groups) and will resend the series very soon.
+Great, I'll queue it for the next merge minus the 2nd hunk.
 
 -- 
-Regards,
-vatsa
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
