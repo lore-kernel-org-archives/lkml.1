@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbXKSTF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbXKSTnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbXKSTF7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 14:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXKSTFk
+	id S1752015AbXKSTnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 14:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXKSTnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 14:05:40 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39568 "EHLO ogre.sisk.pl"
+	Mon, 19 Nov 2007 14:43:08 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:59604 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751612AbXKSTFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 14:05:38 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chris Friedhoff <chris@friedhoff.org>
-Subject: Re: 2.6.24-rc2 STD with s2disk fails to activate suspended system after loading - now 2.6.24-rc3
-Date: Mon, 19 Nov 2007 20:22:59 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20071110221629.1d180480.chris@friedhoff.org> <20071119144200.6026ce62.chris@friedhoff.org> <200711191958.36570.rjw@sisk.pl>
-In-Reply-To: <200711191958.36570.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1750925AbXKSTnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 14:43:06 -0500
+Subject: Re: [RFC 5/7] LTTng instrumentation mm
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071119185258.GA998@Krystal>
+References: <20071113193349.214098508@polymtl.ca>
+	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
+	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
+	 <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost>
+	 <20071119185258.GA998@Krystal>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 11:43:01 -0800
+Message-Id: <1195501381.27759.127.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711192022.59652.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 19 of November 2007, Rafael J. Wysocki wrote:
-> On Monday, 19 of November 2007, Chris Friedhoff wrote:
-> > Hallo Rafael,
+On Mon, 2007-11-19 at 13:52 -0500, Mathieu Desnoyers wrote:
+> > > So I guess the result is a pointer ? Should this be expected ?
 > > 
-> > just to let you know: with 2.6.24-rc3 I have the same problem.
-> 
-> Thanks.
->  
-> > On Sun, 11 Nov 2007 19:45:06 +0100
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > Nope.  'pointer - pointer' is an integer.  Just solve this equation for
+> > integer:
 > > 
-> > > On Saturday, 10 of November 2007, Chris Friedhoff wrote:
-> > > > please cc me, I'm not not subscribed to LKML
-> > > > 
-> > > > Hello,
-> > > > 
-> > > > with kernel 2.6.24-rc2 STD with s2disk suspends the system to disk, but
-> > > > when I start the system and the suspended systemimage is loaded, it
-> > > > fails to "activate" this suspended systemimage and continues after some
-> > > > time with following the normal boot sequence.
+> >       'pointer + integer = pointer'
+> > 
 > 
-> Please add the dmesg output taken right after that
+> Well, using page_to_pfn turns out to be ugly in markers (and in
+> printks) then. Depending on the architecture, it will result in either
+> an unsigned long (x86_64) or an unsigned int (i386), which corresponds
+> to %lu or %u and will print a warning if we don't cast it explicitly. 
 
-I mean, just when the system boots after that.
+Casting the i386 one to be an unconditional 'unsigned long' shouldn't be
+an issue.  We don't generally expect pfns to fit into ints anyway. 
 
-> as an attachment to the bugzilla entry at
-> http://bugzilla.kernel.org/show_bug.cgi?id=9345 
+-- Dave
 
-Thanks,
-Rafael
