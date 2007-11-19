@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXKSJc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbXKSJet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbXKSJc7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 04:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbXKSJcv
+	id S1755443AbXKSJet (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 04:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXKSJem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 04:32:51 -0500
-Received: from sacred.ru ([62.205.161.221]:51773 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbXKSJcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 04:32:50 -0500
-Message-ID: <4741580F.7070301@openvz.org>
-Date: Mon, 19 Nov 2007 12:31:59 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 19 Nov 2007 04:34:42 -0500
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:45680 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752504AbXKSJel (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 04:34:41 -0500
+Date: Mon, 19 Nov 2007 10:34:37 +0100
+From: Andreas Herrmann <aherrman@arcor.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86: fix UTS_MACHINE to be i386 for 32-bit build and x86_64 for 64-bit build
+Message-ID: <20071119093437.GA5104@devil>
+References: <20071117143731.GA7129@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] do_task_stat: don't use task_pid_nr_ns() lockless
-References: <20071117183109.GA2605@tv-sign.ru>
-In-Reply-To: <20071117183109.GA2605@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 19 Nov 2007 12:32:34 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071117143731.GA7129@uranus.ravnborg.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> Without rcu/tasklist/siglock lock task_pid_nr_ns() may read the freed memory,
-> move the callsite under ->siglock.
+On Sat, Nov 17, 2007 at 03:37:31PM +0100, Sam Ravnborg wrote:
 > 
-> Sadly, we can report pid == 0 if the task was detached.
->
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Note: This patch does not fix the uname -m issue - to do so
+> Andreas' patch is needed.
+> 
+> 	Sam
 
-Acked-by: Pavel Emelyanov <xemul@openvz.org>
+Linus,
 
-> --- 24/fs/proc/array.c~dtst	2007-11-09 12:57:30.000000000 +0300
-> +++ 24/fs/proc/array.c	2007-11-17 21:26:55.000000000 +0300
-> @@ -392,7 +392,7 @@ static int do_task_stat(struct task_stru
->  	sigset_t sigign, sigcatch;
->  	char state;
->  	int res;
-> -	pid_t ppid = 0, pgid = -1, sid = -1;
-> +	pid_t pid = 0, ppid = 0, pgid = -1, sid = -1;
->  	int num_threads = 0;
->  	struct mm_struct *mm;
->  	unsigned long long start_time;
-> @@ -403,9 +403,6 @@ static int do_task_stat(struct task_stru
->  	unsigned long rsslim = 0;
->  	char tcomm[sizeof(task->comm)];
->  	unsigned long flags;
-> -	struct pid_namespace *ns;
-> -
-> -	ns = current->nsproxy->pid_ns;
->  
->  	state = *get_task_state(task);
->  	vsize = eip = esp = 0;
-> @@ -425,6 +422,7 @@ static int do_task_stat(struct task_stru
->  
->  	rcu_read_lock();
->  	if (lock_task_sighand(task, &flags)) {
-> +		struct pid_namespace *ns = current->nsproxy->pid_ns;
->  		struct signal_struct *sig = task->signal;
->  
->  		if (sig->tty) {
-> @@ -461,6 +459,7 @@ static int do_task_stat(struct task_stru
->  			gtime = cputime_add(gtime, sig->gtime);
->  		}
->  
-> +		pid = task_pid_nr_ns(task, ns);
->  		sid = task_session_nr_ns(task, ns);
->  		pgid = task_pgrp_nr_ns(task, ns);
->  		ppid = task_ppid_nr_ns(task, ns);
-> @@ -495,7 +494,7 @@ static int do_task_stat(struct task_stru
->  	res = sprintf(buffer, "%d (%s) %c %d %d %d %d %d %u %lu \
->  %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
->  %lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
-> -		task_pid_nr_ns(task, ns),
-> +		pid,
->  		tcomm,
->  		state,
->  		ppid,
-> 
-> 
+The issue Sam refers to is that UTS_MACHINE is set to "x86" instead of
+"i386" or "x86_64" when building with ARCH=x86. Thus the new kernel
+when booted will give either "x86" on x86_64 and many i386 systems or
+even "x66" on other i386 systems for 'uname -m'.
+
+Many tools rely on the usual values of "x86_64", "i366" and "i686"
+here. So we shouldn't change this.
+
+Attached patch fixes that issue. Please apply.
+
+
+Regards,
+
+Andreas
+
+--
+x86: fix UTS_MACHINE to be i386 for 32-bit build and x86_64 for 64-bit build
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
+---
+ arch/x86/Makefile |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 116b03a..7aa1dc6 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -11,10 +11,9 @@ endif
+ $(srctree)/arch/x86/Makefile%: ;
+ 
+ ifeq ($(CONFIG_X86_32),y)
++        UTS_MACHINE := i386
+         include $(srctree)/arch/x86/Makefile_32
+ else
++        UTS_MACHINE := x86_64
+         include $(srctree)/arch/x86/Makefile_64
+ endif
+-
+-
+-
+-- 
+1.5.3.4
+
 
