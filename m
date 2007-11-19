@@ -1,134 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbXKSWCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbXKSWCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbXKSWCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 17:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbXKSWCM
+	id S1755484AbXKSWCx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 17:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXKSWCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 17:02:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33822 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752351AbXKSWCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 17:02:11 -0500
+	Mon, 19 Nov 2007 17:02:41 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:30901 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbXKSWCj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 17:02:39 -0500
+Date: Mon, 19 Nov 2007 15:02:37 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+       gregkh@suse.de, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
+Message-ID: <20071119220237.GC32540@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+	gregkh@suse.de, lenb@kernel.org, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
+	linux-acpi@vger.kernel.org
+References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119094307.517411a2@appleyard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 02/18] x86 vDSO: use vdso-syms.lds
-In-Reply-To: Roland McGrath's message of  Monday, 19 November 2007 13:59:43 -0800 <20071119215944.01B7C26F8BE@magilla.localdomain>
-References: <20071119215944.01B7C26F8BE@magilla.localdomain>
-X-Zippy-Says: HERE!!  Put THIS on!!  I'm in CHARGE!!
-Message-Id: <20071119220206.4CE4D26F8BE@magilla.localdomain>
-Date: Mon, 19 Nov 2007 14:02:06 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20071119094307.517411a2@appleyard>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kristin,
 
-This patch changes the kernel's references to addresses in the vDSO image
-to be based on the symbols defined by vdso-syms.lds instead of the old
-vdso-syms.o symbols.  This is all wrapped up in a macro defined by the new
-asm-x86/vdso.h header; that's the only place in the kernel source that has
-to know the details of the scheme for getting vDSO symbol values.
+* Kristen Carlson Accardi <kristen.c.accardi@intel.com>:
+> Alex Chiang <achiang@hp.com> wrote:
+> 
+> > I have done quite a bit more testing, and verified that this
+> > series plays nicely with acpiphp during all stages of the
+> > series.  Notably, you can modprobe/rmmod acpiphp repeatedly
+> > no matter where you are in the series, and no matter whether
+> > you have CONFIG_ACPI_PCI_SLOT turned on. The correct entries
+> > in /sys/bus/pci/slots/ will appear and disappear, and we
+> > correctly register/deregister ACPI slots with the pci_hp
+> > core. 
+> 
+> How does this patch play with non-acpi based hotplug such as
+> the pciehp driver or the shpchp driver for example?
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/vdso/Makefile     |    3 +--
- arch/x86/vdso/vdso-start.S |    2 --
- arch/x86/vdso/vma.c        |   18 +++++++-----------
- include/asm-x86/vdso.h     |   14 ++++++++++++++
- 4 files changed, 22 insertions(+), 15 deletions(-)
- delete mode 100644 arch/x86/vdso/vdso-start.S
- create mode 100644 include/asm-x86/vdso.h
+Thanks for asking these questions -- I fixed some bugs in patches
+3/4 and 4/4 that should lead to a much better experience.
 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index d8200ad..d2ec170 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -3,8 +3,7 @@
- #
- 
- # files to link into the vdso
--# vdso-start.o has to be first
--vobjs-y := vdso-start.o vdso-note.o vclock_gettime.o vgetcpu.o vvar.o
-+vobjs-y := vdso-note.o vclock_gettime.o vgetcpu.o vvar.o
- 
- # files to link into kernel
- obj-y := vma.o vdso.o vdso-syms.o
-diff --git a/arch/x86/vdso/vdso-start.S b/arch/x86/vdso/vdso-start.S
-deleted file mode 100644
-index 2dc2cdb..0000000
---- a/arch/x86/vdso/vdso-start.S
-+++ /dev/null
-@@ -1,2 +0,0 @@
--	.globl vdso_kernel_start
--vdso_kernel_start:
-diff --git a/arch/x86/vdso/vma.c b/arch/x86/vdso/vma.c
-index ff9333e..3fdd514 100644
---- a/arch/x86/vdso/vma.c
-+++ b/arch/x86/vdso/vma.c
-@@ -11,23 +11,20 @@
- #include <asm/vsyscall.h>
- #include <asm/vgtod.h>
- #include <asm/proto.h>
--#include "voffset.h"
-+#include <asm/vdso.h>
- 
--int vdso_enabled = 1;
--
--#define VEXTERN(x) extern typeof(__ ## x) *vdso_ ## x;
--#include "vextern.h"
-+#include "vextern.h"		/* Just for VMAGIC.  */
- #undef VEXTERN
- 
--extern char vdso_kernel_start[], vdso_start[], vdso_end[];
-+int vdso_enabled = 1;
-+
-+extern char vdso_start[], vdso_end[];
- extern unsigned short vdso_sync_cpuid;
- 
- struct page **vdso_pages;
- 
--static inline void *var_ref(void *vbase, char *var, char *name)
-+static inline void *var_ref(void *p, char *name)
- {
--	unsigned offset = var - &vdso_kernel_start[0] + VDSO_TEXT_OFFSET;
--	void *p = vbase + offset;
- 	if (*(void **)p != (void *)VMAGIC) {
- 		printk("VDSO: variable %s broken\n", name);
- 		vdso_enabled = 0;
-@@ -62,9 +59,8 @@ static int __init init_vdso_vars(void)
- 		vdso_enabled = 0;
- 	}
- 
--#define V(x) *(typeof(x) *) var_ref(vbase, (char *)RELOC_HIDE(&x, 0), #x)
- #define VEXTERN(x) \
--	V(vdso_ ## x) = &__ ## x;
-+	*(typeof(__ ## x) **) var_ref(VDSO64_SYMBOL(vbase, x), #x) = &__ ## x;
- #include "vextern.h"
- #undef VEXTERN
- 	return 0;
-diff --git a/include/asm-x86/vdso.h b/include/asm-x86/vdso.h
-new file mode 100644
-index 0000000..9379ec0
---- /dev/null
-+++ b/include/asm-x86/vdso.h
-@@ -0,0 +1,14 @@
-+#ifndef _ASM_X86_VDSO_H
-+#define _ASM_X86_VDSO_H	1
-+
-+extern const char VDSO64_PRELINK[];
-+
-+/*
-+ * Given a pointer to the vDSO image, find the pointer to VDSO64_name
-+ * as that symbol is defined in the vDSO sources or linker script.
-+ */
-+#define VDSO64_SYMBOL(base, name) ({		\
-+	extern const char VDSO64_##name[];	\
-+	(void *) (VDSO64_##name - VDSO64_PRELINK + (unsigned long) (base)); })
-+
-+#endif	/* asm-x86/vdso.h */
+First, it turns out I did not modify the pciehp driver correctly
+when using the new pci_hp_register interface. I fixed this bug,
+and noticed a problem in the rpaphp driver (which I fixed as
+well). I visually inspected the shpchp driver, and it *seems* to
+be correct, so no change there. I will send these fixes as Patch
+3/4, v4.
+
+Second, I resolved the issue of what happens when two different
+hp drivers try to claim the same PCI slot. Basically, whoever
+registered the slot first wins, and second place gets a -EBUSY
+return value. I *think* that is the correct behavior, as Willy
+informs me that having two drivers try to claim the same slot is
+badness. These fixes will be sent as Patch 4/4, v4.
+
+I tested by modprobe/rmmod both acpiphp and pciehp multiple
+times, and in differing orders. I also tested both
+CONFIG_ACPI_PCI_SLOT turned on and off. In all cases, at least
+what I intended to happen did happen.
+
+Now whether my intentions were correct or misguided might be a
+different story... ;) I'm wondering most about the -EBUSY thing,
+but I don't see a better option.
+
+Patches 1/4 and 2/4 had no changes so I will not resend them.
+
+Thanks.
+
+/ac
+
