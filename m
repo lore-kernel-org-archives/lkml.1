@@ -1,113 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbXKSO2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbXKSO3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbXKSO2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 09:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbXKSO2I
+	id S1755150AbXKSO3J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 09:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbXKSO25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 09:28:08 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:58444 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753057AbXKSO2H (ORCPT
+	Mon, 19 Nov 2007 09:28:57 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58370 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753222AbXKSO24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 09:28:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAHssQUdMROHU/2dsb2JhbACBWA
-Date: Mon, 19 Nov 2007 09:28:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 5/8] Immediate Values - x86 Optimization (simplified)
-Message-ID: <20071119142803.GA19301@Krystal>
-References: <20071113185800.436425570@polymtl.ca> <200711152206.07519.rusty@rustcorp.com.au> <20071116140334.GA14930@Krystal> <200711191011.18634.rusty@rustcorp.com.au>
+	Mon, 19 Nov 2007 09:28:56 -0500
+Date: Mon, 19 Nov 2007 14:27:13 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] termios: document callback more clearly
+Message-ID: <20071119142713.2e15ea74@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200711191011.18634.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:12:04 up 15 days, 18:17,  3 users,  load average: 0.74, 0.78,
-	1.01
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Saturday 17 November 2007 01:03:35 Mathieu Desnoyers wrote:
-> > x86 optimization of the immediate values which uses a movl with code
-> > patching to set/unset the value used to populate the register used as
-> > variable source.
-> 
-> Since immediate values are by definition an optimization, I think it makes
-> sense to insist they be 1, 2, 4 or 8 bytes.  A BUILD_BUG_ON() in the right
-> place should ensure this (probably in generic code rather than x86).
-> 
-sure,
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/arch/x86/kernel/traps_32.c
-> 
-> I don't think you need any modification to this file now.
-> 
-yep,
-
-> > + * Create the instruction in a discarded section to calculate its size. This is
-> > + * how we can align the beginning of the instruction on an address that will 
-> > + * permit atomic modificatino of the immediate value without knowing the size of 
-> > + * the opcode used by the compiler. The operand size is known in advance.
-> > + */ 
-> 
-> This alignment is also now unnecessary.
-> 
-
-right,
-
-> > +++ linux-2.6-lttng/arch/x86/kernel/immediate.c	2007-11-16
-> > 08:56:22.000000000 -0500 @@ -0,0 +1,143 @@
-> > +/*
-> > + * Immediate Value - x86 architecture specific code.
-> 
-> This is now almost entirely generic code, but I suppose we can let the next
-> architecture hoist it out.
-> 
-
-I'll move it to kernel/immediate.c. We can therefore remove the powerpc
-immediate.c as well.
-
-> > +/**
-> > + * arch_immediate_update_early - update one immediate value at boot time
-> > + * @immediate: pointer of type const struct __immediate to update
-> > + *
-> > + * Update one immediate value at boot time.
-> > + */
-> > +void arch_immediate_update_early(const struct __immediate *immediate)
-> 
-> I think it would be easier to just fast-path the num_online_cpus == 1 case,
-> even if you want to keep this "update_early" interface.
-> 
-
-Nope, that could lead to problems. I call core_immediate_update()
-_very_ early, before boot_cpu_init() is called. Therefore,
-cpu_online_map is not set yet. I am not sure the benefit of using
-num_online_cpus outweights the added fragility wrt other boot process
-initializations.
-
-> But I like your IPI algorithm: very tight.
-> 
-
-Thanks. Many thanks for the review, I'll repost the patchset for
-comments.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc2-mm1/Documentation/tty.txt linux-2.6.24-rc2-mm1/Documentation/tty.txt
+--- linux.vanilla-2.6.24-rc2-mm1/Documentation/tty.txt	2007-11-16 17:20:39.000000000 +0000
++++ linux-2.6.24-rc2-mm1/Documentation/tty.txt	2007-11-16 18:10:43.000000000 +0000
+@@ -132,6 +132,14 @@
+ 			tty->termios. Previous settings should be passed in
+ 			the "old" argument.
+ 
++			The API is defined such that the driver should return
++			the actual modes selected. This means that the
++			driver function is responsible for modifying any
++			bits in the request it cannot fulfill to indicate
++			the actual modes being used. A device with no
++			hardware capability for change (eg a USB dongle or
++			virtual port) can provide NULL for this method.
++
+ throttle()		Notify the tty driver that input buffers for the
+ 			line discipline are close to full, and it should
+ 			somehow signal that no more characters should be
