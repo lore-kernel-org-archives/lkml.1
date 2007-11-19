@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751322AbXKSTqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbXKSTvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751322AbXKSTqs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 14:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbXKSTql
+	id S1751285AbXKSTvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 14:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXKSTvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 14:46:41 -0500
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:57838 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750973AbXKSTqk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 14:46:40 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,v2.6.23.8, v2.6.22.13, v2.6.21.7
-Date: Mon, 19 Nov 2007 14:46:12 -0500
-Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0B897C3@ecqcmtlmail3.quebec.int.ec.gc.ca>
-In-Reply-To: <20071119185237.GA10965@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,v2.6.23.8, v2.6.22.13, v2.6.21.7
-Thread-Index: Acgq3WYxPIbb8QVnQQa5rmmEc1yxyAAB1IEA
-References: <20071119151756.GA25446@elte.hu> <20071119181207.GA11900@codepoet.org> <20071119185237.GA10965@elte.hu>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: "Ingo Molnar" <mingo@elte.hu>, <andersen@codepoet.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 19 Nov 2007 19:46:13.0611 (UTC) FILETIME=[D77AABB0:01C82AE4]
+	Mon, 19 Nov 2007 14:51:46 -0500
+Received: from gate.crashing.org ([63.228.1.57]:59760 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750920AbXKSTvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 14:51:45 -0500
+Subject: Re: SCSI breakage on non-cache coherent architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Miller <davem@davemloft.net>
+Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk
+In-Reply-To: <20071119.003802.100741794.davem@davemloft.net>
+References: <1195450523.7022.37.camel@pasglop>
+	 <20071119.003802.100741794.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 06:51:14 +1100
+Message-Id: <1195501874.6539.5.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Message d'origine-----
-> De : linux-kernel-owner@vger.kernel.org 
-> [mailto:linux-kernel-owner@vger.kernel.org] De la part de Ingo Molnar
+
+On Mon, 2007-11-19 at 00:38 -0800, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Mon, 19 Nov 2007 16:35:23 +1100
 > 
-> 
-> * Erik Andersen <andersen@codepoet.org> wrote:
-> 
-> > On Mon Nov 19, 2007 at 04:17:56PM +0100, Ingo Molnar wrote:
-> > > 
-> > > By popular demand, here is release -v24 of the CFS 
-> scheduler patch.
-> > > 
-> > > It is a full backport of the latest & greatest scheduler code to 
-> > > v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7. The patches can be 
-> > > downloaded from the usual place:
-> > > 
-> > >     http://people.redhat.com/mingo/cfs-scheduler/
+> > I'm not sure what is the best way to fix that. Internally, I've done
+> > some test whacking some ____cacheline_aligned in the scsi_cmnd data
+> > structure to verify I no longer get random SLAB corruption when using my
+> > USB but that significantly bloats the size of the structure on archs
+> > such as ppc64 that don't need it and have a large cache line size.
 > > 
-> > Doesn't compile with 2.6.21.7:
+> > Unfortunately, I don't think there's any existing Kconfig symbol or arch
+> > provided #define to tell us that we are on a non-coherent arch afaik
+> > that could be used to make that conditional.
+> > 
+> > Another option would be to kmalloc the buffer (wasn't it the case before
+> > btw ?) but I suppose some people will scream at the idea due to how the
+> > command pools are done...
 > 
-> does the patch below help?
-> 
+> You could make a ____dma_cacheline_aligned and use that.
+> It seems pretty reasonable.
 
-Looks good.  Compiling.
+I was thinking about that. What archs would need it ? arm, mips, what
+else ?
 
-- vin
+Cheers,
+Ben.
+
