@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXKSPAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbXKSPBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbXKSPAX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbXKSPAL
+	id S1755884AbXKSPBE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:01:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXKSPAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:00:11 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35934 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753334AbXKSPAJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:00:09 -0500
-Date: Mon, 19 Nov 2007 14:57:54 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH] tty_audit: Fix checkpatch complaint
-Message-ID: <20071119145754.46006a10@the-village.bc.nu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 19 Nov 2007 10:00:55 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:48921 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753988AbXKSPAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 10:00:54 -0500
+Date: Tue, 20 Nov 2007 00:00:41 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
+Subject: [PATCH] alpha: fix sg_page breakage
+From: FUJITA Tomonori <tomof@acm.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071120000231O.tomof@acm.org>
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/alpha/kernel/pci-noop.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc2-mm1/drivers/char/tty_audit.c linux-2.6.24-rc2-mm1/drivers/char/tty_audit.c
---- linux.vanilla-2.6.24-rc2-mm1/drivers/char/tty_audit.c	2007-11-16 17:20:41.000000000 +0000
-+++ linux-2.6.24-rc2-mm1/drivers/char/tty_audit.c	2007-11-16 18:20:50.000000000 +0000
-@@ -27,7 +27,7 @@
- {
- 	struct tty_audit_buf *buf;
+diff --git a/arch/alpha/kernel/pci-noop.c b/arch/alpha/kernel/pci-noop.c
+index 174b729..468b76c 100644
+--- a/arch/alpha/kernel/pci-noop.c
++++ b/arch/alpha/kernel/pci-noop.c
+@@ -12,6 +12,7 @@
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+ #include <linux/dma-mapping.h>
++#include <linux/scatterlist.h>
  
--	buf = kmalloc(sizeof (*buf), GFP_KERNEL);
-+	buf = kmalloc(sizeof(*buf), GFP_KERNEL);
- 	if (!buf)
- 		goto err;
- 	if (PAGE_SIZE != N_TTY_BUF_SIZE)
+ #include "proto.h"
+ 
+@@ -172,18 +173,19 @@ dma_alloc_coherent(struct device *dev, size_t size,
+ EXPORT_SYMBOL(dma_alloc_coherent);
+ 
+ int
+-dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
++dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	   enum dma_data_direction direction)
+ {
+ 	int i;
++	struct scatterlist *sg;
+ 
+-	for (i = 0; i < nents; i++ ) {
++	for_each_sg(sgl, sg, nents, i) {
+ 		void *va;
+ 
+-		BUG_ON(!sg[i].page);
+-		va = page_address(sg[i].page) + sg[i].offset;
+-		sg_dma_address(sg + i) = (dma_addr_t)virt_to_bus(va);
+-		sg_dma_len(sg + i) = sg[i].length;
++		BUG_ON(!sg_page(sg));
++		va = sg_virt(sg);
++		sg_dma_address(sg) = (dma_addr_t)virt_to_bus(va);
++		sg_dma_len(sg) = sg->length;
+ 	}
+ 
+ 	return nents;
+-- 
+1.5.3.4
+
