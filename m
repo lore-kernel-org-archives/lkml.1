@@ -1,42 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbXKSKf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbXKSKj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbXKSKf1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 05:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXKSKfS
+	id S1753337AbXKSKj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 05:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXKSKjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 05:35:18 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:49854 "EHLO 2ka.mipt.ru"
+	Mon, 19 Nov 2007 05:39:48 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41420 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbXKSKfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 05:35:16 -0500
-Date: Mon, 19 Nov 2007 13:34:28 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Patrick McHardy <kaber@trash.net>
-Cc: herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org, mb@bu3sch.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [HIFN 00/03]: RNG support v2
-Message-ID: <20071119103428.GB2048@2ka.mipt.ru>
-References: <20071118213241.9217.7696.sendpatchset@localhost.localdomain>
+	id S1751249AbXKSKjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 05:39:48 -0500
+Date: Mon, 19 Nov 2007 11:41:29 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andreas Herrmann <aherrman@arcor.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Roman Zippel <zippel@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix UTS_MACHINE to be i386 for 32-bit build and x86_64 for 64-bit build
+Message-ID: <20071119104129.GA10731@uranus.ravnborg.org>
+References: <20071117143731.GA7129@uranus.ravnborg.org> <20071119093437.GA5104@devil>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071118213241.9217.7696.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071119093437.GA5104@devil>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Patrick.
+On Mon, Nov 19, 2007 at 10:34:37AM +0100, Andreas Herrmann wrote:
+> On Sat, Nov 17, 2007 at 03:37:31PM +0100, Sam Ravnborg wrote:
+> > 
+> > Note: This patch does not fix the uname -m issue - to do so
+> > Andreas' patch is needed.
+> > 
+> > 	Sam
+> 
+> Linus,
+> 
+> The issue Sam refers to is that UTS_MACHINE is set to "x86" instead of
+> "i386" or "x86_64" when building with ARCH=x86. Thus the new kernel
+> when booted will give either "x86" on x86_64 and many i386 systems or
+> even "x66" on other i386 systems for 'uname -m'.
+> 
+> Many tools rely on the usual values of "x86_64", "i366" and "i686"
+> here. So we shouldn't change this.
 
-On Sun, Nov 18, 2007 at 10:32:52PM +0100, Patrick McHardy (kaber@trash.net) wrote:
-> These patches add support for using the HIFN rng.
+Andreas - I will suggest you to submit a new patch with
+a better changelog where you jsut describe what you fix.
+The above explanations looks a bit weird if read stand alone.
 
-> Patrick McHardy (3):
->       [HWRNG]: move status polling loop to data_present callbacks
->       [HIFN]: Improve PLL initialization
->       [HIFN]: Add support for using the random number generator
+You can always add additional comments after the line containing:
+---
 
-Thanks a lot for your patches.
-Ack for all three.
+In this way it is not included in the changelog but Linus can read it.
 
--- 
-	Evgeniy Polyakov
+Anyway - your patch has my ack.
+
+	Sam
+
+> 
+> Attached patch fixes that issue. Please apply.
+> 
+> 
+> Regards,
+> 
+> Andreas
+> 
+> --
+> x86: fix UTS_MACHINE to be i386 for 32-bit build and x86_64 for 64-bit build
+> 
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Roman Zippel <zippel@linux-m68k.org>
+> Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+> ---
+>  arch/x86/Makefile |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+> index 116b03a..7aa1dc6 100644
+> --- a/arch/x86/Makefile
+> +++ b/arch/x86/Makefile
+> @@ -11,10 +11,9 @@ endif
+>  $(srctree)/arch/x86/Makefile%: ;
+>  
+>  ifeq ($(CONFIG_X86_32),y)
+> +        UTS_MACHINE := i386
+>          include $(srctree)/arch/x86/Makefile_32
+>  else
+> +        UTS_MACHINE := x86_64
+>          include $(srctree)/arch/x86/Makefile_64
+>  endif
+> -
+> -
+> -
+> -- 
+> 1.5.3.4
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
