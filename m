@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbXKSWCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXKSWDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbXKSWCx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 17:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXKSWCl
+	id S1755374AbXKSWDN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 17:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXKSWCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 17:02:41 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:30901 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753174AbXKSWCj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 17:02:39 -0500
-Date: Mon, 19 Nov 2007 15:02:37 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       gregkh@suse.de, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
-Message-ID: <20071119220237.GC32540@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-	gregkh@suse.de, lenb@kernel.org, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
-	linux-acpi@vger.kernel.org
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119094307.517411a2@appleyard>
+	Mon, 19 Nov 2007 17:02:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33839 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753174AbXKSWCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 17:02:44 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119094307.517411a2@appleyard>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 03/18] x86 vDSO: remove vdso-syms.o
+In-Reply-To: Roland McGrath's message of  Monday, 19 November 2007 13:59:43 -0800 <20071119215944.01B7C26F8BE@magilla.localdomain>
+References: <20071119215944.01B7C26F8BE@magilla.localdomain>
+X-Zippy-Says: I just bought FLATBUSH from MICKEY MANTLE!
+Message-Id: <20071119220238.9131326F8BE@magilla.localdomain>
+Date: Mon, 19 Nov 2007 14:02:38 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kristin,
 
-* Kristen Carlson Accardi <kristen.c.accardi@intel.com>:
-> Alex Chiang <achiang@hp.com> wrote:
-> 
-> > I have done quite a bit more testing, and verified that this
-> > series plays nicely with acpiphp during all stages of the
-> > series.  Notably, you can modprobe/rmmod acpiphp repeatedly
-> > no matter where you are in the series, and no matter whether
-> > you have CONFIG_ACPI_PCI_SLOT turned on. The correct entries
-> > in /sys/bus/pci/slots/ will appear and disappear, and we
-> > correctly register/deregister ACPI slots with the pci_hp
-> > core. 
-> 
-> How does this patch play with non-acpi based hotplug such as
-> the pciehp driver or the shpchp driver for example?
+Get rid of vdso-syms.o from the kernel link.  We don't need it any more.
 
-Thanks for asking these questions -- I fixed some bugs in patches
-3/4 and 4/4 that should lead to a much better experience.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/vdso/Makefile |   15 ++-------------
+ 1 files changed, 2 insertions(+), 13 deletions(-)
 
-First, it turns out I did not modify the pciehp driver correctly
-when using the new pci_hp_register interface. I fixed this bug,
-and noticed a problem in the rpaphp driver (which I fixed as
-well). I visually inspected the shpchp driver, and it *seems* to
-be correct, so no change there. I will send these fixes as Patch
-3/4, v4.
-
-Second, I resolved the issue of what happens when two different
-hp drivers try to claim the same PCI slot. Basically, whoever
-registered the slot first wins, and second place gets a -EBUSY
-return value. I *think* that is the correct behavior, as Willy
-informs me that having two drivers try to claim the same slot is
-badness. These fixes will be sent as Patch 4/4, v4.
-
-I tested by modprobe/rmmod both acpiphp and pciehp multiple
-times, and in differing orders. I also tested both
-CONFIG_ACPI_PCI_SLOT turned on and off. In all cases, at least
-what I intended to happen did happen.
-
-Now whether my intentions were correct or misguided might be a
-different story... ;) I'm wondering most about the -EBUSY thing,
-but I don't see a better option.
-
-Patches 1/4 and 2/4 had no changes so I will not resend them.
-
-Thanks.
-
-/ac
-
+diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
+index d2ec170..6a665dd 100644
+--- a/arch/x86/vdso/Makefile
++++ b/arch/x86/vdso/Makefile
+@@ -6,13 +6,13 @@
+ vobjs-y := vdso-note.o vclock_gettime.o vgetcpu.o vvar.o
+ 
+ # files to link into kernel
+-obj-y := vma.o vdso.o vdso-syms.o
++obj-y := vma.o vdso.o
+ 
+ vobjs := $(foreach F,$(vobjs-y),$(obj)/$F)
+ 
+ $(obj)/vdso.o: $(obj)/vdso.so
+ 
+-targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y) vdso-syms.o
++targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y)
+ 
+ # The DSO images are built using a special linker script.
+ quiet_cmd_syscall = SYSCALL $@
+@@ -43,17 +43,6 @@ CFL := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m
+ $(obj)/vclock_gettime.o: KBUILD_CFLAGS = $(CFL)
+ $(obj)/vgetcpu.o: KBUILD_CFLAGS = $(CFL)
+ 
+-# We also create a special relocatable object that should mirror the symbol
+-# table and layout of the linked DSO.  With ld -R we can then refer to
+-# these symbols in the kernel code rather than hand-coded addresses.
+-extra-y += vdso-syms.o
+-$(obj)/built-in.o: $(obj)/vdso-syms.o
+-$(obj)/built-in.o: ld_flags += -R $(obj)/vdso-syms.o
+-
+-SYSCFLAGS_vdso-syms.o = -r -d
+-$(obj)/vdso-syms.o: $(src)/vdso.lds $(vobjs) FORCE
+-	$(call if_changed,syscall)
+-
+ targets += vdso-syms.lds
+ obj-y += vdso-syms.lds
+ 
