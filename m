@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbXKSNne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbXKSNs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbXKSNne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 08:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbXKSNnV
+	id S1754109AbXKSNs6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 08:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbXKSNsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 08:43:21 -0500
-Received: from pip9.gyao.ne.jp ([61.122.117.247]:53227 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754792AbXKSNnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 08:43:20 -0500
-Date: Mon, 19 Nov 2007 22:43:16 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: even *more* unused CONFIG variables at no extra charge
-Message-ID: <20071119134316.GA12158@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.9999.0711160555530.13454@localhost.localdomain>
+	Mon, 19 Nov 2007 08:48:50 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:29460 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752040AbXKSNsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 08:48:50 -0500
+Date: Mon, 19 Nov 2007 14:46:14 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: alpha: fix sg_page breakage
+Message-ID: <20071119134614.GH18095@kernel.dk>
+References: <200711170752.lAH7qlRg003441@mbox.iij4u.or.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711160555530.13454@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200711170752.lAH7qlRg003441@mbox.iij4u.or.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 06:15:48AM -0500, Robert P. J. Day wrote:
-> ==== sh64 ====
-> >>>>> DEVICE_MEMORY_START
-> >>>>> FLASH_MEMORY_START
-> >>>>> HDSP253_LED
-> >>>>> PCI_BLOCK_START
-> >>>>> PCIDEVICE_MEMORY_START
+On Sat, Nov 17 2007, FUJITA Tomonori wrote:
+> arch/alpha/kernel/pci-noop.c:167: warning: 'virt_to_bus' is deprecated (declared at include2/asm/io.h:117)
+> arch/alpha/kernel/pci-noop.c: In function 'dma_map_sg':
+> arch/alpha/kernel/pci-noop.c:183: error: 'struct scatterlist' has no member named 'page'
+> arch/alpha/kernel/pci-noop.c:184: error: 'struct scatterlist' has no member named 'page'
+> arch/alpha/kernel/pci-noop.c:185: warning: 'virt_to_bus' is deprecated (declared at include2/asm/io.h:11)
 
-Yeah, these are mostly bogus and just never got removed. I'll poke
-through it and kill them off or fix up the Makefiles to actually use
-them (as in the HDSP253_LED case). Thanks for catching these, these sorts
-of reports are really useful.
+I'd greatly prefer this being split in two, it's really two different
+changes.
 
-Have you considered tidying up your config checker and adding it as a
-static analyser target with the existing set? 'make configcheck' or
-something would be a reasonable addition.
+-- 
+Jens Axboe
+
