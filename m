@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbXKSS23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXKSS2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbXKSS23 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbXKSSWh
+	id S1756057AbXKSS2n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752405AbXKSSWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:22:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49341 "EHLO
+	Mon, 19 Nov 2007 13:22:39 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49351 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbXKSSWf (ORCPT
+	with ESMTP id S1752367AbXKSSWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:22:35 -0500
-Date: Mon, 19 Nov 2007 10:19:23 -0800
+	Mon, 19 Nov 2007 13:22:37 -0500
+Date: Mon, 19 Nov 2007 10:19:26 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -21,14 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, rainer.brestan@frequentis.com, kkeil@suse.de,
-       rsc@runtux.com
-Subject: [patch 20/26] i4l: Fix random hard freeze with AVM c4 card
-Message-ID: <20071119181923.GU15425@kroah.com>
+       alan@lxorguk.ukuu.org.uk, kkeil@suse.de
+Subject: [patch 21/26] i4l: fix random freezes with AVM B1 drivers
+Message-ID: <20071119181926.GV15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i4l-fix-random-hard-freeze-with-avm-c4-card.patch"
+Content-Disposition: inline; filename="i4l-fix-random-freezes-with-avm-b1-drivers.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,98 +41,130 @@ know.
 ------------------
 From: Karsten Keil <kkeil@suse.de>
 
-patch 1ccfd63367c1a6aaf8b33943f18856dde85f2f0b in mainline.
+patch 9713d9e650045f7f2afd81d58a068827be306993 in mainline.
 
-The patch
-- Includes the call to capilib_data_b3_req in the spinlock. This routine
-  in turn calls the offending mq_enqueue routine that triggered the
-  freeze if not locked.  This should also fix other indicators of
-  incosistent capilib_msgidqueue list, that trigger messages like:
-  Oct  5 03:05:57 BERL0 kernel: kcapi: msgid 3019 ncci 0x30301 not on queue
-  that we saw several times a day (usually several in a row).
-- Fixes all occurrences of c4_dispatch_tx to be called with active
-  spinlock, there were some instances where no lock was active. Mostly
-  these are in very infrequently called routines, so the additional
-  performance penalty is minimal.
+This fix the same issue which was debbuged for the C4 controller for the B1
+versions.
+
+The capilib_ function modify or traverse a linked list without locking.
+
+This patch extends the existing locking to the calls of these function to
+prevent access to a list which is in the middle of a modification.
 
 Signed-off-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Rainer Brestan <rainer.brestan@frequentis.com>
-Signed-off-by: Ralf Schlatterbeck <rsc@runtux.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/hardware/avm/c4.c |   14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/isdn/hardware/avm/b1.c |   28 +++++++++++++---------------
+ 1 file changed, 13 insertions(+), 15 deletions(-)
 
---- a/drivers/isdn/hardware/avm/c4.c
-+++ b/drivers/isdn/hardware/avm/c4.c
-@@ -727,6 +727,7 @@ static void c4_send_init(avmcard *card)
- {
- 	struct sk_buff *skb;
- 	void *p;
+--- a/drivers/isdn/hardware/avm/b1.c
++++ b/drivers/isdn/hardware/avm/b1.c
+@@ -321,12 +321,15 @@ void b1_reset_ctr(struct capi_ctr *ctrl)
+ 	avmctrl_info *cinfo = (avmctrl_info *)(ctrl->driverdata);
+ 	avmcard *card = cinfo->card;
+ 	unsigned int port = card->port;
 +	unsigned long flags;
  
- 	skb = alloc_skb(15, GFP_ATOMIC);
- 	if (!skb) {
-@@ -744,12 +745,15 @@ static void c4_send_init(avmcard *card)
- 	skb_put(skb, (u8 *)p - (u8 *)skb->data);
+ 	b1_reset(port);
+ 	b1_reset(port);
  
- 	skb_queue_tail(&card->dma->send_queue, skb);
+ 	memset(cinfo->version, 0, sizeof(cinfo->version));
 +	spin_lock_irqsave(&card->lock, flags);
- 	c4_dispatch_tx(card);
+ 	capilib_release(&cinfo->ncci_head);
 +	spin_unlock_irqrestore(&card->lock, flags);
+ 	capi_ctr_reseted(ctrl);
  }
  
- static int queue_sendconfigword(avmcard *card, u32 val)
- {
- 	struct sk_buff *skb;
-+	unsigned long flags;
- 	void *p;
- 
- 	skb = alloc_skb(3+4, GFP_ATOMIC);
-@@ -766,7 +770,9 @@ static int queue_sendconfigword(avmcard 
- 	skb_put(skb, (u8 *)p - (u8 *)skb->data);
- 
- 	skb_queue_tail(&card->dma->send_queue, skb);
-+	spin_lock_irqsave(&card->lock, flags);
- 	c4_dispatch_tx(card);
-+	spin_unlock_irqrestore(&card->lock, flags);
- 	return 0;
- }
- 
-@@ -986,7 +992,9 @@ static void c4_release_appl(struct capi_
- 	struct sk_buff *skb;
- 	void *p;
- 
-+	spin_lock_irqsave(&card->lock, flags);
- 	capilib_release_appl(&cinfo->ncci_head, appl);
-+	spin_unlock_irqrestore(&card->lock, flags);
- 
- 	if (ctrl->cnr == card->cardnr) {
- 		skb = alloc_skb(7, GFP_ATOMIC);
-@@ -1019,7 +1027,8 @@ static u16 c4_send_message(struct capi_c
- 	u16 retval = CAPI_NOERROR;
+@@ -361,9 +364,8 @@ void b1_release_appl(struct capi_ctr *ct
+ 	unsigned int port = card->port;
  	unsigned long flags;
  
-- 	if (CAPIMSG_CMD(skb->data) == CAPI_DATA_B3_REQ) {
+-	capilib_release_appl(&cinfo->ncci_head, appl);
+-
+ 	spin_lock_irqsave(&card->lock, flags);
++	capilib_release_appl(&cinfo->ncci_head, appl);
+ 	b1_put_byte(port, SEND_RELEASE);
+ 	b1_put_word(port, appl);
+ 	spin_unlock_irqrestore(&card->lock, flags);
+@@ -380,27 +382,27 @@ u16 b1_send_message(struct capi_ctr *ctr
+ 	u8 subcmd = CAPIMSG_SUBCOMMAND(skb->data);
+ 	u16 dlen, retval;
+ 
 +	spin_lock_irqsave(&card->lock, flags);
-+	if (CAPIMSG_CMD(skb->data) == CAPI_DATA_B3_REQ) {
+ 	if (CAPICMD(cmd, subcmd) == CAPI_DATA_B3_REQ) {
  		retval = capilib_data_b3_req(&cinfo->ncci_head,
  					     CAPIMSG_APPID(skb->data),
  					     CAPIMSG_NCCI(skb->data),
-@@ -1027,10 +1036,9 @@ static u16 c4_send_message(struct capi_c
- 	}
- 	if (retval == CAPI_NOERROR) {
- 		skb_queue_tail(&card->dma->send_queue, skb);
--		spin_lock_irqsave(&card->lock, flags);
- 		c4_dispatch_tx(card);
+ 					     CAPIMSG_MSGID(skb->data));
+-		if (retval != CAPI_NOERROR) 
++		if (retval != CAPI_NOERROR) {
++			spin_unlock_irqrestore(&card->lock, flags);
+ 			return retval;
++		}
+ 
+ 		dlen = CAPIMSG_DATALEN(skb->data);
+ 
+-	 	spin_lock_irqsave(&card->lock, flags);
+ 		b1_put_byte(port, SEND_DATA_B3_REQ);
+ 		b1_put_slice(port, skb->data, len);
+ 		b1_put_slice(port, skb->data + len, dlen);
+-		spin_unlock_irqrestore(&card->lock, flags);
+ 	} else {
+-	 	spin_lock_irqsave(&card->lock, flags);
+ 		b1_put_byte(port, SEND_MESSAGE);
+ 		b1_put_slice(port, skb->data, len);
 -		spin_unlock_irqrestore(&card->lock, flags);
  	}
 +	spin_unlock_irqrestore(&card->lock, flags);
- 	return retval;
- }
  
+ 	dev_kfree_skb_any(skb);
+ 	return CAPI_NOERROR;
+@@ -534,17 +536,17 @@ irqreturn_t b1_interrupt(int interrupt, 
+ 
+ 		ApplId = (unsigned) b1_get_word(card->port);
+ 		MsgLen = b1_get_slice(card->port, card->msgbuf);
+-		spin_unlock_irqrestore(&card->lock, flags);
+ 		if (!(skb = alloc_skb(MsgLen, GFP_ATOMIC))) {
+ 			printk(KERN_ERR "%s: incoming packet dropped\n",
+ 					card->name);
++			spin_unlock_irqrestore(&card->lock, flags);
+ 		} else {
+ 			memcpy(skb_put(skb, MsgLen), card->msgbuf, MsgLen);
+ 			if (CAPIMSG_CMD(skb->data) == CAPI_DATA_B3_CONF)
+ 				capilib_data_b3_conf(&cinfo->ncci_head, ApplId,
+ 						     CAPIMSG_NCCI(skb->data),
+ 						     CAPIMSG_MSGID(skb->data));
+-
++			spin_unlock_irqrestore(&card->lock, flags);
+ 			capi_ctr_handle_message(ctrl, ApplId, skb);
+ 		}
+ 		break;
+@@ -554,21 +556,17 @@ irqreturn_t b1_interrupt(int interrupt, 
+ 		ApplId = b1_get_word(card->port);
+ 		NCCI = b1_get_word(card->port);
+ 		WindowSize = b1_get_word(card->port);
+-		spin_unlock_irqrestore(&card->lock, flags);
+-
+ 		capilib_new_ncci(&cinfo->ncci_head, ApplId, NCCI, WindowSize);
+-
++		spin_unlock_irqrestore(&card->lock, flags);
+ 		break;
+ 
+ 	case RECEIVE_FREE_NCCI:
+ 
+ 		ApplId = b1_get_word(card->port);
+ 		NCCI = b1_get_word(card->port);
+-		spin_unlock_irqrestore(&card->lock, flags);
+-
+ 		if (NCCI != 0xffffffff)
+ 			capilib_free_ncci(&cinfo->ncci_head, ApplId, NCCI);
+-	       
++		spin_unlock_irqrestore(&card->lock, flags);
+ 		break;
+ 
+ 	case RECEIVE_START:
 
 -- 
