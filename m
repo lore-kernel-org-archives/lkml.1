@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXKSS6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbXKSS7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbXKSS6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbXKSS6N
+	id S1752836AbXKSS7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbXKSS71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:58:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44214 "EHLO mx2.mail.elte.hu"
+	Mon, 19 Nov 2007 13:59:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44515 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbXKSS6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:58:11 -0500
-Date: Mon, 19 Nov 2007 19:57:59 +0100
+	id S1751017AbXKSS70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 13:59:26 -0500
+Date: Mon, 19 Nov 2007 19:59:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: David <david@livux.com>
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
 	v2.6.23.8,v2.6.22.13, v2.6.21.7
-Message-ID: <20071119185759.GA12117@elte.hu>
-References: <200711191925.12072.david@livux.com>
+Message-ID: <20071119185920.GB12117@elte.hu>
+References: <20071119151756.GA25446@elte.hu> <F1D642E5A91BC94D9504EC83AE19E6B0B897BE@ecqcmtlmail3.quebec.int.ec.gc.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711191925.12072.david@livux.com>
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0B897BE@ecqcmtlmail3.quebec.int.ec.gc.ca>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,25 +34,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David <david@livux.com> wrote:
+* Fortier,Vincent [Montreal] <Vincent.Fortier1@EC.GC.CA> wrote:
 
 > Hi Ingo,
 > 
 > Thnx a lot for theses backports...
 > 
-> Ran into this while compiling a 2.6.23.8 with CFS v24
+> Ran into this while compiling a 2.6.22.13 with CFS v24
 > 
-> Compiling with CONFIG_FAIR_GROUP_SCHED disabled :
-> 
-> kernel/sysctl.c:305: error: 'sysctl_sched_min_bal_int_shares' undeclared here (not in a function)
-> kernel/sysctl.c:313: error: 'sysctl_sched_max_bal_int_shares' undeclared here (not in a function)
-> 
-> I made that patch to make it compile.
+>   CC      kernel/sched.o
+> kernel/sched.c: In function 'cpu_to_core_group':
+> kernel/sched.c:6056: error: 'per_cpu__cpu_sibling_map' undeclared (first
 
-thanks - i've applied your fix and have re-uploaded under the same 
-filenames - so if anyone hits this problem it can be fixed by 
-re-downloading the same patch again. Find below the current set of -v24 
-build fixlets.
+find below the current set of fixlets - it should fix the 
+cpu_sibling_map build error too. (or re-download the v24 patch again to 
+get the fixes)
 
 	Ingo
 
