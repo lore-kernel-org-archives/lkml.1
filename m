@@ -1,125 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbXKSRzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbXKSR5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbXKSRzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 12:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbXKSRyv
+	id S1755163AbXKSR5T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 12:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbXKSR5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 12:54:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40663 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753722AbXKSRyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 12:54:50 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] [RFC] Expose _SUN in /proc/acpi/processor/<...>/info
-Date: Mon, 19 Nov 2007 12:54:33 -0500
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-References: <20071019193844.GL8122@ldl.fc.hp.com> <20071030235057.GD3127@ldl.fc.hp.com>
-In-Reply-To: <20071030235057.GD3127@ldl.fc.hp.com>
+	Mon, 19 Nov 2007 12:57:11 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:29203 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754320AbXKSR5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 12:57:09 -0500
+Date: Mon, 19 Nov 2007 10:57:07 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+       gregkh@suse.de, lenb@kernel.org, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
+Message-ID: <20071119175707.GH7392@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
+	gregkh@suse.de, lenb@kernel.org, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
+	linux-acpi@vger.kernel.org
+References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119094307.517411a2@appleyard>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711191254.33682.lenb@kernel.org>
+In-Reply-To: <20071119094307.517411a2@appleyard>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 19:50, Alex Chiang wrote:
-> Hello,
+* Kristen Carlson Accardi <kristen.c.accardi@intel.com>:
+> On Sat, 17 Nov 2007 11:29:54 -0700
+> Alex Chiang <achiang@hp.com> wrote:
 > 
-> I'm looking for comments on the following patch that exposes _SUN
-> on processor objects in /proc/acpi/processor/<...>/info. 
+> > I have done quite a bit more testing, and verified that this
+> > series plays nicely with acpiphp during all stages of the series.
+> > Notably, you can modprobe/rmmod acpiphp repeatedly no matter
+> > where you are in the series, and no matter whether you have
+> > CONFIG_ACPI_PCI_SLOT turned on. The correct entries in
+> > /sys/bus/pci/slots/ will appear and disappear, and we correctly
+> > register/deregister ACPI slots with the pci_hp core. 
 > 
-> This didn't get many comments on the linux-acpi list, so I'm
-> sending to a wider distribution.
-> 
-> I notice that acpiphp exposes _SUN for (hotpluggable) PCI slots
-> in /sys/bus/pci/slots/N/, where N is the value of _SUN. I'm not
-> so sure we want to go *exactly* in the same direction for CPUs,
-> because:
-> 
->   - x86 systems might not implement _SUN for processors
->   - ia64 systems that implement ACPI 2.x do not have unique
->     values for _SUN across the entire system
-> 
-> Nonetheless, even non-unique values of _SUN are still helpful for
-> userspace to figure out which physical socket a CPU might be in,
-> especially when combined with information from /proc/cpuinfo.
-> 
-> Thoughts?
+> How does this patch play with non-acpi based hotplug such as the pciehp
+> driver 
 
-We've not allowed new features in /proc/acpi
-since we started removing /proc/acpi.
-ie. we don't want to update the API, we want to delete it.
+Not well. :(
 
-If this is a useful thing for user-space to know, then you need
-to figure out a generic way to present it -- likely under
-/sys/devices/system/cpu/
+pciehp: HPC vendor_id 103c device_id 403b ss_vid 0 ss_did 0
+pciehp: pci_hp_register failed with error -17
+pciehp: pciehp: slot initialization failed
+pciehp: HPC vendor_id 111d device_id 801c ss_vid 0 ss_did 0
+pciehp: Can't get irq 0 for the hotplug controller
+pciehp: HPC vendor_id 111d device_id 801c ss_vid 0 ss_did 0
+pciehp: Can't get irq 0 for the hotplug controller
+pciehp: HPC vendor_id 103c device_id 403b ss_vid 0 ss_did 0
+pciehp: pci_hp_register failed with error -17
+pciehp: pciehp: slot initialization failed
 
-Andrew, please remove acpi-expose-_sun-in-proc-acpi-processor-info.patch
-from the mm series.
+I'll take a look at this today. Thanks for pointing it out.
 
-thanks,
--Len
+> or the shpchp driver for example?
 
+This one, I'm not sure on, as I don't have any shpc hardware.
+I'll do my best by just looking at the code, but maybe if someone
+out there has that hardware, they could let me know what breaks?
 
->  
-> From: Alex Chiang <achiang@hp.com>
-> 
-> On platforms that provide _SUN for the processor object, higher
-> level software can consume the data to learn physical topology
-> information, so let's expose it.
-> 
-> Platforms that do not implement _SUN will see <not supported>.
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
->  drivers/acpi/processor_core.c |   11 +++++++++++
->  include/acpi/processor.h      |    1 +
->  2 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-> index 235a51e..86cb41a 100644
-> --- a/drivers/acpi/processor_core.c
-> +++ b/drivers/acpi/processor_core.c
-> @@ -302,6 +302,11 @@ static int acpi_processor_info_seq_show(struct seq_file *seq, void *offset)
->  		   pr->flags.throttling ? "yes" : "no",
->  		   pr->flags.limit ? "yes" : "no");
->  
-> +	if (pr->sun == -1)
-> +		seq_printf(seq, "slot user number:        <not supported>\n");
-> +	else
-> +		seq_printf(seq, "slot user number:        %d\n", (int)pr->sun);
-> +
->        end:
->  	return 0;
->  }
-> @@ -590,6 +595,12 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
->  	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Processor [%d:%d]\n", pr->id,
->  			  pr->acpi_id));
->  
-> +	status = acpi_evaluate_object(pr->handle, "_SUN", NULL, &buffer);
-> +	if (ACPI_FAILURE(status))
-> +		object.integer.value = -1;
-> +
-> +	pr->sun = object.integer.value;
-> +
->  	if (!object.processor.pblk_address)
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No PBLK (NULL address)\n"));
->  	else if (object.processor.pblk_length != 6)
-> diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-> index 26d79f6..81792c6 100644
-> --- a/include/acpi/processor.h
-> +++ b/include/acpi/processor.h
-> @@ -210,6 +210,7 @@ struct acpi_processor {
->  	u32 acpi_id;
->  	u32 id;
->  	u32 pblk;
-> +	acpi_native_int sun;
->  	int performance_platform_limit;
->  	int throttling_platform_limit;
->  	/* 0 - states 0..n-th state available */
+Thanks.
+
+/ac
+
