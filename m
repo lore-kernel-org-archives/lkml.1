@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbXKSJW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbXKSJak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754876AbXKSJW4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 04:22:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbXKSJWt
+	id S1755659AbXKSJak (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 04:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXKSJaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 04:22:49 -0500
-Received: from postfix1-g20.free.fr ([212.27.60.42]:55401 "EHLO
-	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbXKSJWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 04:22:48 -0500
-Message-ID: <1195464075.4741558b0f3c6@imp.free.fr>
-Date: Mon, 19 Nov 2007 10:21:15 +0100
-From: eg.news@free.fr
-To: linux-kernel@vger.kernel.org
-Subject: Huge DMA feasibility with linux 2.6.17
+	Mon, 19 Nov 2007 04:30:15 -0500
+Received: from sacred.ru ([62.205.161.221]:37009 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752328AbXKSJaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 04:30:13 -0500
+Message-ID: <4741573E.60609@openvz.org>
+Date: Mon, 19 Nov 2007 12:28:30 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 77.104.18.126
+To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>
+CC: Alexey Dobriyan <adobriyan@sw.ru>, Kees Cook <kees@ubuntu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] wait_task_stopped: don't use task_pid_nr_ns() lockless
+References: <20071116172408.GA7293@tv-sign.ru>
+In-Reply-To: <20071116172408.GA7293@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 19 Nov 2007 12:29:11 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before to post you this request, I have read J BOTTOMLEY documentation
-(inside kernel doc and linux journal).
-May be I have not understood but I currently have the following
-problem.
+Oleg Nesterov wrote:
+> wait_task_stopped(WNOWAIT) does task_pid_nr_ns() without tasklist/rcu lock,
+> we can read an already freed memory. Use the cached pid_t value.
 
-DESCRIPTION
-------------------
-On a PC (x86_64 SMP using linux kernel 2.6.17) there is a device
-dedicated to data acquisition linked via a PCIe bus (using 4 PCIe x4
-slots), this device has 2GB of memory.
+Indeed. Thanks!
 
-We need to perform huge DMA transfer (from the device to the PC) using
-16 PCIe lanes, on the PC side the resulting buffer can be 480 MB long
-(each lane transferring 30 MB).
-Because of ping-pong (2 buffers available for the same acquisition)
-and multi-modality (several kind of data acquired), the total aperture
-accessible by DMA can reach 1.6 GB.
-The datarate has to be greater than 180MB/s per lane ( 2,8 GB/s for
-the whole device).
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-To reach that datarate we plan to make the device initiate the
-transfer and use local Scatter Gather List.
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
 
-QUESTIONS
----------------
-At this point we have the following questions
-Q1: It is possible to get the private usage of these 1.6GB of memory
-for the DMA (by getting it out of the memory managed by linux)?
-Q1.1 : If yes what are the ways ?
-Q1.2 : Is kernel function "init_memory_mapping" a way to get that
-(according to arch/x86_64/kernel/setup.c:643) ?
-Q2: Otherwise do we only have to reserve pages in DMA32 zone during
-the early bootup stage?
-Q3 :  Other solutions?
-
-Any help is welcome
-
-THX
-Eric Guiffard
-
-
+> --- 24/kernel/exit.c~1_PID	2007-11-16 18:12:44.000000000 +0300
+> +++ 24/kernel/exit.c	2007-11-16 18:13:54.000000000 +0300
+> @@ -1357,7 +1357,7 @@ static int wait_task_stopped(struct task
+>  			     int __user *stat_addr, struct rusage __user *ru)
+>  {
+>  	int retval, exit_code;
+> -	struct pid_namespace *ns;
+> +	pid_t pid;
+>  
+>  	if (!p->exit_code)
+>  		return 0;
+> @@ -1376,12 +1376,11 @@ static int wait_task_stopped(struct task
+>  	 * keep holding onto the tasklist_lock while we call getrusage and
+>  	 * possibly take page faults for user memory.
+>  	 */
+> -	ns = current->nsproxy->pid_ns;
+> +	pid = task_pid_nr_ns(p, current->nsproxy->pid_ns);
+>  	get_task_struct(p);
+>  	read_unlock(&tasklist_lock);
+>  
+>  	if (unlikely(noreap)) {
+> -		pid_t pid = task_pid_nr_ns(p, ns);
+>  		uid_t uid = p->uid;
+>  		int why = (p->ptrace & PT_PTRACED) ? CLD_TRAPPED : CLD_STOPPED;
+>  
+> @@ -1451,11 +1450,11 @@ bail_ref:
+>  	if (!retval && infop)
+>  		retval = put_user(exit_code, &infop->si_status);
+>  	if (!retval && infop)
+> -		retval = put_user(task_pid_nr_ns(p, ns), &infop->si_pid);
+> +		retval = put_user(pid, &infop->si_pid);
+>  	if (!retval && infop)
+>  		retval = put_user(p->uid, &infop->si_uid);
+>  	if (!retval)
+> -		retval = task_pid_nr_ns(p, ns);
+> +		retval = pid;
+>  	put_task_struct(p);
+>  
+>  	BUG_ON(!retval);
+> 
+> 
 
