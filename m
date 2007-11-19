@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbXKSSXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXKSSXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752872AbXKSSXb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbXKSSVm
+	id S1752320AbXKSSXp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:23:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXKSSVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:21:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41901 "EHLO
+	Mon, 19 Nov 2007 13:21:46 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41909 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbXKSSVk (ORCPT
+	with ESMTP id S1751660AbXKSSVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:21:40 -0500
-Date: Mon, 19 Nov 2007 10:18:30 -0800
+	Mon, 19 Nov 2007 13:21:44 -0500
+Date: Mon, 19 Nov 2007 10:18:43 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Kiszka <jan.kiszka@web.de>, Dave Young <hidave.darkstar@gmail.com>
-Subject: [patch 05/26] fix param_sysfs_builtin name length check
-Message-ID: <20071119181830.GF15425@kroah.com>
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 06/26] NETFILTER: nf_conntrack_tcp: fix connection reopening
+Message-ID: <20071119181843.GG15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-param_sysfs_builtin-name-length-check.patch"
+Content-Disposition: inline; filename="netfilter-nf_conntrack_tcp-fix-connection-reopening.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,54 +43,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jan Kiszka <jan.kiszka@web.de>
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
 
-patch 22800a2830ec07e7cc5c837999890ac47cc7f5de in mainline.
+Upstream commits: 17311393 + bc34b841 merged together.  Merge done by
+Patrick McHardy <kaber@trash.net>
 
-Commit faf8c714f4508207a9c81cc94dafc76ed6680b44 caused a regression:
-parameter names longer than MAX_KBUILD_MODNAME will now be rejected,
-although we just need to keep the module name part that short.  This patch
-restores the old behaviour while still avoiding that memchr is called with
-its length parameter larger than the total string length.
+[NETFILTER]: nf_conntrack_tcp: fix connection reopening
 
-Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
-Cc: Dave Young <hidave.darkstar@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+With your description I could reproduce the bug and actually you were
+completely right: the code above is incorrect. Somehow I was able to
+misread RFC1122 and mixed the roles :-(:
+
+   When a connection is >>closed actively<<, it MUST linger in
+   TIME-WAIT state for a time 2xMSL (Maximum Segment Lifetime).
+   However, it MAY >>accept<< a new SYN from the remote TCP to
+   reopen the connection directly from TIME-WAIT state, if it:
+   [...]
+
+The fix is as follows: if the receiver initiated an active close, then the
+sender may reopen the connection - otherwise try to figure out if we hold
+a dead connection.
+
+Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- kernel/params.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
 
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -591,19 +591,16 @@ static void __init param_sysfs_builtin(v
+---
+ net/netfilter/nf_conntrack_proto_tcp.c |   38 ++++++++++++++-------------------
+ 1 file changed, 17 insertions(+), 21 deletions(-)
+
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -839,6 +839,22 @@ static int tcp_packet(struct nf_conn *co
+ 	new_state = tcp_conntracks[dir][index][old_state];
  
- 	for (i=0; i < __stop___param - __start___param; i++) {
- 		char *dot;
--		size_t kplen;
-+		size_t max_name_len;
- 
- 		kp = &__start___param[i];
--		kplen = strlen(kp->name);
-+		max_name_len =
-+			min_t(size_t, MAX_KBUILD_MODNAME, strlen(kp->name));
- 
--		/* We do not handle args without periods. */
--		if (kplen > MAX_KBUILD_MODNAME) {
--			DEBUGP("kernel parameter name is too long: %s\n", kp->name);
--			continue;
+ 	switch (new_state) {
++	case TCP_CONNTRACK_SYN_SENT:
++		if (old_state < TCP_CONNTRACK_TIME_WAIT)
++			break;
++		if ((conntrack->proto.tcp.seen[!dir].flags &
++			IP_CT_TCP_FLAG_CLOSE_INIT)
++		    || (conntrack->proto.tcp.last_dir == dir
++		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
++			/* Attempt to reopen a closed/aborted connection.
++			 * Delete this connection and look up again. */
++			write_unlock_bh(&tcp_lock);
++			if (del_timer(&conntrack->timeout))
++				conntrack->timeout.function((unsigned long)
++							    conntrack);
++			return -NF_REPEAT;
++		}
++		/* Fall through */
+ 	case TCP_CONNTRACK_IGNORE:
+ 		/* Ignored packets:
+ 		 *
+@@ -888,27 +904,6 @@ static int tcp_packet(struct nf_conn *co
+ 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
+ 				  "nf_ct_tcp: invalid state ");
+ 		return -NF_ACCEPT;
+-	case TCP_CONNTRACK_SYN_SENT:
+-		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+-			break;
+-		if ((conntrack->proto.tcp.seen[dir].flags &
+-			IP_CT_TCP_FLAG_CLOSE_INIT)
+-		    || after(ntohl(th->seq),
+-			     conntrack->proto.tcp.seen[dir].td_end)) {
+-			/* Attempt to reopen a closed connection.
+-			* Delete this connection and look up again. */
+-			write_unlock_bh(&tcp_lock);
+-			if (del_timer(&conntrack->timeout))
+-				conntrack->timeout.function((unsigned long)
+-							    conntrack);
+-			return -NF_REPEAT;
+-		} else {
+-			write_unlock_bh(&tcp_lock);
+-			if (LOG_INVALID(IPPROTO_TCP))
+-				nf_log_packet(pf, 0, skb, NULL, NULL,
+-					      NULL, "nf_ct_tcp: invalid SYN");
+-			return -NF_ACCEPT;
 -		}
--		dot = memchr(kp->name, '.', kplen);
-+		dot = memchr(kp->name, '.', max_name_len);
- 		if (!dot) {
--			DEBUGP("couldn't find period in %s\n", kp->name);
-+			DEBUGP("couldn't find period in first %d characters "
-+			       "of %s\n", MAX_KBUILD_MODNAME, kp->name);
- 			continue;
- 		}
- 		name_len = dot - kp->name;
+ 	case TCP_CONNTRACK_CLOSE:
+ 		if (index == TCP_RST_SET
+ 		    && ((test_bit(IPS_SEEN_REPLY_BIT, &conntrack->status)
+@@ -941,6 +936,7 @@ static int tcp_packet(struct nf_conn *co
+      in_window:
+ 	/* From now on we have got in-window packets */
+ 	conntrack->proto.tcp.last_index = index;
++	conntrack->proto.tcp.last_dir = dir;
+ 
+ 	DEBUGP("tcp_conntracks: src=%u.%u.%u.%u:%hu dst=%u.%u.%u.%u:%hu "
+ 	       "syn=%i ack=%i fin=%i rst=%i old=%i new=%i\n",
 
 -- 
