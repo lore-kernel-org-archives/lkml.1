@@ -1,103 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbXKST4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbXKST6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413AbXKST4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 14:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbXKST4B
+	id S1753818AbXKST6T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 14:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXKST6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 14:56:01 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:43125 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbXKST4A (ORCPT
+	Mon, 19 Nov 2007 14:58:12 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:42412 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750956AbXKST6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 14:56:00 -0500
-Date: Mon, 19 Nov 2007 14:54:09 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] A few corrections to include/linux/Kbuild.
-Message-ID: <alpine.LFD.0.9999.0711191451540.29569@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 19 Nov 2007 14:58:11 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAFp5QUdMROHU/2dsb2JhbACBWw
+Date: Mon, 19 Nov 2007 14:52:58 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+Subject: [PATCH] Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+Message-ID: <20071119195257.GA3440@Krystal>
+References: <20071113193349.214098508@polymtl.ca> <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost> <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost> <20071119185258.GA998@Krystal> <1195501381.27759.127.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1195501381.27759.127.camel@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:52:04 up 16 days, 57 min,  5 users,  load average: 0.54, 0.51,
+	0.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Dave Hansen (haveblue@us.ibm.com) wrote:
+> On Mon, 2007-11-19 at 13:52 -0500, Mathieu Desnoyers wrote:
+> > > > So I guess the result is a pointer ? Should this be expected ?
+> > > 
+> > > Nope.  'pointer - pointer' is an integer.  Just solve this equation for
+> > > integer:
+> > > 
+> > >       'pointer + integer = pointer'
+> > > 
+> > 
+> > Well, using page_to_pfn turns out to be ugly in markers (and in
+> > printks) then. Depending on the architecture, it will result in either
+> > an unsigned long (x86_64) or an unsigned int (i386), which corresponds
+> > to %lu or %u and will print a warning if we don't cast it explicitly. 
+> 
+> Casting the i386 one to be an unconditional 'unsigned long' shouldn't be
+> an issue.  We don't generally expect pfns to fit into ints anyway. 
 
-Adjustments:
+So would this make sense ?
 
-  auxvec.h, i2c-dev.h and vt.h *should* be unifdef'ed
-  i2o-dev.h does not need unifdef'ing
+Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Make sure the type returned by __page_to_pfn is always unsigned long. If we
+don't cast it explicitly, it can be int on i386, but long on x86_64. This is
+especially inelegant for printks.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Dave Hansen <haveblue@us.ibm.com>
+CC: linux-mm@kvack.org
+CC: linux-kernel@vger.kernel.org
 ---
+ include/asm-generic/memory_model.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 37bfa19..6a7a525 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -34,7 +34,6 @@ header-y += atmsap.h
- header-y += atmsvc.h
- header-y += atm_zatm.h
- header-y += auto_fs4.h
--header-y += auxvec.h
- header-y += ax25.h
- header-y += b1lli.h
- header-y += baycom.h
-@@ -72,7 +71,7 @@ header-y += gen_stats.h
- header-y += gigaset_dev.h
- header-y += hdsmart.h
- header-y += hysdn_if.h
--header-y += i2c-dev.h
-+header-y += i2o-dev.h
- header-y += i8k.h
- header-y += if_arcnet.h
- header-y += if_bonding.h
-@@ -157,7 +156,6 @@ header-y += utime.h
- header-y += video_decoder.h
- header-y += video_encoder.h
- header-y += videotext.h
--header-y += vt.h
- header-y += x25.h
+Index: linux-2.6-lttng/include/asm-generic/memory_model.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/memory_model.h	2007-11-19 14:47:30.000000000 -0500
++++ linux-2.6-lttng/include/asm-generic/memory_model.h	2007-11-19 14:48:30.000000000 -0500
+@@ -50,7 +50,7 @@
+ 
+ /* memmap is virtually contigious.  */
+ #define __pfn_to_page(pfn)	(vmemmap + (pfn))
+-#define __page_to_pfn(page)	((page) - vmemmap)
++#define __page_to_pfn(page)	((unsigned long)((page) - vmemmap))
+ 
+ #elif defined(CONFIG_SPARSEMEM)
+ /*
 
- unifdef-y += acct.h
-@@ -172,6 +170,7 @@ unifdef-y += atm.h
- unifdef-y += atm_tcp.h
- unifdef-y += audit.h
- unifdef-y += auto_fs.h
-+unifdef-y += auxvec.h
- unifdef-y += binfmts.h
- unifdef-y += capability.h
- unifdef-y += capi.h
-@@ -213,7 +212,7 @@ unifdef-y += hdreg.h
- unifdef-y += hiddev.h
- unifdef-y += hpet.h
- unifdef-y += i2c.h
--unifdef-y += i2o-dev.h
-+unifdef-y += i2c-dev.h
- unifdef-y += icmp.h
- unifdef-y += icmpv6.h
- unifdef-y += if_addr.h
-@@ -348,6 +347,7 @@ unifdef-y += videodev.h
- unifdef-y += virtio_config.h
- unifdef-y += virtio_blk.h
- unifdef-y += virtio_net.h
-+unifdef-y += vt.h
- unifdef-y += wait.h
- unifdef-y += wanrouter.h
- unifdef-y += watchdog.h
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
