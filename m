@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbXKSSbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXKSSb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbXKSSbM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXKSSXY
+	id S1755777AbXKSSb3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXKSSYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:23:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49488 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbXKSSXX (ORCPT
+	Mon, 19 Nov 2007 13:24:24 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:2680 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbXKSSYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:23:23 -0500
-Date: Mon, 19 Nov 2007 10:22:37 -0800
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/26] 2.6.22-stable review
-Message-ID: <20071119182237.GA15620@kroah.com>
-References: <20071119181746.GA15425@kroah.com>
+	Mon, 19 Nov 2007 13:24:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cVzCJ429soYNL/7RxhbqiZHbEmxdZl3DROUOUe6X43zftZEqSuB5nNdnTCswS0D9uWEg8RFCZGLCOvdD0AgjyXWG2I5BnqgGryhv9ujH0PdjAUa/rkXJ3gUX0POB7Fu36K0UIRVPKvpLNH+00E45+uHnKbuahcXQOgrh7N0PzNw=
+Message-ID: <64bb37e0711191024m426e8c2cqe1fb968ac3a9dff0@mail.gmail.com>
+Date: Mon, 19 Nov 2007 19:24:19 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+Cc: "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       nfs@lists.sourceforge.net, "Andy Whitcroft" <apw@shadowen.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Jan Blunck" <jblunck@suse.de>, steved@redhat.com
+In-Reply-To: <20071119010002.9387d36b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071119181746.GA15425@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	 <64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+	 <20071117180946.GA14055@elte.hu>
+	 <20071117101957.7562639d.akpm@linux-foundation.org>
+	 <64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
+	 <20071117230508.GB25905@dyad>
+	 <64bb37e0711181044s75fd1081sdf44dac2e060d49a@mail.gmail.com>
+	 <1195413486.7893.16.camel@heimdal.trondhjem.org>
+	 <64bb37e0711182315s1d159c80h11811acb07566f03@mail.gmail.com>
+	 <20071119010002.9387d36b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 10:17:46AM -0800, Greg Kroah-Hartman wrote:
-> This is the start of the stable review cycle for the 2.6.22.14 release.
-> There are 26 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
+On Nov 19, 2007 10:00 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 19 Nov 2007 08:15:48 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> > On Nov 18, 2007 8:18 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > > I had already fixed that one in my own stack. Attached are the 3 patches
+> > > that I've got. 1 from SteveD, 2 fixes.
+> >
+> > Moving the init_waitqueue_head() like patch
+> > linux-2.6.24-006-fix_to_fix_sillyrename_bug_on_umount.dif and applying
+> > linux-2.6.24-007-fix_nfs_free_unlinkdata.dif lets my testcase work.
+> > Also lockdep no longer complains about the non-static key.
+>
+> Thanks.
+>
+> To avoid goofups, could you please send the full fix against 2.6.24-rc2-mm1?
 
-Full patch can be found at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review-patch-2.6.22.14-rc1.gz
+Umm... As I applied this changes manually there is a not insignificant
+change of goofups on my part...
 
-and the diffstat is below.
+For the hang problem I think Tronds suggestion with replacing the
+patches from -mm with fresh versions would be the best.
 
-thanks,
 
-greg k-h
+Anyway, currently I have the patch from
+http://lkml.org/lkml/2007/11/16/74 to fix the can't-create-files-bug.
 
-------------
+To fix the hang bug I used Tronds
+linux-2.6.24-007-fix_nfs_free_unlinkdata.dif and the first two hunks
+from linux-2.6.24-006-fix_to_fix_sillyrename_bug_on_umount.dif.
 
- Makefile                               |    2 
- arch/i386/kernel/tsc.c                 |    5 
- drivers/i2c/busses/i2c-pasemi.c        |    5 
- drivers/i2c/chips/eeprom.c             |   37 ++++---
- drivers/ide/pci/serverworks.c          |    1 
- drivers/isdn/hardware/avm/b1.c         |   28 ++---
- drivers/isdn/hardware/avm/c4.c         |   14 ++
- drivers/net/forcedeth.c                |   19 ++-
- drivers/scsi/hptiop.c                  |    5 
- drivers/usb/core/hcd.h                 |    8 +
- drivers/usb/core/hub.c                 |   15 ++
- drivers/usb/host/ehci-hcd.c            |    8 +
- drivers/usb/serial/generic.c           |    7 -
- drivers/usb/serial/kobil_sct.c         |  170 +++++++++++++--------------------
- fs/ocfs2/aops.c                        |   24 ++++
- include/linux/netlink.h                |    2 
- ipc/mqueue.c                           |    6 -
- kernel/futex_compat.c                  |   24 +++-
- kernel/params.c                        |   15 +-
- kernel/softlockup.c                    |    7 -
- mm/page-writeback.c                    |    4 
- mm/slub.c                              |   22 ----
- net/ipv4/ipcomp.c                      |    3 
- net/ipv6/ipcomp6.c                     |    3 
- net/netfilter/nf_conntrack_proto_tcp.c |   38 +++----
- net/netlink/af_netlink.c               |   10 -
- net/sched/cls_u32.c                    |    4 
- net/sched/sch_teql.c                   |    3 
- net/socket.c                           |    5 
- sound/pci/hda/patch_sigmatel.c         |   14 +-
- sound/pci/rme9652/hdsp.c               |    3 
- 31 files changed, 280 insertions(+), 231 deletions(-)
+Torsten
+
+The needed 2 hunks for reference:
+
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -594,9 +594,6 @@ static int nfs_init_server(struct nfs_server *server,
+ 	/* Create a client RPC handle for the NFSv3 ACL management interface */
+ 	nfs_init_server_aclclient(server);
+
+-	init_waitqueue_head(&server->active_wq);
+-	atomic_set(&server->active, 0);
+-
+ 	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
+ 	return 0;
+
+@@ -736,6 +733,9 @@ static struct nfs_server *nfs_alloc_server(void)
+ 	INIT_LIST_HEAD(&server->client_link);
+ 	INIT_LIST_HEAD(&server->master_link);
+
++	init_waitqueue_head(&server->active_wq);
++	atomic_set(&server->active, 0);
++
+ 	server->io_stats = nfs_alloc_iostats();
+ 	if (!server->io_stats) {
+ 		kfree(server);
