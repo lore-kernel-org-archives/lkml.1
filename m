@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbXKSK3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbXKSKeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbXKSK3x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 05:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXKSK3m
+	id S1753723AbXKSKeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 05:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXKSKeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 05:29:42 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:44007 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbXKSK3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 05:29:41 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [PATCH] Fix segfault when printing battery status
-Date: Mon, 19 Nov 2007 11:29:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, astarikovskiy@suse.de,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <200711182049.33355.eike-kernel@sf-tec.de> <47415B46.4020709@gmail.com>
-In-Reply-To: <47415B46.4020709@gmail.com>
+	Mon, 19 Nov 2007 05:34:04 -0500
+Received: from rn-out-0910.google.com ([64.233.170.186]:38562 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751715AbXKSKeD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 05:34:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=TPF6WrQZ/ULmWiOo7DokwQSpPTDtU/XFEmtGSAQ59w9s00eJ5Xoq302o2PcMqYaMQ5dlXobawOreDwXI9SzxPml2xPBGaZKsboaTczf7Fc86l/t+vzJnVtGEYxyb7jqZfRnPdFiYqBe0pA3D24OW/Kq7yb9iete79cKWVrT81hs=
+Message-ID: <9c9fda240711190234q357f2ec5v3def4601355ea23d@mail.gmail.com>
+Date: Mon, 19 Nov 2007 19:34:02 +0900
+From: "Kyungmin Park" <kmpark@infradead.org>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: [PATCH] Clustering indirect blocks in Ext3
+Cc: "Abhishek Rai" <abhishekrai@google.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andreas Dilger" <adilger@sun.com>, linux-kernel@vger.kernel.org,
+       "Ken Chen" <kenchen@google.com>, "Mike Waychison" <mikew@google.com>
+In-Reply-To: <20071118204724.GS19691@waste.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2184877.l21UsChA7X";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711191129.35144.eike-kernel@sf-tec.de>
+Content-Disposition: inline
+References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com>
+	 <20071115230219.1fe9338c.akpm@linux-foundation.org>
+	 <20071116073716.GB17536@waste.org>
+	 <d9885f0f0711180752o71561745h51f2a18d09709e27@mail.gmail.com>
+	 <20071118204724.GS19691@waste.org>
+X-Google-Sender-Auth: 88d2392c314b3a94
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2184877.l21UsChA7X
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
 
-Alexey Starikovskiy wrote:
-> Rolf Eike Beer wrote:
-> > cat
-> > /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:19/PNP0C0A:00/power_
-> >supply/BAT1/status
 > >
-> > This leads to a stacktrace as acpi_battery_get_property() returns 0 for a
-> > case where it does not set val->intval. These value is used as an array
-> > index in
-> > drivers/power/power_supply_sysfs.c::power_supply_show_property(). I had a
-> > situation where the value was 4096 which caused a problem as the array
-> > only has 5 entries.
+> > Setup: 4 cpu, 8GB RAM, 400GB disk.
 > >
-> > Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+> > Average vanilla results
+> > ==========================================================================
+> > intial create total runs 30 avg 46.49 MB/s (user 1.12s sys 2.25s)
+> > create total runs 5 avg 12.90 MB/s (user 1.08s sys 1.97s)
+> > patch total runs 4 avg 8.70 MB/s (user 0.60s sys 2.31s)
+> > compile total runs 7 avg 21.44 MB/s (user 0.32s sys 2.95s)
+> > clean total runs 4 avg 59.91 MB/s (user 0.05s sys 0.26s)
+> > read tree total runs 2 avg 21.85 MB/s (user 1.12s sys 2.89s)
+> > read compiled tree total runs 1 avg 23.47 MB/s (user 1.45s sys 4.89s)
+> > delete tree total runs 2 avg 13.18 seconds (user 0.64s sys 1.02s)
+> > no runs for delete compiled tree
+> > stat tree total runs 4 avg 4.76 seconds (user 0.70s sys 0.50s)
+> > stat compiled tree total runs 1 avg 7.84 seconds (user 0.74s sys 0.54s)
+> >
+> > Average metaclustering results
+> > ==========================================================================
+> > intial create total runs 30 avg 45.04 MB/s (user 1.13s sys 2.42s)
+> > create total runs 5 avg 15.64 MB/s (user 1.08s sys 1.98s)
+> > patch total runs 4 avg 10.50 MB/s (user 0.61s sys 3.11s)
+> > compile total runs 7 avg 28.07 MB/s (user 0.33s sys 4.06s)
+> > clean total runs 4 avg 83.27 MB/s (user 0.04s sys 0.27s)
+> > read tree total runs 2 avg 21.17 MB/s (user 1.15s sys 2.91s)
+> > read compiled tree total runs 1 avg 22.79 MB/s (user 1.38s sys 4.89s)
+> > delete tree total runs 2 avg 9.23 seconds (user 0.62s sys 1.01s)
+> > no runs for delete compiled tree
+> > stat tree total runs 4 avg 4.72 seconds (user 0.71s sys 0.50s)
+> > stat compiled tree total runs 1 avg 6.50 seconds (user 0.79s sys 0.53s)
+> >
+> > Overall, metaclustering does better than vanilla except in a few cases.
 >
-> Rolf, thanks for remainding.
 
-Huh? This one is unrelated to the problem I reported two weeks ago...
+I think above testcases are just run with normal I/O case.
+Did you test the direct I/O test with this patch?
+With metaclustering patch, I can't run 'fsstress' since it oops when direct I/O.
+or is it dependent on other ext3 patches?
+Since I tested it with latest kernel 2.6.24-rc3 instead of mm kernel.
 
-Eike
-
---nextPart2184877.l21UsChA7X
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBHQWWPXKSJPmm5/E4RAgNlAKCHRIwRVuigu0lk2RE97xYYDzBycwCaAui6
-TevAlfFcnWQjjycise8vP34=
-=QEBS
------END PGP SIGNATURE-----
-
---nextPart2184877.l21UsChA7X--
+Thank you,
+Kyungmin Park
