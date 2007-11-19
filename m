@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbXKSJp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbXKSJ4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbXKSJp3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 04:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbXKSJpT
+	id S1754158AbXKSJ4Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 04:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXKSJ4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 04:45:19 -0500
-Received: from hu-out-0506.google.com ([72.14.214.232]:48559 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXKSJpQ (ORCPT
+	Mon, 19 Nov 2007 04:56:01 -0500
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:5856 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752693AbXKSJ4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 04:45:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=nN5e9ot9WrbJTuUdbdN4zRvaD8OTAjmuEvv8AZcyeStGk5+y1APixWOe/8py+yb2qmHqR5R98w20X0+3FL1XLNUs8afbN+rkOdH8ge1JU4LP5fx4ecOrto6Zn+deL/Q2VZXEXz9knh76MCKpZx9POYQ5UUpLhp7C6F4GLL09VpA=
-Message-ID: <47415B46.4020709@gmail.com>
-Date: Mon, 19 Nov 2007 12:45:42 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-CC: lenb@kernel.org, linux-acpi@vger.kernel.org, astarikovskiy@suse.de,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix segfault when printing battery status
-References: <200711182049.33355.eike-kernel@sf-tec.de>
-In-Reply-To: <200711182049.33355.eike-kernel@sf-tec.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Nov 2007 04:56:00 -0500
+Date: Mon, 19 Nov 2007 10:55:18 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: EIP is at device_shutdown+0x32/0x60
+Message-ID: <20071119105518.598a02cf@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20071116012211.GA7365@suse.de>
+References: <3ae72650711150950k74fdb37eu108bb360a594ffe8@mail.gmail.com>
+	<20071115190124.GA29599@suse.de>
+	<20071116100930.5A78.Y-GOTO@jp.fujitsu.com>
+	<20071116012211.GA7365@suse.de>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0-rc2 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Nov 2007 17:22:11 -0800,
+Greg KH <gregkh@suse.de> wrote:
 
-Rolf Eike Beer wrote:
-> cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:19/PNP0C0A:00/power_supply/BAT1/status
->
-> This leads to a stacktrace as acpi_battery_get_property() returns 0 for a 
-> case where it does not set val->intval. These value is used as an array 
-> index in drivers/power/power_supply_sysfs.c::power_supply_show_property(). 
-> I had a situation where the value was 4096 which caused a problem as the 
-> array only has 5 entries.
->
-> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
->   
-Rolf, thanks for remainding.
-Acked again,
-Alex.
+> On Fri, Nov 16, 2007 at 10:13:42AM +0900, Yasunori Goto wrote:
+> > > > 
+> > > > Care to try this:
+> > > >   +       system_kset = kset_create_and_register("system", NULL,
+> > > >   +                                              &devices_kset->kobj, NULL);
+> > > > 
+> > > > We should not join the kset, only use it as a parent.
+> > > 
+> > > Yes, that fixes the problem for me!
+> > > 
+> > > Can anyone else verify this?
+> > 
+> > I confirmed it fixed the problem. :-)
+> 
+> Thanks for testing, the next -mm should have this fix.
+
+Good, since this fixes things for me on s390 as well.
