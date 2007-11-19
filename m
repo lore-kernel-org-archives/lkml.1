@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbXKSGoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbXKSGpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbXKSGoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 01:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXKSGoG
+	id S1755878AbXKSGpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 01:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXKSGpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 01:44:06 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48045 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbXKSGoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 01:44:04 -0500
-Date: Mon, 19 Nov 2007 17:44:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, anton@au1.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] 2.6.24-rc2-mm1 powerpc (iseries)- build failure - mm/stab.c
-Message-Id: <20071119174405.7ae746f1.sfr@canb.auug.org.au>
-In-Reply-To: <20071119062611.GA11135@linux.vnet.ibm.com>
-References: <20071114105410.GA16846@linux.vnet.ibm.com>
-	<20071119133849.bcfe52c1.sfr@canb.auug.org.au>
-	<20071119062611.GA11135@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 19 Nov 2007 01:45:38 -0500
+Received: from smtprelay03.ispgateway.de ([80.67.18.15]:39568 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbXKSGph (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 01:45:37 -0500
+Message-ID: <4741305E.80603@selhorst.net>
+Date: Mon, 19 Nov 2007 07:42:38 +0100
+From: Marcel Selhorst <tpm@selhorst.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Richard MUSIL <richard.musil@st.com>, linux-kernel@vger.kernel.org,
+       tpmdd-devel@lists.sourceforge.net
+Subject: Re: [tpmdd-devel] [PATCH] - TPM device driver layer (tpm.c|h)
+References: <46CD497F.8030207@st.com> <4740C70F.8050407@selhorst.net> <20071119050921.GB12320@kroah.com>
+In-Reply-To: <20071119050921.GB12320@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.6.0.34; VDF: 7.0.0.227; host: mail)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Hi Greg,
 
-The kernel builds fails with following error, with randconfig
+>> Acked by: Marcel Selhorst <tpm@selhorst.net>
+> Ok, but shouldn't you be sending this patch onward to Andrew and/or
+> others?
 
-  CC      arch/powerpc/mm/stab.o
-arch/powerpc/mm/stab.c: In function ‘stab_initialize’:
-arch/powerpc/mm/stab.c:282: error: implicit declaration of function ‘HvCall1’
-arch/powerpc/mm/stab.c:282: error: ‘HvCallBaseSetASR’ undeclared (first use in this function)
-arch/powerpc/mm/stab.c:282: error: (Each undeclared identifier is reported only once
-arch/powerpc/mm/stab.c:282: error: for each function it appears in.)
-make[1]: *** [arch/powerpc/mm/stab.o] Error 1
-make: *** [arch/powerpc/mm] Error 2
+You are right, I replied to all but he wasn't in CC... Sorry, I
+forwarded the patch to him.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/stab.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> Who is the TPM driver maintainer these days?
 
-On Mon, 19 Nov 2007 11:56:11 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->
-> Resubmitting the patch titled 
-> powerpc-iseries-build-failure-mm-stabc.patch in the -mm tree.
+That would currently be me ;)
 
-Paulus, this should be fine for merging like above.
-
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/mm/stab.c b/arch/powerpc/mm/stab.c
-index 9e85bda..50448d5 100644
---- a/arch/powerpc/mm/stab.c
-+++ b/arch/powerpc/mm/stab.c
-@@ -20,6 +20,7 @@
- #include <asm/lmb.h>
- #include <asm/abs_addr.h>
- #include <asm/firmware.h>
-+#include <asm/iseries/hv_call.h>
- 
- struct stab_entry {
- 	unsigned long esid_data;
--- 
-1.5.3.5
-
+Best regards,
+Marcel Selhorst
