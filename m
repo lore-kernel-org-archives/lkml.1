@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbXKSVxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXKSV4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbXKSVxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 16:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbXKSVxJ
+	id S1754079AbXKSV4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 16:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXKSVz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 16:53:09 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33696 "EHLO gir.skynet.ie"
+	Mon, 19 Nov 2007 16:55:57 -0500
+Received: from gate.crashing.org ([63.228.1.57]:49196 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751485AbXKSVxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 16:53:08 -0500
-Date: Mon, 19 Nov 2007 21:53:05 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: "Bastian, Waldo" <waldo.bastian@intel.com>
-cc: Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       DRI <dri-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
-Subject: Re: Prospects of DRM TTM making it into 2.6.24?
-In-Reply-To: <1B47D24854C7BC4FA8DA28BEBB59B0BA029CD00D@orsmsx419.amr.corp.intel.com>
-Message-ID: <alpine.DEB.0.82.0711192151010.1284@skynet.skynet.ie>
-References: <1B47D24854C7BC4FA8DA28BEBB59B0BA029CD00D@orsmsx419.amr.corp.in
- tel.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1966057021-1195509185=:1284"
+	id S1751365AbXKSVz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 16:55:56 -0500
+Subject: Re: SCSI breakage on non-cache coherent architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roland Dreier <rdreier@cisco.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <adapry5ykps.fsf@cisco.com>
+References: <1195450523.7022.37.camel@pasglop>  <adapry5ykps.fsf@cisco.com>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 08:55:20 +1100
+Message-Id: <1195509320.6970.9.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---29444707-1966057021-1195509185=:1284
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
-
-
-> What are the prospects of the DRM TTM changes making it into 2.6.24? I 
-> noticed that Andrew has them [1] in his mm tree... any chance of that 
-> getting pushed into Linus' tree for 2.6.24?
+On Mon, 2007-11-19 at 13:43 -0800, Roland Dreier wrote:
+> > I've been debugging various issues on the PowerPC 44x embedded
+>  > architecture which happens to have non-coherent PCI DMA.
+>  > 
+>  > One of the problem I'm hitting is that one really need to enforce
+>  > kmalloc alignement to cache lines or bad things will happen (among
+>  > others with USB), for some reasons, powerpc failed to do so, I fixed it.
 > 
-
-No the merge window for 2.6.24 closed a few weeks ago. TTM wasn't in -mm 
-for the 2.6.23 cycle as we hadn't finished the API stabilisation work in 
-time. So I don't expect we'll see it before 2.6.25.
-
-I also have a few AGP changes I need to line up to support the chipset 
-flushing work I've done to support TTM properly..
-
-Dave.
-
-On Mon, 19 Nov 2007, Bastian, Waldo wrote:
-
-> Cheers,
-> Waldo
+> Heh... I hit the same problem literally 5 years ago:
+>     http://lwn.net/Articles/1783/
 > 
-> [1] http://userweb.kernel.org/~akpm/mmotm/broken-out/git-drm.patch 
+> I implemented the __dma_buffer annotation:
+>     http://lwn.net/Articles/2269/
 > 
-> Intel Corporation - Platform Software Engineering, UMG - Hillsboro, Oregon
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2005.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
-> 
---29444707-1966057021-1195509185=:1284--
+> But DaveM said we should just use the PCI pool code instead:
+>     http://lwn.net/Articles/2270/
+
+Heh, well... 
+
+In this case, DaveM just proposed something akin to your
+__dma_buffer :-)
+
+On the other hand, after discussing with James, it looks like we'll just
+be reverting the patch that removed the kmalloc of the sense buffer
+since non cache-coherent archs are supposed to enforce kmalloc alignment
+to cache lines.
+
+__dma_buffer still seems like a good thing to have if too many other
+drivers are hitting that but for this specific problem, it's not the
+approach that we'll be taking.
+
+Cheers,
+Ben.
+
+
