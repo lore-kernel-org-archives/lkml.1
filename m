@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXKSUFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbXKSUJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbXKSUFh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 15:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbXKSUF3
+	id S1752527AbXKSUJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 15:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXKSUJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 15:05:29 -0500
-Received: from ms.trustica.cz ([82.208.32.68]:34975 "EHLO ms.trustica.cz"
+	Mon, 19 Nov 2007 15:09:50 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:56941 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750956AbXKSUF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 15:05:28 -0500
-Message-ID: <4741EB91.9080000@assembler.cz>
-Date: Mon, 19 Nov 2007 21:01:21 +0100
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Jiri Slaby <jirislaby@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       lm-sensors@lm-sensors.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-References: <Pine.LNX.4.44L0.0711182156330.22727-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711182156330.22727-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751291AbXKSUJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 15:09:49 -0500
+Subject: Re: [PATCH] Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071119195257.GA3440@Krystal>
+References: <20071113193349.214098508@polymtl.ca>
+	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
+	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
+	 <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost>
+	 <20071119185258.GA998@Krystal> <1195501381.27759.127.camel@localhost>
+	 <20071119195257.GA3440@Krystal>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 12:09:43 -0800
+Message-Id: <1195502983.27759.134.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
->>> gives coretemp_cpu_callback -> coretemp_device_remove ->
->>> platform_device_unregister, so coretemp seems to be what I have and you don't.
+On Mon, 2007-11-19 at 14:52 -0500, Mathieu Desnoyers wrote:
+> * Dave Hansen (haveblue@us.ibm.com) wrote:
+> > On Mon, 2007-11-19 at 13:52 -0500, Mathieu Desnoyers wrote:
+> > > > > So I guess the result is a pointer ? Should this be expected ?
+> > > > 
+> > > > Nope.  'pointer - pointer' is an integer.  Just solve this equation for
+> > > > integer:
+> > > > 
+> > > >       'pointer + integer = pointer'
+> > > > 
+> > > 
+> > > Well, using page_to_pfn turns out to be ugly in markers (and in
+> > > printks) then. Depending on the architecture, it will result in either
+> > > an unsigned long (x86_64) or an unsigned int (i386), which corresponds
+> > > to %lu or %u and will print a warning if we don't cast it explicitly. 
+> > 
+> > Casting the i386 one to be an unconditional 'unsigned long' shouldn't be
+> > an issue.  We don't generally expect pfns to fit into ints anyway. 
 > 
-> Yes.
+> So would this make sense ?
 > 
-> For the coretemp developers: coretemp_cpu_callback() needs to be more 
-> careful about what it does.  During a system sleep transition (suspend, 
-> hibernate, resume) it isn't possible to register or unregister a 
-> device.  Attempts to register will fail and attempts to unregister will 
-> block until the system sleep is over -- and for this callback that 
-> means hanging.
+> Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+> 
+> Make sure the type returned by __page_to_pfn is always unsigned long. If we
+> don't cast it explicitly, it can be int on i386, but long on x86_64. This is
+> especially inelegant for printks.
 
-Well I wrote the driver. Thanks for the clarification. If I recall correctly I 
-looked how this part should be done from others drivers. Now while checking
-what happened to the file, seems Rafael added something related.
+The only thing I might suggest doing differently is actually using the
+page_to_pfn() definition itself:
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8bb7844286fb8c9fce6f65d8288aeb09d03a5e0d
+memory_model.h:#define page_to_pfn __page_to_pfn
 
-> It's not clear what the best way is to fix this.  Perhaps the CPU 
-> notification should be sent along with a special flag indicating that 
-> the CPU transition is part of a system sleep (although this seems 
-> racy).  Perhaps the driver should notice when a system sleep begins, 
-> and defer all CPU-change handling until after the sleep is over.
+The full inline function version should do this already, and we
+shouldn't have any real direct __page_to_pfn() users anyway.    
 
-maybe it does exist?  CPU_DOWN_PREPARE ?
+-- Dave
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/cpu-hotplug.txt;hb=HEAD
-
-Unfortunately I'm not very familiar with this, calling the 
-coretemp_device_remove from CPU_DOWN_PREPARE would help? Looking at microcode 
-driver, seems it just hide sysfs interface from user.
-
-Thanks,
-Rudolf
