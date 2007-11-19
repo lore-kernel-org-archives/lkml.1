@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbXKSPtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXKSPuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbXKSPtW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbXKSPtO
+	id S1755928AbXKSPuv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXKSPun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:49:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49542 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbXKSPtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:49:14 -0500
-Message-ID: <4741B047.9080601@redhat.com>
-Date: Mon, 19 Nov 2007 07:48:23 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 19 Nov 2007 10:50:43 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:8141 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753766AbXKSPun convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 10:50:43 -0500
+X-Greylist: delayed 654 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Nov 2007 10:50:42 EST
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: [TOMOYO #5 18/18] LSM expansion for TOMOYO Linux.
+Date: Mon, 19 Nov 2007 10:39:41 -0500
+User-Agent: KMail/1.9.7
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp
+References: <20071116173439.796600895@I-love.SAKURA.ne.jp> <200711190836.12940.paul.moore@hp.com> <200711192329.JGB18772.tLHOOSMVFFQOFJ@I-love.SAKURA.ne.jp>
+In-Reply-To: <200711192329.JGB18772.tLHOOSMVFFQOFJ@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv3 0/4] sys_indirect system call
-References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com>	<20071119145224.31ee5242.dada1@cosmosbay.com>	<4741A7DD.1030407@redhat.com> <20071119164329.5a580b84.dada1@cosmosbay.com>
-In-Reply-To: <20071119164329.5a580b84.dada1@cosmosbay.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200711191039.41533.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Monday 19 November 2007 9:29:52 am Tetsuo Handa wrote:
+> Paul Moore wrote:
+> > If that is the case then the second call to
+> > skb_peek() will return a different skb then the one you passed to
+> > security_post_recv_datagram().
+>
+> Yes. The second call to skb_peek() might return a different skb than the
+> one I passed to security_post_recv_datagram().
 
-Eric Dumazet wrote:
-> So when you recompile your old program (as you post it and as I commented on),
-> it will pass a >= 12 bytes data to kernel, with only first 4 bytes set to O_CLOEXEC.
-> 
-> Other bytes will contain junk 
+My apologies, I mistakenly read the following if statement in your patch:
 
-If you don't initialize the entire structure and you use it all, of
-course you get undefined behavior.  That's nothing new.  The program I
-attached is not an example, it's a test for the functionality in this patch.
+ +†††††††if (skb == skb_peek(&sk->sk_receive_queue)) {
+ +†††††††††††††††__skb_unlink(skb, &sk->sk_receive_queue);
+ +†††††††††††††††atomic_dec(&skb->users);
+ +†††††††}
 
-Like with every kernel interface, you have to use it correctly.  The
-good news is that user programs should never use this syscall directly
-(just like don't for existing ones).
+I read the conditional as the following:
 
-I see no problem at all here.
+ +       if (skb = skb_peek(&sk->sk_receive_queue)) {
 
-- --
-‚ûß Ulrich Drepper ‚ûß Red Hat, Inc. ‚ûß 444 Castro St ‚ûß Mountain View, CA ‚ùñ
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+... which would have caused the problems I was describing.  I'm sorry for all 
+of the confusion/frustration, you patient explanations are correct; I was 
+wrong in this particular case.
 
-iD8DBQFHQbBH2ijCOnn/RHQRAkc3AKCxVTWQ3BiQnCBwdbAsT122QWWaiwCggKXN
-Z5Sz9/NFojMHZXXTzIMoxX4=
-=slte
------END PGP SIGNATURE-----
+-- 
+paul moore
+linux security @ hp
