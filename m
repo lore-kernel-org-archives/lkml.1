@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbXKSPmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbXKSPnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbXKSPmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbXKSPmL
+	id S1755260AbXKSPnj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXKSPnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:42:11 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43818 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbXKSPmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:42:10 -0500
-Date: Mon, 19 Nov 2007 15:41:37 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 21285: Report baud rate back via termios
-Message-ID: <20071119154137.GA30129@flint.arm.linux.org.uk>
-References: <20071119151222.6cfa9c4c@the-village.bc.nu>
+	Mon, 19 Nov 2007 10:43:32 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:43808 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753594AbXKSPnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 10:43:31 -0500
+Date: Mon, 19 Nov 2007 16:43:29 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv3 0/4] sys_indirect system call
+Message-Id: <20071119164329.5a580b84.dada1@cosmosbay.com>
+In-Reply-To: <4741A7DD.1030407@redhat.com>
+References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com>
+	<20071119145224.31ee5242.dada1@cosmosbay.com>
+	<4741A7DD.1030407@redhat.com>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119151222.6cfa9c4c@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 03:12:22PM +0000, Alan Cox wrote:
-> Currently reports back the requested rate not the result of the divides
-> but thats an easy fix for someone with h/w
+On Mon, 19 Nov 2007 07:12:29 -0800
+Ulrich Drepper <drepper@redhat.com> wrote:
+
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+> Eric Dumazet wrote:
+> >>   union indirect_params i;
+> >>   i.file_flags.flags = O_CLOEXEC;
+> > 
+> > This setup forbids future addons to file_flags
+> > 
+> > In three years, when we want to add a new indirect feature to socket() 
+> > call, do we need a new indirect2() syscall ?
+> 
+> No, it doesn't.  The setup is indefinitely expandable.
+> 
+> All you need to do, if it becomes necessary to have more than an int, is
+> to define a little structure for the system call and then use it.  The
+> only requirement is that the code has to assume a value of zero is what
+> is used today.  That's the whole point.
 
-Ack for first hunk.  When can this be merged?  I assume it has to wait
-for tty_encode_baud_rate() to appear in mainline?
+Yes, this is what I understood.
 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc2-mm1/drivers/serial/21285.c linux-2.6.24-rc2-mm1/drivers/serial/21285.c
-> --- linux.vanilla-2.6.24-rc2-mm1/drivers/serial/21285.c	2007-11-16 17:20:48.000000000 +0000
-> +++ linux-2.6.24-rc2-mm1/drivers/serial/21285.c	2007-11-16 18:35:29.000000000 +0000
-> @@ -277,6 +279,8 @@
->  	if (termios->c_iflag & INPCK)
->  		port->read_status_mask |= RXSTAT_FRAME | RXSTAT_PARITY;
->  
-> +	tty_encode_baud_rate(tty,  baud, baud);
-> +
->  	/*
->  	 * Which character status flags should we ignore?
->  	 */
-> @@ -301,6 +305,7 @@
->  	*CSR_UARTCON = 1;
->  
->  	spin_unlock_irqrestore(&port->lock, flags);
-> +	
->  }
->  
->  static const char *serial21285_type(struct uart_port *port)
+> 
+> union indirect_params {
+>   struct {
+>     int flags;
+>   } file_flags;
+>   struct {
+>     int flags;
+>     int new_syscall_data1;
+>     sigset_t and_a_sigmask;
+>   } new_data;
+> };
 
-This hunk isn't required.
+Yes, so now, if you take this new definition of indirect_params,
+its size is 12 bytes at least.
 
-Note also that no one reads linux-arm@vger.kernel.org.
+So when you recompile your old program (as you post it and as I commented on),
+it will pass a >= 12 bytes data to kernel, with only first 4 bytes set to O_CLOEXEC.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Other bytes will contain junk (automatic variables are not set to 0 by compiler), 
+and your program possibly break - if kernel socket() call was
+extended to use new_data struct. (ie wanting O_CLOEXEC features +
+ new ones with new_syscall_data1)
+
+You have to take care of binary compatibility, but also that an old program
+ (unaware of the new fields) will be re-compiled with new headers.
+
+> 
+> Old programs will set only the 'flags' member of 'new_data' while new
+> once can also set the new elements.  New programs on old kernels will
+> eithe have failing calls since the structure is too big or the call will
+> not have all the desired effects.  The latter can be tested for.
+> 
+> 
+> > Or better, you could avoid using 'union indirect_params' in user code, and 
+> > only use the substructs for each function.
+> 
+> There is no overhead introduced through the union.  The only reason the
+> union is there in the first place is to allocate sufficient data in
+> task_struct to cover all cases.
+
+Yes, sure, but it should be a kernel issue, not a user space one at all,
+as long as user provides the size of the data he want to pass to kernel (
+and your patch does this already)
+
