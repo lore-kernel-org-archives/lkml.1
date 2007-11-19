@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbXKST6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbXKSUAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbXKST6T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 14:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXKST6M
+	id S1754076AbXKSUAM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 15:00:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXKST76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 14:58:12 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:42412 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750956AbXKST6L (ORCPT
+	Mon, 19 Nov 2007 14:59:58 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:23365 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750973AbXKST76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 14:58:11 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAFp5QUdMROHU/2dsb2JhbACBWw
-Date: Mon, 19 Nov 2007 14:52:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-Subject: [PATCH] Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
-Message-ID: <20071119195257.GA3440@Krystal>
-References: <20071113193349.214098508@polymtl.ca> <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost> <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost> <20071119185258.GA998@Krystal> <1195501381.27759.127.camel@localhost>
-Mime-Version: 1.0
+	Mon, 19 Nov 2007 14:59:58 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=Sq1VjkHaczApqlWAtr0RQqc8ohIkSS8KmmAeSCzchees1gSvmkDQBZI6HzIZwWHWDed7MA0WdUPfm+r4DzhIgY/o99zgqDcHtsbo+TfhH3A0Z4TxXyaR8iYnpyP5KspoMOsNOFFMsPi1OX5/qnpPHQ3Oj0ma8K4mpn80uedOZCA=  ;
+X-YMail-OSG: Z2qA84wVM1lh_LVYsWP8yCi0jQ0Zan_JLFWItTn2RVxuYbdeKJGkeuA8ksInV4WbgMd59c7_Lg--
+Date: Mon, 19 Nov 2007 11:59:55 -0800
+From: David Brownell <david-b@pacbell.net>
+To: stern@rowland.harvard.edu
+Subject: Re: [patch 19/26] USB: mutual exclusion for EHCI init and port resets
+Cc: zwane@arm.linux.org.uk, tytso@mit.edu, torvalds@linux-foundation.org,
+       stable@kernel.org, reviews@ml.cw.f00f.org, rdunlap@xenotime.net,
+       mkrufky@linuxtv.org, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, jmforbes@linuxtx.org, gregkh@suse.de,
+       dely.l.sy@intel.com, davem@davemloft.net, davej@redhat.com,
+       chuckw@quantumlinux.com, cebbert@redhat.com, cavokz@gmail.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+References: <Pine.LNX.4.44L0.0711191403400.3005-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0711191403400.3005-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1195501381.27759.127.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:52:04 up 16 days, 57 min,  5 users,  load average: 0.54, 0.51,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <20071119195955.B0C482214F3@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> On Mon, 2007-11-19 at 13:52 -0500, Mathieu Desnoyers wrote:
-> > > > So I guess the result is a pointer ? Should this be expected ?
-> > > 
-> > > Nope.  'pointer - pointer' is an integer.  Just solve this equation for
-> > > integer:
-> > > 
-> > >       'pointer + integer = pointer'
-> > > 
-> > 
-> > Well, using page_to_pfn turns out to be ugly in markers (and in
-> > printks) then. Depending on the architecture, it will result in either
-> > an unsigned long (x86_64) or an unsigned int (i386), which corresponds
-> > to %lu or %u and will print a warning if we don't cast it explicitly. 
-> 
-> Casting the i386 one to be an unconditional 'unsigned long' shouldn't be
-> an issue.  We don't generally expect pfns to fit into ints anyway. 
+> This addition certainly won't hurt.  Did we ever get any feedback as to 
+> whether it actually helped?
 
-So would this make sense ?
+ISTR that davem refused to try it, after reporting an
+intermittent failure on the original patch (which only
+addresses one end of that hardware race).
 
-Cast __page_to_pfn to unsigned long in CONFIG_SPARSEMEM
+So, no ... but given we know that closing only one side
+of the race isn't quite enough, I think we need it anyway.
 
-Make sure the type returned by __page_to_pfn is always unsigned long. If we
-don't cast it explicitly, it can be int on i386, but long on x86_64. This is
-especially inelegant for printks.
+- Dave
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Dave Hansen <haveblue@us.ibm.com>
-CC: linux-mm@kvack.org
-CC: linux-kernel@vger.kernel.org
----
- include/asm-generic/memory_model.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-lttng/include/asm-generic/memory_model.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/memory_model.h	2007-11-19 14:47:30.000000000 -0500
-+++ linux-2.6-lttng/include/asm-generic/memory_model.h	2007-11-19 14:48:30.000000000 -0500
-@@ -50,7 +50,7 @@
- 
- /* memmap is virtually contigious.  */
- #define __pfn_to_page(pfn)	(vmemmap + (pfn))
--#define __page_to_pfn(page)	((page) - vmemmap)
-+#define __page_to_pfn(page)	((unsigned long)((page) - vmemmap))
- 
- #elif defined(CONFIG_SPARSEMEM)
- /*
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
