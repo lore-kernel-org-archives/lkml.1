@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbXKSPcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbXKSPgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbXKSPcW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXKSPcN
+	id S1755601AbXKSPgn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXKSPgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:32:13 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:25957 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755479AbXKSPcM (ORCPT
+	Mon, 19 Nov 2007 10:36:35 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:36039 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753965AbXKSPge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:32:12 -0500
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: [PATCH] hugetlb: follow_hugetlb_page for write access
-Date: Mon, 19 Nov 2007 16:25:00 +0100
-User-Agent: KMail/1.8.2
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Ken Chen <kenchen@google.com>
-References: <20071107195142.13505.49398.stgit@kernel>
-In-Reply-To: <20071107195142.13505.49398.stgit@kernel>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 19 Nov 2007 10:36:34 -0500
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+From: Daniel Walker <dwalker@mvista.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Remy Bohmer <linux@bohmer.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1195457078.11545.38.camel@jcmlaptop>
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
+	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <1195316550.25393.21.camel@imap.mvista.com>
+	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+	 <1195320569.25393.38.camel@imap.mvista.com>
+	 <20071117174608.GA30641@elte.hu>
+	 <1195322141.25393.41.camel@imap.mvista.com>
+	 <1195457078.11545.38.camel@jcmlaptop>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 07:31:16 -0800
+Message-Id: <1195486276.25393.65.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711191625.00882.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 November 2007 20:51, Adam Litke wrote:
+On Mon, 2007-11-19 at 02:24 -0500, Jon Masters wrote:
+> On Sat, 2007-11-17 at 09:55 -0800, Daniel Walker wrote:
 > 
-> When calling get_user_pages(), a write flag is passed in by the caller to
-> indicate if write access is required on the faulted-in pages.  Currently,
-> follow_hugetlb_page() ignores this flag and always faults pages for
-> read-only access.  This can cause data corruption because a device driver
-> that calls get_user_pages() with write set will not expect COW faults to
-> occur on the returned pages.
+> > Sure, you want to split the list?
 > 
-> This patch passes the write flag down to follow_hugetlb_page() and makes
-> sure hugetlb_fault() is called with the right write_access parameter.
-> 
-> Signed-off-by: Adam Litke <agl@us.ibm.com>
-Apologize for this late response.
-Tested on 2.6.23 with ehca and mthca. It works like a charm for me.
-Thanks!
-Nam
+> I'm happy to grab a few of these too. Let me know if either of you or
+> Ingo is working on the whole lot and about to dump it on us ;-)
+
+I was planning to just try a few, so I think your safe.. 
+
+Daniel
 
