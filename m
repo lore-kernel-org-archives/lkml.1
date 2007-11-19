@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbXKSJa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXKSJbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756120AbXKSJa6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 04:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXKSJas
+	id S1756312AbXKSJbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 04:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbXKSJbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 04:30:48 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45429 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752693AbXKSJas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 04:30:48 -0500
-Subject: [CIFS] still incorrect cifs_reconnect fix?
-From: Petr Tesarik <ptesarik@suse.cz>
-To: linux-cifs-client@lists.samba.org
-Cc: Steve French <smfrench@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
+	Mon, 19 Nov 2007 04:31:10 -0500
+Received: from sacred.ru ([62.205.161.221]:37104 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752751AbXKSJbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 04:31:09 -0500
+Message-ID: <474157A7.1060504@openvz.org>
+Date: Mon, 19 Nov 2007 12:30:15 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] do_task_stat: don't use task_pid_nr_ns() lockless
+References: <20071117183109.GA2605@tv-sign.ru> <m1fxz4ws2z.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1fxz4ws2z.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Mon, 19 Nov 2007 10:30:45 +0100
-Message-Id: <1195464645.29063.12.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 19 Nov 2007 12:30:50 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Eric W. Biederman wrote:
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+>> Without rcu/tasklist/siglock lock task_pid_nr_ns() may read the freed memory,
+>> move the callsite under ->siglock.
+>>
+>> Sadly, we can report pid == 0 if the task was detached.
+> 
+> We only get detached in release_task so it is a pretty small window
+> where we can return pid == 0.  Usually get_task_pid will fail first
+> and we will return -ESRCH.  Still the distance from open to 
+> 
+> There is another bug in here as well.  current->nsproxy->pid_ns is wrong.
+> What we want is: ns = dentry->d_sb->s_fs_info;
 
-while merging commits f01d5e14e764b14b6bf5512678523d009254b209 and
-638b250766272fcaaa0f7ed2776f58f4ac701914 into SLES10, I've noticed that
-there's apparently a bug. The code currently looks like this:
+Actually I thought about this recently - if we produce the list
+of tasks based on the sb's namespace, then we should fill the
+tasks' files according to the sb's namespace as well, not according
+to the current namespace.
 
-		pdu_length = 4; /* enough to get RFC1001 header */
-incomplete_rcv:
-		length =
-		    kernel_recvmsg(csocket, &smb_msg,
-				&iov, 1, pdu_length, 0 /* BB other flags? */);
+> Otherwise we will have file descriptor passing races and the like.
 
-/* ... some irrelevant code left out ... */
+Can you elaborate?
 
-		} else if (length < 4) {	/* <----- HERE IS THE PROBLEM
-			cFYI(1, ("less than four bytes received (%d bytes)",
-			      length));
-			pdu_length -= length;
-			msleep(1);
-			goto incomplete_rcv;
-		}
-
-I think we should be checking for length < pdu_length, not for length <
-4, because if we read 2 bytes in the first run and 2 bytes in the second
-un, CIFS will still treat the second run as incomplete (and possibly run
-in an infinite loop). Am I missing something obvious?
-
-Kind regards,
-Petr Tesarik
+> We could also do: proc_pid(inode) to get the pid, which is a little
+> more race free, and will prevent us from returning pid == 0.
+> 
+> In either event it looks like we need to implement some proper
+> file operations for these proc files, maybe even going to seq file
+> status.
+> 
+> Eric
+> 
 
