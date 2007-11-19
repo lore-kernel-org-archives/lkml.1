@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbXKSS6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXKSS6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752120AbXKSS6R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbXKSS6D
+	id S1753906AbXKSS6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbXKSS6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:58:03 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:38406 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751053AbXKSS6B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:58:01 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAA5rQUdMROHU/2dsb2JhbACBWA
-Date: Mon, 19 Nov 2007 13:52:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-Subject: Re: [RFC 5/7] LTTng instrumentation mm
-Message-ID: <20071119185258.GA998@Krystal>
-References: <20071113193349.214098508@polymtl.ca> <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost> <20071116144742.GA17255@Krystal> <1195495626.27759.119.camel@localhost>
-Mime-Version: 1.0
+	Mon, 19 Nov 2007 13:58:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44214 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751021AbXKSS6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 13:58:11 -0500
+Date: Mon, 19 Nov 2007 19:57:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David <david@livux.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
+	v2.6.23.8,v2.6.22.13, v2.6.21.7
+Message-ID: <20071119185759.GA12117@elte.hu>
+References: <200711191925.12072.david@livux.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1195495626.27759.119.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:50:10 up 15 days, 23:55,  5 users,  load average: 0.91, 1.97,
-	2.10
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200711191925.12072.david@livux.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> On Fri, 2007-11-16 at 09:47 -0500, Mathieu Desnoyers wrote:
-> > * Dave Hansen (haveblue@us.ibm.com) wrote:
-> > > For most (all?) architectures, the PFN and the virtual address in the
-> > > kernel's linear are interchangeable with pretty trivial arithmetic.  All
-> > > pages have a pfn, but not all have a virtual address.  Thus, I suggested
-> > > using the pfn.  What kind of virtual addresses are you talking about?
-> > > 
-> > 
-> > Hrm, in asm-generic/memory_model.h, we have various versions of
-> > __page_to_pfn. Normally they all cast the result to (unsigned long),
-> > except for :
-> > 
-> > 
-> > #elif defined(CONFIG_SPARSEMEM_VMEMMAP)
-> > 
-> > /* memmap is virtually contigious.  */
-> > #define __pfn_to_page(pfn)      (vmemmap + (pfn))
-> > #define __page_to_pfn(page)     ((page) - vmemmap)
-> > 
-> > So I guess the result is a pointer ? Should this be expected ?
+
+* David <david@livux.com> wrote:
+
+> Hi Ingo,
 > 
-> Nope.  'pointer - pointer' is an integer.  Just solve this equation for
-> integer:
+> Thnx a lot for theses backports...
 > 
-> 	'pointer + integer = pointer'
+> Ran into this while compiling a 2.6.23.8 with CFS v24
 > 
-
-Well, using page_to_pfn turns out to be ugly in markers (and in
-printks) then. Depending on the architecture, it will result in either
-an unsigned long (x86_64) or an unsigned int (i386), which corresponds
-to %lu or %u and will print a warning if we don't cast it explicitly.
-
-Mathieu
-
-
-> -- Dave
+> Compiling with CONFIG_FAIR_GROUP_SCHED disabled :
 > 
+> kernel/sysctl.c:305: error: 'sysctl_sched_min_bal_int_shares' undeclared here (not in a function)
+> kernel/sysctl.c:313: error: 'sysctl_sched_max_bal_int_shares' undeclared here (not in a function)
+> 
+> I made that patch to make it compile.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+thanks - i've applied your fix and have re-uploaded under the same 
+filenames - so if anyone hits this problem it can be fixed by 
+re-downloading the same patch again. Find below the current set of -v24 
+build fixlets.
+
+	Ingo
+
+--- linux.orig/kernel/sysctl.c
++++ linux/kernel/sysctl.c
+@@ -309,6 +309,7 @@ static struct ctl_table kern_table[] = {
+ 		.mode		= 644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++#ifdef CONFIG_FAIR_GROUP_SCHED
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_min_bal_int_shares",
+@@ -326,6 +327,7 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ #endif
++#endif
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_compat_yield",
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -10,7 +10,7 @@
+ #define COMPAT_REGISTER_SYSCTL
+ 
+ /* backporting helper macro: */
+-#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
++#define cpu_sibling_map(cpu) cpu_sibling_map[cpu]
+ 
+ /*
+  * cloning flags:
