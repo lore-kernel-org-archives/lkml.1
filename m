@@ -1,36 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbXKSS2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbXKSS23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbXKSS2F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXKSSWf
+	id S1755645AbXKSS23 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbXKSSWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:22:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49333 "EHLO
+	Mon, 19 Nov 2007 13:22:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49341 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751836AbXKSSWd (ORCPT
+	with ESMTP id S1752303AbXKSSWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:22:33 -0500
-Date: Mon, 19 Nov 2007 10:19:20 -0800
+	Mon, 19 Nov 2007 13:22:35 -0500
+Date: Mon, 19 Nov 2007 10:19:23 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-usb-devel@lists.sourceforge.net
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
-       David Miller <davem@davemloft.net>, Dely L Sy <dely.l.sy@intel.com>
-Subject: [patch 19/26] USB: mutual exclusion for EHCI init and port resets
-Message-ID: <20071119181920.GT15425@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, rainer.brestan@frequentis.com, kkeil@suse.de,
+       rsc@runtux.com
+Subject: [patch 20/26] i4l: Fix random hard freeze with AVM c4 card
+Message-ID: <20071119181923.GU15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-mutual-exclusion-for-ehci-init-and-port-resets.patch"
+Content-Disposition: inline; filename="i4l-fix-random-hard-freeze-with-avm-c4-card.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,116 +40,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Karsten Keil <kkeil@suse.de>
 
-patch 32fe01985aa2cb2562f6fc171e526e279abe10db in mainline.
+patch 1ccfd63367c1a6aaf8b33943f18856dde85f2f0b in mainline.
 
-This patch (as999) fixes a problem that sometimes shows up when host
-controller driver modules are loaded in the wrong order.  If ehci-hcd
-happens to initialize an EHCI controller while the companion OHCI or
-UHCI controller is in the middle of a port reset, the reset can fail
-and the companion may get very confused.  The patch adds an
-rw-semaphore and uses it to keep EHCI initialization and port resets
-mutually exclusive.
+The patch
+- Includes the call to capilib_data_b3_req in the spinlock. This routine
+  in turn calls the offending mq_enqueue routine that triggered the
+  freeze if not locked.  This should also fix other indicators of
+  incosistent capilib_msgidqueue list, that trigger messages like:
+  Oct  5 03:05:57 BERL0 kernel: kcapi: msgid 3019 ncci 0x30301 not on queue
+  that we saw several times a day (usually several in a row).
+- Fixes all occurrences of c4_dispatch_tx to be called with active
+  spinlock, there were some instances where no lock was active. Mostly
+  these are in very infrequently called routines, so the additional
+  performance penalty is minimal.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Acked-by: David Brownell <david-b@pacbell.net>
-Cc: David Miller <davem@davemloft.net>
-Cc: Dely L Sy <dely.l.sy@intel.com>
+Signed-off-by: Karsten Keil <kkeil@suse.de>
+Signed-off-by: Rainer Brestan <rainer.brestan@frequentis.com>
+Signed-off-by: Ralf Schlatterbeck <rsc@runtux.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/usb/core/hcd.h      |    8 +++++++-
- drivers/usb/core/hub.c      |   15 ++++++++++++++-
- drivers/usb/host/ehci-hcd.c |    8 ++++++++
- 3 files changed, 29 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -19,6 +19,8 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/rwsem.h>
-+
- /* This file contains declarations of usbcore internals that are mostly
-  * used or exposed by Host Controller Drivers.
-  */
-@@ -464,5 +466,9 @@ static inline void usbmon_urb_complete(s
- 		: (in_interrupt () ? "in_interrupt" : "can sleep"))
- 
- 
--#endif /* __KERNEL__ */
-+/* This rwsem is for use only by the hub driver and ehci-hcd.
-+ * Nobody else should touch it.
-+ */
-+extern struct rw_semaphore ehci_cf_port_reset_rwsem;
- 
-+#endif /* __KERNEL__ */
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -117,6 +117,12 @@ MODULE_PARM_DESC(use_both_schemes,
- 		"try the other device initialization scheme if the "
- 		"first one fails");
- 
-+/* Mutual exclusion for EHCI CF initialization.  This interferes with
-+ * port reset on some companion controllers.
-+ */
-+DECLARE_RWSEM(ehci_cf_port_reset_rwsem);
-+EXPORT_SYMBOL_GPL(ehci_cf_port_reset_rwsem);
-+
- 
- static inline char *portspeed(int portstatus)
+---
+ drivers/isdn/hardware/avm/c4.c |   14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+--- a/drivers/isdn/hardware/avm/c4.c
++++ b/drivers/isdn/hardware/avm/c4.c
+@@ -727,6 +727,7 @@ static void c4_send_init(avmcard *card)
  {
-@@ -1513,6 +1519,11 @@ static int hub_port_reset(struct usb_hub
- {
- 	int i, status;
+ 	struct sk_buff *skb;
+ 	void *p;
++	unsigned long flags;
  
-+	/* Block EHCI CF initialization during the port reset.
-+	 * Some companion controllers don't like it when they mix.
-+	 */
-+	down_read(&ehci_cf_port_reset_rwsem);
-+
- 	/* Reset the port */
- 	for (i = 0; i < PORT_RESET_TRIES; i++) {
- 		status = set_port_feature(hub->hdev,
-@@ -1543,7 +1554,7 @@ static int hub_port_reset(struct usb_hub
- 			usb_set_device_state(udev, status
- 					? USB_STATE_NOTATTACHED
- 					: USB_STATE_DEFAULT);
--			return status;
-+			goto done;
- 		}
+ 	skb = alloc_skb(15, GFP_ATOMIC);
+ 	if (!skb) {
+@@ -744,12 +745,15 @@ static void c4_send_init(avmcard *card)
+ 	skb_put(skb, (u8 *)p - (u8 *)skb->data);
  
- 		dev_dbg (hub->intfdev,
-@@ -1556,6 +1567,8 @@ static int hub_port_reset(struct usb_hub
- 		"Cannot enable port %i.  Maybe the USB cable is bad?\n",
- 		port1);
- 
-+ done:
-+	up_read(&ehci_cf_port_reset_rwsem);
- 	return status;
+ 	skb_queue_tail(&card->dma->send_queue, skb);
++	spin_lock_irqsave(&card->lock, flags);
+ 	c4_dispatch_tx(card);
++	spin_unlock_irqrestore(&card->lock, flags);
  }
  
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -566,10 +566,18 @@ static int ehci_run (struct usb_hcd *hcd
- 	 * are explicitly handed to companion controller(s), so no TT is
- 	 * involved with the root hub.  (Except where one is integrated,
- 	 * and there's no companion controller unless maybe for USB OTG.)
-+	 *
-+	 * Turning on the CF flag will transfer ownership of all ports
-+	 * from the companions to the EHCI controller.  If any of the
-+	 * companions are in the middle of a port reset at the time, it
-+	 * could cause trouble.  Write-locking ehci_cf_port_reset_rwsem
-+	 * guarantees that no resets are in progress.
- 	 */
-+	down_write(&ehci_cf_port_reset_rwsem);
- 	hcd->state = HC_STATE_RUNNING;
- 	ehci_writel(ehci, FLAG_CF, &ehci->regs->configured_flag);
- 	ehci_readl(ehci, &ehci->regs->command);	/* unblock posted writes */
-+	up_write(&ehci_cf_port_reset_rwsem);
+ static int queue_sendconfigword(avmcard *card, u32 val)
+ {
+ 	struct sk_buff *skb;
++	unsigned long flags;
+ 	void *p;
  
- 	temp = HC_VERSION(ehci_readl(ehci, &ehci->caps->hc_capbase));
- 	ehci_info (ehci,
+ 	skb = alloc_skb(3+4, GFP_ATOMIC);
+@@ -766,7 +770,9 @@ static int queue_sendconfigword(avmcard 
+ 	skb_put(skb, (u8 *)p - (u8 *)skb->data);
+ 
+ 	skb_queue_tail(&card->dma->send_queue, skb);
++	spin_lock_irqsave(&card->lock, flags);
+ 	c4_dispatch_tx(card);
++	spin_unlock_irqrestore(&card->lock, flags);
+ 	return 0;
+ }
+ 
+@@ -986,7 +992,9 @@ static void c4_release_appl(struct capi_
+ 	struct sk_buff *skb;
+ 	void *p;
+ 
++	spin_lock_irqsave(&card->lock, flags);
+ 	capilib_release_appl(&cinfo->ncci_head, appl);
++	spin_unlock_irqrestore(&card->lock, flags);
+ 
+ 	if (ctrl->cnr == card->cardnr) {
+ 		skb = alloc_skb(7, GFP_ATOMIC);
+@@ -1019,7 +1027,8 @@ static u16 c4_send_message(struct capi_c
+ 	u16 retval = CAPI_NOERROR;
+ 	unsigned long flags;
+ 
+- 	if (CAPIMSG_CMD(skb->data) == CAPI_DATA_B3_REQ) {
++	spin_lock_irqsave(&card->lock, flags);
++	if (CAPIMSG_CMD(skb->data) == CAPI_DATA_B3_REQ) {
+ 		retval = capilib_data_b3_req(&cinfo->ncci_head,
+ 					     CAPIMSG_APPID(skb->data),
+ 					     CAPIMSG_NCCI(skb->data),
+@@ -1027,10 +1036,9 @@ static u16 c4_send_message(struct capi_c
+ 	}
+ 	if (retval == CAPI_NOERROR) {
+ 		skb_queue_tail(&card->dma->send_queue, skb);
+-		spin_lock_irqsave(&card->lock, flags);
+ 		c4_dispatch_tx(card);
+-		spin_unlock_irqrestore(&card->lock, flags);
+ 	}
++	spin_unlock_irqrestore(&card->lock, flags);
+ 	return retval;
+ }
+ 
 
 -- 
