@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbXKSQFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbXKSQGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbXKSQFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 11:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXKSQFN
+	id S1756287AbXKSQGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 11:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXKSQGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 11:05:13 -0500
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:39351 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754548AbXKSQFL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 11:05:11 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 19 Nov 2007 11:06:07 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:32341 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753706AbXKSQGF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 11:06:05 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Mon, 19 Nov 2007 17:00:24 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+cc: "Andreas Herrmann" <aherrman@arcor.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix UTS_MACHINE to be i386 for 32-bit build
+ and x86_64 for 64-bit build
+Message-ID: <20071119160024.GA11309@alberich.amd.com>
+References: <20071117143731.GA7129@uranus.ravnborg.org>
+ <20071119093437.GA5104@devil>
+ <20071119104129.GA10731@uranus.ravnborg.org>
 MIME-Version: 1.0
+In-Reply-To: <20071119104129.GA10731@uranus.ravnborg.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 19 Nov 2007 16:00:23.0113 (UTC)
+ FILETIME=[4AC0C390:01C82AC5]
+X-WSS-ID: 6B5F6C9307S3019444-01-01
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8,v2.6.22.13, v2.6.21.7
-Date: Mon, 19 Nov 2007 11:04:36 -0500
-Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0B897BE@ecqcmtlmail3.quebec.int.ec.gc.ca>
-In-Reply-To: <20071119151756.GA25446@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8,v2.6.22.13, v2.6.21.7
-Thread-Index: Acgqv3Yvr6QXu4i+RiSp6ufc8Q0WrgABj33Q
-References: <20071119151756.GA25446@elte.hu>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 19 Nov 2007 16:04:38.0325 (UTC) FILETIME=[E2DF0650:01C82AC5]
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Message d'origine-----
-> De : linux-kernel-owner@vger.kernel.org 
-> [mailto:linux-kernel-owner@vger.kernel.org] De la part de Ingo Molnar
+On Mon, Nov 19, 2007 at 11:41:29AM +0100, Sam Ravnborg wrote:
+> On Mon, Nov 19, 2007 at 10:34:37AM +0100, Andreas Herrmann wrote:
+> > On Sat, Nov 17, 2007 at 03:37:31PM +0100, Sam Ravnborg wrote:
+> > > 
+> > > Note: This patch does not fix the uname -m issue - to do so
+> > > Andreas' patch is needed.
+> > > 
+> > > 	Sam
+> > 
+> > Linus,
+> > 
+> > The issue Sam refers to is that UTS_MACHINE is set to "x86" instead of
+> > "i386" or "x86_64" when building with ARCH=x86. Thus the new kernel
+> > when booted will give either "x86" on x86_64 and many i386 systems or
+> > even "x66" on other i386 systems for 'uname -m'.
+> > 
+> > Many tools rely on the usual values of "x86_64", "i366" and "i686"
+> > here. So we shouldn't change this.
 > 
-> By popular demand, here is release -v24 of the CFS scheduler patch.
-> 
-> It is a full backport of the latest & greatest scheduler code 
-> to v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7. The patches 
-> can be downloaded from the usual place:
-> 
->     http://people.redhat.com/mingo/cfs-scheduler/
-> 
-> There's tons of changes since v22 was released:
-> 
->     36 files changed, 2359 insertions(+), 1082 deletions(-)
-> 
-> that's 187 individual commits from 32 authors.
-> 
-> So even if CFS v22 worked well for you, please try this 
-> release too and report regressions (if any).
-> 
+> Andreas - I will suggest you to submit a new patch with
+> a better changelog where you jsut describe what you fix.
+> The above explanations looks a bit weird if read stand alone.
 
-Hi Ingo,
+Ok, I'll resend the patch with an updated changelog asap.
 
-Thnx a lot for theses backports...
+> You can always add additional comments after the line containing:
+> ---
+> 
+> In this way it is not included in the changelog but Linus can read it.
+> 
+> Anyway - your patch has my ack.
 
-Ran into this while compiling a 2.6.22.13 with CFS v24
+Thanks,
 
-  CC      kernel/sched.o
-kernel/sched.c: In function 'cpu_to_core_group':
-kernel/sched.c:6056: error: 'per_cpu__cpu_sibling_map' undeclared (first
-use in this function)
-kernel/sched.c:6056: error: (Each undeclared identifier is reported only
-once
-kernel/sched.c:6056: error: for each function it appears in.)
-kernel/sched.c:6056: warning: type defaults to 'int' in declaration of
-'type name'
-kernel/sched.c:6056: error: invalid type argument of 'unary *'
-kernel/sched.c: In function 'build_sched_domains':
-kernel/sched.c:6319: error: 'per_cpu__cpu_sibling_map' undeclared (first
-use in this function)
-kernel/sched.c:6319: warning: type defaults to 'int' in declaration of
-'type name'
-kernel/sched.c:6319: error: invalid type argument of 'unary *'
-kernel/sched.c:6330: warning: type defaults to 'int' in declaration of
-'type name'
-kernel/sched.c:6330: error: invalid type argument of 'unary *'
-make[2]: *** [kernel/sched.o] Error 1
-make[1]: *** [kernel] Error 2
-make[1]: Leaving directory
-`/usr/src/linux-headers-2.6.22.13-cfs-sarge-686-envcan'
-make: *** [debian/stamp-build-kernel] Error 2
 
-- vin
+Andreas
+
+
+
