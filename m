@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbXKSPxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbXKSPyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbXKSPxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbXKSPxm
+	id S1756510AbXKSPyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbXKSPyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:53:42 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44978 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754110AbXKSPxl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:53:41 -0500
-Date: Mon, 19 Nov 2007 10:53:40 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Kobjects: drop child->parent ref at unregistration
-Message-ID: <Pine.LNX.4.44L0.0711191047230.4806-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 19 Nov 2007 10:54:11 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:52085 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753529AbXKSPyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 10:54:09 -0500
+Date: Mon, 19 Nov 2007 21:36:47 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 2/2] sched: Improve fairness of cpu allocation for task groups
+Message-ID: <20071119160647.GV3359@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071119152258.GB31426@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (as1015) reverts changes that were made to the driver core
-about four years ago.  The intent back then was to avoid certain kinds
-of invalid memory accesses by leaving kernel objects allocated as long
-as any of their children were still allocated.  The original and
-correct approach was to wait only as long as any children were still
-_registered_; that's what this patch reinstates.
+On Mon, Nov 19, 2007 at 04:22:58PM +0100, Ingo Molnar wrote:
+> 
+> * Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> 
+> > - inc/dec_load() takes a load input instead of task pointer input as their
+> >   2nd arg
+> > - inc/dec_nr_running don't call inc/dec_load. Instead,
+> > - enqueue/dequeue_task class callbacks call inc/dec_load
+> > - [Unintended/will-fix change] min/max tunables added in
+> >   /proc/sys/kernel
+> > 
+> > All of above changes (except last, which I will fix) should have zero 
+> > functional+runtime effect for !CONFIG_FAIR_GROUP_SCHED case. So I 
+> > don't see how I can split Patch 2/2 further.
+> 
+> ok, as long as it's NOP for the CONFIG_FAIR_GROUP_SCHED, we could try 
+> it.
 
-This fixes a problem in the SCSI core made visible by the class_device
-to regular device conversion: A reference loop (scsi_device holds
-reference to request_queue, which is the child of a gendisk, which is
-the child of the scsi_device) prevents the data structures from being
-released, even though they are deregistered okay.
+Ok ..thx. I was begining to make changes to avoid even the above minor changes 
+for !CONFIG_FAIR_GROUP_SCHED case, but it doesn't look neat, hence will drop
+that effort.
 
-It's possible that this change will cause a few bugs to surface,
-things that have been hidden for several years.  They can be fixed
-easily enough by having the child device take an explicit reference to
-the parent whenever needed.
+I am fixing other problems observed with Patch 1/2 (usage of a mutex to
+serialize create/destroy groups) and will resend the series very soon.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
----
-
-Greg:
-
-I'm formally submitting this so that it can get some testing in your 
-development tree and in -mm.  So far everyone who has considered the 
-matter thinks that this is a good change.  Any bugs it has papered over 
-should be fixable.
-
-Alan Stern
-
-
-Index: usb-2.6/lib/kobject.c
-===================================================================
---- usb-2.6.orig/lib/kobject.c
-+++ usb-2.6/lib/kobject.c
-@@ -206,12 +206,16 @@ void kobject_init(struct kobject * kobj)
- 
- static void unlink(struct kobject * kobj)
- {
-+	struct kobject *parent = kobj->parent;
-+
- 	if (kobj->kset) {
- 		spin_lock(&kobj->kset->list_lock);
- 		list_del_init(&kobj->entry);
- 		spin_unlock(&kobj->kset->list_lock);
- 	}
-+	kobj->parent = NULL;
- 	kobject_put(kobj);
-+	kobject_put(parent);
- }
- 
- /**
-@@ -262,7 +266,6 @@ int kobject_add(struct kobject * kobj)
- 	if (error) {
- 		/* unlink does the kobject_put() for us */
- 		unlink(kobj);
--		kobject_put(parent);
- 
- 		/* be noisy on error issues */
- 		if (error == -EEXIST)
-@@ -516,7 +519,6 @@ void kobject_cleanup(struct kobject * ko
- {
- 	struct kobj_type * t = get_ktype(kobj);
- 	struct kset * s = kobj->kset;
--	struct kobject * parent = kobj->parent;
- 	const char *name = kobj->k_name;
- 
- 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
-@@ -533,7 +535,6 @@ void kobject_cleanup(struct kobject * ko
- 	}
- 	if (s)
- 		kset_put(s);
--	kobject_put(parent);
- }
- 
- static void kobject_release(struct kref *kref)
-
-
+-- 
+Regards,
+vatsa
