@@ -1,44 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbXKSPwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbXKSPxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbXKSPwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 10:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbXKSPwH
+	id S1756122AbXKSPxu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 10:53:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbXKSPxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 10:52:07 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47658 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754289AbXKSPwG (ORCPT
+	Mon, 19 Nov 2007 10:53:42 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44978 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754110AbXKSPxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 10:52:06 -0500
-Date: Mon, 19 Nov 2007 15:50:07 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 21285: Report baud rate back via termios
-Message-ID: <20071119155007.6cfdce37@the-village.bc.nu>
-In-Reply-To: <20071119154137.GA30129@flint.arm.linux.org.uk>
-References: <20071119151222.6cfa9c4c@the-village.bc.nu>
-	<20071119154137.GA30129@flint.arm.linux.org.uk>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Nov 2007 10:53:41 -0500
+Date: Mon, 19 Nov 2007 10:53:40 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Kobjects: drop child->parent ref at unregistration
+Message-ID: <Pine.LNX.4.44L0.0711191047230.4806-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007 15:41:37 +0000
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+This patch (as1015) reverts changes that were made to the driver core
+about four years ago.  The intent back then was to avoid certain kinds
+of invalid memory accesses by leaving kernel objects allocated as long
+as any of their children were still allocated.  The original and
+correct approach was to wait only as long as any children were still
+_registered_; that's what this patch reinstates.
 
-> On Mon, Nov 19, 2007 at 03:12:22PM +0000, Alan Cox wrote:
-> > Currently reports back the requested rate not the result of the divides
-> > but thats an easy fix for someone with h/w
-> > 
-> > Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> Ack for first hunk.  When can this be merged?  I assume it has to wait
-> for tty_encode_baud_rate() to appear in mainline?
+This fixes a problem in the SCSI core made visible by the class_device
+to regular device conversion: A reference loop (scsi_device holds
+reference to request_queue, which is the child of a gendisk, which is
+the child of the scsi_device) prevents the data structures from being
+released, even though they are deregistered okay.
 
-tty_termios_encode_baud-rate/tty_encode_baud_rate are now in mainline
+It's possible that this change will cause a few bugs to surface,
+things that have been hidden for several years.  They can be fixed
+easily enough by having the child device take an explicit reference to
+the parent whenever needed.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+Greg:
+
+I'm formally submitting this so that it can get some testing in your 
+development tree and in -mm.  So far everyone who has considered the 
+matter thinks that this is a good change.  Any bugs it has papered over 
+should be fixable.
+
+Alan Stern
+
+
+Index: usb-2.6/lib/kobject.c
+===================================================================
+--- usb-2.6.orig/lib/kobject.c
++++ usb-2.6/lib/kobject.c
+@@ -206,12 +206,16 @@ void kobject_init(struct kobject * kobj)
+ 
+ static void unlink(struct kobject * kobj)
+ {
++	struct kobject *parent = kobj->parent;
++
+ 	if (kobj->kset) {
+ 		spin_lock(&kobj->kset->list_lock);
+ 		list_del_init(&kobj->entry);
+ 		spin_unlock(&kobj->kset->list_lock);
+ 	}
++	kobj->parent = NULL;
+ 	kobject_put(kobj);
++	kobject_put(parent);
+ }
+ 
+ /**
+@@ -262,7 +266,6 @@ int kobject_add(struct kobject * kobj)
+ 	if (error) {
+ 		/* unlink does the kobject_put() for us */
+ 		unlink(kobj);
+-		kobject_put(parent);
+ 
+ 		/* be noisy on error issues */
+ 		if (error == -EEXIST)
+@@ -516,7 +519,6 @@ void kobject_cleanup(struct kobject * ko
+ {
+ 	struct kobj_type * t = get_ktype(kobj);
+ 	struct kset * s = kobj->kset;
+-	struct kobject * parent = kobj->parent;
+ 	const char *name = kobj->k_name;
+ 
+ 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+@@ -533,7 +535,6 @@ void kobject_cleanup(struct kobject * ko
+ 	}
+ 	if (s)
+ 		kset_put(s);
+-	kobject_put(parent);
+ }
+ 
+ static void kobject_release(struct kref *kref)
+
+
