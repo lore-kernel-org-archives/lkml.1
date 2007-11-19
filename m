@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbXKSU1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbXKSUfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752156AbXKSU1Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 15:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXKSU1Q
+	id S1752158AbXKSUfZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 15:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXKSUfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 15:27:16 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:33532 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751068AbXKSU1P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 15:27:15 -0500
-Date: Mon, 19 Nov 2007 15:27:14 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Rudolf Marek <r.marek@assembler.cz>
-cc: Jiri Slaby <jirislaby@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       <lm-sensors@lm-sensors.org>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-In-Reply-To: <4741EB91.9080000@assembler.cz>
-Message-ID: <Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
+	Mon, 19 Nov 2007 15:35:15 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37855 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751099AbXKSUfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 15:35:14 -0500
+Date: Mon, 19 Nov 2007 21:31:52 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de
+Subject: nohz and strange sleep latencies
+Message-ID: <20071119203152.GA1772@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007, Rudolf Marek wrote:
+Hi!
 
-> Hello all,
-> >>> gives coretemp_cpu_callback -> coretemp_device_remove ->
-> >>> platform_device_unregister, so coretemp seems to be what I have and you don't.
-> > 
-> > Yes.
-> > 
-> > For the coretemp developers: coretemp_cpu_callback() needs to be more 
-> > careful about what it does.  During a system sleep transition (suspend, 
-> > hibernate, resume) it isn't possible to register or unregister a 
-> > device.  Attempts to register will fail and attempts to unregister will 
-> > block until the system sleep is over -- and for this callback that 
-> > means hanging.
-> 
-> Well I wrote the driver. Thanks for the clarification. If I recall correctly I 
-> looked how this part should be done from others drivers. Now while checking
-> what happened to the file, seems Rafael added something related.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8bb7844286fb8c9fce6f65d8288aeb09d03a5e0d
+On unloaded x60 system, 2.6.24-rc3 (tainted-pavel-so if someone can
+reproduce it, it would be helpful):
 
-That does look like it was meant for exactly this sort of situation.
+pavel@amd:~$ while true; do time sleep 0.01; done
+0.00user 0.00system 0.01 (0m0.013s) elapsed 30.71%CPU
+0.00user 0.00system 0.02 (0m0.024s) elapsed 8.36%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.53%CPU
+0.00user 0.00system 0.02 (0m0.026s) elapsed 7.75%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.34%CPU
+0.00user 0.00system 0.20 (0m0.207s) elapsed 1.45%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.59%CPU
+0.00user 0.00system 0.23 (0m0.230s) elapsed 1.30%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.61%CPU
+0.00user 0.00system 0.20 (0m0.201s) elapsed 1.48%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 15.50%CPU
+0.00user 0.00system 0.19 (0m0.190s) elapsed 1.05%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.37%CPU
+0.00user 0.00system 0.04 (0m0.049s) elapsed 4.09%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.35%CPU
+0.00user 0.00system 0.01 (0m0.017s) elapsed 11.89%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.38%CPU
+0.00user 0.00system 0.08 (0m0.081s) elapsed 3.71%CPU
+0.00user 0.00system 0.01 (0m0.013s) elapsed 23.33%CPU
+0.00user 0.00system 0.01 (0m0.019s) elapsed 15.92%CPU
 
-> > It's not clear what the best way is to fix this.  Perhaps the CPU 
-> > notification should be sent along with a special flag indicating that 
-> > the CPU transition is part of a system sleep (although this seems 
-> > racy).  Perhaps the driver should notice when a system sleep begins, 
-> > and defer all CPU-change handling until after the sleep is over.
-> 
-> maybe it does exist?  CPU_DOWN_PREPARE ?
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/cpu-hotplug.txt;hb=HEAD
-> 
-> Unfortunately I'm not very familiar with this, calling the 
-> coretemp_device_remove from CPU_DOWN_PREPARE would help? Looking at microcode 
-> driver, seems it just hide sysfs interface from user.
-
-I'm not sure exactly what you want to do here.  But it seems like a 
-waste to unregister the coretemp devices at the start of a system sleep 
-and then register them back at the end.
-
-Could you simply leave the devices registered throughout the entire
-sleep?  Of course, at the end you would have to check that all the CPUs
-really did come back up, and unregister the devices for the CPUs that
-are still offline.
-
-Alan Stern
-
+nohz=off helps a lot. while true; do time sleep 0.0; done does not
+have unexpected latencies.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
