@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbXKSS3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbXKSS35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbXKSS3k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 13:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXKSSWr
+	id S1753803AbXKSS35 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 13:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbXKSSWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 13:22:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49371 "EHLO
+	Mon, 19 Nov 2007 13:22:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49401 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbXKSSWp (ORCPT
+	with ESMTP id S1752537AbXKSSWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 13:22:45 -0500
-Date: Mon, 19 Nov 2007 10:19:10 -0800
+	Mon, 19 Nov 2007 13:22:48 -0500
+Date: Mon, 19 Nov 2007 10:19:33 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: [patch 15/26] forcedeth msi bugfix
-Message-ID: <20071119181910.GP15425@kroah.com>
+       Olof Johansson <olof@lixom.net>, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 24/26] i2c-pasemi: Fix NACK detection
+Message-ID: <20071119181933.GY15425@kroah.com>
 References: <20071119181438.617190424@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="forcedeth-msi-bugfix.patch"
+Content-Disposition: inline; filename="i2c-pasemi-fix-nack-detection.patch"
 In-Reply-To: <20071119181746.GA15425@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,124 +38,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Manfred Spraul <manfred@colorfullife.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-patch a7475906bc496456ded9e4b062f94067fb93057a in mainline.
+patch be8a1f7cd4501c3b4b32543577a33aee6d2193ac in mainline.
 
-pci_enable_msi() replaces the INTx irq number in pci_dev->irq with the
-new MSI irq number.
-The forcedeth driver did not update the copy in netdevice->irq and
-parts of the driver used the stale copy.
-See bugzilla.kernel.org, bug 9047.
+Turns out we don't actually check the status to see if there was a
+device out there to talk to, just if we had a timeout when doing so.
 
-The patch
-- updates netdevice->irq
-- replaces all accesses to netdevice->irq with pci_dev->irq.
+Add the proper check, so we don't falsly think there are devices
+on the bus that are not there, etc.
 
-The patch is against 2.6.23.1. IMHO suitable for both 2.6.23 and 2.6.24
-
-Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/forcedeth.c |   19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/i2c/busses/i2c-pasemi.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -987,7 +987,7 @@ static void nv_enable_irq(struct net_dev
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			enable_irq(dev->irq);
-+			enable_irq(np->pci_dev->irq);
- 	} else {
- 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
-@@ -1003,7 +1003,7 @@ static void nv_disable_irq(struct net_de
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			disable_irq(dev->irq);
-+			disable_irq(np->pci_dev->irq);
- 	} else {
- 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
-@@ -1600,7 +1600,7 @@ static void nv_do_rx_refill(unsigned lon
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			disable_irq(dev->irq);
-+			disable_irq(np->pci_dev->irq);
- 	} else {
- 		disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 	}
-@@ -1618,7 +1618,7 @@ static void nv_do_rx_refill(unsigned lon
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			enable_irq(dev->irq);
-+			enable_irq(np->pci_dev->irq);
- 	} else {
- 		enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
- 	}
-@@ -3556,10 +3556,12 @@ static int nv_request_irq(struct net_dev
- 	if (ret != 0 && np->msi_flags & NV_MSI_CAPABLE) {
- 		if ((ret = pci_enable_msi(np->pci_dev)) == 0) {
- 			np->msi_flags |= NV_MSI_ENABLED;
-+			dev->irq = np->pci_dev->irq;
- 			if (request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev) != 0) {
- 				printk(KERN_INFO "forcedeth: request_irq failed %d\n", ret);
- 				pci_disable_msi(np->pci_dev);
- 				np->msi_flags &= ~NV_MSI_ENABLED;
-+				dev->irq = np->pci_dev->irq;
- 				goto out_err;
- 			}
+--- a/drivers/i2c/busses/i2c-pasemi.c
++++ b/drivers/i2c/busses/i2c-pasemi.c
+@@ -51,6 +51,7 @@ struct pasemi_smbus {
+ #define MRXFIFO_DATA_M	0x000000ff
  
-@@ -3622,7 +3624,7 @@ static void nv_do_nic_poll(unsigned long
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			disable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			disable_irq_lockdep(dev->irq);
-+			disable_irq_lockdep(np->pci_dev->irq);
- 		mask = np->irqmask;
- 	} else {
- 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
-@@ -3640,6 +3642,8 @@ static void nv_do_nic_poll(unsigned long
- 	}
- 	np->nic_poll_irq = 0;
+ #define SMSTA_XEN	0x08000000
++#define SMSTA_MTN	0x00200000
  
-+	/* disable_irq() contains synchronize_irq, thus no irq handler can run now */
+ #define CTL_MRR		0x00000400
+ #define CTL_MTR		0x00000200
+@@ -98,6 +99,10 @@ static unsigned int pasemi_smb_waitready
+ 		status = reg_read(smbus, REG_SMSTA);
+ 	}
+ 
++	/* Got NACK? */
++	if (status & SMSTA_MTN)
++		return -ENXIO;
 +
- 	if (np->recover_error) {
- 		np->recover_error = 0;
- 		printk(KERN_INFO "forcedeth: MAC in recoverable error state\n");
-@@ -3676,7 +3680,6 @@ static void nv_do_nic_poll(unsigned long
- 		}
- 	}
- 
--	/* FIXME: Do we need synchronize_irq(dev->irq) here? */
- 
- 	writel(mask, base + NvRegIrqMask);
- 	pci_push(base);
-@@ -3689,7 +3692,7 @@ static void nv_do_nic_poll(unsigned long
- 		if (np->msi_flags & NV_MSI_X_ENABLED)
- 			enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
- 		else
--			enable_irq_lockdep(dev->irq);
-+			enable_irq_lockdep(np->pci_dev->irq);
- 	} else {
- 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
- 			nv_nic_irq_rx(0, dev);
-@@ -4943,7 +4946,7 @@ static int nv_close(struct net_device *d
- 	np->in_shutdown = 1;
- 	spin_unlock_irq(&np->lock);
- 	netif_poll_disable(dev);
--	synchronize_irq(dev->irq);
-+	synchronize_irq(np->pci_dev->irq);
- 
- 	del_timer_sync(&np->oom_kick);
- 	del_timer_sync(&np->nic_poll);
+ 	if (timeout < 0) {
+ 		dev_warn(&smbus->dev->dev, "Timeout, status 0x%08x\n", status);
+ 		reg_write(smbus, REG_SMSTA, status);
 
 -- 
