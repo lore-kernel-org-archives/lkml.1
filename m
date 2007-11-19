@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbXKSA0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbXKSBuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbXKSA0Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Nov 2007 19:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXKSA0O
+	id S1754444AbXKSBuQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Nov 2007 20:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXKSBuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Nov 2007 19:26:14 -0500
-Received: from ozlabs.org ([203.10.76.45]:57015 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbXKSA0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Nov 2007 19:26:14 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] virtio, lguest and module comment fixes
-Date: Mon, 19 Nov 2007 11:22:42 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       lguest <lguest@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711191122.42767.rusty@rustcorp.com.au>
+	Sun, 18 Nov 2007 20:50:04 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2308 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751989AbXKSBuC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Nov 2007 20:50:02 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: lkml@tlinx.org (Linda Walsh)
+Subject: Re: ConfigQ? arch=i368; AES (generic v. i586)
+Cc: linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <4740CA6D.9050507@tlinx.org>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1Itvlg-0000Ar-00@gondolin.me.apana.org.au>
+Date: Mon, 19 Nov 2007 09:49:44 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 2ffbb8377c7a0713baf6644e285adc27a5654582:
-  Linus Torvalds (1):
-        Merge branch 'master' of git://git.kernel.org/.../x86/linux-2.6-x86
+Linda Walsh <lkml@tlinx.org> wrote:
+> There are two options for AES cipher algorithms under
+> the Cryptographic API.  They read:
+> _ AES Cipher algorithms
+> _ AES Cipher algorithms (i586)
+> ---
+> 
+> I assume(?) the i586 is for pentiums of some nature -- but is
+> that any machine pentium(i586) or "newer"(686, P4, Core2, Centrino?).
 
-are available in the git repository at:
+It's optimised for Pentium and above but should work even on
+a 386.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus master
+> If both options are selected (mod or compiled in), will the
+> loading of the AES cipher automatically select the better choice?
 
-Matti Linnanvuori (1):
-      module: fix and elaborate comments
+Yes.
 
-Rusty Russell (3):
-      lguest: Fix uninitialized members in example launcher
-      virtio: fix module/device unloading
-      virtio: fix net driver loop case where we fail to restart
-
- Documentation/lguest/lguest.c  |    9 ++++++---
- drivers/block/virtio_blk.c     |   10 +++++++---
- drivers/lguest/lguest_device.c |    2 ++
- drivers/net/virtio_net.c       |   12 ++++++++----
- drivers/virtio/virtio.c        |   13 +++++++++++++
- kernel/module.c                |    8 +++++---
- 6 files changed, 41 insertions(+), 13 deletions(-)
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
