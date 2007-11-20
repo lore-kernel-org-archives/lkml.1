@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbXKTD2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbXKTD3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757816AbXKTD2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 22:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbXKTD2g
+	id S1757991AbXKTD3U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 22:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbXKTD3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 22:28:36 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:45340 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751527AbXKTD2g convert rfc822-to-8bit (ORCPT
+	Mon, 19 Nov 2007 22:29:09 -0500
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:36762 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755504AbXKTD3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 22:28:36 -0500
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: Pardus / KDE
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-usb-devel] linux-usb@vger created...
-Date: Tue, 20 Nov 2007 05:28:45 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20071109.734585)
-References: <20071119.144609.240248721.davem@davemloft.net> <20071119.191334.50627421.davem@davemloft.net> <200711191926.03108.david-b@pacbell.net>
-In-Reply-To: <200711191926.03108.david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Mon, 19 Nov 2007 22:29:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAErjQUdMROHU/2dsb2JhbACBW48G
+Date: Mon, 19 Nov 2007 22:29:04 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 45/45] Modules: Hack to handle symbols that have a zero
+	value
+Message-ID: <20071120032904.GB21743@Krystal>
+References: <20071120011132.143632442@sgi.com> <20071120011342.426906810@sgi.com> <20071120022007.GA16899@Krystal> <Pine.LNX.4.64.0711191849180.21479@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711200528.45180.ismail@pardus.org.tr>
+In-Reply-To: <Pine.LNX.4.64.0711191849180.21479@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:19:14 up 16 days,  8:24,  3 users,  load average: 0.57, 0.69,
+	0.99
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tuesday 20 November 2007 Tarihinde 05:26:02 yazmıştınız:
-> On Monday 19 November 2007, David Miller wrote:
-> > From: Greg KH <greg@kroah.com>
-> > Date: Mon, 19 Nov 2007 19:12:32 -0800
-> >
-> > > Actually, if we are going to stick with this new list, can we just call
-> > > it "linux-usb@vger.kernel.org" instead of the "-devel" stuff?
-> >
-> > Done.
->
-> Subscribe/unsubscribe ... how?
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 19 Nov 2007, Mathieu Desnoyers wrote:
+> 
+> > * clameter@sgi.com (clameter@sgi.com) wrote:
+> > > The module subsystem cannot handle symbols that are zero. It prints out
+> > > a message that these symbols are unresolved. Define a constant
+> > > 
+> > > UNRESOLVED
+> > > 
+> > > that is used to hold the value used for unresolved symbols. Set it to 1
+> > > (its hopefully unlikely that a symbol will have the value 1). This is necessary
+> > > so that the pda variable which is placed at offset 0 of the per cpu
+> > > segment is handled correctly.
+> > > 
+> > 
+> > Wouldn't it be better to simply return a standard ERR_PTR(-ENO....) ?
+> 
+> Good idea. But can you guarantee that this wont clash with an address?
+> 
 
-See http://vger.kernel.org/majordomo-info.html#subscription
+linux/err.h assumes that the last page of the address space is never
+ever used. Is that a correct assumption ?
 
 -- 
-Faith is believing what you know isn't so -- Mark Twain
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
