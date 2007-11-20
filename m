@@ -1,121 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbXKTROt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbXKTRPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761530AbXKTROt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 12:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbXKTROh
+	id S1761638AbXKTRPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 12:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758588AbXKTRO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 12:14:37 -0500
-Received: from mga01.intel.com ([192.55.52.88]:46704 "EHLO mga01.intel.com"
+	Tue, 20 Nov 2007 12:14:58 -0500
+Received: from the.earth.li ([193.201.200.66]:42147 "EHLO the.earth.li"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760062AbXKTROg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 12:14:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,442,1188802800"; 
-   d="scan'208";a="395032845"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1754496AbXKTRO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 12:14:57 -0500
+Date: Tue, 20 Nov 2007 09:14:55 -0800
+From: Jonathan McDowell <noodles@earth.li>
+To: James Smart <James.Smart@Emulex.Com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, Matt_Domsch@dell.com
+Subject: Re: [PATCH] Unify sysfs filenames for firmware version
+Message-ID: <20071120171454.GH31112@earth.li>
+References: <20071120133824.GD31112@earth.li> <47430CCE.50701@emulex.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [E1000-devel] [PATCH] e100: free IRQ to remove warning whenrebooting
-Date: Tue, 20 Nov 2007 09:11:38 -0800
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5203D28BC3@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20071120053044.GE29070@cse.unsw.EDU.AU>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [E1000-devel] [PATCH] e100: free IRQ to remove warning whenrebooting
-Thread-Index: AcgrNrLnJRHtIWvgS+aTe/qZZO1k4AAYLh8w
-References: <20071120053044.GE29070@cse.unsw.EDU.AU>
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Ian Wienand" <ianw@gelato.unsw.edu.au>
-Cc: <linux-kernel@vger.kernel.org>,
-       "netdev mailing list" <netdev@vger.kernel.org>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       <e1000-devel@lists.sourceforge.net>
-X-OriginalArrivalTime: 20 Nov 2007 17:11:39.0557 (UTC) FILETIME=[6A201550:01C82B98]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47430CCE.50701@emulex.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<forwarding whole message for netdev to review>
+On Tue, Nov 20, 2007 at 11:35:26AM -0500, James Smart wrote:
+> The hearburn I have with these patches is that you are changing
+> driver-specific attributes, not common ones as enforced/requested by a
+> subsystem. As such, you are breaking a management interface for
+> existing tools/scripts.
 
-Ian Wienand wrote:
-> Hi,
-> 
-> When rebooting today I got
-> 
-> Will now restart.
-> ACPI: PCI interrupt for device 0000:00:03.0 disabled
-> GSI 20 (level, low) -> CPU 1 (0x0100) vector 53 unregistered
-> Destroying IRQ53 without calling free_irq
-> WARNING: at
-> /home/insecure/ianw/programs/git-kernel/linux-2.6/kernel/irq/chip.c:76
-> dynamic_irq_cleanup()  
-> 
-> Call Trace:
->  [<a000000100014340>] show_stack+0x40/0xa0
->                                 sp=e00000407c927b40
->  bsp=e00000407c920eb8 [<a0000001000143d0>] dump_stack+0x30/0x60
->                                 sp=e00000407c927d10
->  bsp=e00000407c920ea0 [<a0000001000e58e0>]
->                                 dynamic_irq_cleanup+0x160/0x1e0
->  sp=e00000407c927d10 bsp=e00000407c920e70 [<a0000001000106b0>]
->                                 destroy_and_reserve_irq+0x30/0xc0
->  sp=e00000407c927d10 bsp=e00000407c920e40 [<a0000001000508f0>]
->                                 iosapic_unregister_intr+0x5b0/0x5e0
->  sp=e00000407c927d10 bsp=e00000407c920dd8 [<a00000010000aa70>]
->                                 acpi_unregister_gsi+0x30/0x60
->  sp=e00000407c927d10 bsp=e00000407c920db8 [<a00000010042e300>]
->                                 acpi_pci_irq_disable+0x140/0x160
->  sp=e00000407c927d10 bsp=e00000407c920d88 [<a000000100774200>]
->                                 pcibios_disable_device+0xa0/0xc0
->  sp=e00000407c927d20 bsp=e00000407c920d68 [<a0000001003778d0>]
->                                 pci_disable_device+0x130/0x160
->  sp=e00000407c927d20 bsp=e00000407c920d38 [<a000000100525d20>]
->                                 e100_shutdown+0x1c0/0x220
->  sp=e00000407c927d30 bsp=e00000407c920d08 [<a00000010037d0e0>]
->                                 pci_device_shutdown+0x80/0xc0
->  sp=e00000407c927d30 bsp=e00000407c920ce8 [<a0000001004ecb70>]
->                                 device_shutdown+0xf0/0x180
->  sp=e00000407c927d30 bsp=e00000407c920cc8 [<a0000001000ac4e0>]
->                                 kernel_restart+0x60/0x120
->  sp=e00000407c927d30 bsp=e00000407c920ca8 [<a0000001000ac990>]
->                                 sys_reboot+0x3b0/0x480
->  sp=e00000407c927d30 bsp=e00000407c920c30 [<a00000010000b4e0>]
->                                 ia64_ret_from_syscall+0x0/0x20
->  sp=e00000407c927e30 bsp=e00000407c920c30 [<a000000000010620>]
->                                 ia64_ivt+0xffffffff00010620/0x400
-> sp=e00000407c928000 bsp=e00000407c920c30 
-> Restarting system.
-> 
-> I think the solution might be to free the IRQ before the
-> pci_device_shutdown 
+Yes, that's true. Though at present we have the heartburn that anyone
+wanting to write a script to pull out firmware revisions has to know
+exactly where every driver stores this information.
 
-I believe you are correct.  Our other drivers appear to do this
-correctly.
-
-> Signed-off-by: Ian Wienand <ianw@gelato.unsw.edu.au>
-
-Auke will add this and push it next week.
-
-Thanks!
-
+> There's been a long-standing request to create common device
+> attributes, such as fw_version, but I don't think they ever made it
+> into the kernel. Not only would the names be consistent, but the
+> location would be consistent as well.
 > 
-> ---
-> 
->  e100.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> index 3dbaec6..8ae5ac3 100644
-> --- a/drivers/net/e100.c
-> +++ b/drivers/net/e100.c
-> @@ -2782,6 +2782,7 @@ static void e100_shutdown(struct pci_dev *pdev)
->  		pci_enable_wake(pdev, PCI_D3cold, 0);
->  	}
-> 
-> +	free_irq(pdev->irq, netdev);
->  	pci_disable_device(pdev);
->  	pci_set_power_state(pdev, PCI_D3hot);
->  }
+> I'd rather you took on that work, than proceed with these patches.
+
+Do you have a pointer to previous discussion about this? A central
+device attribute does make more sense. It'd be nice to have uniform
+access to details like the driver version as well.
+ 
+> Jonathan McDowell wrote:
+> >Looking around sysfs in an attempt to pull out SCSI card firmware
+> >versions I found 5 different filenames used to store the information.
+> >Only one, fw_version, was used more than once. The patch below changes
+> >the other drivers to use this filename too.
+> >
+> >I suspect the same applies to other subsystem drivers as well. I'll look
+> >at them assuming this patch is well received.
+
+J.
+
+-- 
+You have a tendency to feel you are superior to most computers.
+This .sig brought to you by the letter U and the number 25
+Product of the Republic of HuggieTag
