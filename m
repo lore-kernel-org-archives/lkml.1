@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbXKTF0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbXKTF3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758331AbXKTF0v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 00:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXKTF0k
+	id S1758233AbXKTF3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 00:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbXKTF3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 00:26:40 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51702
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752611AbXKTF0j (ORCPT
+	Tue, 20 Nov 2007 00:29:04 -0500
+Received: from ro-out-1112.google.com ([72.14.202.182]:24882 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753938AbXKTF3C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 00:26:39 -0500
-Date: Mon, 19 Nov 2007 21:26:39 -0800 (PST)
-Message-Id: <20071119.212639.217993660.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: david-b@pacbell.net, randy.dunlap@oracle.com, toralf.foerster@gmx.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
- `usbnet_set_settings':
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071108033010.GF26163@stusta.de>
-References: <200711071434.52607.david-b@pacbell.net>
-	<20071107225232.GB26163@stusta.de>
-	<20071108033010.GF26163@stusta.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 00:29:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=WJ6RqY7MvDk46C8xKU9EJeyW74I8yrGKL67M3kU8QHeQI1hnnlH+U+4a05qTJQEbijostcpLdvI+mMBukRYCxiZL05r50rn4MFarhnDJzGI95hCHy8EJeV5RGGvpk1AH8R0mwGQMrClnI6uWgGe7ms82thUcNWF5JizA0s7Oliw=
+Date: Tue, 20 Nov 2007 13:26:25 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] Keep UML Kconfig in sync with x86
+Message-ID: <20071120052625.GF2472@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20071119190224.GA7723@c2.user-mode-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071119190224.GA7723@c2.user-mode-linux.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Thu, 8 Nov 2007 04:30:10 +0100
+On Mon, Nov 19, 2007 at 02:02:24PM -0500, Jeff Dike wrote:
+>Fix a 2.6.24-rc3 UML build breakage introduced by commit
+>1032c0ba9da5c5b53173ad2dcf8b2a2da78f8b17 - it introduces X86_32, with
+>many things which UML needs depending on it.
+>
+>This patch adds definitions of X86_32 and RWSEM_XCHGADD_ALGORITHM to
+>the UML/i386 Kconfig.
+>
+>Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 
-> @davem:
-> 
-> Please look at net/ipv4/arp.c:arp_process()
-> 
-> Am I right that CONFIG_NET_ETHERNET=n and CONFIG_NETDEV_1000=y or 
-> CONFIG_NETDEV_10000=y will not be handled correctly there?
-> 
-> And the best solution is to nuke all #ifdef's in this function and make 
-> the code unconditionally available?
+Tested-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-I think removing those specific ifdefs in arp_process()
-is the best option, yes.
+Thanks, Jeff. With this and that patch[1], uml building works fine. ;)
+
+[1] http://lkml.org/lkml/2007/11/15/231
+
