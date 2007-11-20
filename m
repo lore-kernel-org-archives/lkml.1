@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbXKTXv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765079AbXKTXwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761714AbXKTXv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763620AbXKTXvo
+	id S1765079AbXKTXwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764965AbXKTXvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:51:44 -0500
-Received: from waste.org ([66.93.16.53]:44911 "EHLO waste.org"
+	Tue, 20 Nov 2007 18:51:45 -0500
+Received: from www.tglx.de ([62.245.132.106]:50409 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760001AbXKTXvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:51:43 -0500
-Date: Tue, 20 Nov 2007 17:51:38 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: System reboot triggered by just reading a device file....!?
-Message-ID: <20071120235138.GE17536@waste.org>
-References: <2097505946@web.de>
+	id S1760782AbXKTXvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:51:44 -0500
+Date: Wed, 21 Nov 2007 00:50:44 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/18] x86 vDSO: arch/x86/vdso/vdso32
+In-Reply-To: <20071120232715.0803426F8BE@magilla.localdomain>
+Message-ID: <alpine.LFD.0.9999.0711210048020.25057@localhost.localdomain>
+References: <20071119215944.01B7C26F8BE@magilla.localdomain> <20071119220425.6002E26F8BE@magilla.localdomain> <alpine.LFD.0.9999.0711201402520.25057@localhost.localdomain> <20071120205759.3533A26F8BE@magilla.localdomain> <alpine.LFD.0.9999.0711202348470.25057@localhost.localdomain>
+ <20071120232715.0803426F8BE@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2097505946@web.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 21, 2007 at 12:06:57AM +0100, devzero@web.de wrote:
-> - be root
+On Tue, 20 Nov 2007, Roland McGrath wrote:
 
-That's your first mistake.
-
-> -  cat /dev/watchdog or dd if=/dev/watchdog of=/dev/zero bs=1 count=1 or .....
-> -  wait one minute........
+> > git format-patch -p
+> > 
+> > does the trick at least here :)
 > 
-> *reboot*!
+> Ok, I can use that in future.  I hope it still means that in the eventual
+> merged state, GIT will be aware of all the renames.
 
-And that's the defined behavior of /dev/watchdog, yes. Many years too
-late to change it.
+git does not store the "renamed/copied" info at all. That's just an
+optimization. It does not matter if you use git-mv or just apply a
+patch which does the same. git figures that out by looking at the
+changes AFAICT, but not by storing metadata which keeps track of this.
 
-> i have heard 2 opinions for now (contacted the author and also discussed on wine-devel ) that this should be expected behaviour.
-> 
-> being sysadmin quite a while, i cannot believe that (accidentally) reading a device file (being root or not - what does that matter) triggers a system reboot.
+Thanks,
 
-If /dev/watchdog can be opened by non-root, that's an installation
-error.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+	tglx
