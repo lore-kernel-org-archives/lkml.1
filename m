@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbXKTOx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759903AbXKTOxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbXKTOx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbXKTOxG
+	id S1759903AbXKTOxl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759101AbXKTOxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:53:06 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:54931 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757442AbXKTOxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:53:05 -0500
-X-Greylist: delayed 888 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 09:53:05 EST
-Date: Tue, 20 Nov 2007 15:38:04 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Auke Kok <auke-jan.h.kok@intel.com>
+	Tue, 20 Nov 2007 09:53:22 -0500
+Received: from chello089077114002.chello.pl ([89.77.114.2]:57567 "EHLO
+	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758961AbXKTOxV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 09:53:21 -0500
+Date: Tue, 20 Nov 2007 15:53:03 +0100
+From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
+To: Mikael =?UTF-8?B?U3TDpWxkYWw=?= 
+	<mikael.staldal-ingen-reklam@univits.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: e1000 driver problems
-Message-ID: <20071120143803.GA5638@ics.muni.cz>
-References: <20061017205316.25914.qmail@web83109.mail.mud.yahoo.com> <45354850.6050900@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45354850.6050900@intel.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Muni-Spam-TestIP: 147.251.54.96
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 Nov 2007 15:38:11 +0100 (CET)
+Subject: Re: Possibility to adjust the only-root-can-bind-to-port-under-1024
+ limit
+Message-ID: <20071120155303.76f234ec@astralstorm.puszkin.org>
+In-Reply-To: <4742B3A3.2050103@univits.com>
+References: <4742B3A3.2050103@univits.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/E0/R==wuB.TGhqzWimeEhxA";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--Sig_/E0/R==wuB.TGhqzWimeEhxA
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I have laptop thinkpad T61 with 82566MM Gigabit Network Connection (rev 03)
-(8086:1049). I have kernel 2.6.24-rc3. E1000E driver does not work (the card
-is not detected although it is PCI-E), with E1000 driver, it works mostly OK
-unless I force speed to 100Mbits. (ethtool -s eth0 autoneg off speed 100)
+On Tue, 20 Nov 2007 11:14:59 +0100
+Mikael St=C3=A5ldal  <mikael.staldal-ingen-reklam@univits.com> wrote:
 
-I got message about device hang:
-Nov 20 10:57:24 anubis kernel: [  212.307502] e1000: eth0: e1000_watchdog:
-10/100 speed: disabling TSO
-Nov 20 11:03:02 anubis kernel: [  242.811474]   Tx Queue             <0>
-Nov 20 11:03:02 anubis kernel: [  242.811476]   TDH                  <80>
-Nov 20 11:03:02 anubis kernel: [  242.811478]   TDT                  <81>
-Nov 20 11:03:02 anubis kernel: [  242.811480]   next_to_use          <81>
-Nov 20 11:03:02 anubis kernel: [  242.811482]   next_to_clean        <80>
-Nov 20 11:03:02 anubis kernel: [  242.811484] buffer_info[next_to_clean]
-Nov 20 11:03:02 anubis kernel: [  242.811486]   time_stamp <100079cdf>
-Nov 20 11:03:02 anubis kernel: [  242.811488]   next_to_watch        <80>
-Nov 20 11:03:02 anubis kernel: [  242.811489]   jiffies <100079e68>
-Nov 20 11:03:02 anubis kernel: [  242.811491]   next_to_watch.status <0>
-Nov 20 11:03:04 anubis kernel: [  243.000047]   Tx Queue             <0>
-Nov 20 11:03:04 anubis kernel: [  243.000049]   TDH                  <80>
-Nov 20 11:03:04 anubis kernel: [  243.000051]   TDT                  <81>
-Nov 20 11:03:04 anubis kernel: [  243.000053]   next_to_use          <81>
-and so on.
+> In Linux you have to be root in order to listen to TCP or UDP ports below=
+ 1024 (the=20
+> well-known ports). As far as I know, this limit is hardcoded in the kerne=
+l.
+>=20
+> In some cases, this limit do more harm than good, so it would be nice to =
+be able to adjust it.
 
-Is it known problem?
+The proper way to enable port <=3D 1024 binding support is adding CAP_NET_B=
+IND_SERVICE to the process capability set, e.g. by using file-system capabi=
+lities.
 
+--Sig_/E0/R==wuB.TGhqzWimeEhxA
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
--- 
-Luká¹ Hejtmánek
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+
+iD8DBQFHQvTcBlhXA0ALOYMRAmX5AJ9OFhYGm/T56Ede5UTtf35MQrlZvACcCFdA
+lm5ZDCeiKekWZQZgBfaz/ao=
+=RgpL
+-----END PGP SIGNATURE-----
+
+--Sig_/E0/R==wuB.TGhqzWimeEhxA--
