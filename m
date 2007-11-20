@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbXKTVL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764162AbXKTVMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764351AbXKTVL4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbXKTVLp
+	id S1764162AbXKTVMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:12:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758395AbXKTVMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:11:45 -0500
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:33031 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760414AbXKTVLn (ORCPT
+	Tue, 20 Nov 2007 16:12:31 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47023 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755840AbXKTVMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:11:43 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>, xiyou.wangcong@gmail.com,
-       goodmenkernel@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Is there any word about this bug in gcc ?
-References: <E1IuMnZ-0003o3-00@gondolin.me.apana.org.au>
-	<4742831F.9040408@zytor.com>
-From: Nix <nix@esperi.org.uk>
-Emacs: where editing text is like playing Paganini on a glass harmonica.
-Date: Tue, 20 Nov 2007 21:10:49 +0000
-In-Reply-To: <4742831F.9040408@zytor.com> (H. Peter Anvin's message of "20 Nov 2007 06:50:10 -0000")
-Message-ID: <877ikc1v3a.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Tue, 20 Nov 2007 16:12:30 -0500
+Date: Tue, 20 Nov 2007 13:03:15 -0800
+From: Greg KH <greg@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Javier Kohen <jkohen@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David <david@unsolicited.net>
+Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
+Message-ID: <20071120210315.GC13160@kroah.com>
+References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <473F88B0.1030309@goop.org> <20071119232252.GC3528@suse.de> <47423B26.1090607@goop.org> <20071120060525.GF20436@elte.hu> <20071120170519.GB15954@kroah.com> <20071120203919.GB10008@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=6 Fuz1=6 Fuz2=6
+Content-Disposition: inline
+In-Reply-To: <20071120203919.GB10008@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20 Nov 2007, H. Peter Anvin outgrape:
-> This one is definitely messy.  There is absolutely no way to know what
-> gcc has miscompiled.
+On Tue, Nov 20, 2007 at 09:39:19PM +0100, Ingo Molnar wrote:
+> 
+> * Greg KH <greg@kroah.com> wrote:
+> 
+> > > but we only have cpu_clock() from v2.6.23 onwards - so we should not 
+> > > apply the original patch to v2.6.22. (we should not have applied 
+> > > your patch that started the mess to begin with - but that's another 
+> > > matter.)
+> > 
+> > Well, I can easily back that one out, if that is easier than adding 2 
+> > more patches to try to fix up the mess here.
+> > 
+> > Let me know if you feel that would be best.
+> 
+> i'd leave it alone - doing that we have in essence the softlockup 
+> detector turned off. Reverting to the older version might trigger false 
+> positives that need the new stuff.
 
-Actually, since this only affects abs() calls containing multiplications
-or divisions by negative constants, you can at least make a pretty good
-guess as to its prevalence with nothing more than grep (first grep -w
-for abs, then grepping for "- *[0-9]" and filtering the rest by
-eye). (This won't catch cases of macros using abs() which are then
-called with negative constants, but it *will* catch those macros, and
-one can check the calls to such things by hand. I've done that as well.)
+Ok, I'll see if the current round of patches fix up everyone complaints
+:)
 
-I've grepped all the source on my system (1148 expanded upstream source
-tarballs or git/cvs/svn trees including the Linux kernel, most of GNOME,
-and all of KDE and X.org) and found that hits are extremely rare: not as
-rare as calls to seekdir() and telldir() :) but rare. (Quite a lot of
-things multiply by negative constants *inside* a call to abs(), but this
-should be unaffected.)
+thanks for sending these,
 
-Certain hits:
-
-./nethack/3.4.3/src/cmd.c:        else if(x < -2*abs(y))
-./nethack/3.4.3/src/cmd.c:        else if(y < -2*abs(x))
-
-Possible hits (I'm not sure what the folder would do with this: the
-extra level of brackets in the way might affect things but I don't think
-so):
-
-./libtheora/libtheora/lib/enc/pp.c:      TmpMod = 32 + QValue - 2*(abs(Src[j+Pitch]-Src[j]));
-./libtheora/libtheora/lib/enc/pp.c:      TmpMod = 32 + QValue - 2*(abs(Src[j+1]-Src[j]));
-
-./xmms/modules/projectM-0.94.20/main.c:   wave_x_temp=-2*0.4142*(abs(abs(wave_mystery)-.5)-.5);
-./xmms/modules/projectM-0.94.20/main.c:   wave_x_temp=-2*0.4142*(abs(abs(wave_mystery)-.5)-.5);
-
-
-None of these affected programs strike me as being exactly system-
-critical. I think the impact of this bug is probably survivable. :)
-
-I'd build a GCC with the patch and verify that these programs are
-compiled differently with it, but they look unimportant enough that I'm
-not really sure I care enough to do it...
-
--- 
-`Some people don't think performance issues are "real bugs", and I think 
-such people shouldn't be allowed to program.' --- Linus Torvalds
+greg k-h
