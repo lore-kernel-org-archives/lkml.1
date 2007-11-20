@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760335AbXKTNCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbXKTND0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760335AbXKTNCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 08:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbXKTNCG
+	id S1760470AbXKTND0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 08:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbXKTNDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 08:02:06 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:64815 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757386AbXKTNCF (ORCPT
+	Tue, 20 Nov 2007 08:03:18 -0500
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:37837 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751375AbXKTNDR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 08:02:05 -0500
+	Tue, 20 Nov 2007 08:03:17 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAFtpQkdMROHU/2dsb2JhbACBWw
-Date: Tue, 20 Nov 2007 08:02:01 -0500
+X-IronPort-Anti-Spam-Result: Ah4FAN1pQkdMROHU/2dsb2JhbACBWw
+Date: Tue, 20 Nov 2007 08:03:15 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: clameter@sgi.com
 Cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [rfc 19/45] cpu alloc: NFS statistics
-Message-ID: <20071120130201.GE10127@Krystal>
-References: <20071120011132.143632442@sgi.com> <20071120011336.210236732@sgi.com>
+Subject: Re: [rfc 12/45] cpu alloc: crash_notes conversion
+Message-ID: <20071120130315.GF10127@Krystal>
+References: <20071120011132.143632442@sgi.com> <20071120011334.564309282@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071120011336.210236732@sgi.com>
+In-Reply-To: <20071120011334.564309282@sgi.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:00:08 up 16 days, 18:05,  2 users,  load average: 1.57, 1.93,
-	2.33
+X-Uptime: 08:02:58 up 16 days, 18:08,  2 users,  load average: 0.51, 1.32,
+	2.03
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,70 +37,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 * clameter@sgi.com (clameter@sgi.com) wrote:
 > Signed-off-by: Christoph Lameter <clameter@sgi.com>
 > ---
->  fs/nfs/iostat.h |    8 ++++----
->  fs/nfs/super.c  |    2 +-
->  2 files changed, 5 insertions(+), 5 deletions(-)
+>  arch/ia64/kernel/crash.c |    2 +-
+>  drivers/base/cpu.c       |    2 +-
+>  kernel/kexec.c           |    4 ++--
+>  3 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> Index: linux-2.6/fs/nfs/iostat.h
+> Index: linux-2.6/arch/ia64/kernel/crash.c
 > ===================================================================
-> --- linux-2.6.orig/fs/nfs/iostat.h	2007-11-15 21:17:24.391404458 -0800
-> +++ linux-2.6/fs/nfs/iostat.h	2007-11-15 21:25:33.167654066 -0800
-> @@ -123,7 +123,7 @@ static inline void nfs_inc_server_stats(
->  	int cpu;
+> --- linux-2.6.orig/arch/ia64/kernel/crash.c	2007-11-15 21:18:10.647904573 -0800
+> +++ linux-2.6/arch/ia64/kernel/crash.c	2007-11-15 21:25:29.423155123 -0800
+> @@ -71,7 +71,7 @@ crash_save_this_cpu(void)
+>  	dst[46] = (unsigned long)ia64_rse_skip_regs((unsigned long *)dst[46],
+>  			sof - sol);
 >  
->  	cpu = get_cpu();
-> -	iostats = per_cpu_ptr(server->io_stats, cpu);
-> +	iostats = CPU_PTR(server->io_stats, cpu);
->  	iostats->events[stat] ++;
-
-Is there a way to change this into a CPU_ADD ?
-
->  	put_cpu_no_resched();
-
-Why put_cpu_no_resched here ?
-
->  }
-> @@ -139,7 +139,7 @@ static inline void nfs_add_server_stats(
->  	int cpu;
->  
->  	cpu = get_cpu();
-> -	iostats = per_cpu_ptr(server->io_stats, cpu);
-> +	iostats = CPU_PTR(server->io_stats, cpu);
->  	iostats->bytes[stat] += addend;
->  	put_cpu_no_resched();
-
-Why put_cpu_no_resched here ?
-
->  }
-> @@ -151,13 +151,13 @@ static inline void nfs_add_stats(struct 
->  
->  static inline struct nfs_iostats *nfs_alloc_iostats(void)
->  {
-> -	return alloc_percpu(struct nfs_iostats);
-> +	return CPU_ALLOC(struct nfs_iostats, GFP_KERNEL | __GFP_ZERO);
->  }
->  
->  static inline void nfs_free_iostats(struct nfs_iostats *stats)
->  {
->  	if (stats != NULL)
-> -		free_percpu(stats);
-> +		CPU_FREE(stats);
->  }
->  
->  #endif
-> Index: linux-2.6/fs/nfs/super.c
+> -	buf = (u64 *) per_cpu_ptr(crash_notes, cpu);
+> +	buf = (u64 *) CPU_PTR(crash_notes, cpu);
+>  	if (!buf)
+>  		return;
+>  	buf = append_elf_note(buf, KEXEC_CORE_NOTE_NAME, NT_PRSTATUS, prstatus,
+> Index: linux-2.6/drivers/base/cpu.c
 > ===================================================================
-> --- linux-2.6.orig/fs/nfs/super.c	2007-11-15 21:17:24.399404478 -0800
-> +++ linux-2.6/fs/nfs/super.c	2007-11-15 21:25:33.171654143 -0800
-> @@ -529,7 +529,7 @@ static int nfs_show_stats(struct seq_fil
->  		struct nfs_iostats *stats;
->  
->  		preempt_disable();
-> -		stats = per_cpu_ptr(nfss->io_stats, cpu);
-> +		stats = CPU_PTR(nfss->io_stats, cpu);
->  
->  		for (i = 0; i < __NFSIOS_COUNTSMAX; i++)
->  			totals.events[i] += stats->events[i];
+> --- linux-2.6.orig/drivers/base/cpu.c	2007-11-15 21:18:10.655904442 -0800
+> +++ linux-2.6/drivers/base/cpu.c	2007-11-15 21:25:29.423155123 -0800
+> @@ -95,7 +95,7 @@ static ssize_t show_crash_notes(struct s
+>  	 * boot up and this data does not change there after. Hence this
+>  	 * operation should be safe. No locking required.
+>  	 */
+> -	addr = __pa(per_cpu_ptr(crash_notes, cpunum));
+> +	addr = __pa(CPU_PTR(crash_notes, cpunum));
+>  	rc = sprintf(buf, "%Lx\n", addr);
+>  	return rc;
+>  }
+> Index: linux-2.6/kernel/kexec.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/kexec.c	2007-11-15 21:18:10.663904549 -0800
+> +++ linux-2.6/kernel/kexec.c	2007-11-15 21:25:29.423155123 -0800
+> @@ -1122,7 +1122,7 @@ void crash_save_cpu(struct pt_regs *regs
+>  	 * squirrelled away.  ELF notes happen to provide
+>  	 * all of that, so there is no need to invent something new.
+>  	 */
+> -	buf = (u32*)per_cpu_ptr(crash_notes, cpu);
+> +	buf = (u32*)CPU_PTR(crash_notes, cpu);
+
+Nitpick : (u32 *)
+
+>  	if (!buf)
+>  		return;
+>  	memset(&prstatus, 0, sizeof(prstatus));
+> @@ -1136,7 +1136,7 @@ void crash_save_cpu(struct pt_regs *regs
+>  static int __init crash_notes_memory_init(void)
+>  {
+>  	/* Allocate memory for saving cpu registers. */
+> -	crash_notes = alloc_percpu(note_buf_t);
+> +	crash_notes = CPU_ALLOC(note_buf_t, GFP_KERNEL|__GFP_ZERO);
+>  	if (!crash_notes) {
+>  		printk("Kexec: Memory allocation for saving cpu register"
+>  		" states failed\n");
 > 
 > -- 
 
