@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbXKTDal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXKTDbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbXKTDal (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 22:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXKTDad
+	id S1758269AbXKTDbM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 22:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbXKTDa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 22:30:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:37285 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752872AbXKTDad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 22:30:33 -0500
-From: Andi Kleen <ak@suse.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [rfc 00/45] [RFC] CPU ops and a rework of per cpu data handling on x86_64
-Date: Tue, 20 Nov 2007 04:25:34 +0100
-User-Agent: KMail/1.9.1
-Cc: clameter@sgi.com, akpm@linux-foundation.org, travis@sgi.com,
-       mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
-References: <20071120011132.143632442@sgi.com> <20071119.175116.55102316.davem@davemloft.net>
-In-Reply-To: <20071119.175116.55102316.davem@davemloft.net>
+	Mon, 19 Nov 2007 22:30:57 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43278 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752701AbXKTDa4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 22:30:56 -0500
+Date: Mon, 19 Nov 2007 19:30:55 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 03/45] Generic CPU operations: Core piece
+In-Reply-To: <20071120031751.GA21743@Krystal>
+Message-ID: <Pine.LNX.4.64.0711191927510.21689@schroedinger.engr.sgi.com>
+References: <20071120011132.143632442@sgi.com> <20071120011332.415903723@sgi.com>
+ <20071120031751.GA21743@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711200425.34849.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 Nov 2007, Mathieu Desnoyers wrote:
 
-> Although we have a per-cpu area base in a fixed global register
-> for addressing, the above isn't beneficial on sparc64 because
-> the atomic is much slower than doing a:
->
-> 	local_irq_disable();
-> 	nonatomic_percpu_memory_op();
-> 	local_irq_enable();
+> 
+> Very interesting patch! I did not expect we could mix local atomic ops
+> with per CPU offsets in an atomic manner.. brilliant :)
+> 
+> Some nitpicking follows...
 
-Again might be pointing out the obvious, but you 
-need of course save_flags()/restore_flags(), not disable/enable().
+Well this is a draft so I was not that thorough. The beast is getting too 
+big. It would be good if I could get the first patches merged that just 
+deal with the two allocators and then gradually work the rest.
 
-If it was just disable/enable x86 could do it much faster too 
-and Christoph probably would never felt the need to approach
-this project for his SLUB fast path.
+> I think you could use extra () around old, new etc.. ?
 
--Andi
+Right.
+
+> Same here.
+> 
+> > +	(x);					\
+> 
+> () seems unneeded here, since x is local.
+
+But (x) is returned to the "caller" of the macro so it should be specially 
+marged.
+
+> > + * In that case we can simply disable preemption which
+> > + * may be free if the kernel is compiled without preemption.
+> > + */
+> > +
+> > +#define _CPU_READ(addr)				\
+> > +({						\
+> > +	(__CPU_READ(addr));			\
+> > +})
+> 
+> ({ }) seems to be unneeded here.
+
+Hmmm.... I wanted a consistent style.
+
