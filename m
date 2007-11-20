@@ -1,72 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761911AbXKTUCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbXKTUC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761911AbXKTUCb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758854AbXKTUCW
+	id S1762176AbXKTUC5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758854AbXKTUCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:02:22 -0500
-Received: from the.earth.li ([193.201.200.66]:35750 "EHLO the.earth.li"
+	Tue, 20 Nov 2007 15:02:45 -0500
+Received: from rtr.ca ([76.10.145.34]:2865 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758368AbXKTUCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:02:21 -0500
-Date: Tue, 20 Nov 2007 12:02:16 -0800
-From: Jonathan McDowell <noodles@earth.li>
-To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-Cc: James Smart <James.Smart@Emulex.Com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Matt_Domsch@dell.com
-Subject: Re: [PATCH] Unify sysfs filenames for firmware version
-Message-ID: <20071120200212.GI31112@earth.li>
-References: <20071120133824.GD31112@earth.li> <47430CCE.50701@emulex.com> <20071120171454.GH31112@earth.li> <AE4F746F2AECFC4DA4AADD66A1DFEF01FEAC9B@otce2k301.adaptec.com>
+	id S1761946AbXKTUCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:02:44 -0500
+Message-ID: <47433D63.5080806@rtr.ca>
+Date: Tue, 20 Nov 2007 15:02:43 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01FEAC9B@otce2k301.adaptec.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+References: <47425EA5.7000607@rtr.ca>	<200711201837.39664.nickpiggin@yahoo.com.au>	<20071120064747.2a8036cd@laptopd505.fenrus.org>	<200711210243.46944.nickpiggin@yahoo.com.au> <20071120110726.4cc2995e@laptopd505.fenrus.org>
+In-Reply-To: <20071120110726.4cc2995e@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 12:49:49PM -0500, Salyzyn, Mark wrote:
-> Jonathan McDowell sez:
-> > On Tue, Nov 20, 2007 at 11:35:26AM -0500, James Smart wrote:
-> > > The hearburn I have with these patches is that you are changing
-> > > driver-specific attributes, not common ones as enforced/requested
-> > > by a subsystem. As such, you are breaking a management interface
-> > > for existing tools/scripts.
-> > Yes, that's true. Though at present we have the heartburn that
-> > anyone wanting to write a script to pull out firmware revisions has
-> > to know exactly where every driver stores this information.
+Arjan van de Ven wrote:
+> On Wed, 21 Nov 2007 02:43:46 +1100
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> The aacraid cards, which uses hba_monitor_version, hba_kernel_version
-> and hba_bios_version for each piece does not fit into the single
-> 'firmware revision' common ideal and were noticeably missing from this
-> patch set.
+>> On Wednesday 21 November 2007 01:47, Arjan van de Ven wrote:
+>>> On Tue, 20 Nov 2007 18:37:39 +1100
+>>>
+>>> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+>>>>> actually.... no. IRQ balancing is not a "fast" decision; every
+>>>>> time you
+>>>> I didn't say anything of the sort. But IRQ load could still
+>>>> fluctuate a lot more rapidly than we'd like to wake up the
+>>>> irqbalancer.
+>>> irq load fluctuates by definition. but acting on it faster isn't the
+>>> right thing.
+>> Of course it is, if you want to effectively use your resources.
+>> Imagine if the task balancer only polled once every 10s.
+> 
+> but unlike the task balancer, moving an irq is really expensive.
+> (at least for networking and a few other similar systems)
+> ANd no it's not just the cache bouncing, it's the entire reassembly of
+> multiple packets etc etc that gets really messy.
+> 
+> 
+>>> I assume you've read what/how irqbalance does; good luck convincing
+>>> people that that kind of policy belongs in the kernel.
+>> Lots of code to get topology and device information.
+> 
+> yes this would go away in the kernel
+> 
+>> Some constants
+>> that make assumptions about the machine it is running on and may or
+>> may not agree with what the task scheduler is trying to do.
+> 
+>> Some
+>> classification stuff which makes guesses about how a particular bit of
+> 
+> you misunderstood this; the classification stuff is there to spread
+> different irqs of similar class (say networking) over multiple
+> cores/packages. Doing this is a system resource balancing proposition
+> not just a cpu time one. 
+> 
+> You may think this spreading based on classification is a mistake, but
+> it's based on the following observation: 
+> 1) servers with multiple network cards serving internet traffic out
+> really need to load balance their loads; this is for various per-cpu
+> resource reasons (such as per cpu memory pools) to be evenly used. It
+> also makes sure that under network spikes on both interfaces, the
+> response is sane
+> 2) servers with multiple IO devices need this to be spread out, just
+> think of oracle etc.
+> 
+> for both you could argue "but we could balance this based on actual
+> observed load in some way", but you can only do that if you rebalance
+> at a relatively high frequency, which you really don't want to do for
+> networking and probably even storage.
+> 
+> We used to rebalance this frequently in the 2.4-early kernels based on
+> a patch from Ingo. Turned out to be a really really bad idea;
+> performance really tanked.
+> 
+>> hardware or device driver wants to be balanced. Hacks to poll
+>> hotplugging and topology changes.
+> 
+> "hacks" as in "rescan".. so falls under the topology code and would
+> indeed be changed to hook into hotplug inside the kernel; just
+> different complexity.
+> 
+>> I'm still convinced. Who isn't?
+> 
+> I know you can do SOME sort of balancing in the kernel. But please
+> describe the algorithm you would use; I started out with the same
+> thought but when it got down to the algorithm to me at least it became
+> clear "we really don't want this complexity in kernel mode".
+..
 
-I mainly looked for mentions of "firmware" to try and work out which
-drivers were exporting this information in a single file. While I've
-used the aacraid cards in the past I think I agree with you that no 1 of
-those 3 pieces of information represents the firmware. Perhaps it could
-export a triplet though?
+Well, for my dualCore notebook, dualCore MythTV box, and QuadCore desktop,
+the behaviour of the existing, working, 32-bit kernel IRQBALANCE code
+outperforms the userspace utility.
 
-> Fortunately (?), Adaptec has not bought into using sysfs for their
-> management applications to pull these pieces and continues to pick
-> them up directly by issuing ioctl pass-through calls to the card's
-> firmware, so we have some leeway to change them to mold to a
-> developing standard.  The fact that sysfs is a developing standard
-> will confirm the management application folks reasoning for shying
-> away from sysfs ;-/
+Mostly, I suspect, due to it's much faster response to changing conditions.
+That's something the external one could try to match, but at present it
+seems tuned specifically for high-traffic network servers, not for the
+average notebook or desktop.
 
-Management stuff always seems to be tied to a single card. It's one of
-the things that puts me off hardware RAID. It would really rock if we
-could get as much as possible exported in the same fashion across cards,
-rather than having to cope with each individually (though I accept that
-accessing all details/features will probably always require some custom
-card knowledge).
-
-Do the management folks actually have some ideas about what sort of
-interface they'd like in sysfs?
-
-J.
-
--- 
-If I save time, when do I get it back?
+Cheers
