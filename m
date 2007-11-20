@@ -1,64 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXKTOtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbXKTOus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbXKTOtL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXKTOs5
+	id S1759350AbXKTOus (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXKTOul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:48:57 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:60220 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753344AbXKTOs4 (ORCPT
+	Tue, 20 Nov 2007 09:50:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41430 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755583AbXKTOuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:48:56 -0500
-Date: Tue, 20 Nov 2007 20:18:52 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com
-Subject: [PATCH] mm snapshot broken-out-2007-11-20-01-45 Build Failure arch/x86/kernel/pci-gart_64.c
-Message-ID: <20071120144852.GC4438@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 20 Nov 2007 09:50:40 -0500
+Date: Tue, 20 Nov 2007 06:47:47 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+Message-ID: <20071120064747.2a8036cd@laptopd505.fenrus.org>
+In-Reply-To: <200711201837.39664.nickpiggin@yahoo.com.au>
+References: <47425EA5.7000607@rtr.ca>
+	<200711201517.16171.nickpiggin@yahoo.com.au>
+	<20071119213727.16d5917b@laptopd505.fenrus.org>
+	<200711201837.39664.nickpiggin@yahoo.com.au>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Tue, 20 Nov 2007 18:37:39 +1100
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > actually.... no. IRQ balancing is not a "fast" decision; every time
+> > you
+> 
+> I didn't say anything of the sort. But IRQ load could still fluctuate
+> a lot more rapidly than we'd like to wake up the irqbalancer.
 
-The kernel build fails, with foloowing message,
+irq load fluctuates by definition. but acting on it faster isn't the
+right thing.
+> 
+> 
+> > move an interrupt around, you end up causing a really a TON of cache
+> > line bounces, and generally really bad performance
+> 
+> All the more reason why the kernel should do it. When I say move it to
+> the kernel, I don't mean because I want to move IRQs 1 000 000 times
+> per second and can't sustain enough context switches to do it in
+> userspace. Userspace basically has insufficient information to do it
+> as well as kernel.
 
-  CC      arch/x86/kernel/pci-gart_64.o
-arch/x86/kernel/pci-gart_64.c: In function ‘gart_map_sg’:
-arch/x86/kernel/pci-gart_64.c:421: error: redeclaration of ‘s’ with no linkage
-arch/x86/kernel/pci-gart_64.c:416: error: previous declaration of ‘s’was here
-arch/x86/kernel/pci-gart_64.c:421: error: redeclaration of ‘ps’ with no linkage
-arch/x86/kernel/pci-gart_64.c:416: error: previous declaration of ‘ps’ was here
-arch/x86/kernel/pci-gart_64.c:421: error: redeclaration of ‘start_sg’with no linkage
-arch/x86/kernel/pci-gart_64.c:416: error: previous declaration of ‘start_sg’ was here
-arch/x86/kernel/pci-gart_64.c:421: error: redeclaration of ‘sgmap’ with no linkage
-arch/x86/kernel/pci-gart_64.c:416: error: previous declaration of ‘sgmap’ was here
-make[1]: *** [arch/x86/kernel/pci-gart_64.o] Error 1
-make: *** [arch/x86/kernel] Error 2
+like what?
+Assuming this is a "once every few seconds" decision (and really it is,
+esp for networking)....
+> 
+> 
+> > (esp if you do it 
+> > for networking ones, since you destroy the packet reassembly stuff
+> > in the tcp/ip stack).
+> >
+> > Instead, what ends up working is if you do high level categories of
+> > interrupt classes and balance within those (so that no 2 networking
+> > irqs are on the same core/package unless you have more nics than
+> > cores)
+> 
+> Sure, but you say that like it is difficult information for the kernel
+> to know about. Actually it is much easier. Note that you can still
+> bind interrupts to specific CPUs.
 
-This is caused by the git-x86-fixup.patch.
+I assume you've read what/how irqbalance does; good luck convincing
+people that that kind of policy belongs in the kernel.
+> 
+> 
+> > etc. Balancing on a 10 second scale seems to work quite well; no
+> > need to pull that complexity into the kernel....
+> 
+> My perspective is that it isn't a good idea to have such a critical
+> piece of infrastructure outside the kernel.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
+kernel or kernel source? If there was a good place in the kernel source
+I'd not be against moving irqbalance there. In the kernel... not needed.
+(also because on single socket machines, the irqbalancer basically has
+a one-shot task because there balancing is effectively a static setup)
 
---- linux-2.6.24-rc3/arch/x86/kernel/pci-gart_64.c	2007-11-21 00:16:23.000000000 +0530
-+++ linux-2.6.24-rc3/arch/x86/kernel/~pci-gart_64.c	2007-11-21 04:02:12.000000000 +0530
-@@ -418,7 +418,6 @@ gart_map_sg(struct device *dev, struct s
- 	unsigned long pages = 0;
- 	unsigned int seg_size;
- 	unsigned int max_seg_size;
--	struct scatterlist *s, *ps, *start_sg, *sgmap;
- 
- 	if (nents == 0)
- 		return 0;
+The same ("critical piece of infrastructure') can be said about other
+things, like udev and ... even hal. Nobody is arguing for moving those
+into the kernel though....
+
+> 
+> I want the kernel to balance interrupts and tasks fairly; 
+
+with irqthreads that will come for free soon.
+
+>maybe move
+> interrupts closer to the tasks they are interacting with (instead of,
+> or combined with our current policy of moving tasks near the
+> interrupts, which can be much more damaging for cache and NUMA);
+
+interrupts and tasks have an N:M relationship.... or sometimes 1:M
+where tasks only depend on one irq. Moving the irq around then tends to
+be a loss. For NUMA, you actually very likely want the IRQ on the node
+that the IO is associdated with.
+
+> move
+> all interrupts to a single core when there is enough capacity and we
+> are balancing for power savings; 
+
+irqbalance does that today.
+
+>do exponential interrupt balancing
+> backoff when it isn't required; etc. Not easy to do all that in
+> userspace.
+> 
+> Any reason you actually think it is a good idea, aside from the fact
+> that a userspace solution was able to be better than a crappy old
+> kernel one?
+
+I listed a few;
+1) it's policy 
+2) the memory is only needed for a short time (20 seconds or so) on
+single-socket machines
+3) it makes decisions on "subjective" information such as interrupt
+device classes that the kernel currently just doesn't have (it could
+grow that obviously), and is clearly policy information.
 
 
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
