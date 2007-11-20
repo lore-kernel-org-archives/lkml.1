@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761996AbXKTV1C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbXKTV1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761996AbXKTV1C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:27:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbXKTV0w
+	id S1763649AbXKTV1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760965AbXKTV0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:26:52 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:50491 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbXKTV0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:26:51 -0500
-Date: Tue, 20 Nov 2007 21:26:48 +0000
-From: Mel Gorman <mel@csn.ul.ie>
+	Tue, 20 Nov 2007 16:26:55 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:50006 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760104AbXKTV0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 16:26:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAC7gQkdMROHU/2dsb2JhbACBWw
+Date: Tue, 20 Nov 2007 16:26:51 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071120212647.GA18867@csn.ul.ie>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com> <20071120141953.GB32313@csn.ul.ie> <Pine.LNX.4.64.0711201217430.26419@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 19/45] cpu alloc: NFS statistics
+Message-ID: <20071120212651.GB11291@Krystal>
+References: <20071120011132.143632442@sgi.com> <20071120011336.210236732@sgi.com> <20071120130201.GE10127@Krystal> <Pine.LNX.4.64.0711201248330.26745@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711201217430.26419@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0711201248330.26745@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:24:16 up 17 days,  2:29,  6 users,  load average: 1.61, 2.06,
+	1.84
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/11/07 12:18), Christoph Lameter didst pronounce:
-> On Tue, 20 Nov 2007, Mel Gorman wrote:
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Tue, 20 Nov 2007, Mathieu Desnoyers wrote:
 > 
-> > Went back and revisited this. Allocating them at boot-time is below but
-> > essentially it is a silly and it makes sense to just have two zonelists
-> > where one of them is for __GFP_THISNODE. Implementation wise, this involves
-> > dropping the last patch in the set and the overall result is still a reduction
-> > in the number of zonelists.
+> > > Index: linux-2.6/fs/nfs/iostat.h
+> > > ===================================================================
+> > > --- linux-2.6.orig/fs/nfs/iostat.h	2007-11-15 21:17:24.391404458 -0800
+> > > +++ linux-2.6/fs/nfs/iostat.h	2007-11-15 21:25:33.167654066 -0800
+> > > @@ -123,7 +123,7 @@ static inline void nfs_inc_server_stats(
+> > >  	int cpu;
+> > >  
+> > >  	cpu = get_cpu();
+> > > -	iostats = per_cpu_ptr(server->io_stats, cpu);
+> > > +	iostats = CPU_PTR(server->io_stats, cpu);
+> > >  	iostats->events[stat] ++;
+> > 
+> > Is there a way to change this into a CPU_ADD ?
 > 
-> Allright with me. Andrew could we get this patchset merged?
+> Yes I must have missed that.
 > 
+> Could be
+> 
+> CPU_INC(server->io_stats->events[stat]);
+> 
+> > 
+> > >  	put_cpu_no_resched();
+> > 
+> > Why put_cpu_no_resched here ?
+> 
+> We do not want to reschedule here? We may have already disabled interrupts 
+> or some such thing.
 
-They will not merge cleanly with a recent tree. I expect to be ready to
-post a new set when regression tests complete later this evening.
+Well, if interrupts are disabled, then the preempt check will see it and
+won't trigger the reschedule. On the other hand, if this code is called
+when preemption is enabled, we can add important scheduler latencies by
+not checking if a resched must be done at the end of this region.
+
+So if we are so sure that interrupts are always disbled or that
+preemption is already disabled when this function is called, why do we
+disable preemption here at all ?
+
+(this is not introduced by your patch, it just happens to be how the
+code was before)
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
