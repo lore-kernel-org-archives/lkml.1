@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763116AbXKTWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbXKTWnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763116AbXKTWmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbXKTWmW
+	id S1761700AbXKTWnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760008AbXKTWnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:42:22 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40447 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbXKTWmV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:42:21 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] proc: Fix the threaded /proc/self.
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
-	<20071120215914.GE24156@elte.hu>
-Date: Tue, 20 Nov 2007 15:41:12 -0700
-In-Reply-To: <20071120215914.GE24156@elte.hu> (Ingo Molnar's message of "Tue,
-	20 Nov 2007 22:59:14 +0100")
-Message-ID: <m1k5ocr14n.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 20 Nov 2007 17:43:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51055 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755543AbXKTWnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 17:43:02 -0500
+Date: Tue, 20 Nov 2007 23:42:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Zach Brown <zach.brown@oracle.com>,
+       Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+Message-ID: <20071120224206.GB11250@elte.hu>
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <47432666.6070503@oracle.com> <474331B7.6020802@zytor.com> <20071120222227.GH24156@elte.hu> <Pine.LNX.4.64.0711201431490.15098@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711201431490.15098@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Long ago when the CLONE_THREAD support first went it someone
-thought it would be wise to point /proc/self at /proc/<tgid>
-instead of /proc/<pid>.
+* Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Given that /proc/<tgid> can return information about a very different
-task (if enough things have been unshared) then our current process
-/proc/<tgid> seems blatantly wrong.  So far I have yet to think up
-an example where the current behavior would be advantageous, and
-I can see several places where it is seriously non-intuitive.
+> > whether that interpreted syslet language survives is still an open 
+> > question - it was extremely ugly when i wrote the first version of 
+> > it and it only got uglier since then :-)
+> 
+> Aha! You admitted it finally :)
 
-We may be stuck with the current broken behavior for backwards
-compatibility reasons but lets try fixing our ancient bug for the
-2.6.25 time frame and see if anyone screams.
+damn :-)
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/proc/base.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+but if the only alternative is to be fundamentally slower, i am not 
+afraid of some ugliness :-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 34a1821..8502436 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2050,22 +2050,22 @@ static int proc_self_readlink(struct dentry *dentry, char __user *buffer,
- 			      int buflen)
- {
- 	struct pid_namespace *ns = dentry->d_sb->s_fs_info;
--	pid_t tgid = task_tgid_nr_ns(current, ns);
-+	pid_t pid = task_pid_nr_ns(current, ns);
- 	char tmp[PROC_NUMBUF];
--	if (!tgid)
-+	if (!pid)
- 		return -ENOENT;
--	sprintf(tmp, "%d", tgid);
-+	sprintf(tmp, "%d", pid);
- 	return vfs_readlink(dentry,buffer,buflen,tmp);
- }
- 
- static void *proc_self_follow_link(struct dentry *dentry, struct nameidata *nd)
- {
- 	struct pid_namespace *ns = dentry->d_sb->s_fs_info;
--	pid_t tgid = task_tgid_nr_ns(current, ns);
-+	pid_t pid = task_pid_nr_ns(current, ns);
- 	char tmp[PROC_NUMBUF];
--	if (!tgid)
-+	if (!pid)
- 		return ERR_PTR(-ENOENT);
--	sprintf(tmp, "%d", task_tgid_nr_ns(current, ns));
-+	sprintf(tmp, "%d", pid);
- 	return ERR_PTR(vfs_follow_link(nd,tmp));
- }
- 
--- 
-1.5.3.rc6.17.g1911
-
+	Ingo
