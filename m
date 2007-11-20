@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764767AbXKTWK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbXKTWQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764767AbXKTWK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbXKTWKN
+	id S1760813AbXKTWQn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbXKTWQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:10:13 -0500
-Received: from main.gmane.org ([80.91.229.2]:57645 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756875AbXKTWKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:10:11 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: trem <tremyfr@yahoo.fr>
-Subject: Re: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
-Date: Tue, 20 Nov 2007 23:09:53 +0100
-Message-ID: <47435B31.2070304@yahoo.fr>
-References: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com> <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 20 Nov 2007 17:16:32 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:54854 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756345AbXKTWQb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 17:16:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=li1fWzXRhgsLez2QKRpykmoNoH2ALMQMkedkSY9KQAx8XIdXgpY89IYb67yR8NQN7rV762LKwE9E2DCyF+e8hZmd04ccaA5/iH1PxPHaIImv9H5rdD71EOC+oUSOk/GLl8d1vuMkj1hEp6TCS77WP4hwLscmfm+yWAOhiNiYIHo=
+Message-ID: <d00698fb0711201416n30b54d26kd8d5887896d3da83@mail.gmail.com>
+Date: Tue, 20 Nov 2007 23:16:29 +0100
+From: noah <noah123@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+In-Reply-To: <20071120220512.46b9e975@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: atoulouse-256-1-136-84.w90-45.abo.wanadoo.fr
-User-Agent: Thunderbird 2.0.0.6 (X11/20071101)
-In-Reply-To: <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>
-Cc: linux-rt-users@vger.kernel.org
+Content-Disposition: inline
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com>
+	 <20071120220512.46b9e975@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Fri, 16 Nov 2007, Nelson, Shannon wrote:
->> first->async_tx.phys;
->>> -       __list_splice(&new_chain, ioat_chan->used_desc.prev);
->>> +       list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
->>>
->> NAK.
->>
->> These functions do insertions differently.  The 'prev' is pointing to
->> the last valid descriptor in the queue and you really want to get the
->> new_chain stuck on after this.  Your list_splice_tail() will insert the
->> new_chain just before it which will muck up the order of the DMA
->> requests.
->>
->> You might have more success with
->> 	list_splice_tail(&new_chain, ioat_chan->used_desc);
->> where used_desc points to the whole list, rather than using the .prev
->> pointer to a specific node.
->>
->> Please copy me on future ioatdma related comments.
->>
-> 
-> And people wonder why we post RT related patches to LKML. This is exactly
-> why!
-> 
-> Thanks for the response Shannon!
-> 
-> -- Steve
-> 
+2007/11/20, Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> >  kernel: [734344.717844] irq 21: nobody cared (try booting with the
+> > "irqpoll" option)
+> >  kernel: [734344.717866]
+>
+> Your machine decided to emit interrupt 21 without an apparent reason.
+> Whatever caused that made the kernel shut down IRQ 21 at which point the
+> disk drives on that IRQ were no longer being serviced. Everything on IRQ
+> 21 would have died - which may be why your networking failed too.
+>
+> What do you have on IRQ 21 and is this a one off ?
 
-Hi
+I've had other freezes before but this was the first time I was able
+to see what was actually going on.
+IRQ 21 appears to be shared between sata_nv and ethernet.
 
-I've tried this change, but it still don't compile. So I propose this patch.
+Does this mean my hardware/BIOS is broken somehow?
+I'm running the latest BIOS available.
 
-regards,
-trem
+# cat /proc/interrupts            CPU0       CPU1
+  0:      26497    3603163   IO-APIC-edge      timer
+  1:          0          2   IO-APIC-edge      i8042
+  8:          0          0   IO-APIC-edge      rtc
+ 9:          0          0   IO-APIC-fasteoi   acpi
+ 12:          0          6   IO-APIC-edge      i8042
+ 16:       4851     669159   IO-APIC-fasteoi   shpchp, libata
+ 20:          0          0   IO-APIC-fasteoi   sata_nv
+ 21:      36443    4775430   IO-APIC-fasteoi   sata_nv, eth0
+ 22:      31261    4531218   IO-APIC-fasteoi   ohci_hcd:usb1, sata_nv
+ 23:          4       1649   IO-APIC-fasteoi   HDA Intel, ehci_hcd:usb2
+NMI:          0          0
+LOC:    3629562    3629543
+ERR:          0
 
-------------------------
-
-Index: linux-2.6.23/drivers/dma/ioat_dma.c
-===================================================================
---- linux-2.6.23.orig/drivers/dma/ioat_dma.c
-+++ linux-2.6.23/drivers/dma/ioat_dma.c
-@@ -244,7 +244,7 @@ static dma_cookie_t ioat_tx_submit(struc
-        /* write address into NextDescriptor field of last desc in chain */
-        to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
-                                                        first->async_tx.phys;
--       __list_splice(&new_chain, ioat_chan->used_desc.prev);
-+       list_splice_tail(&new_chain, &ioat_chan->used_desc);
- 
-        ioat_chan->pending += desc_count;
-        if (ioat_chan->pending >= 4) {
-
+  -- noah
