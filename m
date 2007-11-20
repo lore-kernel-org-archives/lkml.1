@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXKTS0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761773AbXKTS1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbXKTS0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXKTSZx
+	id S1761773AbXKTS1O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:27:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbXKTS0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:25:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60123 "EHLO
+	Tue, 20 Nov 2007 13:26:00 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60131 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760639AbXKTSZv (ORCPT
+	with ESMTP id S1760887AbXKTSZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:25:51 -0500
-Date: Tue, 20 Nov 2007 10:23:11 -0800
+	Tue, 20 Nov 2007 13:25:57 -0500
+Date: Tue, 20 Nov 2007 10:23:14 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 03/29] i2c/eeprom: Hide Sony Vaio serial numbers
-Message-ID: <20071120182311.GD28611@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Geert.Uytterhoeven@sonycom.com,
+       lizf@cn.fujitsu.com
+Subject: [patch 04/29] drivers/video/ps3fb: fix memset size error
+Message-ID: <20071120182314.GE28611@kroah.com>
 References: <20071120181733.702234406@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2c-eeprom-hide-sony-vaio-serial-numbers.patch"
+Content-Disposition: inline; filename="drivers-video-ps3fb-fix-memset-size-error.patch"
 In-Reply-To: <20071120182248.GA28611@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-patch 0f2cbd38aa377e30df3b7602abed69464d1970aa in mainline.
+patch 3cc2c17700c98b0af778566b0af6292b23b01430 in mainline.
 
-The sysfs interface to DMI data takes care to not make the system
-serial number and UUID world-readable, presumably due to privacy
-concerns. For consistency, we should not let the eeprom driver
-export these same strings to the world on Sony Vaio laptops.
-Instead, only make them readable by root, as we already do for BIOS
-passwords.
+The size passing to memset is wrong.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/i2c/chips/eeprom.c |   23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
 
---- a/drivers/i2c/chips/eeprom.c
-+++ b/drivers/i2c/chips/eeprom.c
-@@ -128,13 +128,20 @@ static ssize_t eeprom_read(struct kobjec
- 	for (slice = off >> 5; slice <= (off + count - 1) >> 5; slice++)
- 		eeprom_update_client(client, slice);
+---
+ drivers/video/ps3fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -659,7 +659,7 @@ static int ps3fb_blank(int blank, struct
  
--	/* Hide Vaio security settings to regular users (16 first bytes) */
--	if (data->nature == VAIO && off < 16 && !capable(CAP_SYS_ADMIN)) {
--		size_t in_row1 = 16 - off;
--		in_row1 = min(in_row1, count);
--		memset(buf, 0, in_row1);
--		if (count - in_row1 > 0)
--			memcpy(buf + in_row1, &data->data[16], count - in_row1);
-+	/* Hide Vaio private settings to regular users:
-+	   - BIOS passwords: bytes 0x00 to 0x0f
-+	   - UUID: bytes 0x10 to 0x1f
-+	   - Serial number: 0xc0 to 0xdf */
-+	if (data->nature == VAIO && !capable(CAP_SYS_ADMIN)) {
-+		int i;
-+
-+		for (i = 0; i < count; i++) {
-+			if ((off + i <= 0x1f) ||
-+			    (off + i >= 0xc0 && off + i <= 0xdf))
-+				buf[i] = 0;
-+			else
-+				buf[i] = data->data[off + i];
-+		}
- 	} else {
- 		memcpy(buf, &data->data[off], count);
- 	}
-@@ -208,7 +215,7 @@ static int eeprom_detect(struct i2c_adap
- 
- 		if (!memcmp(name, "PCG-", 4) || !memcmp(name, "VGN-", 4)) {
- 			dev_info(&new_client->dev, "Vaio EEPROM detected, "
--				"enabling password protection\n");
-+				 "enabling privacy protection\n");
- 			data->nature = VAIO;
- 		}
- 	}
+ static int ps3fb_get_vblank(struct fb_vblank *vblank)
+ {
+-	memset(vblank, 0, sizeof(&vblank));
++	memset(vblank, 0, sizeof(*vblank));
+ 	vblank->flags = FB_VBLANK_HAVE_VSYNC;
+ 	return 0;
+ }
 
 -- 
