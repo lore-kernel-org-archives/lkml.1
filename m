@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbXKTNa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbXKTNif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbXKTNa5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 08:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbXKTNar
+	id S1756028AbXKTNif (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 08:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXKTNi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 08:30:47 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:45031 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbXKTNaq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 08:30:46 -0500
-Message-ID: <4742DFC3.80305@linux.vnet.ibm.com>
-Date: Tue, 20 Nov 2007 18:53:15 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 20 Nov 2007 08:38:26 -0500
+Received: from the.earth.li ([193.201.200.66]:57660 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbXKTNi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 08:38:26 -0500
+Date: Tue, 20 Nov 2007 05:38:24 -0800
+From: Jonathan McDowell <noodles@earth.li>
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Unify sysfs filenames for firmware version
+Message-ID: <20071120133824.GD31112@earth.li>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org, mick@madwifi.org,
-       netdev@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-11-20-01-45 Build Fail - net/wireless
- driver
-References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
-In-Reply-To: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Looking around sysfs in an attempt to pull out SCSI card firmware
+versions I found 5 different filenames used to store the information.
+Only one, fw_version, was used more than once. The patch below changes
+the other drivers to use this filename too.
 
-The kernel build fails, with following message
+I suspect the same applies to other subsystem drivers as well. I'll look
+at them assuming this patch is well received.
 
-  LD      drivers/net/wireless/built-in.o
-drivers/net/wireless/rtl8187.o: In function `rtl8225z2_rf_init':
-(.opd+0x180): multiple definition of `rtl8225z2_rf_init'
-drivers/net/wireless/rtl8180.o:(.opd+0x1b0): first defined here
-drivers/net/wireless/rtl8187.o: In function `rtl8225z2_rf_init':
-/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:571: multiple definition of `.rtl8225z2_rf_init'
-drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:561: first defined here
-ld: Warning: size of symbol `.rtl8225z2_rf_init' changed from 3836 in drivers/net/wireless/rtl8180.o to 3544 in drivers/net/wireless/rtl8187.o
-drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_set_channel':
-(.opd+0x160): multiple definition of `rtl8225_rf_set_channel'
-drivers/net/wireless/rtl8180.o:(.opd+0x1d0): first defined here
-drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_init':
-/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:329: multiple definition of `.rtl8225_rf_init'
-drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:322: first defined here
-ld: Warning: size of symbol `.rtl8225_rf_init' changed from 3492 in drivers/net/wireless/rtl8180.o to 3528 in drivers/net/wireless/rtl8187.o
-drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_stop':
-(.opd+0x190): multiple definition of `rtl8225_rf_stop'
-drivers/net/wireless/rtl8180.o:(.opd+0x1c0): first defined here
-drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_set_channel':
-/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:735: multiple definition of `.rtl8225_rf_set_channel'
-drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:753: first defined here
-ld: Warning: size of symbol `.rtl8225_rf_set_channel' changed from 360 in drivers/net/wireless/rtl8180.o to 136 in drivers/net/wireless/rtl8187.o
-drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_init':
-(.opd+0x170): multiple definition of `rtl8225_rf_init'
-drivers/net/wireless/rtl8180.o:(.opd+0x1a0): first defined here
-drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_stop':
-/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:719: multiple definition of `.rtl8225_rf_stop'
-drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:736: first defined here
-ld: Warning: size of symbol `.rtl8225_rf_stop' changed from 244 in drivers/net/wireless/rtl8180.o to 632 in drivers/net/wireless/rtl8187.o
-make[3]: *** [drivers/net/wireless/built-in.o] Error 1
-make[2]: *** [drivers/net/wireless] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+Signed-Off-By: Jonathan McDowell <noodles@earth.li>
 
-The patch causing this build failure, might be git-wireless.patch.
+-----
+diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
+index 626bb3c..ae80d04 100644
+--- a/drivers/message/fusion/mptscsih.c
++++ b/drivers/message/fusion/mptscsih.c
+@@ -3307,7 +3307,7 @@ mptscsih_version_fw_show(struct class_device *cdev, char *buf)
+ 	    (ioc->facts.FWVersion.Word & 0x0000FF00) >> 8,
+ 	    ioc->facts.FWVersion.Word & 0x000000FF);
+ }
+-static CLASS_DEVICE_ATTR(version_fw, S_IRUGO, mptscsih_version_fw_show, NULL);
++static CLASS_DEVICE_ATTR(fw_version, S_IRUGO, mptscsih_version_fw_show, NULL);
+ 
+ static ssize_t
+ mptscsih_version_bios_show(struct class_device *cdev, char *buf)
+diff --git a/drivers/scsi/arcmsr/arcmsr_attr.c b/drivers/scsi/arcmsr/arcmsr_attr.c
+index 7d7b0a5..646f24c 100644
+--- a/drivers/scsi/arcmsr/arcmsr_attr.c
++++ b/drivers/scsi/arcmsr/arcmsr_attr.c
+@@ -352,7 +352,7 @@ static CLASS_DEVICE_ATTR(host_driver_posted_cmd, S_IRUGO, arcmsr_attr_host_drive
+ static CLASS_DEVICE_ATTR(host_driver_reset, S_IRUGO, arcmsr_attr_host_driver_reset, NULL);
+ static CLASS_DEVICE_ATTR(host_driver_abort, S_IRUGO, arcmsr_attr_host_driver_abort, NULL);
+ static CLASS_DEVICE_ATTR(host_fw_model, S_IRUGO, arcmsr_attr_host_fw_model, NULL);
+-static CLASS_DEVICE_ATTR(host_fw_version, S_IRUGO, arcmsr_attr_host_fw_version, NULL);
++static CLASS_DEVICE_ATTR(fw_version, S_IRUGO, arcmsr_attr_host_fw_version, NULL);
+ static CLASS_DEVICE_ATTR(host_fw_request_len, S_IRUGO, arcmsr_attr_host_fw_request_len, NULL);
+ static CLASS_DEVICE_ATTR(host_fw_numbers_queue, S_IRUGO, arcmsr_attr_host_fw_numbers_queue, NULL);
+ static CLASS_DEVICE_ATTR(host_fw_sdram_size, S_IRUGO, arcmsr_attr_host_fw_sdram_size, NULL);
+diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
+index 0844331..ed130ec 100644
+--- a/drivers/scsi/hptiop.c
++++ b/drivers/scsi/hptiop.c
+@@ -634,7 +634,7 @@ static struct class_device_attribute hptiop_attr_version = {
+ 
+ static struct class_device_attribute hptiop_attr_fw_version = {
+ 	.attr = {
+-		.name = "firmware-version",
++		.name = "fw_version",
+ 		.mode = S_IRUGO,
+ 	},
+ 	.show = hptiop_show_fw_version,
+diff --git a/drivers/scsi/lpfc/lpfc_attr.c b/drivers/scsi/lpfc/lpfc_attr.c
+index 80a1121..32b1d2f 100644
+--- a/drivers/scsi/lpfc/lpfc_attr.c
++++ b/drivers/scsi/lpfc/lpfc_attr.c
+@@ -888,7 +888,7 @@ static CLASS_DEVICE_ATTR(modeldesc, S_IRUGO, lpfc_modeldesc_show, NULL);
+ static CLASS_DEVICE_ATTR(modelname, S_IRUGO, lpfc_modelname_show, NULL);
+ static CLASS_DEVICE_ATTR(programtype, S_IRUGO, lpfc_programtype_show, NULL);
+ static CLASS_DEVICE_ATTR(portnum, S_IRUGO, lpfc_vportnum_show, NULL);
+-static CLASS_DEVICE_ATTR(fwrev, S_IRUGO, lpfc_fwrev_show, NULL);
++static CLASS_DEVICE_ATTR(fw_version, S_IRUGO, lpfc_fwrev_show, NULL);
+ static CLASS_DEVICE_ATTR(hdw, S_IRUGO, lpfc_hdw_show, NULL);
+ static CLASS_DEVICE_ATTR(state, S_IRUGO, lpfc_state_show, NULL);
+ static CLASS_DEVICE_ATTR(option_rom_version, S_IRUGO,
+-----
+
+J.
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Web [    The World's most affectionate creature is a muddy dog.    ]
+site: http:// [                                          ]       Made by
+www.earth.li/~noodles/  [                      ]         HuggieTag 0.0.23
