@@ -1,158 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbXKTOUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbXKTOWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758780AbXKTOUJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbXKTOT6
+	id S1758529AbXKTOWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbXKTOV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:19:58 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:57639 "EHLO gir.skynet.ie"
+	Tue, 20 Nov 2007 09:21:59 -0500
+Received: from www.tglx.de ([62.245.132.106]:33803 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752101AbXKTOT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:19:57 -0500
-Date: Tue, 20 Nov 2007 14:19:53 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-Message-ID: <20071120141953.GB32313@csn.ul.ie>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+	id S1751976AbXKTOV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 09:21:58 -0500
+Date: Tue, 20 Nov 2007 15:21:38 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
+In-Reply-To: <alpine.LFD.0.9999.0711201405480.25057@localhost.localdomain>
+Message-ID: <alpine.LFD.0.9999.0711201520300.25057@localhost.localdomain>
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <4742C54B.1080709@linux.vnet.ibm.com> <alpine.LFD.0.9999.0711201405480.25057@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1652249260-1195568500=:25057"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (09/11/07 07:45), Christoph Lameter didst pronounce:
-> On Fri, 9 Nov 2007, Mel Gorman wrote:
-> 
-> >  struct page * fastcall
-> >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
-> >  		struct zonelist *zonelist)
-> >  {
-> > +	/*
-> > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
-> > +	 * cost of allocating on the stack or the stack usage becomes
-> > +	 * noticable, allocate the nodemasks per node at boot or compile time
-> > +	 */
-> > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
-> > +		nodemask_t nodemask;
-> 
-> Hmmm.. This places a potentially big structure on the stack. nodemask can 
-> contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
-> gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Went back and revisited this. Allocating them at boot-time is below but
-essentially it is a silly and it makes sense to just have two zonelists
-where one of them is for __GFP_THISNODE. Implementation wise, this involves
-dropping the last patch in the set and the overall result is still a reduction
-in the number of zonelists.
+--8323328-1652249260-1195568500=:25057
+Content-Type: TEXT/PLAIN; charset=ISO-2022-JP
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/gfp.h linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/gfp.h
---- linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/gfp.h	2007-11-19 19:27:15.000000000 +0000
-+++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/gfp.h	2007-11-19 19:28:55.000000000 +0000
-@@ -175,7 +175,6 @@ FASTCALL(__alloc_pages(gfp_t, unsigned i
- extern struct page *
- FASTCALL(__alloc_pages_nodemask(gfp_t, unsigned int,
- 				struct zonelist *, nodemask_t *nodemask));
--extern nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask);
+On Tue, 20 Nov 2007, Thomas Gleixner wrote:
+> > arch/x86/kernel/setup_64.c:991: error: redefinition of ‘identify_cpu’
+> > arch/x86/kernel/setup_64.c:958: error: previous definition of ‘identify_cpu’ was here
+> > make[1]: *** [arch/x86/kernel/setup_64.o] Error 1
+> > make: *** [arch/x86/kernel] Error 2
+> > 
+> > The patch causing this error is git-x86.patch
+> 
+> Jeremy pointed me to this already. I'm looking into this.
+
+Fix below.
+
+    tglx
+
+---
+ arch/x86/kernel/setup_64.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+Index: linux-2.6-x86/arch/x86/kernel/setup_64.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/setup_64.c	2007-11-20 15:18:20.000000000 +0100
++++ linux-2.6-x86/arch/x86/kernel/setup_64.c	2007-11-20 15:18:57.000000000 +0100
+@@ -634,8 +634,7 @@ static __cpuinit int amd_apic_timer_brok
+ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
+ {
+ #ifdef CONFIG_SMP
+-	unsigned bits;
+-	unsigned ecx;
++	unsigned bits, ecx;
  
- static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 						unsigned int order)
-@@ -187,13 +186,10 @@ static inline struct page *alloc_pages_n
- 	if (nid < 0)
- 		nid = numa_node_id();
- 
--	/* Use a temporary nodemask for __GFP_THISNODE allocations */
- 	if (unlikely(gfp_mask & __GFP_THISNODE)) {
--		nodemask_t nodemask;
--
- 		return __alloc_pages_nodemask(gfp_mask, order,
- 				node_zonelist(nid),
--				nodemask_thisnode(nid, &nodemask));
-+				NODE_DATA(nid)->nodemask_thisnode);
- 	}
- 
- 	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/mmzone.h linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/mmzone.h
---- linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/mmzone.h	2007-11-19 19:27:15.000000000 +0000
-+++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/mmzone.h	2007-11-19 19:28:55.000000000 +0000
-@@ -519,6 +519,9 @@ typedef struct pglist_data {
- 	struct zone node_zones[MAX_NR_ZONES];
- 	struct zonelist node_zonelist;
- 	int nr_zones;
-+
-+	/* nodemask suitable for __GFP_THISNODE */
-+	nodemask_t *nodemask_thisnode;
- #ifdef CONFIG_FLAT_NODE_MEM_MAP
- 	struct page *node_mem_map;
+ 	/* Multi core CPU? */
+ 	if (c->extended_cpuid_level < 0x80000008)
+@@ -942,13 +941,6 @@ static void __cpuinit early_identify_cpu
+ #ifdef CONFIG_SMP
+ 	c->phys_proc_id = (cpuid_ebx(1) >> 24) & 0xff;
  #endif
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/mm/page_alloc.c linux-2.6.24-rc2-mm1-045_use_static_nodemask/mm/page_alloc.c
---- linux-2.6.24-rc2-mm1-040_use_one_zonelist/mm/page_alloc.c	2007-11-19 19:27:15.000000000 +0000
-+++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/mm/page_alloc.c	2007-11-19 19:28:55.000000000 +0000
-@@ -1695,28 +1695,36 @@ got_pg:
- }
- 
- /* Creates a nodemask suitable for GFP_THISNODE allocations */
--nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask)
-+static inline void alloc_node_nodemask_thisnode(pg_data_t *pgdat)
- {
--	nodes_clear(*nodemask);
--	node_set(nid, *nodemask);
-+	nodemask_t *nodemask_thisnode;
- 
--	return nodemask;
-+	/* Only a machine with multiple nodes needs the nodemask */
-+	if (!NUMA_BUILD || num_online_nodes() == 1)
-+		return;
-+	
-+	/* Allocate the nodemask. Serious if it fails, but not world ending */
-+	nodemask_thisnode = alloc_bootmem_node(pgdat, sizeof(nodemask_t));
-+	if (!nodemask_thisnode) {
-+		printk(KERN_WARNING
-+			"thisnode nodemask allocation failed."
-+			"There may be sub-optimal NUMA placement.\n");
-+		return;
-+	}
-+
-+	/* Initialise the nodemask to only cover the current node */
-+	nodes_clear(*nodemask_thisnode);
-+	node_set(pgdat->node_id, *nodemask_thisnode);
-+	pgdat->nodemask_thisnode = nodemask_thisnode;
- }
- 
- struct page * fastcall
- __alloc_pages(gfp_t gfp_mask, unsigned int order,
- 		struct zonelist *zonelist)
- {
--	/*
--	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
--	 * cost of allocating on the stack or the stack usage becomes
--	 * noticable, allocate the nodemasks per node at boot or compile time
--	 */
- 	if (unlikely(gfp_mask & __GFP_THISNODE)) {
--		nodemask_t nodemask;
+-}
 -
--		return __alloc_pages_internal(gfp_mask, order,
--			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
-+		return __alloc_pages_internal(gfp_mask, order, zonelist,
-+			NODE_DATA(numa_node_id())->nodemask_thisnode);
- 	}
+-/*
+- * This does the hard work of actually picking apart the CPU stuff...
+- */
+-void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
+-{
+ 	/* AMD-defined flags: level 0x80000001 */
+ 	xlvl = cpuid_eax(0x80000000);
+ 	c->extended_cpuid_level = xlvl;
  
- 	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-@@ -3501,6 +3509,7 @@ void __meminit free_area_init_node(int n
- 	calculate_node_totalpages(pgdat, zones_size, zholes_size);
- 
- 	alloc_node_mem_map(pgdat);
-+	alloc_node_nodemask_thisnode(pgdat);
- 
- 	free_area_init_core(pgdat, zones_size, zholes_size);
- }
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--8323328-1652249260-1195568500=:25057--
