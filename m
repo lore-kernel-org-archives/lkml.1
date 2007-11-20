@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbXKTSPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbXKTSS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761439AbXKTSPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbXKTSPY
+	id S1758821AbXKTSS0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbXKTSST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:15:24 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:56582 "EHLO tetsuo.zabbo.net"
+	Tue, 20 Nov 2007 13:18:19 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3032 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755204AbXKTSPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:15:23 -0500
-Message-ID: <4743242D.60304@oracle.com>
-Date: Tue, 20 Nov 2007 10:15:09 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCHv4 4/6] Allow setting FD_CLOEXEC flag for new sockets
-References: <200711200653.lAK6rE31025888@devserv.devel.redhat.com> <474320C4.2040600@oracle.com> <47432267.4040202@redhat.com>
-In-Reply-To: <47432267.4040202@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	id S1752124AbXKTSSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 13:18:18 -0500
+Subject: Re: [KERNEL]: Avoid divide in IS_ALIGN
+From: Joe Perches <joe@perches.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071120135607.GA18346@gondor.apana.org.au>
+References: <20071120135607.GA18346@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 10:17:15 -0800
+Message-Id: <1195582635.4675.145.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-11-20 at 21:56 +0800, Herbert Xu wrote:
+> [KERNEL]: Avoid divide in IS_ALIGN
+> I was happy to discover the brand new IS_ALIGN macro and quickly
+> used it in my code.  To my dismay I found that the generated code
+> used division to perform the test.
+> This patch fixes it by changing the % test to an &.  This avoids
+> the division.
 
-> Since there is no legacy interface to worry about all members added to
-> the structure can and should be neutral of the word size.
+Perhaps this should use is_power_of_2?
 
-OK, perhaps add a giant comment warning about that.  History tells us
-that people will get it wrong.
+#define IS_ALIGNED(x, a) 				\
+	({ typeof(x) _a = (typeof(x))(a); 		\
+	   is_power_of_2(_a) ? (((x) & (_a - 1)) == 0)	\
+			     : (((x) % _a == 0); })
 
-> We've done
-> this with some syscalls already (like pread64) where we always use the
-> wide form in the parameter list.  It's just more simple here since it
-> does not have to split into two 32-bit registers.
+gcc -o2/oS seems to do the right thing.
 
-*nod*
-
-- z
