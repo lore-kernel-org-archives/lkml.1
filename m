@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbXKTBUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbXKTBUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbXKTBUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbXKTBNz
+	id S1757825AbXKTBUl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbXKTBN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:55 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36874 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754337AbXKTBNh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:13:56 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49854 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754574AbXKTBNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:37 -0500
-Message-Id: <20071120011336.441846267@sgi.com>
+Message-Id: <20071120011336.678230087@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:52 -0800
+Date: Mon, 19 Nov 2007 17:11:53 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -21,83 +20,64 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 20/45] cpu alloc: neigbour statistics
-Content-Disposition: inline; filename=0028-cpu-alloc-neigbour-statistics.patch
+Subject: [rfc 21/45] cpu alloc: tcp statistics
+Content-Disposition: inline; filename=0029-cpu-alloc-tcp-statistics.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/net/neighbour.h |    6 +-----
- net/core/neighbour.c    |   11 ++++++-----
- 2 files changed, 7 insertions(+), 10 deletions(-)
+ net/ipv4/tcp.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/include/net/neighbour.h
+Index: linux-2.6/net/ipv4/tcp.c
 ===================================================================
---- linux-2.6.orig/include/net/neighbour.h	2007-11-18 14:38:23.910033621 -0800
-+++ linux-2.6/include/net/neighbour.h	2007-11-18 22:04:47.465297422 -0800
-@@ -81,11 +81,7 @@ struct neigh_statistics
- };
- 
- #define NEIGH_CACHE_STAT_INC(tbl, field)				\
--	do {								\
--		preempt_disable();					\
--		(per_cpu_ptr((tbl)->stats, smp_processor_id())->field)++; \
--		preempt_enable();					\
--	} while (0)
-+	_CPU_INC(tbl->stats->field)
- 
- struct neighbour
+--- linux-2.6.orig/net/ipv4/tcp.c	2007-11-15 21:17:24.267654551 -0800
++++ linux-2.6/net/ipv4/tcp.c	2007-11-15 21:25:34.214404334 -0800
+@@ -2273,7 +2273,7 @@ static void __tcp_free_md5sig_pool(struc
  {
-Index: linux-2.6/net/core/neighbour.c
-===================================================================
---- linux-2.6.orig/net/core/neighbour.c	2007-11-18 14:38:23.918033788 -0800
-+++ linux-2.6/net/core/neighbour.c	2007-11-18 21:55:23.064297499 -0800
-@@ -1348,7 +1348,8 @@ void neigh_table_init_no_netlink(struct 
- 			kmem_cache_create(tbl->id, tbl->entry_size, 0,
- 					  SLAB_HWCACHE_ALIGN|SLAB_PANIC,
- 					  NULL);
--	tbl->stats = alloc_percpu(struct neigh_statistics);
-+	tbl->stats = CPU_ALLOC(struct neigh_statistics,
-+					GFP_KERNEL | __GFP_ZERO);
- 	if (!tbl->stats)
- 		panic("cannot create neighbour cache statistics");
- 
-@@ -1437,7 +1438,7 @@ int neigh_table_clear(struct neigh_table
- 
- 	remove_proc_entry(tbl->id, init_net.proc_net_stat);
- 
--	free_percpu(tbl->stats);
-+	CPU_FREE(tbl->stats);
- 	tbl->stats = NULL;
- 
- 	kmem_cache_destroy(tbl->kmem_cachep);
-@@ -1694,7 +1695,7 @@ static int neightbl_fill_info(struct sk_
- 		for_each_possible_cpu(cpu) {
- 			struct neigh_statistics	*st;
- 
--			st = per_cpu_ptr(tbl->stats, cpu);
-+			st = CPU_PTR(tbl->stats, cpu);
- 			ndst.ndts_allocs		+= st->allocs;
- 			ndst.ndts_destroys		+= st->destroys;
- 			ndst.ndts_hash_grows		+= st->hash_grows;
-@@ -2343,7 +2344,7 @@ static void *neigh_stat_seq_start(struct
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
--		return per_cpu_ptr(tbl->stats, cpu);
-+		return CPU_PTR(tbl->stats, cpu);
+ 	int cpu;
+ 	for_each_possible_cpu(cpu) {
+-		struct tcp_md5sig_pool *p = *per_cpu_ptr(pool, cpu);
++		struct tcp_md5sig_pool *p = *CPU_PTR(pool, cpu);
+ 		if (p) {
+ 			if (p->md5_desc.tfm)
+ 				crypto_free_hash(p->md5_desc.tfm);
+@@ -2281,7 +2281,7 @@ static void __tcp_free_md5sig_pool(struc
+ 			p = NULL;
+ 		}
  	}
- 	return NULL;
+-	free_percpu(pool);
++	CPU_FREE(pool);
  }
-@@ -2358,7 +2359,7 @@ static void *neigh_stat_seq_next(struct 
- 		if (!cpu_possible(cpu))
- 			continue;
- 		*pos = cpu+1;
--		return per_cpu_ptr(tbl->stats, cpu);
-+		return CPU_PTR(tbl->stats, cpu);
- 	}
- 	return NULL;
+ 
+ void tcp_free_md5sig_pool(void)
+@@ -2305,7 +2305,7 @@ static struct tcp_md5sig_pool **__tcp_al
+ 	int cpu;
+ 	struct tcp_md5sig_pool **pool;
+ 
+-	pool = alloc_percpu(struct tcp_md5sig_pool *);
++	pool = CPU_ALLOC(struct tcp_md5sig_pool *, GFP_KERNEL);
+ 	if (!pool)
+ 		return NULL;
+ 
+@@ -2316,7 +2316,7 @@ static struct tcp_md5sig_pool **__tcp_al
+ 		p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 		if (!p)
+ 			goto out_free;
+-		*per_cpu_ptr(pool, cpu) = p;
++		*CPU_PTR(pool, cpu) = p;
+ 
+ 		hash = crypto_alloc_hash("md5", 0, CRYPTO_ALG_ASYNC);
+ 		if (!hash || IS_ERR(hash))
+@@ -2381,7 +2381,7 @@ struct tcp_md5sig_pool *__tcp_get_md5sig
+ 	if (p)
+ 		tcp_md5sig_users++;
+ 	spin_unlock_bh(&tcp_md5sig_pool_lock);
+-	return (p ? *per_cpu_ptr(p, cpu) : NULL);
++	return (p ? *CPU_PTR(p, cpu) : NULL);
  }
+ 
+ EXPORT_SYMBOL(__tcp_get_md5sig_pool);
 
 -- 
