@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbXKTBMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbXKTBNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbXKTBMw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbXKTBMl
+	id S1756014AbXKTBNr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXKTBNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:12:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34474 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755255AbXKTBMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 20:12:40 -0500
-Date: Mon, 19 Nov 2007 20:12:36 -0500
-From: Dave Jones <davej@redhat.com>
-To: Stephen Clark <Stephen.Clark@seclark.us>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Power Saving
-Message-ID: <20071120011236.GA17420@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Stephen Clark <Stephen.Clark@seclark.us>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <47422D3B.8080704@seclark.us> <20071120005443.GB9243@redhat.com> <474232D9.20407@seclark.us>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474232D9.20407@seclark.us>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 19 Nov 2007 20:13:34 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49811 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751898AbXKTBNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:13:32 -0500
+Message-Id: <20071120011132.143632442@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 19 Nov 2007 17:11:32 -0800
+From: clameter@sgi.com
+From: Christoph Lameter <clameter@sgi.com>
+To: ak@suse.de
+Cc: akpm@linux-foundation.org
+Cc: travis@sgi.com
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: [rfc 00/45] [RFC] CPU ops and a rework of per cpu data handling on x86_64
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 08:05:29PM -0500, Stephen Clark wrote:
- 
- > >I think by throttling, you actually mean changing frequency/voltage ?
- > >(throttling is something else, where the CPU skips every n cycles,
- > > which doesn't actually save any power)
- > >
- > well what about the info from /proc/
- > 
- > cat /proc/acpi/processor/CPU0/info
- > processor id:            0
- > acpi id:                 0
- > bus mastering control:   no
- > power management:        yes
- > throttling control:      yes
- > limit interface:         yes
- > 
- > and:
- > cat /proc/acpi/processor/CPU0/throttling
- > state count:             2
- > active state:            T0
- > states:
- >    *T0:                  00%
- >     T1:                  50%
+This is a pretty early draft stage of the patch. It works on
+x86_64 only. Its a bit massive so I'd like to have some feedback
+before proceeding (and maybe some help)?.
 
-See above. These are throttling states, used typically
-if the system is overheating.
+The support for other arches was not tested yet.
 
- > [root@joker ~]# cat /proc/acpi/processor/CPU0/power
- > active state:            C2
- > max_cstate:              C8
- > bus master activity:     d18324c9
- > states:
- >     C1:                  type[C1] promotion[C2] demotion[--] 
- > latency[000] usage[01340140]
- >    *C2:                  type[C2] promotion[--] demotion[C1] 
- > latency[090] usage[02980043]
- > 
- > ????
+The patch establishes a new set of cpu operations that allow to
+exploit single instruction atomicity to allow per cpu variable
+modifications without disabling/enabling preempt or interrupts and
+without the need to do an offset calculation in order to determine
+the location of the variable on the current processor.
 
-C states are unrelated to frequency/voltage scaling (which are P states)
-They get taken advantage of automatically by ACPI as you can
-see from the usage fields.
+It then implements these operations on x86_64 after consolidating
+per cpu access for allocpercpu, percpu and pda. All per
+cpu data is then accessible via gs segment override.
 
-	Dave
+This results in a reduction in code size of the kernel and in more efficient
+operation of per cpu access.
+
+Before:
+   text    data     bss     dec     hex filename
+   4041907  512371 1302360 5856638  595d7e vmlinux
+
+After (this includes the code added for the cpu allocator!):
+
+  text    data     bss     dec     hex filename
+  3861532  527715 1298072 5687319  56c817 vmlinux
+
+
+On x86_64 the segment override results in the following change for a simple
+vm counter increment:
+
+Before:
+
+mov    %gs:0x8,%rdx		Get smp_processor_id
+mov    tableoffset,%rax		Get table base
+incq   varoffset(%rax,%rdx,1)	Perform the operation with a complex lookup
+				adding the var offset
+
+An interrupt or a reschedule action can move the execution thread to another
+processor if interrupt or preempt is not disabled. Then the variable of
+the wrong processor may be updated in a racy way.
+
+After:
+
+incq   %gs:varoffset(%rip)
+
+Single instruction that is safe from interrupts or moving of the execution
+thread. It will reliably operate on the current processors data area.
+
+Other platforms can also perform address relocation plus atomic ops on
+a memory location. Exploiting of the atomicity of instructions vs interrupts
+is therefore possible and will reduce the cpu op processing overhead.
+
+F.e on IA64 we have per cpu virtual mapping of the per cpu area. If
+we add an offset to the per cpu area variable address then we can guarantee
+that we always hit the per cpu areas local to a processor.
+
+Other platforms (SPARC?) have registers that can be used to form addresses.
+If the cpu area address is in one of those then atomic per cpu modifications
+can be generated for those platforms in the same way.
+
+Slub best performance in the fast fastpath goes from 47 cycles to 41 cycles
+through the use of the segment override.
+
 
 -- 
-http://www.codemonkey.org.uk
