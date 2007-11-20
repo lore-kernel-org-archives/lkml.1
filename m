@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbXKTNW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbXKTNaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760226AbXKTNW3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 08:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbXKTNWV
+	id S1753484AbXKTNaO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 08:30:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbXKTN35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 08:22:21 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:58268 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755840AbXKTNWU (ORCPT
+	Tue, 20 Nov 2007 08:29:57 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:46538 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750941AbXKTN34 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 08:22:20 -0500
-X-Greylist: delayed 361 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 08:22:20 EST
-From: Damien Wyart <damien.wyart@free.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7
-References: <20071119151756.GA25446@elte.hu>
-	<20071120112459.GA2884@localhost.localdomain>
-	<20071120125557.GB8355@elte.hu>
-Date: Tue, 20 Nov 2007 14:22:19 +0100
-In-Reply-To: <20071120125557.GB8355@elte.hu> (Ingo Molnar's message of "Tue,
-	20 Nov 2007 13:55:57 +0100")
-Message-ID: <87zlx9vypg.fsf@free.fr>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.50
+	Tue, 20 Nov 2007 08:29:56 -0500
+Message-ID: <4742E14B.1080901@linux.vnet.ibm.com>
+Date: Tue, 20 Nov 2007 18:59:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: akpm@linux-foundation.org
+CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org, mick@madwifi.org,
+       linville@tuxdriver.com, netdev@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
+In-Reply-To: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Testing sched-cfs-v2.6.24-rc3-v24.patch on top of 2.6.24-rc3-git1
-> > (ignored the two "already applied" messages coming from git1
-> > commits), I get a 1.00 minimum load in top, coming from the
-> > load_balance_mo thread staying in D-state. I get this on 2 different
-> > computers with similar configs, so I am attaching one of them here.
+Hi Andrew,
 
-* Ingo Molnar <mingo@elte.hu> [071120 13:55]:
-> does the patch below fix that problem for you?
+The kernel build fails, with following message
 
-Yes, it does. Thanks for your answer.
+  LD      drivers/net/wireless/built-in.o
+drivers/net/wireless/rtl8187.o: In function `rtl8225z2_rf_init':
+(.opd+0x180): multiple definition of `rtl8225z2_rf_init'
+drivers/net/wireless/rtl8180.o:(.opd+0x1b0): first defined here
+drivers/net/wireless/rtl8187.o: In function `rtl8225z2_rf_init':
+/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:571: multiple definition of `.rtl8225z2_rf_init'
+drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:561: first defined here
+ld: Warning: size of symbol `.rtl8225z2_rf_init' changed from 3836 in drivers/net/wireless/rtl8180.o to 3544 in drivers/net/wireless/rtl8187.o
+drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_set_channel':
+(.opd+0x160): multiple definition of `rtl8225_rf_set_channel'
+drivers/net/wireless/rtl8180.o:(.opd+0x1d0): first defined here
+drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_init':
+/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:329: multiple definition of `.rtl8225_rf_init'
+drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:322: first defined here
+ld: Warning: size of symbol `.rtl8225_rf_init' changed from 3492 in drivers/net/wireless/rtl8180.o to 3528 in drivers/net/wireless/rtl8187.o
+drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_stop':
+(.opd+0x190): multiple definition of `rtl8225_rf_stop'
+drivers/net/wireless/rtl8180.o:(.opd+0x1c0): first defined here
+drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_set_channel':
+/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:735: multiple definition of `.rtl8225_rf_set_channel'
+drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:753: first defined here
+ld: Warning: size of symbol `.rtl8225_rf_set_channel' changed from 360 in drivers/net/wireless/rtl8180.o to 136 in drivers/net/wireless/rtl8187.o
+drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_init':
+(.opd+0x170): multiple definition of `rtl8225_rf_init'
+drivers/net/wireless/rtl8180.o:(.opd+0x1a0): first defined here
+drivers/net/wireless/rtl8187.o: In function `rtl8225_rf_stop':
+/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:719: multiple definition of `.rtl8225_rf_stop'
+drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:736: first defined here
+ld: Warning: size of symbol `.rtl8225_rf_stop' changed from 244 in drivers/net/wireless/rtl8180.o to 632 in drivers/net/wireless/rtl8187.o
+make[3]: *** [drivers/net/wireless/built-in.o] Error 1
+make[2]: *** [drivers/net/wireless] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
-Damien
-
-> Index: linux/kernel/sched.c
-> ===================================================================
-> --- linux.orig/kernel/sched.c
-> +++ linux/kernel/sched.c
-> @@ -7138,7 +7138,7 @@ static int load_balance_monitor(void *un
->  		else if (timeout < sysctl_sched_max_bal_int_shares)
->  			timeout *= 2;
->  
-> -		msleep(timeout);
-> +		msleep_interruptible(timeout);
->  	}
->  
->  	return 0;
->
+The patch causing this build failure, might be git-wireless.patch.
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
