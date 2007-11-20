@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbXKTF0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbXKTF0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbXKTF0L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 00:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXKTFZ4
+	id S1758331AbXKTF0v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 00:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXKTF0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 00:25:56 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64524 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbXKTFZz (ORCPT
+	Tue, 20 Nov 2007 00:26:40 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51702
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752611AbXKTF0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 00:25:55 -0500
-Date: Mon, 19 Nov 2007 23:25:48 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 2/2] sata_nv: fix ATAPI issues with memory over 4GB (v3)
-In-reply-to: <474230DC.8020308@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Message-id: <47426FDC.4030800@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <473A7677.6080007@shaw.ca> <473BA332.9030406@gmail.com>
- <473BC5DF.1040302@shaw.ca> <474230DC.8020308@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 20 Nov 2007 00:26:39 -0500
+Date: Mon, 19 Nov 2007 21:26:39 -0800 (PST)
+Message-Id: <20071119.212639.217993660.davem@davemloft.net>
+To: bunk@kernel.org
+Cc: david-b@pacbell.net, randy.dunlap@oracle.com, toralf.foerster@gmx.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: build #337 failed for 2.6.24-rc1-gb1d08ac In function
+ `usbnet_set_settings':
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071108033010.GF26163@stusta.de>
+References: <200711071434.52607.david-b@pacbell.net>
+	<20071107225232.GB26163@stusta.de>
+	<20071108033010.GF26163@stusta.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Robert Hancock wrote:
->> Tejun Heo wrote:
->>> Robert Hancock wrote:
->>>> This fixes some problems with ATAPI devices on nForce4 controllers in
->>>> ADMA mode
->>>> on systems with memory located above 4GB. We need to delay setting
->>>> the 64-bit
->>>> DMA mask until the PRD table and padding buffer are allocated so that
->>>> they don't
->>>> get allocated above 4GB and break legacy mode (which is needed for ATAPI
->>>> devices).
->>>>
->>>> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
->>> applied to #tj-upstream-fixes.
->>>
->> I have a report that these patches crashed but the previous patch worked:
->>
->> https://bugzilla.redhat.com/show_bug.cgi?id=351451
->>
->> So there may still be a problem here.
+From: Adrian Bunk <bunk@kernel.org>
+Date: Thu, 8 Nov 2007 04:30:10 +0100
+
+> @davem:
 > 
-> Any progress?
+> Please look at net/ipv4/arp.c:arp_process()
+> 
+> Am I right that CONFIG_NET_ETHERNET=n and CONFIG_NETDEV_1000=y or 
+> CONFIG_NETDEV_10000=y will not be handled correctly there?
+> 
+> And the best solution is to nuke all #ifdef's in this function and make 
+> the code unconditionally available?
 
-It looks like the problem is that even though we set the DMA mask after 
-we allocate the PRD and pad buffers, when the other port is set up, the 
-DMA mask is already over 64-bit and so it allocates its buffers over 4GB 
-and fails. I think we just need to explicitly set to 32-bit first, 
-getting the reporter to try that one now.
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+I think removing those specific ifdefs in arp_process()
+is the best option, yes.
