@@ -1,38 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbXKTDOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbXKTDPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757257AbXKTDOe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 22:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXKTDO1
+	id S1756953AbXKTDPd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 22:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbXKTDPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 22:14:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38794
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751118AbXKTDO0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 22:14:26 -0500
-Date: Mon, 19 Nov 2007 19:14:25 -0800 (PST)
-Message-Id: <20071119.191425.240107157.davem@davemloft.net>
-To: greg@kroah.com
-Cc: kay.sievers@vrfy.org, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       linux-hotplug-devel@lists.sourceforge.net
-Subject: Re: linux-usb-devel@vger created...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071120022915.GA16706@kroah.com>
-References: <3ae72650711191733r565f98dbh464b31d4497d23b2@mail.gmail.com>
-	<20071119.175554.211506815.davem@davemloft.net>
-	<20071120022915.GA16706@kroah.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 19 Nov 2007 22:15:21 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51355 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752252AbXKTDPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 22:15:18 -0500
+Subject: Re: SCSI breakage on non-cache coherent architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: James.Bottomley@HansenPartnership.com
+Cc: David Miller <davem@davemloft.net>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       rmk@arm.linux.org.uk
+In-Reply-To: <ada8x4ty8e1.fsf@cisco.com>
+References: <1195501874.6539.5.camel@pasglop>
+	 <20071119.143115.251022325.davem@davemloft.net>
+	 <1195518864.6970.23.camel@pasglop>
+	 <20071119.164611.64664648.davem@davemloft.net>  <ada8x4ty8e1.fsf@cisco.com>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 14:14:57 +1100
+Message-Id: <1195528497.6970.35.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <greg@kroah.com>
-Date: Mon, 19 Nov 2007 18:29:15 -0800
+FYI, Here's what I have for the SCSI change. I haven't updated drivers
+to care for the new return code though, help appreciated with that as I
+don't know much about these drivers.
 
-> linux-hotplug@vger.kernel.org would be great to have. 
+Index: linux-work/drivers/scsi/scsi_error.c
+===================================================================
+--- linux-work.orig/drivers/scsi/scsi_error.c	2007-11-20 13:26:18.000000000 +1100
++++ linux-work/drivers/scsi/scsi_error.c	2007-11-20 13:43:05.000000000 +1100
+@@ -602,8 +602,9 @@ static void scsi_abort_eh_cmnd(struct sc
+  * @cmnd is ignored and this functions sets up a REQUEST_SENSE command
+  * and cmnd buffers to read @sense_bytes into @scmd->sense_buffer.
+  **/
+-void scsi_eh_prep_cmnd(struct scsi_cmnd *scmd, struct scsi_eh_save *ses,
+-			unsigned char *cmnd, int cmnd_size, unsigned sense_bytes)
++int scsi_eh_prep_cmnd(struct scsi_cmnd *scmd, struct scsi_eh_save *ses,
++		      unsigned char *cmnd, int cmnd_size, unsigned sense_bytes,
++		      gfp_t gfp_mask)
+ {
+ 	struct scsi_device *sdev = scmd->device;
+ 
+@@ -622,12 +623,20 @@ void scsi_eh_prep_cmnd(struct scsi_cmnd 
+ 	ses->use_sg = scmd->use_sg;
+ 	ses->resid = scmd->resid;
+ 	ses->result = scmd->result;
++	sg_init_table(&ses->sense_sgl, 1);
+ 
+ 	if (sense_bytes) {
++		struct page *pg;
++
++		if (sdev->host->hostt->unchecked_isa_dma)
++			gfp_mask |= __GFP_DMA;
+ 		scmd->request_bufflen = min_t(unsigned,
+ 		                       sizeof(scmd->sense_buffer), sense_bytes);
+-		sg_init_one(&ses->sense_sgl, scmd->sense_buffer,
+-		                                       scmd->request_bufflen);
++		pg = alloc_page(gfp_mask);
++		if (!pg)
++			return FAILED;
++		memset(page_address(pg), 0, scmd->request_bufflen);
++		sg_set_page(&ses->sense_sgl, pg, scmd->request_bufflen, 0);
+ 		scmd->request_buffer = &ses->sense_sgl;
+ 		scmd->sc_data_direction = DMA_FROM_DEVICE;
+ 		scmd->use_sg = 1;
+@@ -658,6 +667,8 @@ void scsi_eh_prep_cmnd(struct scsi_cmnd 
+ 	 * untransferred sense data should be interpreted as being zero.
+ 	 */
+ 	memset(scmd->sense_buffer, 0, sizeof(scmd->sense_buffer));
++
++	return SUCCESS;
+ }
+ EXPORT_SYMBOL(scsi_eh_prep_cmnd);
+ 
+@@ -670,9 +681,17 @@ EXPORT_SYMBOL(scsi_eh_prep_cmnd);
+  **/
+ void scsi_eh_restore_cmnd(struct scsi_cmnd* scmd, struct scsi_eh_save *ses)
+ {
++	struct page *pg;
++
+ 	/*
+ 	 * Restore original data
+ 	 */
++	pg = sg_page(&ses->sense_sgl);
++	if (pg) {
++		memcpy(scmd->sense_buffer, page_address(pg),
++		       scmd->request_bufflen);
++		__free_page(pg);
++	}
+ 	scmd->cmd_len = ses->cmd_len;
+ 	memcpy(scmd->cmnd, ses->cmnd, sizeof(scmd->cmnd));
+ 	scmd->sc_data_direction = ses->data_direction;
+@@ -709,7 +728,10 @@ static int scsi_send_eh_cmnd(struct scsi
+ 	struct scsi_eh_save ses;
+ 	int rtn;
+ 
+-	scsi_eh_prep_cmnd(scmd, &ses, cmnd, cmnd_size, sense_bytes);
++	if (scsi_eh_prep_cmnd(scmd, &ses, cmnd, cmnd_size, sense_bytes,
++			      GFP_KERNEL) != SUCCESS)
++		return FAILED;
++
+ 	shost->eh_action = &done;
+ 
+ 	spin_lock_irqsave(shost->host_lock, flags);
+Index: linux-work/include/scsi/scsi_eh.h
+===================================================================
+--- linux-work.orig/include/scsi/scsi_eh.h	2007-11-20 13:36:44.000000000 +1100
++++ linux-work/include/scsi/scsi_eh.h	2007-11-20 13:42:49.000000000 +1100
+@@ -81,9 +81,10 @@ struct scsi_eh_save {
+ 	struct scatterlist sense_sgl;
+ };
+ 
+-extern void scsi_eh_prep_cmnd(struct scsi_cmnd *scmd,
++extern int scsi_eh_prep_cmnd(struct scsi_cmnd *scmd,
+ 		struct scsi_eh_save *ses, unsigned char *cmnd,
+-		int cmnd_size, unsigned sense_bytes);
++		int cmnd_size, unsigned sense_bytes,
++		gfp_t gfp_mask);
+ 
+ extern void scsi_eh_restore_cmnd(struct scsi_cmnd* scmd,
+ 		struct scsi_eh_save *ses);
+Index: linux-work/drivers/scsi/NCR5380.c
+===================================================================
+--- linux-work.orig/drivers/scsi/NCR5380.c	2007-11-20 13:46:41.000000000 +1100
++++ linux-work/drivers/scsi/NCR5380.c	2007-11-20 13:46:47.000000000 +1100
+@@ -2283,7 +2283,7 @@ static void NCR5380_information_transfer
+ 					}
+ 
+ 					if ((cmd->cmnd[0] != REQUEST_SENSE) && (status_byte(cmd->SCp.Status) == CHECK_CONDITION)) {
+-						scsi_eh_prep_cmnd(cmd, &hostdata->ses, NULL, 0, ~0);
++						scsi_eh_prep_cmnd(cmd, &hostdata->ses, NULL, 0, ~0, GFP_ATOMIC);
+ 
+ 						dprintk(NDEBUG_AUTOSENSE, ("scsi%d : performing request sense\n", instance->host_no));
+ 
+Index: linux-work/drivers/scsi/atari_NCR5380.c
+===================================================================
+--- linux-work.orig/drivers/scsi/atari_NCR5380.c	2007-11-20 13:46:55.000000000 +1100
++++ linux-work/drivers/scsi/atari_NCR5380.c	2007-11-20 13:47:00.000000000 +1100
+@@ -2240,7 +2240,7 @@ static void NCR5380_information_transfer
+ 
+ 					if ((cmd->cmnd[0] != REQUEST_SENSE) &&
+ 					    (status_byte(cmd->SCp.Status) == CHECK_CONDITION)) {
+-						scsi_eh_prep_cmnd(cmd, &hostdata->ses, NULL, 0, ~0);
++						scsi_eh_prep_cmnd(cmd, &hostdata->ses, NULL, 0, ~0, GFP_ATOMIC);
+ 
+ 						ASEN_PRINTK("scsi%d: performing request sense\n", HOSTNO);
+ 
+Index: linux-work/drivers/scsi/sun3_NCR5380.c
+===================================================================
+--- linux-work.orig/drivers/scsi/sun3_NCR5380.c	2007-11-20 13:46:27.000000000 +1100
++++ linux-work/drivers/scsi/sun3_NCR5380.c	2007-11-20 13:46:33.000000000 +1100
+@@ -2261,7 +2261,7 @@ static void NCR5380_information_transfer
+ 
+ 		    if ((cmd->cmnd[0] != REQUEST_SENSE) && 
+ 			(status_byte(cmd->SCp.Status) == CHECK_CONDITION)) {
+-			scsi_eh_prep_cmnd(cmd, &hostdata->ses, NULL, 0, ~0);
++			scsi_eh_prep_cmnd(cmd, &hostdata->ses, NULL, 0, ~0, GFP_ATOMIC);
+ 			ASEN_PRINTK("scsi%d: performing request sense\n",
+ 				    HOSTNO);
+ 			/* this is initialized from initialize_SCp 
 
-Created, enjoy.
 
