@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759221AbXKTIQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759861AbXKTIRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759221AbXKTIQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 03:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbXKTIQq
+	id S1759861AbXKTIRj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 03:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbXKTIRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 03:16:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53643 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755364AbXKTIQp (ORCPT
+	Tue, 20 Nov 2007 03:17:32 -0500
+Received: from mailout08.sul.t-online.de ([194.25.134.20]:37646 "EHLO
+	mailout08.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755505AbXKTIRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 03:16:45 -0500
-Date: Tue, 20 Nov 2007 00:16:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Scott James Remnant <scott@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] wait_task_stopped: pass correct exit_code to
- wait_noreap_copyout
-Message-Id: <20071120001624.83c7fbce.akpm@linux-foundation.org>
-In-Reply-To: <1195545322.14510.170.camel@wing-commander>
-References: <1195377204.6070.3.camel@wing-commander>
-	<20071119224326.198f77a0.akpm@linux-foundation.org>
-	<1195545322.14510.170.camel@wing-commander>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Nov 2007 03:17:31 -0500
+Message-ID: <4742980A.60407@t-online.de>
+Date: Tue, 20 Nov 2007 09:17:14 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23.8, ondemand scaling governor: "BUG: soft lockup detected
+ on CPU#0!"
+References: <474227F9.8050909@t-online.de> <924EFEDD5F540B4284297C4DC59F3DEE251A40@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE251A40@orsmsx423.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ID: GoQQekZlwhBcB3I0qCdByKRjseuJcbBsMaNjR+5bJiAnVnwzYmhXJGG-HcwZWIdw48
+X-TOI-MSGID: 8f88021c-d52e-4b38-a188-252a7b141f14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 07:55:22 +0000 Scott James Remnant <scott@ubuntu.com> wrote:
-
-> On Mon, 2007-11-19 at 22:43 -0800, Andrew Morton wrote:
-> > On Sun, 18 Nov 2007 09:13:24 +0000 Scott James Remnant <scott@ubuntu.com> wrote:
-> > 
-> > > In wait_task_stopped() exit_code already contains the right value for
-> > > the si_status member of siginfo, and this is simply set in the non
-> > > WNOWAIT case.
-> > >     
-> > > Pass it unchanged to wait_noreap_copyout();  we would only need to
-> > > shift it and add 0x7f if we were returning it in the user status field
-> > > and that isn't used for any function that permits WNOWAIT.
-> > >     
-> > Is this bug visible to userspace?  If so, I'm surprised that none of the
-> > various testsuites (which like to exercise this sort of interface) has
-> > detected it.
-> > 
-> Absolutely;  if you call waitid() with a stopped or traced process,
-> you'll get the signal in siginfo.si_status as expected -- however if you
-> call waitid(WNOWAIT) at the same time, you'll get the signal << 8 | 0x7f
+Pallipadi, Venkatesh wrote:
+> 
+> Can you try switching to powersave governor (which should always run CPU
+> at 400MHz) and see whether you see similar error?
 > 
 
-hm, OK.  Well I guess I'll stick a for-2.6.23 tag on this as well as
-queueing it for 2.6.24.
+Yes, if I move from performance to powersave, then I see a similar
+error:
+
+Nov 20 09:06:48 bugs kernel: BUG: soft lockup detected on CPU#0!
+Nov 20 09:06:48 bugs kernel:  [<c013cf8d>] softlockup_tick+0x91/0xa6
+Nov 20 09:06:48 bugs kernel:  [<c012269c>] update_process_times+0x3a/0x5d
+Nov 20 09:06:48 bugs kernel:  [<c0131219>] tick_sched_timer+0x115/0x164
+Nov 20 09:06:48 bugs kernel:  [<c012d311>] hrtimer_interrupt+0x102/0x191
+Nov 20 09:06:48 bugs kernel:  [<c0106cd6>] timer_interrupt+0x2e/0x34
+Nov 20 09:06:48 bugs kernel:  [<c013d1f6>] handle_IRQ_event+0x1a/0x3f
+Nov 20 09:06:48 bugs kernel:  [<c013e4e1>] handle_level_irq+0xa8/0xb7
+Nov 20 09:06:48 bugs kernel:  [<c0106367>] do_IRQ+0x53/0x6c
+Nov 20 09:06:48 bugs kernel:  [<c0104853>] common_interrupt+0x23/0x28
+Nov 20 09:06:48 bugs kernel:  =======================
+
+
+Please mail. Regards
+
+Harri
 
