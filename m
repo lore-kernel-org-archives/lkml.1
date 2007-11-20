@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764189AbXKTUxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764131AbXKTUxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764189AbXKTUxA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764087AbXKTUwn
+	id S1764131AbXKTUxr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760504AbXKTUxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:52:43 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:45634 "EHLO mgw2.diku.dk"
+	Tue, 20 Nov 2007 15:53:37 -0500
+Received: from ts.adaptec.com ([162.62.93.58]:55461 "EHLO mail-gw3.adaptec.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764067AbXKTUwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:52:41 -0500
-Date: Tue, 20 Nov 2007 21:52:37 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: marcel@holtmann.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/bluetooth: Convert kfree to kfree_skb
-Message-ID: <Pine.LNX.4.64.0711202151430.25786@ask.diku.dk>
+	id S1757237AbXKTUxg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:53:36 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Unify sysfs filenames for firmware version
+Date: Tue, 20 Nov 2007 15:53:34 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01FEAD01@otce2k301.adaptec.com>
+In-Reply-To: <20071120200212.GI31112@earth.li>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Unify sysfs filenames for firmware version
+Thread-Index: AcgrsEUgVqhLo/DcQhmSCfpgbKzZ4AAAgyxQ
+References: <20071120133824.GD31112@earth.li> <47430CCE.50701@emulex.com> <20071120171454.GH31112@earth.li> <AE4F746F2AECFC4DA4AADD66A1DFEF01FEAC9B@otce2k301.adaptec.com> <20071120200212.GI31112@earth.li>
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Jonathan McDowell" <noodles@earth.li>
+Cc: "James Smart" <James.Smart@Emulex.Com>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       <Matt_Domsch@dell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Jonathan McDowell [mailto:noodles@earth.li] sez:
+> On Tue, Nov 20, 2007 at 12:49:49PM -0500, Salyzyn, Mark wrote:
+> > The aacraid cards, which uses hba_monitor_version, 
+> > hba_kernel_version and hba_bios_version for each piece
+> > does not fit into the single 'firmware revision' common ideal
+> While I've used the aacraid cards in the past I think I agree
+> with you that no 1 of those 3 pieces of information represents
+> the firmware. Perhaps it could export a triplet though?
 
-kfree_skb rather than kfree should be used for values of type struct
-sk_buff *.
+A single can be used in 99% of all cases, OEM or users can muck
+it up. I would 'vote' for hba_kernel_version == fw_version.
 
-This was fixed using the following semantic patch
-(http://www.emn.fr/x-info/coccinelle/).
+Maybe add a companion standard for hba_bios_version == bios_version
+and hba_monitor_version == exec_version (executive_version) if other
+cards can supply such info ...
 
-// <smpl>
-@@
-struct sk_buff *skb;
-@@
+> Management stuff always seems to be tied to a single card. It's one of
+> the things that puts me off hardware RAID.
 
-- kfree(skb)
-+ kfree_skb(skb)
-// </smpl>
+There are 113 cards this driver works for in concert. Maybe my tail
+feathers are showing ;->
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
+> Do the management folks actually have some ideas about what sort of
+> interface they'd like in sysfs?
 
-diff -u -p a/drivers/bluetooth/bpa10x.c b/drivers/bluetooth/bpa10x.c
---- a/drivers/bluetooth/bpa10x.c 2007-11-01 10:30:39.000000000 +0100
-+++ b/drivers/bluetooth/bpa10x.c 2007-11-20 21:07:42.000000000 +0100
-@@ -446,8 +446,8 @@ static void bpa10x_destruct(struct hci_d
- 
- 	BT_DBG("%s", hdev->name);
- 
--	kfree(data->rx_skb[0]);
--	kfree(data->rx_skb[1]);
-+	kfree_skb(data->rx_skb[0]);
-+	kfree_skb(data->rx_skb[1]);
- 	kfree(data);
- }
- 
-diff -u -p a/drivers/bluetooth/btsdio.c b/drivers/bluetooth/btsdio.c
---- a/drivers/bluetooth/btsdio.c 2007-11-01 10:30:39.000000000 +0100
-+++ b/drivers/bluetooth/btsdio.c 2007-11-20 21:07:44.000000000 +0100
-@@ -152,7 +152,7 @@ static int btsdio_rx_packet(struct btsdi
- 
- 	err = sdio_readsb(data->func, skb->data, REG_RDAT, len - 4);
- 	if (err < 0) {
--		kfree(skb);
-+		kfree_skb(skb);
- 		return err;
- 	}
- 
-@@ -163,7 +163,7 @@ static int btsdio_rx_packet(struct btsdi
- 
- 	err = hci_recv_frame(skb);
- 	if (err < 0) {
--		kfree(skb);
-+		kfree_skb(skb);
- 		return err;
- 	}
- 
+Simple answer:
+	No
+
+Detailed answer (I digress):
+
+They love ioctls as a commonality across all operating
+systems and a pass-through to proprietary firmware
+portals: binary, bidirectional, atomic and freely
+formatted migrating structures that do not herd the
+cats into just one specification. These are all
+eventually presented as documented stable objects
+exported by a sizeable C++ StorLib(tm) library that
+provides the consistent interface that the OEMs and
+Adaptec use to the higher level install, event, GUI
+and CLI applications. Driver is only involved as a
+transport.
+
+Sincerely -- Mark Salyzyn
