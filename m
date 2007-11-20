@@ -1,1422 +1,1568 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbXKTLhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbXKTLiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758844AbXKTLhK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 06:37:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXKTLg6
+	id S1759213AbXKTLiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 06:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbXKTLiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 06:36:58 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:56933 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756374AbXKTLgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 06:36:55 -0500
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Shannon Nelson <shannon.nelson@intel.com>,
-       Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
-       David Brownell <david-b@pacbell.net>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] dmaengine: Driver for the AVR32 DMACA controller
-Date: Tue, 20 Nov 2007 12:36:37 +0100
-Message-Id: <1195558597-23187-1-git-send-email-hskinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.3.4
+	Tue, 20 Nov 2007 06:38:15 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:58737 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756555AbXKTLiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 06:38:10 -0500
+Subject: Please pull git390 'for-linus' branch
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 20 Nov 2007 12:38:07 +0100
+Message-Id: <1195558687.20237.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the "DMA Engine" menu visible on AVR32 and adds a
-driver for the DMACA (aka DW DMAC) controller. This DMA controller can
-be found on the AT32AP7000 chip and it primarily meant for peripheral
-DMA transfer, but can also be used for memory-to-memory transfers.
+Please pull from 'for-linus' branch of
 
-The dmatest client shows no problems, but the performance is not as
-good as it should be yet -- iperf shows a slight slowdown when
-enabling TCP receive copy offload. This is probably because the
-controller is set up to always do byte transfers; I'll try to optimize
-this, but if someone can tell me if there any guaranteed alignment
-requirements for the users of the DMA engine API, that would help a
-lot.
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
 
-This patch is based on a driver from David Brownell which was based on
-an older version of the DMA Engine framework.
+to receive the following updates:
 
-I'm going to look at extending the DMA Engine API to cover the primary
-functionality of this controller, peripheral-to-memory and
-memory-to-peripheral transfers, next.
+ arch/s390/appldata/appldata.h         |    1 -
+ arch/s390/appldata/appldata_base.c    |   74 ++++----------------
+ arch/s390/appldata/appldata_mem.c     |    1 -
+ arch/s390/appldata/appldata_net_sum.c |    1 -
+ arch/s390/appldata/appldata_os.c      |    1 -
+ arch/s390/kernel/early.c              |    2 +-
+ arch/s390/kernel/entry.S              |  120 +++++++++++++++++++++-----------
+ arch/s390/kernel/entry64.S            |  114 ++++++++++++++++++++-----------
+ arch/s390/kernel/setup.c              |    6 ++-
+ arch/s390/kernel/smp.c                |   56 ++-------------
+ arch/s390/kernel/traps.c              |    1 +
+ arch/s390/mm/cmm.c                    |    3 -
+ drivers/s390/cio/css.c                |    2 +-
+ drivers/s390/cio/device_fsm.c         |    2 +-
+ drivers/s390/cio/device_id.c          |   45 +++----------
+ include/asm-s390/system.h             |    5 ++
+ include/linux/sysctl.h                |    6 --
+ kernel/sysctl_check.c                 |   14 ----
+ mm/rmap.c                             |    9 ++-
+ net/iucv/iucv.c                       |  107 +++++++++++++++++-------------
+ 20 files changed, 263 insertions(+), 307 deletions(-)
 
-Not signed off as this driver isn't ready to be merged yet.
----
-This patch depends on "DMA: Correct invalid assumptions in the Kconfig
-text" (without the part that adds AVR32 to the dependency list) and
-"DMAENGINE: Convert from class_device to device".
+Christian Borntraeger (2):
+      [S390] magic sysrq: check for in_atomic before doing an console_unblank
+      [S390] Optimize storage key handling for anonymous pages
 
- arch/avr32/mach-at32ap/at32ap7000.c        |   29 +-
- drivers/dma/Kconfig                        |   11 +-
- drivers/dma/Makefile                       |    1 +
- drivers/dma/dw_dmac.c                      |  977 ++++++++++++++++++++++++++++
- drivers/dma/dw_dmac.h                      |  244 +++++++
- include/asm-avr32/arch-at32ap/at32ap7000.h |   16 +
- 6 files changed, 1264 insertions(+), 14 deletions(-)
- create mode 100644 drivers/dma/dw_dmac.c
- create mode 100644 drivers/dma/dw_dmac.h
+Christoph Lameter (1):
+      [S390] Explicitly code allocpercpu calls in iucv
 
-diff --git a/arch/avr32/mach-at32ap/at32ap7000.c b/arch/avr32/mach-at32ap/at32ap7000.c
-index 7c4388f..1759f0d 100644
---- a/arch/avr32/mach-at32ap/at32ap7000.c
-+++ b/arch/avr32/mach-at32ap/at32ap7000.c
-@@ -450,6 +450,20 @@ static void __init genclk_init_parent(struct clk *clk)
- 	clk->parent = parent;
- }
+Cornelia Huck (1):
+      [S390] cio: Register/unregister subchannels only from kslowcrw.
+
+Heiko Carstens (7):
+      [S390] Fix irq tracing and lockdep_sys_exit calls.
+      [S390] cmm: remove unused binary sysctls.
+      [S390] appldata: remove unused binary sysctls.
+      [S390] Fix kernel preemption.
+      [S390] Dont overwrite lowcores on smp_send_stop().
+      [S390] Fix memory detection.
+      [S390] Add missing die_notifier() call to die().
+
+Peter Oberparleiter (1):
+      [S390] cio: change device sense procedure to work with pav aliases
+
+diff --git a/arch/s390/appldata/appldata.h b/arch/s390/appldata/appldata.h
+index 4069b81..db3ae85 100644
+--- a/arch/s390/appldata/appldata.h
++++ b/arch/s390/appldata/appldata.h
+@@ -45,7 +45,6 @@ struct appldata_ops {
+ 	int    active;				/* monitoring status */
  
-+/* REVISIT we may want a real struct for this driver's platform data,
-+ * but for now we'll only use it to pass the number of DMA channels
-+ * configured into this instance.  Also, most platform data here ought
-+ * to be declared as "const" (not just this) ...
-+ */
-+static unsigned dw_dmac0_data = 3;
-+
-+static struct resource dw_dmac0_resource[] = {
-+	PBMEM(0xff200000),
-+	IRQ(2),
-+};
-+DEFINE_DEV_DATA(dw_dmac, 0);
-+DEV_CLK(hclk, dw_dmac0, hsb, 10);
-+
- /* --------------------------------------------------------------------
-  *  System peripherals
-  * -------------------------------------------------------------------- */
-@@ -556,17 +570,6 @@ static struct clk pico_clk = {
- 	.users		= 1,
+ 	/* fill in from here */
+-	unsigned int ctl_nr;			/* sysctl ID */
+ 	char name[APPLDATA_PROC_NAME_LENGTH];	/* name of /proc fs node */
+ 	unsigned char record_nr;		/* Record Nr. for Product ID */
+ 	void (*callback)(void *data);		/* callback function */
+diff --git a/arch/s390/appldata/appldata_base.c b/arch/s390/appldata/appldata_base.c
+index ac61cf4..655d525 100644
+--- a/arch/s390/appldata/appldata_base.c
++++ b/arch/s390/appldata/appldata_base.c
+@@ -53,29 +53,26 @@ static int appldata_interval_handler(ctl_table *ctl, int write,
+ static struct ctl_table_header *appldata_sysctl_header;
+ static struct ctl_table appldata_table[] = {
+ 	{
+-		.ctl_name	= CTL_APPLDATA_TIMER,
+ 		.procname	= "timer",
+ 		.mode		= S_IRUGO | S_IWUSR,
+ 		.proc_handler	= &appldata_timer_handler,
+ 	},
+ 	{
+-		.ctl_name	= CTL_APPLDATA_INTERVAL,
+ 		.procname	= "interval",
+ 		.mode		= S_IRUGO | S_IWUSR,
+ 		.proc_handler	= &appldata_interval_handler,
+ 	},
+-	{ .ctl_name = 0 }
++	{ },
  };
  
--static struct resource dmaca0_resource[] = {
--	{
--		.start	= 0xff200000,
--		.end	= 0xff20ffff,
--		.flags	= IORESOURCE_MEM,
--	},
--	IRQ(2),
--};
--DEFINE_DEV(dmaca, 0);
--DEV_CLK(hclk, dmaca0, hsb, 10);
+ static struct ctl_table appldata_dir_table[] = {
+ 	{
+-		.ctl_name	= CTL_APPLDATA,
+ 		.procname	= appldata_proc_name,
+ 		.maxlen		= 0,
+ 		.mode		= S_IRUGO | S_IXUGO,
+ 		.child		= appldata_table,
+ 	},
+-	{ .ctl_name = 0 }
++	{ },
+ };
+ 
+ /*
+@@ -441,75 +438,38 @@ out:
+  */
+ int appldata_register_ops(struct appldata_ops *ops)
+ {
+-	struct list_head *lh;
+-	struct appldata_ops *tmp_ops;
+-	int i;
 -
- /* --------------------------------------------------------------------
-  * HMATRIX
-  * -------------------------------------------------------------------- */
-@@ -666,7 +669,7 @@ void __init at32_add_system_devices(void)
- 	platform_device_register(&at32_eic0_device);
- 	platform_device_register(&smc0_device);
- 	platform_device_register(&pdc_device);
--	platform_device_register(&dmaca0_device);
-+	platform_device_register(&dw_dmac0_device);
- 
- 	platform_device_register(&at32_systc0_device);
- 
-@@ -1627,7 +1630,7 @@ struct clk *at32_clock_list[] = {
- 	&smc0_mck,
- 	&pdc_hclk,
- 	&pdc_pclk,
--	&dmaca0_hclk,
-+	&dw_dmac0_hclk,
- 	&pico_clk,
- 	&pio0_mck,
- 	&pio1_mck,
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 1db5499..b67126f 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -4,7 +4,7 @@
- 
- menuconfig DMADEVICES
- 	bool "DMA Engine support"
--	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
-+	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || AVR32
- 	help
- 	  DMA engines can do asynchronous data transfers without
- 	  involving the host CPU. This can be used to offload memory
-@@ -36,6 +36,15 @@ config INTEL_IOP_ADMA
- 	help
- 	  Enable support for the Intel(R) IOP Series RAID engines.
- 
-+config DW_DMAC
-+	tristate "Synopsys DesignWare AHB DMA support"
-+	depends on AVR32
-+	select DMA_ENGINE
-+	default y if CPU_AT32AP7000
-+	help
-+	  Support the Synopsys DesignWare AHB DMA controller.  This
-+	  can be integrated in chips such as the Atmel AT32ap7000.
-+
- config DMA_ENGINE
- 	bool
- 
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index b152cd8..c9e35a8 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -1,5 +1,6 @@
- obj-$(CONFIG_DMA_ENGINE) += dmaengine.o
- obj-$(CONFIG_NET_DMA) += iovlock.o
- obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
-+obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- ioatdma-objs := ioat.o ioat_dma.o ioat_dca.o
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
-diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
-new file mode 100644
-index 0000000..b6f8b6d
---- /dev/null
-+++ b/drivers/dma/dw_dmac.c
-@@ -0,0 +1,977 @@
-+/*
-+ * Driver for the Synopsys DesignWare DMA Controller (aka DMACA on
-+ * AVR32 systems.)
-+ *
-+ * Copyright (C) 2007 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#define DEBUG
-+/* #define VERBOSE_DEBUG */
-+
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+
-+
-+/*
-+ * This supports the Synopsis "DesignWare AHB Central DMA Controller",
-+ * (DW_ahb_dmac) which is used with various AMBA 2.0 systems (not all
-+ * of which use ARM any more).  See the "Databook" from Synopsis for
-+ * information beyond what licensees probably provide.
-+ *
-+ * This "DMA Engine" framework is currently only a memcpy accelerator,
-+ * so the **PRIMARY FUNCTIONALITY** of this controller is not available:
-+ * hardware-synchronized DMA to/from external hardware or integrated
-+ * peripherals (such as an MMC/SD controller or audio interface).
-+ *
-+ * The driver has currently been tested only with the Atmel AT32AP7000,
-+ * which appears to be configured without writeback ... contrary to docs,
-+ * unless there's a bug in dma-coherent memory allocation.
-+ */
-+
-+#define USE_DMA_POOL
-+#undef USE_FREELIST
-+
-+#ifdef USE_DMA_POOL
-+#include <linux/dmapool.h>
-+#else
-+#include <linux/slab.h>
-+#endif
-+
-+#include "dw_dmac.h"
-+
-+/*----------------------------------------------------------------------*/
-+
-+#define NR_DESCS_PER_CHANNEL	8
-+
-+/* Because we're not relying on writeback from the controller (it may not
-+ * even be configured into the core!) we don't need to use dma_pool.  These
-+ * descriptors -- and associated data -- are cacheable.  We do need to make
-+ * sure their dcache entries are written back before handing them off to
-+ * the controller, though.
-+ */
-+
-+#ifdef USE_FREELIST
-+#define	FREECNT		10		/* for fastpath allocations */
-+#endif
-+
-+static struct dw_lli *
-+dwc_lli_alloc(struct dw_dma_chan *dwc, gfp_t flags)
-+{
-+	struct dw_lli	*lli;
-+
-+#ifdef USE_DMA_POOL
-+	dma_addr_t phys;
-+
-+	lli = dma_pool_alloc(dwc->lli_pool, flags, &phys);
-+	if (likely(lli))
-+		lli->phys = phys;
-+#else
-+	lli = kmem_cache_alloc(dwc->lli_pool, flags);
-+	if (unlikely(!lli))
-+		return NULL;
-+	lli->phys = dma_map_single(dwc->dev, lli,
-+			sizeof *lli, DMA_TO_DEVICE);
-+#endif
-+
-+	return lli;
-+}
-+
-+static inline void
-+dwc_lli_free(struct dw_dma_chan *dwc, struct dw_lli *lli)
-+{
-+#ifdef USE_DMA_POOL
-+	dma_pool_free(dwc->lli_pool, lli, lli->phys);
-+#else
-+	dma_unmap_single(dwc->dev, lli->phys, sizeof *lli, DMA_TO_DEVICE);
-+	kmem_cache_free(dwc->lli_pool, lli);
-+#endif
-+}
-+
-+static inline void
-+dwc_lli_sync_for_device(struct dw_dma_chan *dwc, struct dw_lli *lli)
-+{
-+#ifndef USE_DMA_POOL
-+	dma_sync_single_for_device(dwc->dev, lli->phys,
-+			sizeof(struct dw_lli), DMA_TO_DEVICE);
-+#endif
-+}
-+
-+static inline struct dw_lli *
-+dwc_lli_get(struct dw_dma_chan *dwc, gfp_t flags)
-+{
-+	struct dw_lli	*lli;
-+
-+#ifdef USE_FREELIST
-+	lli = dwc->free;
-+
-+	if (lli && FREECNT) {
-+		dwc->free = lli->next;
-+		dwc->freecnt--;
-+	} else
-+#endif
-+		lli = dwc_lli_alloc(dwc, flags);
-+
-+	return lli;
-+}
-+
-+static inline void
-+dwc_lli_put(struct dw_dma_chan *dwc, struct dw_lli *lli)
-+{
-+#ifdef USE_FREELIST
-+	if (dwc->freecnt < FREECNT) {
-+		lli->ctllo = lli->ctlhi = 0;
-+		lli->next = dwc->free;
-+		dwc->free = lli;
-+		dwc->freecnt++;
-+	} else
-+#endif
-+		dwc_lli_free(dwc, lli);
-+}
-+
-+static struct dw_desc *dwc_desc_get(struct dw_dma_chan *dwc)
-+{
-+	struct dw_desc *desc, *_desc;
-+	struct dw_desc *ret = NULL;
-+
-+	spin_lock_bh(&dwc->lock);
-+	list_for_each_entry_safe(desc, _desc, &dwc->free_list, desc_node) {
-+		if (desc->txd.ack) {
-+			list_del(&desc->desc_node);
-+			desc->txd.ack = 0;
-+			ret = desc;
-+			break;
-+		}
-+	}
-+	spin_unlock_bh(&dwc->lock);
-+
-+	return ret;
-+}
-+
-+static void dwc_desc_put(struct dw_dma_chan *dwc, struct dw_desc *desc)
-+{
-+	spin_lock_bh(&dwc->lock);
-+	list_add_tail(&desc->desc_node, &dwc->free_list);
-+	spin_unlock_bh(&dwc->lock);
-+}
-+
-+/* Called with dwc->lock held and bh disabled */
-+static dma_cookie_t
-+dwc_assign_cookie(struct dw_dma_chan *dwc, struct dw_desc *desc)
-+{
-+	dma_cookie_t cookie = dwc->chan.cookie;
-+
-+	if (++cookie < 0)
-+		cookie = 1;
-+
-+	dwc->chan.cookie = cookie;
-+	desc->txd.cookie = cookie;
-+
-+	return cookie;
-+}
-+
-+/*----------------------------------------------------------------------*/
-+
-+/* Called with dwc->lock held and bh disabled */
-+static void dwc_dostart(struct dw_dma_chan *dwc, struct dw_lli *first)
-+{
-+	struct dw_dma	*dw = to_dw_dma(dwc->chan.device);
-+
-+	if (dma_readl(dw, CH_EN) & dwc->mask) {
-+		dev_err(&dwc->chan.dev,
-+			"BUG: Attempted to start non-idle channel\n");
-+		dev_err(&dwc->chan.dev, "  new: %p last_lli: %p\n",
-+			first, dwc->last_lli);
-+		dev_err(&dwc->chan.dev,
-+			"  first_queued: %p last_queued: %p\n",
-+			dwc->first_queued, dwc->last_queued);
-+		dev_err(&dwc->chan.dev,
-+			"  LLP: 0x%x CTL: 0x%x:%08x\n",
-+			channel_readl(dwc, LLP),
-+			channel_readl(dwc, CTL_HI),
-+			channel_readl(dwc, CTL_LO));
-+
-+		/* The tasklet will hopefully advance the queue... */
-+		return;
-+	}
-+
-+	/* ASSERT:  channel is idle */
-+
-+	channel_writel(dwc, LLP, first->phys);
-+	channel_writel(dwc, CTL_LO,
-+			DWC_CTLL_LLP_D_EN | DWC_CTLL_LLP_S_EN);
-+	channel_writel(dwc, CTL_HI, 0);
-+	channel_set_bit(dw, CH_EN, dwc->mask);
-+}
-+
-+/*----------------------------------------------------------------------*/
-+
-+/*
-+ * Move descriptors that have been queued up because the DMA
-+ * controller was busy at the time of submission, to the "active"
-+ * list. The caller must make sure that the DMA controller is
-+ * kickstarted if necessary.
-+ *
-+ * Called with dwc->lock held and bh disabled.
-+ */
-+static void dwc_submit_queue(struct dw_dma_chan *dwc)
-+{
-+	dwc->last_lli = dwc->last_queued;
-+	list_splice_init(&dwc->queue, dwc->active_list.prev);
-+	dwc->first_queued = dwc->last_queued = NULL;
-+}
-+
-+static void
-+dwc_descriptor_complete(struct dw_dma_chan *dwc, struct dw_desc *desc)
-+{
-+	struct dw_lli *lli;
-+
-+	dwc->completed = desc->txd.cookie;
-+	for (lli = desc->first_lli; lli; lli = lli->next)
-+		dwc_lli_put(dwc, lli);
-+
-+	desc->first_lli = NULL;
-+	list_move(&desc->desc_node, &dwc->free_list);
-+
-+	/*
-+	 * The API requires that no submissions are done from a
-+	 * callback, so we don't need to drop the lock here
-+	 */
-+	if (desc->txd.callback)
-+		desc->txd.callback(desc->txd.callback_param);
-+}
-+
-+static void dwc_scan_descriptors(struct dw_dma *dw, struct dw_dma_chan *dwc)
-+{
-+	dma_addr_t llp;
-+	struct dw_desc *desc, *_desc;
-+	struct dw_lli *lli;
-+
-+	/* Clear interrupt flags before scanning */
-+	dma_writel(dw, CLEAR_XFER, dwc->mask);
-+	dma_writel(dw, CLEAR_BLOCK, dwc->mask);
-+	llp = channel_readl(dwc, LLP);
-+
-+	dev_vdbg(&dwc->chan.dev, "scan_descriptors: llp=0x%x\n", llp);
-+
-+	list_for_each_entry_safe(desc, _desc, &dwc->active_list, desc_node) {
-+		for (lli = desc->first_lli; lli; lli = lli->next) {
-+			if (lli->phys == llp)
-+				return;
-+		}
-+
-+		/*
-+		 * If none of the descriptors so far were next in
-+		 * line, it means that the dummy descriptor at the end
-+		 * has been loaded, which in turn means that the
-+		 * whole async_tx descriptor is done.
-+		 */
-+		dwc_descriptor_complete(dwc, desc);
-+	}
-+
-+	/*
-+	 * The DMA controller seems to get stuck after loading the
-+	 * dummy descriptor. Try to un-wedge it...
-+	 */
-+	channel_clear_bit(dw, CH_EN, dwc->mask);
-+	while (dma_readl(dw, CH_EN) & dwc->mask)
-+		cpu_relax();
-+
-+	/*
-+	 * Everything we've submitted is done. The DMA controller
-+	 * should be idle, so submit any descriptors that have been
-+	 * queued up.
-+	 */
-+	dwc->last_lli = NULL;
-+	if (dwc->first_queued) {
-+		dwc_dostart(dwc, dwc->first_queued);
-+		dwc_submit_queue(dwc);
-+	}
-+}
-+
-+static void dwc_handle_error(struct dw_dma *dw, struct dw_dma_chan *dwc)
-+{
-+	struct dw_desc *bad_desc;
-+	struct dw_desc *next_desc;
-+	struct dw_lli *lli;
-+
-+	/*
-+	 * The descriptor currently at the head of the active list is
-+	 * borked. Since we don't have any way to report errors, we'll
-+	 * just have to scream loudly and try to carry on.
-+	 */
-+	bad_desc = list_entry(dwc->active_list.next,
-+			struct dw_desc, desc_node);
-+	list_del_init(&bad_desc->desc_node);
-+	if (dwc->first_queued)
-+		dwc_submit_queue(dwc);
-+
-+	/* Clear the error flag and try to restart the controller */
-+	dma_writel(dw, CLEAR_ERROR, dwc->mask);
-+	if (!list_empty(&dwc->active_list)) {
-+		next_desc = list_entry(dwc->active_list.next,
-+				struct dw_desc, desc_node);
-+		dwc_dostart(dwc, next_desc->first_lli);
-+	}
-+
-+	/*
-+	 * KERN_CRITICAL may seem harsh, but since this only happens
-+	 * when someone submits a bad physical address in a
-+	 * descriptor, we should consider ourselves lucky that the
-+	 * controller flagged an error instead of scribbling over
-+	 * random memory locations.
-+	 */
-+	dev_printk(KERN_CRIT, &dwc->chan.dev,
-+			"Bad descriptor submitted for DMA!\n");
-+	dev_printk(KERN_CRIT, &dwc->chan.dev,
-+			"  cookie: %d\n", bad_desc->txd.cookie);
-+	for (lli = bad_desc->first_lli; lli; lli = lli->next)
-+		dev_printk(KERN_CRIT, &dwc->chan.dev,
-+			"  LLI: s/0x%x d/0x%x l/0x%x c/0x%x:%x\n",
-+			lli->sar, lli->dar, lli->llp,
-+			lli->ctlhi, lli->ctllo);
-+
-+	/* Pretend the descriptor completed successfully */
-+	dwc_descriptor_complete(dwc, bad_desc);
-+}
-+
-+static void dw_dma_tasklet(unsigned long data)
-+{
-+	struct dw_dma *dw = (struct dw_dma *)data;
-+	struct dw_dma_chan *dwc;
-+	u32 status_block;
-+	u32 status_err;
-+	int i;
-+
-+	status_block = dma_readl(dw, RAW_BLOCK);
-+	status_err = dma_readl(dw, RAW_ERROR);
-+
-+	for (i = 0; i < NDMA; i++) {
-+		dwc = &dw->chan[i];
-+		spin_lock(&dwc->lock);
-+		if (status_block & (1 << i))
-+			dwc_scan_descriptors(dw, dwc);
-+		if (status_err & (1 << i))
-+			dwc_handle_error(dw, dwc);
-+		spin_unlock(&dwc->lock);
-+	}
-+
-+	/*
-+	 * Re-enable interrupts. We usually don't care about "block
-+	 * complete" interrupts, but they may be enabled by some
-+	 * descriptors. This will trigger a scan before the whole list
-+	 * is done.
-+	 */
-+	channel_set_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_set_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
-+}
-+
-+static irqreturn_t dw_dma_interrupt(int irq, void *dev_id)
-+{
-+	struct dw_dma *dw = dev_id;
-+	u32 status;
-+
-+	/*
-+	 * Just disable the interrupts. We'll turn them back on in the
-+	 * softirq handler.
-+	 */
-+	channel_clear_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
-+
-+	status = dma_readl(dw, STATUS_INT);
-+	if (status) {
-+		dev_err(dw->dma.dev,
-+			"BUG: Unexpected interrupts pending: 0x%x\n",
-+			status);
-+
-+		/* Try to recover */
-+		channel_clear_bit(dw, MASK_XFER, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_BLOCK, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_SRC_TRAN, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_DST_TRAN, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_ERROR, (1 << 8) - 1);
-+	}
-+
-+	tasklet_schedule(&dw->tasklet);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*----------------------------------------------------------------------*/
-+
-+static dma_cookie_t dwc_tx_submit(struct dma_async_tx_descriptor *tx)
-+{
-+	struct dw_desc		*desc = to_dw_descriptor(tx);
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(tx->chan);
-+	struct dw_lli		*lli;
-+	dma_cookie_t		cookie;
-+
-+	/* Make sure all descriptors are written to RAM */
-+	for (lli = desc->first_lli; lli; lli = lli->next)
-+		dwc_lli_sync_for_device(dwc, lli);
-+
-+	spin_lock_bh(&dwc->lock);
-+	cookie = dwc_assign_cookie(dwc, desc);
-+
-+	/*
-+	 * REVISIT: We should attempt to chain as many descriptors as
-+	 * possible, perhaps even appending to those already submitted
-+	 * for DMA. But this is hard to do in a race-free manner.
-+	 */
-+	if (dwc->last_queued || dwc->last_lli) {
-+		list_add_tail(&desc->desc_node, &dwc->queue);
-+		dwc->last_queued = desc->last_lli;
-+		if (!dwc->first_queued)
-+			dwc->first_queued = desc->first_lli;
-+	} else {
-+		dwc_dostart(dwc, desc->first_lli);
-+		list_add_tail(&desc->desc_node, &dwc->active_list);
-+		dwc->last_lli = desc->last_lli;
-+	}
-+
-+	spin_unlock_bh(&dwc->lock);
-+
-+	return cookie;
-+}
-+
-+static void dwc_tx_set_dest(dma_addr_t addr,
-+		struct dma_async_tx_descriptor *tx, int index)
-+{
-+	/* FIXME: What does "index" mean? */
-+	struct dw_desc	*desc = to_dw_descriptor(tx);
-+	struct dw_lli	*lli;
-+
-+	for (lli = desc->first_lli; lli; lli = lli->next) {
-+		lli->dar = addr;
-+		addr += DWC_CTLH_BLOCK_TS_MASK;
-+	}
-+}
-+
-+static void dwc_tx_set_src(dma_addr_t addr,
-+		struct dma_async_tx_descriptor *tx, int index)
-+{
-+	/* FIXME: What does "index" mean? */
-+	struct dw_desc	*desc = to_dw_descriptor(tx);
-+	struct dw_lli	*lli;
-+
-+	for (lli = desc->first_lli; lli; lli = lli->next) {
-+		lli->sar = addr;
-+		addr += DWC_CTLH_BLOCK_TS_MASK;
-+	}
-+}
-+
-+static struct dma_async_tx_descriptor *
-+dwc_prep_dma_memcpy(struct dma_chan *chan, size_t len, int int_en)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_desc		*desc;
-+	struct dw_lli		*prev, *lli;
-+	u32			ctllo;
-+
-+	dev_vdbg(&chan->dev, "prep_dma_memcpy\n");
-+
-+	if (unlikely(!len))
-+		return NULL;
-+
-+	desc = dwc_desc_get(dwc);
-+	if (!desc)
-+		return NULL;
-+
-+	dev_vdbg(&chan->dev, "  got descriptor %p\n", desc);
-+
-+	/* FIXME: Try to use wider transfers when possible */
-+	ctllo = DWC_CTLL_DST_WIDTH(0)
-+			| DWC_CTLL_SRC_WIDTH(0)
-+			| DWC_CTLL_DST_INC
-+			| DWC_CTLL_SRC_INC
-+			| DWC_CTLL_DST_MSIZE(4)
-+			| DWC_CTLL_SRC_MSIZE(4)
-+			| DWC_CTLL_FC_M2M
-+			/* NOTE:  DMS+SMS could be system-specific... */
-+			| DWC_CTLL_DMS(0)
-+			| DWC_CTLL_SMS(1)
-+			| DWC_CTLL_LLP_D_EN
-+			| DWC_CTLL_LLP_S_EN;
-+
-+	/*
-+	 * Use block chaining, and "transfer type 10" with source and
-+	 * destination addresses updated through LLP.  Terminate using
-+	 * a dummy descriptor with invalid LLP.
-+	 *
-+	 * IMPORTANT:  here we assume the core is configured with each
-+	 * channel supporting dma descriptor lists!
-+	 */
-+	prev = NULL;
-+	while (len) {
-+		size_t		max_len = DWC_CTLH_BLOCK_TS_MASK;
-+		size_t		block_len;
-+
-+		lli = dwc_lli_get(dwc, GFP_ATOMIC);
-+		if (!lli)
-+			goto err_lli_get;
-+
-+		block_len = min(len, max_len);
-+
-+		if (!prev) {
-+			desc->first_lli = lli;
-+		} else {
-+			prev->llp = lli->phys;
-+			prev->next = lli;
-+		}
-+		lli->ctllo = ctllo;
-+		lli->ctlhi = block_len;
-+
-+		len -= block_len;
-+		prev = lli;
-+
-+		dev_vdbg(&chan->dev, "  lli %p: len %zu phys 0x%x\n",
-+				lli, block_len, lli->phys);
-+	}
-+
-+	if (int_en)
-+		/* Trigger interrupt after last block */
-+		prev->ctllo |= DWC_CTLL_INT_EN;
-+
-+	/*
-+	 * Add a dummy descriptor to the end to make chaining
-+	 * subsequent requests easier.
-+	 *
-+	 * REVISIT: Reduce the number of dummy descriptors by
-+	 * submitting descriptors in batches.
-+	 */
-+	lli = dwc_lli_get(dwc, GFP_ATOMIC);
-+	if (!lli)
-+		goto err_get_dummy;
-+
-+	lli->llp = 0;
-+	lli->ctlhi = 0;
-+	lli->ctllo = 0;
-+	lli->next = NULL;
-+
-+	prev->next = lli;
-+	prev->llp = lli->phys;
-+	desc->last_lli = lli;
-+
-+	return &desc->txd;
-+
-+err_get_dummy:
-+err_lli_get:
-+	for (lli = desc->first_lli; lli; lli = lli->next)
-+		dwc_lli_put(dwc, lli);
-+	dwc_desc_put(dwc, desc);
-+	return NULL;
-+}
-+
-+static void dwc_dependency_added(struct dma_chan *chan)
-+{
-+	/* FIXME: What is this hook supposed to do? */
-+}
-+
-+static enum dma_status
-+dwc_is_tx_complete(struct dma_chan *chan,
-+		dma_cookie_t cookie,
-+		dma_cookie_t *done, dma_cookie_t *used)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	dma_cookie_t		last_used;
-+	dma_cookie_t		last_complete;
-+	int			ret;
-+
-+	last_complete = dwc->completed;
-+	last_used = chan->cookie;
-+
-+	ret = dma_async_is_complete(cookie, last_complete, last_used);
-+	if (ret != DMA_SUCCESS) {
-+		dwc_scan_descriptors(to_dw_dma(chan->device), dwc);
-+
-+		last_complete = dwc->completed;
-+		last_used = chan->cookie;
-+
-+		ret = dma_async_is_complete(cookie, last_complete, last_used);
-+	}
-+
-+	if (done)
-+		*done = last_complete;
-+	if (used)
-+		*used = last_used;
-+
-+	return ret;
-+}
-+
-+static void dwc_issue_pending(struct dma_chan *chan)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+
-+	spin_lock_bh(&dwc->lock);
-+	if (dwc->last_queued)
-+		dwc_scan_descriptors(to_dw_dma(chan->device), dwc);
-+	spin_unlock_bh(&dwc->lock);
-+}
-+
-+static int dwc_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_dma		*dw = to_dw_dma(chan->device);
-+	struct dw_desc		*desc;
-+	int			i;
-+
-+	dev_vdbg(&chan->dev, "alloc_chan_resources\n");
-+
-+	/* ASSERT:  channel is idle */
-+	if (dma_readl(dw, CH_EN) & dwc->mask) {
-+		dev_dbg(&chan->dev, "DMA channel not idle?\n");
-+		return -EIO;
-+	}
-+
-+	dwc->completed = chan->cookie = 1;
-+
-+	/* "no" handshaking, and no fancy games */
-+	channel_writel(dwc, CFG_LO, 0);
-+	channel_writel(dwc, CFG_HI, DWC_CFGH_FIFO_MODE);
-+
-+	/* NOTE: got access faults trying to clear SGR and DSR;
-+	 * also later when trying to read SSTATAR and DSTATAR...
-+	 */
-+
-+	spin_lock_bh(&dwc->lock);
-+	i = dwc->descs_allocated;
-+	while (dwc->descs_allocated < NR_DESCS_PER_CHANNEL) {
-+		spin_unlock_bh(&dwc->lock);
-+
-+		desc = kzalloc(sizeof(struct dw_desc), GFP_KERNEL);
-+		if (!desc) {
-+			dev_info(&chan->dev,
-+				"only allocated %d descriptors\n", i);
-+			spin_lock_bh(&dwc->lock);
-+			break;
-+		}
-+
-+		dma_async_tx_descriptor_init(&desc->txd, chan);
-+		desc->txd.ack = 1;
-+		desc->txd.tx_submit = dwc_tx_submit;
-+		desc->txd.tx_set_dest = dwc_tx_set_dest;
-+		desc->txd.tx_set_src = dwc_tx_set_src;
-+
-+		dev_vdbg(&chan->dev, "  adding descriptor %p\n", desc);
-+
-+		spin_lock_bh(&dwc->lock);
-+		i = ++dwc->descs_allocated;
-+		list_add_tail(&desc->desc_node, &dwc->free_list);
-+	}
-+
-+	/* Enable interrupts */
-+	channel_set_bit(dw, MASK_XFER, dwc->mask);
-+	channel_set_bit(dw, MASK_ERROR, dwc->mask);
-+
-+	spin_unlock_bh(&dwc->lock);
-+
-+	dev_vdbg(&chan->dev,
-+		"alloc_chan_resources allocated %d descriptors\n", i);
-+
-+	return i;
-+}
-+
-+static void dwc_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_dma		*dw = to_dw_dma(chan->device);
-+	struct dw_desc		*desc, *_desc;
-+	LIST_HEAD(list);
-+
-+	dev_vdbg(&chan->dev, "free_chan_resources (descs allocated=%u)\n",
-+			dwc->descs_allocated);
-+
-+	/* ASSERT:  channel is idle */
-+	BUG_ON(!list_empty(&dwc->active_list));
-+	BUG_ON(!list_empty(&dwc->queue));
-+	BUG_ON(dma_readl(to_dw_dma(chan->device), CH_EN) & dwc->mask);
-+
-+	spin_lock_bh(&dwc->lock);
-+	list_splice_init(&dwc->free_list, &list);
-+	dwc->descs_allocated = 0;
-+
-+	/* Disable interrupts */
-+	channel_clear_bit(dw, MASK_XFER, dwc->mask);
-+	channel_clear_bit(dw, MASK_BLOCK, dwc->mask);
-+	channel_clear_bit(dw, MASK_ERROR, dwc->mask);
-+
-+	spin_unlock_bh(&dwc->lock);
-+
-+	list_for_each_entry_safe(desc, _desc, &list, desc_node) {
-+		dev_vdbg(&chan->dev, "  freeing descriptor %p\n", desc);
-+		kfree(desc);
-+	}
-+
-+	dev_vdbg(&chan->dev, "free_chan_resources done\n");
-+}
-+
-+/*----------------------------------------------------------------------*/
-+
-+static void dw_dma_off(struct dw_dma *dw)
-+{
-+	dma_writel(dw, CFG, 0);
-+
-+	channel_clear_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_SRC_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_DST_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
-+
-+	while (dma_readl(dw, CFG) & DW_CFG_DMA_EN)
-+		cpu_relax();
-+}
-+
-+static int __init dw_probe(struct platform_device *pdev)
-+{
-+	struct resource		*io;
-+	struct dw_dma		*dw;
-+#ifdef USE_DMA_POOL
-+	struct dma_pool		*lli_pool;
-+#else
-+	struct kmem_cache	*lli_pool;
-+#endif
-+	int			irq;
-+	int			err;
-+	int			i;
-+
-+	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!io)
+-	i = 0;
++	if ((ops->size > APPLDATA_MAX_REC_SIZE) || (ops->size < 0))
 +		return -EINVAL;
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	/* FIXME platform_data holds NDMA.  Use that to adjust the size
-+	 * of this allocation to match the silicon, and channel init.
-+	 */
-+
-+	dw = kzalloc(sizeof *dw, GFP_KERNEL);
-+	if (!dw)
-+		return -ENOMEM;
-+
-+	if (request_mem_region(io->start, DW_REGLEN,
-+			pdev->dev.driver->name) == 0) {
-+		err = -EBUSY;
-+		goto err_kfree;
-+	}
-+
-+	memset(dw, 0, sizeof *dw);
-+
-+	dw->regs = ioremap(io->start, DW_REGLEN);
-+	if (!dw->regs) {
-+		err = -ENOMEM;
-+		goto err_release_r;
-+	}
-+
-+	dw->clk = clk_get(&pdev->dev, "hclk");
-+	if (IS_ERR(dw->clk)) {
-+		err = PTR_ERR(dw->clk);
-+		goto err_clk;
-+	}
-+	clk_enable(dw->clk);
-+
-+	/* force dma off, just in case */
-+	dw_dma_off(dw);
-+
-+	err = request_irq(irq, dw_dma_interrupt, 0, "dw_dmac", dw);
-+	if (err)
-+		goto err_irq;
-+
-+#ifdef USE_DMA_POOL
-+	lli_pool = dma_pool_create(pdev->dev.bus_id, &pdev->dev,
-+			sizeof(struct dw_lli), 4, 0);
-+#else
-+	lli_pool = kmem_cache_create(pdev->dev.bus_id,
-+			sizeof(struct dw_lli), 4, 0, NULL);
-+#endif
-+	if (!lli_pool) {
-+		err = -ENOMEM;
-+		goto err_dma_pool;
-+	}
-+
-+	dw->lli_pool = lli_pool;
-+	platform_set_drvdata(pdev, dw);
-+
-+	tasklet_init(&dw->tasklet, dw_dma_tasklet, (unsigned long)dw);
-+
-+	INIT_LIST_HEAD(&dw->dma.channels);
-+	for (i = 0; i < NDMA; i++, dw->dma.chancnt++) {
-+		struct dw_dma_chan	*dwc = &dw->chan[i];
-+
-+		dwc->chan.device = &dw->dma;
-+		dwc->chan.cookie = dwc->completed = 1;
-+		dwc->chan.chan_id = i;
-+		list_add_tail(&dwc->chan.device_node, &dw->dma.channels);
-+
-+		dwc->ch_regs = dw->regs + DW_DMAC_CHAN_BASE(i);
-+		dwc->lli_pool = lli_pool;
-+		spin_lock_init(&dwc->lock);
-+		dwc->mask = 1 << i;
-+
-+		/* FIXME dmaengine API bug:  the dma_device isn't coupled
-+		 * to the underlying hardware; so neither is the dma_chan.
-+		 *
-+		 * Workaround:  dwc->dev instead of dwc->chan.cdev.dev
-+		 * (or eventually dwc->chan.dev.parent).
-+		 */
-+		dwc->dev = &pdev->dev;
-+
-+		INIT_LIST_HEAD(&dwc->active_list);
-+		INIT_LIST_HEAD(&dwc->queue);
-+		INIT_LIST_HEAD(&dwc->free_list);
-+
-+		channel_clear_bit(dw, CH_EN, dwc->mask);
-+	}
-+
-+	/* Clear/disable all interrupts on all channels. */
-+	dma_writel(dw, CLEAR_XFER, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_BLOCK, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_SRC_TRAN, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_DST_TRAN, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_ERROR, (1 << NDMA) - 1);
-+
-+	channel_clear_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_SRC_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_DST_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
-+
-+	dma_cap_set(DMA_MEMCPY, dw->dma.cap_mask);
-+	dw->dma.dev = &pdev->dev;
-+	dw->dma.device_alloc_chan_resources = dwc_alloc_chan_resources;
-+	dw->dma.device_free_chan_resources = dwc_free_chan_resources;
-+
-+	dw->dma.device_prep_dma_memcpy = dwc_prep_dma_memcpy;
-+
-+	dw->dma.device_dependency_added = dwc_dependency_added;
-+	dw->dma.device_is_tx_complete = dwc_is_tx_complete;
-+	dw->dma.device_issue_pending = dwc_issue_pending;
-+
-+	dma_writel(dw, CFG, DW_CFG_DMA_EN);
-+
-+	printk(KERN_INFO "%s: DesignWare DMA Controller, %d channels\n",
-+			pdev->dev.bus_id, dw->dma.chancnt);
-+
-+	dma_async_device_register(&dw->dma);
-+
-+	return 0;
-+
-+err_dma_pool:
-+	free_irq(irq, dw);
-+err_irq:
-+	clk_disable(dw->clk);
-+	clk_put(dw->clk);
-+err_clk:
-+	iounmap(dw->regs);
-+	dw->regs = NULL;
-+err_release_r:
-+	release_resource(io);
-+err_kfree:
-+	kfree(dw);
-+	return err;
-+}
-+
-+static int __exit dw_remove(struct platform_device *pdev)
-+{
-+	struct dw_dma		*dw = platform_get_drvdata(pdev);
-+	struct dw_dma_chan	*dwc, *_dwc;
-+	struct resource		*io;
-+
-+	dev_dbg(&pdev->dev, "dw_remove\n");
-+
-+	dw_dma_off(dw);
-+	dma_async_device_unregister(&dw->dma);
-+
-+	free_irq(platform_get_irq(pdev, 0), dw);
-+	tasklet_kill(&dw->tasklet);
-+
-+	list_for_each_entry_safe(dwc, _dwc, &dw->dma.channels,
-+			chan.device_node) {
-+		list_del(&dwc->chan.device_node);
-+		channel_clear_bit(dw, CH_EN, dwc->mask);
-+	}
-+
-+#ifdef USE_DMA_POOL
-+	dma_pool_destroy(dw->lli_pool);
-+#else
-+	kmem_cache_destroy(dw->lli_pool);
-+#endif
-+
-+	clk_disable(dw->clk);
-+	clk_put(dw->clk);
-+
-+	iounmap(dw->regs);
-+	dw->regs = NULL;
-+
-+	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	release_mem_region(io->start, DW_REGLEN);
-+
-+	kfree(dw);
-+
-+	dev_dbg(&pdev->dev, "dw_remove done\n");
-+
-+	return 0;
-+}
-+
-+static void dw_shutdown(struct platform_device *pdev)
-+{
-+	struct dw_dma	*dw = platform_get_drvdata(pdev);
-+
-+	dw_dma_off(platform_get_drvdata(pdev));
-+	clk_disable(dw->clk);
-+}
-+
-+static int dw_suspend_late(struct platform_device *pdev, pm_message_t mesg)
-+{
-+	struct dw_dma	*dw = platform_get_drvdata(pdev);
-+
-+	dw_dma_off(platform_get_drvdata(pdev));
-+	clk_disable(dw->clk);
-+	return 0;
-+}
-+
-+static int dw_resume_early(struct platform_device *pdev)
-+{
-+	struct dw_dma	*dw = platform_get_drvdata(pdev);
-+
-+	clk_enable(dw->clk);
-+	dma_writel(dw, CFG, DW_CFG_DMA_EN);
-+	return 0;
-+
-+}
-+
-+static struct platform_driver dw_driver = {
-+	.remove		= __exit_p(dw_remove),
-+	.shutdown	= dw_shutdown,
-+	.suspend_late	= dw_suspend_late,
-+	.resume_early	= dw_resume_early,
-+	.driver = {
-+		.name	= "dw_dmac",
-+	},
-+};
-+
-+static int __init dw_init(void)
-+{
-+	BUILD_BUG_ON(NDMA > 8);
-+	return platform_driver_probe(&dw_driver, dw_probe);
-+}
-+device_initcall(dw_init);
-+
-+static void __exit dw_exit(void)
-+{
-+	platform_driver_unregister(&dw_driver);
-+}
-+module_exit(dw_exit);
-+
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/dw_dmac.h b/drivers/dma/dw_dmac.h
-new file mode 100644
-index 0000000..88cc072
---- /dev/null
-+++ b/drivers/dma/dw_dmac.h
-@@ -0,0 +1,244 @@
-+/*
-+ * Driver for the Synopsys DesignWare AHB DMA Controller
-+ *
-+ * Copyright (C) 2005-2007 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+/* REVISIT Synopsys provides a C header; use symbols from there instead? */
-+
-+/* per-channel registers */
-+#define DW_DMAC_CHAN_SAR	0x000
-+#define DW_DMAC_CHAN_DAR	0x008
-+#define DW_DMAC_CHAN_LLP	0x010
-+#define DW_DMAC_CHAN_CTL_LO	0x018
-+#	define DWC_CTLL_INT_EN		(1 << 0)	/* irqs enabled? */
-+#	define DWC_CTLL_DST_WIDTH(n)	((n)<<1)	/* bytes per element */
-+#	define DWC_CTLL_SRC_WIDTH(n)	((n)<<5)
-+#	define DWC_CTLL_DST_INC		(0<<7)		/* DAR update/not */
-+#	define DWC_CTLL_DST_DEC		(1<<7)
-+#	define DWC_CTLL_DST_FIX		(2<<7)
-+#	define DWC_CTLL_SRC_INC		(0<<7)		/* SAR update/not */
-+#	define DWC_CTLL_SRC_DEC		(1<<9)
-+#	define DWC_CTLL_SRC_FIX		(2<<9)
-+#	define DWC_CTLL_DST_MSIZE(n)	((n)<<11)	/* burst, #elements */
-+#	define DWC_CTLL_SRC_MSIZE(n)	((n)<<14)
-+#	define DWC_CTLL_S_GATH_EN	(1 << 17)	/* src gather, !FIX */
-+#	define DWC_CTLL_D_SCAT_EN	(1 << 18)	/* dst scatter, !FIX */
-+#	define DWC_CTLL_FC_M2M		(0 << 20)	/* mem-to-mem */
-+	/* plus 7 flow control/synch models for peripheral I/O ... */
-+#	define DWC_CTLL_DMS(n)		((n)<<23)
-+#	define DWC_CTLL_SMS(n)		((n)<<25)
-+#	define DWC_CTLL_LLP_D_EN	(1 << 27)	/* dest block chain */
-+#	define DWC_CTLL_LLP_S_EN	(1 << 28)	/* src block chain */
-+#define DW_DMAC_CHAN_CTL_HI	0x01c
-+#	define DWC_CTLH_DONE		0x00001000
-+#	define DWC_CTLH_BLOCK_TS_MASK	0x000007ff
-+#define DW_DMAC_CHAN_SSTAT	0x020
-+#define DW_DMAC_CHAN_DSTAT	0x028
-+#define DW_DMAC_CHAN_SSTATAR	0x030
-+#define DW_DMAC_CHAN_DSTATAR	0x038
-+#define DW_DMAC_CHAN_CFG_LO	0x040
-+#	define DWC_CFGL_PRIO(x)		((x) << 5)	/* priority */
-+#	define DWC_CFGL_CH_SUSP		(1 << 8)	/* pause xfer */
-+#	define DWC_CFGL_FIFO_EMPTY	(1 << 9)	/* pause xfer */
-+#	define DWC_CFGL_HS_DST		(1 << 10)	/* handshake w/dst */
-+#	define DWC_CFGL_HS_SRC		(1 << 11)	/* handshake w/src */
-+#	define DWC_CFGL_LOCK_CH_XFER	(0 << 12)	/* scope of LOCK_CH */
-+#	define DWC_CFGL_LOCK_CH_BLOCK	(1 << 12)
-+#	define DWC_CFGL_LOCK_CH_XACT	(2 << 12)
-+#	define DWC_CFGL_LOCK_BUS_XFER	(0 << 14)	/* scope of LOCK_BUS */
-+#	define DWC_CFGL_LOCK_BUS_BLOCK	(1 << 14)
-+#	define DWC_CFGL_LOCK_BUS_XACT	(2 << 14)
-+#	define DWC_CFGL_LOCK_CH		(1 << 15)	/* channel lockout */
-+#	define DWC_CFGL_LOCK_BUS	(1 << 16)	/* busmaster lockout */
-+#	define DWC_CFGL_HS_DST_POL	(1 << 18)
-+#	define DWC_CFGL_HS_SRC_POL	(1 << 19)
-+#	define DWC_CFGL_MAX_BURST(x)	((x) << 20)
-+#	define DWC_CFGL_RELOAD_SAR	(1 << 30)
-+#	define DWC_CFGL_RELOAD_DAR	(1 << 31)
-+#define DW_DMAC_CHAN_CFG_HI	0x044
-+#	define DWC_CFGH_FCMODE		(1 << 0)
-+#	define DWC_CFGH_FIFO_MODE	(1 << 1)
-+#	define DWC_CFGH_PROTCTL(x)	((x) << 2)
-+#	define DWC_CFGH_DS_UPD_EN	(1 << 5)
-+#	define DWC_CFGH_SS_UPD_EN	(1 << 6)
-+#	define DWC_CFGH_SRC_PER(x)	((x) << 7)
-+#	define DWC_CFGH_DST_PER(x)	((x) << 11)
-+#define DW_DMAC_CHAN_SGR	0x048
-+#	define DWC_SGR_SGI(x)		((x) << 0)
-+#	define DWC_SGR_SGC(x)		((x) << 20)
-+#define DW_DMAC_CHAN_DSR	0x050
-+#	define DWC_DSR_DSI(x)		((x) << 0)
-+#	define DWC_DSR_DSC(x)		((x) << 20)
-+
-+#define	DW_DMAC_CHAN_BASE(n)	((n)*0x58)
-+
-+/* irq handling */
-+#define DW_DMAC_RAW_XFER	0x2c0		/* r */
-+#define DW_DMAC_RAW_BLOCK	0x2c8
-+#define DW_DMAC_RAW_SRC_TRAN	0x2d0
-+#define DW_DMAC_RAW_DST_TRAN	0x2d8
-+#define DW_DMAC_RAW_ERROR	0x2e0
-+
-+#define DW_DMAC_STATUS_XFER	0x2e8		/* r (raw & mask) */
-+#define DW_DMAC_STATUS_BLOCK	0x2f0
-+#define DW_DMAC_STATUS_SRC_TRAN	0x2f8
-+#define DW_DMAC_STATUS_DST_TRAN	0x300
-+#define DW_DMAC_STATUS_ERROR	0x308
-+
-+#define DW_DMAC_MASK_XFER	0x310		/* rw (set = irq enabled) */
-+#define DW_DMAC_MASK_BLOCK	0x318
-+#define DW_DMAC_MASK_SRC_TRAN	0x320
-+#define DW_DMAC_MASK_DST_TRAN	0x328
-+#define DW_DMAC_MASK_ERROR	0x330
-+
-+#define DW_DMAC_CLEAR_XFER	0x338		/* w (ack, affects "raw") */
-+#define DW_DMAC_CLEAR_BLOCK	0x340
-+#define DW_DMAC_CLEAR_SRC_TRAN	0x348
-+#define DW_DMAC_CLEAR_DST_TRAN	0x350
-+#define DW_DMAC_CLEAR_ERROR	0x358
-+
-+#define DW_DMAC_STATUS_INT	0x360		/* r */
-+
-+/* software handshaking */
-+#define	DW_DMAC_REQ_SRC		0x368		/* rw */
-+#define	DW_DMAC_REQ_DST		0x370
-+#define	DW_DMAC_SGL_REQ_SRC	0x378
-+#define	DW_DMAC_SGL_REQ_DST	0x380
-+#define	DW_DMAC_LAST_SRC	0x388
-+#define	DW_DMAC_LAST_DST	0x390
-+
-+/* miscellaneous */
-+#define DW_DMAC_CFG		0x398		/* rw */
-+#	define DW_CFG_DMA_EN		(1 << 0)
-+#define DW_DMAC_CH_EN		0x3a0
-+
-+#define DW_DMAC_ID		0x3a8		/* r */
-+#define DW_DMAC_TEST		0x3b0		/* rw */
-+
-+/* optional encoded params, 0x3c8..0x3 */
-+
-+#define DW_REGLEN		0x400
-+
-+
-+/* How many channels ... potentially, up to 8 */
-+#ifdef CONFIG_CPU_AT32AP7000
-+#define	NDMA	3
-+#endif
-+
-+#ifndef NDMA
-+/* REVISIT want a better (static) solution than this */
-+#warning system unrecognized, assuming max NDMA=8
-+#define	NDMA	8
-+#endif
-+
-+struct dw_dma_chan {
-+	struct dma_chan		chan;
-+	void __iomem		*ch_regs;
-+#ifdef USE_DMA_POOL
-+	struct dma_pool		*lli_pool;
-+#else
-+	struct kmem_cache	*lli_pool;
-+#endif
-+	struct device		*dev;
-+
-+	u8			mask;
-+
-+	spinlock_t		lock;
-+
-+	/* these other elements are all protected by lock */
-+	dma_cookie_t		completed;
-+	struct list_head	active_list;
-+	struct list_head	queue;
-+	struct list_head	free_list;
-+
-+	struct dw_lli		*last_lli;
-+	struct dw_lli		*first_queued;
-+	struct dw_lli		*last_queued;
-+
-+	unsigned int		descs_allocated;
-+};
-+
-+/* REVISIT these register access macros cause inefficient code: the st.w
-+ * and ld.w displacements are all zero, never DW_DMAC_ constants embedded
-+ * in the instructions.  GCC 4.0.2-atmel.0.99.2 issue?  Struct access is
-+ * as efficient as one would expect...
-+ */
-+
-+#define channel_readl(dwc, name) \
-+	__raw_readl((dwc)->ch_regs + DW_DMAC_CHAN_##name)
-+#define channel_writel(dwc, name, val) \
-+	__raw_writel((val), (dwc)->ch_regs + DW_DMAC_CHAN_##name)
-+
-+static inline struct dw_dma_chan *to_dw_dma_chan(struct dma_chan *chan)
-+{
-+	return container_of(chan, struct dw_dma_chan, chan);
-+}
-+
-+
-+struct dw_dma {
-+	struct dma_device	dma;
-+	void __iomem		*regs;
-+#ifdef USE_DMA_POOL
-+	struct dma_pool		*lli_pool;
-+#else
-+	struct kmem_cache	*lli_pool;
-+#endif
-+	struct tasklet_struct	tasklet;
-+	struct clk		*clk;
-+	struct dw_dma_chan	chan[NDMA];
-+};
-+
-+#define dma_readl(dw, name) \
-+	__raw_readl((dw)->regs + DW_DMAC_##name)
-+#define dma_writel(dw, name, val) \
-+	__raw_writel((val), (dw)->regs + DW_DMAC_##name)
-+
-+#define channel_set_bit(dw, reg, mask) \
-+	dma_writel(dw, reg, ((mask) << 8) | (mask))
-+#define channel_clear_bit(dw, reg, mask) \
-+	dma_writel(dw, reg, ((mask) << 8) | 0)
-+
-+static inline struct dw_dma *to_dw_dma(struct dma_device *ddev)
-+{
-+	return container_of(ddev, struct dw_dma, dma);
-+}
-+
-+
-+/* LLI == Linked List Item; a.k.a. DMA block descriptor */
-+struct dw_lli {
-+	/* FIRST values the hardware uses */
-+	dma_addr_t	sar;
-+	dma_addr_t	dar;
-+	dma_addr_t	llp;		/* chain to next lli */
-+	u32		ctllo;
-+	/* values that may get written back: */
-+	u32		ctlhi;
-+	/* sstat and dstat can snapshot peripheral register state.
-+	 * silicon config may discard either or both...
-+	 */
-+	u32		sstat;
-+	u32		dstat;
-+
-+	/* THEN values for driver housekeeping */
-+	struct dw_lli	*next;
-+	dma_addr_t	phys;
-+};
-+
-+struct dw_desc {
-+	struct dw_lli	*first_lli;
-+	struct dw_lli	*last_lli;
-+
-+	struct dma_async_tx_descriptor txd;
-+	struct list_head desc_node;
-+};
-+
-+static inline struct dw_desc *
-+to_dw_descriptor(struct dma_async_tx_descriptor *txd)
-+{
-+	return container_of(txd, struct dw_desc, txd);
-+}
-diff --git a/include/asm-avr32/arch-at32ap/at32ap7000.h b/include/asm-avr32/arch-at32ap/at32ap7000.h
-index 3914d7b..a6e53cd 100644
---- a/include/asm-avr32/arch-at32ap/at32ap7000.h
-+++ b/include/asm-avr32/arch-at32ap/at32ap7000.h
-@@ -32,4 +32,20 @@
- #define GPIO_PIN_PD(N)	(GPIO_PIOD_BASE + (N))
- #define GPIO_PIN_PE(N)	(GPIO_PIOE_BASE + (N))
  
+-	if ((ops->size > APPLDATA_MAX_REC_SIZE) ||
+-		(ops->size < 0)){
+-		P_ERROR("Invalid size of %s record = %i, maximum = %i!\n",
+-			ops->name, ops->size, APPLDATA_MAX_REC_SIZE);
+-		return -ENOMEM;
+-	}
+-	if ((ops->ctl_nr == CTL_APPLDATA) ||
+-	    (ops->ctl_nr == CTL_APPLDATA_TIMER) ||
+-	    (ops->ctl_nr == CTL_APPLDATA_INTERVAL)) {
+-		P_ERROR("ctl_nr %i already in use!\n", ops->ctl_nr);
+-		return -EBUSY;
+-	}
+-	ops->ctl_table = kzalloc(4*sizeof(struct ctl_table), GFP_KERNEL);
+-	if (ops->ctl_table == NULL) {
+-		P_ERROR("Not enough memory for %s ctl_table!\n", ops->name);
++	ops->ctl_table = kzalloc(4 * sizeof(struct ctl_table), GFP_KERNEL);
++	if (!ops->ctl_table)
+ 		return -ENOMEM;
+-	}
+ 
+ 	spin_lock(&appldata_ops_lock);
+-	list_for_each(lh, &appldata_ops_list) {
+-		tmp_ops = list_entry(lh, struct appldata_ops, list);
+-		P_DEBUG("register_ops loop: %i) name = %s, ctl = %i\n",
+-			++i, tmp_ops->name, tmp_ops->ctl_nr);
+-		P_DEBUG("Comparing %s (ctl %i) with %s (ctl %i)\n",
+-			tmp_ops->name, tmp_ops->ctl_nr, ops->name,
+-			ops->ctl_nr);
+-		if (strncmp(tmp_ops->name, ops->name,
+-				APPLDATA_PROC_NAME_LENGTH) == 0) {
+-			P_ERROR("Name \"%s\" already registered!\n", ops->name);
+-			kfree(ops->ctl_table);
+-			spin_unlock(&appldata_ops_lock);
+-			return -EBUSY;
+-		}
+-		if (tmp_ops->ctl_nr == ops->ctl_nr) {
+-			P_ERROR("ctl_nr %i already registered!\n", ops->ctl_nr);
+-			kfree(ops->ctl_table);
+-			spin_unlock(&appldata_ops_lock);
+-			return -EBUSY;
+-		}
+-	}
+ 	list_add(&ops->list, &appldata_ops_list);
+ 	spin_unlock(&appldata_ops_lock);
+ 
+-	ops->ctl_table[0].ctl_name = CTL_APPLDATA;
+ 	ops->ctl_table[0].procname = appldata_proc_name;
+ 	ops->ctl_table[0].maxlen   = 0;
+ 	ops->ctl_table[0].mode     = S_IRUGO | S_IXUGO;
+ 	ops->ctl_table[0].child    = &ops->ctl_table[2];
+ 
+-	ops->ctl_table[1].ctl_name = 0;
+-
+-	ops->ctl_table[2].ctl_name = ops->ctl_nr;
+ 	ops->ctl_table[2].procname = ops->name;
+ 	ops->ctl_table[2].mode     = S_IRUGO | S_IWUSR;
+ 	ops->ctl_table[2].proc_handler = appldata_generic_handler;
+ 	ops->ctl_table[2].data = ops;
+ 
+-	ops->ctl_table[3].ctl_name = 0;
+-
+ 	ops->sysctl_header = register_sysctl_table(ops->ctl_table);
+-
++	if (!ops->sysctl_header)
++		goto out;
+ 	P_INFO("%s-ops registered!\n", ops->name);
+ 	return 0;
++out:
++	spin_lock(&appldata_ops_lock);
++	list_del(&ops->list);
++	spin_unlock(&appldata_ops_lock);
++	kfree(ops->ctl_table);
++	return -ENOMEM;
+ }
+ 
+ /*
+@@ -519,15 +479,11 @@ int appldata_register_ops(struct appldata_ops *ops)
+  */
+ void appldata_unregister_ops(struct appldata_ops *ops)
+ {
+-	void *table;
+ 	spin_lock(&appldata_ops_lock);
+ 	list_del(&ops->list);
+-	/* at that point any incoming access will fail */
+-	table = ops->ctl_table;
+-	ops->ctl_table = NULL;
+ 	spin_unlock(&appldata_ops_lock);
+ 	unregister_sysctl_table(ops->sysctl_header);
+-	kfree(table);
++	kfree(ops->ctl_table);
+ 	P_INFO("%s-ops unregistered!\n", ops->name);
+ }
+ /********************** module-ops management <END> **************************/
+diff --git a/arch/s390/appldata/appldata_mem.c b/arch/s390/appldata/appldata_mem.c
+index 697eb30..51181cc 100644
+--- a/arch/s390/appldata/appldata_mem.c
++++ b/arch/s390/appldata/appldata_mem.c
+@@ -147,7 +147,6 @@ static void appldata_get_mem_data(void *data)
+ 
+ 
+ static struct appldata_ops ops = {
+-	.ctl_nr    = CTL_APPLDATA_MEM,
+ 	.name      = "mem",
+ 	.record_nr = APPLDATA_RECORD_MEM_ID,
+ 	.size	   = sizeof(struct appldata_mem_data),
+diff --git a/arch/s390/appldata/appldata_net_sum.c b/arch/s390/appldata/appldata_net_sum.c
+index 6c1815a..4d83443 100644
+--- a/arch/s390/appldata/appldata_net_sum.c
++++ b/arch/s390/appldata/appldata_net_sum.c
+@@ -142,7 +142,6 @@ static void appldata_get_net_sum_data(void *data)
+ 
+ 
+ static struct appldata_ops ops = {
+-	.ctl_nr    = CTL_APPLDATA_NET_SUM,
+ 	.name	   = "net_sum",
+ 	.record_nr = APPLDATA_RECORD_NET_SUM_ID,
+ 	.size	   = sizeof(struct appldata_net_sum_data),
+diff --git a/arch/s390/appldata/appldata_os.c b/arch/s390/appldata/appldata_os.c
+index 76a1552..6b3eafe 100644
+--- a/arch/s390/appldata/appldata_os.c
++++ b/arch/s390/appldata/appldata_os.c
+@@ -82,7 +82,6 @@ struct appldata_os_data {
+ static struct appldata_os_data *appldata_os_data;
+ 
+ static struct appldata_ops ops = {
+-	.ctl_nr    = CTL_APPLDATA_OS,
+ 	.name	   = "os",
+ 	.record_nr = APPLDATA_RECORD_OS_ID,
+ 	.owner	   = THIS_MODULE,
+diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
+index 8bf4ae1..1b3af7d 100644
+--- a/arch/s390/kernel/early.c
++++ b/arch/s390/kernel/early.c
+@@ -200,7 +200,7 @@ static noinline __init void find_memory_chunks(unsigned long memsize)
+ 		cc = __tprot(addr);
+ 		while (cc == old_cc) {
+ 			addr += CHUNK_INCR;
+-			if (addr >= memsize)
++			if (memsize && addr >= memsize)
+ 				break;
+ #ifndef CONFIG_64BIT
+ 			if (addr == ADDR2G)
+diff --git a/arch/s390/kernel/entry.S b/arch/s390/kernel/entry.S
+index 139ca15..b2b2edc 100644
+--- a/arch/s390/kernel/entry.S
++++ b/arch/s390/kernel/entry.S
+@@ -69,13 +69,31 @@ STACK_SIZE  = 1 << STACK_SHIFT
+ 	basr	%r14,%r1
+ 	.endm
+ 
+-	.macro	LOCKDEP_SYS_EXIT
+-	l	%r1,BASED(.Llockdep_sys_exit)
++	.macro	TRACE_IRQS_CHECK
++	tm	SP_PSW(%r15),0x03	# irqs enabled?
++	jz	0f
++	l	%r1,BASED(.Ltrace_irq_on)
+ 	basr	%r14,%r1
++	j	1f
++0:	l	%r1,BASED(.Ltrace_irq_off)
++	basr	%r14,%r1
++1:
+ 	.endm
+ #else
+ #define TRACE_IRQS_ON
+ #define TRACE_IRQS_OFF
++#define TRACE_IRQS_CHECK
++#endif
 +
-+/*
-+ * DMAC peripheral hardware handshaking interfaces, used with dw_dmac
-+ */
-+#define DMAC_MCI_RX		0
-+#define DMAC_MCI_TX		1
-+#define DMAC_DAC_TX		2
-+#define DMAC_AC97_A_RX		3
-+#define DMAC_AC97_A_TX		4
-+#define DMAC_AC97_B_RX		5
-+#define DMAC_AC97_B_TX		6
-+#define DMAC_DMAREQ_0		7
-+#define DMAC_DMAREQ_1		8
-+#define DMAC_DMAREQ_2		9
-+#define DMAC_DMAREQ_3		10
++#ifdef CONFIG_LOCKDEP
++	.macro	LOCKDEP_SYS_EXIT
++	tm	SP_PSW+1(%r15),0x01	# returning to user ?
++	jz	0f
++	l	%r1,BASED(.Llockdep_sys_exit)
++	basr	%r14,%r1
++0:
++	.endm
++#else
+ #define LOCKDEP_SYS_EXIT
+ #endif
+ 
+@@ -234,8 +252,6 @@ sysc_saveall:
+ 	lh	%r7,0x8a	  # get svc number from lowcore
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ sysc_vtime:
+-	tm	SP_PSW+1(%r15),0x01	# interrupting from user ?
+-	bz	BASED(sysc_do_svc)
+ 	UPDATE_VTIME __LC_EXIT_TIMER,__LC_SYNC_ENTER_TIMER,__LC_USER_TIMER
+ sysc_stime:
+ 	UPDATE_VTIME __LC_LAST_UPDATE_TIMER,__LC_EXIT_TIMER,__LC_SYSTEM_TIMER
+@@ -263,19 +279,34 @@ sysc_do_restart:
+ 
+ sysc_return:
+ 	tm	SP_PSW+1(%r15),0x01	# returning to user ?
+-	bno	BASED(sysc_leave)
++	bno	BASED(sysc_restore)
+ 	tm	__TI_flags+3(%r9),_TIF_WORK_SVC
+ 	bnz	BASED(sysc_work)  # there is work to do (signals etc.)
++sysc_restore:
++#ifdef CONFIG_TRACE_IRQFLAGS
++	la	%r1,BASED(sysc_restore_trace_psw)
++	lpsw	0(%r1)
++sysc_restore_trace:
++	TRACE_IRQS_CHECK
+ 	LOCKDEP_SYS_EXIT
++#endif
+ sysc_leave:
+ 	RESTORE_ALL __LC_RETURN_PSW,1
++sysc_done:
 +
- #endif /* __ASM_ARCH_AT32AP7000_H__ */
--- 
-1.5.3.4
++#ifdef CONFIG_TRACE_IRQFLAGS
++	.align	8
++	.globl	sysc_restore_trace_psw
++sysc_restore_trace_psw:
++	.long	0, sysc_restore_trace + 0x80000000
++#endif
+ 
+ #
+ # recheck if there is more work to do
+ #
+ sysc_work_loop:
+ 	tm	__TI_flags+3(%r9),_TIF_WORK_SVC
+-	bz	BASED(sysc_leave)	# there is no work to do
++	bz	BASED(sysc_restore)	# there is no work to do
+ #
+ # One of the work bits is on. Find out which one.
+ #
+@@ -290,8 +321,8 @@ sysc_work:
+ 	bo	BASED(sysc_restart)
+ 	tm	__TI_flags+3(%r9),_TIF_SINGLE_STEP
+ 	bo	BASED(sysc_singlestep)
+-	LOCKDEP_SYS_EXIT
+-	b	BASED(sysc_leave)
++	b	BASED(sysc_restore)
++sysc_work_done:
+ 
+ #
+ # _TIF_NEED_RESCHED is set, call schedule
+@@ -458,6 +489,7 @@ pgm_check_handler:
+ pgm_no_vtime:
+ #endif
+ 	l	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
++	TRACE_IRQS_OFF
+ 	l	%r3,__LC_PGM_ILC	# load program interruption code
+ 	la	%r8,0x7f
+ 	nr	%r8,%r3
+@@ -497,6 +529,7 @@ pgm_per_std:
+ pgm_no_vtime2:
+ #endif
+ 	l	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
++	TRACE_IRQS_OFF
+ 	l	%r1,__TI_task(%r9)
+ 	mvc	__THREAD_per+__PER_atmid(2,%r1),__LC_PER_ATMID
+ 	mvc	__THREAD_per+__PER_address(4,%r1),__LC_PER_ADDRESS
+@@ -517,15 +550,13 @@ pgm_svcper:
+ 	SAVE_ALL_SYNC __LC_SVC_OLD_PSW,__LC_SAVE_AREA
+ 	CREATE_STACK_FRAME __LC_SVC_OLD_PSW,__LC_SAVE_AREA
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	tm	SP_PSW+1(%r15),0x01	# interrupting from user ?
+-	bz	BASED(pgm_no_vtime3)
+ 	UPDATE_VTIME __LC_EXIT_TIMER,__LC_SYNC_ENTER_TIMER,__LC_USER_TIMER
+ 	UPDATE_VTIME __LC_LAST_UPDATE_TIMER,__LC_EXIT_TIMER,__LC_SYSTEM_TIMER
+ 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
+-pgm_no_vtime3:
+ #endif
+ 	lh	%r7,0x8a		# get svc number from lowcore
+ 	l	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
++	TRACE_IRQS_OFF
+ 	l	%r1,__TI_task(%r9)
+ 	mvc	__THREAD_per+__PER_atmid(2,%r1),__LC_PER_ATMID
+ 	mvc	__THREAD_per+__PER_address(4,%r1),__LC_PER_ADDRESS
+@@ -542,7 +573,7 @@ kernel_per:
+ 	mvi	SP_TRAP+1(%r15),0x28	# set trap indication to pgm check
+ 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
+ 	l	%r1,BASED(.Lhandle_per)	# load adr. of per handler
+-	la	%r14,BASED(sysc_leave)	# load adr. of system return
++	la	%r14,BASED(sysc_restore)# load adr. of system return
+ 	br	%r1			# branch to do_single_step
+ 
+ /*
+@@ -569,26 +600,38 @@ io_no_vtime:
+ 	l	%r1,BASED(.Ldo_IRQ)	# load address of do_IRQ
+ 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
+ 	basr	%r14,%r1		# branch to standard irq handler
+-	TRACE_IRQS_ON
+-
+ io_return:
+ 	tm	SP_PSW+1(%r15),0x01	# returning to user ?
+ #ifdef CONFIG_PREEMPT
+ 	bno	BASED(io_preempt)	# no -> check for preemptive scheduling
+ #else
+-	bno	BASED(io_leave) 	# no-> skip resched & signal
++	bno	BASED(io_restore)	# no-> skip resched & signal
+ #endif
+ 	tm	__TI_flags+3(%r9),_TIF_WORK_INT
+ 	bnz	BASED(io_work)		# there is work to do (signals etc.)
++io_restore:
++#ifdef CONFIG_TRACE_IRQFLAGS
++	la	%r1,BASED(io_restore_trace_psw)
++	lpsw	0(%r1)
++io_restore_trace:
++	TRACE_IRQS_CHECK
+ 	LOCKDEP_SYS_EXIT
++#endif
+ io_leave:
+ 	RESTORE_ALL __LC_RETURN_PSW,0
+ io_done:
+ 
++#ifdef CONFIG_TRACE_IRQFLAGS
++	.align	8
++	.globl	io_restore_trace_psw
++io_restore_trace_psw:
++	.long	0, io_restore_trace + 0x80000000
++#endif
++
+ #ifdef CONFIG_PREEMPT
+ io_preempt:
+ 	icm	%r0,15,__TI_precount(%r9)
+-	bnz	BASED(io_leave)
++	bnz	BASED(io_restore)
+ 	l	%r1,SP_R15(%r15)
+ 	s	%r1,BASED(.Lc_spsize)
+ 	mvc	SP_PTREGS(__PT_SIZE,%r1),SP_PTREGS(%r15)
+@@ -596,14 +639,10 @@ io_preempt:
+ 	lr	%r15,%r1
+ io_resume_loop:
+ 	tm	__TI_flags+3(%r9),_TIF_NEED_RESCHED
+-	bno	BASED(io_leave)
+-	mvc	__TI_precount(4,%r9),BASED(.Lc_pactive)
+-	stosm	__SF_EMPTY(%r15),0x03  # reenable interrupts
+-	l	%r1,BASED(.Lschedule)
+-	basr	%r14,%r1	       # call schedule
+-	stnsm	__SF_EMPTY(%r15),0xfc  # disable I/O and ext. interrupts
+-	xc	__TI_precount(4,%r9),__TI_precount(%r9)
+-	b	BASED(io_resume_loop)
++	bno	BASED(io_restore)
++	l	%r1,BASED(.Lpreempt_schedule_irq)
++	la	%r14,BASED(io_resume_loop)
++	br	%r1			# call schedule
+ #endif
+ 
+ #
+@@ -627,40 +666,42 @@ io_work_loop:
+ 	bo	BASED(io_reschedule)
+ 	tm	__TI_flags+3(%r9),(_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK)
+ 	bnz	BASED(io_sigpending)
+-	LOCKDEP_SYS_EXIT
+-	b	BASED(io_leave)
++	b	BASED(io_restore)
++io_work_done:
+ 
+ #
+ # _TIF_MCCK_PENDING is set, call handler
+ #
+ io_mcck_pending:
+-	TRACE_IRQS_OFF
+ 	l	%r1,BASED(.Ls390_handle_mcck)
+ 	basr	%r14,%r1		# TIF bit will be cleared by handler
+-	TRACE_IRQS_ON
+ 	b	BASED(io_work_loop)
+ 
+ #
+ # _TIF_NEED_RESCHED is set, call schedule
+ #
+ io_reschedule:
++	TRACE_IRQS_ON
+ 	l	%r1,BASED(.Lschedule)
+ 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+ 	basr	%r14,%r1		# call scheduler
+ 	stnsm	__SF_EMPTY(%r15),0xfc	# disable I/O and ext. interrupts
++	TRACE_IRQS_OFF
+ 	tm	__TI_flags+3(%r9),_TIF_WORK_INT
+-	bz	BASED(io_leave) 	# there is no work to do
++	bz	BASED(io_restore)	# there is no work to do
+ 	b	BASED(io_work_loop)
+ 
+ #
+ # _TIF_SIGPENDING or _TIF_RESTORE_SIGMASK is set, call do_signal
+ #
+ io_sigpending:
++	TRACE_IRQS_ON
+ 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+ 	la	%r2,SP_PTREGS(%r15)	# load pt_regs
+ 	l	%r1,BASED(.Ldo_signal)
+ 	basr	%r14,%r1		# call do_signal
+ 	stnsm	__SF_EMPTY(%r15),0xfc	# disable I/O and ext. interrupts
++	TRACE_IRQS_OFF
+ 	b	BASED(io_work_loop)
+ 
+ /*
+@@ -688,7 +729,6 @@ ext_no_vtime:
+ 	lh	%r3,__LC_EXT_INT_CODE	# get interruption code
+ 	l	%r1,BASED(.Ldo_extint)
+ 	basr	%r14,%r1
+-	TRACE_IRQS_ON
+ 	b	BASED(io_return)
+ 
+ __critical_end:
+@@ -853,15 +893,15 @@ cleanup_table_system_call:
+ cleanup_table_sysc_return:
+ 	.long	sysc_return + 0x80000000, sysc_leave + 0x80000000
+ cleanup_table_sysc_leave:
+-	.long	sysc_leave + 0x80000000, sysc_work_loop + 0x80000000
++	.long	sysc_leave + 0x80000000, sysc_done + 0x80000000
+ cleanup_table_sysc_work_loop:
+-	.long	sysc_work_loop + 0x80000000, sysc_reschedule + 0x80000000
++	.long	sysc_work_loop + 0x80000000, sysc_work_done + 0x80000000
+ cleanup_table_io_return:
+ 	.long	io_return + 0x80000000, io_leave + 0x80000000
+ cleanup_table_io_leave:
+ 	.long	io_leave + 0x80000000, io_done + 0x80000000
+ cleanup_table_io_work_loop:
+-	.long	io_work_loop + 0x80000000, io_mcck_pending + 0x80000000
++	.long	io_work_loop + 0x80000000, io_work_done + 0x80000000
+ 
+ cleanup_critical:
+ 	clc	4(4,%r12),BASED(cleanup_table_system_call)
+@@ -930,8 +970,6 @@ cleanup_system_call:
+ cleanup_vtime:
+ 	clc	__LC_RETURN_PSW+4(4),BASED(cleanup_system_call_insn+12)
+ 	bhe	BASED(cleanup_stime)
+-	tm	SP_PSW+1(%r15),0x01	# interrupting from user ?
+-	bz	BASED(cleanup_novtime)
+ 	UPDATE_VTIME __LC_EXIT_TIMER,__LC_SYNC_ENTER_TIMER,__LC_USER_TIMER
+ cleanup_stime:
+ 	clc	__LC_RETURN_PSW+4(4),BASED(cleanup_system_call_insn+16)
+@@ -939,7 +977,6 @@ cleanup_stime:
+ 	UPDATE_VTIME __LC_LAST_UPDATE_TIMER,__LC_EXIT_TIMER,__LC_SYSTEM_TIMER
+ cleanup_update:
+ 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
+-cleanup_novtime:
+ #endif
+ 	mvc	__LC_RETURN_PSW+4(4),BASED(cleanup_table_system_call+4)
+ 	la	%r12,__LC_RETURN_PSW
+@@ -978,10 +1015,10 @@ cleanup_sysc_leave:
+ 2:	la	%r12,__LC_RETURN_PSW
+ 	br	%r14
+ cleanup_sysc_leave_insn:
++	.long	sysc_done - 4 + 0x80000000
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	.long	sysc_leave + 14 + 0x80000000
++	.long	sysc_done - 8 + 0x80000000
+ #endif
+-	.long	sysc_leave + 10 + 0x80000000
+ 
+ cleanup_io_return:
+ 	mvc	__LC_RETURN_PSW(4),0(%r12)
+@@ -1008,10 +1045,10 @@ cleanup_io_leave:
+ 2:	la	%r12,__LC_RETURN_PSW
+ 	br	%r14
+ cleanup_io_leave_insn:
++	.long	io_done - 4 + 0x80000000
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	.long	io_leave + 18 + 0x80000000
++	.long	io_done - 8 + 0x80000000
+ #endif
+-	.long	io_leave + 14 + 0x80000000
+ 
+ /*
+  * Integer constants
+@@ -1019,7 +1056,6 @@ cleanup_io_leave_insn:
+ 		.align	4
+ .Lc_spsize:	.long	SP_SIZE
+ .Lc_overhead:	.long	STACK_FRAME_OVERHEAD
+-.Lc_pactive:	.long	PREEMPT_ACTIVE
+ .Lnr_syscalls:	.long	NR_syscalls
+ .L0x018:	.short	0x018
+ .L0x020:	.short	0x020
+@@ -1043,6 +1079,8 @@ cleanup_io_leave_insn:
+ .Lexecve_tail:	.long	execve_tail
+ .Ljump_table:	.long	pgm_check_table
+ .Lschedule:	.long	schedule
++.Lpreempt_schedule_irq:
++		.long	preempt_schedule_irq
+ .Ltrace:	.long	syscall_trace
+ .Lschedtail:	.long	schedule_tail
+ .Lsysc_table:	.long	sys_call_table
+diff --git a/arch/s390/kernel/entry64.S b/arch/s390/kernel/entry64.S
+index 05e26d1..a3e47b8 100644
+--- a/arch/s390/kernel/entry64.S
++++ b/arch/s390/kernel/entry64.S
+@@ -67,12 +67,28 @@ _TIF_WORK_INT = (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK | _TIF_NEED_RESCHED | \
+ 	 brasl	%r14,trace_hardirqs_off
+ 	.endm
+ 
+-	.macro	LOCKDEP_SYS_EXIT
+-	 brasl	%r14,lockdep_sys_exit
++	.macro TRACE_IRQS_CHECK
++	tm	SP_PSW(%r15),0x03	# irqs enabled?
++	jz	0f
++	brasl	%r14,trace_hardirqs_on
++	j	1f
++0:	brasl	%r14,trace_hardirqs_off
++1:
+ 	.endm
+ #else
+ #define TRACE_IRQS_ON
+ #define TRACE_IRQS_OFF
++#define TRACE_IRQS_CHECK
++#endif
++
++#ifdef CONFIG_LOCKDEP
++	.macro	LOCKDEP_SYS_EXIT
++	tm	SP_PSW+1(%r15),0x01	# returning to user ?
++	jz	0f
++	brasl	%r14,lockdep_sys_exit
++0:
++	.endm
++#else
+ #define LOCKDEP_SYS_EXIT
+ #endif
+ 
+@@ -222,8 +238,6 @@ sysc_saveall:
+ 	llgh	%r7,__LC_SVC_INT_CODE	# get svc number from lowcore
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ sysc_vtime:
+-	tm	SP_PSW+1(%r15),0x01	# interrupting from user ?
+-	jz	sysc_do_svc
+ 	UPDATE_VTIME __LC_EXIT_TIMER,__LC_SYNC_ENTER_TIMER,__LC_USER_TIMER
+ sysc_stime:
+ 	UPDATE_VTIME __LC_LAST_UPDATE_TIMER,__LC_EXIT_TIMER,__LC_SYSTEM_TIMER
+@@ -257,19 +271,34 @@ sysc_noemu:
+ 
+ sysc_return:
+ 	tm	SP_PSW+1(%r15),0x01	# returning to user ?
+-	jno	sysc_leave
++	jno	sysc_restore
+ 	tm	__TI_flags+7(%r9),_TIF_WORK_SVC
+ 	jnz	sysc_work	# there is work to do (signals etc.)
++sysc_restore:
++#ifdef CONFIG_TRACE_IRQFLAGS
++	larl	%r1,sysc_restore_trace_psw
++	lpswe	0(%r1)
++sysc_restore_trace:
++	TRACE_IRQS_CHECK
+ 	LOCKDEP_SYS_EXIT
++#endif
+ sysc_leave:
+ 	RESTORE_ALL __LC_RETURN_PSW,1
++sysc_done:
++
++#ifdef CONFIG_TRACE_IRQFLAGS
++	.align	8
++	.globl sysc_restore_trace_psw
++sysc_restore_trace_psw:
++	.quad	0, sysc_restore_trace
++#endif
+ 
+ #
+ # recheck if there is more work to do
+ #
+ sysc_work_loop:
+ 	tm	__TI_flags+7(%r9),_TIF_WORK_SVC
+-	jz	sysc_leave	  # there is no work to do
++	jz	sysc_restore	  # there is no work to do
+ #
+ # One of the work bits is on. Find out which one.
+ #
+@@ -284,8 +313,8 @@ sysc_work:
+ 	jo	sysc_restart
+ 	tm	__TI_flags+7(%r9),_TIF_SINGLE_STEP
+ 	jo	sysc_singlestep
+-	LOCKDEP_SYS_EXIT
+-	j	sysc_leave
++	j	sysc_restore
++sysc_work_done:
+ 
+ #
+ # _TIF_NEED_RESCHED is set, call schedule
+@@ -445,6 +474,7 @@ pgm_check_handler:
+ pgm_no_vtime:
+ #endif
+ 	lg	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
++	TRACE_IRQS_OFF
+ 	lgf	%r3,__LC_PGM_ILC	# load program interruption code
+ 	lghi	%r8,0x7f
+ 	ngr	%r8,%r3
+@@ -484,6 +514,7 @@ pgm_per_std:
+ pgm_no_vtime2:
+ #endif
+ 	lg	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
++	TRACE_IRQS_OFF
+ 	lg	%r1,__TI_task(%r9)
+ 	tm	SP_PSW+1(%r15),0x01	# kernel per event ?
+ 	jz	kernel_per
+@@ -504,12 +535,9 @@ pgm_svcper:
+ 	SAVE_ALL_SYNC __LC_SVC_OLD_PSW,__LC_SAVE_AREA
+ 	CREATE_STACK_FRAME __LC_SVC_OLD_PSW,__LC_SAVE_AREA
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	tm	SP_PSW+1(%r15),0x01	# interrupting from user ?
+-	jz	pgm_no_vtime3
+ 	UPDATE_VTIME __LC_EXIT_TIMER,__LC_SYNC_ENTER_TIMER,__LC_USER_TIMER
+ 	UPDATE_VTIME __LC_LAST_UPDATE_TIMER,__LC_EXIT_TIMER,__LC_SYSTEM_TIMER
+ 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
+-pgm_no_vtime3:
+ #endif
+ 	llgh	%r7,__LC_SVC_INT_CODE	# get svc number from lowcore
+ 	lg	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
+@@ -529,7 +557,7 @@ kernel_per:
+ 	lhi	%r0,__LC_PGM_OLD_PSW
+ 	sth	%r0,SP_TRAP(%r15)	# set trap indication to pgm check
+ 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
+-	larl	%r14,sysc_leave		# load adr. of system ret, no work
++	larl	%r14,sysc_restore	# load adr. of system ret, no work
+ 	jg	do_single_step		# branch to do_single_step
+ 
+ /*
+@@ -554,26 +582,38 @@ io_no_vtime:
+ 	TRACE_IRQS_OFF
+ 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
+ 	brasl	%r14,do_IRQ		# call standard irq handler
+-	TRACE_IRQS_ON
+-
+ io_return:
+ 	tm	SP_PSW+1(%r15),0x01	# returning to user ?
+ #ifdef CONFIG_PREEMPT
+ 	jno	io_preempt		# no -> check for preemptive scheduling
+ #else
+-	jno	io_leave		# no-> skip resched & signal
++	jno	io_restore		# no-> skip resched & signal
+ #endif
+ 	tm	__TI_flags+7(%r9),_TIF_WORK_INT
+ 	jnz	io_work 		# there is work to do (signals etc.)
++io_restore:
++#ifdef CONFIG_TRACE_IRQFLAGS
++	larl	%r1,io_restore_trace_psw
++	lpswe	0(%r1)
++io_restore_trace:
++	TRACE_IRQS_CHECK
+ 	LOCKDEP_SYS_EXIT
++#endif
+ io_leave:
+ 	RESTORE_ALL __LC_RETURN_PSW,0
+ io_done:
+ 
++#ifdef CONFIG_TRACE_IRQFLAGS
++	.align	8
++	.globl io_restore_trace_psw
++io_restore_trace_psw:
++	.quad	0, io_restore_trace
++#endif
++
+ #ifdef CONFIG_PREEMPT
+ io_preempt:
+ 	icm	%r0,15,__TI_precount(%r9)
+-	jnz	io_leave
++	jnz	io_restore
+ 	# switch to kernel stack
+ 	lg	%r1,SP_R15(%r15)
+ 	aghi	%r1,-SP_SIZE
+@@ -582,14 +622,9 @@ io_preempt:
+ 	lgr	%r15,%r1
+ io_resume_loop:
+ 	tm	__TI_flags+7(%r9),_TIF_NEED_RESCHED
+-	jno	io_leave
+-	larl	%r1,.Lc_pactive
+-	mvc	__TI_precount(4,%r9),0(%r1)
+-	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+-	brasl	%r14,schedule		# call schedule
+-	stnsm	__SF_EMPTY(%r15),0xfc	# disable I/O and ext. interrupts
+-	xc	__TI_precount(4,%r9),__TI_precount(%r9)
+-	j	io_resume_loop
++	jno	io_restore
++	larl	%r14,io_resume_loop
++	jg	preempt_schedule_irq
+ #endif
+ 
+ #
+@@ -613,37 +648,39 @@ io_work_loop:
+ 	jo	io_reschedule
+ 	tm	__TI_flags+7(%r9),(_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK)
+ 	jnz	io_sigpending
+-	LOCKDEP_SYS_EXIT
+-	j	io_leave
++	j	io_restore
++io_work_done:
+ 
+ #
+ # _TIF_MCCK_PENDING is set, call handler
+ #
+ io_mcck_pending:
+-	TRACE_IRQS_OFF
+ 	brasl	%r14,s390_handle_mcck	# TIF bit will be cleared by handler
+-	TRACE_IRQS_ON
+ 	j	io_work_loop
+ 
+ #
+ # _TIF_NEED_RESCHED is set, call schedule
+ #
+ io_reschedule:
++	TRACE_IRQS_ON
+ 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+ 	brasl	%r14,schedule		# call scheduler
+ 	stnsm	__SF_EMPTY(%r15),0xfc	# disable I/O and ext. interrupts
++	TRACE_IRQS_OFF
+ 	tm	__TI_flags+7(%r9),_TIF_WORK_INT
+-	jz	io_leave		# there is no work to do
++	jz	io_restore		# there is no work to do
+ 	j	io_work_loop
+ 
+ #
+ # _TIF_SIGPENDING or _TIF_RESTORE_SIGMASK is set, call do_signal
+ #
+ io_sigpending:
++	TRACE_IRQS_ON
+ 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+ 	la	%r2,SP_PTREGS(%r15)	# load pt_regs
+ 	brasl	%r14,do_signal		# call do_signal
+ 	stnsm	__SF_EMPTY(%r15),0xfc	# disable I/O and ext. interrupts
++	TRACE_IRQS_OFF
+ 	j	io_work_loop
+ 
+ /*
+@@ -669,7 +706,6 @@ ext_no_vtime:
+ 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
+ 	llgh	%r3,__LC_EXT_INT_CODE	# get interruption code
+ 	brasl	%r14,do_extint
+-	TRACE_IRQS_ON
+ 	j	io_return
+ 
+ __critical_end:
+@@ -824,15 +860,15 @@ cleanup_table_system_call:
+ cleanup_table_sysc_return:
+ 	.quad	sysc_return, sysc_leave
+ cleanup_table_sysc_leave:
+-	.quad	sysc_leave, sysc_work_loop
++	.quad	sysc_leave, sysc_done
+ cleanup_table_sysc_work_loop:
+-	.quad	sysc_work_loop, sysc_reschedule
++	.quad	sysc_work_loop, sysc_work_done
+ cleanup_table_io_return:
+ 	.quad	io_return, io_leave
+ cleanup_table_io_leave:
+ 	.quad	io_leave, io_done
+ cleanup_table_io_work_loop:
+-	.quad	io_work_loop, io_mcck_pending
++	.quad	io_work_loop, io_work_done
+ 
+ cleanup_critical:
+ 	clc	8(8,%r12),BASED(cleanup_table_system_call)
+@@ -901,8 +937,6 @@ cleanup_system_call:
+ cleanup_vtime:
+ 	clc	__LC_RETURN_PSW+8(8),BASED(cleanup_system_call_insn+24)
+ 	jhe	cleanup_stime
+-	tm	SP_PSW+1(%r15),0x01	# interrupting from user ?
+-	jz	cleanup_novtime
+ 	UPDATE_VTIME __LC_EXIT_TIMER,__LC_SYNC_ENTER_TIMER,__LC_USER_TIMER
+ cleanup_stime:
+ 	clc	__LC_RETURN_PSW+8(8),BASED(cleanup_system_call_insn+32)
+@@ -910,7 +944,6 @@ cleanup_stime:
+ 	UPDATE_VTIME __LC_LAST_UPDATE_TIMER,__LC_EXIT_TIMER,__LC_SYSTEM_TIMER
+ cleanup_update:
+ 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
+-cleanup_novtime:
+ #endif
+ 	mvc	__LC_RETURN_PSW+8(8),BASED(cleanup_table_system_call+8)
+ 	la	%r12,__LC_RETURN_PSW
+@@ -949,10 +982,10 @@ cleanup_sysc_leave:
+ 2:	la	%r12,__LC_RETURN_PSW
+ 	br	%r14
+ cleanup_sysc_leave_insn:
++	.quad	sysc_done - 4
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	.quad	sysc_leave + 16
++	.quad	sysc_done - 8
+ #endif
+-	.quad	sysc_leave + 12
+ 
+ cleanup_io_return:
+ 	mvc	__LC_RETURN_PSW(8),0(%r12)
+@@ -979,17 +1012,16 @@ cleanup_io_leave:
+ 2:	la	%r12,__LC_RETURN_PSW
+ 	br	%r14
+ cleanup_io_leave_insn:
++	.quad	io_done - 4
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	.quad	io_leave + 20
++	.quad	io_done - 8
+ #endif
+-	.quad	io_leave + 16
+ 
+ /*
+  * Integer constants
+  */
+ 		.align	4
+ .Lconst:
+-.Lc_pactive:	.long	PREEMPT_ACTIVE
+ .Lnr_syscalls:	.long	NR_syscalls
+ .L0x0130:	.short	0x130
+ .L0x0140:	.short	0x140
+diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
+index 7e1bfb9..50f8f1e 100644
+--- a/arch/s390/kernel/setup.c
++++ b/arch/s390/kernel/setup.c
+@@ -347,7 +347,7 @@ void (*_machine_power_off)(void) = do_machine_power_off_nonsmp;
+ 
+ void machine_restart(char *command)
+ {
+-	if (!in_interrupt() || oops_in_progress)
++	if ((!in_interrupt() && !in_atomic()) || oops_in_progress)
+ 		/*
+ 		 * Only unblank the console if we are called in enabled
+ 		 * context or a bust_spinlocks cleared the way for us.
+@@ -492,6 +492,10 @@ static void setup_addressing_mode(void)
+ 		printk("S390 address spaces switched, ");
+ 		set_amode_and_uaccess(PSW_ASC_PRIMARY, PSW32_ASC_PRIMARY);
+ 	}
++#ifdef CONFIG_TRACE_IRQFLAGS
++	sysc_restore_trace_psw.mask = psw_kernel_bits & ~PSW_MASK_MCHECK;
++	io_restore_trace_psw.mask = psw_kernel_bits & ~PSW_MASK_MCHECK;
++#endif
+ }
+ 
+ static void __init
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index b05ae85..264ea90 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -193,72 +193,30 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
+-static void do_send_stop(void)
++void smp_send_stop(void)
+ {
+ 	int cpu, rc;
+ 
+-	/* stop all processors */
+-	for_each_online_cpu(cpu) {
+-		if (cpu == smp_processor_id())
+-			continue;
+-		do {
+-			rc = signal_processor(cpu, sigp_stop);
+-		} while (rc == sigp_busy);
+-	}
+-}
++	/* Disable all interrupts/machine checks */
++	__load_psw_mask(psw_kernel_bits & ~PSW_MASK_MCHECK);
+ 
+-static void do_store_status(void)
+-{
+-	int cpu, rc;
++	/* write magic number to zero page (absolute 0) */
++	lowcore_ptr[smp_processor_id()]->panic_magic = __PANIC_MAGIC;
+ 
+-	/* store status of all processors in their lowcores (real 0) */
++	/* stop all processors */
+ 	for_each_online_cpu(cpu) {
+ 		if (cpu == smp_processor_id())
+ 			continue;
+ 		do {
+-			rc = signal_processor_p(
+-				(__u32)(unsigned long) lowcore_ptr[cpu], cpu,
+-				sigp_store_status_at_address);
++			rc = signal_processor(cpu, sigp_stop);
+ 		} while (rc == sigp_busy);
+-	}
+-}
+ 
+-static void do_wait_for_stop(void)
+-{
+-	int cpu;
+-
+-	/* Wait for all other cpus to enter stopped state */
+-	for_each_online_cpu(cpu) {
+-		if (cpu == smp_processor_id())
+-			continue;
+ 		while (!smp_cpu_not_running(cpu))
+ 			cpu_relax();
+ 	}
+ }
+ 
+ /*
+- * this function sends a 'stop' sigp to all other CPUs in the system.
+- * it goes straight through.
+- */
+-void smp_send_stop(void)
+-{
+-	/* Disable all interrupts/machine checks */
+-	__load_psw_mask(psw_kernel_bits & ~PSW_MASK_MCHECK);
+-
+-	/* write magic number to zero page (absolute 0) */
+-	lowcore_ptr[smp_processor_id()]->panic_magic = __PANIC_MAGIC;
+-
+-	/* stop other processors. */
+-	do_send_stop();
+-
+-	/* wait until other processors are stopped */
+-	do_wait_for_stop();
+-
+-	/* store status of other processors. */
+-	do_store_status();
+-}
+-
+-/*
+  * Reboot, halt and power_off routines for SMP.
+  */
+ void machine_restart_smp(char *__unused)
+diff --git a/arch/s390/kernel/traps.c b/arch/s390/kernel/traps.c
+index 8ec9def..8ed16a8 100644
+--- a/arch/s390/kernel/traps.c
++++ b/arch/s390/kernel/traps.c
+@@ -260,6 +260,7 @@ void die(const char * str, struct pt_regs * regs, long err)
+ 	bust_spinlocks(1);
+ 	printk("%s: %04lx [#%d]\n", str, err & 0xffff, ++die_counter);
+ 	print_modules();
++	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_no, SIGSEGV);
+ 	show_regs(regs);
+ 	bust_spinlocks(0);
+ 	add_taint(TAINT_DIE);
+diff --git a/arch/s390/mm/cmm.c b/arch/s390/mm/cmm.c
+index d4ed93d..413c240 100644
+--- a/arch/s390/mm/cmm.c
++++ b/arch/s390/mm/cmm.c
+@@ -341,19 +341,16 @@ cmm_timeout_handler(ctl_table *ctl, int write, struct file *filp,
+ 
+ static struct ctl_table cmm_table[] = {
+ 	{
+-		.ctl_name	= VM_CMM_PAGES,
+ 		.procname	= "cmm_pages",
+ 		.mode		= 0644,
+ 		.proc_handler	= &cmm_pages_handler,
+ 	},
+ 	{
+-		.ctl_name	= VM_CMM_TIMED_PAGES,
+ 		.procname	= "cmm_timed_pages",
+ 		.mode		= 0644,
+ 		.proc_handler	= &cmm_pages_handler,
+ 	},
+ 	{
+-		.ctl_name	= VM_CMM_TIMEOUT,
+ 		.procname	= "cmm_timeout",
+ 		.mode		= 0644,
+ 		.proc_handler	= &cmm_timeout_handler,
+diff --git a/drivers/s390/cio/css.c b/drivers/s390/cio/css.c
+index 838f7ac..6db3108 100644
+--- a/drivers/s390/cio/css.c
++++ b/drivers/s390/cio/css.c
+@@ -483,7 +483,7 @@ static DECLARE_WORK(css_reprobe_work, reprobe_all);
+ void css_schedule_reprobe(void)
+ {
+ 	need_reprobe = 1;
+-	queue_work(ccw_device_work, &css_reprobe_work);
++	queue_work(slow_path_wq, &css_reprobe_work);
+ }
+ 
+ EXPORT_SYMBOL_GPL(css_schedule_reprobe);
+diff --git a/drivers/s390/cio/device_fsm.c b/drivers/s390/cio/device_fsm.c
+index 8867443..bfad421 100644
+--- a/drivers/s390/cio/device_fsm.c
++++ b/drivers/s390/cio/device_fsm.c
+@@ -1034,7 +1034,7 @@ device_trigger_reprobe(struct subchannel *sch)
+ 	if (sch->schib.pmcw.dev != cdev->private->dev_id.devno) {
+ 		PREPARE_WORK(&cdev->private->kick_work,
+ 			     ccw_device_move_to_orphanage);
+-		queue_work(ccw_device_work, &cdev->private->kick_work);
++		queue_work(slow_path_wq, &cdev->private->kick_work);
+ 	} else
+ 		ccw_device_start_id(cdev, 0);
+ }
+diff --git a/drivers/s390/cio/device_id.c b/drivers/s390/cio/device_id.c
+index f232832..2f6bf46 100644
+--- a/drivers/s390/cio/device_id.c
++++ b/drivers/s390/cio/device_id.c
+@@ -113,19 +113,10 @@ __ccw_device_sense_id_start(struct ccw_device *cdev)
+ {
+ 	struct subchannel *sch;
+ 	struct ccw1 *ccw;
+-	int ret;
+ 
+ 	sch = to_subchannel(cdev->dev.parent);
+ 	/* Setup sense channel program. */
+ 	ccw = cdev->private->iccws;
+-	if (sch->schib.pmcw.pim != 0x80) {
+-		/* more than one path installed. */
+-		ccw->cmd_code = CCW_CMD_SUSPEND_RECONN;
+-		ccw->cda = 0;
+-		ccw->count = 0;
+-		ccw->flags = CCW_FLAG_SLI | CCW_FLAG_CC;
+-		ccw++;
+-	}
+ 	ccw->cmd_code = CCW_CMD_SENSE_ID;
+ 	ccw->cda = (__u32) __pa (&cdev->private->senseid);
+ 	ccw->count = sizeof (struct senseid);
+@@ -133,25 +124,9 @@ __ccw_device_sense_id_start(struct ccw_device *cdev)
+ 
+ 	/* Reset device status. */
+ 	memset(&cdev->private->irb, 0, sizeof(struct irb));
++	cdev->private->flags.intretry = 0;
+ 
+-	/* Try on every path. */
+-	ret = -ENODEV;
+-	while (cdev->private->imask != 0) {
+-		if ((sch->opm & cdev->private->imask) != 0 &&
+-		    cdev->private->iretry > 0) {
+-			cdev->private->iretry--;
+-			/* Reset internal retry indication. */
+-			cdev->private->flags.intretry = 0;
+-			ret = cio_start (sch, cdev->private->iccws,
+-					 cdev->private->imask);
+-			/* ret is 0, -EBUSY, -EACCES or -ENODEV */
+-			if (ret != -EACCES)
+-				return ret;
+-		}
+-		cdev->private->imask >>= 1;
+-		cdev->private->iretry = 5;
+-	}
+-	return ret;
++	return cio_start(sch, ccw, LPM_ANYPATH);
+ }
+ 
+ void
+@@ -161,8 +136,7 @@ ccw_device_sense_id_start(struct ccw_device *cdev)
+ 
+ 	memset (&cdev->private->senseid, 0, sizeof (struct senseid));
+ 	cdev->private->senseid.cu_type = 0xFFFF;
+-	cdev->private->imask = 0x80;
+-	cdev->private->iretry = 5;
++	cdev->private->iretry = 3;
+ 	ret = __ccw_device_sense_id_start(cdev);
+ 	if (ret && ret != -EBUSY)
+ 		ccw_device_sense_id_done(cdev, ret);
+@@ -278,14 +252,13 @@ ccw_device_sense_id_irq(struct ccw_device *cdev, enum dev_event dev_event)
+ 		ccw_device_sense_id_done(cdev, ret);
+ 		break;
+ 	case -EACCES:		/* channel is not operational. */
+-		sch->lpm &= ~cdev->private->imask;
+-		cdev->private->imask >>= 1;
+-		cdev->private->iretry = 5;
+-		/* fall through. */
+ 	case -EAGAIN:		/* try again. */
+-		ret = __ccw_device_sense_id_start(cdev);
+-		if (ret == 0 || ret == -EBUSY)
+-			break;
++		cdev->private->iretry--;
++		if (cdev->private->iretry > 0) {
++			ret = __ccw_device_sense_id_start(cdev);
++			if (ret == 0 || ret == -EBUSY)
++				break;
++		}
+ 		/* fall through. */
+ 	default:		/* Sense ID failed. Try asking VM. */
+ 		if (MACHINE_IS_VM) {
+diff --git a/include/asm-s390/system.h b/include/asm-s390/system.h
+index d866d33..44bda78 100644
+--- a/include/asm-s390/system.h
++++ b/include/asm-s390/system.h
+@@ -388,6 +388,11 @@ extern void (*_machine_power_off)(void);
+ 
+ #define arch_align_stack(x) (x)
+ 
++#ifdef CONFIG_TRACE_IRQFLAGS
++extern psw_t sysc_restore_trace_psw;
++extern psw_t io_restore_trace_psw;
++#endif
++
+ #endif /* __KERNEL__ */
+ 
+ #endif
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index e99171f..4f5047d 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -70,7 +70,6 @@ enum
+ 	CTL_ABI=9,		/* Binary emulation */
+ 	CTL_CPU=10,		/* CPU stuff (speed scaling, etc) */
+ 	CTL_ARLAN=254,		/* arlan wireless driver */
+-	CTL_APPLDATA=2120,	/* s390 appldata */
+ 	CTL_S390DBF=5677,	/* s390 debug */
+ 	CTL_SUNRPC=7249,	/* sunrpc debug */
+ 	CTL_PM=9899,		/* frv power management */
+@@ -207,11 +206,6 @@ enum
+ 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
+ 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
+ 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
+-
+-	/* s390 vm cmm sysctls */
+-	VM_CMM_PAGES=1111,
+-	VM_CMM_TIMED_PAGES=1112,
+-	VM_CMM_TIMEOUT=1113,
+ };
+ 
+ 
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index 4abc6d2..8f5baac 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -140,9 +140,6 @@ static struct trans_ctl_table trans_vm_table[] = {
+ 	{ VM_PANIC_ON_OOM,		"panic_on_oom" },
+ 	{ VM_VDSO_ENABLED,		"vdso_enabled" },
+ 	{ VM_MIN_SLAB,			"min_slab_ratio" },
+-	{ VM_CMM_PAGES,			"cmm_pages" },
+-	{ VM_CMM_TIMED_PAGES,		"cmm_timed_pages" },
+-	{ VM_CMM_TIMEOUT,		"cmm_timeout" },
+ 
+ 	{}
+ };
+@@ -1219,16 +1216,6 @@ static struct trans_ctl_table trans_arlan_table[] = {
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_appldata_table[] = {
+-	{ CTL_APPLDATA_TIMER,		"timer" },
+-	{ CTL_APPLDATA_INTERVAL,	"interval" },
+-	{ CTL_APPLDATA_OS,		"os" },
+-	{ CTL_APPLDATA_NET_SUM,		"net_sum" },
+-	{ CTL_APPLDATA_MEM,		"mem" },
+-	{}
+-
+-};
+-
+ static struct trans_ctl_table trans_s390dbf_table[] = {
+ 	{ 5678 /* CTL_S390DBF_STOPPABLE */,	"debug_stoppable" },
+ 	{ 5679 /* CTL_S390DBF_ACTIVE */,	"debug_active" },
+@@ -1273,7 +1260,6 @@ static struct trans_ctl_table trans_root_table[] = {
+ 	{ CTL_ABI,	"abi" },
+ 	/* CTL_CPU not used */
+ 	{ CTL_ARLAN,	"arlan",	trans_arlan_table },
+-	{ CTL_APPLDATA,	"appldata",	trans_appldata_table },
+ 	{ CTL_S390DBF,	"s390dbf",	trans_s390dbf_table },
+ 	{ CTL_SUNRPC,	"sunrpc",	trans_sunrpc_table },
+ 	{ CTL_PM,	"pm",		trans_pm_table },
+diff --git a/mm/rmap.c b/mm/rmap.c
+index dc3be5f..dbc2ca2 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -471,11 +471,12 @@ int page_mkclean(struct page *page)
+ 
+ 	if (page_mapped(page)) {
+ 		struct address_space *mapping = page_mapping(page);
+-		if (mapping)
++		if (mapping) {
+ 			ret = page_mkclean_file(mapping, page);
+-		if (page_test_dirty(page)) {
+-			page_clear_dirty(page);
+-			ret = 1;
++			if (page_test_dirty(page)) {
++				page_clear_dirty(page);
++				ret = 1;
++			}
+ 		}
+ 	}
+ 
+diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
+index a2f5a6e..7698f6c 100644
+--- a/net/iucv/iucv.c
++++ b/net/iucv/iucv.c
+@@ -97,7 +97,7 @@ struct iucv_irq_list {
+ 	struct iucv_irq_data data;
+ };
+ 
+-static struct iucv_irq_data *iucv_irq_data;
++static struct iucv_irq_data *iucv_irq_data[NR_CPUS];
+ static cpumask_t iucv_buffer_cpumask = CPU_MASK_NONE;
+ static cpumask_t iucv_irq_cpumask = CPU_MASK_NONE;
+ 
+@@ -277,7 +277,7 @@ union iucv_param {
+ /*
+  * Anchor for per-cpu IUCV command parameter block.
+  */
+-static union iucv_param *iucv_param;
++static union iucv_param *iucv_param[NR_CPUS];
+ 
+ /**
+  * iucv_call_b2f0
+@@ -356,7 +356,7 @@ static void iucv_allow_cpu(void *data)
+ 	 *	0x10 - Flag to allow priority message completion interrupts
+ 	 *	0x08 - Flag to allow IUCV control interrupts
+ 	 */
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[cpu];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->set_mask.ipmask = 0xf8;
+ 	iucv_call_b2f0(IUCV_SETMASK, parm);
+@@ -377,7 +377,7 @@ static void iucv_block_cpu(void *data)
+ 	union iucv_param *parm;
+ 
+ 	/* Disable all iucv interrupts. */
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[cpu];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	iucv_call_b2f0(IUCV_SETMASK, parm);
+ 
+@@ -401,9 +401,9 @@ static void iucv_declare_cpu(void *data)
+ 		return;
+ 
+ 	/* Declare interrupt buffer. */
+-	parm = percpu_ptr(iucv_param, cpu);
++	parm = iucv_param[cpu];
+ 	memset(parm, 0, sizeof(union iucv_param));
+-	parm->db.ipbfadr1 = virt_to_phys(percpu_ptr(iucv_irq_data, cpu));
++	parm->db.ipbfadr1 = virt_to_phys(iucv_irq_data[cpu]);
+ 	rc = iucv_call_b2f0(IUCV_DECLARE_BUFFER, parm);
+ 	if (rc) {
+ 		char *err = "Unknown";
+@@ -458,7 +458,7 @@ static void iucv_retrieve_cpu(void *data)
+ 	iucv_block_cpu(NULL);
+ 
+ 	/* Retrieve interrupt buffer. */
+-	parm = percpu_ptr(iucv_param, cpu);
++	parm = iucv_param[cpu];
+ 	iucv_call_b2f0(IUCV_RETRIEVE_BUFFER, parm);
+ 
+ 	/* Clear indication that an iucv buffer exists for this cpu. */
+@@ -558,22 +558,23 @@ static int __cpuinit iucv_cpu_notify(struct notifier_block *self,
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (!percpu_populate(iucv_irq_data,
+-				     sizeof(struct iucv_irq_data),
+-				     GFP_KERNEL|GFP_DMA, cpu))
++		iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
++					GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_irq_data[cpu])
+ 			return NOTIFY_BAD;
+-		if (!percpu_populate(iucv_param, sizeof(union iucv_param),
+-				     GFP_KERNEL|GFP_DMA, cpu)) {
+-			percpu_depopulate(iucv_irq_data, cpu);
++		iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
++				     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_param[cpu])
+ 			return NOTIFY_BAD;
+-		}
+ 		break;
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+-		percpu_depopulate(iucv_param, cpu);
+-		percpu_depopulate(iucv_irq_data, cpu);
++		kfree(iucv_param[cpu]);
++		iucv_param[cpu] = NULL;
++		kfree(iucv_irq_data[cpu]);
++		iucv_irq_data[cpu] = NULL;
+ 		break;
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+@@ -612,7 +613,7 @@ static int iucv_sever_pathid(u16 pathid, u8 userdata[16])
+ {
+ 	union iucv_param *parm;
+ 
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (userdata)
+ 		memcpy(parm->ctrl.ipuser, userdata, sizeof(parm->ctrl.ipuser));
+@@ -755,7 +756,7 @@ int iucv_path_accept(struct iucv_path *path, struct iucv_handler *handler,
+ 
+ 	local_bh_disable();
+ 	/* Prepare parameter block. */
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->ctrl.ippathid = path->pathid;
+ 	parm->ctrl.ipmsglim = path->msglim;
+@@ -799,7 +800,7 @@ int iucv_path_connect(struct iucv_path *path, struct iucv_handler *handler,
+ 	BUG_ON(in_atomic());
+ 	spin_lock_bh(&iucv_table_lock);
+ 	iucv_cleanup_queue();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->ctrl.ipmsglim = path->msglim;
+ 	parm->ctrl.ipflags1 = path->flags;
+@@ -854,7 +855,7 @@ int iucv_path_quiesce(struct iucv_path *path, u8 userdata[16])
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (userdata)
+ 		memcpy(parm->ctrl.ipuser, userdata, sizeof(parm->ctrl.ipuser));
+@@ -881,7 +882,7 @@ int iucv_path_resume(struct iucv_path *path, u8 userdata[16])
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (userdata)
+ 		memcpy(parm->ctrl.ipuser, userdata, sizeof(parm->ctrl.ipuser));
+@@ -936,7 +937,7 @@ int iucv_message_purge(struct iucv_path *path, struct iucv_message *msg,
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->purge.ippathid = path->pathid;
+ 	parm->purge.ipmsgid = msg->id;
+@@ -1003,7 +1004,7 @@ int iucv_message_receive(struct iucv_path *path, struct iucv_message *msg,
+ 	}
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->db.ipbfadr1 = (u32)(addr_t) buffer;
+ 	parm->db.ipbfln1f = (u32) size;
+@@ -1040,7 +1041,7 @@ int iucv_message_reject(struct iucv_path *path, struct iucv_message *msg)
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	parm->db.ippathid = path->pathid;
+ 	parm->db.ipmsgid = msg->id;
+@@ -1074,7 +1075,7 @@ int iucv_message_reply(struct iucv_path *path, struct iucv_message *msg,
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (flags & IUCV_IPRMDATA) {
+ 		parm->dpl.ippathid = path->pathid;
+@@ -1118,7 +1119,7 @@ int iucv_message_send(struct iucv_path *path, struct iucv_message *msg,
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (flags & IUCV_IPRMDATA) {
+ 		/* Message of 8 bytes can be placed into the parameter list. */
+@@ -1172,7 +1173,7 @@ int iucv_message_send2way(struct iucv_path *path, struct iucv_message *msg,
+ 	int rc;
+ 
+ 	local_bh_disable();
+-	parm = percpu_ptr(iucv_param, smp_processor_id());
++	parm = iucv_param[smp_processor_id()];
+ 	memset(parm, 0, sizeof(union iucv_param));
+ 	if (flags & IUCV_IPRMDATA) {
+ 		parm->dpl.ippathid = path->pathid;
+@@ -1559,7 +1560,7 @@ static void iucv_external_interrupt(u16 code)
+ 	struct iucv_irq_data *p;
+ 	struct iucv_irq_list *work;
+ 
+-	p = percpu_ptr(iucv_irq_data, smp_processor_id());
++	p = iucv_irq_data[smp_processor_id()];
+ 	if (p->ippathid >= iucv_max_pathid) {
+ 		printk(KERN_WARNING "iucv_do_int: Got interrupt with "
+ 		       "pathid %d > max_connections (%ld)\n",
+@@ -1598,6 +1599,7 @@ static void iucv_external_interrupt(u16 code)
+ static int __init iucv_init(void)
+ {
+ 	int rc;
++	int cpu;
+ 
+ 	if (!MACHINE_IS_VM) {
+ 		rc = -EPROTONOSUPPORT;
+@@ -1617,19 +1619,23 @@ static int __init iucv_init(void)
+ 		rc = PTR_ERR(iucv_root);
+ 		goto out_bus;
+ 	}
+-	/* Note: GFP_DMA used to get memory below 2G */
+-	iucv_irq_data = percpu_alloc(sizeof(struct iucv_irq_data),
+-				     GFP_KERNEL|GFP_DMA);
+-	if (!iucv_irq_data) {
+-		rc = -ENOMEM;
+-		goto out_root;
+-	}
+-	/* Allocate parameter blocks. */
+-	iucv_param = percpu_alloc(sizeof(union iucv_param),
+-				  GFP_KERNEL|GFP_DMA);
+-	if (!iucv_param) {
+-		rc = -ENOMEM;
+-		goto out_extint;
++
++	for_each_online_cpu(cpu) {
++		/* Note: GFP_DMA used to get memory below 2G */
++		iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
++				     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_irq_data[cpu]) {
++			rc = -ENOMEM;
++			goto out_free;
++		}
++
++		/* Allocate parameter blocks. */
++		iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
++				  GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
++		if (!iucv_param[cpu]) {
++			rc = -ENOMEM;
++			goto out_free;
++		}
+ 	}
+ 	register_hotcpu_notifier(&iucv_cpu_notifier);
+ 	ASCEBC(iucv_error_no_listener, 16);
+@@ -1638,9 +1644,13 @@ static int __init iucv_init(void)
+ 	iucv_available = 1;
+ 	return 0;
+ 
+-out_extint:
+-	percpu_free(iucv_irq_data);
+-out_root:
++out_free:
++	for_each_possible_cpu(cpu) {
++		kfree(iucv_param[cpu]);
++		iucv_param[cpu] = NULL;
++		kfree(iucv_irq_data[cpu]);
++		iucv_irq_data[cpu] = NULL;
++	}
+ 	s390_root_dev_unregister(iucv_root);
+ out_bus:
+ 	bus_unregister(&iucv_bus);
+@@ -1658,6 +1668,7 @@ out:
+ static void __exit iucv_exit(void)
+ {
+ 	struct iucv_irq_list *p, *n;
++	int cpu;
+ 
+ 	spin_lock_irq(&iucv_queue_lock);
+ 	list_for_each_entry_safe(p, n, &iucv_task_queue, list)
+@@ -1666,8 +1677,12 @@ static void __exit iucv_exit(void)
+ 		kfree(p);
+ 	spin_unlock_irq(&iucv_queue_lock);
+ 	unregister_hotcpu_notifier(&iucv_cpu_notifier);
+-	percpu_free(iucv_param);
+-	percpu_free(iucv_irq_data);
++	for_each_possible_cpu(cpu) {
++		kfree(iucv_param[cpu]);
++		iucv_param[cpu] = NULL;
++		kfree(iucv_irq_data[cpu]);
++		iucv_irq_data[cpu] = NULL;
++	}
+ 	s390_root_dev_unregister(iucv_root);
+ 	bus_unregister(&iucv_bus);
+ 	unregister_external_interrupt(0x4000, iucv_external_interrupt);
+
 
