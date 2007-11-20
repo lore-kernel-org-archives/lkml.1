@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbXKTAzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbXKTAzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbXKTAzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 19:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXKTAzV
+	id S1756437AbXKTAzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 19:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXKTAzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 19 Nov 2007 19:55:23 -0500
+Received: from gate.crashing.org ([63.228.1.57]:34221 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752656AbXKTAzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 19:55:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42823
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752654AbXKTAzU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 19:55:20 -0500
-Date: Mon, 19 Nov 2007 16:55:19 -0800 (PST)
-Message-Id: <20071119.165519.164684482.davem@davemloft.net>
-To: eranian@hpl.hp.com
-Cc: paulus@samba.org, hch@infradead.org, akpm@linux-foundation.org,
-       gregkh@suse.de, mucci@cs.utk.edu, wcohen@redhat.com,
-       robert.richter@amd.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org
-Subject: Re: [perfmon] Re: [perfmon2] perfmon2 merge news
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071119205330.GD27571@frankl.hpl.hp.com>
-References: <20071114.172722.71465976.davem@davemloft.net>
-	<20071119.050843.48408777.davem@davemloft.net>
-	<20071119205330.GD27571@frankl.hpl.hp.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: SCSI breakage on non-cache coherent architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Miller <davem@davemloft.net>
+Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk
+In-Reply-To: <20071119.164611.64664648.davem@davemloft.net>
+References: <1195501874.6539.5.camel@pasglop>
+	 <20071119.143115.251022325.davem@davemloft.net>
+	 <1195518864.6970.23.camel@pasglop>
+	 <20071119.164611.64664648.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 11:55:01 +1100
+Message-Id: <1195520101.6970.28.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephane Eranian <eranian@hpl.hp.com>
-Date: Mon, 19 Nov 2007 12:53:30 -0800
 
-> In anycase, I would be happy to integrate your sparc64 patches.
+On Mon, 2007-11-19 at 16:46 -0800, David Miller wrote:
+> 
+> 1) Require that entire buffers are commited by call sites,
+>    and thus "embedding" DMA'd within non-DMA stuff isn't allowed
+> 
+> 2) Add the __dma_cacheline_aligned tag.
+> 
+> But note that with #2 it could get quite ugly because the
+> alignment and size both have a minimum that needs to be
+> enforced, not just the alignment alone.  So either:
 
-I sent these to Philip Mucci late last night, but in the meantime
-I finished implementing breakpoint support as well for pfmon.
+Yup.
 
-Let me clean up my diffs and I'll send it all out to you in a
-few hours.
+> struct foo {
+>         unsigned int other_unrelated_stuff;
+> 
+>         struct object dma_thing __dma_cacheline_aligned;
+> 
+>         unsigned int more_nondma_stuff __dma_cacheline_aligned;
+> };
+
+In my tests, I had used a "fuckton_t" object defined to be an empty
+thing with alignment constraint, seemed to work :-) But I'd rather
+require #1.
+
+BTW. What is the status nowadays with skb's ?
+
+Cheers,
+Ben.
+
