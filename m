@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbXKTVoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbXKTVrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758583AbXKTVoo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbXKTVof
+	id S1760864AbXKTVrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXKTVrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:44:35 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:48439 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbXKTVoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:44:34 -0500
-Date: Wed, 21 Nov 2007 00:43:44 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/2] kill PT_PTRACED
-Message-ID: <20071120214344.GA177@tv-sign.ru>
-References: <20071120152133.GA4546@tv-sign.ru> <20071120210840.94CB726F8BE@magilla.localdomain> <20071120212031.GA157@tv-sign.ru> <20071120212851.EEB5026F8BE@magilla.localdomain> <20071120133743.117c4e61.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Nov 2007 16:47:12 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:32256 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755572AbXKTVrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 16:47:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ErrdPI13Frwp7ocQ48xagYvGcl9bT3pT57rCRt6M9+agLhphjByHlRaRp4Vy1Us+VVlO/vA07EVlrhjIu7wk4HnxeLboMPw6y5uAnsdDHsli0w5mDl8AlUJ+bShbpe8v6MV9Bb2qNjxsYcYDd5n8H4aXoF8A8rWpkJ5ycG2ZEK0=
+Message-ID: <d9def9db0711201347u2786fe0ev96b2fb43fc2954e9@mail.gmail.com>
+Date: Tue, 20 Nov 2007 22:47:09 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       "Laurent Pinchart" <laurentp@cse-semaphore.com>
+Subject: USB deadlock after resume
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071120133743.117c4e61.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/20, Andrew Morton wrote:
->
-> On Tue, 20 Nov 2007 13:28:51 -0800 (PST)
-> Roland McGrath <roland@redhat.com> wrote:
-> 
-> > > Andrew, it is very easy to send the new patch to fix the code, but is it
-> > > possible to fix the changelog somehow for the patch in -mm tree?
-> 
-> Sure, just send me the new text.
-> 
-> > I'd prefer a comment in the code there making it explicit that ->sighand is
-> > a "reaped yet" synchronization check (under tasklist_lock).
-> 
-> that works too.
+Hi,
 
-Will do tomorrow. Actually, I just realized we don't need need either check.
-release_task() first does ptrace_unlink(), then __exit_signal(). This means
-that (child->ptrace & PT_PTRACED) under tasklist_lock implies we have the valid
-->sighand/signal.
+I'm looking at the linux uvc driver, and noticed after resuming my
+notebook it deadlocks at usb_set_interface.
+The linux kernel version on that notebook is 2.6.21.4, I searched
+around and haven't found any such bugreports.
+I wonder if anyone has ever heard about such a problem?
 
-Will send the patch with the comment.
+I'm digging closer into that issue now..
 
-Oleg.
-
+thanks,
+Markus
