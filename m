@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765060AbXKTXy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762376AbXKTXyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765060AbXKTXy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbXKTXyT
+	id S1762376AbXKTXyq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbXKTXye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:54:19 -0500
-Received: from ns.suse.de ([195.135.220.2]:48922 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbXKTXyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:54:18 -0500
-Date: Tue, 20 Nov 2007 15:52:45 -0800
-From: Greg KH <gregkh@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, greg@kroah.com, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       jkohen@users.sourceforge.net, akpm@linux-foundation.org,
-       david@unsolicited.net
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-Message-ID: <20071120235245.GA4628@suse.de>
-References: <20071120203919.GB10008@elte.hu> <20071120210315.GC13160@kroah.com> <20071120214927.GB24156@elte.hu> <20071120.151538.68704351.davem@davemloft.net>
+	Tue, 20 Nov 2007 18:54:34 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45175 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765147AbXKTXyc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:54:32 -0500
+Message-ID: <474372BC.2000609@zytor.com>
+Date: Tue, 20 Nov 2007 15:50:20 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071120.151538.68704351.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mark Lord <lkml@rtr.ca>, Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+References: <47425EA5.7000607@rtr.ca> <200711201517.16171.nickpiggin@yahoo.com.au> <20071119213727.16d5917b@laptopd505.fenrus.org> <200711201837.39664.nickpiggin@yahoo.com.au> <20071120064747.2a8036cd@laptopd505.fenrus.org> <20071120220110.GF24156@elte.hu> <47436C43.6010200@rtr.ca> <20071120232723.GB23667@elte.hu> <47436ECD.3050004@zytor.com> <20071120234725.GH23667@elte.hu>
+In-Reply-To: <20071120234725.GH23667@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 03:15:38PM -0800, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 20 Nov 2007 22:49:27 +0100
+Ingo Molnar wrote:
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> > 
-> > * Greg KH <greg@kroah.com> wrote:
-> > 
-> > > On Tue, Nov 20, 2007 at 09:39:19PM +0100, Ingo Molnar wrote:
-> > > > 
-> > > > * Greg KH <greg@kroah.com> wrote:
-> > > > 
-> > > > > > but we only have cpu_clock() from v2.6.23 onwards - so we should not 
-> > > > > > apply the original patch to v2.6.22. (we should not have applied 
-> > > > > > your patch that started the mess to begin with - but that's another 
-> > > > > > matter.)
-> > > > > 
-> > > > > Well, I can easily back that one out, if that is easier than adding 2 
-> > > > > more patches to try to fix up the mess here.
-> > > > > 
-> > > > > Let me know if you feel that would be best.
-> > > > 
-> > > > i'd leave it alone - doing that we have in essence the softlockup 
-> > > > detector turned off. Reverting to the older version might trigger false 
-> > > > positives that need the new stuff.
-> > > 
-> > > Ok, I'll see if the current round of patches fix up everyone 
-> > > complaints :)
-> > 
-> > so just to reiterate, to make sure we have the same plans: lets leave 
-> > v2.6.22 and earlier kernels alone - and lets strive for the latest 
-> > patches and code for v2.6.23 (and v2.6.24, evidently).
+>> Ingo Molnar wrote:
+>>> * Mark Lord <lkml@rtr.ca> wrote:
+>>>
+>>>> Perhaps, but this also violates the principle that the kernel should just 
+>>>> *work* with sensible defaults.  I don't use an initrd, or an initramfs, 
+>>>> and have no intention of ever doing so.
+>>> nor do i - i was under the impression that klibc was able to work out of a 
+>>> bzImage too? Am i wrong?
+>>>
+>> Nope.  It runs inside an initramfs, of course; that initramfs is 
+>> linked into the kernel binary.
 > 
-> I've validated that those patches make 2.6.23 behave on my
-> Niagara box.
+> would be nice to have a single-image variant for all of this. having the 
+> separate initrd was always trouble - and it's pointless as well. (we 
+> rarely update the initrd without updating the vmlinuz as well)
+> 
 
-Great, thanks for testing and letting us know!
+We do.  Am I missing something?
 
-greg k-h
+	-hpa
