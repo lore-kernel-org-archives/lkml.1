@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbXKTBOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbXKTBO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbXKTBOo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXKTBNh
+	id S1757055AbXKTBO7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbXKTBNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:37 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36842 "EHLO
+	Mon, 19 Nov 2007 20:13:39 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36848 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752676AbXKTBNd (ORCPT
+	with ESMTP id S1752964AbXKTBNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:33 -0500
-Message-Id: <20071120011332.182511436@sgi.com>
+Message-Id: <20071120011332.652677710@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:34 -0800
+Date: Mon, 19 Nov 2007 17:11:36 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -21,387 +21,512 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 02/45] cpu alloc: Simple version of the allocator (static allocations)
-Content-Disposition: inline; filename=cpu_alloc
+Subject: [rfc 04/45] cpu alloc: Use in SLUB
+Content-Disposition: inline; filename=cpu_alloc_slub_conversion
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The core portion of the cpu allocator.
+Using cpu alloc removes the needs for the per cpu arrays in the kmem_cache struct.
+These could get quite big if we have to support system of up to thousands of cpus.
+The use of alloc_percpu means that:
 
-The per cpu allocator allows dynamic allocation of memory on all
-processor simultaneously. A bitmap is used to track used areas.
-The allocator implements tight packing to reduce the cache footprint
-and increase speed since cacheline contention is typically not a concern
-for memory mainly used by a single cpu. Small objects will fill up gaps
-left by larger allocations that required alignments.
+1. The size of kmem_cache for SMP configuration shrinks since we will only
+   need 1 pointer instead of NR_CPUS. The same pointer can be used by all
+   processors. Reduces cache footprint of the allocator.
 
-This is a limited version of the cpu allocator that only performs a
-static allocation of a single page for each processor. This is enough
-for the use of the cpu allocator in the slab and page allocator for most
-of the common configurations. The configuration will be useful for
-embedded systems to reduce memory requirements. However, there is a hard limit
-of the size of the per cpu structures and so the default configuration of an
-order 0 allocation can only support up to 150 slab caches (most systems that
-I got use 70) and probably not more than 16 or so NUMA nodes. The size of the
-statically configured area can be changed via make menuconfig etc.
+2. We can dynamically size kmem_cache according to the actual nodes in the
+   system meaning less memory overhead for configurations that may potentially
+   support up to 1k NUMA nodes.
 
-The cpu allocator virtualization patch is needed in order to support the dynamically
-extending per cpu areas.
+3. We can remove the diddle widdle with allocating and releasing kmem_cache_cpu
+   structures when bringing up and shuttting down cpus. The allocpercpu
+   logic will do it all for us. Removes some portions of the cpu hotplug
+   functionality.
 
-V1->V2:
-- Split off the dynamic extendable cpu area feature to make it clear that it exists.\
-- Remove useless variables.
-- Add boot_cpu_alloc for bootime cpu area reservations (allows the folding in of
-  per cpu areas and other arch specific per cpu stuff during boot).
+4. Fastpath performance increases by another 20% vs. the earlier improvements.
+   Instead of having fastpath with 45-50 cycles it is now possible to get
+   below 40.
+
+Remove the CONFIG_FAST_CMPXCHG version since this patch makes SLUB use CPU ops
+instead.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/percpu.h |   78 +++++++++++++++++++
- include/linux/vmstat.h |    2 
- mm/Kconfig             |    7 +
- mm/Makefile            |    2 
- mm/cpu_alloc.c         |  192 +++++++++++++++++++++++++++++++++++++++++++++++++
- mm/vmstat.c            |    1 
- 6 files changed, 280 insertions(+), 2 deletions(-)
- create mode 100644 include/linux/cpu_alloc.h
- create mode 100644 mm/cpu_alloc.c
+ arch/x86/Kconfig         |    4 
+ include/linux/slub_def.h |    6 -
+ mm/slub.c                |  229 ++++++++++-------------------------------------
+ 3 files changed, 52 insertions(+), 187 deletions(-)
 
-Index: linux-2.6/include/linux/vmstat.h
+Index: linux-2.6/include/linux/slub_def.h
 ===================================================================
---- linux-2.6.orig/include/linux/vmstat.h	2007-11-18 22:07:35.588274285 -0800
-+++ linux-2.6/include/linux/vmstat.h	2007-11-18 22:07:49.864273686 -0800
-@@ -36,7 +36,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
- 		FOR_ALL_ZONES(PGSCAN_KSWAPD),
- 		FOR_ALL_ZONES(PGSCAN_DIRECT),
- 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
--		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-+		PAGEOUTRUN, ALLOCSTALL, PGROTATED, CPU_BYTES,
- 		NR_VM_EVENT_ITEMS
- };
- 
-Index: linux-2.6/mm/Kconfig
-===================================================================
---- linux-2.6.orig/mm/Kconfig	2007-11-18 22:07:35.600273725 -0800
-+++ linux-2.6/mm/Kconfig	2007-11-18 22:13:51.405773802 -0800
-@@ -194,3 +194,10 @@ config NR_QUICK
- config VIRT_TO_BUS
- 	def_bool y
- 	depends on !ARCH_NO_VIRT_TO_BUS
-+
-+config CPU_AREA_ORDER
-+	int "Maximum size (order) of CPU area"
-+	default "3"
-+	help
-+	  Sets the maximum amount of memory that can be allocated via cpu_alloc
-+	  The size is set in page order, so 0 = PAGE_SIZE, 1 = PAGE_SIZE << 1 etc.
-Index: linux-2.6/mm/Makefile
-===================================================================
---- linux-2.6.orig/mm/Makefile	2007-11-18 22:07:35.608273792 -0800
-+++ linux-2.6/mm/Makefile	2007-11-18 22:13:44.924523941 -0800
-@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o
- 			   page_alloc.o page-writeback.o pdflush.o \
- 			   readahead.o swap.o truncate.o vmscan.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
--			   page_isolation.o $(mmu-y)
-+			   page_isolation.o cpu_alloc.o $(mmu-y)
- 
- obj-$(CONFIG_BOUNCE)	+= bounce.o
- obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
-Index: linux-2.6/mm/cpu_alloc.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/mm/cpu_alloc.c	2007-11-18 22:15:04.453743317 -0800
-@@ -0,0 +1,192 @@
-+/*
-+ * Cpu allocator - Manage objects allocated for each processor
-+ *
-+ * (C) 2007 SGI, Christoph Lameter <clameter@sgi.com>
-+ * 	Basic implementation with allocation and free from a dedicated per
-+ * 	cpu area.
-+ *
-+ * The per cpu allocator allows dynamic allocation of memory on all
-+ * processor simultaneously. A bitmap is used to track used areas.
-+ * The allocator implements tight packing to reduce the cache footprint
-+ * and increase speed since cacheline contention is typically not a concern
-+ * for memory mainly used by a single cpu. Small objects will fill up gaps
-+ * left by larger allocations that required alignments.
-+ */
-+#include <linux/mm.h>
-+#include <linux/mmzone.h>
-+#include <linux/module.h>
-+#include <linux/percpu.h>
-+#include <linux/bitmap.h>
-+
-+/*
-+ * Basic allocation unit. A bit map is created to track the use of each
-+ * UNIT_SIZE element in the cpu area.
-+ */
-+
-+#define UNIT_SIZE sizeof(int)
-+#define UNITS (ALLOC_SIZE / UNIT_SIZE)
-+
-+/*
-+ * How many units are needed for an object of a given size
-+ */
-+static int size_to_units(unsigned long size)
-+{
-+	return DIV_ROUND_UP(size, UNIT_SIZE);
-+}
-+
-+/*
-+ * Lock to protect the bitmap and the meta data for the cpu allocator.
-+ */
-+static DEFINE_SPINLOCK(cpu_alloc_map_lock);
-+static unsigned long units_reserved;	/* Units reserved by boot allocations */
-+
-+/*
-+ * Static configuration. The cpu areas are of a fixed size and
-+ * cannot be extended. Such configurations are mainly useful on
-+ * machines that do not have MMU support. Note that we have to use
-+ * bss space for the static declarations. The combination of a large number
-+ * of processors and a large cpu area may cause problems with the size
-+ * of the bss segment.
-+ */
-+#define ALLOC_SIZE (1UL << (CONFIG_CPU_AREA_ORDER + PAGE_SHIFT))
-+
-+char cpu_area[NR_CPUS * ALLOC_SIZE];
-+static DECLARE_BITMAP(cpu_alloc_map, UNITS);
-+
-+void * __init boot_cpu_alloc(unsigned long size)
-+{
-+	unsigned long x = units_reserved;
-+
-+	units_reserved += size_to_units(size);
-+	BUG_ON(units_reserved > UNITS);
-+	return (void *)(x * UNIT_SIZE);
-+}
-+
-+static int first_free;		/* First known free unit */
-+EXPORT_SYMBOL(cpu_area);
-+
-+/*
-+ * Mark an object as used in the cpu_alloc_map
-+ *
-+ * Must hold cpu_alloc_map_lock
-+ */
-+static void set_map(int start, int length)
-+{
-+	while (length-- > 0)
-+		__set_bit(start++, cpu_alloc_map);
-+}
-+
-+/*
-+ * Mark an area as freed.
-+ *
-+ * Must hold cpu_alloc_map_lock
-+ */
-+static void clear_map(int start, int length)
-+{
-+	while (length-- > 0)
-+		__clear_bit(start++, cpu_alloc_map);
-+}
-+
-+/*
-+ * Allocate an object of a certain size
-+ *
-+ * Returns a special pointer that can be used with CPU_PTR to find the
-+ * address of the object for a certain cpu.
-+ */
-+void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
-+{
-+	unsigned long start;
-+	int units = size_to_units(size);
-+	void *ptr;
-+	int first;
-+	unsigned long flags;
-+
-+	BUG_ON(gfpflags & ~(GFP_RECLAIM_MASK | __GFP_ZERO));
-+
-+	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-+
-+	if (!units_reserved)
-+		/*
-+		 * No boot time allocations. Must have at least one
-+		 * reserved unit to avoid returning a NULL pointer
-+		 */
-+		units_reserved = 1;
-+
-+	first = 1;
-+	start = first_free;
-+
-+	for ( ; ; ) {
-+
-+		start = find_next_zero_bit(cpu_alloc_map, ALLOC_SIZE, start);
-+		if (start >= UNITS - units_reserved)
-+			goto out_of_memory;
-+
-+		if (first)
-+			first_free = start;
-+
-+		/*
-+		 * Check alignment and that there is enough space after
-+		 * the starting unit.
-+		 */
-+		if ((start + units_reserved) % (align / UNIT_SIZE) == 0 &&
-+			find_next_bit(cpu_alloc_map, ALLOC_SIZE, start + 1)
-+							>= start + units)
-+				break;
-+		start++;
-+		first = 0;
-+	}
-+
-+	if (first)
-+		first_free = start + units;
-+
-+	if (start + units > UNITS - units_reserved)
-+		goto out_of_memory;
-+
-+	set_map(start, units);
-+	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
-+
-+	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-+
-+	ptr =  (void *)((start + units_reserved) * UNIT_SIZE);
-+
-+	if (gfpflags & __GFP_ZERO) {
-+		int cpu;
-+
-+		for_each_possible_cpu(cpu)
-+			memset(CPU_PTR(ptr, cpu), 0, size);
-+	}
-+
-+	return ptr;
-+
-+out_of_memory:
-+	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(cpu_alloc);
-+
-+/*
-+ * Free an object. The pointer must be a cpu pointer allocated
-+ * via cpu_alloc.
-+ */
-+void cpu_free(void *start, unsigned long size)
-+{
-+	int units = size_to_units(size);
-+	int index;
-+	unsigned long p = (unsigned long)start;
-+	unsigned long flags;
-+
-+	BUG_ON(p < units_reserved * UNIT_SIZE);
-+	index = p / UNIT_SIZE - units_reserved;
-+	BUG_ON(!test_bit(index, cpu_alloc_map) ||
-+			index >= UNITS - units_reserved);
-+
-+	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-+
-+	clear_map(index, units);
-+	__count_vm_events(CPU_BYTES, -units * UNIT_SIZE);
-+	if (index < first_free)
-+		first_free = index;
-+
-+	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-+}
-+EXPORT_SYMBOL(cpu_free);
-Index: linux-2.6/mm/vmstat.c
-===================================================================
---- linux-2.6.orig/mm/vmstat.c	2007-11-18 22:07:49.784273594 -0800
-+++ linux-2.6/mm/vmstat.c	2007-11-18 22:13:51.538023840 -0800
-@@ -639,6 +639,7 @@ static const char * const vmstat_text[] 
- 	"allocstall",
- 
- 	"pgrotated",
-+	"cpu_bytes",
+--- linux-2.6.orig/include/linux/slub_def.h	2007-11-19 15:45:08.270140279 -0800
++++ linux-2.6/include/linux/slub_def.h	2007-11-19 15:53:25.869890760 -0800
+@@ -34,6 +34,7 @@ struct kmem_cache_node {
+  * Slab cache management.
+  */
+ struct kmem_cache {
++	struct kmem_cache_cpu *cpu_slab;
+ 	/* Used for retriving partial slabs etc */
+ 	unsigned long flags;
+ 	int size;		/* The size of an object including meta data */
+@@ -63,11 +64,6 @@ struct kmem_cache {
+ 	int defrag_ratio;
+ 	struct kmem_cache_node *node[MAX_NUMNODES];
  #endif
+-#ifdef CONFIG_SMP
+-	struct kmem_cache_cpu *cpu_slab[NR_CPUS];
+-#else
+-	struct kmem_cache_cpu cpu_slab;
+-#endif
  };
  
-Index: linux-2.6/include/linux/percpu.h
+ /*
+Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2007-11-18 22:07:49.729023738 -0800
-+++ linux-2.6/include/linux/percpu.h	2007-11-18 22:13:51.773274119 -0800
-@@ -112,4 +112,82 @@ static inline void percpu_free(void *__p
- #define free_percpu(ptr)	percpu_free((ptr))
- #define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
+--- linux-2.6.orig/mm/slub.c	2007-11-19 15:45:08.278140252 -0800
++++ linux-2.6/mm/slub.c	2007-11-19 15:54:10.513640214 -0800
+@@ -239,15 +239,6 @@ static inline struct kmem_cache_node *ge
+ #endif
+ }
  
-+
-+/*
-+ * cpu allocator definitions
-+ *
-+ * The cpu allocator allows allocating an array of objects on all processors.
-+ * A single pointer can then be used to access the instance of the object
-+ * on a particular processor.
-+ *
-+ * Cpu objects are typically small. The allocator packs them tightly
-+ * to increase the chance on each access that a per cpu object is already
-+ * cached. Alignments may be specified but the intent is to align the data
-+ * properly due to cpu alignment constraints and not to avoid cacheline
-+ * contention. Any holes left by aligning objects are filled up with smaller
-+ * objects that are allocated later.
-+ *
-+ * Cpu data can be allocated using CPU_ALLOC. The resulting pointer is
-+ * pointing to the instance of the variable on cpu 0. It is generally an
-+ * error to use the pointer directly unless we are running on cpu 0. So
-+ * the use is valid during boot for example.
-+ *
-+ * The GFP flags have their usual function: __GFP_ZERO zeroes the object
-+ * and other flags may be used to control reclaim behavior if the cpu
-+ * areas have to be extended. However, zones cannot be selected nor
-+ * can locality constraint flags be used.
-+ *
-+ * CPU_PTR() may be used to calculate the pointer for a specific processor.
-+ * CPU_PTR is highly scalable since it simply adds the shifted value of
-+ * smp_processor_id() to the base.
-+ *
-+ * Note: Synchronization is up to caller. If preemption is disabled then
-+ * it is generally safe to access cpu variables (unless they are also
-+ * handled from an interrupt context).
-+ */
-+
-+#define SHIFT_PTR(__p, __offset) ((__typeof__(__p))((void *)(__p) \
-+						+ (__offset)))
-+extern char cpu_area[];
-+
-+static inline unsigned long __cpu_offset(unsigned long cpu)
+-static inline struct kmem_cache_cpu *get_cpu_slab(struct kmem_cache *s, int cpu)
+-{
+-#ifdef CONFIG_SMP
+-	return s->cpu_slab[cpu];
+-#else
+-	return &s->cpu_slab;
+-#endif
+-}
+-
+ /*
+  * The end pointer in a slab is special. It points to the first object in the
+  * slab but has bit 0 set to mark it.
+@@ -1472,7 +1463,7 @@ static inline void flush_slab(struct kme
+  */
+ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
+ {
+-	struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++	struct kmem_cache_cpu *c = CPU_PTR(s->cpu_slab, cpu);
+ 
+ 	if (likely(c && c->page))
+ 		flush_slab(s, c);
+@@ -1487,15 +1478,7 @@ static void flush_cpu_slab(void *d)
+ 
+ static void flush_all(struct kmem_cache *s)
+ {
+-#ifdef CONFIG_SMP
+ 	on_each_cpu(flush_cpu_slab, s, 1, 1);
+-#else
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	flush_cpu_slab(s);
+-	local_irq_restore(flags);
+-#endif
+ }
+ 
+ /*
+@@ -1511,6 +1494,15 @@ static inline int node_match(struct kmem
+ 	return 1;
+ }
+ 
++static inline int cpu_node_match(struct kmem_cache_cpu *c, int node)
 +{
-+	int shift = CONFIG_CPU_AREA_ORDER + PAGE_SHIFT;
-+
-+	return (unsigned long)cpu_area + (cpu << shift);
-+}
-+
-+static inline unsigned long cpu_offset(unsigned long cpu)
-+{
-+#ifdef CONFIG_DEBUG_VM
-+	if (system_state == SYSTEM_RUNNING) {
-+		BUG_ON(!cpu_isset(cpu, cpu_possible_map));
-+		WARN_ON(!cpu_isset(cpu, cpu_online_map));
-+	}
++#ifdef CONFIG_NUMA
++	if (node != -1 && __CPU_READ(c->node) != node)
++		return 0;
 +#endif
-+	return __cpu_offset(cpu);
++	return 1;
 +}
 +
-+#define CPU_PTR(__p, __cpu) SHIFT_PTR(__p, cpu_offset(__cpu))
-+#define __CPU_PTR(__p, __cpu) SHIFT_PTR(__p, __cpu_offset(__cpu))
-+
-+#define CPU_ALLOC(type, flags)	cpu_alloc(sizeof(type), flags, \
-+					__alignof__(type))
-+#define CPU_FREE(pointer)	cpu_free(pointer, sizeof(*(pointer)))
-+
-+#define THIS_CPU(__p)	CPU_PTR(__p, smp_processor_id())
-+#define __THIS_CPU(__p)	CPU_PTR(__p, raw_smp_processor_id())
-+
-+/*
-+ * Raw calls
-+ */
-+void *cpu_alloc(unsigned long size, gfp_t gfp, unsigned long align);
-+void cpu_free(void *cpu_pointer, unsigned long size);
-+
-+/*
-+ * Early boot allocator for per_cpu variables and special per cpu areas.
-+ * Allocations are not tracked and cannot be freed.
-+ */
-+void *boot_cpu_alloc(unsigned long size);
-+
- #endif /* __LINUX_PERCPU_H */
+ /* Allocate a new slab and make it the current cpu slab */
+ static noinline unsigned long get_new_slab(struct kmem_cache *s,
+ 	struct kmem_cache_cpu **pc, gfp_t gfpflags, int node)
+@@ -1529,7 +1521,7 @@ static noinline unsigned long get_new_sl
+ 	if (!page)
+ 		return 0;
+ 
+-	*pc = c = get_cpu_slab(s, smp_processor_id());
++	*pc = c = THIS_CPU(s->cpu_slab);
+ 	if (c->page)
+ 		flush_slab(s, c);
+ 	c->page = page;
+@@ -1554,16 +1546,18 @@ static noinline unsigned long get_new_sl
+  * we need to allocate a new slab. This is slowest path since we may sleep.
+  */
+ static void *__slab_alloc(struct kmem_cache *s,
+-		gfp_t gfpflags, int node, void *addr, struct kmem_cache_cpu *c)
++		gfp_t gfpflags, int node, void *addr)
+ {
+ 	void **object;
+ 	unsigned long state;
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
++	struct kmem_cache_cpu *c;
++#ifdef CONFIG_FAST_CPU_OPS
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+ 	preempt_enable_no_resched();
+ #endif
++	c = THIS_CPU(s->cpu_slab);
+ 	if (likely(c->page)) {
+ 		state = slab_lock(c->page);
+ 
+@@ -1597,7 +1591,7 @@ load_freelist:
+ unlock_out:
+ 	slab_unlock(c->page, state);
+ out:
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
++#ifdef CONFIG_FAST_CPU_OPS
+ 	preempt_disable();
+ 	local_irq_restore(flags);
+ #endif
+@@ -1640,26 +1634,24 @@ static void __always_inline *slab_alloc(
+ 	void **object;
+ 	struct kmem_cache_cpu *c;
+ 
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+-	c = get_cpu_slab(s, get_cpu());
++#ifdef CONFIG_FAST_CPU_OPS
++	c = s->cpu_slab;
+ 	do {
+-		object = c->freelist;
+-		if (unlikely(is_end(object) || !node_match(c, node))) {
+-			object = __slab_alloc(s, gfpflags, node, addr, c);
+-			if (unlikely(!object)) {
+-				put_cpu();
++		object = __CPU_READ(c->freelist);
++		if (unlikely(is_end(object) ||
++					!cpu_node_match(c, node))) {
++			object = __slab_alloc(s, gfpflags, node, addr);
++			if (unlikely(!object))
+ 				goto out;
+-			}
+ 			break;
+ 		}
+-	} while (cmpxchg_local(&c->freelist, object, object[c->offset])
+-								!= object);
+-	put_cpu();
++	} while (CPU_CMPXCHG(c->freelist, object,
++			object[__CPU_READ(c->offset)]) != object);
+ #else
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+-	c = get_cpu_slab(s, smp_processor_id());
++	c = THIS_CPU(s->cpu_slab);
+ 	if (unlikely((is_end(c->freelist)) || !node_match(c, node))) {
+ 
+ 		object = __slab_alloc(s, gfpflags, node, addr, c);
+@@ -1709,7 +1701,7 @@ static void __slab_free(struct kmem_cach
+ 	void **object = (void *)x;
+ 	unsigned long state;
+ 
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
++#ifdef CONFIG_FAST_CPU_OPS
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+@@ -1739,7 +1731,7 @@ checks_ok:
+ 
+ out_unlock:
+ 	slab_unlock(page, state);
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
++#ifdef CONFIG_FAST_CPU_OPS
+ 	local_irq_restore(flags);
+ #endif
+ 	return;
+@@ -1752,7 +1744,7 @@ slab_empty:
+ 		remove_partial(s, page);
+ 
+ 	slab_unlock(page, state);
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
++#ifdef CONFIG_FAST_CPU_OPS
+ 	local_irq_restore(flags);
+ #endif
+ 	discard_slab(s, page);
+@@ -1781,13 +1773,13 @@ static void __always_inline slab_free(st
+ 	void **object = (void *)x;
+ 	struct kmem_cache_cpu *c;
+ 
+-#ifdef CONFIG_FAST_CMPXCHG_LOCAL
++#ifdef CONFIG_FAST_CPU_OPS
+ 	void **freelist;
+ 
+-	c = get_cpu_slab(s, get_cpu());
++	c = s->cpu_slab;
+ 	debug_check_no_locks_freed(object, s->objsize);
+ 	do {
+-		freelist = c->freelist;
++		freelist = __CPU_READ(c->freelist);
+ 		barrier();
+ 		/*
+ 		 * If the compiler would reorder the retrieval of c->page to
+@@ -1800,19 +1792,19 @@ static void __always_inline slab_free(st
+ 		 * then any change of cpu_slab will cause the cmpxchg to fail
+ 		 * since the freelist pointers are unique per slab.
+ 		 */
+-		if (unlikely(page != c->page || c->node < 0)) {
+-			__slab_free(s, page, x, addr, c->offset);
++		if (unlikely(page != __CPU_READ(c->page) ||
++					__CPU_READ(c->node) < 0)) {
++			__slab_free(s, page, x, addr, __CPU_READ(c->offset));
+ 			break;
+ 		}
+-		object[c->offset] = freelist;
+-	} while (cmpxchg_local(&c->freelist, freelist, object) != freelist);
+-	put_cpu();
++		object[__CPU_READ(c->offset)] = freelist;
++	} while (CPU_CMPXCHG(c->freelist, freelist, object) != freelist);
+ #else
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+ 	debug_check_no_locks_freed(object, s->objsize);
+-	c = get_cpu_slab(s, smp_processor_id());
++	c = THIS_CPU(s->cpu_slab);
+ 	if (likely(page == c->page && c->node >= 0)) {
+ 		object[c->offset] = c->freelist;
+ 		c->freelist = object;
+@@ -2015,130 +2007,19 @@ static void init_kmem_cache_node(struct 
+ #endif
+ }
+ 
+-#ifdef CONFIG_SMP
+-/*
+- * Per cpu array for per cpu structures.
+- *
+- * The per cpu array places all kmem_cache_cpu structures from one processor
+- * close together meaning that it becomes possible that multiple per cpu
+- * structures are contained in one cacheline. This may be particularly
+- * beneficial for the kmalloc caches.
+- *
+- * A desktop system typically has around 60-80 slabs. With 100 here we are
+- * likely able to get per cpu structures for all caches from the array defined
+- * here. We must be able to cover all kmalloc caches during bootstrap.
+- *
+- * If the per cpu array is exhausted then fall back to kmalloc
+- * of individual cachelines. No sharing is possible then.
+- */
+-#define NR_KMEM_CACHE_CPU 100
+-
+-static DEFINE_PER_CPU(struct kmem_cache_cpu,
+-				kmem_cache_cpu)[NR_KMEM_CACHE_CPU];
+-
+-static DEFINE_PER_CPU(struct kmem_cache_cpu *, kmem_cache_cpu_free);
+-static cpumask_t kmem_cach_cpu_free_init_once = CPU_MASK_NONE;
+-
+-static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
+-							int cpu, gfp_t flags)
+-{
+-	struct kmem_cache_cpu *c = per_cpu(kmem_cache_cpu_free, cpu);
+-
+-	if (c)
+-		per_cpu(kmem_cache_cpu_free, cpu) =
+-				(void *)c->freelist;
+-	else {
+-		/* Table overflow: So allocate ourselves */
+-		c = kmalloc_node(
+-			ALIGN(sizeof(struct kmem_cache_cpu), cache_line_size()),
+-			flags, cpu_to_node(cpu));
+-		if (!c)
+-			return NULL;
+-	}
+-
+-	init_kmem_cache_cpu(s, c);
+-	return c;
+-}
+-
+-static void free_kmem_cache_cpu(struct kmem_cache_cpu *c, int cpu)
+-{
+-	if (c < per_cpu(kmem_cache_cpu, cpu) ||
+-			c > per_cpu(kmem_cache_cpu, cpu) + NR_KMEM_CACHE_CPU) {
+-		kfree(c);
+-		return;
+-	}
+-	c->freelist = (void *)per_cpu(kmem_cache_cpu_free, cpu);
+-	per_cpu(kmem_cache_cpu_free, cpu) = c;
+-}
+-
+-static void free_kmem_cache_cpus(struct kmem_cache *s)
+-{
+-	int cpu;
+-
+-	for_each_online_cpu(cpu) {
+-		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
+-
+-		if (c) {
+-			s->cpu_slab[cpu] = NULL;
+-			free_kmem_cache_cpu(c, cpu);
+-		}
+-	}
+-}
+-
+ static int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+ {
+ 	int cpu;
+ 
+-	for_each_online_cpu(cpu) {
+-		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++	s->cpu_slab = CPU_ALLOC(struct kmem_cache_cpu, flags);
+ 
+-		if (c)
+-			continue;
+-
+-		c = alloc_kmem_cache_cpu(s, cpu, flags);
+-		if (!c) {
+-			free_kmem_cache_cpus(s);
+-			return 0;
+-		}
+-		s->cpu_slab[cpu] = c;
+-	}
+-	return 1;
+-}
+-
+-/*
+- * Initialize the per cpu array.
+- */
+-static void init_alloc_cpu_cpu(int cpu)
+-{
+-	int i;
+-
+-	if (cpu_isset(cpu, kmem_cach_cpu_free_init_once))
+-		return;
+-
+-	for (i = NR_KMEM_CACHE_CPU - 1; i >= 0; i--)
+-		free_kmem_cache_cpu(&per_cpu(kmem_cache_cpu, cpu)[i], cpu);
+-
+-	cpu_set(cpu, kmem_cach_cpu_free_init_once);
+-}
+-
+-static void __init init_alloc_cpu(void)
+-{
+-	int cpu;
++	if (!s->cpu_slab)
++		return 0;
+ 
+ 	for_each_online_cpu(cpu)
+-		init_alloc_cpu_cpu(cpu);
+-  }
+-
+-#else
+-static inline void free_kmem_cache_cpus(struct kmem_cache *s) {}
+-static inline void init_alloc_cpu(void) {}
+-
+-static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+-{
+-	init_kmem_cache_cpu(s, &s->cpu_slab);
++		init_kmem_cache_cpu(s, CPU_PTR(s->cpu_slab, cpu));
+ 	return 1;
+ }
+-#endif
+ 
+ #ifdef CONFIG_NUMA
+ /*
+@@ -2452,9 +2333,8 @@ static inline int kmem_cache_close(struc
+ 	int node;
+ 
+ 	flush_all(s);
+-
++	CPU_FREE(s->cpu_slab);
+ 	/* Attempt to free all objects */
+-	free_kmem_cache_cpus(s);
+ 	for_each_node_state(node, N_NORMAL_MEMORY) {
+ 		struct kmem_cache_node *n = get_node(s, node);
+ 
+@@ -2958,8 +2838,6 @@ void __init kmem_cache_init(void)
+ 	int i;
+ 	int caches = 0;
+ 
+-	init_alloc_cpu();
+-
+ #ifdef CONFIG_NUMA
+ 	/*
+ 	 * Must first have the slab cache available for the allocations of the
+@@ -3019,11 +2897,12 @@ void __init kmem_cache_init(void)
+ 	for (i = KMALLOC_SHIFT_LOW; i < PAGE_SHIFT; i++)
+ 		kmalloc_caches[i]. name =
+ 			kasprintf(GFP_KERNEL, "kmalloc-%d", 1 << i);
+-
+ #ifdef CONFIG_SMP
+ 	register_cpu_notifier(&slab_notifier);
+-	kmem_size = offsetof(struct kmem_cache, cpu_slab) +
+-				nr_cpu_ids * sizeof(struct kmem_cache_cpu *);
++#endif
++#ifdef CONFIG_NUMA
++	kmem_size = offsetof(struct kmem_cache, node) +
++				nr_node_ids * sizeof(struct kmem_cache_node *);
+ #else
+ 	kmem_size = sizeof(struct kmem_cache);
+ #endif
+@@ -3120,7 +2999,7 @@ struct kmem_cache *kmem_cache_create(con
+ 		 * per cpu structures
+ 		 */
+ 		for_each_online_cpu(cpu)
+-			get_cpu_slab(s, cpu)->objsize = s->objsize;
++			CPU_PTR(s->cpu_slab, cpu)->objsize = s->objsize;
+ 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
+ 		up_write(&slub_lock);
+ 		if (sysfs_slab_alias(s, name))
+@@ -3165,11 +3044,9 @@ static int __cpuinit slab_cpuup_callback
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		init_alloc_cpu_cpu(cpu);
+ 		down_read(&slub_lock);
+ 		list_for_each_entry(s, &slab_caches, list)
+-			s->cpu_slab[cpu] = alloc_kmem_cache_cpu(s, cpu,
+-							GFP_KERNEL);
++			init_kmem_cache_cpu(s, __CPU_PTR(s->cpu_slab, cpu));
+ 		up_read(&slub_lock);
+ 		break;
+ 
+@@ -3179,13 +3056,9 @@ static int __cpuinit slab_cpuup_callback
+ 	case CPU_DEAD_FROZEN:
+ 		down_read(&slub_lock);
+ 		list_for_each_entry(s, &slab_caches, list) {
+-			struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
+-
+ 			local_irq_save(flags);
+ 			__flush_cpu_slab(s, cpu);
+ 			local_irq_restore(flags);
+-			free_kmem_cache_cpu(c, cpu);
+-			s->cpu_slab[cpu] = NULL;
+ 		}
+ 		up_read(&slub_lock);
+ 		break;
+@@ -3657,7 +3530,7 @@ static unsigned long slab_objects(struct
+ 	for_each_possible_cpu(cpu) {
+ 		struct page *page;
+ 		int node;
+-		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++		struct kmem_cache_cpu *c = CPU_PTR(s->cpu_slab, cpu);
+ 
+ 		if (!c)
+ 			continue;
+@@ -3724,7 +3597,7 @@ static int any_slab_objects(struct kmem_
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++		struct kmem_cache_cpu *c = CPU_PTR(s->cpu_slab, cpu);
+ 
+ 		if (c && c->page)
+ 			return 1;
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig	2007-11-19 15:53:55.529390403 -0800
++++ linux-2.6/arch/x86/Kconfig	2007-11-19 15:54:10.509139813 -0800
+@@ -112,10 +112,6 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default X86_64
+ 
+-config FAST_CMPXCHG_LOCAL
+-	bool
+-	default y
+-
+ config ZONE_DMA32
+ 	bool
+ 	default X86_64
 
 -- 
