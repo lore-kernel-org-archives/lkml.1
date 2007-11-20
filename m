@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbXKTEIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXKTEMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758453AbXKTEIV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 23:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXKTEIL
+	id S1756840AbXKTEMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 23:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbXKTEMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 23:08:11 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:2359 "EHLO perches.com"
+	Mon, 19 Nov 2007 23:12:24 -0500
+Received: from rtr.ca ([76.10.145.34]:1844 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbXKTEIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 23:08:10 -0500
-Subject: Re: [v4l-dvb-maintainer] [PATCH 25/59] drivers/media/video: Add
-	missing "space"
-From: Joe Perches <joe@perches.com>
-To: Brandon Philips <bphilips@suse.de>
-Cc: linux-kernel@vger.kernel.org, Stelian Pop <stelian@popies.net>,
-       "LinuxTV.org Project" <v4l-dvb-maintainer@linuxtv.org>,
-       video4linux-list@redhat.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <20071120022442.GA17247@ifup.org>
-References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
-	 <8cdb362d494c702f6f0cf095e8e24435550bf5ce.1195454435.git.joe@perches.com>
-	 <20071120022442.GA17247@ifup.org>
-Content-Type: text/plain
-Date: Mon, 19 Nov 2007 20:08:07 -0800
-Message-Id: <1195531687.4675.73.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	id S1752159AbXKTEMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 23:12:24 -0500
+Message-ID: <47425EA5.7000607@rtr.ca>
+Date: Mon, 19 Nov 2007 23:12:21 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: CONFIG_IRQBALANCE for 64-bit x86 ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-19 at 18:24 -0800, Brandon Philips wrote:
-> On 17:48 Mon 19 Nov 2007, Joe Perches wrote:
-> >  		v4l_dbg(1, cx25840_debug, client, "hblank %i, hactive %i, "
-> > -			"vblank %i , vactive %i, vblank656 %i, src_dec %i,"
-> > +			"vblank %i , vactive %i, vblank656 %i, src_dec %i, "
-> 				^^^^^
-> 				can you remove that unintended
+On 32-bit x86, we have CONFIG_IRQBALANCE available,
+but not on 64-bit x86.  Why not?
 
-diff --git a/drivers/media/video/cx25840/cx25840-vbi.c b/drivers/media/video/cx25840/cx25840-vbi.c
-index ced13fe..d2949e5 100644
---- a/drivers/media/video/cx25840/cx25840-vbi.c
-+++ b/drivers/media/video/cx25840/cx25840-vbi.c
-@@ -180,7 +180,7 @@ void cx25840_vbi_setup(struct i2c_client *client)
- 						fsc/1000000,fsc%1000000);
- 
- 		v4l_dbg(1, cx25840_debug, client, "hblank %i, hactive %i, "
--			"vblank %i , vactive %i, vblank656 %i, src_dec %i,"
-+			"vblank %i, vactive %i, vblank656 %i, src_dec %i, "
- 			"burst 0x%02x, luma_lpf %i, uv_lpf %i, comb 0x%02x,"
- 			" sc 0x%06x\n",
- 			hblank, hactive, vblank, vactive, vblank656,
+I ask, because this feature seems almost essential to obtaining
+reasonable latencies during heavy I/O with fast devices.
 
+My 32-bit Core2Duo MythTV box drops audio frames without it,
+but works perfectly *with* IRQBALANCE.
 
+My QuadCore box works very well in 32-bit mode with IRQBALANCE,
+but responsiveness sucks bigtime when run in 64-bit mode (no IRQBALANCE)
+during periods of multiple heavy I/O streams (USB flash drives).
 
+That's with both the 32 and 64 bit versions of Kubuntu Gutsy,
+so the software uses pretty much identical versions either way.
+
+As near as I can tell, when IRQBALANCE is not configured,
+all I/O device interrupts go to CPU#0.
+
+I don't think our CPU scheduler takes that into account when assigning
+tasks to CPUs, so anything sent to CPU0 runs with very high latencies.
+
+Or something like that.
+
+Why no IRQ_BALANCE in 64-bit mode ?
