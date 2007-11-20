@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbXKTBVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbXKTBV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbXKTBVk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbXKTBN6
+	id S1757572AbXKTBV5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbXKTBN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:58 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36876 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755310AbXKTBNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:13:59 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49858 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755624AbXKTBNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:38 -0500
-Message-Id: <20071120011337.630766318@sgi.com>
+Message-Id: <20071120011337.864745925@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:57 -0800
+Date: Mon, 19 Nov 2007 17:11:58 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -21,64 +20,74 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 25/45] cpu alloc: veth conversion
-Content-Disposition: inline; filename=0033-cpu-alloc-veth-conversion.patch
+Subject: [rfc 26/45] cpu alloc: Chelsio statistics conversion
+Content-Disposition: inline; filename=0034-cpu-alloc-Chelsio-statistics-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- drivers/net/veth.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/chelsio/sge.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/net/veth.c
+Index: linux-2.6/drivers/net/chelsio/sge.c
 ===================================================================
---- linux-2.6.orig/drivers/net/veth.c	2007-11-15 21:17:24.010404318 -0800
-+++ linux-2.6/drivers/net/veth.c	2007-11-15 21:25:36.483154219 -0800
-@@ -162,7 +162,7 @@ static int veth_xmit(struct sk_buff *skb
- 	rcv_priv = netdev_priv(rcv);
+--- linux-2.6.orig/drivers/net/chelsio/sge.c	2007-11-15 21:17:23.927654318 -0800
++++ linux-2.6/drivers/net/chelsio/sge.c	2007-11-15 21:25:37.015154316 -0800
+@@ -805,7 +805,7 @@ void t1_sge_destroy(struct sge *sge)
+ 	int i;
  
- 	cpu = smp_processor_id();
--	stats = per_cpu_ptr(priv->stats, cpu);
-+	stats = CPU_PTR(priv->stats, cpu);
+ 	for_each_port(sge->adapter, i)
+-		free_percpu(sge->port_stats[i]);
++		CPU_FREE(sge->port_stats[i]);
  
- 	if (!(rcv->flags & IFF_UP))
- 		goto outf;
-@@ -183,7 +183,7 @@ static int veth_xmit(struct sk_buff *skb
- 	stats->tx_bytes += length;
- 	stats->tx_packets++;
+ 	kfree(sge->tx_sched);
+ 	free_tx_resources(sge);
+@@ -984,7 +984,7 @@ void t1_sge_get_port_stats(const struct 
  
--	stats = per_cpu_ptr(rcv_priv->stats, cpu);
-+	stats = CPU_PTR(rcv_priv->stats, cpu);
- 	stats->rx_bytes += length;
- 	stats->rx_packets++;
+ 	memset(ss, 0, sizeof(*ss));
+ 	for_each_possible_cpu(cpu) {
+-		struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[port], cpu);
++		struct sge_port_stats *st = CPU_PTR(sge->port_stats[port], cpu);
  
-@@ -217,7 +217,7 @@ static struct net_device_stats *veth_get
- 	dev_stats->tx_dropped = 0;
+ 		ss->rx_packets += st->rx_packets;
+ 		ss->rx_cso_good += st->rx_cso_good;
+@@ -1379,7 +1379,7 @@ static void sge_rx(struct sge *sge, stru
+ 	}
+ 	__skb_pull(skb, sizeof(*p));
  
- 	for_each_online_cpu(cpu) {
--		stats = per_cpu_ptr(priv->stats, cpu);
-+		stats = CPU_PTR(priv->stats, cpu);
+-	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
++	st = THIS_CPU(sge->port_stats[p->iff]);
+ 	st->rx_packets++;
  
- 		dev_stats->rx_packets += stats->rx_packets;
- 		dev_stats->tx_packets += stats->tx_packets;
-@@ -261,7 +261,7 @@ static int veth_dev_init(struct net_devi
- 	struct veth_net_stats *stats;
- 	struct veth_priv *priv;
+ 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
+@@ -1848,7 +1848,7 @@ int t1_start_xmit(struct sk_buff *skb, s
+ {
+ 	struct adapter *adapter = dev->priv;
+ 	struct sge *sge = adapter->sge;
+-	struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[dev->if_port], smp_processor_id());
++	struct sge_port_stats *st = THIS_CPU(sge->port_stats[dev->if_port]);
+ 	struct cpl_tx_pkt *cpl;
+ 	struct sk_buff *orig_skb = skb;
+ 	int ret;
+@@ -2165,7 +2165,8 @@ struct sge * __devinit t1_sge_create(str
+ 	sge->jumbo_fl = t1_is_T1B(adapter) ? 1 : 0;
  
--	stats = alloc_percpu(struct veth_net_stats);
-+	stats = CPU_ALLOC(struct veth_net_stats, GFP_KERNEL | __GFP_ZER);
- 	if (stats == NULL)
- 		return -ENOMEM;
- 
-@@ -275,7 +275,7 @@ static void veth_dev_free(struct net_dev
- 	struct veth_priv *priv;
- 
- 	priv = netdev_priv(dev);
--	free_percpu(priv->stats);
-+	CPU_FREE(priv->stats);
- 	free_netdev(dev);
- }
- 
+ 	for_each_port(adapter, i) {
+-		sge->port_stats[i] = alloc_percpu(struct sge_port_stats);
++		sge->port_stats[i] = CPU_ALLOC(struct sge_port_stats,
++					GFP_KERNEL | __GFP_ZERO);
+ 		if (!sge->port_stats[i])
+ 			goto nomem_port;
+ 	}
+@@ -2209,7 +2210,7 @@ struct sge * __devinit t1_sge_create(str
+ 	return sge;
+ nomem_port:
+ 	while (i >= 0) {
+-		free_percpu(sge->port_stats[i]);
++		CPU_FREE(sge->port_stats[i]);
+ 		--i;
+ 	}
+ 	kfree(sge);
 
 -- 
