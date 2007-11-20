@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXKTSY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbXKTSZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759980AbXKTSY7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXKTSYw
+	id S1760825AbXKTSZz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbXKTSZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:24:52 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:37283 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbXKTSYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:24:51 -0500
-Message-ID: <47432666.6070503@oracle.com>
-Date: Tue, 20 Nov 2007 10:24:38 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Tue, 20 Nov 2007 13:25:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60113 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756247AbXKTSZo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 13:25:44 -0500
+Date: Tue, 20 Nov 2007 10:22:48 -0800
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/29] 2.6.23-stable review
+Message-ID: <20071120182248.GA28611@kroah.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com>
-In-Reply-To: <474323CA.9030306@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the start of the stable review cycle for the 2.6.23.9 release.
+There are 29 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-> That's only because you're being, deliberately or accidentally, vague
-> about what your actual (as opposed to imagined) requirements are.
+I would especially like people who experienced the softlockup messages
+in their kernel logs on 2.6.23.8 to test this series to make sure that
+everything is now working properly.
 
-Maybe I can help by summarizing how syslets fit in to this.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Currently the syslet patches add a single submission call which includes
-an argument which is a structure which duplicates the system call ABI.
-The submission syscall in the kernel does some syslet specific work
-which amounts to verifying state and storing it in the task_struct.  It
-then has to unpack the system call arguments from this submission
-syscall argument and call the specified system call.
+Responses should be made by Friday, Nov 23, 00:00:00 UTC.  Anything
+received after that time might be too late.
 
-Every architecture will need helpers, then, on either side.  They'll
-need to pack their arguments into the struct and then unpack and call in
-the kernel.  The PPC64 guys have already expressed concern about this.
+thanks,
 
-It's, in effect, adding the syslet arguments to every single system call.
-
-So, instead of duplicating the system call ABI in the argument to a
-syslet submission syscall, we could pass the syslet arguments via this
-indirect parameters convention.  This, hopefully, will reduce complexity
-by reducing the number of places that we have to muck around with the
-sycall ABI.
-
-That's the high level summary, anyway.  I'm working on the simplest
-expression of this mechanism at the moment.  We'll have code to argue
-about before the silly thanksgiving break, I hope.
-
-- z
+greg k-h
