@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXKTQX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbXKTQ2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbXKTQX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbXKTQXS
+	id S1760262AbXKTQ2f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXKTQ2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:23:18 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57977 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757933AbXKTQXQ (ORCPT
+	Tue, 20 Nov 2007 11:28:24 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:49393 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753536AbXKTQ2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:23:16 -0500
-X-Sasl-enc: W+ndk8v4CRHFzxmHGbyLfz3g1WmO1SsHbKgjyjmYmmKr 1195575795
-Date: Tue, 20 Nov 2007 14:23:12 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: stgit (was Re: [PATCH 4/4, v4] ACPI, PCI: ACPI PCI slot detection
-	driver)
-Message-ID: <20071120162312.GE4654@khazad-dum.debian.net>
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071117183818.GD26452@ldl.fc.hp.com> <20071119220418.GE32540@ldl.fc.hp.com> <20071119142631.4aa650eb@appleyard> <20071120030738.GA15633@ldl.fc.hp.com>
+	Tue, 20 Nov 2007 11:28:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=fy8PyiKHO+UF757G9m/Pvzv5d5hqgkXHvw8ebAsXJWWpIg2enM8AcrF/MeNNdfKSv/SoPsUIYRFkeEfbNL9AgJQqm/3vcAM072PhUiDXMHBqoXOdXj1KU9eDyWTbrcehIymllNTsew3nyy8ZqwflzgwFVgBiE6L2lqjHMphW+hs=
+Message-ID: <cac0ab7d0711200828n3548fadn48cce2837ed6a7c6@mail.gmail.com>
+Date: Tue, 20 Nov 2007 17:28:22 +0100
+From: "Jonas Danielsson" <the.sator@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH][v2] net/ipv4/arp.c: Fix arp reply when sender ip 0
+Cc: "David Miller" <davem@davemloft.net>,
+       "Alexey Kuznetsov" <kuznet@ms2.inr.ac.ru>, jmorris@namei.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071120030738.GA15633@ldl.fc.hp.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007, Alex Chiang wrote:
-> Ugh, seems that stacked git got very confused when I did a
-> git-fetch && git-rebase origin. Also, guess it figures that I
+Fix arp reply when received arp probe with sender ip 0.
 
-Being a very heavy stgit user myself, I have to say you must give up git
-rebase on any stgit branch, and use stg rebase instead... otherwise, bad
-things can, and do happen.
+Send arp reply with target ip address 0.0.0.0 and target hardware address
+set to hardware address of requester. Previously sent reply with target
+ip address and target hardware address set to same as source fields.
 
-Also, don't trust the stgit release schedule, it is "release eventually" and
-not something more sensible, like "release often".  Instead, track the stgit
-git tree.
 
-I wish git learned to do the basic stgit's business by itself :(
+Signed-off-by: Jonas Danielsson <the.sator@gmail.com>
+Acked-by: Alexey Kuznetov <kuznet@ms2.inr.ac.ru>
+---
+arp.c |    3 ++-
+1 file changed, 2 insertions(+), 1 deletion(-)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -828,7 +828,8 @@ static int arp_process(struct sk_buff *skb)
+                if (arp->ar_op == htons(ARPOP_REQUEST) &&
+                    inet_addr_type(tip) == RTN_LOCAL &&
+                    !arp_ignore(in_dev,dev,sip,tip))
+-
+arp_send(ARPOP_REPLY,ETH_P_ARP,tip,dev,tip,sha,dev->dev_addr,dev->dev_addr);
++                       arp_send(ARPOP_REPLY, ETH_P_ARP, sip, dev, tip, sha,
++                                dev->dev_addr, sha);
+                goto out;
+        }
