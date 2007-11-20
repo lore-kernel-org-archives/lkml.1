@@ -1,51 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbXKTDhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbXKTDkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbXKTDhy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 22:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXKTDhr
+	id S1757454AbXKTDkl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 22:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXKTDke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 22:37:47 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:21231 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752389AbXKTDhq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 22:37:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=160pi6t/1kVzqOX40lW6UAF80Ix34YQIQ5vjMsUrGI2HpjHEeu7u1ZTXn1oDgE8g4oV7ImdhNiLmdQpJN/95P9JsahofbrpuZpKleowMHonVGzeeprDHIRPUHT5SjFPVGxCyFlmwd6909ZYMZ/yZi7d0l6dH4KQPl1d86zyjKEs=  ;
-X-YMail-OSG: 7WWYuPEVM1lxdBWFsqtwQEBmtEKOsF4oSiAYZ5ScqU1jRAWt4oIJfJ5EfSTYTz48RXzyM2Bdhw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-Date: Tue, 20 Nov 2007 14:37:37 +1100
-User-Agent: KMail/1.9.5
-Cc: "H. Peter Anvin" <hpa@zytor.com>, ak@suse.de, akpm@linux-foundation.org,
-       travis@sgi.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-References: <20071120011132.143632442@sgi.com> <474239CA.20403@zytor.com> <Pine.LNX.4.64.0711191759370.19954@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711191759370.19954@schroedinger.engr.sgi.com>
+	Mon, 19 Nov 2007 22:40:34 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37986 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752640AbXKTDkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 22:40:33 -0500
+To: Pavel Krauz <krauz@cncz.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: wrong NUMA detection on HP385 G2
+From: Andi Kleen <andi@firstfloor.org>
+References: <200711191543.30665.krauz@cncz.cz>
+Date: Tue, 20 Nov 2007 04:40:32 +0100
+In-Reply-To: <200711191543.30665.krauz@cncz.cz> (Pavel Krauz's message of "Mon\, 19 Nov 2007 15\:43\:30 +0100")
+Message-ID: <p73ejelbn4f.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711201437.38045.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 November 2007 13:02, Christoph Lameter wrote:
-> On Mon, 19 Nov 2007, H. Peter Anvin wrote:
-> > You're making the assumption here that NUMA = large number of CPUs. This
-> > assumption is flat-out wrong.
->
-> Well maybe. Usually one gets to NUMA because the hardware gets too big to
-> be handleed the UMA way.
+Pavel Krauz <krauz@cncz.cz> writes:
 
-Not the way things are going with multicore and multithread, though
-(that is, the hardware can be one socket and still have many cpus).
+> Hello
+> my HP 385 G2 - 2x dual core Opteron 2216 running 2.6.23.1 with NUMA support says the following:
 
-The chip might have several memory controllers on it, but they could
-well be connected to the caches with a crossbar, so it needn't be
-NUMA at all. Future scalability work shouldn't rely on many cores
-~= many nodes, IMO.
+Can you post a full boot log? 
+-Andi
