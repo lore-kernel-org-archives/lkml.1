@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763246AbXKTUjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763103AbXKTUlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763246AbXKTUjw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761501AbXKTUjm
+	id S1763103AbXKTUlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbXKTUlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:39:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43019 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Nov 2007 15:41:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41076 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760579AbXKTUjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:39:41 -0500
-Date: Tue, 20 Nov 2007 21:39:19 +0100
+	id S1761012AbXKTUlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:41:15 -0500
+Date: Tue, 20 Nov 2007 21:41:03 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <greg@kroah.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Greg KH <gregkh@suse.de>,
-       David <david@unsolicited.net>,
-       Javier Kohen <jkohen@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-Message-ID: <20071120203919.GB10008@elte.hu>
-References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <473F88B0.1030309@goop.org> <20071119232252.GC3528@suse.de> <47423B26.1090607@goop.org> <20071120060525.GF20436@elte.hu> <20071120170519.GB15954@kroah.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
+	v2.6.23.8, v2.6.22.13, v2.6.21.7
+Message-ID: <20071120204103.GC10008@elte.hu>
+References: <20071119151756.GA25446@elte.hu> <b637ec0b0711201238i746ca9bala3812ca93479c6fa@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071120170519.GB15954@kroah.com>
+In-Reply-To: <b637ec0b0711201238i746ca9bala3812ca93479c6fa@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,20 +34,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Greg KH <greg@kroah.com> wrote:
+* Fabio Comolli <fabio.comolli@gmail.com> wrote:
 
-> > but we only have cpu_clock() from v2.6.23 onwards - so we should not 
-> > apply the original patch to v2.6.22. (we should not have applied 
-> > your patch that started the mess to begin with - but that's another 
-> > matter.)
-> 
-> Well, I can easily back that one out, if that is easier than adding 2 
-> more patches to try to fix up the mess here.
-> 
-> Let me know if you feel that would be best.
+> Hi.
+> First, thanks for this patch. I don't have numbers but working with my
+> laptop feels much better.
 
-i'd leave it alone - doing that we have in essence the softlockup 
-detector turned off. Reverting to the older version might trigger false 
-positives that need the new stuff.
+curious: what scheduler/kernel version have you used before?
+
+> Just a question: does the patch include the fix (divide by zero....) 
+> you just posted in the stable review for 2.6.23.9?
+
+yeah.
 
 	Ingo
