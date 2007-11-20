@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbXKTFa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbXKTFkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbXKTFa5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 00:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbXKTFas
+	id S1758330AbXKTFkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 00:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbXKTFkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 00:30:48 -0500
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:38885 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755195AbXKTFar (ORCPT
+	Tue, 20 Nov 2007 00:40:04 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35842 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750949AbXKTFkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 00:30:47 -0500
-From: Ian Wienand <ianw@gelato.unsw.edu.au>
-To: e1000-devel@lists.sourceforge.net
-Date: Tue, 20 Nov 2007 16:30:44 +1100
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] e100: free IRQ to remove warning when rebooting
-Message-ID: <20071120053044.GE29070@cse.unsw.EDU.AU>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 20 Nov 2007 00:40:01 -0500
+Date: Mon, 19 Nov 2007 21:37:27 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+Message-ID: <20071119213727.16d5917b@laptopd505.fenrus.org>
+In-Reply-To: <200711201517.16171.nickpiggin@yahoo.com.au>
+References: <47425EA5.7000607@rtr.ca>
+	<200711201517.16171.nickpiggin@yahoo.com.au>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 20 Nov 2007 15:17:15 +1100
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-When rebooting today I got
+> On Tuesday 20 November 2007 15:12, Mark Lord wrote:
+> > On 32-bit x86, we have CONFIG_IRQBALANCE available,
+> > but not on 64-bit x86.  Why not?
 
-Will now restart.
-ACPI: PCI interrupt for device 0000:00:03.0 disabled
-GSI 20 (level, low) -> CPU 1 (0x0100) vector 53 unregistered
-Destroying IRQ53 without calling free_irq
-WARNING: at /home/insecure/ianw/programs/git-kernel/linux-2.6/kernel/irq/chip.c:76 dynamic_irq_cleanup()
+because the in-kernel one is actually quite bad.
 
-Call Trace:
- [<a000000100014340>] show_stack+0x40/0xa0
-                                sp=e00000407c927b40 bsp=e00000407c920eb8
- [<a0000001000143d0>] dump_stack+0x30/0x60
-                                sp=e00000407c927d10 bsp=e00000407c920ea0
- [<a0000001000e58e0>] dynamic_irq_cleanup+0x160/0x1e0
-                                sp=e00000407c927d10 bsp=e00000407c920e70
- [<a0000001000106b0>] destroy_and_reserve_irq+0x30/0xc0
-                                sp=e00000407c927d10 bsp=e00000407c920e40
- [<a0000001000508f0>] iosapic_unregister_intr+0x5b0/0x5e0
-                                sp=e00000407c927d10 bsp=e00000407c920dd8
- [<a00000010000aa70>] acpi_unregister_gsi+0x30/0x60
-                                sp=e00000407c927d10 bsp=e00000407c920db8
- [<a00000010042e300>] acpi_pci_irq_disable+0x140/0x160
-                                sp=e00000407c927d10 bsp=e00000407c920d88
- [<a000000100774200>] pcibios_disable_device+0xa0/0xc0
-                                sp=e00000407c927d20 bsp=e00000407c920d68
- [<a0000001003778d0>] pci_disable_device+0x130/0x160
-                                sp=e00000407c927d20 bsp=e00000407c920d38
- [<a000000100525d20>] e100_shutdown+0x1c0/0x220
-                                sp=e00000407c927d30 bsp=e00000407c920d08
- [<a00000010037d0e0>] pci_device_shutdown+0x80/0xc0
-                                sp=e00000407c927d30 bsp=e00000407c920ce8
- [<a0000001004ecb70>] device_shutdown+0xf0/0x180
-                                sp=e00000407c927d30 bsp=e00000407c920cc8
- [<a0000001000ac4e0>] kernel_restart+0x60/0x120
-                                sp=e00000407c927d30 bsp=e00000407c920ca8
- [<a0000001000ac990>] sys_reboot+0x3b0/0x480
-                                sp=e00000407c927d30 bsp=e00000407c920c30
- [<a00000010000b4e0>] ia64_ret_from_syscall+0x0/0x20
-                                sp=e00000407c927e30 bsp=e00000407c920c30
- [<a000000000010620>] ia64_ivt+0xffffffff00010620/0x400
-                                sp=e00000407c928000 bsp=e00000407c920c30
-Restarting system.
 
-I think the solution might be to free the IRQ before the pci_device_shutdown
+> > My QuadCore box works very well in 32-bit mode with IRQBALANCE,
+> > but responsiveness sucks bigtime when run in 64-bit mode (no
+> > IRQBALANCE) during periods of multiple heavy I/O streams (USB flash
+> > drives).
 
-Signed-off-by: Ian Wienand <ianw@gelato.unsw.edu.au>
+please run the userspace irq balancer, see http://www.irqbalance.org
+afaik most distros ship that by default anyway.
 
----
 
- e100.c |    1 +
- 1 file changed, 1 insertion(+)
+> > As near as I can tell, when IRQBALANCE is not configured,
+> > all I/O device interrupts go to CPU#0.
 
-diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-index 3dbaec6..8ae5ac3 100644
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -2782,6 +2782,7 @@ static void e100_shutdown(struct pci_dev *pdev)
- 		pci_enable_wake(pdev, PCI_D3cold, 0);
- 	}
- 
-+	free_irq(pdev->irq, netdev);
- 	pci_disable_device(pdev);
- 	pci_set_power_state(pdev, PCI_D3hot);
- }
+that depends on your chipset; some chipsets do worse than that.
+
+>
+> > I don't think our CPU scheduler takes that into account when
+> > assigning tasks to CPUs, so anything sent to CPU0 runs with very
+> > high latencies.
+> >
+> > Or something like that.
+> >
+> > Why no IRQ_BALANCE in 64-bit mode ?
+> 
+> For that matter, I'd like to know why it has been decided that the
+> best place for IRQ balancing is in userspace. It should be in kernel
+> IMO, and it would probably allow better power saving, performance,
+> fairness, etc. if it were to be integrated with the task balancer as
+> well.
+
+actually.... no. IRQ balancing is not a "fast" decision; every time you
+move an interrupt around, you end up causing a really a TON of cache
+line bounces, and generally really bad performance (esp if you do it
+for networking ones, since you destroy the packet reassembly stuff in
+the tcp/ip stack).
+
+Instead, what ends up working is if you do high level categories of
+interrupt classes and balance within those (so that no 2 networking
+irqs are on the same core/package unless you have more nics than cores)
+etc. Balancing on a 10 second scale seems to work quite well; no need
+to pull that complexity into the kernel.... 
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
