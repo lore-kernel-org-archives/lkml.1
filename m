@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXKTBRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbXKTBSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXKTBRx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:17:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbXKTBNs
+	id S1757313AbXKTBSU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbXKTBNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:48 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49842 "EHLO relay.sgi.com"
+	Mon, 19 Nov 2007 20:13:49 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49845 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753906AbXKTBNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753954AbXKTBNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:35 -0500
-Message-Id: <20071120011334.798433661@sgi.com>
+Message-Id: <20071120011335.036003167@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:45 -0800
+Date: Mon, 19 Nov 2007 17:11:46 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -20,123 +20,107 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 13/45] cpu alloc: workqueue conversion
-Content-Disposition: inline; filename=0021-cpu-alloc-workqueue-conversion.patch
+Subject: [rfc 14/45] cpu alloc: ACPI cstate handling conversion
+Content-Disposition: inline; filename=0022-cpu-alloc-ACPI-cstate-handling-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- kernel/workqueue.c |   27 ++++++++++++++-------------
- 1 file changed, 14 insertions(+), 13 deletions(-)
+ arch/x86/kernel/acpi/cstate.c              |    9 +++++----
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    7 ++++---
+ drivers/acpi/processor_perflib.c           |    4 ++--
+ 3 files changed, 11 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/kernel/workqueue.c
+Index: linux-2.6/arch/x86/kernel/acpi/cstate.c
 ===================================================================
---- linux-2.6.orig/kernel/workqueue.c	2007-11-15 21:18:11.726153923 -0800
-+++ linux-2.6/kernel/workqueue.c	2007-11-15 21:25:29.966154099 -0800
-@@ -100,7 +100,7 @@ struct cpu_workqueue_struct *wq_per_cpu(
- {
- 	if (unlikely(is_single_threaded(wq)))
- 		cpu = singlethread_cpu;
--	return per_cpu_ptr(wq->cpu_wq, cpu);
-+	return CPU_PTR(wq->cpu_wq, cpu);
+--- linux-2.6.orig/arch/x86/kernel/acpi/cstate.c	2007-11-15 21:18:09.238904115 -0800
++++ linux-2.6/arch/x86/kernel/acpi/cstate.c	2007-11-15 21:25:30.499154221 -0800
+@@ -87,7 +87,7 @@ int acpi_processor_ffh_cstate_probe(unsi
+ 	if (reg->bit_offset != NATIVE_CSTATE_BEYOND_HALT)
+ 		return -1;
+ 
+-	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
++	percpu_entry = CPU_PTR(cpu_cstate_entry, cpu);
+ 	percpu_entry->states[cx->index].eax = 0;
+ 	percpu_entry->states[cx->index].ecx = 0;
+ 
+@@ -138,7 +138,7 @@ void acpi_processor_ffh_cstate_enter(str
+ 	unsigned int cpu = smp_processor_id();
+ 	struct cstate_entry *percpu_entry;
+ 
+-	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
++	percpu_entry = CPU_PTR(cpu_cstate_entry, cpu);
+ 	mwait_idle_with_hints(percpu_entry->states[cx->index].eax,
+ 	                      percpu_entry->states[cx->index].ecx);
  }
+@@ -150,13 +150,14 @@ static int __init ffh_cstate_init(void)
+ 	if (c->x86_vendor != X86_VENDOR_INTEL)
+ 		return -1;
  
- /*
-@@ -398,7 +398,7 @@ void fastcall flush_workqueue(struct wor
- 	lock_acquire(&wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
- 	lock_release(&wq->lockdep_map, 1, _THIS_IP_);
- 	for_each_cpu_mask(cpu, *cpu_map)
--		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
-+		flush_cpu_workqueue(CPU_PTR(wq->cpu_wq, cpu));
- }
- EXPORT_SYMBOL_GPL(flush_workqueue);
- 
-@@ -478,7 +478,7 @@ static void wait_on_work(struct work_str
- 	cpu_map = wq_cpu_map(wq);
- 
- 	for_each_cpu_mask(cpu, *cpu_map)
--		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
-+		wait_on_cpu_work(CPU_PTR(wq->cpu_wq, cpu), work);
- }
- 
- static int __cancel_work_timer(struct work_struct *work,
-@@ -601,21 +601,21 @@ int schedule_on_each_cpu(work_func_t fun
- 	int cpu;
- 	struct work_struct *works;
- 
--	works = alloc_percpu(struct work_struct);
-+	works = CPU_ALLOC(struct work_struct, GFP_KERNEL);
- 	if (!works)
- 		return -ENOMEM;
- 
- 	preempt_disable();		/* CPU hotplug */
- 	for_each_online_cpu(cpu) {
--		struct work_struct *work = per_cpu_ptr(works, cpu);
-+		struct work_struct *work = CPU_PTR(works, cpu);
- 
- 		INIT_WORK(work, func);
- 		set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
--		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), work);
-+		__queue_work(CPU_PTR(keventd_wq->cpu_wq, cpu), work);
- 	}
- 	preempt_enable();
- 	flush_workqueue(keventd_wq);
--	free_percpu(works);
-+	CPU_FREE(works);
+-	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
++	cpu_cstate_entry = CPU_ALLOC(struct cstate_entry,
++					GFP_KERNEL|__GFP_ZERO);
  	return 0;
  }
  
-@@ -664,7 +664,7 @@ int current_is_keventd(void)
- 
- 	BUG_ON(!keventd_wq);
- 
--	cwq = per_cpu_ptr(keventd_wq->cpu_wq, cpu);
-+	cwq = CPU_PTR(keventd_wq->cpu_wq, cpu);
- 	if (current == cwq->thread)
- 		ret = 1;
- 
-@@ -675,7 +675,7 @@ int current_is_keventd(void)
- static struct cpu_workqueue_struct *
- init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
+ static void __exit ffh_cstate_exit(void)
  {
--	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+	struct cpu_workqueue_struct *cwq = CPU_PTR(wq->cpu_wq, cpu);
- 
- 	cwq->wq = wq;
- 	spin_lock_init(&cwq->lock);
-@@ -732,7 +732,8 @@ struct workqueue_struct *__create_workqu
- 	if (!wq)
- 		return NULL;
- 
--	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
-+	wq->cpu_wq = CPU_ALLOC(struct cpu_workqueue_struct,
-+					GFP_KERNEL|__GFP_ZERO);
- 	if (!wq->cpu_wq) {
- 		kfree(wq);
- 		return NULL;
-@@ -814,11 +815,11 @@ void destroy_workqueue(struct workqueue_
- 	mutex_unlock(&workqueue_mutex);
- 
- 	for_each_cpu_mask(cpu, *cpu_map) {
--		cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+		cwq = CPU_PTR(wq->cpu_wq, cpu);
- 		cleanup_workqueue_thread(cwq, cpu);
- 	}
- 
--	free_percpu(wq->cpu_wq);
-+	CPU_FREE(wq->cpu_wq);
- 	kfree(wq);
+-	free_percpu(cpu_cstate_entry);
++	CPU_FREE(cpu_cstate_entry);
+ 	cpu_cstate_entry = NULL;
  }
- EXPORT_SYMBOL_GPL(destroy_workqueue);
-@@ -847,7 +848,7 @@ static int __devinit workqueue_cpu_callb
- 	}
  
- 	list_for_each_entry(wq, &workqueues, list) {
--		cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+		cwq = CPU_PTR(wq->cpu_wq, cpu);
+Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2007-11-15 21:18:09.246904080 -0800
++++ linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2007-11-15 21:25:30.499154221 -0800
+@@ -513,7 +513,8 @@ static int __init acpi_cpufreq_early_ini
+ {
+ 	dprintk("acpi_cpufreq_early_init\n");
  
- 		switch (action) {
- 		case CPU_UP_PREPARE:
+-	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
++	acpi_perf_data = CPU_ALLOC(struct acpi_processor_performance,
++						GFP_KERNEL|__GFP_ZERO);
+ 	if (!acpi_perf_data) {
+ 		dprintk("Memory allocation error for acpi_perf_data.\n");
+ 		return -ENOMEM;
+@@ -569,7 +570,7 @@ static int acpi_cpufreq_cpu_init(struct 
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+-	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
++	data->acpi_data = CPU_PTR(acpi_perf_data, cpu);
+ 	drv_data[cpu] = data;
+ 
+ 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
+@@ -782,7 +783,7 @@ static void __exit acpi_cpufreq_exit(voi
+ 
+ 	cpufreq_unregister_driver(&acpi_cpufreq_driver);
+ 
+-	free_percpu(acpi_perf_data);
++	CPU_FREE(acpi_perf_data);
+ 
+ 	return;
+ }
+Index: linux-2.6/drivers/acpi/processor_perflib.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/processor_perflib.c	2007-11-15 21:18:09.254904773 -0800
++++ linux-2.6/drivers/acpi/processor_perflib.c	2007-11-15 21:25:30.499154221 -0800
+@@ -567,12 +567,12 @@ int acpi_processor_preregister_performan
+ 			continue;
+ 		}
+ 
+-		if (!performance || !percpu_ptr(performance, i)) {
++		if (!performance || !CPU_PTR(performance, i)) {
+ 			retval = -EINVAL;
+ 			continue;
+ 		}
+ 
+-		pr->performance = percpu_ptr(performance, i);
++		pr->performance = CPU_PTR(performance, i);
+ 		cpu_set(i, pr->performance->shared_cpu_map);
+ 		if (acpi_processor_get_psd(pr)) {
+ 			retval = -EINVAL;
 
 -- 
