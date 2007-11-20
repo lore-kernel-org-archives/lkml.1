@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbXKTGIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbXKTGN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbXKTGIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbXKTGIl
+	id S1757885AbXKTGN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbXKTGNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:08:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58024 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Nov 2007 01:13:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47326 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409AbXKTGIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:08:40 -0500
-Date: Tue, 20 Nov 2007 07:08:08 +0100
+	id S1751096AbXKTGNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 01:13:14 -0500
+Date: Tue, 20 Nov 2007 07:13:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Greg KH <greg@kroah.com>, David <david@unsolicited.net>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, gregkh@suse.de,
-       Javier Kohen <jkohen@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-Message-ID: <20071120060808.GG20436@elte.hu>
-References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <20071118005538.GD26865@elte.hu> <47422AA3.7060507@redhat.com>
+To: David <david@livux.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
+	v2.6.23.8,v2.6.22.13, v2.6.21.7
+Message-ID: <20071120061302.GH20436@elte.hu>
+References: <200711191925.12072.david@livux.com> <200711192051.44095.david@livux.com> <20071119205000.GB25142@elte.hu> <200711192239.51301.david@livux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <47422AA3.7060507@redhat.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200711192239.51301.david@livux.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,45 +35,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Chuck Ebbert <cebbert@redhat.com> wrote:
+* David <david@livux.com> wrote:
 
-> On 11/17/2007 07:55 PM, Ingo Molnar wrote:
-> > * Greg KH <greg@kroah.com> wrote:
-> > 
-> >> Great, thanks for tracking this down.
-> >>
-> >> Ingo, this corrisponds to changeset 
-> >> a115d5caca1a2905ba7a32b408a6042b20179aaa in mainline.  Is that patch 
-> >> incorrect?  Should this patch in the -stable tree be reverted?
-> > 
-> > hm, there are no such problems in .24 and the cpu_clock() and other 
-> > fixes i did were not picked up. Find the missing fixes below. They 
-> > should work just fine in .23 as it has the cpu_clock() functionality 
-> > too.
-> > 
-> > [ NOTE: the most robust thing is to make the .23 version match the .24
-> >   version of kernel/softlockup.c, so i included two other harmless
-> >   changes in this diff as well. ]
-> > 
+> El Lunes, 19 de Noviembre de 2007, Ingo Molnar escribió:
+> > * David <david@livux.com> wrote:
+> > > I have removed all other patches, and applied only cfs v24 above
+> > > 2.6.23.8, and the compiler ran into (with CONFIG_FAIR_GROUP_SCHED
+> > > enabled):
+> >
+> > does the patch below help?
+> >
 > > 	Ingo
-> > 
-> > ----------->
-> > commit a5f2ce3c6024a5bb895647b6bd88ecae5001020a
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Tue Oct 16 23:26:08 2007 -0700
-> > 
-> > commit 43581a10075492445f65234384210492ff333eba
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Tue Oct 16 23:26:08 2007 -0700
 > 
-> Those are just cosmetic / cleanup changes.
+> Yes, now sched.c compile without errors, but linking fails at:
 > 
-> Don't you need commit a3b13c23f186ecb57204580cc1f2dbe9c284953a ??
+> 
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o:(.data+0x4a8): undefined reference to `sysctl_sched_min_bal_int_shares'
+> kernel/built-in.o:(.data+0x4d4): undefined reference to `sysctl_sched_max_bal_int_shares'
+> make: *** [.tmp_vmlinux1] Error 1
 
-yes:
-
-> > [...] the cpu_clock() and other fixes i did were not picked up.
-
-i just forgot to attach the cpu_clock() changes - they are in a3b13c23.
+does the patch below do the trick?
 
 	Ingo
+
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c
++++ linux/kernel/sysctl.c
+@@ -309,7 +309,7 @@ static struct ctl_table kern_table[] = {
+ 		.mode		= 644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+-#ifdef CONFIG_FAIR_GROUP_SCHED
++#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_SMP)
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "sched_min_bal_int_shares",
