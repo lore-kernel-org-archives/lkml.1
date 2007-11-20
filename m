@@ -1,100 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbXKTPS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbXKTPU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759738AbXKTPS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbXKTPSs
+	id S1759739AbXKTPU7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXKTPUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:18:48 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:58913 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756708AbXKTPSq (ORCPT
+	Tue, 20 Nov 2007 10:20:51 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:63167 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757146AbXKTPUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:18:46 -0500
-Message-ID: <4742FACF.7040906@linux.vnet.ibm.com>
-Date: Tue, 20 Nov 2007 20:48:39 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
-References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
-In-Reply-To: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Nov 2007 10:20:50 -0500
+Date: Tue, 20 Nov 2007 16:20:47 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: "eric miao" <eric.y.miao@gmail.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
+       "Bill Gatliff" <bgat@billgatliff.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Tony Lindgren" <tony@atomide.com>, "Kevin Hilman" <khilman@mvista.com>,
+       "Paul Mundt" <lethal@linux-sh.org>, "Ben Dooks" <ben@trinity.fluff.org>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Message-ID: <20071120162047.277c1ccd@hyperion.delvare>
+In-Reply-To: <200711170936.25524.david-b@pacbell.net>
+References: <200710291809.29936.david-b@pacbell.net>
+	<200711132036.14927.david-b@pacbell.net>
+	<20071117113855.7532e477@hyperion.delvare>
+	<200711170936.25524.david-b@pacbell.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Hi David,
 
-The kernel build fails, on the AMD machine with following message
+On Sat, 17 Nov 2007 09:36:24 -0800, David Brownell wrote:
+> On Saturday 17 November 2007, Jean Delvare wrote:
+> > On Tue, 13 Nov 2007 20:36:13 -0800, David Brownell wrote:
+> > > On Tuesday 13 November 2007, eric miao wrote:
+> > > >  	if (!requested)
+> > > > -		printk(KERN_DEBUG "GPIO-%d autorequested\n",
+> > > > -				chip->base + offset);
+> > > > +		pr_debug("GPIO-%d autorequested\n", gpio);
+> > > 
+> > > Leave the printk in ... this is the sort of thing we want
+> > > to see fixed, which becomes unlikely once you hide such
+> > > diagnostics.  And for that matter, what would be enabling
+> > > the "-DDEBUG" that would trigger a pr_debug() message?
+> > 
+> > The original code isn't correct either.
+> 
+> It's perfectly correct.  That it's an idiom you don't
+> seem to *like* but is distinct from correctness.
+> 
+> > Either this is a debug message 
+> > and indeed pr_debug() should be used, or it's not and KERN_DEBUG should
+> > be replaced by a lower log level.
+> 
+> KERN_DEBUG is what says the message level is "debug".
+> Both styles log messages at that priority level.
+> 
+> Which is distinct from saying that the message should
+> vanish from non-debug builds ... that's what pr_debug
+> and friends do, by relying implicitly on "-DDEBUG".
 
-arch/x86/ia32/ia32_aout.c: In function ‘load_aout_binary’:
-arch/x86/ia32/ia32_aout.c:283: error: implicit declaration of function ‘N_MAGIC’
-arch/x86/ia32/ia32_aout.c:283: error: ‘ZMAGIC’ undeclared (first use in this function)
-arch/x86/ia32/ia32_aout.c:283: error: (Each undeclared identifier is reported only once
-arch/x86/ia32/ia32_aout.c:283: error: for each function it appears in.)
-arch/x86/ia32/ia32_aout.c:283: error: ‘OMAGIC’ undeclared (first use in this function)
-arch/x86/ia32/ia32_aout.c:284: error: ‘QMAGIC’ undeclared (first use in this function)
-arch/x86/ia32/ia32_aout.c:284: error: ‘NMAGIC’ undeclared (first use in this function)
-arch/x86/ia32/ia32_aout.c:285: error: implicit declaration of function ‘N_TRSIZE’
-arch/x86/ia32/ia32_aout.c:285: error: implicit declaration of function ‘N_DRSIZE’
-arch/x86/ia32/ia32_aout.c:287: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:287: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:287: error: implicit declaration of function ‘N_SYMSIZE’
-arch/x86/ia32/ia32_aout.c:287: error: implicit declaration of function ‘N_TXTOFF’
-arch/x86/ia32/ia32_aout.c:300: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:300: error: ‘struct exec’ has no member named ‘a_bss’
-arch/x86/ia32/ia32_aout.c:317: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:318: error: implicit declaration of function ‘N_TXTADDR’
-arch/x86/ia32/ia32_aout.c:319: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:320: error: implicit declaration of function ‘N_DATADDR’
-arch/x86/ia32/ia32_aout.c:321: error: ‘struct exec’ has no member named ‘a_bss’
-arch/x86/ia32/ia32_aout.c:322: error: implicit declaration of function ‘N_BSSADDR’
-arch/x86/ia32/ia32_aout.c:337: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:337: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:350: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:350: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:380: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:380: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:383: warning: cast to pointer from integer of different size
-arch/x86/ia32/ia32_aout.c:384: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:384: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:392: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:405: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:409: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:434: error: ‘struct exec’ has no member named ‘a_entry’
-arch/x86/ia32/ia32_aout.c: In function ‘load_aout_library’:
-arch/x86/ia32/ia32_aout.c:466: error: ‘ZMAGIC’ undeclared (first use in this function)
-arch/x86/ia32/ia32_aout.c:466: error: ‘QMAGIC’ undeclared (first use in this function)
-arch/x86/ia32/ia32_aout.c:467: error: ‘struct exec’ has no member named ‘a_entry’
-arch/x86/ia32/ia32_aout.c:469: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:469: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:473: error: implicit declaration of function ‘N_FLAGS’
-arch/x86/ia32/ia32_aout.c:479: error: ‘struct exec’ has no member named ‘a_entry’
-arch/x86/ia32/ia32_aout.c:495: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:495: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:495: error: ‘struct exec’ has no member named ‘a_bss’
-arch/x86/ia32/ia32_aout.c:499: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:499: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:509: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:509: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:518: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:518: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:519: error: ‘struct exec’ has no member named ‘a_text’
-arch/x86/ia32/ia32_aout.c:519: error: ‘struct exec’ has no member named ‘a_data’
-arch/x86/ia32/ia32_aout.c:519: error: ‘struct exec’ has no member named ‘a_bss’
-make[1]: *** [arch/x86/ia32/ia32_aout.o] Error 1
-make: *** [arch/x86/ia32] Error 2
+Were you trying to be funny or something? You aren't really suggesting
+that I don't know what a debug level is, and how pr_debug() works, are
+you?
 
-The patch aout-suppress-aout-library-support-if-config_arch_supports_aout.patch,
-creates a struct exec in linux/a.out.h and asm/a.out.h already has it, for the struct
-related warnings.
+> In this case, the original code was saying that the
+> message should NOT just vanish.  One reason the patch
+> was incorrect was that even on its own terms, it was
+> wrong ... since it used the "-DDEBUG" mechanism wrong,
+> and prevented the message from *EVER* appearing.
 
+It's perfectly correct: developers can add "#define DEBUG" manually
+before they build the code. That it's an idiom you don't seem to *like*
+is distinct from correctness.
+
+OK, can we stop now? David, you need to learn how to work with the
+community. The way you keep discussing every word of every reply is
+very unpleasant and not constructive at all. Whenever someone reviews
+your code, he or she is giving you something. You should be thankful
+for the help you received. Instead of that, it looks like you try to
+defend yourself against him/her. Please stop working against people
+reviewing your code, and start working _with_ them.
+
+Thanks,
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Jean Delvare
