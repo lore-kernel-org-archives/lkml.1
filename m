@@ -1,71 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbXKTREW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbXKTRGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760851AbXKTREW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 12:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbXKTREO
+	id S1761309AbXKTRGh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 12:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759547AbXKTRGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 12:04:14 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:56831 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755619AbXKTREM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 12:04:12 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAM2iQkdMROHU/2dsb2JhbACBW48I
-Date: Tue, 20 Nov 2007 12:04:10 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [rfc-patch 0/9] Immediate Values for 2.6.24-rc2-git5
-Message-ID: <20071120170410.GC31044@Krystal>
-References: <20071116200238.740495156@polymtl.ca> <20071117125007.GA4450@gollum.tnic> <20071119153139.GA24454@Krystal> <20071120051232.GA7210@gollum.tnic>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 20 Nov 2007 12:06:30 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:52540 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757211AbXKTRG3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 12:06:29 -0500
+Date: Tue, 20 Nov 2007 12:05:51 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-user@lists.sourceforge.net,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH 08/59] arch/um: Add missing "space"
+Message-ID: <20071120170551.GB7211@c2.user-mode-linux.org>
+References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <fbeb04f6d7134565611741ad0148e1b401362ef9.1195454434.git.joe@perches.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20071120051232.GA7210@gollum.tnic>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:03:35 up 16 days, 22:09,  6 users,  load average: 0.64, 0.82,
-	0.90
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <fbeb04f6d7134565611741ad0148e1b401362ef9.1195454434.git.joe@perches.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Borislav Petkov (bbpetkov@yahoo.de) wrote:
-> On Mon, Nov 19, 2007 at 10:31:39AM -0500, Mathieu Desnoyers wrote:
-> > * Borislav Petkov (bbpetkov@yahoo.de) wrote:
-> > > On Fri, Nov 16, 2007 at 03:02:38PM -0500, Mathieu Desnoyers wrote:
-> > > Hi, 
-> > > just a conventions proposal: have you thought of shortening all those
-> > > "immediate_foo" prefixes to 'imm_foo', for example? This'll make the 
-> > > code much more readable, i think.
-> > > 
-> > 
-> > Hrm, a quick grep in the kernel tree shows me that the imm_* namespace
-> > is already quite clobbered (although I do not detect any imm_read or
-> > imm_set). 
-> 
-> Right, something called "low level driver for the IOMEGA MatchMaker"
-> (drivers/scsi/imm.c) has gotten hold of the imm_* prefix already so there might
-> be a problem later, probably. Nevertheless, you could use the imm_ prefix or
-> choose some other 3-n letter prefix:
-> 
-> immed_* (3 matches)
-> imme_* (no matches but dumb)
-> imd_* (none!)
-> immv_* (none, v like [v]alues), etc.
-> ...
-> 
+On Mon, Nov 19, 2007 at 05:48:00PM -0800, Joe Perches wrote:
+> -		printk(UM_KERN_ERR "vde_init_libstuff - vde_open_args"
+> +		printk(UM_KERN_ERR "vde_init_libstuff - vde_open_args "
 
-I'd go for imv_* then, which indeed stands for "IMmediate Values"
+Applied, thanks.
 
-> -- 
-> Regards/Gruß,
->     Boris.
+		Jeff
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Work email - jdike at linux dot intel dot com
