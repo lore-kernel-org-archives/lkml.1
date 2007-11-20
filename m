@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764465AbXKTU7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764619AbXKTU75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764465AbXKTU7e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXKTU7X
+	id S1764619AbXKTU75 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764009AbXKTU7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:59:23 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:45150 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760974AbXKTU7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:59:21 -0500
-Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Remy Bohmer <linux@bohmer.net>, Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071120203730.GA10008@elte.hu>
-References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
-	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
-	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
-	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
-	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
-	 <1195316550.25393.21.camel@imap.mvista.com>
-	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
-	 <1195320569.25393.38.camel@imap.mvista.com>
-	 <20071117174608.GA30641@elte.hu> <1195576996.16514.4.camel@imap.mvista.com>
-	 <20071120203730.GA10008@elte.hu>
-Content-Type: text/plain
-Date: Tue, 20 Nov 2007 12:54:10 -0800
-Message-Id: <1195592050.16514.14.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Tue, 20 Nov 2007 15:59:45 -0500
+Received: from ns2.suse.de ([195.135.220.15]:48917 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763066AbXKTU7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:59:44 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [rfc 08/45] cpu alloc: x86 support
+Date: Tue, 20 Nov 2007 21:59:36 +0100
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, travis@sgi.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+References: <20071120011132.143632442@sgi.com> <200711201301.25373.ak@suse.de> <Pine.LNX.4.64.0711201228180.26745@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711201228180.26745@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711202159.36377.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-20 at 21:37 +0100, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
+
 > 
-> > On Sat, 2007-11-17 at 18:46 +0100, Ingo Molnar wrote:
-> > 
-> > > fixing the top 20:
-> > 
-> > There are about 25 DECLARE_MUTEX() semaphores remaining .. One is the 
-> > BKL which I would guess can't be converted. The others I've looked at 
-> > appear to be trivial find/replace changes to get them to use the mutex 
-> > type.. Any reason those haven't been converted over?
+> Right so I could move the kernel to
 > 
-> i guess talking about it instead of posting patches is a factor ;-)
+> #define __PAGE_OFFSET     _AC(0xffff810000000000, UL)
+> #define __START_KERNEL_map_AC(0xfffffff800000000, UL)
 
-There's several using init_MUTEX() (~70 or so), reviewing a few they
-look fairly trivial ..
+That is -31GB unless I'm miscounting. But it needs to be >= -2GB
+(31bits) 
 
-Daniel
+Right now it is at -2GB + 2MB,  because it is loaded at physical +2MB
+so it's convenient to identity map there. In theory you could avoid that
+with some effort, but that would only buy you 2MB and would also
+break some early code and earlyprintk I believe.
 
+> > You could in theory move the modules, but then you would need to implement
+> > a full PIC dynamic linker for them  first and also increase runtime overhead
+> > for them because they would need to use a GOT/PLT.
+> 
+> Why is it not possible to move the kernel lower while keeping bit 31 1?
+
+The kernel model relies on 32bit sign extension. This means bits [31;63] have
+to be all 1
+ 
+> > I suspect all of this  would cause far more overhead all over the kernel than 
+> > you could ever save with the per cpu data in your fast paths.
+> 
+> Moving the kernel down a bit seems to be trivial without any of the weird 
+> solutions.
+
+Another one I came up in the previous mail would be to do the linker reference
+variable allocation in [0;2GB] positive space; but do all real references only
+%gs relative. And keep the real data copy on some other address. That would
+be a similar trick to the old style x86-64 vsyscalls. It gets fairly
+messy in the linker map file though.
+
+-Andi
