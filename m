@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbXKTF63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbXKTGGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbXKTF63 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 00:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXKTF6V
+	id S1757164AbXKTGGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXKTGFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 00:58:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51657 "EHLO mx2.mail.elte.hu"
+	Tue, 20 Nov 2007 01:05:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57835 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750702AbXKTF6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 00:58:20 -0500
-Date: Tue, 20 Nov 2007 06:57:55 +0100
+	id S1750702AbXKTGFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 01:05:53 -0500
+Date: Tue, 20 Nov 2007 07:05:25 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Micah Dowty <micah@vmware.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
-       Paul Menage <menage@google.com>,
-       Peter Williams <pwil3058@bigpond.net.au>
-Subject: Re: High priority tasks break SMP balancer?
-Message-ID: <20071120055755.GE20436@elte.hu>
-References: <20071116024408.GA20322@vmware.com> <20071116060700.GD16273@elte.hu> <b647ffbd0711160248v444d8f64ic72a17fcb56adc6d@mail.gmail.com> <20071116221404.GC31527@vmware.com> <b647ffbd0711161526p2faf5abt2457084f1996c735@mail.gmail.com> <20071117010352.GA13666@vmware.com> <b647ffbd0711171110q9f695e1qb42ba73dc23b626d@mail.gmail.com> <20071119185116.GA28173@vmware.com> <b647ffbd0711191422q6be59c44gfbc72f0fc3167768@mail.gmail.com> <20071119230516.GC4736@vmware.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       David <david@unsolicited.net>,
+       Javier Kohen <jkohen@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
+Message-ID: <20071120060525.GF20436@elte.hu>
+References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <473F88B0.1030309@goop.org> <20071119232252.GC3528@suse.de> <47423B26.1090607@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071119230516.GC4736@vmware.com>
+In-Reply-To: <47423B26.1090607@goop.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,24 +37,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Micah Dowty <micah@vmware.com> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> > this one is being triggered whenever a cpu becomes idle (schedule() 
-> > --> idle_balance() --> load_balance_newidle()).
-> > 
-> > (this flag is a bit #1 == 2)
-> > 
-> > cat /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+> Greg KH wrote:
+> > Can you try applying the patch below to see if that solves the problem
+> > for you?
+> >   
 > 
-> Hmm. I don't have this file on my system:
+> I don't think this patch will help; it only has cosmetic changes in
+> addition to the original message printing fix.  I think it also needs
+> change a3b13c23f186ecb57204580cc1f2dbe9c284953a:
 > 
-> root@micah-64:/proc/sys/kernel/sched_domain/cpu0/domain0# ls
-> busy_factor  busy_idx  forkexec_idx  idle_idx  imbalance_pct  max_interval  min_interval  newidle_idx  wake_idx
-> root@micah-64:/proc/sys/kernel/sched_domain/cpu0/domain0# uname -a
-> Linux micah-64 2.6.23.1 #1 SMP Fri Nov 2 12:25:47 PDT 2007 x86_64 GNU/Linux
-> 
-> Is there a config option I'm missing?
+> diff -r 79f0ea1e0e70 -r 06f060ab58aa kernel/softlockup.c
 
-yes, CONFIG_SCHED_DEBUG.
+yes, it does need the cpu_clock() changes as i mentioned.
+
+  commit a3b13c23f186ecb57204580cc1f2dbe9c284953a
+  Author: Ingo Molnar <mingo@elte.hu>
+  Date:   Tue Oct 16 23:26:06 2007 -0700
+
+    softlockup: use cpu_clock() instead of sched_clock()
+
+    sched_clock() is not a reliable time-source, use cpu_clock() instead.
+
+but we only have cpu_clock() from v2.6.23 onwards - so we should not 
+apply the original patch to v2.6.22. (we should not have applied your 
+patch that started the mess to begin with - but that's another matter.)
 
 	Ingo
