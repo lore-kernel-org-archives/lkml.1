@@ -1,108 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbXKTPVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbXKTPWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759727AbXKTPVf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:21:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXKTPV1
+	id S1758288AbXKTPWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbXKTPVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:21:27 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:43874 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756594AbXKTPV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:21:26 -0500
-Date: Tue, 20 Nov 2007 18:21:33 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 1/2] kill PT_PTRACED
-Message-ID: <20071120152133.GA4546@tv-sign.ru>
+	Tue, 20 Nov 2007 10:21:55 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:40301 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757115AbXKTPVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:21:53 -0500
+X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 10:21:53 EST
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+In-Reply-To: <20071120141953.GB32313@csn.ul.ie>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
+	 <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
+	 <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+	 <20071120141953.GB32313@csn.ul.ie>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 20 Nov 2007 10:14:39 -0500
+Message-Id: <1195571680.5041.14.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the patch
+On Tue, 2007-11-20 at 14:19 +0000, Mel Gorman wrote:
+> On (09/11/07 07:45), Christoph Lameter didst pronounce:
+> > On Fri, 9 Nov 2007, Mel Gorman wrote:
+> > 
+> > >  struct page * fastcall
+> > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+> > >  		struct zonelist *zonelist)
+> > >  {
+> > > +	/*
+> > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> > > +	 * cost of allocating on the stack or the stack usage becomes
+> > > +	 * noticable, allocate the nodemasks per node at boot or compile time
+> > > +	 */
+> > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> > > +		nodemask_t nodemask;
+> > 
+> > Hmmm.. This places a potentially big structure on the stack. nodemask can 
+> > contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
+> > gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
+> 
+> Went back and revisited this. Allocating them at boot-time is below but
+> essentially it is a silly and it makes sense to just have two zonelists
+> where one of them is for __GFP_THISNODE. Implementation wise, this involves
+> dropping the last patch in the set and the overall result is still a reduction
+> in the number of zonelists.
 
-	"Fix ptrace_attach()/ptrace_traceme()/de_thread() race"
-	commit f5b40e363ad6041a96e3da32281d8faa191597b9
+Hi, Mel:
 
-we set PT_ATTACHED and change child->parent "atomically" wrt task_list lock.
+I'll try this out [n 24-rc2-mm1 or later].  I have a series with yet
+another rework of policy reference counting that will be easier/cleaner
+atop your series w/o the external zonelist hung off 'BIND policies.  So,
+I'm hoping your series goes into -mm "real soon now".
 
-This means we can remove the checks like "PT_ATTACHED && ->parent != ptracer"
-which were needed to catch the "ptrace attach is in progress" case. We can also
-remove the flag itself since nobody else uses it.
+Question:  Just wondering why you didn't embed the '_THISNODE nodemask
+in the pgdat_t--initialized at boot/node-hot-add time?  Perhaps under
+#ifdef CONFIG_NUMA. The size is known at build time, right?  And
+wouldn't that be way smaller than an additional zonelist?  
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Lee
 
---- PT/include/linux/ptrace.h~1_PT_ATTACHED	2007-07-28 16:58:17.000000000 +0400
-+++ PT/include/linux/ptrace.h	2007-11-20 17:22:13.000000000 +0300
-@@ -67,7 +67,6 @@
- #define PT_TRACE_EXEC	0x00000080
- #define PT_TRACE_VFORK_DONE	0x00000100
- #define PT_TRACE_EXIT	0x00000200
--#define PT_ATTACHED	0x00000400	/* parent != real_parent */
- 
- #define PT_TRACE_MASK	0x000003f4
- 
---- PT/kernel/ptrace.c~1_PT_ATTACHED	2007-11-20 17:16:10.000000000 +0300
-+++ PT/kernel/ptrace.c	2007-11-20 17:26:05.000000000 +0300
-@@ -100,8 +100,7 @@ int ptrace_check_attach(struct task_stru
- 	 */
- 	read_lock(&tasklist_lock);
- 	if ((child->ptrace & PT_PTRACED) && child->parent == current &&
--	    (!(child->ptrace & PT_ATTACHED) || child->real_parent != current)
--	    && child->signal != NULL) {
-+	     child->sighand != NULL) {
- 		ret = 0;
- 		spin_lock_irq(&child->sighand->siglock);
- 		if (is_task_stopped(child)) {
-@@ -202,8 +201,7 @@ repeat:
- 		goto bad;
- 
- 	/* Go */
--	task->ptrace |= PT_PTRACED | ((task->real_parent != current)
--				      ? PT_ATTACHED : 0);
-+	task->ptrace |= PT_PTRACED;
- 	if (capable(CAP_SYS_PTRACE))
- 		task->ptrace |= PT_PTRACE_CAP;
- 
---- PT/kernel/signal.c~1_PT_ATTACHED	2007-11-20 17:16:10.000000000 +0300
-+++ PT/kernel/signal.c	2007-11-20 17:27:28.000000000 +0300
-@@ -1577,11 +1577,6 @@ static inline int may_ptrace_stop(void)
- {
- 	if (!likely(current->ptrace & PT_PTRACED))
- 		return 0;
--
--	if (unlikely(current->parent == current->real_parent &&
--		    (current->ptrace & PT_ATTACHED)))
--		return 0;
--
- 	/*
- 	 * Are we in the middle of do_coredump?
- 	 * If so and our tracer is also part of the coredump stopping
---- PT/kernel/exit.c~1_PT_ATTACHED	2007-11-20 17:16:10.000000000 +0300
-+++ PT/kernel/exit.c	2007-11-20 17:21:52.000000000 +0300
-@@ -1513,18 +1513,7 @@ static int wait_task_continued(struct ta
- 
- static inline int my_ptrace_child(struct task_struct *p)
- {
--	if (!(p->ptrace & PT_PTRACED))
--		return 0;
--	if (!(p->ptrace & PT_ATTACHED))
--		return 1;
--	/*
--	 * This child was PTRACE_ATTACH'd.  We should be seeing it only if
--	 * we are the attacher.  If we are the real parent, this is a race
--	 * inside ptrace_attach.  It is waiting for the tasklist_lock,
--	 * which we have to switch the parent links, but has already set
--	 * the flags in p->ptrace.
--	 */
--	return (p->parent != p->real_parent);
-+	return p->ptrace & PT_PTRACED;
- }
- 
- static long do_wait(pid_t pid, int options, struct siginfo __user *infop,
+> 
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/gfp.h linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/gfp.h
+> --- linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/gfp.h	2007-11-19 19:27:15.000000000 +0000
+> +++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/gfp.h	2007-11-19 19:28:55.000000000 +0000
+> @@ -175,7 +175,6 @@ FASTCALL(__alloc_pages(gfp_t, unsigned i
+>  extern struct page *
+>  FASTCALL(__alloc_pages_nodemask(gfp_t, unsigned int,
+>  				struct zonelist *, nodemask_t *nodemask));
+> -extern nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask);
+>  
+>  static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+>  						unsigned int order)
+> @@ -187,13 +186,10 @@ static inline struct page *alloc_pages_n
+>  	if (nid < 0)
+>  		nid = numa_node_id();
+>  
+> -	/* Use a temporary nodemask for __GFP_THISNODE allocations */
+>  	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> -		nodemask_t nodemask;
+> -
+>  		return __alloc_pages_nodemask(gfp_mask, order,
+>  				node_zonelist(nid),
+> -				nodemask_thisnode(nid, &nodemask));
+> +				NODE_DATA(nid)->nodemask_thisnode);
+>  	}
+>  
+>  	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/mmzone.h linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/mmzone.h
+> --- linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/mmzone.h	2007-11-19 19:27:15.000000000 +0000
+> +++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/mmzone.h	2007-11-19 19:28:55.000000000 +0000
+> @@ -519,6 +519,9 @@ typedef struct pglist_data {
+>  	struct zone node_zones[MAX_NR_ZONES];
+>  	struct zonelist node_zonelist;
+>  	int nr_zones;
+> +
+> +	/* nodemask suitable for __GFP_THISNODE */
+> +	nodemask_t *nodemask_thisnode;
+>  #ifdef CONFIG_FLAT_NODE_MEM_MAP
+>  	struct page *node_mem_map;
+>  #endif
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/mm/page_alloc.c linux-2.6.24-rc2-mm1-045_use_static_nodemask/mm/page_alloc.c
+> --- linux-2.6.24-rc2-mm1-040_use_one_zonelist/mm/page_alloc.c	2007-11-19 19:27:15.000000000 +0000
+> +++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/mm/page_alloc.c	2007-11-19 19:28:55.000000000 +0000
+> @@ -1695,28 +1695,36 @@ got_pg:
+>  }
+>  
+>  /* Creates a nodemask suitable for GFP_THISNODE allocations */
+> -nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask)
+> +static inline void alloc_node_nodemask_thisnode(pg_data_t *pgdat)
+>  {
+> -	nodes_clear(*nodemask);
+> -	node_set(nid, *nodemask);
+> +	nodemask_t *nodemask_thisnode;
+>  
+> -	return nodemask;
+> +	/* Only a machine with multiple nodes needs the nodemask */
+> +	if (!NUMA_BUILD || num_online_nodes() == 1)
+> +		return;
+> +	
+> +	/* Allocate the nodemask. Serious if it fails, but not world ending */
+> +	nodemask_thisnode = alloc_bootmem_node(pgdat, sizeof(nodemask_t));
+> +	if (!nodemask_thisnode) {
+> +		printk(KERN_WARNING
+> +			"thisnode nodemask allocation failed."
+> +			"There may be sub-optimal NUMA placement.\n");
+> +		return;
+> +	}
+> +
+> +	/* Initialise the nodemask to only cover the current node */
+> +	nodes_clear(*nodemask_thisnode);
+> +	node_set(pgdat->node_id, *nodemask_thisnode);
+> +	pgdat->nodemask_thisnode = nodemask_thisnode;
+>  }
+>  
+>  struct page * fastcall
+>  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+>  		struct zonelist *zonelist)
+>  {
+> -	/*
+> -	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> -	 * cost of allocating on the stack or the stack usage becomes
+> -	 * noticable, allocate the nodemasks per node at boot or compile time
+> -	 */
+>  	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> -		nodemask_t nodemask;
+> -
+> -		return __alloc_pages_internal(gfp_mask, order,
+> -			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
+> +		return __alloc_pages_internal(gfp_mask, order, zonelist,
+> +			NODE_DATA(numa_node_id())->nodemask_thisnode);
+>  	}
+>  
+>  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
+> @@ -3501,6 +3509,7 @@ void __meminit free_area_init_node(int n
+>  	calculate_node_totalpages(pgdat, zones_size, zholes_size);
+>  
+>  	alloc_node_mem_map(pgdat);
+> +	alloc_node_nodemask_thisnode(pgdat);
+>  
+>  	free_area_init_core(pgdat, zones_size, zholes_size);
+>  }
+> 
 
