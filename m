@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbXKTJ7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbXKTKIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbXKTJ7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 04:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbXKTJ7l
+	id S1757208AbXKTKIf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 05:08:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbXKTKI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 04:59:41 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:29026 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbXKTJ7k (ORCPT
+	Tue, 20 Nov 2007 05:08:27 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:51559 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbXKTKI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 04:59:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OrXQfX/Vy6Af8HRGPJ65LyUepIHn08xSnsFYiXV4e+Gov+vOBaUQRTeTY6vU8q/XNcNfdPW7wvPFGcINjZk4KNLXDeunT4buOA2eUvPQrZu2dJ/vXBNF5bQoi3qBEdX4pfiM6k3uqX4GuL9A50dsv532zIPdRBGR818Z3my35eg=
-Message-ID: <a8e1da0711200159h393d8787r9abcc7d1807401b1@mail.gmail.com>
-Date: Tue, 20 Nov 2007 17:59:39 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.24-rc2-mm1 Warning at arch/x86/kernel/smp_32.c:561
-Cc: linux-kernel@vger.kernel.org, "Mark Gross" <mgross@linux.intel.com>
-In-Reply-To: <20071120015600.50a1f5f1.akpm@linux-foundation.org>
+	Tue, 20 Nov 2007 05:08:26 -0500
+Message-ID: <4742AB78.8020306@linux.vnet.ibm.com>
+Date: Tue, 20 Nov 2007 15:10:08 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-cifs-client@lists.samba.org,
+       samba-technical@lists.samba.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - smbd write fails
+References: <47429A7B.6040802@linux.vnet.ibm.com> <20071120003817.94cce1d9.akpm@linux-foundation.org> <4742A05B.40902@linux.vnet.ibm.com> <20071120012446.f97c5467.akpm@linux-foundation.org>
+In-Reply-To: <20071120012446.f97c5467.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071120094728.GA12096@darkstar.te-china.tietoenator.com>
-	 <20071120015600.50a1f5f1.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 20, 2007 5:56 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> On Tue, 20 Nov 2007 17:47:28 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
->
-> > Hi,
-> > I encountered kernel warningsr. I just executed xawtv without video dev being found.
-> >
-> > like this:
-> >
-> > WARNING: at arch/x86/kernel/smp_32.c:561 native_smp_call_function_mask()
-> >  [<c0118769>] native_smp_call_function_mask+0x149/0x150
-> >  [<c0178dd9>] alloc_debug_processing+0xa9/0x130
-> >  [<c0372da0>] smp_callback+0x0/0x10
-> >  [<c0119b7c>] smp_call_function+0x1c/0x20
-> >  [<c0372dc8>] cpuidle_latency_notify+0x18/0x20
-> >  [<c0144eae>] notifier_call_chain+0x3e/0x70
-> >  [<c01450d4>] __blocking_notifier_call_chain+0x44/0x70
-> >  [<c0145117>] blocking_notifier_call_chain+0x17/0x20
-> >  [<c01454fd>] pm_qos_add_requirement+0x8d/0xd0
-> >  [<f887030c>] snd_pcm_hw_params+0x20c/0x2a0 [snd_pcm]
-> >  [<f88703ee>] snd_pcm_hw_params_user+0x4e/0x90 [snd_pcm]
-> >  [<f88741ed>] snd_pcm_capture_ioctl1+0x3d/0x230 [snd_pcm]
-> >  [<f88c1b28>] snd_pcm_hw_param_near+0x198/0x230 [snd_pcm_oss]
-> >  [<f88744fe>] snd_pcm_kernel_ioctl+0x7e/0x90 [snd_pcm]
-> >  [<f88c28fc>] snd_pcm_oss_change_params+0x2fc/0x750 [snd_pcm_oss]
-> >  [<f88c2e47>] snd_pcm_oss_make_ready+0x47/0x60 [snd_pcm_oss]
-> >  [<f88c3a4e>] snd_pcm_oss_sync+0x10e/0x290 [snd_pcm_oss]
-> >  [<f88c4daa>] snd_pcm_oss_release+0x9a/0xb0 [snd_pcm_oss]
-> >  [<c01801ae>] __fput+0x16e/0x200
-> >  [<c017e35c>] filp_close+0x3c/0x80
-> >  [<c017e409>] sys_close+0x69/0xd0
-> >  [<c01042da>] syscall_call+0x7/0xb
-> >  [<c0400000>] xfrm_notify_sa+0x110/0x290
-> >  =======================
-> >
->
-> That was hopefully fixed.  You might care to test
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-11-20-01-45.tar.gz
-> to confirm that, if feeling sufficiently brave..
->
-
-Hi,
-I would like to try this tomorrow if have time,  thanks.
-
-Regards
-dave
+Andrew Morton wrote:
+> On Tue, 20 Nov 2007 14:22:43 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>> On Tue, 20 Nov 2007 13:57:39 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>>>
+>>>> Hi Andrew,
+>>>>
+>>>> Following calltrace is seen server, while running filesystem stress on smb mounted partition on the client machine.
+>>>>
+>>>> Nov 19 18:45:52 p55lp6 smbd[3304]: [2007/11/19 18:45:52, 0] lib/util_sock.c:write_data(562)
+>>>> Nov 19 18:45:52 p55lp6 smbd[3304]:   write_data: write failure in writing to client 9.124.111.212. Error Broken pipe
+>>>> Nov 19 18:45:52 p55lp6 smbd[3304]: [2007/11/19 18:45:52, 0] lib/util_sock.c:send_smb(769)
+>>>> Nov 19 18:45:52 p55lp6 smbd[3304]:   Error writing 39 bytes to client. -1. (Broken pipe)
+>>>> Nov 19 18:47:42 p55lp6 smbd[3650]: [2007/11/19 18:47:42, 0] smbd/oplock.c:oplock_timeout_handler(351)
+>>>> Nov 19 18:47:42 p55lp6 smbd[3650]:   Oplock break failed for file p0/d3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+>>>> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/deX/d3cX/d6eXXX/f8d -- replying anyway
+>>>> Nov 19 18:47:42 p55lp6 kernel: [ 6960.261068] warning: process `smbd' gets w/ old libcap
+>>>> Nov 19 18:47:42 p55lp6 smbd[3650]: [2007/11/19 18:47:42, 0] smbd/oplock_linux.c:linux_release_kernel_oplock(193)
+>>>> Nov 19 18:47:43 p55lp6 smbd[3650]:   linux_release_kernel_oplock: Error when removing kernel oplock on file p0/d3XXXXXXXXXXXXXXXXXXXXXXX
+>>>> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/deX/d3cX/d6eXXX/f8d, dev = 807, inode = 30983, file
+>>>> _id = 501. Error w
+>>>> Nov 19 18:48:04 p55lp6 smbd[3650]: [2007/11/19 18:48:04, 0] lib/util_sock.c:write_data(562)
+>>>> Nov 19 18:48:04 p55lp6 smbd[3650]:   write_data: write failure in writing to client 9.124.111.212. Error Connection reset by peer
+>>>>
+>>> So you have samba running on a 2.6.24-rc2-mm1 machine and samba is failing
+>>> with the above messages?
+>>>
+>> Hi Andrew,
+>>
+>> Yes, the above messages are seen with the 2.6.24-rc2-mm1 kernel.
+> 
+> Oh.  Well I don't know where to start looking for that one.
+> 
+> Maybe someone fixed it amongst all the things which have been happening
+> recently.  I'll upload an mm snapshot as soon as I can get some of it to
+> compile.  Can you please retest with that?
+> 
+> If it still fails and if this is reasonably reproducible I'm afraid I'd ask
+> if you have time to run a bisection search on it.
+> 
+Sure, will retest it on the mm snapshot.
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
