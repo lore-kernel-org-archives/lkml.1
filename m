@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXKTWxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXKTWzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbXKTWxA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXKTWwv
+	id S1755374AbXKTWzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbXKTWzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:52:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39240 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Nov 2007 17:55:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34644 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbXKTWwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:52:50 -0500
-Date: Tue, 20 Nov 2007 23:52:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: nohz and strange sleep latencies
-Message-ID: <20071120225246.GA24380@elte.hu>
-References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz> <20071120205454.GD10008@elte.hu> <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain>
+	id S1751655AbXKTWzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 17:55:00 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: 2.6.24-rc3: find complains about /proc/net
+In-Reply-To: Ingo Molnar's message of  Tuesday, 20 November 2007 23:35:59 +0100 <20071120223559.GA6655@elte.hu>
+References: <20071119191000.GA1560@elf.ucw.cz>
+	<200711192304.25087.rjw@sisk.pl>
+	<4743026B.2020907@openvz.org>
+	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
+	<20071120215914.GE24156@elte.hu>
+	<m1ve7wr28z.fsf@ebiederm.dsl.xmission.com>
+	<20071120223559.GA6655@elte.hu>
+X-Zippy-Says: When this load is DONE I think I'll wash it AGAIN..
+Message-Id: <20071120225457.B6E2D26F8BE@magilla.localdomain>
+Date: Tue, 20 Nov 2007 14:54:57 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When did /proc/self get changed to follow tgid instead of pid?  glibc uses
+/proc/self to refer to various things that are usually shared anyway (fd,
+maps, cwd, exe), but I think the expectation has always been that this
+refers to the same calling thread, not the group leader.  e.g., if one
+thread has changed uids so it no longer has access to the group leader's
+/proc/PID/fd, suddenly it using /proc/self/fd starts failing.
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> On Tue, 20 Nov 2007, Ingo Molnar wrote:
-> > 
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> > > > and send us the output? (Enabling CONFIG_TIMER_STATS, 
-> > > > CONFIG_SCHED_DEBUG and CONFIG_SCHEDSTATS would maximize the amount 
-> > > > of information.)
-> > > 
-> > > This was w/o hpet=disable . Do you want me to test with hpet=disable?
-> > 
-> > no, this is fine. You've got a hpet clockevents driver and two lapic 
-> > drivers:
-> > 
-> > Clock Event Device: hpet
-> >  set_next_event: hpet_legacy_next_event
-> >  set_mode:       hpet_legacy_set_mode
-> >  event_handler:  tick_handle_oneshot_broadcast
-> > 
-> > Clock Event Device: lapic
-> >  set_next_event: lapic_next_event
-> >  set_mode:       lapic_timer_setup
-> >  event_handler:  hrtimer_interrupt
-> > 
-> > Clock Event Device: lapic
-> >  set_next_event: lapic_next_event
-> >  set_mode:       lapic_timer_setup
-> >  event_handler:  hrtimer_interrupt
-> > 
-> > to me this has the feeling of lapic breakage in C2 mode. Does it get any 
-> > better if you boot with 'nolapic'? (but that might in turn turn off 
-> > high-res timers and nohz in essence) Thomas, any ideas?
-> 
-> Hmm, lapic is considered unstable in c2 by default. You have to tell 
-> the kernel that you trust it in C2 on the command line.
-
-yeah, i was wondering about that too. ACPI enumerated them properly at a 
-certain stage:
-
- ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
- ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
-
-but perhaps somehow we miss this fact and fail to turn off the lapic 
-clockevents drivers?
-
-	Ingo
+Thanks,
+Roland
