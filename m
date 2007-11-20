@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764529AbXKTV3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762090AbXKTVcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764529AbXKTV3i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764009AbXKTV3I
+	id S1762090AbXKTVcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbXKTVcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:29:08 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56156 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763955AbXKTV3G (ORCPT
+	Tue, 20 Nov 2007 16:32:43 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:6218 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757503AbXKTVcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:29:06 -0500
-Date: Tue, 20 Nov 2007 13:29:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: casey@schaufler-ca.com
-Cc: torvalds@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] (2.6.24-rc3 -mm only) Smack Version 11c Simplified
- Mandatory Access Control Kernel
-Message-Id: <20071120132902.244057eb.akpm@linux-foundation.org>
-In-Reply-To: <561782.48046.qm@web36602.mail.mud.yahoo.com>
-References: <4742769D.60105@schaufler-ca.com>
-	<561782.48046.qm@web36602.mail.mud.yahoo.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Nov 2007 16:32:42 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
+Date: Tue, 20 Nov 2007 16:31:45 -0500
+User-Agent: KMail/1.9.7
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <474344D0.40704@linux.vnet.ibm.com> <200711201548.44542.paul.moore@hp.com>
+In-Reply-To: <200711201548.44542.paul.moore@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711201631.46068.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 11:04:32 -0800 (PST)
-Casey Schaufler <casey@schaufler-ca.com> wrote:
+On Tuesday 20 November 2007 3:48:44 pm Paul Moore wrote:
+> On Tuesday 20 November 2007 3:34:24 pm Kamalesh Babulal wrote:
+> > Hi Andrew,
+> >
+> > The kernel build fails, in selinux with following error
+> >
+> >   CHK     include/linux/compile.h
+> >   UPD     include/linux/compile.h
+> >   CC      init/version.o
+> >   LD      init/built-in.o
+> >   LD      .tmp_vmlinux1
+> > security/built-in.o(.toc1+0x928): undefined reference to
+> > `selinux_xfrm_refcount' make: *** [.tmp_vmlinux1] Error 1
+> > 11/20/2007-14:42:08 Build the kernel. Failed rc = 2
+> > 11/20/2007-14:42:08 build: Building kernel... Failed rc = 1
+> >
+> > The patch causing this error is git-lblnet.patch, where in the
+> > selinux_xfrm_enabled() is called from security/selinux/hooks.c, depends
+> > on the extern atomic_tselinux_xfrm_refcount.
+>
+> The problem appears to be that the selinux_xfrm_refcount functionality is
+> not properly protected by CONFIG_SECURITY_NETWORK_XFRM.  I'm fixing that
+> now.
 
-> 
-> --- Casey Schaufler <casey@schaufler-ca.com> wrote:
-> 
-> > From: Casey Schaufler <casey@schaufler-ca.com>
-> > 
-> > ...
-> 
-> I have verified this version against broken-out-2007-11-20-01-45
-> as well. Compiles, boots, and passes tests.
-> 
+I've fixed the problem in the git tree below, meaning I just did a quick 
+compile without defining CONFIG_SECURITY_NETWORK_XFRM and everything appeared 
+to link correctly.  I haven't had a chance to try booting the fix yet because 
+my test machine is a little slow compiling right now, but the fix was pretty 
+trivial (simply move the extern and the inline function) so I don't expect 
+any problems.
 
-So is it time for me to wake up and start paying attention again?
+ * git://git.infradead.org/users/pcmoore/lblnet-2.6_testing
+
+-- 
+paul moore
+linux security @ hp
