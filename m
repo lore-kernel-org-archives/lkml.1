@@ -1,56 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763163AbXKTWYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762965AbXKTW0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763163AbXKTWYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbXKTWYL
+	id S1762965AbXKTW0e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXKTW0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:24:11 -0500
-Received: from outmail1.freedom2surf.net ([194.106.33.237]:54895 "EHLO
-	outmail1.freedom2surf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758015AbXKTWYK (ORCPT
+	Tue, 20 Nov 2007 17:26:25 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36915 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751741AbXKTW0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:24:10 -0500
-Subject: Re: [patch] 0/4 Support for Toshiba TMIO multifunction devices
-From: ian <spyro@f2s.com>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <474359E3.2020603@gmail.com>
-References: <1195591234.2329.52.camel@wirenth>  <474359E3.2020603@gmail.com>
-Content-Type: text/plain
-Date: Tue, 20 Nov 2007 22:20:52 +0000
-Message-Id: <1195597252.2329.70.camel@wirenth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 17:26:24 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       nfs@lists.sourceforge.net, kamalesh@linux.vnet.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz -- powerpc panic
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
+	<20071120144659.GC12066@shadowen.org>
+	<20071120123559.d970db9e.akpm@linux-foundation.org>
+Date: Tue, 20 Nov 2007 15:23:07 -0700
+In-Reply-To: <20071120123559.d970db9e.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 20 Nov 2007 12:35:59 -0800")
+Message-ID: <m1r6ikr1ys.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-21 at 01:04 +0300, Dmitry Baryshkov wrote:
-> Just to note, that there is an alternative implementation for at least
-> the tc6393 chip devices. Most current version of those patches can be 
-> found in the OpenEmbedded monotone. 
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Yes, this is true. The core code in both cases originates from my and
-Dirks work.
+> On Tue, 20 Nov 2007 14:46:59 +0000
+> Andy Whitcroft <apw@shadowen.org> wrote:
+>
+>> I have one powerpc machine which managed to compile this snapshot!  It
+>> paniced on boot as below, might be nfs so copied them.  General results
+>> are popping out on TKO.
+>> 
+>> -apw
+>> 
+>> Freeing initrd memory: 1224k freed
+>> Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+>> Unable to handle kernel paging request for data at address 0x00000050
+>> Faulting instruction address: 0xc000000000113b64
+>> Oops: Kernel access of bad area, sig: 11 [#1]
+>> SMP NR_CPUS=32 NUMA pSeries
+>> Modules linked in:
+>> NIP: c000000000113b64 LR: c000000000113b44 CTR: 0000000000000000
+>> REGS: C00000077E0679D0 TRAP: 0300   Not tainted  (2.6.24-rc3-mm1-autokern1)
+>> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24004044  XER: 20000000
+>> DAR: 0000000000000050, DSISR: 0000000040000000
+>> TASK = C00000077E062000[1] 'swapper' THREAD: C00000077E064000 CPU: 0
+>> GPR00: 0000000000000000 c00000077e067c50 c0000000006c5650 0000000000000001 
+>> GPR04: c00000077e625bdc 0000000000000005 c000000000501ad4 c000000000731d18 
+>> GPR08: 0000000000000000 0000000000000000 c00000077e625b40 0000000000000001 
+>> GPR12: 0000000024004044 c0000000005fd000 0000000000000000 0000000000000000 
+>> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+>> GPR20: 4000000003a00000 0000000004300000 0000000003fb94a8 0000000000132000 
+>> GPR24: 0000000003fb9718 0000000000000000 c0000000005b6e70 0000000000000000 
+>> GPR28: 0000000000000005 c00000077e625b40 c000000000652e48 c00000077e625c50 
+>> NIP [c000000000113b64] .remove_proc_entry+0xac/0x234
+>> LR [c000000000113b44] .remove_proc_entry+0x8c/0x234
+>> Call Trace:
+>> [c00000077e067c50] [c000000000113b44] .remove_proc_entry+0x8c/0x234
+> (unreliable)
+>> [c00000077e067d10] [c00000000048bf28] .cache_unregister+0x108/0x1b4
+>> [c00000077e067d90] [c0000000001ca988] .nfsd_export_shutdown+0x50/0xa4
+>> [c00000077e067e10] [c0000000005a712c] .init_nfsd+0x108/0x13c
+>> [c00000077e067ea0] [c000000000582438] .kernel_init+0x224/0x3fc
+>> [c00000077e067f90] [c000000000026204] .kernel_thread+0x4c/0x68
+>> Instruction dump:
+>> e8bf0000 e8810090 7f83e378 4bfffd25 2f830000 419e0018 ebbf0000 e81d0050 
+>> f81f0000 38000000 f81d0050 e93f0000 <e8090050> 3be90050 2fa00000 409effc4 
+>> Kernel panic - not syncing: Attempted to kill init!
+>
+> Various people have been mucking with procfs core:
+>
+> proc-remove-module_license.patch
+> proc-less-lock-operations-during-lookup.patch
+> proc-simplify-function-prototypes.patch
+> proc-remove-useless-check-on-symlink-removal.patch
+> proc-remove-useless-checks-in-proc_register.patch
+> proc-detect-duplicate-names-on-registration.patch
+> proc-detect-duplicate-names-on-registration-fix.patch
+> proc-simplify-remove_proc_entry-wrt-locking.patch
+> proc-simplify-remove_proc_entry-wrt-locking-checkpatch-fixes.patch
 
-I'd just like to get something pushed up to mainline so that work can
-begin on expanding the number of chips supported.
+> proc-implement-proc_single_file_operations.patch
+> proc-rewrite-do_task_stat-to-correctly-handle-pid-namespaces.patch
+> proc-seqfile-convert-proc_pid_statm.patch
+> proc-proper-pidns-handling-for-proc-self.patch
 
-This would include the ASICs found in many iPAQ PDAs (their MMC module
-seems to be an IRQ-less TMIO chip).
+These last four are all affect proc/base not proc/generic so they should
+have no affect on this issue.  Those two are almost entirely separate
+filesystems.
 
-I havent submitted the subdevice drivers yet, only the base/core
-drivers.
+> And I had to skip a couple of patches due to conflicts.
+>
+> I'll see if it happens on any of my test machines.
 
-The OE versions probably have better USB and video subdevice support
-(which I shall evaluate as I go on), wheras the NAND flash and MMC
-drivers in hh.org are probably more up to date (I run root on SD usinf
-the hh.org tmio_mmc driver on all three of the MFD chips in this patch
-series on a daily basis).
+If I get a bit more I will look more closely.  I'm right on
+the edge of figuring out how to really slicing /proc into multiple filesystems
+at the moment.
 
-merging the best of these patch series is my goal and it shouldnt be too
-hard.
-
+Eric
 
 
