@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbXKTQsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbXKTQsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760639AbXKTQsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbXKTQsH
+	id S1761416AbXKTQsf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757687AbXKTQsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:48:07 -0500
-Received: from ns.suse.de ([195.135.220.2]:49780 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756223AbXKTQsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:48:06 -0500
-Subject: Re: [PATCH 2/3] PNP cleanups - Unify the pnp macros to
-	access	resources in the pnp resource table
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "yakui.zhao" <yakui.zhao@intel.com>, akpm <akpm@linux-foundation.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-In-Reply-To: <4742EFBE.6030407@keyaccess.nl>
-References: <1195552283.23700.166.camel@queen.suse.de>
-	 <20071120123102.03bdaa67@the-village.bc.nu>
-	 <1195568360.23700.202.camel@queen.suse.de>  <4742EFBE.6030407@keyaccess.nl>
+	Tue, 20 Nov 2007 11:48:24 -0500
+Received: from homer.mvista.com ([63.81.120.158]:12741 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756773AbXKTQsX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 11:48:23 -0500
+Subject: Re: [BUG on PREEMPT_RT, 2.6.23.1-rt5] in rt-mutex code and signals
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Remy Bohmer <linux@bohmer.net>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071117174608.GA30641@elte.hu>
+References: <3efb10970711160751l279fe99dl9f3a130a4373a449@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161516580.25989@gandalf.stny.rr.com>
+	 <3efb10970711161502m6216bf5rc19a34184b4f3a2b@mail.gmail.com>
+	 <Pine.LNX.4.58.0711161830570.28002@gandalf.stny.rr.com>
+	 <3efb10970711170344n670d8b69w6679d494922c5bb@mail.gmail.com>
+	 <1195316550.25393.21.camel@imap.mvista.com>
+	 <3efb10970711170909n3acca605j70525e36faf8da7f@mail.gmail.com>
+	 <1195320569.25393.38.camel@imap.mvista.com>
+	 <20071117174608.GA30641@elte.hu>
 Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Tue, 20 Nov 2007 17:48:04 +0100
-Message-Id: <1195577284.23700.211.camel@queen.suse.de>
+Date: Tue, 20 Nov 2007 08:43:16 -0800
+Message-Id: <1195576996.16514.4.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-20 at 15:31 +0100, Rene Herman wrote:
-> On 20-11-07 15:19, Thomas Renninger wrote:
-> 
-> > At the end is some example code how things could get even more cleaned
-> > up. It shows how I think pnp layer and one example driver would get
-> > adjusted. There are not that much drivers making use of
-> > pnp_resource_change...
-> 
-> The ALSA ISA-PnP drivers do in what I personally consider a bad layering 
-> violation. Brought up not doing that a while ago on alsa-devel, but no 
-> discussion ensued. If the PnP maintainer(s) agree with me though, I'd be 
-> more than happy to rip all of that out of ALSA.
-> 
-> (added alsa-devel)
+On Sat, 2007-11-17 at 18:46 +0100, Ingo Molnar wrote:
 
-The pnp_resource_change is really ugly..., these are making use of it:
-sound/isa/sb/es968.c
-sound/isa/sb/sb16.c
-sound/isa/gus/interwave.c
-sound/isa/es18xx.c
-sound/isa/cs423x/cs4236.c
-sound/isa/wavefront/wavefront.c
-sound/isa/ad1816a/ad1816a.c
-sound/isa/cmi8330.c
-sound/isa/opl3sa2.c
-sound/isa/opti9xx/opti92x-ad1848.c
-sound/isa/als100.c
-sound/isa/azt2320.c
-sound/isa/dt019x.c
+> fixing the top 20:
+> 
 
+There are about 25 DECLARE_MUTEX() semaphores remaining .. One is the
+BKL which I would guess can't be converted. The others I've looked at
+appear to be trivial find/replace changes to get them to use the mutex
+type.. Any reason those haven't been converted over?
 
-   Thomas
+Daniel
 
