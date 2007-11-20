@@ -1,121 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbXKTNT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbXKTNW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759613AbXKTNT3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 08:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbXKTNTV
+	id S1760226AbXKTNW3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 08:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbXKTNWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 08:19:21 -0500
-Received: from emerald.lightlink.com ([205.232.34.14]:10350 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755572AbXKTNTU (ORCPT
+	Tue, 20 Nov 2007 08:22:21 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:58268 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755840AbXKTNWU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 08:19:20 -0500
-Date: Tue, 20 Nov 2007 08:15:21 -0500
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Rudolf Marek <r.marek@assembler.cz>, Jiri Slaby <jirislaby@gmail.com>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [lm-sensors] broken suspend [Was: 2.6.24-rc2-mm1]
-Message-ID: <20071120131520.GC12077@jupiter.solarsys.private>
-References: <4741EB91.9080000@assembler.cz> <Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
+	Tue, 20 Nov 2007 08:22:20 -0500
+X-Greylist: delayed 361 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 08:22:20 EST
+From: Damien Wyart <damien.wyart@free.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7
+References: <20071119151756.GA25446@elte.hu>
+	<20071120112459.GA2884@localhost.localdomain>
+	<20071120125557.GB8355@elte.hu>
+Date: Tue, 20 Nov 2007 14:22:19 +0100
+In-Reply-To: <20071120125557.GB8355@elte.hu> (Ingo Molnar's message of "Tue,
+	20 Nov 2007 13:55:57 +0100")
+Message-ID: <87zlx9vypg.fsf@free.fr>
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.50
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all:
+> > Testing sched-cfs-v2.6.24-rc3-v24.patch on top of 2.6.24-rc3-git1
+> > (ignored the two "already applied" messages coming from git1
+> > commits), I get a 1.00 minimum load in top, coming from the
+> > load_balance_mo thread staying in D-state. I get this on 2 different
+> > computers with similar configs, so I am attaching one of them here.
 
-* Alan Stern <stern@rowland.harvard.edu> [2007-11-19 15:27:14 -0500]:
-> On Mon, 19 Nov 2007, Rudolf Marek wrote:
-> 
-> > Hello all,
-> > >>> gives coretemp_cpu_callback -> coretemp_device_remove ->
-> > >>> platform_device_unregister, so coretemp seems to be what I have and you don't.
-> > > 
-> > > Yes.
-> > > 
-> > > For the coretemp developers: coretemp_cpu_callback() needs to be more 
-> > > careful about what it does.  During a system sleep transition (suspend, 
-> > > hibernate, resume) it isn't possible to register or unregister a 
-> > > device.  Attempts to register will fail and attempts to unregister will 
-> > > block until the system sleep is over -- and for this callback that 
-> > > means hanging.
-> > 
-> > Well I wrote the driver. Thanks for the clarification. If I recall correctly I 
-> > looked how this part should be done from others drivers. Now while checking
-> > what happened to the file, seems Rafael added something related.
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8bb7844286fb8c9fce6f65d8288aeb09d03a5e0d
-> 
-> That does look like it was meant for exactly this sort of situation.
-> 
-> > > It's not clear what the best way is to fix this.  Perhaps the CPU 
-> > > notification should be sent along with a special flag indicating that 
-> > > the CPU transition is part of a system sleep (although this seems 
-> > > racy).  Perhaps the driver should notice when a system sleep begins, 
-> > > and defer all CPU-change handling until after the sleep is over.
-> > 
-> > maybe it does exist?  CPU_DOWN_PREPARE ?
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/cpu-hotplug.txt;hb=HEAD
-> > 
-> > Unfortunately I'm not very familiar with this, calling the 
-> > coretemp_device_remove from CPU_DOWN_PREPARE would help? Looking at microcode 
-> > driver, seems it just hide sysfs interface from user.
+* Ingo Molnar <mingo@elte.hu> [071120 13:55]:
+> does the patch below fix that problem for you?
 
-AFAICT from that documentation, it would have been better to unregister
-the device on CPU_DOWN_PREPARE anyway.  CPU_DEAD seems to be too late -
-it's already gone by then.
+Yes, it does. Thanks for your answer.
 
-> I'm not sure exactly what you want to do here.  But it seems like a 
-> waste to unregister the coretemp devices at the start of a system sleep 
-> and then register them back at the end.
-> 
-> Could you simply leave the devices registered throughout the entire
-> sleep?  Of course, at the end you would have to check that all the CPUs
-> really did come back up, and unregister the devices for the CPUs that
-> are still offline.
+Damien
 
-Is it possible to unregister a driver on CPU_DOWN_PREPARE_FROZEN?  If
-so, then the simplest fix would be the patch below (Jiri: feel free to
-try it). Otherwise it would take a bit of refactoring to bring the sysfs
-interface down/up for suspend/resume.
-
-commit ce9c7b78c839a6304696d90083eac08baad524ce
-Author: Mark M. Hoffman <mhoffman@lightlink.com>
-Date:   Tue Nov 20 07:51:50 2007 -0500
-
-    hwmon: (coretemp) fix suspend/resume hang
-    
-    Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
-
-diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
-index 5c82ec7..afe2d31 100644
---- a/drivers/hwmon/coretemp.c
-+++ b/drivers/hwmon/coretemp.c
-@@ -338,10 +338,12 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
-+	case CPU_DOWN_FAILED:
-+	case CPU_DOWN_FAILED_FROZEN:
- 		coretemp_device_add(cpu);
- 		break;
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
- 		coretemp_device_remove(cpu);
- 		break;
- 	}
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+> Index: linux/kernel/sched.c
+> ===================================================================
+> --- linux.orig/kernel/sched.c
+> +++ linux/kernel/sched.c
+> @@ -7138,7 +7138,7 @@ static int load_balance_monitor(void *un
+>  		else if (timeout < sysctl_sched_max_bal_int_shares)
+>  			timeout *= 2;
+>  
+> -		msleep(timeout);
+> +		msleep_interruptible(timeout);
+>  	}
+>  
+>  	return 0;
+>
