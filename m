@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbXKTDde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbXKTDhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbXKTDde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 22:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXKTDd1
+	id S1757293AbXKTDhy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 22:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXKTDhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 22:33:27 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43347 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751484AbXKTDd0 (ORCPT
+	Mon, 19 Nov 2007 22:37:47 -0500
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:21231 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752389AbXKTDhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 22:33:26 -0500
-Date: Mon, 19 Nov 2007 19:33:25 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       travis@sgi.com, mathieu.desnoyers@polymtl.ca,
+	Mon, 19 Nov 2007 22:37:46 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=160pi6t/1kVzqOX40lW6UAF80Ix34YQIQ5vjMsUrGI2HpjHEeu7u1ZTXn1oDgE8g4oV7ImdhNiLmdQpJN/95P9JsahofbrpuZpKleowMHonVGzeeprDHIRPUHT5SjFPVGxCyFlmwd6909ZYMZ/yZi7d0l6dH4KQPl1d86zyjKEs=  ;
+X-YMail-OSG: 7WWYuPEVM1lxdBWFsqtwQEBmtEKOsF4oSiAYZ5ScqU1jRAWt4oIJfJ5EfSTYTz48RXzyM2Bdhw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [rfc 08/45] cpu alloc: x86 support
+Date: Tue, 20 Nov 2007 14:37:37 +1100
+User-Agent: KMail/1.9.5
+Cc: "H. Peter Anvin" <hpa@zytor.com>, ak@suse.de, akpm@linux-foundation.org,
+       travis@sgi.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        linux-kernel@vger.kernel.org
-Subject: Re: [rfc 00/45] [RFC] CPU ops and a rework of per cpu data handling
- on x86_64
-In-Reply-To: <200711200425.34849.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0711191932290.21689@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <20071119.175116.55102316.davem@davemloft.net>
- <200711200425.34849.ak@suse.de>
+References: <20071120011132.143632442@sgi.com> <474239CA.20403@zytor.com> <Pine.LNX.4.64.0711191759370.19954@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711191759370.19954@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711201437.38045.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n Tue, 20 Nov 2007, Andi Kleen wrote:
+On Tuesday 20 November 2007 13:02, Christoph Lameter wrote:
+> On Mon, 19 Nov 2007, H. Peter Anvin wrote:
+> > You're making the assumption here that NUMA = large number of CPUs. This
+> > assumption is flat-out wrong.
+>
+> Well maybe. Usually one gets to NUMA because the hardware gets too big to
+> be handleed the UMA way.
 
-> 
-> > Although we have a per-cpu area base in a fixed global register
-> > for addressing, the above isn't beneficial on sparc64 because
-> > the atomic is much slower than doing a:
-> >
-> > 	local_irq_disable();
-> > 	nonatomic_percpu_memory_op();
-> > 	local_irq_enable();
-> 
-> Again might be pointing out the obvious, but you 
-> need of course save_flags()/restore_flags(), not disable/enable().
-> 
-> If it was just disable/enable x86 could do it much faster too 
-> and Christoph probably would never felt the need to approach
-> this project for his SLUB fast path.
+Not the way things are going with multicore and multithread, though
+(that is, the hardware can be one socket and still have many cpus).
 
-I already have no need for that anymore with the material now in Andrews 
-tree. However, this cuts out another 6 cycles from the fastpath and I 
-found that the same principles reduce overhead all over the kernel.
-
-
+The chip might have several memory controllers on it, but they could
+well be connected to the caches with a crossbar, so it needn't be
+NUMA at all. Future scalability work shouldn't rely on many cores
+~= many nodes, IMO.
