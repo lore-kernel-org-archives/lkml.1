@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763026AbXKTCRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbXKTCSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763026AbXKTCRq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762336AbXKTCM2
+	id S1762905AbXKTCSK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762435AbXKTCOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 21:12:28 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40000 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762201AbXKTCM0 (ORCPT
+	Mon, 19 Nov 2007 21:14:20 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:16860 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762651AbXKTCOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 21:12:26 -0500
-Date: Mon, 19 Nov 2007 18:12:24 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
-       mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [rfc 00/45] [RFC] CPU ops and a rework of per cpu data handling
- on x86_64
-In-Reply-To: <20071119.181016.224103721.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0711191811290.20625@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <20071119.175116.55102316.davem@davemloft.net>
- <Pine.LNX.4.64.0711191758390.19954@schroedinger.engr.sgi.com>
- <20071119.181016.224103721.davem@davemloft.net>
+	Mon, 19 Nov 2007 21:14:18 -0500
+Date: Mon, 19 Nov 2007 18:13:21 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Kurt Hackel <kurt.hackel@oracle.com>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH 47/59] fs/ocfs2: Add missing "space"
+Message-ID: <20071120021321.GY28607@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <82a29b02f6151dd2d9a34d071e24f0726b8466d0.1195454436.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <82a29b02f6151dd2d9a34d071e24f0726b8466d0.1195454436.git.joe@perches.com>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007, David Miller wrote:
-
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Mon, 19 Nov 2007 17:59:33 -0800 (PST)
+On Mon, Nov 19, 2007 at 05:53:34PM -0800, Joe Perches wrote:
 > 
-> > In that case the generic fallbacks can just provide what you already
-> > have.
-> 
-> I understand, I was just letting you know why we probably won't
-> take advantage of this new stuff :-)
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  fs/ocfs2/dlm/dlmmaster.c |    4 ++--
+>  fs/ocfs2/inode.c         |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-On the other hand: The pointer array removal and the allocation 
-density improvements of the cpu_alloc should also help sparc to 
-increase the information density in cachelines and thus increase overall 
-speed of your 64p box.
+Thanks, I'll put this in ocfs2.git.
+	--Mark
 
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
