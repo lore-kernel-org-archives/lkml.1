@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbXKTNGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760413AbXKTNHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbXKTNGK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 08:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757116AbXKTNF5
+	id S1760413AbXKTNHk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 08:07:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbXKTNHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 08:05:57 -0500
-Received: from www.tglx.de ([62.245.132.106]:40927 "EHLO www.tglx.de"
+	Tue, 20 Nov 2007 08:07:32 -0500
+Received: from www.tglx.de ([62.245.132.106]:40981 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756612AbXKTNF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 08:05:56 -0500
-Date: Tue, 20 Nov 2007 14:05:24 +0100 (CET)
+	id S1753004AbXKTNHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 08:07:31 -0500
+Date: Tue, 20 Nov 2007 14:07:00 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
-To: Roland McGrath <roland@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/18] x86 vDSO: arch/x86/vdso/vdso32
-In-Reply-To: <20071119220425.6002E26F8BE@magilla.localdomain>
-Message-ID: <alpine.LFD.0.9999.0711201402520.25057@localhost.localdomain>
-References: <20071119215944.01B7C26F8BE@magilla.localdomain> <20071119220425.6002E26F8BE@magilla.localdomain>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
+In-Reply-To: <4742C54B.1080709@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.0.9999.0711201405480.25057@localhost.localdomain>
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <4742C54B.1080709@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2104343075-1195564022=:25057"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Mon, 19 Nov 2007, Roland McGrath wrote:
+--8323328-2104343075-1195564022=:25057
+Content-Type: TEXT/PLAIN; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 
+On Tue, 20 Nov 2007, Kamalesh Babulal wrote:
+
+> Hi Andrew,
 > 
-> This moves the i386 vDSO sources into arch/x86/vdso/vdso32/, a
-> new directory.  This patch is a pure renaming, but paves the way
-> for consolidating the vDSO build logic.
+> The kernel build fails on AMD Opteron
 > 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  arch/x86/ia32/vsyscall-sigreturn.S                 |    3 +--
->  arch/x86/kernel/Makefile_32                        |    3 +++
->  .../vsyscall-int80_32.S => vdso/vdso32/int80.S}    |    2 +-
->  .../vsyscall-note_32.S => vdso/vdso32/note.S}      |    2 +-
->  .../vdso32/sigreturn.S}                            |    0 
->  .../vdso32/sysenter.S}                             |    2 +-
->  6 files changed, 7 insertions(+), 5 deletions(-)
->  rename arch/x86/{kernel/vsyscall-int80_32.S => vdso/vdso32/int80.S} (97%)
->  rename arch/x86/{kernel/vsyscall-note_32.S => vdso/vdso32/note.S} (95%)
->  rename arch/x86/{kernel/vsyscall-sigreturn_32.S => vdso/vdso32/sigreturn.S} (100%)
->  rename arch/x86/{kernel/vsyscall-sysenter_32.S => vdso/vdso32/sysenter.S} (99%)
+>   CC      arch/x86/kernel/setup_64.o
+> arch/x86/kernel/setup_64.c: In function ‘early_identify_cpu’:
+> arch/x86/kernel/setup_64.c:904: warning: unused variable ‘xlvl’
+> arch/x86/kernel/setup_64.c: In function ‘identify_cpu’:
+> arch/x86/kernel/setup_64.c:960: error: ‘xlvl’ undeclared (first use in this function)
+> arch/x86/kernel/setup_64.c:960: error: (Each undeclared identifier is reported only once
+> arch/x86/kernel/setup_64.c:960: error: for each function it appears in.)
+> arch/x86/kernel/setup_64.c: At top level:
+> arch/x86/kernel/setup_64.c:991: error: redefinition of ‘identify_cpu’
+> arch/x86/kernel/setup_64.c:958: error: previous definition of ‘identify_cpu’ was here
+> make[1]: *** [arch/x86/kernel/setup_64.o] Error 1
+> make: *** [arch/x86/kernel] Error 2
+> 
+> The patch causing this error is git-x86.patch
 
-I just stumbled accross those renames, when I tried to apply your
-series from the mailbox. I guess there is some option to git which
-creates a real patch. I fixed it up manually for now.
+Jeremy pointed me to this already. I'm looking into this.
 
 Thanks,
 
 	tglx
+--8323328-2104343075-1195564022=:25057--
