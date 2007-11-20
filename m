@@ -1,58 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762613AbXKTSmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763248AbXKTSnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762613AbXKTSmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbXKTSml
+	id S1763248AbXKTSnG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:43:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759415AbXKTSml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 20 Nov 2007 13:42:41 -0500
-Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:52346 "EHLO
-	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755708AbXKTSmk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: from rtr.ca ([76.10.145.34]:4137 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757224AbXKTSmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Nov 2007 13:42:40 -0500
-Date: Tue, 20 Nov 2007 20:42:35 +0200
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Is there any word about this bug in gcc ?
-Message-ID: <20071120184235.3bcfy3y2f4lc3s7i@m.safari.iki.fi>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <E1IuMnZ-0003o3-00@gondolin.me.apana.org.au> <4742831F.9040408@zytor.com> <20071120065212.GA14702@gondor.apana.org.au> <5a4c581d0711200452u1f7c9dc3h63e2697926ce1be0@mail.gmail.com>
+Message-ID: <47432A9E.6030608@rtr.ca>
+Date: Tue, 20 Nov 2007 13:42:38 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5a4c581d0711200452u1f7c9dc3h63e2697926ce1be0@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-15)
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+References: <47425EA5.7000607@rtr.ca>	<200711201517.16171.nickpiggin@yahoo.com.au>	<20071119213727.16d5917b@laptopd505.fenrus.org>	<200711201837.39664.nickpiggin@yahoo.com.au>	<20071120064747.2a8036cd@laptopd505.fenrus.org>	<4743018C.1000307@rtr.ca>	<474302D0.9000509@rtr.ca> <20071120080243.22725fb3@laptopd505.fenrus.org>
+In-Reply-To: <20071120080243.22725fb3@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 13:52:52 +0100, Alessandro Suardi wrote:
-> On Nov 20, 2007 7:52 AM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> > On Mon, Nov 19, 2007 at 10:47:59PM -0800, H. Peter Anvin wrote:
-> > >
-> > > This one is definitely messy.  There is absolutely no way to know what
-> > > gcc has miscompiled.  It looks to me that both gcc 4.2 and 4.3 are
-> > > affected, any others?
-> >
-> > I just tested it here and gcc 3.3 is also affected so presumably
-> > everything in between is too.  Gcc 2.95 is not affected.  I don't
-> > have the intervening versions to test.
-> 
-> Fedora 7's 4.1.2-27 is also affected.
+(resending this one to the list).
 
--m32:
-2.7.2.3: /tmp/cc1EO0wg.s:14: Error: suffix or operands invalid for `push'
-2.95.3: OK
-3.0.4: broken
-3.1.1: broken
-3.2.3: broken
-3.3.5: broken
-3.4.6: broken
-4.0.3: broken
+Arjan van de Ven wrote:
+> On Tue, 20 Nov 2007 10:47:24 -0500
+> Mark Lord <lkml@rtr.ca> wrote:
+..
+>> After reading some of the replies, I installed it on my
+>> malfunctioning 64-bit system, but discovered it does not perform
+>> nearly as well as the kernel solution in the 32-bit system does.
+>
+> can you send me the output you get from running irqbalance with the
+> --debug option? That'll show me what decisions it made and why
+..
 
--m32 and -m64:
-gcc Red Hat 4.1.2-33: broken
-4.2.2 20070909 (prerelease): broken
+The next time I'm using that system for large I/O I will try and do so.
+But the shortcomings seem rather obvious already (more below).
 
--- 
-Do what you love because life is too short for anything else.
+>> Much of this could be due to a slow response curve in the userspace
+>> balancer (?), but I have not yet examined it for such bugs.
+>> Hopefully it also is clever enough to mlock() itself, and to run at a
+>> low RT priority ? 
+>
+> there's no need for either of those two.
+..
+
+But there is!  If it is not in-memory, then it needs IRQs to be paged-in
+before it can redistribute any IRQs.  And when the situation is bad,
+the page-in device is one that can be suffering from poor response.
+Which just makes the system stutter even more.
+
+>> It really does need to respond *quickly* to changes in IRQ load,
+>> as otherwise I see dropouts on sound playback (let along video..) and
+>> the like.
+>
+> the problem is, you cannot respond quickly like that without
+> sacrificing huge heaps of performance, especially on networking.
+..
+
+You are more expert on that aspect than I am.
+But surely networking can be taken into account when
+distributing other IRQs dynamically ?
+
+>> The vast majority of Linux machines are "single package", and this
+>> software appears to be designed more for multi package, 
+>
+> it's not. It just right now makes the assumption that on single package
+> it can do a good enough job with a static balancing.
+> Maybe you've found a case that proves that assumption wrong.
+..
+
+I think perhaps the existing algorithm makes the assumptions of
+a static configuration of IRQ generating devices, and an unchanging
+IRQ average frequency among them.
+
+Neither assumption is valid in a hotplug environment, and the second
+assumption is certainly not true on most of my machines.
+
+The lone 64-bit desktop configuration I have here is the only one without
+in-kernel IRQ distribution, and it has the fastest (2.5GHz) clock speed,
+the largest number (4) of CPU cores, and the most memory (4GB)
+of any of the machines here.
+
+And yet it really felt "jerky" in use when copying data around last night,
+even after installing/running the userspace irqbalance daemon.
+
+I eventually just moved the work over to a slower machine with a 32-bit
+kernel (notebook, 2.1GHz, two cores, 3GB), and things finished more rapidly
+and with no noticeable mal effects on the GUI at the time.
+
+The workload in all cases here was plugging in 2GB USB sticks,
+and copying a 2GB image to them, and the unplugging/replugging them
+and running md5sum to verify correct data transfers.
+
+I had a lot of them (14) to do, and so generally two or three sticks
+were plugged in and in use at any given time.
+
+A last note on the quad-core, is that irqbalance *never* used
+more than two cores.  Dunno why not.
+
+Cheers
+
 
