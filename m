@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbXKTA5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbXKTA5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbXKTA5W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 19:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXKTA5L
+	id S1756541AbXKTA5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 19:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXKTA5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 19:57:11 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:23639 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbXKTA5I (ORCPT
+	Mon, 19 Nov 2007 19:57:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54711
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752515AbXKTA5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 19:57:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jwwrbUAsY6LE14v6mnWoD+yj8xkTWJBF2j2YbbXBVaAJQEEJoYOxo9vHq9/bzW+tSRicxdXZgMpj60H81ee3tXD0XQeI77vvXZvevaVeXZ0KK+xFyhFKVOPt6NqnT+z0qy0d1OjEpDKK4iOBAjJAbg0z627yAIbfTDYhYD4tiXU=
-Message-ID: <474230DC.8020308@gmail.com>
-Date: Tue, 20 Nov 2007 09:57:00 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2/2] sata_nv: fix ATAPI issues with memory over 4GB (v3)
-References: <473A7677.6080007@shaw.ca> <473BA332.9030406@gmail.com> <473BC5DF.1040302@shaw.ca>
-In-Reply-To: <473BC5DF.1040302@shaw.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+	Mon, 19 Nov 2007 19:57:09 -0500
+Date: Mon, 19 Nov 2007 16:57:08 -0800 (PST)
+Message-Id: <20071119.165708.37213607.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk
+Subject: Re: SCSI breakage on non-cache coherent architectures
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1195520101.6970.28.camel@pasglop>
+References: <1195518864.6970.23.camel@pasglop>
+	<20071119.164611.64664648.davem@davemloft.net>
+	<1195520101.6970.28.camel@pasglop>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Tejun Heo wrote:
->> Robert Hancock wrote:
->>> This fixes some problems with ATAPI devices on nForce4 controllers in
->>> ADMA mode
->>> on systems with memory located above 4GB. We need to delay setting
->>> the 64-bit
->>> DMA mask until the PRD table and padding buffer are allocated so that
->>> they don't
->>> get allocated above 4GB and break legacy mode (which is needed for ATAPI
->>> devices).
->>>
->>> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
->>
->> applied to #tj-upstream-fixes.
->>
-> 
-> I have a report that these patches crashed but the previous patch worked:
-> 
-> https://bugzilla.redhat.com/show_bug.cgi?id=351451
-> 
-> So there may still be a problem here.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 20 Nov 2007 11:55:01 +1100
 
-Any progress?
+> BTW. What is the status nowadays with skb's ?
 
--- 
-tejun
+Good question.
+
+Some drivers are problematic (or were) because they put
+DMA descriptor chaining information at the head of the
+buffer, but those have been fixed either to use alternate
+descriptor ring facilities or make the proper DMA sync
+calls.
