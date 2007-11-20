@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbXKTRPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761226AbXKTRRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761638AbXKTRPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 12:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758588AbXKTRO6
+	id S1761226AbXKTRRr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 12:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbXKTRRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 12:14:58 -0500
-Received: from the.earth.li ([193.201.200.66]:42147 "EHLO the.earth.li"
+	Tue, 20 Nov 2007 12:17:40 -0500
+Received: from mail0.scram.de ([78.47.204.202]:43355 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754496AbXKTRO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 12:14:57 -0500
-Date: Tue, 20 Nov 2007 09:14:55 -0800
-From: Jonathan McDowell <noodles@earth.li>
-To: James Smart <James.Smart@Emulex.Com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, Matt_Domsch@dell.com
-Subject: Re: [PATCH] Unify sysfs filenames for firmware version
-Message-ID: <20071120171454.GH31112@earth.li>
-References: <20071120133824.GD31112@earth.li> <47430CCE.50701@emulex.com>
+	id S1755534AbXKTRRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 12:17:36 -0500
+X-Spam-Score: -4.067
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.3 AWL AWL: From: address is in the auto white-list
+Message-ID: <474316A4.4010807@scram.de>
+Date: Tue, 20 Nov 2007 18:17:24 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47430CCE.50701@emulex.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linuxppc-embedded@ozlabs.org
+CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+       paulus@samba.org
+Subject: [PATCH try2] powerpc: Add support for PORTA and PORTB odr registers
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 11:35:26AM -0500, James Smart wrote:
-> The hearburn I have with these patches is that you are changing
-> driver-specific attributes, not common ones as enforced/requested by a
-> subsystem. As such, you are breaking a management interface for
-> existing tools/scripts.
+PORTA and PORTB have odr registers, as well. However, the PORTB odr
+register is only 16bit.
 
-Yes, that's true. Though at present we have the heartburn that anyone
-wanting to write a script to pull out firmware revisions has to know
-exactly where every driver stores this information.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-> There's been a long-standing request to create common device
-> attributes, such as fw_version, but I don't think they ever made it
-> into the kernel. Not only would the names be consistent, but the
-> location would be consistent as well.
-> 
-> I'd rather you took on that work, than proceed with these patches.
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index d5a0dcf..c0d00c2 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -411,7 +411,7 @@ EXPORT_SYMBOL(cpm_dpram_phys);
+ #endif /* !CONFIG_PPC_CPM_NEW_BINDING */
 
-Do you have a pointer to previous discussion about this? A central
-device attribute does make more sense. It'd be nice to have uniform
-access to details like the driver version as well.
- 
-> Jonathan McDowell wrote:
-> >Looking around sysfs in an attempt to pull out SCSI card firmware
-> >versions I found 5 different filenames used to store the information.
-> >Only one, fw_version, was used more than once. The patch below changes
-> >the other drivers to use this filename too.
-> >
-> >I suspect the same applies to other subsystem drivers as well. I'll look
-> >at them assuming this patch is well received.
+ struct cpm_ioport16 {
+-	__be16 dir, par, sor, dat, intr;
++	__be16 dir, par, odr_sor, dat, intr;
+ 	__be16 res[3];
+ };
 
-J.
+@@ -441,6 +441,13 @@ static void cpm1_set_pin32(int port, int pin, int flags)
+ 	else
+ 		clrbits32(&iop->par, pin);
+
++	if (port == CPM_PORTB) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++		else
++			clrbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++	}
++
+ 	if (port == CPM_PORTE) {
+ 		if (flags & CPM_PIN_SECONDARY)
+ 			setbits32(&iop->sor, pin);
+@@ -474,11 +481,17 @@ static void cpm1_set_pin16(int port, int pin, int flags)
+ 	else
+ 		clrbits16(&iop->par, pin);
+
++	if (port == CPM_PORTA) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&iop->odr_sor, pin);
++		else
++			clrbits16(&iop->odr_sor, pin);
++	}
+ 	if (port == CPM_PORTC) {
+ 		if (flags & CPM_PIN_SECONDARY)
+-			setbits16(&iop->sor, pin);
++			setbits16(&iop->odr_sor, pin);
+ 		else
+-			clrbits16(&iop->sor, pin);
++			clrbits16(&iop->odr_sor, pin);
+ 	}
+ }
 
 -- 
-You have a tendency to feel you are superior to most computers.
-This .sig brought to you by the letter U and the number 25
-Product of the Republic of HuggieTag
+1.5.3.4
+
+
