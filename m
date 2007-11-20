@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbXKTGRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759035AbXKTGR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758981AbXKTGRK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbXKTGQz
+	id S1759035AbXKTGR0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759237AbXKTGRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:16:55 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:53046 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbXKTGQy (ORCPT
+	Tue, 20 Nov 2007 01:17:12 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36190
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759110AbXKTGRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:16:54 -0500
-Date: Tue, 20 Nov 2007 01:16:45 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Bastian Blank <bastian@waldi.eu.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       jun.nakajima@intel.com
-Subject: Re: [PATCH 7/24] consolidate msr.h
-In-Reply-To: <20071120055113.GC20436@elte.hu>
-Message-ID: <Pine.LNX.4.58.0711200114580.4062@gandalf.stny.rr.com>
-References: <11946337851964-git-send-email-gcosta@redhat.com>
- <11946337933104-git-send-email-gcosta@redhat.com>
- <11946337991750-git-send-email-gcosta@redhat.com>
- <11946338053158-git-send-email-gcosta@redhat.com>
- <11946338103068-git-send-email-gcosta@redhat.com> <1194633815833-git-send-email-gcosta@redhat.com>
- <11946338212915-git-send-email-gcosta@redhat.com>
- <11946338263902-git-send-email-gcosta@redhat.com> <20071119222151.GA11178@wavehammer.waldi.eu.org>
- <Pine.LNX.4.58.0711191734270.32296@gandalf.stny.rr.com> <20071120055113.GC20436@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 Nov 2007 01:17:11 -0500
+Date: Mon, 19 Nov 2007 22:17:10 -0800 (PST)
+Message-Id: <20071119.221710.241875586.davem@davemloft.net>
+To: xiyou.wangcong@gmail.com
+Cc: hpa@zytor.com, goodmenkernel@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Is there any word about this bug in gcc ?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071120053904.GG2472@hacking>
+References: <20071120041600.GC2472@hacking>
+	<47426C54.9020009@zytor.com>
+	<20071120053904.GG2472@hacking>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: WANG Cong <xiyou.wangcong@gmail.com>
+Date: Tue, 20 Nov 2007 13:39:05 +0800
 
-On Tue, 20 Nov 2007, Ingo Molnar wrote:
->
-> i dont think there's ever any true need (and good cause) to force
-> integer type casts like that at the callee site.
+> And you mean abs() is not in glibc, then where is it? Built in gcc?
+> And what's more, why not put it in glibc?
 
-Unless you mean we should do something like this:
-
-static inline void __wrmsrl(unsigned int msr, unsigned long long val);
-#define wrmsr(msr, val) __wrmsrl(msr, (unsigned long long)var)
-
--- Steve
-
-
+Because the compiler knows things about the inputs and can
+thus apply optimizations that a static implementation in glibc
+that has to handle all forms of inputs cannot.
