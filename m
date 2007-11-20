@@ -1,96 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbXKTMYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbXKTM0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbXKTMYw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 07:24:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbXKTMYo
+	id S1759470AbXKTM0x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 07:26:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbXKTM0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 07:24:44 -0500
-Received: from mail.vapor.com ([85.114.133.49]:33344 "EHLO mail.vapor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756854AbXKTMYn (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 07:24:43 -0500
-X-Greylist: delayed 1145 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 07:24:43 EST
-Date: Tue, 20 Nov 2007 13:05:33 +0100
-From: iank@bredband.net
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: pomac@vapor.com, Linux-kernel@vger.kernel.org
-Subject: Re: [BUG?] OOM with large cache....(x86_64, 2.6.24-rc3-git1, nohz)
-Message-ID: <20071120120533.GA25851@pomac.netswarm.net>
-References: <1195520355.8601.14.camel@localhost> <200711201513.36711.nickpiggin@yahoo.com.au> <1195549767.8601.22.camel@localhost> <200711202147.32354.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711202147.32354.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 20 Nov 2007 07:26:45 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:49720 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbXKTM0o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 07:26:44 -0500
+Subject: Re: MMC sub-system: SDIO block-mode with increment address issue
+From: Dean Jenkins <djenkins@mvista.co.uk>
+Reply-To: djenkins@mvista.co.uk
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071120115841.25765bd3@poseidon.drzeus.cx>
+References: <1195472694.18869.57.camel@libdev3.libertesoft.co.uk>
+	 <20071120115841.25765bd3@poseidon.drzeus.cx>
+Content-Type: text/plain
+Organization: MontaVista
+Date: Tue, 20 Nov 2007 12:26:11 +0000
+Message-Id: <1195561571.13874.4.camel@libdev3.libertesoft.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+D82d/kNVm6JKP8gMuViVxeFUMzNiOkS+3ITs
+ lX4qd1FP+S98yccf+kxXdeLdbawhQycNCEBldF3XBHtPpQBO3X
+ TInqRVxM5uSbby6nVEjiA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 09:47:32PM +1100, Nick Piggin wrote:
-> On Tuesday 20 November 2007 20:09, Ian Kumlien wrote:
-> > On tis, 2007-11-20 at 15:13 +1100, Nick Piggin wrote:
+Hi Pierre,
+
+IMHO the issue is there is no upper bound limit to the valid address
+range in sdio_io_rw_ext_helper() in sdio_io.c.
+
+I call sdio_memcpy_toio() as it enables the incrementing address flag in
+the CMD53 command but if I try passing too much data then the actual
+address of the subsequent CMD53 commands are erroneously incremented out
+of range.
+
+The difficulty is the SDIO card can transfer 8 blocks in a single CMD53
+command using the incrementing address flag. However
+sdio_io_rw_ext_helper() will not prevent the attempt at sending 9 blocks
+transferred as 2 CMD53 commands of 8 blocks + 1 block and the last block
+goes to the wrong address. This causes a big system crash. I suspect the
+SDIO card internally resets and the MMC sub-system can't handle the
+error condition.
+
+This means the card driver needs to know that it cannot use
+sdio_memcpy_toio() to send any size of data but must ensure it does not
+exceed 8 blocks before calling sdio_memcpy_toio(). IMHO this makes the
+card driver undesirably tightly coupled with the core driver. OK. I'll
+workaround it using multiple calls to sdio_memcpy_toio().
+
+BTW. Is the API for the exported SDIO core functions documented
+anywhere ?
+
+Thanks,
+
+Regards,
+Dean.
+
+
+On Tue, 2007-11-20 at 11:58 +0100, Pierre Ossman wrote: 
+> On Mon, 19 Nov 2007 11:44:54 +0000
+> Dean Jenkins <djenkins@...> wrote:
 > 
-> > > It's also used up all your 2.5GB of swap. The output of your `free` shows
-> > > a fair bit of disk cache there, but it also shows a lot of swap free,
-> > > which isn't the case at oom-time.
-> >
-> > Yes, as i said those was from several hours later...
+> > This E-mail is for the attention of Pierre Ossman (MMC sub-system
+> > maintainer)
 > 
-> OK, missed that.
-
-It all happened at home while i was at work and the machine there went
-down due to hardware failure, so i have no logs at all.
-(It has a maxtor disk that sometimes just hangs... )
-
-> > > Unfortunately, we don't show NR_ANON_PAGES in these stats, but at a
-> > > guess, I'd say that the file cache is mostly shrunk and you still don't
-> > > have enough memory. trackerd probably has a memory leak in it, or else is
-> > > just trying to allocate more memory than you have. Is this a regression?
-> >
-> > I have had it happen twice before, without tracker running...
+> A cc helps if you want my attention. ;)
 > 
-> Does the machine recover afterward, or is the memory freed up after
-> the OOM kill? How about if you kill X and do a sysrq+E then sysrq+I
-> (to kill all tasks)?
-
-Yes it recovers, it only happens during high I/O with rtorrent.
-In this case, downloading a 8gb image at ~6mb/s.
-
-> If the memory still isn't freed after that, then we could have a
-> kernel memory leak.
-
-I don't think it's a kernel memoryleak, my suspicion is that the kernel,
-for some reason, doesn't want to return the cache when it needs more
-memory. Perhaps due to the read and write patterns that rtorrent
-creates.
-
-> > It didn't quite get to the oom stage, it just failed alot of allocations
-> > while having 1.5 or more memory locked in cache.
-> >
-> > http://marc.info/?l=linux-kernel&m=118895576924867&w=2
+> > 
+> > Hi Pierre,
+> > 
+> > I've being trying to get SDIO block-mode with incrementing address to
+> > work on an OMAP2430 based reference board with an SDIO card.
+> > 
+> > Looking at the latest code ( as of 19/11/2007 ) on the mmc-git tree (I'm
+> > not a git expert so I'm not sure how to reference the codebase). I have
+> > a comment to make concerning the following code snippet...
 > 
-> OK, yes this is a different case, and it is very far off the OOM
-> killing stage. Atomic allocations can fail quite easily, but
-> kswapd will have started up and will start freeing memory.
+> git log or git show will give you your current top commit id.
+> > 
+> > I think the lines
+> > 
+> > 227                         if (incr_addr)
+> > 228                                 addr += size;
+> > 
+> > are incorrect and should be removed. I think the SDIO increment address
+> > parameter relates to the internal operation of the SDIO card and NOT to
+> > the external register address of the FIFO. In other words, I think with
+> > incrementing address enabled in block mode, the register address of the
+> > FIFO in the SDIO function register space will be erroneously changed on
+> > the next block write and will fail (it seems to fail on my card). It
+> > seems strange to change the register address ?
+> > 
+> 
+> I don't follow. The SDIO specification very clearly defines the behaviour of incrementing address. The referenced code is very much needed to keep that behaviour when we need to split up the transfer.
+> 
+> I assume what you want is multiple transactions with incrementing address, but each transaction restarting at the same base address. In that case you'll have to call the sdio register functions multiple times.
+> 
+> Rgds
+-- 
+Dean Jenkins
+Embedded Software Engineer
+MontaVista Software (UK)
+Professional Services Division
 
-Ok, this ONLY happens with rtorrent and large images...
-I'll try to reproduce it locally as soon as my schedule permits.
-
-> Actually there are some patches gone into 2.6.24 that have fixed
-> some corner cases with the network stack making order-1 allocations
-> when it should be order-0. That might help your atomic allocation
-> failures, but they aren't really a bug anyway (unless networking
-> fails to recover).
-
-Yeah, i remember reading about that, thats why i upgraded =)
-
-> Thanks for reporting all this...
-
-I just hope that something worthwhile comes out of it =)
-
-PS. Perhaps i should have mentioned that all writes goes to a RAID5
-array. but i doubt it matters..
-DS.
-
-Wow, i really need caffine =)
-
-I/O, I/O, I/O off to work I go
