@@ -1,114 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXKTBBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbXKTBFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXKTBBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXKTBBF
+	id S1755561AbXKTBFk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:05:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752405AbXKTBFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:01:05 -0500
-Received: from mga11.intel.com ([192.55.52.93]:38872 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbXKTBBD convert rfc822-to-8bit (ORCPT
+	Mon, 19 Nov 2007 20:05:33 -0500
+Received: from smtpauth01.prod.mesa1.secureserver.net ([64.202.165.181]:33566
+	"HELO smtpauth01.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752327AbXKTBFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 20:01:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,438,1188802800"; 
-   d="scan'208";a="210907250"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 19 Nov 2007 20:05:32 -0500
+Message-ID: <474232D9.20407@seclark.us>
+Date: Mon, 19 Nov 2007 20:05:29 -0500
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.23.8, ondemand scaling governor: "BUG: soft lockup detected on CPU#0!"
-Date: Mon, 19 Nov 2007 17:01:11 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE251A40@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <474227F9.8050909@t-online.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.23.8, ondemand scaling governor: "BUG: soft lockup detected on CPU#0!"
-Thread-Index: AcgrC1DSnRFMcEbnTBaXEUfY3PCn/wABWHHg
-References: <474227F9.8050909@t-online.de>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Harald Dunkel" <harald.dunkel@t-online.de>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 20 Nov 2007 01:01:02.0967 (UTC) FILETIME=[D269A870:01C82B10]
+To: Dave Jones <davej@redhat.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Power Saving
+References: <47422D3B.8080704@seclark.us> <20071120005443.GB9243@redhat.com>
+In-Reply-To: <20071120005443.GB9243@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Dave Jones wrote:
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org 
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Harald Dunkel
->Sent: Monday, November 19, 2007 4:19 PM
->To: Linux Kernel list
->Subject: 2.6.23.8, ondemand scaling governor: "BUG: soft 
->lockup detected on CPU#0!"
+>On Mon, Nov 19, 2007 at 07:41:31PM -0500, Stephen Clark wrote:
+> > Hello List,
+> > 
+> > I am trying to get throttling to work on the following processor
 >
->Hi folks,
+>I think by throttling, you actually mean changing frequency/voltage ?
+>(throttling is something else, where the CPU skips every n cycles,
+> which doesn't actually save any power)
 >
->using the ondemand scaling governour I see some error messages
->in kern.log, e.g.:
+> > with linux 2.6.17-1.2142_FC4 with no luck.
 >
->Nov 20 01:00:46 bugs kernel: BUG: soft lockup detected on CPU#0!
->Nov 20 01:00:46 bugs kernel:  [<c013cf8d>] softlockup_tick+0x91/0xa6
->Nov 20 01:00:46 bugs kernel:  [<c012269c>] 
->update_process_times+0x3a/0x5d
->Nov 20 01:00:46 bugs kernel:  [<c0131219>] tick_sched_timer+0x115/0x164
->Nov 20 01:00:46 bugs kernel:  [<c012d311>] 
->hrtimer_interrupt+0x102/0x191
->Nov 20 01:00:46 bugs kernel:  [<c0106cd6>] timer_interrupt+0x2e/0x34
->Nov 20 01:00:46 bugs kernel:  [<c013d1f6>] handle_IRQ_event+0x1a/0x3f
->Nov 20 01:00:46 bugs kernel:  [<c013e4e1>] handle_level_irq+0xa8/0xb7
->Nov 20 01:00:46 bugs kernel:  [<c0106367>] do_IRQ+0x53/0x6c
->Nov 20 01:00:46 bugs kernel:  [<c0104853>] common_interrupt+0x23/0x28
->Nov 20 01:00:46 bugs kernel:  [<c011007b>] 
->smp_apic_timer_interrupt+0x1a/0x70
->Nov 20 01:00:46 bugs kernel:  [<c0102a36>] default_idle+0x27/0x39
->Nov 20 01:00:46 bugs kernel:  [<c010234c>] cpu_idle+0x46/0x68
->Nov 20 01:00:46 bugs kernel:  [<c032e9e8>] start_kernel+0x24d/0x252
->Nov 20 01:00:46 bugs kernel:  [<c032e317>] unknown_bootoption+0x0/0x196
->Nov 20 01:00:46 bugs kernel:  =======================
+>wow. that's a prehistoric kernel.
 >
->This seems to happen when the load drops below the threshold and
->the ondemand governor changes the CPU from 2GHz to 400MHz. If I use
->the "performance" governor instead, then there is no such message.
->If I set it back to "ondemand", then the message is printed
->immediately.
+> > AMD Athlon(tm) XP 1700+
 >
-># uname -a
->Linux bugs 2.6.23.8 #1 PREEMPT Sun Nov 18 09:14:13 CET 2007 
->i686 GNU/Linux
-># cat /proc/cpuinfo
->processor       : 0
->vendor_id       : GenuineIntel
->cpu family      : 6
->model           : 13
->model name      : Intel(R) Pentium(R) M processor 2.00GHz
->stepping        : 8
->cpu MHz         : 400.000
->cache size      : 2048 KB
->fdiv_bug        : no
->hlt_bug         : no
->f00f_bug        : no
->coma_bug        : no
->fpu             : yes
->fpu_exception   : yes
->cpuid level     : 2
->wp              : yes
->flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr 
->pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe 
->nx bts est tm2
->bogomips        : 798.34
->clflush size    : 64
+>you lose.  Only the mobile athlons supported scaling their speed.
+>And even then, only if the BIOS supported it with the correct tables.
+>(Typically this means, "only laptops").
 >
+>	Dave
 >
->Please mail if I can help to track this down.
+>  
 >
->
+well what about the info from /proc/
 
-Can you try switching to powersave governor (which should always run CPU
-at 400MHz) and see whether you see similar error?
+cat /proc/acpi/processor/CPU0/info
+processor id:            0
+acpi id:                 0
+bus mastering control:   no
+power management:        yes
+throttling control:      yes
+limit interface:         yes
 
-Thanks,
-Venki
+and:
+cat /proc/acpi/processor/CPU0/throttling
+state count:             2
+active state:            T0
+states:
+   *T0:                  00%
+    T1:                  50%
+
+and:
+[root@joker ~]# cat /proc/acpi/processor/CPU0/power
+active state:            C2
+max_cstate:              C8
+bus master activity:     d18324c9
+states:
+    C1:                  type[C1] promotion[C2] demotion[--] 
+latency[000] usage[01340140]
+   *C2:                  type[C2] promotion[--] demotion[C1] 
+latency[090] usage[02980043]
+
+????
+Steve
+
+-- 
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
