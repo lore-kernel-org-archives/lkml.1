@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXKTCyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbXKTC6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbXKTCyV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXKTCyM
+	id S1756597AbXKTC6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXKTC6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 21:54:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43309 "EHLO hera.kernel.org"
+	Mon, 19 Nov 2007 21:58:25 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:2324 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbXKTCyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 21:54:11 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 10/59] drivers/acpi: Add missing "space"
-Date: Mon, 19 Nov 2007 21:53:53 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       linux-acpi@vger.kernel.org
-References: <1195523331-15303-1-git-send-email-joe@perches.com> <1195523331-15303-10-git-send-email-joe@perches.com> <1195523331-15303-11-git-send-email-joe@perches.com>
-In-Reply-To: <1195523331-15303-11-git-send-email-joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1750963AbXKTC6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 21:58:24 -0500
+Subject: Re: [PATCH 46/59] drivers/usb: Add missing "space"
+From: Joe Perches <joe@perches.com>
+To: Thomas Dahlmann <thomas.dahlmann@amd.com>,
+       info-linux-owner <info-linux-owner@ldcmail.amd.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <mailman.218.1195523679.15309.info-linux@ldcmail.amd.com>
+References: <mailman.218.1195523679.15309.info-linux@ldcmail.amd.com>
+Content-Type: text/plain
+Date: Mon, 19 Nov 2007 18:58:24 -0800
+Message-Id: <1195527504.4675.69.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711192153.53720.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied.
-
-thanks,
--len
-
-On Monday 19 November 2007 20:48, Joe Perches wrote:
+On Mon, 2007-11-19 at 18:54 -0700, info-linux-owner@ldcmail.amd.com
+wrote:
+> You are not allowed to post to this mailing list, and your message has
+> been automatically rejected.  If you think that your messages are
+> being rejected in error, contact the mailing list owner at
+> info-linux-owner@ldcmail.amd.com.
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/acpi/ec.c             |    4 ++--
->  drivers/acpi/processor_core.c |    2 +-
->  drivers/acpi/tables/tbutils.c |    2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-> index 06b78e5..cb09e5e 100644
-> --- a/drivers/acpi/ec.c
-> +++ b/drivers/acpi/ec.c
-> @@ -175,12 +175,12 @@ static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int force_poll)
->  		if (acpi_ec_check_status(ec, event)) {
->  			if (event == ACPI_EC_EVENT_OBF_1) {
->  				/* miss OBF = 1 GPE, don't expect it anymore */
-> -				printk(KERN_INFO PREFIX "missing OBF_1 confirmation,"
-> +				printk(KERN_INFO PREFIX "missing OBF_1 confirmation, "
->  					"switching to degraded mode.\n");
->  				set_bit(EC_FLAGS_ONLY_IBF_GPE, &ec->flags);
->  			} else {
->  				/* missing GPEs, switch back to poll mode */
-> -				printk(KERN_INFO PREFIX "missing IBF_1 confirmations,"
-> +				printk(KERN_INFO PREFIX "missing IBF_1 confirmations, "
->  					"switch off interrupt mode.\n");
->  				clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
->  			}
-> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-> index 235a51e..44156e7 100644
-> --- a/drivers/acpi/processor_core.c
-> +++ b/drivers/acpi/processor_core.c
-> @@ -647,7 +647,7 @@ static int __cpuinit acpi_processor_start(struct acpi_device *device)
->  	 */
->  	if (processor_device_array[pr->id] != NULL &&
->  	    processor_device_array[pr->id] != device) {
-> -		printk(KERN_WARNING "BIOS reported wrong ACPI id"
-> +		printk(KERN_WARNING "BIOS reported wrong ACPI id "
->  			"for the processor\n");
->  		return -ENODEV;
->  	}
-> diff --git a/drivers/acpi/tables/tbutils.c b/drivers/acpi/tables/tbutils.c
-> index 5f1d85f..010f196 100644
-> --- a/drivers/acpi/tables/tbutils.c
-> +++ b/drivers/acpi/tables/tbutils.c
-> @@ -449,7 +449,7 @@ acpi_tb_parse_root_table(acpi_physical_address rsdp_address, u8 flags)
->  			/* XSDT has NULL entry, RSDT is used */
->  			address = rsdt_address;
->  			table_entry_size = sizeof(u32);
-> -			ACPI_WARNING((AE_INFO, "BIOS XSDT has NULL entry,"
-> +			ACPI_WARNING((AE_INFO, "BIOS XSDT has NULL entry, "
->  					"using RSDT"));
->  		}
->  	}
+> > -------- Forwarded Message --------
+> > From: Joe Perches <joe@perches.com>
+> > To: linux-kernel@vger.kernel.org
+> > Cc: David Brownell <dbrownell@users.sourceforge.net>, Greg
+> > Kroah-Hartman <gregkh@suse.de>, Thomas Dahlmann
+> > <thomas.dahlmann@amd.com>, info-linux@geode.amd.com,
+> > linux-usb-devel@lists.sourceforge.net,
+> > linux-usb-users@lists.sourceforge.net
+> > Subject: [PATCH 46/59] drivers/usb: Add missing "space"
+> > Date: Mon, 19 Nov 2007 17:53:33 -0800
+
+This list info-linux@geode.amd.com should be removed
+from MAINTAINERS if it continues to reject not moderate
+emails with patches to the list without subscribing.
+
+
