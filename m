@@ -1,85 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761205AbXKTPxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760688AbXKTP5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761205AbXKTPxE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:53:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbXKTPwv
+	id S1760688AbXKTP5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:57:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbXKTP5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:52:51 -0500
-Received: from rtr.ca ([76.10.145.34]:1571 "EHLO mail.rtr.ca"
+	Tue, 20 Nov 2007 10:57:42 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34175 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759358AbXKTPwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:52:50 -0500
-Message-ID: <474302D0.9000509@rtr.ca>
-Date: Tue, 20 Nov 2007 10:52:48 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1756951AbXKTP5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:57:41 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Subject: Re: [patch][v2] x86, ptrace: support for branch trace store(BTS)
+Date: Tue, 20 Nov 2007 16:57:37 +0100
+User-Agent: KMail/1.9.6
+Cc: "dean gaudet" <dean@arctic.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org
+References: <029E5BE7F699594398CA44E3DDF55444F3AEA7@swsmsx413.ger.corp.intel.com> <alpine.DEB.0.99999.0711200729570.765@twinlark.arctic.org> <029E5BE7F699594398CA44E3DDF55444F71289@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <029E5BE7F699594398CA44E3DDF55444F71289@swsmsx413.ger.corp.intel.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
-References: <47425EA5.7000607@rtr.ca>	<200711201517.16171.nickpiggin@yahoo.com.au>	<20071119213727.16d5917b@laptopd505.fenrus.org>	<200711201837.39664.nickpiggin@yahoo.com.au> <20071120064747.2a8036cd@laptopd505.fenrus.org> <4743018C.1000307@rtr.ca>
-In-Reply-To: <4743018C.1000307@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200711201657.37508.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Arjan van de Ven wrote:
->> ..
->> I listed a few;
->> 1) it's policy 2) the memory is only needed for a short time (20 
->> seconds or so) on
->> single-socket machines
->> 3) it makes decisions on "subjective" information such as interrupt
->> device classes that the kernel currently just doesn't have (it could
->> grow that obviously), and is clearly policy information.
-> ..
-> 
-> It's much more than just "policy".
-> Distributing IRQs across available cores is *essential* functionality,
-> not an optional "extra" as this would have it be.
-> 
-> After reading some of the replies, I installed it on my malfunctioning 
-> 64-bit
-> system, but discovered it does not perform nearly as well as the kernel 
-> solution
-> in the 32-bit system does.
-> 
-> Responsiveness was jerky, and it took a long time to have any noticeable 
-> effect.
-> 
-> And in the end, it still just assigned IRQs to two of the four available 
-> cores.
-> Which still results in the task scheduler fighting against IRQs more 
-> than necessary.
-> 
-> Much of this could be due to a slow response curve in the userspace 
-> balancer (?),
-> but I have not yet examined it for such bugs.  Hopefully it also is 
-> clever enough
-> to mlock() itself, and to run at a low RT priority ?
-> It really does need to respond *quickly* to changes in IRQ load,
-> as otherwise I see dropouts on sound playback (let along video..) and 
-> the like.
-> 
-> The vast majority of Linux machines are "single package", and this software
-> appears to be designed more for multi package, and doesn't do a great 
-> job here
-> on the single package Intel cores I have (Core2duo, Core2quad).
-..
 
-All of which reminds me of perhaps *the* most important reason to keep
-core functionality like "IRQ distribution" *inside* the kernel:
+> >and it seems like this patch and perfmon2 are going to have to 
+> >live with 
+> >each other... since they both require the use of the DS save area...
+> 
+> Hmmm, this might require some synchronization between those two.
+> 
+> Do you know how (accesses to) MSR's are managed by the kernel?
 
-   It has to pass peer review on this mailing list.
+There is a simple MSR allocator in the nmi watchdog code. It is very
+simple though and was only intended for performance counters originally
+so you might need to enhance it first for complicated things.
 
-External utilities have no such accountability, and can generally just
-follow the whims of their maintainers at the expense of kernel performance.
-
-Not that this may be the case (or not) here, but..
-
-Cheers
+-Andi
