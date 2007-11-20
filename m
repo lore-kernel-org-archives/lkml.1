@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbXKTSbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763137AbXKTScM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762983AbXKTSbw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760364AbXKTS0v
+	id S1763137AbXKTScM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:32:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760240AbXKTS0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:26:51 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51878 "EHLO
+	Tue, 20 Nov 2007 13:26:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51906 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757497AbXKTS0s (ORCPT
+	with ESMTP id S1761630AbXKTS0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:26:48 -0500
-Date: Tue, 20 Nov 2007 10:24:25 -0800
+	Tue, 20 Nov 2007 13:26:54 -0500
+Date: Tue, 20 Nov 2007 10:24:28 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,110 +21,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 15/29] Fix divide-by-zero in the 2.6.23 scheduler code
-Message-ID: <20071120182425.GQ28611@kroah.com>
+       Sebastian Siewior <sebastian@breakpoint.cc>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 16/29] geode: Fix not inplace encryption
+Message-ID: <20071120182428.GR28611@kroah.com>
 References: <20071120181733.702234406@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-divide-by-zero-in-the-2.6.23-scheduler-code.patch"
+Content-Disposition: inline; filename="geode-fix-not-inplace-encryption.patch"
 In-Reply-To: <20071120182248.GA28611@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Chuck Ebbert <cebbert@redhat.com>
+From: Sebastian Siewior <sebastian@breakpoint.cc>
 
-No patch in mainline as this logic has been removed from 2.6.24 so it is
-not necessary.
+patch 2e21630ddc3fb717dc645356b75771c6a52dc627 in mainline.
 
+Currently the Geode AES module fails to encrypt or decrypt if
+the coherent bits are not set what is currently the case if the
+encryption does not occur inplace. However, the encryption works
+on my Geode machine _only_ if the coherent bits are always set.
 
-https://bugzilla.redhat.com/show_bug.cgi?id=340161
-
-The problem code has been removed in 2.6.24. The below patch disables
-SCHED_FEAT_PRECISE_CPU_LOAD which causes the offending code to be skipped
-but does not prevent the user from enabling it.
-
-The divide-by-zero is here in kernel/sched.c:
-
-static void update_cpu_load(struct rq *this_rq)
-{
-	u64 fair_delta64, exec_delta64, idle_delta64, sample_interval64, tmp64;
-	unsigned long total_load = this_rq->ls.load.weight;
-	unsigned long this_load =  total_load;
-	struct load_stat *ls = &this_rq->ls;
-	int i, scale;
-
-	this_rq->nr_load_updates++;
-	if (unlikely(!(sysctl_sched_features & SCHED_FEAT_PRECISE_CPU_LOAD)))
-		goto do_avg;
-
-	/* Update delta_fair/delta_exec fields first */
-	update_curr_load(this_rq);
-
-	fair_delta64 = ls->delta_fair + 1;
-	ls->delta_fair = 0;
-
-	exec_delta64 = ls->delta_exec + 1;
-	ls->delta_exec = 0;
-
-	sample_interval64 = this_rq->clock - ls->load_update_last;
-	ls->load_update_last = this_rq->clock;
-
-	if ((s64)sample_interval64 < (s64)TICK_NSEC)
-		sample_interval64 = TICK_NSEC;
-
-	if (exec_delta64 > sample_interval64)
-		exec_delta64 = sample_interval64;
-
-	idle_delta64 = sample_interval64 - exec_delta64;
-
-======>	tmp64 = div64_64(SCHED_LOAD_SCALE * exec_delta64, fair_delta64);
-	tmp64 = div64_64(tmp64 * exec_delta64, sample_interval64);
-
-	this_load = (unsigned long)tmp64;
-
-do_avg:
-
-	/* Update our load: */
-	for (i = 0, scale = 1; i < CPU_LOAD_IDX_MAX; i++, scale += scale) {
-		unsigned long old_load, new_load;
-
-		/* scale is effectively 1 << i now, and >> i divides by scale */
-
-		old_load = this_rq->cpu_load[i];
-		new_load = this_load;
-
-		this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
-	}
-}
-
-For stable only; the code has been removed in 2.6.24.
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
+Acked-by: Jordan Crouse <jordan.crouse@amd.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sched_fair.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/crypto/geode-aes.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -93,7 +93,7 @@ unsigned int sysctl_sched_features __rea
- 		SCHED_FEAT_FAIR_SLEEPERS	*1 |
- 		SCHED_FEAT_SLEEPER_AVG		*0 |
- 		SCHED_FEAT_SLEEPER_LOAD_AVG	*1 |
--		SCHED_FEAT_PRECISE_CPU_LOAD	*1 |
-+		SCHED_FEAT_PRECISE_CPU_LOAD	*0 |
- 		SCHED_FEAT_START_DEBIT		*1 |
- 		SCHED_FEAT_SKIP_INITIAL		*0;
+--- a/drivers/crypto/geode-aes.c
++++ b/drivers/crypto/geode-aes.c
+@@ -110,8 +110,7 @@ geode_aes_crypt(struct geode_aes_op *op)
+ 	 * we don't need to worry
+ 	 */
  
+-	if (op->src == op->dst)
+-		flags |= (AES_CTRL_DCA | AES_CTRL_SCA);
++	flags |= (AES_CTRL_DCA | AES_CTRL_SCA);
+ 
+ 	if (op->dir == AES_DIR_ENCRYPT)
+ 		flags |= AES_CTRL_ENCRYPT;
 
 -- 
