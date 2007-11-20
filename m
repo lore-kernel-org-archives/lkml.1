@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbXKTBV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbXKTBWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbXKTBV5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbXKTBN7
+	id S1758347AbXKTBWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXKTBOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:59 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49858 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755624AbXKTBNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:14:00 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36881 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754755AbXKTBNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:38 -0500
-Message-Id: <20071120011337.864745925@sgi.com>
+Message-Id: <20071120011337.395678305@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:58 -0800
+Date: Mon, 19 Nov 2007 17:11:56 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -20,74 +21,69 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 26/45] cpu alloc: Chelsio statistics conversion
-Content-Disposition: inline; filename=0034-cpu-alloc-Chelsio-statistics-conversion.patch
+Subject: [rfc 24/45] cpu alloc: convert loopback statistics
+Content-Disposition: inline; filename=0032-cpu-alloc-convert-loopback-statistics.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- drivers/net/chelsio/sge.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/net/loopback.c |   14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/drivers/net/chelsio/sge.c
+Index: linux-2.6/drivers/net/loopback.c
 ===================================================================
---- linux-2.6.orig/drivers/net/chelsio/sge.c	2007-11-15 21:17:23.927654318 -0800
-+++ linux-2.6/drivers/net/chelsio/sge.c	2007-11-15 21:25:37.015154316 -0800
-@@ -805,7 +805,7 @@ void t1_sge_destroy(struct sge *sge)
- 	int i;
- 
- 	for_each_port(sge->adapter, i)
--		free_percpu(sge->port_stats[i]);
-+		CPU_FREE(sge->port_stats[i]);
- 
- 	kfree(sge->tx_sched);
- 	free_tx_resources(sge);
-@@ -984,7 +984,7 @@ void t1_sge_get_port_stats(const struct 
- 
- 	memset(ss, 0, sizeof(*ss));
- 	for_each_possible_cpu(cpu) {
--		struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[port], cpu);
-+		struct sge_port_stats *st = CPU_PTR(sge->port_stats[port], cpu);
- 
- 		ss->rx_packets += st->rx_packets;
- 		ss->rx_cso_good += st->rx_cso_good;
-@@ -1379,7 +1379,7 @@ static void sge_rx(struct sge *sge, stru
- 	}
- 	__skb_pull(skb, sizeof(*p));
- 
--	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
-+	st = THIS_CPU(sge->port_stats[p->iff]);
- 	st->rx_packets++;
- 
- 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
-@@ -1848,7 +1848,7 @@ int t1_start_xmit(struct sk_buff *skb, s
+--- linux-2.6.orig/drivers/net/loopback.c	2007-11-18 14:38:23.621283530 -0800
++++ linux-2.6/drivers/net/loopback.c	2007-11-18 22:04:47.399082691 -0800
+@@ -134,7 +134,7 @@ static void emulate_large_send_offload(s
+  */
+ static int loopback_xmit(struct sk_buff *skb, struct net_device *dev)
  {
- 	struct adapter *adapter = dev->priv;
- 	struct sge *sge = adapter->sge;
--	struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[dev->if_port], smp_processor_id());
-+	struct sge_port_stats *st = THIS_CPU(sge->port_stats[dev->if_port]);
- 	struct cpl_tx_pkt *cpl;
- 	struct sk_buff *orig_skb = skb;
- 	int ret;
-@@ -2165,7 +2165,8 @@ struct sge * __devinit t1_sge_create(str
- 	sge->jumbo_fl = t1_is_T1B(adapter) ? 1 : 0;
+-	struct pcpu_lstats *pcpu_lstats, *lb_stats;
++	struct pcpu_lstats *pcpu_lstats;
  
- 	for_each_port(adapter, i) {
--		sge->port_stats[i] = alloc_percpu(struct sge_port_stats);
-+		sge->port_stats[i] = CPU_ALLOC(struct sge_port_stats,
-+					GFP_KERNEL | __GFP_ZERO);
- 		if (!sge->port_stats[i])
- 			goto nomem_port;
+ 	skb_orphan(skb);
+ 
+@@ -154,11 +154,9 @@ static int loopback_xmit(struct sk_buff 
+ #endif
+ 	dev->last_rx = jiffies;
+ 
+-	/* it's OK to use per_cpu_ptr() because BHs are off */
+ 	pcpu_lstats = netdev_priv(dev);
+-	lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
+-	lb_stats->bytes += skb->len;
+-	lb_stats->packets++;
++	__CPU_ADD(pcpu_lstats->bytes, skb->len);
++	__CPU_INC(pcpu_lstats->packets);
+ 
+ 	netif_rx(skb);
+ 
+@@ -177,7 +175,7 @@ static struct net_device_stats *get_stat
+ 	for_each_possible_cpu(i) {
+ 		const struct pcpu_lstats *lb_stats;
+ 
+-		lb_stats = per_cpu_ptr(pcpu_lstats, i);
++		lb_stats = CPU_PTR(pcpu_lstats, i);
+ 		bytes   += lb_stats->bytes;
+ 		packets += lb_stats->packets;
  	}
-@@ -2209,7 +2210,7 @@ struct sge * __devinit t1_sge_create(str
- 	return sge;
- nomem_port:
- 	while (i >= 0) {
--		free_percpu(sge->port_stats[i]);
-+		CPU_FREE(sge->port_stats[i]);
- 		--i;
- 	}
- 	kfree(sge);
+@@ -205,7 +203,7 @@ static int loopback_dev_init(struct net_
+ {
+ 	struct pcpu_lstats *lstats;
+ 
+-	lstats = alloc_percpu(struct pcpu_lstats);
++	lstats = CPU_ALLOC(struct pcpu_lstats, GFP_KERNEL | __GFP_ZERO);
+ 	if (!lstats)
+ 		return -ENOMEM;
+ 
+@@ -217,7 +215,7 @@ static void loopback_dev_free(struct net
+ {
+ 	struct pcpu_lstats *lstats = netdev_priv(dev);
+ 
+-	free_percpu(lstats);
++	CPU_FREE(lstats);
+ 	free_netdev(dev);
+ }
+ 
 
 -- 
