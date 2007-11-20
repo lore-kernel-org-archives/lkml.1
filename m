@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764162AbXKTVMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbXKTVPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764162AbXKTVMk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758395AbXKTVMb
+	id S1762691AbXKTVPL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXKTVO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:12:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47023 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755840AbXKTVMa (ORCPT
+	Tue, 20 Nov 2007 16:14:59 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:42349 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754201AbXKTVO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:12:30 -0500
-Date: Tue, 20 Nov 2007 13:03:15 -0800
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Javier Kohen <jkohen@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David <david@unsolicited.net>
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-Message-ID: <20071120210315.GC13160@kroah.com>
-References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <473F88B0.1030309@goop.org> <20071119232252.GC3528@suse.de> <47423B26.1090607@goop.org> <20071120060525.GF20436@elte.hu> <20071120170519.GB15954@kroah.com> <20071120203919.GB10008@elte.hu>
+	Tue, 20 Nov 2007 16:14:57 -0500
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Christoph Raisch <raisch@de.ibm.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       Roland Dreier <rolandd@cisco.com>,
+       Sean Hefty <mshefty@ichips.intel.com>, general@lists.openfabrics.org
+Subject: Re: [PATCH 19/59] drivers/infiniband: Add missing "space"
+X-Message-Flag: Warning: May contain useful information
+References: <1195523331-15303-1-git-send-email-joe@perches.com>
+	<1195523331-15303-2-git-send-email-joe@perches.com>
+	<1195523331-15303-3-git-send-email-joe@perches.com>
+	<1195523331-15303-4-git-send-email-joe@perches.com>
+	<1195523331-15303-5-git-send-email-joe@perches.com>
+	<1195523331-15303-6-git-send-email-joe@perches.com>
+	<1195523331-15303-7-git-send-email-joe@perches.com>
+	<1195523331-15303-8-git-send-email-joe@perches.com>
+	<1195523331-15303-9-git-send-email-joe@perches.com>
+	<1195523331-15303-10-git-send-email-joe@perches.com>
+	<1195523331-15303-11-git-send-email-joe@perches.com>
+	<1195523331-15303-12-git-send-email-joe@perches.com>
+	<1195523331-15303-13-git-send-email-joe@perches.com>
+	<1195523331-15303-14-git-send-email-joe@perches.com>
+	<1195523331-15303-15-git-send-email-joe@perches.com>
+	<1195523331-15303-16-git-send-email-joe@perches.com>
+	<1195523331-15303-17-git-send-email-joe@perches.com>
+	<1195523331-15303-18-git-send-email-joe@perches.com>
+	<1195523331-15303-19-git-send-email-joe@perches.com>
+	<ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
+	<1195523331-15303-20-git-send-email-joe@perches.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 20 Nov 2007 13:14:51 -0800
+In-Reply-To: <1195523331-15303-20-git-send-email-joe@perches.com> (Joe Perches's message of "Mon, 19 Nov 2007 17:48:11 -0800")
+Message-ID: <ada7ikcvctw.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071120203919.GB10008@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Nov 2007 21:14:51.0872 (UTC) FILETIME=[63D2A600:01C82BBA]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 09:39:19PM +0100, Ingo Molnar wrote:
-> 
-> * Greg KH <greg@kroah.com> wrote:
-> 
-> > > but we only have cpu_clock() from v2.6.23 onwards - so we should not 
-> > > apply the original patch to v2.6.22. (we should not have applied 
-> > > your patch that started the mess to begin with - but that's another 
-> > > matter.)
-> > 
-> > Well, I can easily back that one out, if that is easier than adding 2 
-> > more patches to try to fix up the mess here.
-> > 
-> > Let me know if you feel that would be best.
-> 
-> i'd leave it alone - doing that we have in essence the softlockup 
-> detector turned off. Reverting to the older version might trigger false 
-> positives that need the new stuff.
-
-Ok, I'll see if the current round of patches fix up everyone complaints
-:)
-
-thanks for sending these,
-
-greg k-h
+thanks, applied.
