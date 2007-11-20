@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbXKTD0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbXKTD13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbXKTD0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 22:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbXKTD0I
+	id S1757655AbXKTD13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 22:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbXKTD1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 22:26:08 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:38975 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753639AbXKTD0H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 22:26:07 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=AElUux3Q/TX8ztaVV+daSSyJG3tKYA62MrNuLW6lbqvXtEl9Z+Rl6en9UTEbD0GV8vpyc6h8ordxkdHTNY4VSYmnPxXbOpUDiHszHCP8H4Uq7qPTBzd4xyrsdGNAjlGFmtJkZmIpTNUUaNdhwr9D9KJt0lv+XO+84a8czwbOX+g=  ;
-X-YMail-OSG: FHzFWEAVM1mnOruXJgSTHOG6aWHodm2WxyHq9cUWCI8Cj5R5qgqq36g.fCPgnY4QWXake8UMoQ--
-From: David Brownell <david-b@pacbell.net>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [linux-usb-devel] linux-usb@vger created...
-Date: Mon, 19 Nov 2007 19:26:02 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-usb-devel@lists.sourceforge.net, greg@kroah.com,
+	Mon, 19 Nov 2007 22:27:21 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37121 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751714AbXKTD1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 22:27:20 -0500
+From: Andi Kleen <ak@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc 37/45] x86_64: Support for fast per cpu operations
+Date: Tue, 20 Nov 2007 04:23:07 +0100
+User-Agent: KMail/1.9.1
+Cc: David Miller <davem@davemloft.net>, clameter@sgi.com,
+       akpm@linux-foundation.org, travis@sgi.com, mathieu.desnoyers@polymtl.ca,
        linux-kernel@vger.kernel.org
-References: <20071119.144609.240248721.davem@davemloft.net> <20071120031232.GA17018@kroah.com> <20071119.191334.50627421.davem@davemloft.net>
-In-Reply-To: <20071119.191334.50627421.davem@davemloft.net>
+References: <20071120011132.143632442@sgi.com> <20071119.181720.03409715.davem@davemloft.net> <47424435.8050704@zytor.com>
+In-Reply-To: <47424435.8050704@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711191926.03108.david-b@pacbell.net>
+Message-Id: <200711200423.08195.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 November 2007, David Miller wrote:
-> From: Greg KH <greg@kroah.com>
-> Date: Mon, 19 Nov 2007 19:12:32 -0800
-> 
-> > Actually, if we are going to stick with this new list, can we just call
-> > it "linux-usb@vger.kernel.org" instead of the "-devel" stuff?
-> 
-> Done.
+On Tuesday 20 November 2007 03:19, H. Peter Anvin wrote:
+> David Miller wrote:
+> >> There was, at some point, discussion about using the gcc TLS mechanism,
+> >> which should permit even better code to be generated.  Unfortunately, it
+> >> would require gcc to be able to reference %gs instead of %fs (and vice
+> >> versa for i386), which I don't think is available in anything except
+> >> maybe the most cutting-edge version of gcc.
+> >
+> > You can't use __thread because GCC will cache __thread computed
+> > addresses across context switches and cpu changes.
+> >
+> > It's been tried before on powerpc, it doesn't work.
+>
+> OK, that pretty much answers that question.
 
-Subscribe/unsubscribe ... how?
+I investigated that some time ago.
+
+There are other obstacles too on x86-64, e.g. the relocations
+are wrong for kernel mode. You would need to extend the linker first.
+
+-Andi
