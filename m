@@ -1,82 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761361AbXKTROU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbXKTROt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761361AbXKTROU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 12:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbXKTRNx
+	id S1761530AbXKTROt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 12:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbXKTROh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 12:13:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39330 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758734AbXKTRNw (ORCPT
+	Tue, 20 Nov 2007 12:14:37 -0500
+Received: from mga01.intel.com ([192.55.52.88]:46704 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760062AbXKTROg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 12:13:52 -0500
-Date: Tue, 20 Nov 2007 09:04:20 -0800
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Javier Kohen <jkohen@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David <david@unsolicited.net>
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-Message-ID: <20071120170420.GA15954@kroah.com>
-References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <20071118005538.GD26865@elte.hu> <47422AA3.7060507@redhat.com> <20071120060808.GG20436@elte.hu>
+	Tue, 20 Nov 2007 12:14:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,442,1188802800"; 
+   d="scan'208";a="395032845"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071120060808.GG20436@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [E1000-devel] [PATCH] e100: free IRQ to remove warning whenrebooting
+Date: Tue, 20 Nov 2007 09:11:38 -0800
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5203D28BC3@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20071120053044.GE29070@cse.unsw.EDU.AU>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [E1000-devel] [PATCH] e100: free IRQ to remove warning whenrebooting
+Thread-Index: AcgrNrLnJRHtIWvgS+aTe/qZZO1k4AAYLh8w
+References: <20071120053044.GE29070@cse.unsw.EDU.AU>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Ian Wienand" <ianw@gelato.unsw.edu.au>
+Cc: <linux-kernel@vger.kernel.org>,
+       "netdev mailing list" <netdev@vger.kernel.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       <e1000-devel@lists.sourceforge.net>
+X-OriginalArrivalTime: 20 Nov 2007 17:11:39.0557 (UTC) FILETIME=[6A201550:01C82B98]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 07:08:08AM +0100, Ingo Molnar wrote:
-> 
-> * Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > On 11/17/2007 07:55 PM, Ingo Molnar wrote:
-> > > * Greg KH <greg@kroah.com> wrote:
-> > > 
-> > >> Great, thanks for tracking this down.
-> > >>
-> > >> Ingo, this corrisponds to changeset 
-> > >> a115d5caca1a2905ba7a32b408a6042b20179aaa in mainline.  Is that patch 
-> > >> incorrect?  Should this patch in the -stable tree be reverted?
-> > > 
-> > > hm, there are no such problems in .24 and the cpu_clock() and other 
-> > > fixes i did were not picked up. Find the missing fixes below. They 
-> > > should work just fine in .23 as it has the cpu_clock() functionality 
-> > > too.
-> > > 
-> > > [ NOTE: the most robust thing is to make the .23 version match the .24
-> > >   version of kernel/softlockup.c, so i included two other harmless
-> > >   changes in this diff as well. ]
-> > > 
-> > > 	Ingo
-> > > 
-> > > ----------->
-> > > commit a5f2ce3c6024a5bb895647b6bd88ecae5001020a
-> > > Author: Ingo Molnar <mingo@elte.hu>
-> > > Date:   Tue Oct 16 23:26:08 2007 -0700
-> > > 
-> > > commit 43581a10075492445f65234384210492ff333eba
-> > > Author: Ingo Molnar <mingo@elte.hu>
-> > > Date:   Tue Oct 16 23:26:08 2007 -0700
-> > 
-> > Those are just cosmetic / cleanup changes.
-> > 
-> > Don't you need commit a3b13c23f186ecb57204580cc1f2dbe9c284953a ??
-> 
-> yes:
-> 
-> > > [...] the cpu_clock() and other fixes i did were not picked up.
-> 
-> i just forgot to attach the cpu_clock() changes - they are in a3b13c23.
+<forwarding whole message for netdev to review>
 
-Ok, I've now added that patch too :)
+Ian Wienand wrote:
+> Hi,
+> 
+> When rebooting today I got
+> 
+> Will now restart.
+> ACPI: PCI interrupt for device 0000:00:03.0 disabled
+> GSI 20 (level, low) -> CPU 1 (0x0100) vector 53 unregistered
+> Destroying IRQ53 without calling free_irq
+> WARNING: at
+> /home/insecure/ianw/programs/git-kernel/linux-2.6/kernel/irq/chip.c:76
+> dynamic_irq_cleanup()  
+> 
+> Call Trace:
+>  [<a000000100014340>] show_stack+0x40/0xa0
+>                                 sp=e00000407c927b40
+>  bsp=e00000407c920eb8 [<a0000001000143d0>] dump_stack+0x30/0x60
+>                                 sp=e00000407c927d10
+>  bsp=e00000407c920ea0 [<a0000001000e58e0>]
+>                                 dynamic_irq_cleanup+0x160/0x1e0
+>  sp=e00000407c927d10 bsp=e00000407c920e70 [<a0000001000106b0>]
+>                                 destroy_and_reserve_irq+0x30/0xc0
+>  sp=e00000407c927d10 bsp=e00000407c920e40 [<a0000001000508f0>]
+>                                 iosapic_unregister_intr+0x5b0/0x5e0
+>  sp=e00000407c927d10 bsp=e00000407c920dd8 [<a00000010000aa70>]
+>                                 acpi_unregister_gsi+0x30/0x60
+>  sp=e00000407c927d10 bsp=e00000407c920db8 [<a00000010042e300>]
+>                                 acpi_pci_irq_disable+0x140/0x160
+>  sp=e00000407c927d10 bsp=e00000407c920d88 [<a000000100774200>]
+>                                 pcibios_disable_device+0xa0/0xc0
+>  sp=e00000407c927d20 bsp=e00000407c920d68 [<a0000001003778d0>]
+>                                 pci_disable_device+0x130/0x160
+>  sp=e00000407c927d20 bsp=e00000407c920d38 [<a000000100525d20>]
+>                                 e100_shutdown+0x1c0/0x220
+>  sp=e00000407c927d30 bsp=e00000407c920d08 [<a00000010037d0e0>]
+>                                 pci_device_shutdown+0x80/0xc0
+>  sp=e00000407c927d30 bsp=e00000407c920ce8 [<a0000001004ecb70>]
+>                                 device_shutdown+0xf0/0x180
+>  sp=e00000407c927d30 bsp=e00000407c920cc8 [<a0000001000ac4e0>]
+>                                 kernel_restart+0x60/0x120
+>  sp=e00000407c927d30 bsp=e00000407c920ca8 [<a0000001000ac990>]
+>                                 sys_reboot+0x3b0/0x480
+>  sp=e00000407c927d30 bsp=e00000407c920c30 [<a00000010000b4e0>]
+>                                 ia64_ret_from_syscall+0x0/0x20
+>  sp=e00000407c927e30 bsp=e00000407c920c30 [<a000000000010620>]
+>                                 ia64_ivt+0xffffffff00010620/0x400
+> sp=e00000407c928000 bsp=e00000407c920c30 
+> Restarting system.
+> 
+> I think the solution might be to free the IRQ before the
+> pci_device_shutdown 
 
-Hopefully this is all straightened out now, I'll go cut a -rc for the
-next stable so people can test...
+I believe you are correct.  Our other drivers appear to do this
+correctly.
 
-thanks,
+> Signed-off-by: Ian Wienand <ianw@gelato.unsw.edu.au>
 
-greg k-h
+Auke will add this and push it next week.
+
+Thanks!
+
+> 
+> ---
+> 
+>  e100.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+> index 3dbaec6..8ae5ac3 100644
+> --- a/drivers/net/e100.c
+> +++ b/drivers/net/e100.c
+> @@ -2782,6 +2782,7 @@ static void e100_shutdown(struct pci_dev *pdev)
+>  		pci_enable_wake(pdev, PCI_D3cold, 0);
+>  	}
+> 
+> +	free_irq(pdev->irq, netdev);
+>  	pci_disable_device(pdev);
+>  	pci_set_power_state(pdev, PCI_D3hot);
+>  }
