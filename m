@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbXKTFYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbXKTF0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbXKTFYv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 00:24:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbXKTFYn
+	id S1758023AbXKTF0L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 00:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXKTFZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 00:24:43 -0500
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:38282 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752113AbXKTFYm (ORCPT
+	Tue, 20 Nov 2007 00:25:56 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64524 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbXKTFZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 00:24:42 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vDyjxxFmxhUUDTpdJ73rx1vZczNFc5nZYg8DBYePwji8eZlDwEqHDllTmS0j82gBlJHNfZFPdsGYgCT9vLiOTkaXxzvPTotAmAruMAHpJzPfrdlCnZreYTXXdVT/iWttPiGmDyJIwggbRd9hoZORaynl828CrOER5R3MSpFGLBs=  ;
-X-YMail-OSG: .paDt58VM1k4gASYw6tf4INExQsl4PBZmrlJ9OnDTd4.D4hrn2e0d7lY7RSrkJ9Qn8lruaC7Rw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
-Date: Tue, 20 Nov 2007 16:24:32 +1100
-User-Agent: KMail/1.9.5
-Cc: Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <47425EA5.7000607@rtr.ca> <20071120042929.GD15227@1wt.eu> <20071120043742.GE6164@stusta.de>
-In-Reply-To: <20071120043742.GE6164@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711201624.32611.nickpiggin@yahoo.com.au>
+	Tue, 20 Nov 2007 00:25:55 -0500
+Date: Mon, 19 Nov 2007 23:25:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH 2/2] sata_nv: fix ATAPI issues with memory over 4GB (v3)
+In-reply-to: <474230DC.8020308@gmail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Message-id: <47426FDC.4030800@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <473A7677.6080007@shaw.ca> <473BA332.9030406@gmail.com>
+ <473BC5DF.1040302@shaw.ca> <474230DC.8020308@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 November 2007 15:37, Adrian Bunk wrote:
-> On Tue, Nov 20, 2007 at 05:29:29AM +0100, Willy Tarreau wrote:
+Tejun Heo wrote:
+> Robert Hancock wrote:
+>> Tejun Heo wrote:
+>>> Robert Hancock wrote:
+>>>> This fixes some problems with ATAPI devices on nForce4 controllers in
+>>>> ADMA mode
+>>>> on systems with memory located above 4GB. We need to delay setting
+>>>> the 64-bit
+>>>> DMA mask until the PRD table and padding buffer are allocated so that
+>>>> they don't
+>>>> get allocated above 4GB and break legacy mode (which is needed for ATAPI
+>>>> devices).
+>>>>
+>>>> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+>>> applied to #tj-upstream-fixes.
+>>>
+>> I have a report that these patches crashed but the previous patch worked:
+>>
+>> https://bugzilla.redhat.com/show_bug.cgi?id=351451
+>>
+>> So there may still be a problem here.
+> 
+> Any progress?
 
-> > Agreed. When userspace has something to do with the way IRQs are
-> > delivered, it's going to smell as bad as micro-kernels...
->
-> The next step to a micro-kernel would then be hardware drivers and file
-> systems in userspace?  ;-)
+It looks like the problem is that even though we set the DMA mask after 
+we allocate the PRD and pad buffers, when the other port is set up, the 
+DMA mask is already over 64-bit and so it allocates its buffers over 4GB 
+and fails. I think we just need to explicitly set to 32-bit first, 
+getting the reporter to try that one now.
 
-We already have those. So the next step would be to pretend the
-performance critical ones can be in userspace and remain competitive,
-wouldn't it? ;)
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
