@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbXKTRVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbXKTR2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbXKTRVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 12:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbXKTRVq
+	id S1758734AbXKTR2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 12:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbXKTR2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 12:21:46 -0500
-Received: from mail0.scram.de ([78.47.204.202]:60100 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755603AbXKTRVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 12:21:45 -0500
-X-Spam-Score: -4.087
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <47431799.6010802@scram.de>
-Date: Tue, 20 Nov 2007 18:21:29 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Tue, 20 Nov 2007 12:28:44 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:10756 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755841AbXKTR2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 12:28:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=evVNOfYOITPEfNnaYvBpTcUUVnJpSBJrYyKT/K9alqJ2ga+aRlC4w2tW/23zakXw3nuJQ3lCsbk5Q0+YFs3sdAhKsCYtNOX0ZNii4yhrYGdVcFVC4rTCO9vQO7b4f37+T2bVje3wK5P+eMAuBHBJEBLkjyM/XLMJcX6806itPT0=
+Date: Tue, 20 Nov 2007 20:28:33 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org
+Subject: [PATCH] SPARC64: check for possible NULL pointer dereference
+Message-ID: <20071120172833.GB7275@cvg>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
-       paulus@samba.org, Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: Change _tlbie arguments to reflect new API
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A new pid argument has been added to _tlbie for 4xx platforms.
-Add this argument to the 8xx path in mem.c, as well. As 8xx
-does not need th epid information, this argument can always be 0.
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
+This patch adds checking for possible NULL pointer dereference
+if of_find_property() failed.
 
-  CC      arch/powerpc/mm/mem.o
-arch/powerpc/mm/mem.c: In function 'update_mmu_cache':
-arch/powerpc/mm/mem.c:467: error: too few arguments to function '_tlbie'
-make[1]: *** [arch/powerpc/mm/mem.o] Error 1
-make: *** [arch/powerpc/mm] Error 2
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
- arch/powerpc/mm/mem.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I'm not sure about the message being printed in worst case.
+Check please.
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 81eb96e..e07852e 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -464,7 +464,7 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
- 		 * we invalidate the TLB here, thus avoiding dcbst
- 		 * misbehaviour.
- 		 */
--		_tlbie(address);
-+		_tlbie(address, 0);
- #endif
- 		if (!PageReserved(page)
- 		    && !test_bit(PG_arch_1, &page->flags)) {
--- 
-1.5.3.4
+ arch/sparc64/kernel/pci_sun4v.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
+diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
+index 8c4875b..e587a37 100644
+--- a/arch/sparc64/kernel/pci_sun4v.c
++++ b/arch/sparc64/kernel/pci_sun4v.c
+@@ -1022,6 +1022,10 @@ void __init sun4v_pci_init(struct device_node *dp, char *model_name)
+ 	}
+ 
+ 	prop = of_find_property(dp, "reg", NULL);
++	if (!prop) {
++		prom_printf("SUN4V_PCI: Could not find config registers\n");
++		prom_halt();
++	}
+ 	regs = prop->value;
+ 
+ 	devhandle = (regs->phys_addr >> 32UL) & 0x0fffffff;
