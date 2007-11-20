@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760903AbXKTSbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762888AbXKTSbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760903AbXKTSbN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761565AbXKTS0n
+	id S1762888AbXKTSbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761571AbXKTS0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:26:43 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51848 "EHLO
+	Tue, 20 Nov 2007 13:26:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51862 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761553AbXKTS0m (ORCPT
+	with ESMTP id S1761567AbXKTS0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:26:42 -0500
-Date: Tue, 20 Nov 2007 10:23:49 -0800
+	Tue, 20 Nov 2007 13:26:43 -0500
+Date: Tue, 20 Nov 2007 10:24:23 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,16 +21,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Tobias Powalowski <t.powa@gmx.de>
-Subject: [patch 12/29] sata_sis: fix SCR read breakage
-Message-ID: <20071120182349.GM28611@kroah.com>
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, Tobias Powalowski <t.powa@gmx.de>
+Subject: [patch 14/29] ACPI: VIDEO: Adjust current level to closest
+	available one.
+Message-ID: <20071120182423.GP28611@kroah.com>
 References: <20071120181733.702234406@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_sis-fix-scr-read-breakage.patch"
+Content-Disposition: inline; filename="acpi-video-adjust-current-level-to-closest-available-one.patch"
+In-Reply-To: <20071120182248.GA28611@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References but no 'Re:' in Subject.
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -38,68 +40,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Tejun Heo <htejun@gmail.com>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-patch aaa092a114696f4425cd57c4d7fa05110007e247 in mainline.
+patch 63f0edfc0b7f8058f9d3f9b572615ec97ae011ba in mainline.
 
-sata_sis: fix SCR read breakage
+ACPI: VIDEO: Adjust current level to closest available one.
 
-SCR read for controllers which uses PCI configuration space for SCR
-access got broken while adding @val argument to SCR accessors.  Fix
-it.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Tobias Powalowski <t.powa@gmx.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_sis.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/acpi/video.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
---- a/drivers/ata/sata_sis.c
-+++ b/drivers/ata/sata_sis.c
-@@ -168,11 +168,11 @@ static unsigned int get_scr_cfg_addr(str
- 	return addr;
- }
- 
--static u32 sis_scr_cfg_read (struct ata_port *ap, unsigned int sc_reg)
-+static u32 sis_scr_cfg_read (struct ata_port *ap, unsigned int sc_reg, u32 *val)
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -1633,9 +1633,20 @@ static int
+ acpi_video_get_next_level(struct acpi_video_device *device,
+ 			  u32 level_current, u32 event)
  {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
- 	unsigned int cfg_addr = get_scr_cfg_addr(ap, sc_reg);
--	u32 val, val2 = 0;
-+	u32 val2 = 0;
- 	u8 pmr;
- 
- 	if (sc_reg == SCR_ERROR) /* doesn't exist in PCI cfg space */
-@@ -180,13 +180,16 @@ static u32 sis_scr_cfg_read (struct ata_
- 
- 	pci_read_config_byte(pdev, SIS_PMR, &pmr);
- 
--	pci_read_config_dword(pdev, cfg_addr, &val);
-+	pci_read_config_dword(pdev, cfg_addr, val);
- 
- 	if ((pdev->device == 0x0182) || (pdev->device == 0x0183) ||
- 	    (pdev->device == 0x1182) || (pmr & SIS_PMR_COMBINED))
- 		pci_read_config_dword(pdev, cfg_addr+0x10, &val2);
- 
--	return (val|val2) &  0xfffffffb; /* avoid problems with powerdowned ports */
-+	*val |= val2;
-+	*val &= 0xfffffffb;	/* avoid problems with powerdowned ports */
-+
-+	return 0;
- }
- 
- static void sis_scr_cfg_write (struct ata_port *ap, unsigned int sc_reg, u32 val)
-@@ -216,7 +219,7 @@ static int sis_scr_read(struct ata_port 
- 		return -EINVAL;
- 
- 	if (ap->flags & SIS_FLAG_CFGSCR)
--		return sis_scr_cfg_read(ap, sc_reg);
-+		return sis_scr_cfg_read(ap, sc_reg, val);
- 
- 	pci_read_config_byte(pdev, SIS_PMR, &pmr);
- 
+-	int min, max, min_above, max_below, i, l;
++	int min, max, min_above, max_below, i, l, delta = 255;
+ 	max = max_below = 0;
+ 	min = min_above = 255;
++	/* Find closest level to level_current */
++	for (i = 0; i < device->brightness->count; i++) {
++		l = device->brightness->levels[i];
++		if (abs(l - level_current) < abs(delta)) {
++			delta = l - level_current;
++			if (!delta)
++				break;
++		}
++	}
++	/* Ajust level_current to closest available level */
++	level_current += delta;
+ 	for (i = 0; i < device->brightness->count; i++) {
+ 		l = device->brightness->levels[i];
+ 		if (l < min)
 
 -- 
