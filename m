@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbXKTUZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbXKTUcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762692AbXKTUZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760153AbXKTUZV
+	id S1762071AbXKTUcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:32:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbXKTUc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:25:21 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:60968 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760184AbXKTUZT (ORCPT
+	Tue, 20 Nov 2007 15:32:27 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43293 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759376AbXKTUc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:25:19 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Nov 2007 15:32:26 -0500
+Date: Tue, 20 Nov 2007 12:31:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, apw@shadowen.org, balbir@linux.vnet.ibm.com,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45 Build Failure
+ mach_apic.h
+Message-Id: <20071120123140.e0e41c90.akpm@linux-foundation.org>
+In-Reply-To: <4742EDA1.3080308@linux.vnet.ibm.com>
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
+	<4742EDA1.3080308@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18243.17058.469444.94821@stoffel.org>
-Date: Tue, 20 Nov 2007 15:25:06 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: "Abhishek Rai" <abhishekrai@google.com>
-Cc: "Matt Mackall" <mpm@selenic.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andreas Dilger" <adilger@sun.com>, linux-kernel@vger.kernel.org,
-       "Ken Chen" <kenchen@google.com>, "Mike Waychison" <mikew@google.com>
-Subject: Re: [PATCH] Clustering indirect blocks in Ext3
-In-Reply-To: <d9885f0f0711180752o71561745h51f2a18d09709e27@mail.gmail.com>
-References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com>
-	<20071115230219.1fe9338c.akpm@linux-foundation.org>
-	<20071116073716.GB17536@waste.org>
-	<d9885f0f0711180752o71561745h51f2a18d09709e27@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 Nov 2007 19:52:25 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-Abhishek> It took me some time to get compilebench working due to the
-Abhishek> known issue with drop_caches due to circular lock dependency
-Abhishek> between j_list_lock and inode_lock (compilebench triggers
-Abhishek> drop_caches quite frequently). Here are the results for
-Abhishek> compilebench run with options "-i 30 -r 30". I repeated the
-Abhishek> test 5 times on each of vanilla and mc configurations.
+> Hi Andrew,
+> 
+> The kernel build fails, on one of the machine 
+> 
+>   CC      arch/x86/mach-generic/summit.o
+> In file included from arch/x86/mach-generic/summit.c:16:
+> include/asm/mach-summit/mach_apic.h: In function ___target_cpus___:
+> include/asm/mach-summit/mach_apic.h:23: error: ___per_cpu__cpu_mask___ undeclared (first use in this function)
+> include/asm/mach-summit/mach_apic.h:23: error: (Each undeclared identifier is reported only once
+> include/asm/mach-summit/mach_apic.h:23: error: for each function it appears in.)
+> include/asm/mach-summit/mach_apic.h:23: warning: type defaults to ___int___ in declaration of ___type name___
+> include/asm/mach-summit/mach_apic.h:23: error: invalid type argument of ___unary *___
+> make[1]: *** [arch/x86/mach-generic/summit.o] Error 1
+> make: *** [arch/x86/mach-generic] Error 2
 
-Abhishek> Setup: 4 cpu, 8GB RAM, 400GB disk.
+        return cpumask_of_cpu(0);
 
-How about running these tests on a more pedestrian system which people
-will actually have?  Like 1gb, 1cpu and 400gb of a single disk?  
+Surely do-not-use-stack-to-allocate-cpumask-for-cpumask_of_cpu.patch.
 
+We can't include percpu.h from cpumask.h because cpumask.h already includes
+percpu.h.  So basically all users of cpumask_of_cpu() must include both
+percpu.h and percpu.h.
+
+akpm:/usr/src/linux-2.6.24-rc3> grep -rl cpumask_of_cpu . | wc -l
+105
+
+erp.  I'll drop the patch.
