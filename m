@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbXKTHzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbXKTHzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760067AbXKTHzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 02:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbXKTHz3
+	id S1760279AbXKTHzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 02:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759434AbXKTHzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 02:55:29 -0500
-Received: from paperboy.netsplit.com ([82.108.80.242]:50761 "EHLO
-	paperboy.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756677AbXKTHz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 02:55:28 -0500
-Subject: Re: [PATCH] wait_task_stopped: pass correct exit_code to
-	wait_noreap_copyout
-From: Scott James Remnant <scott@ubuntu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Roland McGrath <roland@redhat.com>
-In-Reply-To: <20071119224326.198f77a0.akpm@linux-foundation.org>
-References: <1195377204.6070.3.camel@wing-commander>
-	 <20071119224326.198f77a0.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9PzzZI0R+f2S3IC97v0T"
-Date: Tue, 20 Nov 2007 07:55:22 +0000
-Message-Id: <1195545322.14510.170.camel@wing-commander>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 20 Nov 2007 02:55:37 -0500
+Received: from www.tglx.de ([62.245.132.106]:38923 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759332AbXKTHzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 02:55:36 -0500
+Date: Tue, 20 Nov 2007 08:55:15 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mike Travis <travis@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 1/1] x86: convert-cpuinfo_x86-array-to-a-per_cpu-array
+ fix
+In-Reply-To: <473B423B.6030400@sgi.com>
+Message-ID: <alpine.LFD.0.9999.0711200848160.7601@localhost.localdomain>
+References: <20071012225433.928899000@sgi.com> <20071012225434.102879000@sgi.com> <473B423B.6030400@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 14 Nov 2007, Mike Travis wrote:
 
---=-9PzzZI0R+f2S3IC97v0T
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Hi Andrew,
+> 
+> It appears that this patch is missing from the latest 2.6.24 git kernel?
+> 
+> (Suresh noticed that it is still a problem.)
+> 
+> Thanks,
+> Mike
+> 
+> This fix corrects the problem that early_identify_cpu() sets
+> cpu_index to '0' (needed when called by setup_arch) after
+> smp_store_cpu_info() had set it to the correct value.
+> 
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
+>  arch/x86_64/kernel/smpboot.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux.orig/arch/x86_64/kernel/smpboot.c	2007-10-12 14:28:45.000000000 -0700
+> +++ linux/arch/x86_64/kernel/smpboot.c	2007-10-12 14:53:42.753508152 -0700
+> @@ -141,8 +141,8 @@ static void __cpuinit smp_store_cpu_info
+>  	struct cpuinfo_x86 *c = &cpu_data(id);
+>  
+>  	*c = boot_cpu_data;
+> -	c->cpu_index = id;
+>  	identify_cpu(c);
+> +	c->cpu_index = id;
+>  	print_cpu_info(c);
+>  }
 
-On Mon, 2007-11-19 at 22:43 -0800, Andrew Morton wrote:
-> On Sun, 18 Nov 2007 09:13:24 +0000 Scott James Remnant <scott@ubuntu.com>=
- wrote:
->=20
-> > In wait_task_stopped() exit_code already contains the right value for
-> > the si_status member of siginfo, and this is simply set in the non
-> > WNOWAIT case.
-> >    =20
-> > Pass it unchanged to wait_noreap_copyout();  we would only need to
-> > shift it and add 0x7f if we were returning it in the user status field
-> > and that isn't used for any function that permits WNOWAIT.
-> >    =20
-> Is this bug visible to userspace?  If so, I'm surprised that none of the
-> various testsuites (which like to exercise this sort of interface) has
-> detected it.
->=20
-Absolutely;  if you call waitid() with a stopped or traced process,
-you'll get the signal in siginfo.si_status as expected -- however if you
-call waitid(WNOWAIT) at the same time, you'll get the signal << 8 | 0x7f
+The correct fix is already in mainline:
 
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
+commit 699d934d5f958d7944d195c03c334f28cc0b3669
 
---=-9PzzZI0R+f2S3IC97v0T
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHQpLqSnQiFMl4yK4RAnPGAJ4glVFGtZuYkTqq86Q/LTYkPgbwKwCgixjs
-0jtYZc47g2w+bY/bJsXH8+s=
-=nWcK
------END PGP SIGNATURE-----
-
---=-9PzzZI0R+f2S3IC97v0T--
-
+	tglx
