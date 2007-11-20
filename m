@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbXKTUQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761967AbXKTUS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761548AbXKTUQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXKTUQm
+	id S1761967AbXKTUS0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758900AbXKTUSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:16:42 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:35840 "EHLO relay.sgi.com"
+	Tue, 20 Nov 2007 15:18:16 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:36517 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752404AbXKTUQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:16:41 -0500
-Date: Tue, 20 Nov 2007 12:16:40 -0800 (PST)
+	id S1756927AbXKTUSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:18:15 -0500
+Date: Tue, 20 Nov 2007 12:18:10 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 01/45] ACPI: Avoid references to impossible processors.
-In-Reply-To: <20071120124754.GB10127@Krystal>
-Message-ID: <Pine.LNX.4.64.0711201214540.26419@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <20071120011331.944255657@sgi.com>
- <20071120124754.GB10127@Krystal>
+To: akpm@linux-foundation.org
+cc: Mel Gorman <mel@csn.ul.ie>, Lee.Schermerhorn@hp.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+In-Reply-To: <20071120141953.GB32313@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0711201217430.26419@schroedinger.engr.sgi.com>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
+ <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
+ <20071120141953.GB32313@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007, Mathieu Desnoyers wrote:
+On Tue, 20 Nov 2007, Mel Gorman wrote:
 
-> > Convert one loop to NR_CPUS to use the cpu_possible map instead.
-> > 
-> 
-> I'm just wondering how broken this is. Is there any assumption that
-> there is no holes in the online cpu map in this code ?
+> Went back and revisited this. Allocating them at boot-time is below but
+> essentially it is a silly and it makes sense to just have two zonelists
+> where one of them is for __GFP_THISNODE. Implementation wise, this involves
+> dropping the last patch in the set and the overall result is still a reduction
+> in the number of zonelists.
 
-Yeah, I saw only one loop in there and so I think this covers it. The 
-debug code that I added to the cpu alloc patches did not throw any warning 
-and bugs anymore. So I am sure that this does not occur on the 
-configurations where I tested it. If some is running with the latest cpu 
-area patches then he will get bugs() for accessing an impossible 
-processors cpu area and warnings for accessing an offline processors cpu 
-area.
-
+Allright with me. Andrew could we get this patchset merged?
