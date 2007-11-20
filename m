@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762454AbXKTCOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762732AbXKTCO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762454AbXKTCOk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760908AbXKTCEF
+	id S1762732AbXKTCO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:14:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbXKTCGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 21:04:05 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39456 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761077AbXKTCED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 21:04:03 -0500
-Date: Mon, 19 Nov 2007 18:03:56 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 37/45] x86_64: Support for fast per cpu operations
-In-Reply-To: <47423FB7.20800@zytor.com>
-Message-ID: <Pine.LNX.4.64.0711191802270.19954@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <20071120011340.569486037@sgi.com>
- <47423FB7.20800@zytor.com>
+	Mon, 19 Nov 2007 21:06:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37987 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758902AbXKTCGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 21:06:08 -0500
+Date: Mon, 19 Nov 2007 21:05:48 -0500
+From: Dave Jones <davej@redhat.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, cpufreq@lists.linux.org.uk
+Subject: Re: [PATCH 09/59] arch/x86: Add missing "space"
+Message-ID: <20071120020548.GB17507@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+	Dave Jones <davej@codemonkey.org.uk>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>, cpufreq@lists.linux.org.uk
+References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <c2f1bd6f19828452d5916728ebaa8d5f1bd0b152.1195454434.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c2f1bd6f19828452d5916728ebaa8d5f1bd0b152.1195454434.git.joe@perches.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007, H. Peter Anvin wrote:
+On Mon, Nov 19, 2007 at 05:48:01PM -0800, Joe Perches wrote:
+ > 
+ > Signed-off-by: Joe Perches <joe@perches.com>
+ > ---
+ >  arch/x86/kernel/cpu/cpufreq/powernow-k7.c |    2 +-
+ >  1 files changed, 1 insertions(+), 1 deletions(-)
+ 
+Thanks Joe, applied.
 
-> There was, at some point, discussion about using the gcc TLS mechanism, which
-> should permit even better code to be generated.  Unfortunately, it would
+	Dave
 
-How would that be possible? Oh. You mean the discussion where I mentioned 
-using the thread attribute?
-
-> require gcc to be able to reference %gs instead of %fs (and vice versa for
-> i386), which I don't think is available in anything except maybe the most
-> cutting-edge version of gcc.
-
-Right. That is why we do it in ASM here.
-
-> However, if we're doing a masssive revampt it would be good to get an idea of
-> how to migrate to that model eventually, or why it doesn't make sense at all.
-
-If you can tell me what the difference would be then we can discuss it. 
-AFAICT there is no difference. Both use a segment register.
-
+-- 
+http://www.codemonkey.org.uk
