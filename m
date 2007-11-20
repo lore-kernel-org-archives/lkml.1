@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764625AbXKTVxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbXKTVz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764625AbXKTVxw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbXKTVx1
+	id S1762151AbXKTVz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbXKTVzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:53:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48413 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbXKTVxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:53:25 -0500
-Date: Tue, 20 Nov 2007 22:53:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
-	v2.6.23.8, v2.6.22.13, v2.6.21.7
-Message-ID: <20071120215313.GD24156@elte.hu>
-References: <20071119151756.GA25446@elte.hu> <b637ec0b0711201238i746ca9bala3812ca93479c6fa@mail.gmail.com> <20071120204103.GC10008@elte.hu> <b637ec0b0711201247m4038a2cds5924ddbd43db6f8e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b637ec0b0711201247m4038a2cds5924ddbd43db6f8e@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 20 Nov 2007 16:55:21 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:65401 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755580AbXKTVzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 16:55:20 -0500
+Date: Tue, 20 Nov 2007 22:54:15 +0100
+From: Chris Friedhoff <chris@friedhoff.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "chris@friedhoff.org" <chris@friedhoff.org>
+Subject: Re: 2.6.24-rc2 STD with s2disk fails to activate suspended system
+ after loading - now 2.6.24-rc3
+Message-Id: <20071120225415.c5943463.chris@friedhoff.org>
+In-Reply-To: <200711200058.29663.rjw@sisk.pl>
+References: <20071110221629.1d180480.chris@friedhoff.org>
+	<200711191958.36570.rjw@sisk.pl>
+	<20071119234334.2b955b92.chris@friedhoff.org>
+	<200711200058.29663.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.14; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19ySxkEc9nTJvfENDqG3PoqYLvEBu7ohr5gs/3
+ ftNVyJHUEDEtxbjhBg6ZQEPvA41eHsuKBy3tpJ8uBJxMxXoCtS
+ krezoEbGJJh/fFXA4kKY3U5ZFSO+7QH
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The patch
+http://bugzilla.kernel.org/attachment.cgi?id=13652&action=view from
+Comment #16 of http://bugzilla.kernel.org/show_bug.cgi?id=9345
+also works for me and enables successful s2disk cycles.
 
-* Fabio Comolli <fabio.comolli@gmail.com> wrote:
+Tested with 6 cycles, 3 from console and than 3 from within X.
 
-> Hi
+Thanks,
+Chris
+
+
+On Tue, 20 Nov 2007 00:58:29 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Monday, 19 of November 2007, Chris Friedhoff wrote:
+> > dmesg output is added.
+> > 
+> > increasing CONFIG_BLK_DEV_RAM_SIZE from 7777 to 131072 hasn't changed
+> > the non-functioning of 2.6.24-rc3
+> > 
+> > s2disk works with 2.6.23.8 ; I tested 4 cycles in a row, 2 from console
+> > and 2 from within X
 > 
-> On Nov 20, 2007 9:41 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> >
-> > > Hi.
-> > > First, thanks for this patch. I don't have numbers but working with my
-> > > laptop feels much better.
-> >
-> > curious: what scheduler/kernel version have you used before?
+> I've attached a patch to the bugzilla entry, please test it.
 > 
-> I was using 2.6.23.1 with ck patches.
+> Thanks,
+> Rafael
 
-are you sure? The last -ck patch i can find is for .22:
 
-  http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/
-
-or have they been forward ported? (if yes, do you have an URL for that)
-
-(my guess is you used the 2.6.23.1 scheduler (CFS), so the improvement 
-you felt on the laptop is relative to 2.6.23-vanilla in essence - which 
-is good news.)
-
-> > > Just a question: does the patch include the fix (divide by 
-> > > zero....) you just posted in the stable review for 2.6.23.9?
-> >
-> > yeah.
-> 
-> OK, thanks. Have you already tried to apply the patch to 2.6.23.9? 
-> Shall we expect some other rejects?
-
-hm:
-
-The latest stable version of the Linux kernel is:           2.6.23.8
-
-so there's no 23.9 yet.
-
-	Ingo
+--------------------
+Chris Friedhoff
+chris@friedhoff.org
