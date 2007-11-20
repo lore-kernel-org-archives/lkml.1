@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbXKTBTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbXKTBTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758153AbXKTBTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXKTBNx
+	id S1754337AbXKTBTq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXKTBNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:53 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49852 "EHLO relay.sgi.com"
+	Mon, 19 Nov 2007 20:13:54 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49833 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754297AbXKTBNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 20:13:36 -0500
-Message-Id: <20071120011336.210236732@sgi.com>
+	id S1754076AbXKTBNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:13:35 -0500
+Message-Id: <20071120011335.504174556@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:51 -0800
+Date: Mon, 19 Nov 2007 17:11:48 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -20,67 +20,55 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 19/45] cpu alloc: NFS statistics
-Content-Disposition: inline; filename=0027-cpu-alloc-NFS-statistics.patch
+Subject: [rfc 16/45] cpu alloc: blktrace conversion
+Content-Disposition: inline; filename=0024-cpu-alloc-blktrace-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/nfs/iostat.h |    8 ++++----
- fs/nfs/super.c  |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ block/blktrace.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/fs/nfs/iostat.h
+Index: linux-2.6/block/blktrace.c
 ===================================================================
---- linux-2.6.orig/fs/nfs/iostat.h	2007-11-15 21:17:24.391404458 -0800
-+++ linux-2.6/fs/nfs/iostat.h	2007-11-15 21:25:33.167654066 -0800
-@@ -123,7 +123,7 @@ static inline void nfs_inc_server_stats(
- 	int cpu;
+--- linux-2.6.orig/block/blktrace.c	2007-11-15 21:17:24.586154116 -0800
++++ linux-2.6/block/blktrace.c	2007-11-15 21:25:31.591154091 -0800
+@@ -155,7 +155,7 @@ void __blk_add_trace(struct blk_trace *b
+ 	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
+ 	if (t) {
+ 		cpu = smp_processor_id();
+-		sequence = per_cpu_ptr(bt->sequence, cpu);
++		sequence = CPU_PTR(bt->sequence, cpu);
  
- 	cpu = get_cpu();
--	iostats = per_cpu_ptr(server->io_stats, cpu);
-+	iostats = CPU_PTR(server->io_stats, cpu);
- 	iostats->events[stat] ++;
- 	put_cpu_no_resched();
- }
-@@ -139,7 +139,7 @@ static inline void nfs_add_server_stats(
- 	int cpu;
- 
- 	cpu = get_cpu();
--	iostats = per_cpu_ptr(server->io_stats, cpu);
-+	iostats = CPU_PTR(server->io_stats, cpu);
- 	iostats->bytes[stat] += addend;
- 	put_cpu_no_resched();
- }
-@@ -151,13 +151,13 @@ static inline void nfs_add_stats(struct 
- 
- static inline struct nfs_iostats *nfs_alloc_iostats(void)
- {
--	return alloc_percpu(struct nfs_iostats);
-+	return CPU_ALLOC(struct nfs_iostats, GFP_KERNEL | __GFP_ZERO);
+ 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+ 		t->sequence = ++(*sequence);
+@@ -227,7 +227,7 @@ static void blk_trace_cleanup(struct blk
+ 	relay_close(bt->rchan);
+ 	debugfs_remove(bt->dropped_file);
+ 	blk_remove_tree(bt->dir);
+-	free_percpu(bt->sequence);
++	CPU_FREE(bt->sequence);
+ 	kfree(bt);
  }
  
- static inline void nfs_free_iostats(struct nfs_iostats *stats)
- {
- 	if (stats != NULL)
--		free_percpu(stats);
-+		CPU_FREE(stats);
- }
+@@ -338,7 +338,7 @@ int do_blk_trace_setup(struct request_qu
+ 	if (!bt)
+ 		goto err;
  
- #endif
-Index: linux-2.6/fs/nfs/super.c
-===================================================================
---- linux-2.6.orig/fs/nfs/super.c	2007-11-15 21:17:24.399404478 -0800
-+++ linux-2.6/fs/nfs/super.c	2007-11-15 21:25:33.171654143 -0800
-@@ -529,7 +529,7 @@ static int nfs_show_stats(struct seq_fil
- 		struct nfs_iostats *stats;
+-	bt->sequence = alloc_percpu(unsigned long);
++	bt->sequence = CPU_ALLOC(unsigned long, GFP_KERNEL | __GFP_ZERO);
+ 	if (!bt->sequence)
+ 		goto err;
  
- 		preempt_disable();
--		stats = per_cpu_ptr(nfss->io_stats, cpu);
-+		stats = CPU_PTR(nfss->io_stats, cpu);
- 
- 		for (i = 0; i < __NFSIOS_COUNTSMAX; i++)
- 			totals.events[i] += stats->events[i];
+@@ -387,7 +387,7 @@ err:
+ 	if (bt) {
+ 		if (bt->dropped_file)
+ 			debugfs_remove(bt->dropped_file);
+-		free_percpu(bt->sequence);
++		CPU_FREE(bt->sequence);
+ 		if (bt->rchan)
+ 			relay_close(bt->rchan);
+ 		kfree(bt);
 
 -- 
