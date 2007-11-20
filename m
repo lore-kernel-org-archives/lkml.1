@@ -1,73 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbXKTWSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762440AbXKTWUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbXKTWSO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760229AbXKTWR4
+	id S1762440AbXKTWUb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbXKTWUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:17:56 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37221 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759574AbXKTWRz (ORCPT
+	Tue, 20 Nov 2007 17:20:23 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35490 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756938AbXKTWUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:17:55 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
-	<20071120215914.GE24156@elte.hu>
-Date: Tue, 20 Nov 2007 15:17:00 -0700
-In-Reply-To: <20071120215914.GE24156@elte.hu> (Ingo Molnar's message of "Tue,
-	20 Nov 2007 22:59:14 +0100")
-Message-ID: <m1ve7wr28z.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Nov 2007 17:20:21 -0500
+Date: Tue, 20 Nov 2007 22:18:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: trenn@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "yakui.zhao" <yakui.zhao@intel.com>
+Subject: Re: [PATCH 3/3] PNP cleanups - Version 2 - Pass struct pnp_dev to 
+  pnp_clean_resource_table for cleanup reasons
+Message-ID: <20071120221812.47fb5645@the-village.bc.nu>
+In-Reply-To: <4743372A.6030400@keyaccess.nl>
+References: <1195581124.23700.262.camel@queen.suse.de>
+	<20071120180007.1ebe11a2@the-village.bc.nu>
+	<4743372A.6030400@keyaccess.nl>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+> > Again I don't see the point of this change. A routine for cleaning up
+> > resource tables expects logically to be passed a resource table to clean
+> > up not some device it may be attached to.
+> 
+> He needs to pass the pnp_dev to later be able to replace the:
+> 
+> 	for (idx = 0; idx < PNP_MAX_PORT; idx++)
+> 
+> loops with:
+> 
+> 	for (idx = 0; pnp_port(dev, idx); idx++)
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> > lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
->> > ...
->> 
->> Yes all of those are nasty.  So much for my clever way of implementing 
->> these things.  Grr. Simple hacks that almost work!
->
-> btw., in case you feel inclined, i recently did some userspace coding 
-> and found to my surprise that /proc/self points to the parent task, not 
-> the thread itself (giving threads no real way to examine themselves). If 
-> you are hacking in this area, would it be a big trouble to add something 
-> like /proc/self-task/ or something like that? I had to use a raw gettid 
-> syscall to figure out the TID to get to /proc/*/tasks/TID/sched 
-> instrumentation info - which is quite a PITA.
+I can see why he does it, but that doesn't answer the problem that the
+code is messing up the sensible interface.
 
-Agreed.  I have been debating with myself in the last couple of days
-if it is a bug that /proc/self uses the tgid and not the actual pid/tid
-value.
+> in a later patch when he introduces dynamic resource tables -- pnp-acpi can 
+> (and does) now sometimes require more resources than the current pnp limits 
+> allow but simply upping the limits uncoditionally wastes too much space in 
+> the resource tables. He therefore aims to krealloc() the arrays as required.
 
-If I can be convinced that posix threads don't care I will happily just
-switch /proc/self, calling the current implementation a bug.
+That bit is fine, but put the count in the resource structure. Then you
+can pass a resource around as a meaningful self contained object. That
+means you can pass them, ref count them and whatever else is needed.
 
-I think it is a bug the real question is what are the backwards
-compatibility implications.  Do posix threads care?
+(Remember if you krealloc a pnp resource you have to know *nobody* is
+using the existing resource pointer at that moment, so you will need
+locks attached to the resource as well - or RCU later)
 
-It appears to me that either we need to fix /proc/self or we need
-to add /proc/task-self and fix /proc/mounts to point at that.
+> > I don't see why pnp_dma() and pnp_irq() should change either. It just 
+> > causes noise and breaks driver code. I don't see where it needs to change
+> > to make internal pnp changes work ?
+> 
+> As he explained in his 0/3, his pnp_port() would look like:
 
-In the normal case we share all of the same things so I think it is
-a don't care.  Except that /proc/self/status | grep Pid returns the
-tgid.
+You don't need to change the names - just the code. 
 
-Hmm.  I think I am just going to send Andrew a patch for 2.6.25 that
-just fixes /proc/self.  I just fail to see how using the tgid is correct.
-The only cases we could care seem to do the wrong thing when we use the
-tgid.
+Lets split the problems I have with it into three areas
 
-Eric
+1.	Changes the interface to drivers but for no apparent reason in
+part.
+
+2.	Hides a lot of stuff in macros so we get peculiar un C like
+assignments that hide the actual functionality. I want to *see* what is
+going on when I touch the code not hide it, at least within the pnp layer
+
+3.	Object lifetime and internal completeness - dev->res should
+point to everything that is neccessary to manage the resource set. It
+should be updatable in a consistent locked manner. That matters the
+moment you do any dynamic reassignment of resources affecting a live
+object, it matters the moment you want to do things like work with
+resources cleanly without the device structure.
+
+Now I would suggest that #2 and #3 actually matter right now. We can
+argue about whether its called a wombat or banana and rename them any day
+of the week.
+
+
+What I would thus like to see is a patch set which
+
+1.	Switches to krealloc resources internally and moves the
+resource count sizes into the resource object but without hiding internal
+detail in magic macros (macros for device side are good internal bad
+generally). Nothing dynamic after setup *yet*
+
+2.	Update any driver specific assumptions about resource walking
+
