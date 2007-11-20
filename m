@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbXKTAn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXKTAqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbXKTAn3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 19:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbXKTAnV
+	id S1754819AbXKTAqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 19:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbXKTAqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 19:43:21 -0500
-Received: from smtpauth01.prod.mesa1.secureserver.net ([64.202.165.181]:38001
-	"HELO smtpauth01.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752234AbXKTAnU (ORCPT
+	Mon, 19 Nov 2007 19:46:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54231
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751898AbXKTAqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 19:43:20 -0500
-Message-ID: <47422D3B.8080704@seclark.us>
-Date: Mon, 19 Nov 2007 19:41:31 -0500
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Power Saving
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Nov 2007 19:46:11 -0500
+Date: Mon, 19 Nov 2007 16:46:11 -0800 (PST)
+Message-Id: <20071119.164611.64664648.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk
+Subject: Re: SCSI breakage on non-cache coherent architectures
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1195518864.6970.23.camel@pasglop>
+References: <1195501874.6539.5.camel@pasglop>
+	<20071119.143115.251022325.davem@davemloft.net>
+	<1195518864.6970.23.camel@pasglop>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello List,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 20 Nov 2007 11:34:24 +1100
 
-I am trying to get throttling to work on the following processor with 
-linux 2.6.17-1.2142_FC4
-with no luck.
+> Do you still think we should introduce this __dma_cacheline_aligned ? Do
+> you see other cases of drivers where it would be useful ? It tend to
+> agree with your earlier statement that drivers doing that are broken and
+> should be using a separate allocator for DMA'ble objects (in fact, on
+> non-cache coherent archs, kmalloc is just fine).
 
-AMD Athlon(tm) XP 1700+
+I don't care either way.
 
-cat /proc/acpi/processor/CPU0/info
-processor id:            0
-acpi id:                 0
-bus mastering control:   no
-power management:        yes
-throttling control:      yes
-limit interface:         yes
+If we say that the DMA api works on "DMA cacheline boundaries"
+(and in reality it does) we do need to either:
 
-The /sys/devices/system/cpu/cpu0/cpufreq/* directory does not exist. I 
-have modprobed
-the following cpufreq* modules.
+1) Require that entire buffers are commited by call sites,
+   and thus "embedding" DMA'd within non-DMA stuff isn't allowed
 
-Module                  Size  Used by
-cpufreq_stats           6101  0
-cpufreq_powersave       2241  0
-cpufreq_ondemand        7009  0
-cpufreq_conservative     7265  0
+2) Add the __dma_cacheline_aligned tag.
 
+But note that with #2 it could get quite ugly because the
+alignment and size both have a minimum that needs to be
+enforced, not just the alignment alone.  So either:
 
-What am I doing wrong?
+struct foo {
+	unsigned int other_unrelated_stuff;
 
-Thanks Steve
+	struct object dma_thing __dma_cacheline_aligned;
 
--- 
+	unsigned int more_nondma_stuff __dma_cacheline_aligned;
+};
 
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
+or:
 
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
+struct foo {
+	unsigned int other_unrelated_stuff;
 
+	union {
+		struct object dma_thing __dma_cacheline_aligned;
+		char __pad[(sizeof(object) + DMA_CACHELINE_SIZE &
+			   ~DMA_CACHELINE_SIZE)];
+	} u;
 
+	unsigned int more_nondma_stuff __dma_cacheline_aligned;
+};
 
+I hope you see what I'm trying to say.
