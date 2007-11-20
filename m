@@ -1,175 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbXKTQcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbXKTQe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbXKTQcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXKTQcF
+	id S1760141AbXKTQe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXKTQeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:32:05 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:44668 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbXKTQcD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:32:03 -0500
-Message-ID: <47430DF1.8090808@suse.de>
-Date: Wed, 21 Nov 2007 00:40:17 +0800
-From: Coly Li <coyli@suse.de>
-Reply-To: coyli@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext4: dir inode reservation V3
-References: <4739B0C0.3060907@suse.de> <20071120155826.GB31177@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20071120155826.GB31177@atrey.karlin.mff.cuni.cz>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 11:34:50 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:34403 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750963AbXKTQet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 11:34:49 -0500
+Date: Tue, 20 Nov 2007 19:34:57 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] proc-remove-races-from-proc_id_readdir-factor-out-tgid-increment
+Message-ID: <20071120163457.GA13021@tv-sign.ru>
+References: <20071117181549.GA1415@tv-sign.ru> <m1bq9swqyu.fsf@ebiederm.dsl.xmission.com> <20071118142047.GA360@tv-sign.ru> <m1tzniumoo.fsf@ebiederm.dsl.xmission.com> <20071119182937.GA89@tv-sign.ru> <m1ejelvrjf.fsf_-_@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ejelvrjf.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
-
-Thanks for taking time to review the patch :-)
-
-Jan Kara wrote:
->   Hi Coly,
+On 11/19, Eric W. Biederman wrote:
 > 
->   finally I've found some time to have a look at a new version of your
-> patch.
+> So to fix the problem this patch modifies next_tgid() to return
+> both a tgid and the task struct in question.
 > 
->> 5, Performance number
->> On a Core-Duo, 2MB DDM memory, 7200 RPM SATA PC, I built a 50GB ext4
->> partition, and tried to create 50000 directories, and create 15 (1KB)
->> files in each directory alternatively. After a remount, I tried to
->> remove all the directories and files recursively by a 'rm -rf'. Bellow
->> is the benchmark result,
->> 			normal ext4			ext4 with dir inode reservation
->> 	mount options:	-o data=writeback		-o data=writeback,dir_ireserve=low
->> 	Create dirs:	real    0m49.101s		real    2m59.703s
->> 	Create files:	real    24m17.962s		real    21m8.161s
->> 	Unlink all:	real    24m43.788s		real    17m29.862s
->> Creating dirs with dir inode reservation is slower than normal ext4 as
->> predicted, because allocating directory inodes in non-linear order
->> will cause extra hard disk seeking and block I/O. Creating files with
->> dir inode reservation is 13% faster than normal ext4. Unlink all the
->> directories and files is 29.2% faster as expected.  When number of
->> directories is increased, the performance improvement will be more
->> considerable. More benchmark result will be posted here if necessary,
->> because I need more time to run more test cases.
->   Maybe to get some better idea - could you compare how long does take
-> untar of a kernel tree, find through the whole kernel tree and removal
-> of the tree? Also measuring CPU load during your benchmarks would be
-> useful so that we can see whether we don't increase too much the cost of
-> searching in bitmaps...
+> A structure is introduced to return these values because it is
+> slightly cleaner and easier to optimize, and the resulting code
+> is a little shorter.
 
-Sure, good ideas, I will add these items to my benchmark list.
+Nice. Perhaps we can also factor out the incrementing of iter.tgid? Lessens
+the generated code, and (imho) cleanups the source a little bit.
 
-> 
->   The patch is nicely short ;)
-Thanks for the encouragement.
-The first version was more than 2000 lines, including kernel and e2fsprogs patches. Finally I find
-only around 100 lines kernel patch can achieve same performance too. Really nice :-)
+(untested, 2.6.24-rc2-mm1 doesn't boot on my machine)
 
-> 
->> diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
->> index 17b5df1..f838a72 100644
->> --- a/fs/ext4/ialloc.c
->> +++ b/fs/ext4/ialloc.c
->> @@ -10,6 +10,8 @@
->>   *  Stephen Tweedie (sct@redhat.com), 1993
->>   *  Big-endian to little-endian byte-swapping/bitmaps by
->>   *        David S. Miller (davem@caip.rutgers.edu), 1995
->> + *  Directory inodes reservation by
->> + *        Coly Li (coyli@suse.de), 2007
->>   */
->>
->>  #include <linux/time.h>
->> @@ -478,6 +480,75 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
->>  	return -1;
->>  }
->>
->> +static int ext4_ino_from_ireserve(handle_t *handle, struct inode *dir,
->> +			  int mode, ext4_group_t *group, unsigned long *ino)
->> +{
->> +	struct super_block *sb;
->> +	struct ext4_sb_info *sbi;
->> +	struct ext4_group_desc *gdp = NULL;
->> +	struct buffer_head *gdp_bh = NULL, *bitmap_bh = NULL;
->> +	ext4_group_t ires_group = *group;
->> +	unsigned long ires_ino;
->> +	int i, bit;
->> +
->> +	sb = dir->i_sb;
->> +	sbi = EXT4_SB(sb);
->> +
->> +	/* if the inode number is not for directory,
->> +	 * only try to allocate after directory's inode
->> +	 */
->> +	if (!S_ISDIR(mode)) {
->> +		*ino = dir->i_ino % EXT4_INODES_PER_GROUP(sb);
->> +		return 0;
->> +	}
->   ^^^ You don't set a group here - is this intentional? It means we get
-> the group from find_group_other() and there we start searching at a
-> place corresponding to parent's inode number... That would be an
-> interesting heuristic but I'm not sure if that's what you want.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Yes, if allocating a file inode, just return first inode offset in the reserved area of parent
-directory. In this case, group is decided by find_group_other() or find_group_orlov(),
-ext4_ino_from_ireserve() just tries to persuade linear inode allocator to search free inode slot
-after parent's inode.
+--- PT/fs/proc/base.c~	2007-11-20 19:00:05.000000000 +0300
++++ PT/fs/proc/base.c	2007-11-20 19:06:28.000000000 +0300
+@@ -2378,6 +2378,7 @@ static struct tgid_iter next_tgid(struct
+ 	rcu_read_lock();
+ retry:
+ 	iter.task = NULL;
++	iter.tgid++;
+ 	pid = find_ge_pid(iter.tgid, ns);
+ 	if (pid) {
+ 		iter.tgid = pid_nr_ns(pid, ns);
+@@ -2394,10 +2395,8 @@ retry:
+ 		 * found doesn't happen to be a thread group leader.
+ 		 * As we don't care in the case of readdir.
+ 		 */
+-		if (!iter.task || !has_group_leader_pid(iter.task)) {
+-			iter.tgid += 1;
++		if (!iter.task || !has_group_leader_pid(iter.task))
+ 			goto retry;
+-		}
+ 		get_task_struct(iter.task);
+ 	}
+ 	rcu_read_unlock();
+@@ -2434,10 +2433,8 @@ int proc_pid_readdir(struct file * filp,
+ 
+ 	ns = filp->f_dentry->d_sb->s_fs_info;
+ 	iter.task = NULL;
+-	iter.tgid = filp->f_pos - TGID_OFFSET;
+-	for (iter = next_tgid(ns, iter);
+-	     iter.task;
+-	     iter.tgid += 1, iter = next_tgid(ns, iter)) {
++	iter.tgid = filp->f_pos - TGID_OFFSET - 1;
++	while ((iter = next_tgid(ns, iter)).task) {
+ 		filp->f_pos = iter.tgid + TGID_OFFSET;
+ 		if (proc_pid_fill_cache(filp, dirent, filldir, iter) < 0) {
+ 			put_task_struct(iter.task);
 
-> 
->> +
->> +	/* reserve inodes for new directory */
->> +	for (i = 0; i < sbi->s_groups_count; i++) {
->> +		gdp = ext4_get_group_desc(sb, ires_group, &gdp_bh);
->> +		if (!gdp)
->> +			goto fail;
->> +		bit = 0;
->> +try_same_group:
->> +		if (bit < EXT4_INODES_PER_GROUP(sb)) {
->> +			brelse(bitmap_bh);
->> +			bitmap_bh = read_inode_bitmap(sb, ires_group);
->> +			if (!bitmap_bh)
->> +				goto fail;
->> +
->> +			BUFFER_TRACE(bitmap_bh, "get_write_access");
->> +			if (ext4_journal_get_write_access(
->> +				handle, bitmap_bh) != 0)
->> +				goto fail;
->> +			if (!ext4_set_bit_atomic(sb_bgl_lock(sbi, ires_group),
->> +					bit, bitmap_bh->b_data)) {
->> +				/* we won it */
->> +				BUFFER_TRACE(bitmap_bh,
->> +					"call ext4_journal_dirty_metadata");
->> +				if (ext4_journal_dirty_metadata(handle,
->> +							bitmap_bh) != 0)
->> +					goto fail;
->> +				ires_ino = bit;
->> +				goto find;
->> +			}
->> +			/* we lost it */
->> +			jbd2_journal_release_buffer(handle, bitmap_bh);
->> +			bit += sbi->s_dir_ireserve_nr;
->> +			goto try_same_group;
->> +		}
->      So this above is just a while loop coded with goto... While loop
-> would be IMO better.
-
-The only reason for me to use a goto, is 80 column limitation :) BTW, goto does not hurt performance
-and readability here. IMHO, it's acceptable :-)
-
-> 
-> 									Honza
-
-Today I finished V4 patch, which fixs  a bug and provides new mount option to configure reserved
-inodes number. It can be faster on creating empty directories, I will release it once I finished
-basic benchmark. Your advice on benchmark is valuable, I will post the benchmark result next week.
-
-Best regards.
-
--- 
-Coly Li
-SuSE PRC Labs
