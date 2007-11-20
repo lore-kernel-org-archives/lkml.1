@@ -1,28 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXKTCJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762030AbXKTCKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762113AbXKTCJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758449AbXKTByK
+	id S1762030AbXKTCKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbXKTByN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:54:10 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:2211 "EHLO perches.com"
+	Mon, 19 Nov 2007 20:54:13 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:2214 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758756AbXKTBx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 20:53:57 -0500
+	id S1758761AbXKTBx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:53:58 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-       James Morris <jmorris@namei.org>,
-       Networking Team <netdev@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [PATCH 53/59] net/ipv6: Add missing "space"
-Date: Mon, 19 Nov 2007 17:53:40 -0800
-Message-Id: <1195523627-15389-11-git-send-email-joe@perches.com>
+Cc: Networking Team <netdev@vger.kernel.org>, Samuel Ortiz <samuel@sortiz.org>
+Subject: [PATCH 54/59] net/irda: Add missing "space"
+Date: Mon, 19 Nov 2007 17:53:41 -0800
+Message-Id: <1195523627-15389-12-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.6.728.gea559
-In-Reply-To: <1195523627-15389-10-git-send-email-joe@perches.com>
+In-Reply-To: <1195523627-15389-11-git-send-email-joe@perches.com>
 References: 1234567
  <1195523627-15389-1-git-send-email-joe@perches.com>
  <1195523627-15389-2-git-send-email-joe@perches.com>
@@ -34,7 +28,8 @@ References: 1234567
  <1195523627-15389-8-git-send-email-joe@perches.com>
  <1195523627-15389-9-git-send-email-joe@perches.com>
  <1195523627-15389-10-git-send-email-joe@perches.com>
-Message-Id: <e6a341b03ca9134b944d3021738a795c4e9085c7.1195454436.git.joe@perches.com>
+ <1195523627-15389-11-git-send-email-joe@perches.com>
+Message-Id: <40f9ed858135b417a27a0a628667cc0da0d91e73.1195454436.git.joe@perches.com>
 In-Reply-To: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
 References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,22 +38,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- net/ipv6/addrconf.c |    2 +-
+ net/irda/iriap.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
-index 1bd8d81..567664e 100644
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -967,7 +967,7 @@ int ipv6_dev_get_saddr(struct net_device *daddr_dev,
- 			if (unlikely(score.addr_type == IPV6_ADDR_ANY ||
- 				     score.addr_type & IPV6_ADDR_MULTICAST)) {
- 				LIMIT_NETDEBUG(KERN_DEBUG
--					       "ADDRCONF: unspecified / multicast address"
-+					       "ADDRCONF: unspecified / multicast address "
- 					       "assigned as unicast address on %s",
- 					       dev->name);
- 				continue;
+diff --git a/net/irda/iriap.c b/net/irda/iriap.c
+index dc5e34a..a86a5d8 100644
+--- a/net/irda/iriap.c
++++ b/net/irda/iriap.c
+@@ -928,7 +928,7 @@ void iriap_call_indication(struct iriap_cb *self, struct sk_buff *skb)
+ 
+ 	opcode = fp[0];
+ 	if (~opcode & 0x80) {
+-		IRDA_WARNING("%s: IrIAS multiframe commands or results"
++		IRDA_WARNING("%s: IrIAS multiframe commands or results "
+ 			     "is not implemented yet!\n", __FUNCTION__);
+ 		return;
+ 	}
 -- 
 1.5.3.5.652.gf192c
 
