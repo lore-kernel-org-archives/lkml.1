@@ -1,39 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761967AbXKTUS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762359AbXKTUTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761967AbXKTUS0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758900AbXKTUSQ
+	id S1762359AbXKTUTG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXKTUSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:18:16 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:36517 "EHLO relay.sgi.com"
+	Tue, 20 Nov 2007 15:18:54 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:36755 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756927AbXKTUSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:18:15 -0500
-Date: Tue, 20 Nov 2007 12:18:10 -0800 (PST)
+	id S1759571AbXKTUSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:18:53 -0500
+Date: Tue, 20 Nov 2007 12:18:53 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: akpm@linux-foundation.org
-cc: Mel Gorman <mel@csn.ul.ie>, Lee.Schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
-In-Reply-To: <20071120141953.GB32313@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0711201217430.26419@schroedinger.engr.sgi.com>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
- <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com>
- <20071120141953.GB32313@csn.ul.ie>
+To: Andi Kleen <ak@suse.de>
+cc: akpm@linux-foundation.org, travis@sgi.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: [rfc 01/45] ACPI: Avoid references to impossible processors.
+In-Reply-To: <200711201629.14590.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0711201218310.26419@schroedinger.engr.sgi.com>
+References: <20071120011132.143632442@sgi.com> <20071120011331.944255657@sgi.com>
+ <200711201629.14590.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007, Mel Gorman wrote:
+On Tue, 20 Nov 2007, Andi Kleen wrote:
 
-> Went back and revisited this. Allocating them at boot-time is below but
-> essentially it is a silly and it makes sense to just have two zonelists
-> where one of them is for __GFP_THISNODE. Implementation wise, this involves
-> dropping the last patch in the set and the overall result is still a reduction
-> in the number of zonelists.
+> I would suggest to separate that one and fast-track it, possibly even for 
+> 2.6.24
 
-Allright with me. Andrew could we get this patchset merged?
+I already did. Andrew has the patch in his tree.
