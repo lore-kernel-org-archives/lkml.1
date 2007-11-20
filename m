@@ -1,59 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbXKTBtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbXKTBuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbXKTBtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbXKTBsx
+	id S1757478AbXKTBuN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:50:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbXKTBsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:48:53 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:2038 "EHLO perches.com"
+	Mon, 19 Nov 2007 20:48:55 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:2037 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754255AbXKTBsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751003AbXKTBsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:48:51 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
-Subject: [PATCH 02/59] arch/mips: Add missing "space"
-Date: Mon, 19 Nov 2007 17:47:54 -0800
-Message-Id: <1195523331-15303-3-git-send-email-joe@perches.com>
+Cc: Jes Sorensen <jes@sgi.com>, Tony Luck <tony.luck@intel.com>,
+       linux-altix@sgi.com, linux-ia64@vger.kernel.org
+Subject: [PATCH 01/59] arch/ia64: Add missing "space"
+Date: Mon, 19 Nov 2007 17:47:53 -0800
+Message-Id: <1195523331-15303-2-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.6.728.gea559
-In-Reply-To: <1195523331-15303-2-git-send-email-joe@perches.com>
+In-Reply-To: <1195523331-15303-1-git-send-email-joe@perches.com>
 References: 1234567
  <1195523331-15303-1-git-send-email-joe@perches.com>
- <1195523331-15303-2-git-send-email-joe@perches.com>
-Message-Id: <23f0badf8dab73294c2aa142fafb9301ca843e88.1195454434.git.joe@perches.com>
-In-Reply-To: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
-References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
+Message-Id: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/mips/kernel/vpe.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/ia64/kernel/kprobes.c      |   10 +++++-----
+ arch/ia64/mm/tlb.c              |    2 +-
+ arch/ia64/sn/kernel/io_common.c |    2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/mips/kernel/vpe.c b/arch/mips/kernel/vpe.c
-index 38bd33f..c06eb81 100644
---- a/arch/mips/kernel/vpe.c
-+++ b/arch/mips/kernel/vpe.c
-@@ -470,7 +470,7 @@ static int apply_r_mips_lo16(struct module *me, uint32_t *location,
- 			 */
-  			if (v != l->value) {
- 				printk(KERN_DEBUG "VPE loader: "
--				       "apply_r_mips_lo16/hi16: 	"
-+				       "apply_r_mips_lo16/hi16: \t"
- 				       "inconsistent value information\n");
- 				return -ENOEXEC;
- 			}
-@@ -629,7 +629,7 @@ static void simplify_symbols(Elf_Shdr * sechdrs,
- 			break;
+diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
+index 5fd65d8..90518e4 100644
+--- a/arch/ia64/kernel/kprobes.c
++++ b/arch/ia64/kernel/kprobes.c
+@@ -182,8 +182,8 @@ static int __kprobes unsupported_inst(uint template, uint  slot,
+ 	qp = kprobe_inst & 0x3f;
+ 	if (is_cmp_ctype_unc_inst(template, slot, major_opcode, kprobe_inst)) {
+ 		if (slot == 1 && qp)  {
+-			printk(KERN_WARNING "Kprobes on cmp unc"
+-					"instruction on slot 1 at <0x%lx>"
++			printk(KERN_WARNING "Kprobes on cmp unc "
++					"instruction on slot 1 at <0x%lx> "
+ 					"is not supported\n", addr);
+ 			return -EINVAL;
  
- 		case SHN_MIPS_SCOMMON:
--			printk(KERN_DEBUG "simplify_symbols: ignoring SHN_MIPS_SCOMMON"
-+			printk(KERN_DEBUG "simplify_symbols: ignoring SHN_MIPS_SCOMMON "
- 			       "symbol <%s> st_shndx %d\n", strtab + sym[i].st_name,
- 			       sym[i].st_shndx);
- 			// .sbss section
+@@ -221,8 +221,8 @@ static int __kprobes unsupported_inst(uint template, uint  slot,
+ 			 * bit 12 to be equal to 1
+ 			 */
+ 			if (slot == 1 && qp) {
+-				printk(KERN_WARNING "Kprobes on test bit"
+-						"instruction on slot at <0x%lx>"
++				printk(KERN_WARNING "Kprobes on test bit "
++						"instruction on slot at <0x%lx> "
+ 						"is not supported\n", addr);
+ 				return -EINVAL;
+ 			}
+@@ -242,7 +242,7 @@ static int __kprobes unsupported_inst(uint template, uint  slot,
+ 			 */
+ 			int x6=(kprobe_inst >> 27) & 0x3F;
+ 			if ((x6 == 0x10) || (x6 == 0x11)) {
+-				printk(KERN_WARNING "Kprobes on"
++				printk(KERN_WARNING "Kprobes on "
+ 					"Indirect Predict is not supported\n");
+ 				return -EINVAL;
+ 			}
+diff --git a/arch/ia64/mm/tlb.c b/arch/ia64/mm/tlb.c
+index 1682fc6..cef1647 100644
+--- a/arch/ia64/mm/tlb.c
++++ b/arch/ia64/mm/tlb.c
+@@ -180,7 +180,7 @@ ia64_tlb_init (void)
+ 	long status;
+ 
+ 	if ((status = ia64_pal_vm_page_size(&tr_pgbits, &purge.mask)) != 0) {
+-		printk(KERN_ERR "PAL_VM_PAGE_SIZE failed with status=%ld;"
++		printk(KERN_ERR "PAL_VM_PAGE_SIZE failed with status=%ld; "
+ 		       "defaulting to architected purge page-sizes.\n", status);
+ 		purge.mask = 0x115557000UL;
+ 	}
+diff --git a/arch/ia64/sn/kernel/io_common.c b/arch/ia64/sn/kernel/io_common.c
+index 4594770..710bf51 100644
+--- a/arch/ia64/sn/kernel/io_common.c
++++ b/arch/ia64/sn/kernel/io_common.c
+@@ -347,7 +347,7 @@ sn_common_bus_fixup(struct pci_bus *bus,
+ 	if (controller->node >= num_online_nodes()) {
+ 		struct pcibus_bussoft *b = SN_PCIBUS_BUSSOFT(bus);
+ 
+-		printk(KERN_WARNING "Device ASIC=%u XID=%u PBUSNUM=%u"
++		printk(KERN_WARNING "Device ASIC=%u XID=%u PBUSNUM=%u "
+ 		       "L_IO=%lx L_MEM=%lx BASE=%lx\n",
+ 		       b->bs_asic_type, b->bs_xid, b->bs_persist_busnum,
+ 		       b->bs_legacy_io, b->bs_legacy_mem, b->bs_base);
 -- 
 1.5.3.5.652.gf192c
 
