@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbXKTU52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764234AbXKTU6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764286AbXKTU52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762489AbXKTU4z
+	id S1764234AbXKTU6o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbXKTU6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:56:55 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:29370 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757638AbXKTU4w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:56:52 -0500
-X-Greylist: delayed 437 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 15:56:52 EST
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
-Date: Tue, 20 Nov 2007 15:48:44 -0500
-User-Agent: KMail/1.9.7
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <474344D0.40704@linux.vnet.ibm.com>
-In-Reply-To: <474344D0.40704@linux.vnet.ibm.com>
+	Tue, 20 Nov 2007 15:58:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52915 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757638AbXKTU6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:58:34 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711201548.44542.paul.moore@hp.com>
+From: Roland McGrath <roland@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/18] x86 vDSO: arch/x86/vdso/vdso32
+In-Reply-To: Thomas Gleixner's message of  Tuesday, 20 November 2007 14:05:24 +0100 <alpine.LFD.0.9999.0711201402520.25057@localhost.localdomain>
+References: <20071119215944.01B7C26F8BE@magilla.localdomain>
+	<20071119220425.6002E26F8BE@magilla.localdomain>
+	<alpine.LFD.0.9999.0711201402520.25057@localhost.localdomain>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20071120205759.3533A26F8BE@magilla.localdomain>
+Date: Tue, 20 Nov 2007 12:57:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 November 2007 3:34:24 pm Kamalesh Babulal wrote:
-> Hi Andrew,
->
-> The kernel build fails, in selinux with following error
->
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> security/built-in.o(.toc1+0x928): undefined reference to
-> `selinux_xfrm_refcount' make: *** [.tmp_vmlinux1] Error 1
-> 11/20/2007-14:42:08 Build the kernel. Failed rc = 2
-> 11/20/2007-14:42:08 build: Building kernel... Failed rc = 1
->
-> The patch causing this error is git-lblnet.patch, where in the
-> selinux_xfrm_enabled() is called from security/selinux/hooks.c, depends on
-> the extern atomic_tselinux_xfrm_refcount.
+> >  rename arch/x86/{kernel/vsyscall-int80_32.S => vdso/vdso32/int80.S} (97%)
+> >  rename arch/x86/{kernel/vsyscall-note_32.S => vdso/vdso32/note.S} (95%)
+> >  rename arch/x86/{kernel/vsyscall-sigreturn_32.S => vdso/vdso32/sigreturn.S} (100%)
+> >  rename arch/x86/{kernel/vsyscall-sysenter_32.S => vdso/vdso32/sysenter.S} (99%)
+> 
+> I just stumbled accross those renames, when I tried to apply your
+> series from the mailbox. I guess there is some option to git which
+> creates a real patch. I fixed it up manually for now.
 
-The problem appears to be that the selinux_xfrm_refcount functionality is not 
-properly protected by CONFIG_SECURITY_NETWORK_XFRM.  I'm fixing that now.
+You don't have to do anything manual.  git-apply handles these fine.
+>From my introduction post (00/18):
 
--- 
-paul moore
-linux security @ hp
+	There are several renames in here, so GIT can apply them but maybe patch
+	can't.  (If there is a switch to git-format-patch to produce something
+	more universally applicable, I haven't found it.)
+
+
+
+Thanks,
+Roland
