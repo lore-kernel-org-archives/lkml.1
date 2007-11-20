@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbXKTBTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbXKTBTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbXKTBTJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:19:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbXKTBNw
+	id S1758153AbXKTBTa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXKTBNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:52 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36871 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754255AbXKTBNg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 20:13:53 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49852 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754297AbXKTBNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:36 -0500
-Message-Id: <20071120011335.975705216@sgi.com>
+Message-Id: <20071120011336.210236732@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:50 -0800
+Date: Mon, 19 Nov 2007 17:11:51 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -21,109 +20,67 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 18/45] cpu alloc: XFS counters
-Content-Disposition: inline; filename=0026-cpu-alloc-XFS-counters.patch
+Subject: [rfc 19/45] cpu alloc: NFS statistics
+Content-Disposition: inline; filename=0027-cpu-alloc-NFS-statistics.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also remove the useless zeroing after allocation. Allocpercpu already
-zeroed the objects.
-
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/xfs/xfs_mount.c |   24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ fs/nfs/iostat.h |    8 ++++----
+ fs/nfs/super.c  |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/fs/xfs/xfs_mount.c
+Index: linux-2.6/fs/nfs/iostat.h
 ===================================================================
---- linux-2.6.orig/fs/xfs/xfs_mount.c	2007-11-15 21:17:24.467654585 -0800
-+++ linux-2.6/fs/xfs/xfs_mount.c	2007-11-15 21:25:32.643904117 -0800
-@@ -1924,7 +1924,7 @@ xfs_icsb_cpu_notify(
+--- linux-2.6.orig/fs/nfs/iostat.h	2007-11-15 21:17:24.391404458 -0800
++++ linux-2.6/fs/nfs/iostat.h	2007-11-15 21:25:33.167654066 -0800
+@@ -123,7 +123,7 @@ static inline void nfs_inc_server_stats(
+ 	int cpu;
  
- 	mp = (xfs_mount_t *)container_of(nfb, xfs_mount_t, m_icsb_notifier);
- 	cntp = (xfs_icsb_cnts_t *)
--			per_cpu_ptr(mp->m_sb_cnts, (unsigned long)hcpu);
-+			CPU_PTR(mp->m_sb_cnts, (unsigned long)hcpu);
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
-@@ -1976,10 +1976,7 @@ int
- xfs_icsb_init_counters(
- 	xfs_mount_t	*mp)
- {
--	xfs_icsb_cnts_t *cntp;
--	int		i;
--
--	mp->m_sb_cnts = alloc_percpu(xfs_icsb_cnts_t);
-+	mp->m_sb_cnts = CPU_ALLOC(xfs_icsb_cnts_t, GFP_KERNEL | __GFP_ZERO);
- 	if (mp->m_sb_cnts == NULL)
- 		return -ENOMEM;
- 
-@@ -1989,11 +1986,6 @@ xfs_icsb_init_counters(
- 	register_hotcpu_notifier(&mp->m_icsb_notifier);
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
--		memset(cntp, 0, sizeof(xfs_icsb_cnts_t));
--	}
--
- 	mutex_init(&mp->m_icsb_mutex);
- 
- 	/*
-@@ -2026,7 +2018,7 @@ xfs_icsb_destroy_counters(
- {
- 	if (mp->m_sb_cnts) {
- 		unregister_hotcpu_notifier(&mp->m_icsb_notifier);
--		free_percpu(mp->m_sb_cnts);
-+		CPU_FREE(mp->m_sb_cnts);
- 	}
- 	mutex_destroy(&mp->m_icsb_mutex);
- }
-@@ -2056,7 +2048,7 @@ xfs_icsb_lock_all_counters(
- 	int		i;
- 
- 	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
- 		xfs_icsb_lock_cntr(cntp);
- 	}
- }
-@@ -2069,7 +2061,7 @@ xfs_icsb_unlock_all_counters(
- 	int		i;
- 
- 	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
- 		xfs_icsb_unlock_cntr(cntp);
- 	}
- }
-@@ -2089,7 +2081,7 @@ xfs_icsb_count(
- 		xfs_icsb_lock_all_counters(mp);
- 
- 	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
- 		cnt->icsb_icount += cntp->icsb_icount;
- 		cnt->icsb_ifree += cntp->icsb_ifree;
- 		cnt->icsb_fdblocks += cntp->icsb_fdblocks;
-@@ -2167,7 +2159,7 @@ xfs_icsb_enable_counter(
- 
- 	xfs_icsb_lock_all_counters(mp);
- 	for_each_online_cpu(i) {
--		cntp = per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = CPU_PTR(mp->m_sb_cnts, i);
- 		switch (field) {
- 		case XFS_SBS_ICOUNT:
- 			cntp->icsb_icount = count + resid;
-@@ -2307,7 +2299,7 @@ xfs_icsb_modify_counters(
- 	might_sleep();
- again:
  	cpu = get_cpu();
--	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
-+	icsbp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, cpu);
+-	iostats = per_cpu_ptr(server->io_stats, cpu);
++	iostats = CPU_PTR(server->io_stats, cpu);
+ 	iostats->events[stat] ++;
+ 	put_cpu_no_resched();
+ }
+@@ -139,7 +139,7 @@ static inline void nfs_add_server_stats(
+ 	int cpu;
  
- 	/*
- 	 * if the counter is disabled, go to slow path
+ 	cpu = get_cpu();
+-	iostats = per_cpu_ptr(server->io_stats, cpu);
++	iostats = CPU_PTR(server->io_stats, cpu);
+ 	iostats->bytes[stat] += addend;
+ 	put_cpu_no_resched();
+ }
+@@ -151,13 +151,13 @@ static inline void nfs_add_stats(struct 
+ 
+ static inline struct nfs_iostats *nfs_alloc_iostats(void)
+ {
+-	return alloc_percpu(struct nfs_iostats);
++	return CPU_ALLOC(struct nfs_iostats, GFP_KERNEL | __GFP_ZERO);
+ }
+ 
+ static inline void nfs_free_iostats(struct nfs_iostats *stats)
+ {
+ 	if (stats != NULL)
+-		free_percpu(stats);
++		CPU_FREE(stats);
+ }
+ 
+ #endif
+Index: linux-2.6/fs/nfs/super.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/super.c	2007-11-15 21:17:24.399404478 -0800
++++ linux-2.6/fs/nfs/super.c	2007-11-15 21:25:33.171654143 -0800
+@@ -529,7 +529,7 @@ static int nfs_show_stats(struct seq_fil
+ 		struct nfs_iostats *stats;
+ 
+ 		preempt_disable();
+-		stats = per_cpu_ptr(nfss->io_stats, cpu);
++		stats = CPU_PTR(nfss->io_stats, cpu);
+ 
+ 		for (i = 0; i < __NFSIOS_COUNTSMAX; i++)
+ 			totals.events[i] += stats->events[i];
 
 -- 
