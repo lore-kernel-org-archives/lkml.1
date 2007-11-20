@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbXKTB3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbXKTBaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760055AbXKTB3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758601AbXKTBVn
+	id S1759854AbXKTBaP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:30:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbXKTB0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:21:43 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34793 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758596AbXKTBVm (ORCPT
+	Mon, 19 Nov 2007 20:26:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55906 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759497AbXKTB0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 20:21:42 -0500
-Message-ID: <474236A0.8030601@zytor.com>
-Date: Mon, 19 Nov 2007 17:21:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Stephen Clark <Stephen.Clark@seclark.us>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Power Saving
-References: <47422D3B.8080704@seclark.us> <20071120005443.GB9243@redhat.com> <474232D9.20407@seclark.us> <20071120011236.GA17420@redhat.com>
-In-Reply-To: <20071120011236.GA17420@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Nov 2007 20:26:42 -0500
+Date: Mon, 19 Nov 2007 17:24:18 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "kernel coder" <lhrkernelcoder@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: increased number of cycles
+Message-ID: <20071119172418.3894fc25@laptopd505.fenrus.org>
+In-Reply-To: <f69849430711172131j41c21d84y2ac10759eff29eb7@mail.gmail.com>
+References: <f69849430711172131j41c21d84y2ac10759eff29eb7@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
->  > 
->  > and:
->  > cat /proc/acpi/processor/CPU0/throttling
->  > state count:             2
->  > active state:            T0
->  > states:
->  >    *T0:                  00%
->  >     T1:                  50%
-> 
-> See above. These are throttling states, used typically
-> if the system is overheating.
-> 
+On Sat, 17 Nov 2007 21:31:25 -0800
+"kernel coder" <lhrkernelcoder@gmail.com> wrote:
 
-And more importantly, there is no power advantages over T states as 
-opposed to C states.  They pretty much mean pulsing the system in and 
-out of either C1 or C2 depending on the CPU/chipset.
+> hi,
+>         I'm trying to add some code to netif_receive_skb function in
+> dev.c file . The cycles consumed by that code was around 16 cycles on
+> Dual Core Opetron machine.I'm working on that code for last 6 months
+> now and the consumed cycles have always been around 16 cycles .I don't
+> touch any other part of kernel .
+> 
+> But for last 4 days the consumed cycles have suddenly increased to
+> around 35 cycles . I'm using RDTSC instruction to profile the
+> code.There is no change in code and the kernel version is also the
+> same .I am assuming that there  must be something wrong with hardware.
 
-	-hpa
+note that profiling a section that takes this short with rdtsc is...
+not really working well in practice; you're profiling something that's
+smaller (or at least roughly the same size) than the cpu's out of order
+speculation window, so your rdtsc greatly impacts what is actually
+happening in the code.
+
+as for the change... 16->35 cycles can well be a code or data alignment
+change or even a branch misprediction due to some minor code generation
+issue.... you're looking at a small microscopic part of the universe
+after all, the butterfly in the pacific WILL influence you ;-)
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
