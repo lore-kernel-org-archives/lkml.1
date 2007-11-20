@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759760AbXKTPhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXKTPhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759760AbXKTPhX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:37:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXKTPhJ
+	id S1760570AbXKTPhp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbXKTPhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:37:09 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:53210 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758055AbXKTPhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:37:08 -0500
-Date: Tue, 20 Nov 2007 18:37:20 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] do_wait: remove one "else if" branch
-Message-ID: <20071120153720.GA5319@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 20 Nov 2007 10:37:32 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:48200 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760005AbXKTPhb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:37:31 -0500
+Date: Tue, 20 Nov 2007 07:37:28 -0800 (PST)
+From: dean gaudet <dean@arctic.org>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, ak@suse.de,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org
+Subject: Re: [patch][v2] x86, ptrace: support for branch trace store(BTS)
+In-Reply-To: <alpine.DEB.0.99999.0711200708580.765@twinlark.arctic.org>
+Message-ID: <alpine.DEB.0.99999.0711200729570.765@twinlark.arctic.org>
+References: <029E5BE7F699594398CA44E3DDF55444F3AEA7@swsmsx413.ger.corp.intel.com> <alpine.DEB.0.99999.0711200708580.765@twinlark.arctic.org>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minor cleanup. We can remove one "else if" branch.
+On Tue, 20 Nov 2007, dean gaudet wrote:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> On Tue, 20 Nov 2007, Metzger, Markus T wrote:
+> 
+> > +__cpuinit void ptrace_bts_init_intel(struct cpuinfo_x86 *c)
+> > +{
+> > +	switch (c->x86) {
+> > +	case 0x6:
+> > +		switch (c->x86_model) {
+> > +#ifdef __i386__
+> > +		case 0xD:
+> > +		case 0xE: /* Pentium M */
+> > +			ptrace_bts_ops = ptrace_bts_ops_pentium_m;
+> > +			break;
+> > +#endif /* _i386_ */
+> > +		case 0xF: /* Core2 */
+> > +			ptrace_bts_ops = ptrace_bts_ops_core2;
+> > +			break;
+> > +		default:
+> > +			/* sorry, don't know about them */
+> > +			break;
+> > +		}
+> > +		break;
+> > +	case 0xF:
+> > +		switch (c->x86_model) {
+> > +#ifdef __i386__
+> > +		case 0x0:
+> > +		case 0x1:
+> > +		case 0x2:
+> > +		case 0x3: /* Netburst */
+> > +			ptrace_bts_ops = ptrace_bts_ops_netburst;
+> > +			break;
+> > +#endif /* _i386_ */
+> > +		default:
+> > +			/* sorry, don't know about them */
+> > +			break;
+> > +		}
+> > +		break;
+> 
+> is this right?  i thought intel family 15 models 3 and 4 supported amd64
+> mode...
 
---- PT/kernel/exit.c~3_EXIT_DEAD	2007-11-20 17:54:07.000000000 +0300
-+++ PT/kernel/exit.c	2007-11-20 18:23:16.000000000 +0300
-@@ -1561,8 +1561,6 @@ repeat:
- 					goto repeat;
- 				if (retval != 0) /* He released the lock.  */
- 					goto end;
--			} else if (p->exit_state == EXIT_DEAD) {
--				continue;
- 			} else if (p->exit_state == EXIT_ZOMBIE) {
- 				/*
- 				 * Eligible but we cannot release it yet:
-@@ -1577,7 +1575,7 @@ repeat:
- 				/* He released the lock.  */
- 				if (retval != 0)
- 					goto end;
--			} else {
-+			} else if (p->exit_state != EXIT_DEAD) {
- check_continued:
- 				/*
- 				 * It's running now, so it might later
+actually... why aren't you using cpuid level 1 edx bit 21 to 
+enable/disable this feature?  isn't that the bit defined to indicate 
+whether this feature is supported or not?
 
+and it seems like this patch and perfmon2 are going to have to live with 
+each other... since they both require the use of the DS save area...
+
+-dean
