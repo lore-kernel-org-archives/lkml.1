@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764639AbXKTSiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbXKTSjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764639AbXKTSiq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760740AbXKTS21
+	id S932123AbXKTSjH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:39:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762159AbXKTS2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:28:27 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52106 "EHLO
+	Tue, 20 Nov 2007 13:28:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52130 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762120AbXKTS20 (ORCPT
+	with ESMTP id S1762153AbXKTS2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:28:26 -0500
-Date: Tue, 20 Nov 2007 10:25:07 -0800
+	Tue, 20 Nov 2007 13:28:32 -0500
+Date: Tue, 20 Nov 2007 10:25:10 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dan Williams <dcbw@redhat.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
        Tobias Powalowski <t.powa@gmx.de>
-Subject: [patch 28/29] USB: Nikon D40X unusual_devs entry
-Message-ID: <20071120182507.GD28611@kroah.com>
+Subject: [patch 29/29] ipw2200: batch non-user-requested scan result
+	notifications
+Message-ID: <20071120182510.GE28611@kroah.com>
 References: <20071120181733.702234406@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline; filename="usb-nikon-d40x-unusual_devs-entry.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ipw2200-batch-non-user-requested-scan-result-notifications.patch"
 In-Reply-To: <20071120182248.GA28611@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,37 +41,169 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Ortwin Glück <odi@odi.ch>
+From: Dan Williams <dcbw@redhat.com>
 
-patch d466a9190ff1ceddfee50686e61d63590fc820d9 in mainline.
+patch 0b5316769774d1dc2fdd702e095f9e6992af269a in mainline.
 
-Not surprisingly the Nikon D40X DSC needs the same quirks as the D40,
-but it has a separate ID.
-See http://bugs.gentoo.org/show_bug.cgi?id=191431
+ipw2200 makes extensive use of background scanning when unassociated or
+down.  Unfortunately, the firmware sends scan completed events many
+times per second, which the driver pushes directly up to userspace.
+This needlessly wakes up processes listening for wireless events many
+times per second.  Batch together scan completed events for
+non-user-requested scans and send them up to userspace every 4 seconds.
+Scan completed events resulting from an SIOCSIWSCAN call are pushed up
+without delay.
 
-From: Ortwin Glück <odi@odi.ch>
+Signed-off-by: Dan Williams <dcbw@redhat.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Cc: Tobias Powalowski <t.powa@gmx.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/wireless/ipw2200.c |   56 +++++++++++++++++++++++++++++++++--------
+ drivers/net/wireless/ipw2200.h |    3 ++
+ 2 files changed, 49 insertions(+), 10 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -362,6 +362,13 @@ UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -1740,8 +1740,10 @@ static int ipw_radio_kill_sw(struct ipw_
+ 	if (disable_radio) {
+ 		priv->status |= STATUS_RF_KILL_SW;
  
-+/* Reported by Shan Destromp (shansan@gmail.com) */
-+UNUSUAL_DEV(  0x04b0, 0x0417, 0x0100, 0x0100,
-+		"NIKON",
-+		"NIKON DSC D40X",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY),
+-		if (priv->workqueue)
++		if (priv->workqueue) {
+ 			cancel_delayed_work(&priv->request_scan);
++			cancel_delayed_work(&priv->scan_event);
++		}
+ 		queue_work(priv->workqueue, &priv->down);
+ 	} else {
+ 		priv->status &= ~STATUS_RF_KILL_SW;
+@@ -1992,6 +1994,7 @@ static void ipw_irq_tasklet(struct ipw_p
+ 		wake_up_interruptible(&priv->wait_command_queue);
+ 		priv->status &= ~(STATUS_ASSOCIATED | STATUS_ASSOCIATING);
+ 		cancel_delayed_work(&priv->request_scan);
++		cancel_delayed_work(&priv->scan_event);
+ 		schedule_work(&priv->link_down);
+ 		queue_delayed_work(priv->workqueue, &priv->rf_kill, 2 * HZ);
+ 		handled |= IPW_INTA_BIT_RF_KILL_DONE;
+@@ -4341,6 +4344,37 @@ static void ipw_handle_missed_beacon(str
+ 	IPW_DEBUG_NOTIF("Missed beacon: %d\n", missed_count);
+ }
+ 
++static void ipw_scan_event(struct work_struct *work)
++{
++	union iwreq_data wrqu;
 +
- /* BENQ DC5330
-  * Reported by Manuel Fombuena <mfombuena@ya.com> and
-  * Frank Copeland <fjc@thingy.apana.org.au> */
++	struct ipw_priv *priv =
++		container_of(work, struct ipw_priv, scan_event.work);
++
++	wrqu.data.length = 0;
++	wrqu.data.flags = 0;
++	wireless_send_event(priv->net_dev, SIOCGIWSCAN, &wrqu, NULL);
++}
++
++static void handle_scan_event(struct ipw_priv *priv)
++{
++	/* Only userspace-requested scan completion events go out immediately */
++	if (!priv->user_requested_scan) {
++		if (!delayed_work_pending(&priv->scan_event))
++			queue_delayed_work(priv->workqueue, &priv->scan_event,
++					 round_jiffies(msecs_to_jiffies(4000)));
++	} else {
++		union iwreq_data wrqu;
++
++		priv->user_requested_scan = 0;
++		cancel_delayed_work(&priv->scan_event);
++
++		wrqu.data.length = 0;
++		wrqu.data.flags = 0;
++		wireless_send_event(priv->net_dev, SIOCGIWSCAN, &wrqu, NULL);
++	}
++}
++
+ /**
+  * Handle host notification packet.
+  * Called from interrupt routine
+@@ -4702,14 +4736,8 @@ static void ipw_rx_notification(struct i
+ 			 * on how the scan was initiated. User space can just
+ 			 * sync on periodic scan to get fresh data...
+ 			 * Jean II */
+-			if (x->status == SCAN_COMPLETED_STATUS_COMPLETE) {
+-				union iwreq_data wrqu;
+-
+-				wrqu.data.length = 0;
+-				wrqu.data.flags = 0;
+-				wireless_send_event(priv->net_dev, SIOCGIWSCAN,
+-						    &wrqu, NULL);
+-			}
++			if (x->status == SCAN_COMPLETED_STATUS_COMPLETE)
++				handle_scan_event(priv);
+ 			break;
+ 		}
+ 
+@@ -9472,6 +9500,10 @@ static int ipw_wx_set_scan(struct net_de
+ 	struct ipw_priv *priv = ieee80211_priv(dev);
+ 	struct iw_scan_req *req = (struct iw_scan_req *)extra;
+ 
++	mutex_lock(&priv->mutex);
++	priv->user_requested_scan = 1;
++	mutex_unlock(&priv->mutex);
++
+ 	if (wrqu->data.length == sizeof(struct iw_scan_req)) {
+ 		if (wrqu->data.flags & IW_SCAN_THIS_ESSID) {
+ 			ipw_request_direct_scan(priv, req->essid,
+@@ -10647,6 +10679,7 @@ static void ipw_link_up(struct ipw_priv 
+ 	}
+ 
+ 	cancel_delayed_work(&priv->request_scan);
++	cancel_delayed_work(&priv->scan_event);
+ 	ipw_reset_stats(priv);
+ 	/* Ensure the rate is updated immediately */
+ 	priv->last_rate = ipw_get_current_rate(priv);
+@@ -10684,7 +10717,8 @@ static void ipw_link_down(struct ipw_pri
+ 	if (!(priv->status & STATUS_EXIT_PENDING)) {
+ 		/* Queue up another scan... */
+ 		queue_delayed_work(priv->workqueue, &priv->request_scan, 0);
+-	}
++	} else
++		cancel_delayed_work(&priv->scan_event);
+ }
+ 
+ static void ipw_bg_link_down(struct work_struct *work)
+@@ -10714,6 +10748,7 @@ static int ipw_setup_deferred_work(struc
+ 	INIT_WORK(&priv->up, ipw_bg_up);
+ 	INIT_WORK(&priv->down, ipw_bg_down);
+ 	INIT_DELAYED_WORK(&priv->request_scan, ipw_request_scan);
++	INIT_DELAYED_WORK(&priv->scan_event, ipw_scan_event);
+ 	INIT_WORK(&priv->request_passive_scan, ipw_request_passive_scan);
+ 	INIT_DELAYED_WORK(&priv->gather_stats, ipw_bg_gather_stats);
+ 	INIT_WORK(&priv->abort_scan, ipw_bg_abort_scan);
+@@ -11746,6 +11781,7 @@ static void ipw_pci_remove(struct pci_de
+ 	cancel_delayed_work(&priv->adhoc_check);
+ 	cancel_delayed_work(&priv->gather_stats);
+ 	cancel_delayed_work(&priv->request_scan);
++	cancel_delayed_work(&priv->scan_event);
+ 	cancel_delayed_work(&priv->rf_kill);
+ 	cancel_delayed_work(&priv->scan_check);
+ 	destroy_workqueue(priv->workqueue);
+--- a/drivers/net/wireless/ipw2200.h
++++ b/drivers/net/wireless/ipw2200.h
+@@ -1288,6 +1288,8 @@ struct ipw_priv {
+ 
+ 	struct iw_public_data wireless_data;
+ 
++	int user_requested_scan;
++
+ 	struct workqueue_struct *workqueue;
+ 
+ 	struct delayed_work adhoc_check;
+@@ -1296,6 +1298,7 @@ struct ipw_priv {
+ 	struct work_struct system_config;
+ 	struct work_struct rx_replenish;
+ 	struct delayed_work request_scan;
++	struct delayed_work scan_event;
+   	struct work_struct request_passive_scan;
+ 	struct work_struct adapter_restart;
+ 	struct delayed_work rf_kill;
 
 -- 
