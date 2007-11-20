@@ -1,209 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbXKTSjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932216AbXKTSjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbXKTSjH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:39:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762159AbXKTS2e
+	id S932216AbXKTSjg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761871AbXKTSah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:28:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52130 "EHLO
+	Tue, 20 Nov 2007 13:30:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52197 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762153AbXKTS2c (ORCPT
+	with ESMTP id S1762672AbXKTSaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:28:32 -0500
-Date: Tue, 20 Nov 2007 10:25:10 -0800
+	Tue, 20 Nov 2007 13:30:35 -0500
+Date: Tue, 20 Nov 2007 10:29:45 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dcbw@redhat.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Tobias Powalowski <t.powa@gmx.de>
-Subject: [patch 29/29] ipw2200: batch non-user-requested scan result
-	notifications
-Message-ID: <20071120182510.GE28611@kroah.com>
-References: <20071120181733.702234406@mini.kroah.org>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/29] 2.6.23-stable review
+Message-ID: <20071120182945.GA32333@kroah.com>
+References: <20071120182248.GA28611@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipw2200-batch-non-user-requested-scan-result-notifications.patch"
+Content-Disposition: inline
 In-Reply-To: <20071120182248.GA28611@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.23-stable review patch.  If anyone has any objections, please let us
-know.
+On Tue, Nov 20, 2007 at 10:22:48AM -0800, Greg Kroah-Hartman wrote:
+> This is the start of the stable review cycle for the 2.6.23.9 release.
+> There are 29 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
+> 
+> I would especially like people who experienced the softlockup messages
+> in their kernel logs on 2.6.23.8 to test this series to make sure that
+> everything is now working properly.
 
+And the full patch can be found at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.23.9-rc1.gz
+
+The diffstat is below.
+
+thanks,
+
+greg k-h
 ------------------
-From: Dan Williams <dcbw@redhat.com>
 
-patch 0b5316769774d1dc2fdd702e095f9e6992af269a in mainline.
-
-ipw2200 makes extensive use of background scanning when unassociated or
-down.  Unfortunately, the firmware sends scan completed events many
-times per second, which the driver pushes directly up to userspace.
-This needlessly wakes up processes listening for wireless events many
-times per second.  Batch together scan completed events for
-non-user-requested scans and send them up to userspace every 4 seconds.
-Scan completed events resulting from an SIOCSIWSCAN call are pushed up
-without delay.
-
-Signed-off-by: Dan Williams <dcbw@redhat.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Cc: Tobias Powalowski <t.powa@gmx.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/net/wireless/ipw2200.c |   56 +++++++++++++++++++++++++++++++++--------
- drivers/net/wireless/ipw2200.h |    3 ++
- 2 files changed, 49 insertions(+), 10 deletions(-)
-
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -1740,8 +1740,10 @@ static int ipw_radio_kill_sw(struct ipw_
- 	if (disable_radio) {
- 		priv->status |= STATUS_RF_KILL_SW;
- 
--		if (priv->workqueue)
-+		if (priv->workqueue) {
- 			cancel_delayed_work(&priv->request_scan);
-+			cancel_delayed_work(&priv->scan_event);
-+		}
- 		queue_work(priv->workqueue, &priv->down);
- 	} else {
- 		priv->status &= ~STATUS_RF_KILL_SW;
-@@ -1992,6 +1994,7 @@ static void ipw_irq_tasklet(struct ipw_p
- 		wake_up_interruptible(&priv->wait_command_queue);
- 		priv->status &= ~(STATUS_ASSOCIATED | STATUS_ASSOCIATING);
- 		cancel_delayed_work(&priv->request_scan);
-+		cancel_delayed_work(&priv->scan_event);
- 		schedule_work(&priv->link_down);
- 		queue_delayed_work(priv->workqueue, &priv->rf_kill, 2 * HZ);
- 		handled |= IPW_INTA_BIT_RF_KILL_DONE;
-@@ -4341,6 +4344,37 @@ static void ipw_handle_missed_beacon(str
- 	IPW_DEBUG_NOTIF("Missed beacon: %d\n", missed_count);
- }
- 
-+static void ipw_scan_event(struct work_struct *work)
-+{
-+	union iwreq_data wrqu;
-+
-+	struct ipw_priv *priv =
-+		container_of(work, struct ipw_priv, scan_event.work);
-+
-+	wrqu.data.length = 0;
-+	wrqu.data.flags = 0;
-+	wireless_send_event(priv->net_dev, SIOCGIWSCAN, &wrqu, NULL);
-+}
-+
-+static void handle_scan_event(struct ipw_priv *priv)
-+{
-+	/* Only userspace-requested scan completion events go out immediately */
-+	if (!priv->user_requested_scan) {
-+		if (!delayed_work_pending(&priv->scan_event))
-+			queue_delayed_work(priv->workqueue, &priv->scan_event,
-+					 round_jiffies(msecs_to_jiffies(4000)));
-+	} else {
-+		union iwreq_data wrqu;
-+
-+		priv->user_requested_scan = 0;
-+		cancel_delayed_work(&priv->scan_event);
-+
-+		wrqu.data.length = 0;
-+		wrqu.data.flags = 0;
-+		wireless_send_event(priv->net_dev, SIOCGIWSCAN, &wrqu, NULL);
-+	}
-+}
-+
- /**
-  * Handle host notification packet.
-  * Called from interrupt routine
-@@ -4702,14 +4736,8 @@ static void ipw_rx_notification(struct i
- 			 * on how the scan was initiated. User space can just
- 			 * sync on periodic scan to get fresh data...
- 			 * Jean II */
--			if (x->status == SCAN_COMPLETED_STATUS_COMPLETE) {
--				union iwreq_data wrqu;
--
--				wrqu.data.length = 0;
--				wrqu.data.flags = 0;
--				wireless_send_event(priv->net_dev, SIOCGIWSCAN,
--						    &wrqu, NULL);
--			}
-+			if (x->status == SCAN_COMPLETED_STATUS_COMPLETE)
-+				handle_scan_event(priv);
- 			break;
- 		}
- 
-@@ -9472,6 +9500,10 @@ static int ipw_wx_set_scan(struct net_de
- 	struct ipw_priv *priv = ieee80211_priv(dev);
- 	struct iw_scan_req *req = (struct iw_scan_req *)extra;
- 
-+	mutex_lock(&priv->mutex);
-+	priv->user_requested_scan = 1;
-+	mutex_unlock(&priv->mutex);
-+
- 	if (wrqu->data.length == sizeof(struct iw_scan_req)) {
- 		if (wrqu->data.flags & IW_SCAN_THIS_ESSID) {
- 			ipw_request_direct_scan(priv, req->essid,
-@@ -10647,6 +10679,7 @@ static void ipw_link_up(struct ipw_priv 
- 	}
- 
- 	cancel_delayed_work(&priv->request_scan);
-+	cancel_delayed_work(&priv->scan_event);
- 	ipw_reset_stats(priv);
- 	/* Ensure the rate is updated immediately */
- 	priv->last_rate = ipw_get_current_rate(priv);
-@@ -10684,7 +10717,8 @@ static void ipw_link_down(struct ipw_pri
- 	if (!(priv->status & STATUS_EXIT_PENDING)) {
- 		/* Queue up another scan... */
- 		queue_delayed_work(priv->workqueue, &priv->request_scan, 0);
--	}
-+	} else
-+		cancel_delayed_work(&priv->scan_event);
- }
- 
- static void ipw_bg_link_down(struct work_struct *work)
-@@ -10714,6 +10748,7 @@ static int ipw_setup_deferred_work(struc
- 	INIT_WORK(&priv->up, ipw_bg_up);
- 	INIT_WORK(&priv->down, ipw_bg_down);
- 	INIT_DELAYED_WORK(&priv->request_scan, ipw_request_scan);
-+	INIT_DELAYED_WORK(&priv->scan_event, ipw_scan_event);
- 	INIT_WORK(&priv->request_passive_scan, ipw_request_passive_scan);
- 	INIT_DELAYED_WORK(&priv->gather_stats, ipw_bg_gather_stats);
- 	INIT_WORK(&priv->abort_scan, ipw_bg_abort_scan);
-@@ -11746,6 +11781,7 @@ static void ipw_pci_remove(struct pci_de
- 	cancel_delayed_work(&priv->adhoc_check);
- 	cancel_delayed_work(&priv->gather_stats);
- 	cancel_delayed_work(&priv->request_scan);
-+	cancel_delayed_work(&priv->scan_event);
- 	cancel_delayed_work(&priv->rf_kill);
- 	cancel_delayed_work(&priv->scan_check);
- 	destroy_workqueue(priv->workqueue);
---- a/drivers/net/wireless/ipw2200.h
-+++ b/drivers/net/wireless/ipw2200.h
-@@ -1288,6 +1288,8 @@ struct ipw_priv {
- 
- 	struct iw_public_data wireless_data;
- 
-+	int user_requested_scan;
-+
- 	struct workqueue_struct *workqueue;
- 
- 	struct delayed_work adhoc_check;
-@@ -1296,6 +1298,7 @@ struct ipw_priv {
- 	struct work_struct system_config;
- 	struct work_struct rx_replenish;
- 	struct delayed_work request_scan;
-+	struct delayed_work scan_event;
-   	struct work_struct request_passive_scan;
- 	struct work_struct adapter_restart;
- 	struct delayed_work rf_kill;
-
--- 
+ Makefile                           |    2 -
+ arch/i386/lib/delay.c              |    3 +
+ arch/i386/mm/pgtable.c             |    3 -
+ arch/x86_64/kernel/entry.S         |    2 -
+ arch/x86_64/kernel/time.c          |   11 ++-----
+ arch/x86_64/lib/bitstr.c           |    2 -
+ arch/x86_64/lib/delay.c            |   11 ++++---
+ arch/x86_64/mm/pageattr.c          |    1 
+ drivers/acpi/video.c               |   13 +++++++-
+ drivers/ata/sata_sis.c             |   15 +++++----
+ drivers/crypto/geode-aes.c         |    3 -
+ drivers/dma/dmaengine.c            |   17 +++--------
+ drivers/i2c/busses/i2c-pasemi.c    |    5 +++
+ drivers/i2c/chips/eeprom.c         |   37 +++++++++++++++---------
+ drivers/md/raid5.c                 |   16 +++++-----
+ drivers/net/wireless/ipw2200.c     |   56 ++++++++++++++++++++++++++++++-------
+ drivers/net/wireless/ipw2200.h     |    3 +
+ drivers/oprofile/cpu_buffer.c      |    7 ++++
+ drivers/oprofile/cpu_buffer.h      |    1 
+ drivers/oprofile/oprofile_stats.c  |    4 ++
+ drivers/usb/storage/unusual_devs.h |   14 +++++++++
+ drivers/video/ps3fb.c              |    2 -
+ fs/nfsd/nfs2acl.c                  |    2 -
+ fs/nfsd/nfs3acl.c                  |    2 -
+ fs/nfsd/nfsfh.c                    |   43 +++++++++++++++++-----------
+ fs/reiserfs/stree.c                |    3 -
+ include/asm-i386/system.h          |    2 -
+ include/asm-x86_64/system.h        |    8 ++---
+ kernel/sched_fair.c                |    2 -
+ kernel/softlockup.c                |   47 +++++++++++++++++++------------
+ kernel/time/ntp.c                  |    2 -
+ lib/libcrc32c.c                    |    7 +---
+ 32 files changed, 227 insertions(+), 119 deletions(-)
