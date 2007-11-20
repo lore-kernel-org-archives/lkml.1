@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbXKTAEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbXKTANB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbXKTAEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 19:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXKTAEP
+	id S1753815AbXKTANB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 19:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXKTAMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 19:04:15 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:61736 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbXKTAEO (ORCPT
+	Mon, 19 Nov 2007 19:12:52 -0500
+Received: from amber.ccs.neu.edu ([129.10.116.51]:55163 "EHLO
+	amber.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752008AbXKTAMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 19:04:14 -0500
-Message-Id: <200711200004.lAK044jG080743@www262.sakura.ne.jp>
-Subject: Re: [TOMOYO #5 18/18] LSM expansion for TOMOYO Linux.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: Paul Moore <paul.moore@hp.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp
+	Mon, 19 Nov 2007 19:12:52 -0500
+Date: Mon, 19 Nov 2007 19:12:48 -0500 (EST)
+From: Jim Faulkner <jfaulkne@ccs.neu.edu>
+To: Nick Warne <nick@ukfsn.org>
+cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: sb live (emu10k1) stops working between 2.6.23.1 and 2.6.23.7
+In-Reply-To: <20071119225542.1e0577e4@linuxamd.linicks.net>
+Message-ID: <Pine.GSO.4.58.0711191903410.22461@denali.ccs.neu.edu>
+References: <20071119225542.1e0577e4@linuxamd.linicks.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 20 Nov 2007 09:04:04 +0900
-References: <20071116173439.796600895@I-love.SAKURA.ne.jp> <200711190836.12940.paul.moore@hp.com> <200711192329.JGB18772.tLHOOSMVFFQOFJ@I-love.SAKURA.ne.jp> <200711191039.41533.paul.moore@hp.com>
-In-Reply-To: <200711191039.41533.paul.moore@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Paul Moore wrote:
-> My apologies, I mistakenly read the following if statement in your patch:
-> 
->  +       if (skb == skb_peek(&sk->sk_receive_queue)) {
->  +               __skb_unlink(skb, &sk->sk_receive_queue);
->  +               atomic_dec(&skb->users);
->  +       }
-> 
-> I read the conditional as the following:
-> 
->  +       if (skb = skb_peek(&sk->sk_receive_queue)) {
-> 
-> ... which would have caused the problems I was describing.  I'm sorry for all 
-> of the confusion/frustration, you patient explanations are correct; I was 
-> wrong in this particular case.
-No problem.
+On Mon, 19 Nov 2007, Nick Warne wrote:
 
+> nick@linuxamd:nick$ sudo /usr/sbin/alsactl -F restore
+> /usr/sbin/alsactl: set_control:970: failed to obtain info for control
+> #228 (No such file or directory)
+> /usr/sbin/alsactl: set_control:970: failed to obtain info for control
+> #232 (No such file or directory)
 
+Hi all,
 
-To everyone:
+I get a similar error message when I take Takashi's advice:
+dampkring ~ # alsactl -F restore
+alsactl: set_control:968: failed to obtain info for control #222 (No such
+file or directory)
+alsactl: set_control:968: failed to obtain info for control #226 (No such
+file or directory)
 
-  Are there any remaining worries with skb_recv_datagram()/socket_post_accept()?
+However it did restore my digital audio output.  Its strange that I was
+unable to get it working myself using alsamixer, even when I took
+screenshots of the settings under 2.6.23.1, and duplicated them under
+2.6.23.7.  Oh well, the SB Live has to have the most convoluted alsamixer
+setup out of any sound card, so I suppose I might have missed something.
+Thanks for your help in getting this working again!
 
-  If nobody has objection, I'd like to cut these skb_recv_datagram()/socket_post_accept() changes
-  and submit to -mm tree.
-
-Regards.
+Jim Faulkner
