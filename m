@@ -1,83 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbXKTGy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbXKTGzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbXKTGy4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759268AbXKTGxq
+	id S1759585AbXKTGzV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbXKTGxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:53:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60800 "EHLO mx1.redhat.com"
+	Tue, 20 Nov 2007 01:53:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60797 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759251AbXKTGxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759240AbXKTGxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Nov 2007 01:53:44 -0500
 Date: Tue, 20 Nov 2007 01:53:14 -0500
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com>
+Message-Id: <200711200653.lAK6rEVB025878@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+Subject: [PATCHv4 1/6] actual sys_indirect code
 Cc: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for setting the O_NONBLOCK flag of the file
-descriptors returned by socket, socketpair, and accept.
+This is the actual architecture-independent part of the system call
+implementation.
 
- socket.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ include/linux/indirect.h |    6 ++++++
+ include/linux/sched.h    |    4 ++++
+ include/linux/syscalls.h |    4 ++++
+ kernel/Makefile          |    2 +-
+ kernel/indirect.c        |   36 ++++++++++++++++++++++++++++++++++++
+ 5 files changed, 51 insertions(+), 1 deletion(-)
 
---- net/socket.c
-+++ net/socket.c
-@@ -362,7 +362,7 @@ static int sock_alloc_fd(struct file **filep, int flags)
- 	return fd;
- }
+--- /dev/null
++++ include/linux/indirect.h
+@@ -0,0 +1,6 @@
++#ifndef _LINUX_INDIRECT_H
++#define _LINUX_INDIRECT_H
++
++#include <asm/indirect.h>
++
++#endif
+--- include/linux/sched.h
++++ include/linux/sched.h
+@@ -80,6 +80,7 @@ struct sched_param {
+ #include <linux/rcupdate.h>
+ #include <linux/futex.h>
+ #include <linux/rtmutex.h>
++#include <linux/indirect.h>
  
--static int sock_attach_fd(struct socket *sock, struct file *file)
-+static int sock_attach_fd(struct socket *sock, struct file *file, int flags)
- {
- 	struct dentry *dentry;
- 	struct qstr name = { .name = "" };
-@@ -384,7 +384,7 @@ static int sock_attach_fd(struct socket *sock, struct file *file)
- 	init_file(file, sock_mnt, dentry, FMODE_READ | FMODE_WRITE,
- 		  &socket_file_ops);
- 	SOCK_INODE(sock)->i_fop = &socket_file_ops;
--	file->f_flags = O_RDWR;
-+	file->f_flags = O_RDWR | (flags & O_NONBLOCK);
- 	file->f_pos = 0;
- 	file->private_data = sock;
+ #include <linux/time.h>
+ #include <linux/param.h>
+@@ -1174,6 +1175,9 @@ struct task_struct {
+ 	int make_it_fail;
+ #endif
+ 	struct prop_local_single dirties;
++
++	/* Additional system call parameters.  */
++	union indirect_params indirect_params;
+ };
  
-@@ -397,7 +397,7 @@ static int sock_map_fd_flags(struct socket *sock, int flags)
- 	int fd = sock_alloc_fd(&newfile, flags);
+ /*
+--- include/linux/syscalls.h
++++ include/linux/syscalls.h
+@@ -54,6 +54,7 @@ struct compat_stat;
+ struct compat_timeval;
+ struct robust_list_head;
+ struct getcpu_cache;
++struct indirect_registers;
  
- 	if (likely(fd >= 0)) {
--		int err = sock_attach_fd(sock, newfile);
-+		int err = sock_attach_fd(sock, newfile, flags);
+ #include <linux/types.h>
+ #include <linux/aio_abi.h>
+@@ -611,6 +612,9 @@ asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
+ 			    const struct itimerspec __user *utmr);
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_indirect(struct indirect_registers __user *userregs,
++			     void __user *userparams, size_t paramslen,
++			     int flags);
  
- 		if (unlikely(err < 0)) {
- 			put_filp(newfile);
-@@ -1268,12 +1268,14 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
- 		goto out_release_both;
- 	}
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
  
--	err = sock_attach_fd(sock1, newfile1);
-+	err = sock_attach_fd(sock1, newfile1,
-+			     INDIRECT_PARAM(file_flags, flags));
- 	if (unlikely(err < 0)) {
- 		goto out_fd2;
- 	}
+--- /dev/null
++++ kernel/indirect.c
+@@ -0,0 +1,36 @@
++#include <linux/sched.h>
++#include <linux/uaccess.h>
++#include <linux/unistd.h>
++#include <asm/asm-offsets.h>
++
++
++asmlinkage long sys_indirect(struct indirect_registers __user *userregs,
++			     void __user *userparams, size_t paramslen,
++			     int flags)
++{
++	struct indirect_registers regs;
++	long result;
++
++	if (unlikely(flags != 0))
++		return -EINVAL;
++
++	if (copy_from_user(&regs, userregs, sizeof(regs)))
++		return -EFAULT;
++
++	switch (INDIRECT_SYSCALL (&regs))
++	{
++	default:
++		return -EINVAL;
++	}
++
++	if (paramslen > sizeof(union indirect_params))
++		return -EINVAL;
++
++	result = -EFAULT;
++	if (!copy_from_user(&current->indirect_params, userparams, paramslen))
++		result = CALL_INDIRECT(&regs);
++
++	memset(&current->indirect_params, '\0', paramslen);
++
++	return result;
++}
+--- kernel/Makefile
++++ kernel/Makefile
+@@ -9,7 +9,7 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
+ 	    rcupdate.o extable.o params.o posix-timers.o \
+ 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+ 	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o \
+-	    utsname.o notifier.o
++	    utsname.o notifier.o indirect.o
  
--	err = sock_attach_fd(sock2, newfile2);
-+	err = sock_attach_fd(sock2, newfile2,
-+			     INDIRECT_PARAM(file_flags, flags));
- 	if (unlikely(err < 0)) {
- 		fput(newfile1);
- 		goto out_fd1;
-@@ -1423,7 +1425,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
- 		goto out_put;
- 	}
- 
--	err = sock_attach_fd(newsock, newfile);
-+	err = sock_attach_fd(newsock, newfile,
-+			     INDIRECT_PARAM(file_flags, flags));
- 	if (err < 0)
- 		goto out_fd_simple;
- 
+ obj-$(CONFIG_SYSCTL) += sysctl_check.o
+ obj-$(CONFIG_STACKTRACE) += stacktrace.o
