@@ -1,59 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbXKTO6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbXKTPAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbXKTO6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXKTO6P
+	id S1758908AbXKTPAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbXKTPA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:58:15 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:51725 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753852AbXKTO6O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:58:14 -0500
-Date: Tue, 20 Nov 2007 09:58:12 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Huang, Ying" <ying.huang@intel.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <nigel@nigel.suspend2.net>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-pm@lists.linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: [PATCH 3/3 -mm] kexec based hibernation -v6:
- kexec hibernate/resume
-In-Reply-To: <1195527033.11955.50.camel@caritas-dev.intel.com>
-Message-ID: <Pine.LNX.4.44L0.0711200949590.3931-100000@iolanthe.rowland.org>
+	Tue, 20 Nov 2007 10:00:26 -0500
+Received: from il.qumranet.com ([82.166.9.18]:34115 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755262AbXKTPAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:00:25 -0500
+Message-ID: <4742F6B7.20503@qumranet.com>
+Date: Tue, 20 Nov 2007 17:01:11 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rusycorp.com.au>,
+       virtualization@lists.osdl.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com> <11944900163817-git-send-email-aliguori@us.ibm.com>
+In-Reply-To: <11944900163817-git-send-email-aliguori@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007, Huang, Ying wrote:
+Anthony Liguori wrote:
+> This is a PCI device that implements a transport for virtio.  It allows virtio
+> devices to be used by QEMU based VMMs like KVM or Xen.
+>
+> +
+> +/* the notify function used when creating a virt queue */
+> +static void vp_notify(struct virtqueue *vq)
+> +{
+> +	struct virtio_pci_device *vp_dev = to_vp_device(vq->vdev);
+> +	struct virtio_pci_vq_info *info = vq->priv;
+> +
+> +	/* we write the queue's selector into the notification register to
+> +	 * signal the other end */
+> +	iowrite16(info->queue_index, vp_dev->ioaddr + VIRTIO_PCI_QUEUE_NOTIFY);
+> +}
+>   
 
-> - What is the difference between PMSG_SUSPEND and PMSG_FREEZE?
+This means we can't kick multiple queues with one exit.
 
-SUSPEND means that the system is about to go into a low-power state, so 
-the driver should take the appropriate action to reduce the device's 
-power consumption.  It should also stop all I/O and DMA to the device.  
-Interrupts can remain enabled if the device is supposed to be a wakeup 
-source; otherwise they should be disabled.
+I'd also like to see a hypercall-capable version of this (but that can 
+wait).
 
-FREEZE means that the system is going to hibernate, and devices need to
-be quiescent (no I/O, no DMA, and no interrupts) so that an atomic
-memory snapshot can be captured.  The driver should take the
-appropriate action to quiesce the device but the power level doesn't
-need to change.
+> +
+> +/* A small wrapper to also acknowledge the interrupt when it's handled.
+> + * I really need an EIO hook for the vring so I can ack the interrupt once we
+> + * know that we'll be handling the IRQ but before we invoke the callback since
+> + * the callback may notify the host which results in the host attempting to
+> + * raise an interrupt that we would then mask once we acknowledged the
+> + * interrupt. */
+> +static irqreturn_t vp_interrupt(int irq, void *opaque)
+> +{
+> +	struct virtio_pci_device *vp_dev = opaque;
+> +	struct virtio_pci_vq_info *info;
+> +	irqreturn_t ret = IRQ_NONE;
+> +	u8 isr;
+> +
+> +	/* reading the ISR has the effect of also clearing it so it's very
+> +	 * important to save off the value. */
+> +	isr = ioread8(vp_dev->ioaddr + VIRTIO_PCI_ISR);
+>   
 
-PRETHAW means that the system is going to resume from hibernation by
-loading a previously-saved memory snapshot.  The driver should take the
-appropriate action to quiesce the device (no I/O, no DMA, and no
-interrupts) so that the snapshot can be safely restored, but the power
-level doesn't need to change.  The driver may also want to put the
-device into a special state so that the saved kernel's resume method
-will recognize the device has undergone a hibernation cycle and needs
-to be reinitialized.
+Can this be implemented via shared memory? We're exiting now on every 
+interrupt.
 
-Alan Stern
+
+> +	return ret;
+> +}
+> +
+> +/* the config->find_vq() implementation */
+> +static struct virtqueue *vp_find_vq(struct virtio_device *vdev, unsigned index,
+> +				    bool (*callback)(struct virtqueue *vq))
+> +{
+> +	struct virtio_pci_device *vp_dev = to_vp_device(vdev);
+> +	struct virtio_pci_vq_info *info;
+> +	struct virtqueue *vq;
+> +	int err;
+> +	u16 num;
+> +
+> +	/* Select the queue we're interested in */
+> +	iowrite16(index, vp_dev->ioaddr + VIRTIO_PCI_QUEUE_SEL);
+>   
+
+I would really like to see this implemented as pci config space, with no 
+tricks like multiplexing several virtqueues on one register. Something 
+like the PCI BARs where you have all the register numbers allocated 
+statically to queues.
+
+> +
+> +	/* Check if queue is either not available or already active. */
+> +	num = ioread16(vp_dev->ioaddr + VIRTIO_PCI_QUEUE_NUM);
+> +	if (!num || ioread32(vp_dev->ioaddr + VIRTIO_PCI_QUEUE_PFN))
+> +		return ERR_PTR(-ENOENT);
+> +
+> +	/* allocate and fill out our structure the represents an active
+> +	 * queue */
+> +	info = kmalloc(sizeof(struct virtio_pci_vq_info), GFP_KERNEL);
+> +	if (!info)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	info->queue_index = index;
+> +	info->num = num;
+> +
+> +	/* determine the memory needed for the queue and provide the memory
+> +	 * location to the host */
+> +	info->n_pages = DIV_ROUND_UP(vring_size(num), PAGE_SIZE);
+> +	info->pages = alloc_pages(GFP_KERNEL | __GFP_ZERO,
+> +				  get_order(info->n_pages));
+> +	if (info->pages == NULL) {
+> +		err = -ENOMEM;
+> +		goto out_info;
+> +	}
+> +
+> +	/* FIXME: is this sufficient for info->n_pages > 1? */
+> +	info->queue = kmap(info->pages);
+> +	if (info->queue == NULL) {
+> +		err = -ENOMEM;
+> +		goto out_alloc_pages;
+> +	}
+> +
+> +	/* activate the queue */
+> +	iowrite32(page_to_pfn(info->pages),
+> +		  vp_dev->ioaddr + VIRTIO_PCI_QUEUE_PFN);
+> +		  
+> +	/* create the vring */
+> +	vq = vring_new_virtqueue(info->num, vdev, info->queue,
+> +				 vp_notify, callback);
+> +	if (!vq) {
+> +		err = -ENOMEM;
+> +		goto out_activate_queue;
+> +	}
+> +
+> +	vq->priv = info;
+> +	info->vq = vq;
+> +
+> +	spin_lock(&vp_dev->lock);
+> +	list_add(&info->node, &vp_dev->virtqueues);
+> +	spin_unlock(&vp_dev->lock);
+> +
+>   
+
+Is this run only on init? If so the lock isn't needed.
+
+
+-- 
+error compiling committee.c: too many arguments to function
 
