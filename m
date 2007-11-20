@@ -1,131 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbXKTPtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760677AbXKTPwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760965AbXKTPtT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758365AbXKTPtH
+	id S1760677AbXKTPwe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbXKTPwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:49:07 -0500
-Received: from mga02.intel.com ([134.134.136.20]:13933 "EHLO mga02.intel.com"
+	Tue, 20 Nov 2007 10:52:22 -0500
+Received: from sacred.ru ([62.205.161.221]:41045 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754384AbXKTPtG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:49:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,442,1188802800"; 
-   d="scan'208";a="276302251"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1755513AbXKTPwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:52:21 -0500
+Message-ID: <4743026B.2020907@openvz.org>
+Date: Tue, 20 Nov 2007 18:51:07 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Subject: RE: [patch][v2] x86, ptrace: support for branch trace store(BTS)
-Date: Tue, 20 Nov 2007 15:49:03 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF55444F71289@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <alpine.DEB.0.99999.0711200729570.765@twinlark.arctic.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch][v2] x86, ptrace: support for branch trace store(BTS)
-thread-index: Acgri0zyGvL16xsdTTahFnbyR3HzWAAAFeEQ
-References: <029E5BE7F699594398CA44E3DDF55444F3AEA7@swsmsx413.ger.corp.intel.com> <alpine.DEB.0.99999.0711200708580.765@twinlark.arctic.org> <alpine.DEB.0.99999.0711200729570.765@twinlark.arctic.org>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "dean gaudet" <dean@arctic.org>
-Cc: <linux-kernel@vger.kernel.org>, <mingo@elte.hu>, <hpa@zytor.com>,
-       <tglx@linutronix.de>, <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 20 Nov 2007 15:49:02.0145 (UTC) FILETIME=[DF470B10:01C82B8C]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+CC: kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.24-rc3: find complains about /proc/net
+References: <20071119191000.GA1560@elf.ucw.cz> <200711192304.25087.rjw@sisk.pl>
+In-Reply-To: <200711192304.25087.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 20 Nov 2007 18:51:09 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Rafael J. Wysocki wrote:
+> On Monday, 19 of November 2007, Pavel Machek wrote:
+>> Hi!
+>>
+>> I think that this worked before:
+>>
+>> root@amd:/proc# find . -name "timer_info"
+>> find: WARNING: Hard link count is wrong for ./net: this may be a bug
+>> in your filesystem driver.  Automatically turning on find's -noleaf
+>> option.  Earlier results may have failed to include directories that
+>> should have been searched.
+>> root@amd:/proc#
+> 
+> I'm seeing that too.
 
->-----Original Message-----
->From: dean gaudet [mailto:dean@arctic.org] 
->Sent: Dienstag, 20. November 2007 16:37
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; 
->hpa@zytor.com; tglx@linutronix.de; ak@suse.de; Siddha, Suresh 
->B; akpm@linux-foundation.org
->Subject: Re: [patch][v2] x86, ptrace: support for branch trace 
->store(BTS)
->
->On Tue, 20 Nov 2007, dean gaudet wrote:
->
->> On Tue, 20 Nov 2007, Metzger, Markus T wrote:
->> 
->> > +__cpuinit void ptrace_bts_init_intel(struct cpuinfo_x86 *c)
->> > +{
->> > +	switch (c->x86) {
->> > +	case 0x6:
->> > +		switch (c->x86_model) {
->> > +#ifdef __i386__
->> > +		case 0xD:
->> > +		case 0xE: /* Pentium M */
->> > +			ptrace_bts_ops = ptrace_bts_ops_pentium_m;
->> > +			break;
->> > +#endif /* _i386_ */
->> > +		case 0xF: /* Core2 */
->> > +			ptrace_bts_ops = ptrace_bts_ops_core2;
->> > +			break;
->> > +		default:
->> > +			/* sorry, don't know about them */
->> > +			break;
->> > +		}
->> > +		break;
->> > +	case 0xF:
->> > +		switch (c->x86_model) {
->> > +#ifdef __i386__
->> > +		case 0x0:
->> > +		case 0x1:
->> > +		case 0x2:
->> > +		case 0x3: /* Netburst */
->> > +			ptrace_bts_ops = ptrace_bts_ops_netburst;
->> > +			break;
->> > +#endif /* _i386_ */
->> > +		default:
->> > +			/* sorry, don't know about them */
->> > +			break;
->> > +		}
->> > +		break;
->> 
->> is this right?  i thought intel family 15 models 3 and 4 
->supported amd64
->> mode...
->
->actually... why aren't you using cpuid level 1 edx bit 21 to 
->enable/disable this feature?  isn't that the bit defined to indicate 
->whether this feature is supported or not?
+I have a better things with 2.6.24-rc3 ;)
 
-This function is not checking for the presence of the feature 
-but for the BTS record format.
-The feature check is done in init_intel().
+# cd /proc/net
+# ls ..
+ls: reading directory ..: Not a directory
 
+and this
 
->and it seems like this patch and perfmon2 are going to have to 
->live with 
->each other... since they both require the use of the DS save area...
+# cd /proc
+# find
+...
+./net
+find: . changed during execution of find
+# find net
+find: net changed during execution of find
+# find net/
+<this works ok however>
 
-Hmmm, this might require some synchronization between those two.
+Moreover. Program that opens /proc/net and dumps the /proc/self/fd
+files produces the following:
 
-Do you know how (accesses to) MSR's are managed by the kernel?
+# cd /
+# a.out /proc/net
+...
+lr-x------  1 root root 64 Nov 20 18:02 3 -> /proc/net/net (deleted)
+...
+# cd /proc/net
+# a.out .
+...
+lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net/net (deleted)
+...
+# a.out ..
+...
+lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
+...
 
-regards,
-markus.
+This all is somehow related to the shadow proc files.
+E.g. the first problem (with -ENOTDIR) is due to the shadow /proc/net
+dentry doesn't implement the .readdir method:
 
->
->-dean
->
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+static const struct file_operations proc_net_dir_operations = {
+        .read                   = generic_read_dir,
+};
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+And I haven't managed to find out why the rest problems
+occur...
+
+Eric, do you have fixes for it?
+
+> Rafael
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
