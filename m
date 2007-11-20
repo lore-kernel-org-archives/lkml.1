@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXKTCQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbXKTCR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbXKTCQx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762009AbXKTCKZ
+	id S1762891AbXKTCR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761959AbXKTCLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 21:10:25 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:56912 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760625AbXKTCKW (ORCPT
+	Mon, 19 Nov 2007 21:11:07 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:53621 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759983AbXKTCLE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 21:10:22 -0500
-To: David Miller <davem@davemloft.net>
-Cc: benh@kernel.crashing.org, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Subject: Re: SCSI breakage on non-cache coherent architectures
-X-Message-Flag: Warning: May contain useful information
-References: <1195501874.6539.5.camel@pasglop>
-	<20071119.143115.251022325.davem@davemloft.net>
-	<1195518864.6970.23.camel@pasglop>
-	<20071119.164611.64664648.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 19 Nov 2007 18:10:14 -0800
-In-Reply-To: <20071119.164611.64664648.davem@davemloft.net> (David Miller's message of "Mon, 19 Nov 2007 16:46:11 -0800 (PST)")
-Message-ID: <ada8x4ty8e1.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Mon, 19 Nov 2007 21:11:04 -0500
+Date: Tue, 20 Nov 2007 02:04:02 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
+       gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Message-ID: <20071120020402.GA26446@srcf.ucam.org>
+References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Nov 2007 02:10:14.0792 (UTC) FILETIME=[7D17E080:01C82B1A]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20071119233225.GA6931@us.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > 2) Add the __dma_cacheline_aligned tag.
- > 
- > But note that with #2 it could get quite ugly because the
- > alignment and size both have a minimum that needs to be
- > enforced, not just the alignment alone.  So either:
- > 
- > struct foo {
- > 	unsigned int other_unrelated_stuff;
- > 
- > 	struct object dma_thing __dma_cacheline_aligned;
- > 
- > 	unsigned int more_nondma_stuff __dma_cacheline_aligned;
- > };
- > 
- > or:
- > 
- > struct foo {
- > 	unsigned int other_unrelated_stuff;
- > 
- > 	union {
- > 		struct object dma_thing __dma_cacheline_aligned;
- > 		char __pad[(sizeof(object) + DMA_CACHELINE_SIZE &
- > 			   ~DMA_CACHELINE_SIZE)];
- > 	} u;
- > 
- > 	unsigned int more_nondma_stuff __dma_cacheline_aligned;
- > };
+On Mon, Nov 19, 2007 at 03:32:25PM -0800, Gary Hade wrote:
 
-I wrapped this ugliness up inside the macro back in what I posted in
-2002 (http://lkml.org/lkml/2002/6/12/234):
+> Alex, What I was trying to suggest is a boot-time kernel option, 
+> not a kernel configuration option.  The basic idea is to give
+> the user (with a single binary kernel) the ability to include
+> your ACPI-PCI slot driver feature changes only when they are
+> really needed.  In addition to reducing the number of
+> system/PCI hotplug driver combinations where your changes
+> would need to be validated, I believe would also help 
+> alleviate other worries (e.g. Andi Kleen's memory consumption
+> concern).  I believe this goal could also be achieved with the
+> kernel config option by making the pci_slot module runtime
+> loadable with the PCI hotplug drivers only visiting your new
+> code when the pci_slot driver is loaded, although I think this
+> would be more difficult to implement.
 
-#define __dma_buffer __dma_buffer_line(__LINE__)
-#define __dma_buffer_line(line) __dma_buffer_expand_line(line)
-#define __dma_buffer_expand_line(line) \
-	__attribute__ ((aligned(L1_CACHE_BYTES))); \
-	char __dma_pad_ ## line [0] __attribute__ ((aligned(L1_CACHE_BYTES)))
+If we're compiling something into the kernel, the default behaviour 
+should be for the functionality to be turned on unless the user 
+overrides it.
 
-then you just need to tag the actual member like:
-
-	char foo[3] __dma_buffer;
-
- - R.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
