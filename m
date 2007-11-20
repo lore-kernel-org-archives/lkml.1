@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbXKTOKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbXKTOL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbXKTOKr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXKTOKj
+	id S1758033AbXKTOL1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXKTOLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:10:39 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:42657 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbXKTOKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:10:39 -0500
-Date: Tue, 20 Nov 2007 15:10:32 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: djenkins@mvista.co.uk
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: MMC sub-system: SDIO block-mode with increment address issue
-Message-ID: <20071120151032.56bf3e31@poseidon.drzeus.cx>
-In-Reply-To: <1195561571.13874.4.camel@libdev3.libertesoft.co.uk>
-References: <1195472694.18869.57.camel@libdev3.libertesoft.co.uk>
-	<20071120115841.25765bd3@poseidon.drzeus.cx>
-	<1195561571.13874.4.camel@libdev3.libertesoft.co.uk>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 09:11:19 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:50105 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbXKTOLT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 09:11:19 -0500
+Date: Tue, 20 Nov 2007 06:11:17 -0800 (PST)
+From: dean gaudet <dean@arctic.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv3 0/4] sys_indirect system call
+In-Reply-To: <20071119190826.GD12650@elte.hu>
+Message-ID: <alpine.DEB.0.99999.0711200609240.765@twinlark.arctic.org>
+References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com> <20071119145224.31ee5242.dada1@cosmosbay.com> <4741A7DD.1030407@redhat.com> <20071119164329.5a580b84.dada1@cosmosbay.com> <4741B047.9080601@redhat.com> <20071119171455.c05793a0.dada1@cosmosbay.com>
+ <20071119190826.GD12650@elte.hu>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 12:26:11 +0000
-Dean Jenkins <djenkins@mvista.co.uk> wrote:
-
-> Hi Pierre,
-> 
-> IMHO the issue is there is no upper bound limit to the valid address
-> range in sdio_io_rw_ext_helper() in sdio_io.c.
-> 
-> I call sdio_memcpy_toio() as it enables the incrementing address flag in
-> the CMD53 command but if I try passing too much data then the actual
-> address of the subsequent CMD53 commands are erroneously incremented out
-> of range.
-> 
-> The difficulty is the SDIO card can transfer 8 blocks in a single CMD53
-> command using the incrementing address flag. However
-> sdio_io_rw_ext_helper() will not prevent the attempt at sending 9 blocks
-> transferred as 2 CMD53 commands of 8 blocks + 1 block and the last block
-> goes to the wrong address. This causes a big system crash. I suspect the
-> SDIO card internally resets and the MMC sub-system can't handle the
-> error condition.
-
-I'm afraid I still can't see the problem. If you want to transfer 9 blocks, then the method by which you do so shouldn't matter. So 9, or 8 + 1 should give the same end result.
+On Mon, 19 Nov 2007, Ingo Molnar wrote:
 
 > 
-> This means the card driver needs to know that it cannot use
-> sdio_memcpy_toio() to send any size of data but must ensure it does not
-> exceed 8 blocks before calling sdio_memcpy_toio(). IMHO this makes the
-> card driver undesirably tightly coupled with the core driver. OK. I'll
-> workaround it using multiple calls to sdio_memcpy_toio().
+> * Eric Dumazet <dada1@cosmosbay.com> wrote:
 > 
+> > I do see a problem, because some readers will take your example as a 
+> > reference, as it will probably sit in a page that 
+> > google^Wsearch_engines will bring at the top of search results for 
+> > next ten years or so.
+> > 
+> > (I bet for "sys_indirect syscall" -> http://lwn.net/Articles/258708/ )
+> > 
+> > Next time you post it, please warn users that it will break in some 
+> > years, or state clearly this should only be used internally by glibc.
+> 
+> dont be silly, next time Ulrich should also warn everyone that running 
+> attachments and applying patches from untrusted sources is dangerous?
+> 
+> any code that includes:
+> 
+>   fd = syscall (__NR_indirect, &r, &i, sizeof (i));
+> 
+> is by definition broken and unportable in every sense of the word. Apps 
+> will use the proper glibc interfaces (if it's exposed).
 
-Well, the problem is that the abstraction used should work just fine according to how the SDIO standard is defined. The problem seems to be that some card vendors decided to go their own way and started treating the SDIO interface as something other than a simple register interface.
+as an application writer how do i access accept(2) with FD_CLOEXEC 
+functionality?  will glibc expose an accept2() with a flags param?  if 
+so... why don't we just have an accept2() syscall?
 
-As long as that is the case, there will be a lot of pain supporting these weird cards. We can only debate where to put that pain and what compromises to make.
-
-> BTW. Is the API for the exported SDIO core functions documented
-> anywhere ?
-
-Yes, as kerneldoc tags for the relevant functions. Have a look in drivers/core/sdio_io.c if you don't want to build the full document.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+-dean
