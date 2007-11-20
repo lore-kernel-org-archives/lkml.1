@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764122AbXKTSg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764200AbXKTSgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764122AbXKTSg0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762099AbXKTS2H
+	id S1764200AbXKTSgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760999AbXKTS2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:28:07 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52053 "EHLO
+	Tue, 20 Nov 2007 13:28:08 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52055 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761309AbXKTS2F (ORCPT
+	with ESMTP id S1761395AbXKTS2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Nov 2007 13:28:05 -0500
-Date: Tue, 20 Nov 2007 10:24:50 -0800
+Date: Tue, 20 Nov 2007 10:24:52 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,15 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andrey Mirkin <major@openvz.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 22/29] x86: return correct error code from child_rip in
-	x86_64 entry.S
-Message-ID: <20071120182450.GX28611@kroah.com>
+       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 23/29] ntp: fix typo that makes sync_cmos_clock erratic
+Message-ID: <20071120182452.GY28611@kroah.com>
 References: <20071120181733.702234406@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x98-return-correct-error-code-from-child-rip.patch"
+Content-Disposition: inline; filename="ntp-fix-sync-cmos-clock-typo.patch"
 In-Reply-To: <20071120182248.GA28611@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -40,40 +39,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Andrey Mirkin <major@openvz.org>
+From: David P. Reed <dpreed@reed.com>
 
-patch 1c5b5cfd290b6cb7c67020ef420e275f746a7236 in mainline.
+patch fa6a1a554b50cbb7763f6907e6fef927ead480d9 in mainline.
 
-x86: return correct error code from child_rip in x86_64 entry.S
+ntp: fix typo that makes sync_cmos_clock erratic
 
-Right now register edi is just cleared before calling do_exit.
-That is wrong because correct return value will be ignored.
-Value from rax should be copied to rdi instead of clearing edi.
+Fix a typo in ntp.c that has caused updating of the persistent (RTC)
+clock when synced to NTP to behave erratically.
 
-AK: changed to 32bit move because it's strictly an int
+When debugging a freeze that arises on my AMD64 machines when I
+run the ntpd service, I added a number of printk's to monitor the
+sync_cmos_clock procedure.  I discovered that it was not syncing to
+cmos RTC every 11 minutes as documented, but instead would keep trying
+every second for hours at a time.  The reason turned out to be a typo
+in sync_cmos_clock, where it attempts to ensure that
+update_persistent_clock is called very close to 500 msec. after a 1
+second boundary (required by the PC RTC's spec). That typo referred to
+"xtime" in one spot, rather than "now", which is derived from "xtime"
+but not equal to it.  This makes the test erratic, creating a
+"coin-flip" that decides when update_persistent_clock is called - when
+it is called, which is rarely, it may be at any time during the one
+second period, rather than close to 500 msec, so the value written is
+needlessly incorrect, too.
 
-[ tglx: arch/x86 adaptation ]
-
-Signed-off-by: Andrey Mirkin <major@openvz.org>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: David P. Reed <dpreed@reed.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86_64/kernel/entry.S |    2 +-
+ kernel/time/ntp.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86_64/kernel/entry.S
-+++ b/arch/x86_64/kernel/entry.S
-@@ -989,7 +989,7 @@ child_rip:
- 	movq %rsi, %rdi
- 	call *%rax
- 	# exit
--	xorl %edi, %edi
-+	mov %eax, %edi
- 	call do_exit
- 	CFI_ENDPROC
- ENDPROC(child_rip)
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -205,7 +205,7 @@ static void sync_cmos_clock(unsigned lon
+ 		return;
+ 
+ 	getnstimeofday(&now);
+-	if (abs(xtime.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
++	if (abs(now.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
+ 		fail = update_persistent_clock(now);
+ 
+ 	next.tv_nsec = (NSEC_PER_SEC / 2) - now.tv_nsec;
 
 -- 
