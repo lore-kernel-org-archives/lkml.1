@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbXKTVPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761579AbXKTVTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762691AbXKTVPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 16:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXKTVO7
+	id S1761579AbXKTVTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 16:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbXKTVTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 16:14:59 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:42349 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbXKTVO5 (ORCPT
+	Tue, 20 Nov 2007 16:19:10 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:40427 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756518AbXKTVTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 16:14:57 -0500
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Christoph Raisch <raisch@de.ibm.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       Roland Dreier <rolandd@cisco.com>,
-       Sean Hefty <mshefty@ichips.intel.com>, general@lists.openfabrics.org
-Subject: Re: [PATCH 19/59] drivers/infiniband: Add missing "space"
-X-Message-Flag: Warning: May contain useful information
-References: <1195523331-15303-1-git-send-email-joe@perches.com>
-	<1195523331-15303-2-git-send-email-joe@perches.com>
-	<1195523331-15303-3-git-send-email-joe@perches.com>
-	<1195523331-15303-4-git-send-email-joe@perches.com>
-	<1195523331-15303-5-git-send-email-joe@perches.com>
-	<1195523331-15303-6-git-send-email-joe@perches.com>
-	<1195523331-15303-7-git-send-email-joe@perches.com>
-	<1195523331-15303-8-git-send-email-joe@perches.com>
-	<1195523331-15303-9-git-send-email-joe@perches.com>
-	<1195523331-15303-10-git-send-email-joe@perches.com>
-	<1195523331-15303-11-git-send-email-joe@perches.com>
-	<1195523331-15303-12-git-send-email-joe@perches.com>
-	<1195523331-15303-13-git-send-email-joe@perches.com>
-	<1195523331-15303-14-git-send-email-joe@perches.com>
-	<1195523331-15303-15-git-send-email-joe@perches.com>
-	<1195523331-15303-16-git-send-email-joe@perches.com>
-	<1195523331-15303-17-git-send-email-joe@perches.com>
-	<1195523331-15303-18-git-send-email-joe@perches.com>
-	<1195523331-15303-19-git-send-email-joe@perches.com>
-	<ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
-	<1195523331-15303-20-git-send-email-joe@perches.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 20 Nov 2007 13:14:51 -0800
-In-Reply-To: <1195523331-15303-20-git-send-email-joe@perches.com> (Joe Perches's message of "Mon, 19 Nov 2007 17:48:11 -0800")
-Message-ID: <ada7ikcvctw.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Tue, 20 Nov 2007 16:19:08 -0500
+Message-ID: <47434F2E.6080007@linux.vnet.ibm.com>
+Date: Wed, 21 Nov 2007 02:48:38 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Nov 2007 21:14:51.0872 (UTC) FILETIME=[63D2A600:01C82BBA]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: akpm@linux-foundation.org
+CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45 Build Failure  - macro
+ CONFIG_THREAD_ORDER not defined
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
+In-Reply-To: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, applied.
+Hi Andrew,
+
+The kernel build fails, with randconfig
+
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from include/asm/thread_info.h:4,
+                 from include/linux/thread_info.h:21,
+                 from include/linux/preempt.h:9,
+                 from include/linux/spinlock.h:49,
+                 from include/linux/seqlock.h:29,
+                 from include/linux/time.h:8,
+                 from include/linux/stat.h:60,
+                 from include/linux/module.h:10,
+                 from include/linux/crypto.h:21,
+                 from arch/x86/kernel/asm-offsets_64.c:7,
+                 from arch/x86/kernel/asm-offsets.c:4:
+include/asm/thread_info_64.h: In function ‘current_thread_info’:
+include/asm/thread_info_64.h:63: error: ‘CONFIG_THREAD_ORDER’ undeclared (first use in this function)
+include/asm/thread_info_64.h:63: error: (Each undeclared identifier is reported only once
+include/asm/thread_info_64.h:63: error: for each function it appears in.)
+include/asm/thread_info_64.h: In function ‘stack_thread_info’:
+include/asm/thread_info_64.h:71: error: ‘CONFIG_THREAD_ORDER’ undeclared (first use in this function)
+In file included from arch/x86/kernel/asm-offsets_64.c:8,
+                 from arch/x86/kernel/asm-offsets.c:4:
+include/linux/sched.h: At top level:
+include/linux/sched.h:1527: error: ‘CONFIG_THREAD_ORDER’ undeclared here (not in a function)
+make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
+make: *** [prepare0] Error 2
+
+The patch git-x86.patch introduces CONFIG_THREAD_ORDER undefined macro, instead of THREAD_ORDER.
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
