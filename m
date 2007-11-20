@@ -1,128 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbXKTTUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762350AbXKTTXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762743AbXKTTUa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 14:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXKTTUX
+	id S1762350AbXKTTXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 14:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbXKTTXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 14:20:23 -0500
-Received: from mail1.perex.cz ([212.20.107.53]:44307 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758885AbXKTTUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 14:20:22 -0500
-Date: Tue, 20 Nov 2007 20:20:17 +0100 (CET)
-From: Jaroslav Kysela <perex@perex.cz>
-X-X-Sender: perex@tm8103.perex-int.cz
-To: Takashi Iwai <tiwai@suse.de>
-cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ALSA PATCH] alsa-git merge request
-In-Reply-To: <s5h7ikdbeec.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.61.0711202018130.8761@tm8103.perex-int.cz>
-References: <Pine.LNX.4.61.0711191933210.7813@tm8103.perex-int.cz>
- <s5h7ikdbeec.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 Nov 2007 14:23:17 -0500
+Received: from chello089077114002.chello.pl ([89.77.114.2]:56224 "EHLO
+	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757171AbXKTTXQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 14:23:16 -0500
+Date: Tue, 20 Nov 2007 20:23:06 +0100
+From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
+To: Mikael =?UTF-8?B?U3TDpWxkYWw=?= <mikael.staldal@univits.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Possibility to adjust the only-root-can-bind-to-port-under-1024
+ limit
+Message-ID: <20071120202306.65e6036c@astralstorm.puszkin.org>
+In-Reply-To: <474306BF.4010207@univits.com>
+References: <4742B3A3.2050103@univits.com>
+	<20071120155303.76f234ec@astralstorm.puszkin.org>
+	<474306BF.4010207@univits.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/jqbiGe6.9GJWz=v8mB7jxDy";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007, Takashi Iwai wrote:
+--Sig_/jqbiGe6.9GJWz=v8mB7jxDy
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> At Mon, 19 Nov 2007 19:35:09 +0100 (CET),
-> Jaroslav Kysela wrote:
-> > 
-> > 
-> > Linus, please pull from [the linus branch at]:
-> > 
-> >   master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-> > gitweb interface:
-> >   http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
-> 
-> Grrr, please hold this.  The tree looks broken.
-> 
-> At least, the last patch
->        [ALSA] hda-codec - Revert volume knob controls in STAC codecs
-> wasn't applied properly, and resulted in an empty change.
-> 
-> This is likely because the patch used was for mm tree and not cleanly
-> applied to 2.6.24-rc3.  It'll require a manual adjustment.
-> 
-> 
-> In addition, the following patches are real fixes that miss in this
-> push:
-> 
-> 	5543	emu10k1 - Check value ranges in ctl callbacks
-> 	5532	fix private data pointer calculation in CS4270 driver
-> 	5530	emu10k1: Add mixer controls parameter checking.
-> 	5495	portman2x4 - Fix probe error
-> 	5485	ca0106 - Fix write proc assignment
-> 	5476	s3c2443-ac97: compilation fix
+On Tue, 20 Nov 2007 17:09:35 +0100
+Mikael St=C3=A5ldal <mikael.staldal@univits.com> wrote:
 
-Hi,
+> Hello.
+>=20
+> > The proper way to enable port <=3D 1024 binding support is adding CAP_N=
+ET_BIND_SERVICE=20
+>  > to the process capability set, e.g. by using file-system capabilities.
+>=20
+> Is file-system capabilites part of the stable official Linux kernel? From=
+ which version?
+> How do I use it?
+>=20
 
-	thanks for notice. I overlooked this empty patch. I added all 
-requested fixes to ALSA GIT tree now.
+They were recently added in 2.6.24-rc1.
+(mostly commit b53767719b6cd8789392ea3e7e2eb7b8906898f0)
+The patch should be easy to backport, I've seen it in various
+distro kernels.
 
-					Jaroslav
+According to the commit, documentation is at
+http://www.friedhoff.org/fscaps.html
 
+Some programs already have capability support - they
+drop all permissions they don't need.
 
-Linus, please pull from [the linus branch at]:
+--Sig_/jqbiGe6.9GJWz=v8mB7jxDy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-gitweb interface:
-  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
 
-The GNU patch is available at:
+iD8DBQFHQzQgBlhXA0ALOYMRAjAYAJ4s7rI+ESD8zMq1DILy+LiH2B920ACfUX0T
+rAVi4dMlNM2mJmtAtnwNMeA=
+=sWnj
+-----END PGP SIGNATURE-----
 
-  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2007-11-20.patch.gz
-
-
-The following files will be updated:
-
- include/sound/version.h            |    2 +-
- sound/drivers/mpu401/mpu401_uart.c |   12 ++++--
- sound/drivers/portman2x4.c         |    2 +-
- sound/pci/ca0106/ca0106_mixer.c    |   18 +++++++---
- sound/pci/ca0106/ca0106_proc.c     |    4 +--
- sound/pci/cmipci.c                 |    5 +--
- sound/pci/emu10k1/emumixer.c       |   65 ++++++++++++++++++++++++++++-------
- sound/pci/emu10k1/p16v.c           |    4 ++
- sound/pci/hda/hda_codec.c          |   40 +++++++++++++---------
- sound/pci/hda/hda_local.h          |    1 +
- sound/pci/hda/patch_analog.c       |    8 ++++
- sound/pci/hda/patch_sigmatel.c     |   57 +-------------------------------
- sound/soc/codecs/cs4270.c          |    3 +-
- sound/soc/s3c24xx/s3c2443-ac97.c   |    2 +-
- 14 files changed, 118 insertions(+), 105 deletions(-)
-
-
-The following things were done:
-
-Clemens Ladisch (2):
-      [ALSA] cmipci: fix FLINKON/OFF bits
-      [ALSA] mpu401: fix recursive locking in timer
-
-James Courtier-Dutton (1):
-      [ALSA] emu10k1: Add mixer controls parameter checking.
-
-Jaroslav Kysela (1):
-      [ALSA] version 1.0.15
-
-Krzysztof Helt (1):
-      [ALSA] s3c2443-ac97: compilation fix
-
-Takashi Iwai (7):
-      [ALSA] hda-codec - Disable shared stream on AD1986A
-      [ALSA] hda-codec - Check PINCAP only for PIN widgets
-      [ALSA] ca0106 - Check value range in ctl callbacks
-      [ALSA] hda-codec - Revert volume knob controls in STAC codecs
-      [ALSA] ca0106 - Fix write proc assignment
-      [ALSA] portman2x4 - Fix probe error
-      [ALSA] emu10k1 - Check value ranges in ctl callbacks
-
-Timur Tabi (1):
-      [ALSA] fix private data pointer calculation in CS4270 driver
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project
+--Sig_/jqbiGe6.9GJWz=v8mB7jxDy--
