@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbXKTBYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbXKTBYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759193AbXKTBYe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbXKTBOK
+	id S1759259AbXKTBYu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbXKTBOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:14:10 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36895 "EHLO
+	Mon, 19 Nov 2007 20:14:11 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36874 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756104AbXKTBNk (ORCPT
+	with ESMTP id S1756126AbXKTBNk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:40 -0500
-Message-Id: <20071120011339.867853374@sgi.com>
+Message-Id: <20071120011340.110250064@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:12:06 -0800
+Date: Mon, 19 Nov 2007 17:12:07 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -21,143 +21,133 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 34/45] x86_64: Fold percpu area into the cpu area.
-Content-Disposition: inline; filename=x86_64_fold_percpu_into_cpu_area
+Subject: [rfc 35/45] X86_64: Declare pda as per cpu data thereby moving it into the cpu area
+Content-Disposition: inline; filename=x86_64_fold_pda
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use boot_cpu_alloc to allocate a cpu area chunk that is needed to store the
-statically declared per cpu data and then point the per_cpu_offset pointers
-to the cpu area.
+Declare the pda as a per cpu variable. This will have the effect of moving
+the pda data into the cpu area managed by cpu alloc.
 
-The per cpu area is moved to a ZERO offset using some linker scripting.
-All per cpu variable addresses become true offsets into a cpu area to their
-respective variable. The addresses of per cpu variables can be treated
-like the offsets that are returned by CPU_ALLOC.
+The boot_pdas are only needed in head64.c so move the declaration
+over there and make it static.
+
+Remove the code that allocates special pda data structures.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- arch/x86/kernel/setup64.c         |   29 ++++++++++++-----------------
- arch/x86/kernel/vmlinux_64.lds.S  |    3 ++-
- include/asm-generic/sections.h    |    1 +
- include/asm-generic/vmlinux.lds.h |   17 +++++++++++++++++
- 4 files changed, 32 insertions(+), 18 deletions(-)
+ arch/x86/kernel/head64.c     |    6 ++++++
+ arch/x86/kernel/setup64.c    |   11 ++++++++++-
+ arch/x86/kernel/smpboot_64.c |   16 ----------------
+ include/asm-x86/pda.h        |    1 -
+ include/asm-x86/percpu_64.h  |    1 +
+ 5 files changed, 17 insertions(+), 18 deletions(-)
 
 Index: linux-2.6/arch/x86/kernel/setup64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup64.c	2007-11-18 22:39:24.706247819 -0800
-+++ linux-2.6/arch/x86/kernel/setup64.c	2007-11-19 10:31:49.088824106 -0800
-@@ -87,35 +87,30 @@ __setup("noexec32=", nonx32_setup);
- void __init setup_per_cpu_areas(void)
- { 
- 	int i;
--	unsigned long size;
-+	char *base;
+--- linux-2.6.orig/arch/x86/kernel/setup64.c	2007-11-19 16:29:09.045139782 -0800
++++ linux-2.6/arch/x86/kernel/setup64.c	2007-11-19 16:29:15.693140270 -0800
+@@ -30,7 +30,9 @@ cpumask_t cpu_initialized __cpuinitdata 
  
- #ifdef CONFIG_HOTPLUG_CPU
- 	prefill_possible_map();
- #endif
+ struct x8664_pda *_cpu_pda[NR_CPUS] __read_mostly;
+ EXPORT_SYMBOL(_cpu_pda);
+-struct x8664_pda boot_cpu_pda[NR_CPUS] __cacheline_aligned;
++
++DEFINE_PER_CPU(struct x8664_pda, pda);
++EXPORT_PER_CPU_SYMBOL(pda);
  
- 	/* Copy section for each CPU (we discard the original) */
--	size = PERCPU_ENOUGH_ROOM;
-+	base = boot_cpu_alloc(PERCPU_ENOUGH_ROOM);
-+	if (base)
-+		panic("Cannot allocate per cpu data at 0\n");
+ struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
  
--	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n", size);
-+	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
-+					PERCPU_ENOUGH_ROOM);
- 	for_each_cpu_mask (i, cpu_possible_map) {
--		char *ptr;
-+		cpu_pda(i)->data_offset = cpu_offset(i);
+@@ -105,7 +107,13 @@ void __init setup_per_cpu_areas(void)
  
--		if (!NODE_DATA(cpu_to_node(i))) {
--			printk("cpu with no node %d, num_online_nodes %d\n",
--			       i, num_online_nodes());
--			ptr = alloc_bootmem_pages(size);
--		} else { 
--			ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
--		}
--		if (!ptr)
--			panic("Cannot allocate cpu data for CPU %d\n", i);
--		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-+		memcpy(CPU_PTR(base, i), __load_per_cpu_start,
-+				__per_cpu_end - __per_cpu_start);
+ 		memcpy(CPU_PTR(base, i), __load_per_cpu_start,
+ 				__per_cpu_end - __per_cpu_start);
++
++		/* Relocate the pda */
++		memcpy(&per_cpu(pda, i), cpu_pda(i), sizeof(struct x8664_pda));
++		cpu_pda(i) = &per_cpu(pda, i);
  	}
--} 
-+	count_vm_events(CPU_BYTES, PERCPU_ENOUGH_ROOM);
-+}
++	/* Fix up pda for this processor .... */
++	pda_init(0);
+ 	count_vm_events(CPU_BYTES, PERCPU_ENOUGH_ROOM);
+ }
  
- void pda_init(int cpu)
--{ 
-+{
- 	struct x8664_pda *pda = cpu_pda(cpu);
+@@ -120,6 +128,7 @@ void pda_init(int cpu)
+ 	wrmsrl(MSR_GS_BASE, pda);
+ 	mb();
  
- 	/* Setup up data that may be needed in __get_free_pages early */
-Index: linux-2.6/include/asm-generic/vmlinux.lds.h
++	printk(KERN_INFO "Processor #%d: GS for cpu variable access set to %p\n",cpu, pda);
+ 	pda->cpunumber = cpu; 
+ 	pda->irqcount = -1;
+ 	pda->kernelstack = 
+Index: linux-2.6/arch/x86/kernel/smpboot_64.c
 ===================================================================
---- linux-2.6.orig/include/asm-generic/vmlinux.lds.h	2007-11-18 22:39:23.370497641 -0800
-+++ linux-2.6/include/asm-generic/vmlinux.lds.h	2007-11-19 10:30:20.095586336 -0800
-@@ -258,8 +258,25 @@
- #define PERCPU(align)							\
- 	. = ALIGN(align);						\
- 	__per_cpu_start = .;						\
-+	__load_per_cpu_start = .;					\
- 	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
- 		*(.data.percpu)						\
- 		*(.data.percpu.shared_aligned)				\
- 	}								\
-+	 __load_per_cpu_end = .;					\
- 	__per_cpu_end = .;
-+
-+#define ZERO_BASED_PERCPU						\
-+	percpu : { } :percpu						\
-+	__load_per_cpu_start = .;					\
-+	.data.percpu 0 : AT(__load_per_cpu_start - LOAD_OFFSET) {	\
-+		__per_cpu_start = .;					\
-+		*(.data.percpu)						\
-+		*(.data.percpu.shared_aligned)				\
-+		__per_cpu_end = .;					\
-+	}								\
-+	. = __load_per_cpu_start + __per_cpu_end - __per_cpu_start;	\
-+	__load_per_cpu_end = .;						\
-+	data : { } :data
-+
-+
-Index: linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+--- linux-2.6.orig/arch/x86/kernel/smpboot_64.c	2007-11-19 16:28:00.781640288 -0800
++++ linux-2.6/arch/x86/kernel/smpboot_64.c	2007-11-19 16:29:15.693140270 -0800
+@@ -556,22 +556,6 @@ static int __cpuinit do_boot_cpu(int cpu
+ 		return -1;
+ 	}
+ 
+-	/* Allocate node local memory for AP pdas */
+-	if (cpu_pda(cpu) == &boot_cpu_pda[cpu]) {
+-		struct x8664_pda *newpda, *pda;
+-		int node = cpu_to_node(cpu);
+-		pda = cpu_pda(cpu);
+-		newpda = kmalloc_node(sizeof (struct x8664_pda), GFP_ATOMIC,
+-				      node);
+-		if (newpda) {
+-			memcpy(newpda, pda, sizeof (struct x8664_pda));
+-			cpu_pda(cpu) = newpda;
+-		} else
+-			printk(KERN_ERR
+-		"Could not allocate node local PDA for CPU %d on node %d\n",
+-				cpu, node);
+-	}
+-
+ 	alternatives_smp_switch(1);
+ 
+ 	c_idle.idle = get_idle_for_cpu(cpu);
+Index: linux-2.6/arch/x86/kernel/head64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S	2007-11-18 22:41:39.261997209 -0800
-+++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S	2007-11-18 22:42:33.119247430 -0800
-@@ -19,6 +19,7 @@ cpu_area = CPU_AREA_BASE;
+--- linux-2.6.orig/arch/x86/kernel/head64.c	2007-11-19 16:28:00.789640087 -0800
++++ linux-2.6/arch/x86/kernel/head64.c	2007-11-19 16:29:15.693140270 -0800
+@@ -20,6 +20,12 @@
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
  
- PHDRS {
- 	text PT_LOAD FLAGS(5);	/* R_E */
-+	percpu PT_LOAD FLAGS(4); /* R__ */
- 	data PT_LOAD FLAGS(7);	/* RWE */
- 	user PT_LOAD FLAGS(7);	/* RWE */
- 	data.init PT_LOAD FLAGS(7);	/* RWE */
-@@ -206,7 +207,7 @@ SECTIONS
-   __initramfs_end = .;
- #endif
- 
--  PERCPU(4096)
-+  ZERO_BASED_PERCPU
- 
-   . = ALIGN(4096);
-   __init_end = .;
-Index: linux-2.6/include/asm-generic/sections.h
++/*
++ * Only used before the per cpu areas are setup. The use for the non possible
++ * cpus continues after boot
++ */
++static struct x8664_pda boot_cpu_pda[NR_CPUS];
++
+ static void __init zap_identity_mappings(void)
+ {
+ 	pgd_t *pgd = pgd_offset_k(0UL);
+Index: linux-2.6/include/asm-x86/pda.h
 ===================================================================
---- linux-2.6.orig/include/asm-generic/sections.h	2007-11-18 22:39:23.374497627 -0800
-+++ linux-2.6/include/asm-generic/sections.h	2007-11-18 22:45:33.073997351 -0800
-@@ -12,6 +12,7 @@ extern char _sextratext[] __attribute__(
- extern char _eextratext[] __attribute__((weak));
- extern char _end[];
- extern char __per_cpu_start[], __per_cpu_end[];
-+extern char __load_per_cpu_start[], __load_per_cpu_end[];
- extern char __kprobes_text_start[], __kprobes_text_end[];
- extern char __initdata_begin[], __initdata_end[];
- extern char __start_rodata[], __end_rodata[];
+--- linux-2.6.orig/include/asm-x86/pda.h	2007-11-19 16:28:00.801640345 -0800
++++ linux-2.6/include/asm-x86/pda.h	2007-11-19 16:29:15.693140270 -0800
+@@ -39,7 +39,6 @@ struct x8664_pda {
+ } ____cacheline_aligned_in_smp;
+ 
+ extern struct x8664_pda *_cpu_pda[];
+-extern struct x8664_pda boot_cpu_pda[];
+ 
+ #define cpu_pda(i) (_cpu_pda[i])
+ 
+Index: linux-2.6/include/asm-x86/percpu_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/percpu_64.h	2007-11-19 16:28:33.611190669 -0800
++++ linux-2.6/include/asm-x86/percpu_64.h	2007-11-19 16:29:39.569139671 -0800
+@@ -61,6 +61,7 @@ extern void setup_per_cpu_areas(void);
+ #endif	/* SMP */
+ 
+ #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
++DECLARE_PER_CPU(struct x8664_pda, pda);
+ 
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+ #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
 
 -- 
