@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbXKTIf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXKTIjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbXKTIf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 03:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbXKTIfO
+	id S1756592AbXKTIjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 03:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXKTIjC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 03:35:14 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:12675 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755923AbXKTIfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 03:35:13 -0500
-Date: Tue, 20 Nov 2007 09:32:25 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Miller <mike.miller@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 2/3] cciss: add support for blktrace
-Message-ID: <20071120083225.GB5695@kernel.dk>
-References: <20071119220717.GB4660@roadking.cca.cpqcorp.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119220717.GB4660@roadking.cca.cpqcorp.net>
+	Tue, 20 Nov 2007 03:39:02 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53336 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751302AbXKTIjB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 03:39:01 -0500
+Date: Tue, 20 Nov 2007 00:38:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-cifs-client@lists.samba.org,
+       samba-technical@lists.samba.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - smbd write fails
+Message-Id: <20071120003817.94cce1d9.akpm@linux-foundation.org>
+In-Reply-To: <47429A7B.6040802@linux.vnet.ibm.com>
+References: <47429A7B.6040802@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19 2007, Mike Miller wrote:
-> Patch 2 of 3
-> This patch adds support for the blktrace utility. Please consider this for
-> inclusion. Seems there was already a call to blk_add_trace. This patch adds
-> ifdef's and includes the header file.
-> 
-> Signed-off-by: Mike Miller <mike.miller@hp.com>
-> 
-> 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> index 2ba5a89..61bc0f3 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -41,6 +41,10 @@
->  #include <asm/uaccess.h>
->  #include <asm/io.h>
->  
-> +#ifdef CONFIG_BLK_DEV_IO_TRACE
-> +#include <linux/blktrace_api.h>
-> +#endif /* CONFIG_BLK_DEV_IO_TRACE */
-> +
->  #include <linux/dma-mapping.h>
->  #include <linux/blkdev.h>
->  #include <linux/genhd.h>
-> @@ -3013,7 +3017,9 @@ after_error_processing:
->  	}
->  	cmd->rq->data_len = 0;
->  	cmd->rq->completion_data = cmd;
-> +#ifdef CONFIG_BLK_DEV_IO_TRACE
->  	blk_add_trace_rq(cmd->rq->q, cmd->rq, BLK_TA_COMPLETE);
-> +#endif /* CONFIG_BLK_DEV_IO_TRACE */
->  	blk_complete_request(cmd->rq);
->  }
+On Tue, 20 Nov 2007 13:57:39 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-Puzzled by this patch... What is it trying to achieve?
+> Hi Andrew,
+> 
+> Following calltrace is seen server, while running filesystem stress on smb mounted partition on the client machine.
+> 
+> Nov 19 18:45:52 p55lp6 smbd[3304]: [2007/11/19 18:45:52, 0] lib/util_sock.c:write_data(562)
+> Nov 19 18:45:52 p55lp6 smbd[3304]:   write_data: write failure in writing to client 9.124.111.212. Error Broken pipe
+> Nov 19 18:45:52 p55lp6 smbd[3304]: [2007/11/19 18:45:52, 0] lib/util_sock.c:send_smb(769)
+> Nov 19 18:45:52 p55lp6 smbd[3304]:   Error writing 39 bytes to client. -1. (Broken pipe)
+> Nov 19 18:47:42 p55lp6 smbd[3650]: [2007/11/19 18:47:42, 0] smbd/oplock.c:oplock_timeout_handler(351)
+> Nov 19 18:47:42 p55lp6 smbd[3650]:   Oplock break failed for file p0/d3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/deX/d3cX/d6eXXX/f8d -- replying anyway
+> Nov 19 18:47:42 p55lp6 kernel: [ 6960.261068] warning: process `smbd' gets w/ old libcap
+> Nov 19 18:47:42 p55lp6 smbd[3650]: [2007/11/19 18:47:42, 0] smbd/oplock_linux.c:linux_release_kernel_oplock(193)
+> Nov 19 18:47:43 p55lp6 smbd[3650]:   linux_release_kernel_oplock: Error when removing kernel oplock on file p0/d3XXXXXXXXXXXXXXXXXXXXXXX
+> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/deX/d3cX/d6eXXX/f8d, dev = 807, inode = 30983, file
+> _id = 501. Error w
+> Nov 19 18:48:04 p55lp6 smbd[3650]: [2007/11/19 18:48:04, 0] lib/util_sock.c:write_data(562)
+> Nov 19 18:48:04 p55lp6 smbd[3650]:   write_data: write failure in writing to client 9.124.111.212. Error Connection reset by peer
+> 
 
--- 
-Jens Axboe
+So you have samba running on a 2.6.24-rc2-mm1 machine and samba is failing
+with the above messages?
 
