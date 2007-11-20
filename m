@@ -1,138 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbXKTMsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbXKTMuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759797AbXKTMsO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 07:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756959AbXKTMr7
+	id S1760013AbXKTMuL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 07:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbXKTMt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 07:47:59 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:54268 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756847AbXKTMr6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 07:47:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAE5mQkdMROHU/2dsb2JhbACBWw
-Date: Tue, 20 Nov 2007 07:47:54 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: clameter@sgi.com
-Cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 01/45] ACPI: Avoid references to impossible processors.
-Message-ID: <20071120124754.GB10127@Krystal>
-References: <20071120011132.143632442@sgi.com> <20071120011331.944255657@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Nov 2007 07:49:59 -0500
+Received: from mx2.suse.de ([195.135.220.15]:36695 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756306AbXKTMt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 07:49:58 -0500
+From: Andi Kleen <ak@suse.de>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Subject: Re: [patch][v2] x86, ptrace: support for branch trace store(BTS)
+Date: Tue, 20 Nov 2007 13:45:39 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org
+References: <029E5BE7F699594398CA44E3DDF55444F3AEA7@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <029E5BE7F699594398CA44E3DDF55444F3AEA7@swsmsx413.ger.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071120011331.944255657@sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 07:46:40 up 16 days, 17:52,  2 users,  load average: 3.70, 3.41,
-	2.54
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200711201345.39580.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* clameter@sgi.com (clameter@sgi.com) wrote:
-> ACPI uses NR_CPUS in various loops and in some it accesses per cpu
-> data of processors that are not present(!) and that will never be present.
-> The pointers to per cpu data are typically not initialized for processors
-> that are not present. So we seem to be reading something here from offset 0
-> in memory.
-> 
-> Make ACPI use nr_cpu_ids instead. That stops at the end of the possible
-> processors.
-> 
-> Convert one loop to NR_CPUS to use the cpu_possible map instead.
-> 
 
-I'm just wondering how broken this is. Is there any assumption that
-there is no holes in the online cpu map in this code ?
+> - the internal buffer interpretation as well as the corresponding
+>   operations are selected at run-time by hardware detection
+>   - different processors use different branch record formats
 
-We can very well have :
+I still think it would be far better if you would switch this over to be table
+driven. e.g. define a record that contains offsetof()/sizeof() of the 
+different formats and use generic functions. That would decrease
+code size considerably.
 
-0 off
-1 on
-2 on
-3 on
-...
+Also those manpages are really needed.
 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  drivers/acpi/processor_core.c |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6/drivers/acpi/processor_core.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/processor_core.c	2007-11-19 15:45:05.041140492 -0800
-> +++ linux-2.6/drivers/acpi/processor_core.c	2007-11-19 15:48:22.513639920 -0800
-> @@ -494,7 +494,7 @@ static int get_cpu_id(acpi_handle handle
->  	if (apic_id == -1)
->  		return apic_id;
->  
-> -	for (i = 0; i < NR_CPUS; ++i) {
-> +	for_each_possible_cpu(i) {
->  		if (cpu_physical_id(i) == apic_id)
->  			return i;
->  	}
-> @@ -638,7 +638,7 @@ static int __cpuinit acpi_processor_star
->  		return 0;
->  	}
->  
-> -	BUG_ON((pr->id >= NR_CPUS) || (pr->id < 0));
-> +	BUG_ON((pr->id >= nr_cpu_ids) || (pr->id < 0));
->  
->  	/*
->  	 * Buggy BIOS check
-> @@ -771,7 +771,7 @@ static int acpi_processor_remove(struct 
->  
->  	pr = acpi_driver_data(device);
->  
-> -	if (pr->id >= NR_CPUS) {
-> +	if (pr->id >= nr_cpu_ids) {
->  		kfree(pr);
->  		return 0;
->  	}
-> @@ -842,7 +842,7 @@ int acpi_processor_device_add(acpi_handl
->  	if (!pr)
->  		return -ENODEV;
->  
-> -	if ((pr->id >= 0) && (pr->id < NR_CPUS)) {
-> +	if ((pr->id >= 0) && (pr->id < nr_cpu_ids)) {
->  		kobject_uevent(&(*device)->dev.kobj, KOBJ_ONLINE);
->  	}
->  	return 0;
-> @@ -880,13 +880,13 @@ acpi_processor_hotplug_notify(acpi_handl
->  			break;
->  		}
->  
-> -		if (pr->id >= 0 && (pr->id < NR_CPUS)) {
-> +		if (pr->id >= 0 && (pr->id < nr_cpu_ids)) {
->  			kobject_uevent(&device->dev.kobj, KOBJ_OFFLINE);
->  			break;
->  		}
->  
->  		result = acpi_processor_start(device);
-> -		if ((!result) && ((pr->id >= 0) && (pr->id < NR_CPUS))) {
-> +		if ((!result) && ((pr->id >= 0) && (pr->id < nr_cpu_ids))) {
->  			kobject_uevent(&device->dev.kobj, KOBJ_ONLINE);
->  		} else {
->  			printk(KERN_ERR PREFIX "Device [%s] failed to start\n",
-> @@ -909,7 +909,7 @@ acpi_processor_hotplug_notify(acpi_handl
->  			return;
->  		}
->  
-> -		if ((pr->id < NR_CPUS) && (cpu_present(pr->id)))
-> +		if ((pr->id < nr_cpu_ids) && (cpu_present(pr->id)))
->  			kobject_uevent(&device->dev.kobj, KOBJ_OFFLINE);
->  		break;
->  	default:
-> 
-> -- 
+And your patch seems to be word wrapped.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-Andi
