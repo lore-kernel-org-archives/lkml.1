@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760941AbXKTCBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbXKTCCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760941AbXKTCBu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:01:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXKTBuT
+	id S1760051AbXKTCCR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbXKTBuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:50:19 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:2123 "EHLO perches.com"
+	Mon, 19 Nov 2007 20:50:24 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:2120 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756191AbXKTBtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756935AbXKTBtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:49:22 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Jeff Garzik <jgarzik@pobox.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       netdev@vger.kernel.org
-Subject: [PATCH 34/59] drivers/net/wan: Add missing "space"
-Date: Mon, 19 Nov 2007 17:48:26 -0800
-Message-Id: <1195523331-15303-35-git-send-email-joe@perches.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
+Subject: [PATCH 33/59] drivers/net/sk98lin: Add missing "space"
+Date: Mon, 19 Nov 2007 17:48:25 -0800
+Message-Id: <1195523331-15303-34-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.6.728.gea559
-In-Reply-To: <1195523331-15303-34-git-send-email-joe@perches.com>
+In-Reply-To: <1195523331-15303-33-git-send-email-joe@perches.com>
 References: 1234567
  <1195523331-15303-1-git-send-email-joe@perches.com>
  <1195523331-15303-2-git-send-email-joe@perches.com>
@@ -52,8 +51,7 @@ References: 1234567
  <1195523331-15303-31-git-send-email-joe@perches.com>
  <1195523331-15303-32-git-send-email-joe@perches.com>
  <1195523331-15303-33-git-send-email-joe@perches.com>
- <1195523331-15303-34-git-send-email-joe@perches.com>
-Message-Id: <8c0ecd8ae2baa9b0596d352f53c4c3527f3528bd.1195454435.git.joe@perches.com>
+Message-Id: <938a74cb7895afece561b299f11d28785214bade.1195454435.git.joe@perches.com>
 In-Reply-To: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
 References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -62,22 +60,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/wan/wanxl.c |    2 +-
+ drivers/net/sk98lin/skgepnmi.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/wan/wanxl.c b/drivers/net/wan/wanxl.c
-index 8e320b7..ad8c865 100644
---- a/drivers/net/wan/wanxl.c
-+++ b/drivers/net/wan/wanxl.c
-@@ -743,7 +743,7 @@ static int __devinit wanxl_pci_init_one(struct pci_dev *pdev,
- 	}while (time_after(timeout, jiffies));
+diff --git a/drivers/net/sk98lin/skgepnmi.c b/drivers/net/sk98lin/skgepnmi.c
+index b36dd9a..678659f 100644
+--- a/drivers/net/sk98lin/skgepnmi.c
++++ b/drivers/net/sk98lin/skgepnmi.c
+@@ -383,7 +383,7 @@ int Level)		/* Initialization level */
+ 			SK_ERR_LOG(pAC, SK_ERRCL_SW, SK_PNMI_ERR049, SK_PNMI_ERR049MSG);
  
- 	if (!stat) {
--		printk(KERN_WARNING "wanXL %s: timeout while initializing card"
-+		printk(KERN_WARNING "wanXL %s: timeout while initializing card "
- 		       "firmware\n", pci_name(pdev));
- 		wanxl_pci_remove_one(pdev);
- 		return -ENODEV;
+ 			SK_DBG_MSG(pAC, SK_DBGMOD_PNMI, SK_DBGCAT_INIT | SK_DBGCAT_FATAL,
+-					   ("CounterOffset struct size (%d) differs from"
++					   ("CounterOffset struct size (%d) differs from "
+ 						"SK_PNMI_MAX_IDX (%d)\n",
+ 						SK_PNMI_CNT_NO, SK_PNMI_MAX_IDX));
+ 		}
 -- 
 1.5.3.5.652.gf192c
 
