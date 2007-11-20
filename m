@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764131AbXKTUxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbXKTUzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764131AbXKTUxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760504AbXKTUxh
+	id S1763619AbXKTUzX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbXKTUzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:53:37 -0500
-Received: from ts.adaptec.com ([162.62.93.58]:55461 "EHLO mail-gw3.adaptec.com"
+	Tue, 20 Nov 2007 15:55:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47984 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757237AbXKTUxg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:53:36 -0500
-Content-class: urn:content-classes:message
+	id S1752406AbXKTUzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:55:08 -0500
+Date: Tue, 20 Nov 2007 21:54:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, tglx@linutronix.de
+Subject: Re: nohz and strange sleep latencies
+Message-ID: <20071120205454.GD10008@elte.hu>
+References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] Unify sysfs filenames for firmware version
-Date: Tue, 20 Nov 2007 15:53:34 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01FEAD01@otce2k301.adaptec.com>
-In-Reply-To: <20071120200212.GI31112@earth.li>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Unify sysfs filenames for firmware version
-Thread-Index: AcgrsEUgVqhLo/DcQhmSCfpgbKzZ4AAAgyxQ
-References: <20071120133824.GD31112@earth.li> <47430CCE.50701@emulex.com> <20071120171454.GH31112@earth.li> <AE4F746F2AECFC4DA4AADD66A1DFEF01FEAC9B@otce2k301.adaptec.com> <20071120200212.GI31112@earth.li>
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Jonathan McDowell" <noodles@earth.li>
-Cc: "James Smart" <James.Smart@Emulex.Com>, <linux-scsi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       <Matt_Domsch@dell.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071120105458.GA1597@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan McDowell [mailto:noodles@earth.li] sez:
-> On Tue, Nov 20, 2007 at 12:49:49PM -0500, Salyzyn, Mark wrote:
-> > The aacraid cards, which uses hba_monitor_version, 
-> > hba_kernel_version and hba_bios_version for each piece
-> > does not fit into the single 'firmware revision' common ideal
-> While I've used the aacraid cards in the past I think I agree
-> with you that no 1 of those 3 pieces of information represents
-> the firmware. Perhaps it could export a triplet though?
 
-A single can be used in 99% of all cases, OEM or users can muck
-it up. I would 'vote' for hba_kernel_version == fw_version.
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-Maybe add a companion standard for hba_bios_version == bios_version
-and hba_monitor_version == exec_version (executive_version) if other
-cards can supply such info ...
+> > and send us the output? (Enabling CONFIG_TIMER_STATS, 
+> > CONFIG_SCHED_DEBUG and CONFIG_SCHEDSTATS would maximize the amount 
+> > of information.)
+> 
+> This was w/o hpet=disable . Do you want me to test with hpet=disable?
 
-> Management stuff always seems to be tied to a single card. It's one of
-> the things that puts me off hardware RAID.
+no, this is fine. You've got a hpet clockevents driver and two lapic 
+drivers:
 
-There are 113 cards this driver works for in concert. Maybe my tail
-feathers are showing ;->
+Clock Event Device: hpet
+ set_next_event: hpet_legacy_next_event
+ set_mode:       hpet_legacy_set_mode
+ event_handler:  tick_handle_oneshot_broadcast
 
-> Do the management folks actually have some ideas about what sort of
-> interface they'd like in sysfs?
+Clock Event Device: lapic
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  hrtimer_interrupt
 
-Simple answer:
-	No
+Clock Event Device: lapic
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  hrtimer_interrupt
 
-Detailed answer (I digress):
+to me this has the feeling of lapic breakage in C2 mode. Does it get any 
+better if you boot with 'nolapic'? (but that might in turn turn off 
+high-res timers and nohz in essence) Thomas, any ideas?
 
-They love ioctls as a commonality across all operating
-systems and a pass-through to proprietary firmware
-portals: binary, bidirectional, atomic and freely
-formatted migrating structures that do not herd the
-cats into just one specification. These are all
-eventually presented as documented stable objects
-exported by a sizeable C++ StorLib(tm) library that
-provides the consistent interface that the OEMs and
-Adaptec use to the higher level install, event, GUI
-and CLI applications. Driver is only involved as a
-transport.
-
-Sincerely -- Mark Salyzyn
+	Ingo
