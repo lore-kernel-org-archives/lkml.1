@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXKTGXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbXKTGbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbXKTGXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXKTGXg
+	id S1755742AbXKTGbW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXKTGbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:23:36 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59942 "EHLO
+	Tue, 20 Nov 2007 01:31:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33057 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752231AbXKTGXf (ORCPT
+	by vger.kernel.org with ESMTP id S1751506AbXKTGbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:23:35 -0500
-Date: Mon, 19 Nov 2007 22:23:08 -0800
+	Tue, 20 Nov 2007 01:31:10 -0500
+Date: Mon, 19 Nov 2007 22:31:07 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Marcel Selhorst <tpm@selhorst.net>
-Cc: TPM Device Driver List <tpmdd-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, Kylene Jo Hall <kjhall@us.ibm.com>
-Subject: Re: [PATCH] TPM TIS device driver locality request
-Message-Id: <20071119222308.05d32ba7.akpm@linux-foundation.org>
-In-Reply-To: <4740CBA3.4090708@selhorst.net>
-References: <4740CBA3.4090708@selhorst.net>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] printk.c: use ints instead of longs for logbuf index
+Message-Id: <20071119223107.36e85982.akpm@linux-foundation.org>
+In-Reply-To: <200711181932.12588.vda.linux@googlemail.com>
+References: <200711181932.12588.vda.linux@googlemail.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,53 +25,29 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007 00:32:51 +0100 Marcel Selhorst <tpm@selhorst.net> wrote:
+On Sun, 18 Nov 2007 19:32:12 -0800 Denys Vlasenko <vda.linux@googlemail.com> wrote:
 
-> Dear all,
+> Subject: [PATCH] printk.c: use ints instead of longs for logbuf index
+
+"unsigned ints".  It matters - using ints would fill the code with bugs.
+
+> Date: Sun, 18 Nov 2007 19:32:12 -0800
+> User-Agent: KMail/1.9.1
 > 
-> during the initialization of the TPM TIS driver, the necessary
-> locality has to be requested earlier in the init-process. Depending on
-> the used TPM chip, this leads to wrong information.
-> For example: Lenovo X61s with Atmel TPM:
+> Hi Andrew,
 > 
-> tpm_tis 00:0a: 1.2 TPM (device-id 0xFFFF, rev-id 255)
+> This patch stops using unsigned _longs_ for printk
+> buffer indexes. Log buffer is way smaller than 2 gigabytes
+> and unsigned ints will work too . Indeed, they do work nicely
+> on all 32-bit platforms where longs and ints are the same.
 > 
-> But correct is:
+> With this patch, we have following size savings on amd64:
 > 
-> tpm_tis 00:0c: 1.2 TPM (device-id 0x3203, rev-id 9)
-> 
-> This short patch fixes this issue.
+>    text    data     bss     dec     hex filename
+>    5997     313   17736   24046    5dee 2.6.23.1.t64/kernel/printk.o
+>    5858     313   17700   23871    5d3f 2.6.23.1.printk.t64/kernel/printk.o
 
-Is this bug sufficiently serious to warrant inclusion of the fix in
-2.6.24?  2.6.23.x?
+I can imagine someone using an 8GB log buffer for crazy
+i-cant-be-bothered-using-relayfs stuff.
 
-It looks like it's just a cosmetic thing, but I'd like to check...
-
-> Signed-Off-by Marcel Selhorst <tpm@selhorst.net>
-
-Signed-off-by:, please.
-
-> ---
-> --- tpm_tis.c.orig      2007-11-19 00:21:09.000000000 +0100
-> +++ tpm_tis.c   2007-11-19 00:21:23.000000000 +0100
-
-`patch -p1' form, please.  This should have been
-
---- a/drivers/char/tpm/tpm_tis.c
-+++ a/drivers/char/tpm/tpm_tis.c
-
-> @@ -450,6 +450,11 @@ static int tpm_tis_init(struct device *d
->                 goto out_err;
->         }
-> 
-> +       if (request_locality(chip, 0) != 0) {
-> +               rc = -ENODEV;
-> +               goto out_err;
-> +       }
-> +
-
-Your email client is converting tabs to spaces.
-
-http://mbligh.org/linuxdocs/Email/Clients/Thunderbird has help for this.
-
-Thanks.
+Oh well, they'll live.
