@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbXKTQkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbXKTQnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbXKTQkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbXKTQjz
+	id S1760747AbXKTQnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXKTQnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:39:55 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:39065 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754170AbXKTQjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:39:55 -0500
-Date: Tue, 20 Nov 2007 17:39:51 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: djenkins@mvista.co.uk
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [Fwd: MMC sub-system: SDIO block-mode with increment address
- issue]
-Message-ID: <20071120173951.334f7a2f@poseidon.drzeus.cx>
-In-Reply-To: <1195570357.13874.17.camel@libdev3.libertesoft.co.uk>
-References: <1195554533.18869.111.camel@libdev3.libertesoft.co.uk>
-	<20071120115104.163810ea@poseidon.drzeus.cx>
-	<1195570357.13874.17.camel@libdev3.libertesoft.co.uk>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Nov 2007 11:43:32 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55915 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbXKTQnb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 11:43:31 -0500
+Message-ID: <47430D86.3070801@bull.net>
+Date: Tue, 20 Nov 2007 17:38:30 +0100
+From: Jean noel Cordenner <jean-noel.cordenner@bull.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20061107)
+MIME-Version: 1.0
+To: cmm@us.ibm.com
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2]  i_version update - vfs part
+References: <1191598088.24615.45.camel@frecb002711.frec.bull.fr>	 <1193331870.5487.31.camel@frecb002711.frec.bull.fr> <1193346351.4288.16.camel@localhost.localdomain>
+In-Reply-To: <1193346351.4288.16.camel@localhost.localdomain>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 20/11/2007 17:50:41,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 20/11/2007 17:50:41,
+	Serialize complete at 20/11/2007 17:50:41
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 14:52:37 +0000
-Dean Jenkins <djenkins@mvista.co.uk> wrote:
+Hi,
 
-> Hi Pierre,
-> 
-> My card driver needed to set the R/W E4MI bit in the Card Capability
-> register (0x08) in CCCR (function 0). Perhaps it is unnecessary ?
-> 
+Here you can find some performance comparison in terms of CPU 
+utilization and transactions per second (using FFSB) on ext4 filesystem 
+with and without i_version option.
 
-That bit is pointless given the current design of the MMC layer, so it shouldn't be necessary.
+http://bullopensource.org/ext4/20071116/ffsb-write.html
 
-> BTW. It is easy to for the card driver to access function 0 registers by
-> doing the following...
-> 
-
-Of course. Any driver can do whatever it pleases since it is in kernel space. But you won't make any friends if you keep trying to bypass every system in the kernel. ;)
-
-(Not to mention you'll have a lot more work on your hands.)
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+regards,
+Jean noel
