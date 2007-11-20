@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbXKTKpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbXKTKrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758450AbXKTKpf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 05:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXKTKp1
+	id S1758615AbXKTKrw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 05:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXKTKro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 05:45:27 -0500
-Received: from srv02.itamservices.de ([87.106.7.29]:59899 "EHLO
-	itamservices.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbXKTKp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 05:45:27 -0500
-X-Greylist: delayed 665 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 05:45:26 EST
-Message-ID: <4742B82C.3060001@itamservices.de>
-Date: Tue, 20 Nov 2007 11:34:20 +0100
-From: Daniel Reichelt <mail@itamservices.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 20 Nov 2007 05:47:44 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:45025 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752124AbXKTKro (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 05:47:44 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tQu+G9yPe+CtWseTokFKRQQoiDlkU6vgea8OIjM408w/f1SWosCTZfjvvroktfILTCUn51QMRKSI3h/lwHfSvGh2SGJKRLRFcrK7E5dtrv0zxJrqbAFv3DgQ2l9fb9ecIVz6sGZayJOSrDUHAJlfNdMl76RWv7fgnL0FQN4ibeM=  ;
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: pomac@vapor.com
+Subject: Re: [BUG?] OOM with large cache....(x86_64, 2.6.24-rc3-git1, nohz)
+Date: Tue, 20 Nov 2007 21:47:32 +1100
+User-Agent: KMail/1.9.5
+Cc: Linux-kernel@vger.kernel.org
+References: <1195520355.8601.14.camel@localhost> <200711201513.36711.nickpiggin@yahoo.com.au> <1195549767.8601.22.camel@localhost>
+In-Reply-To: <1195549767.8601.22.camel@localhost>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Patch: Hide process info from other users/users not in my group
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=360C6B0F
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711202147.32354.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+On Tuesday 20 November 2007 20:09, Ian Kumlien wrote:
+> On tis, 2007-11-20 at 15:13 +1100, Nick Piggin wrote:
 
-this patch sets (if the corresponding kconfig option is active) the access
-modes of /proc/<pid>-dirs to 550 instead of 555 in order to provide some
-privacy to users. Tools like lsof and ps to spy out on other users become
-ineffective.
+> > It's also used up all your 2.5GB of swap. The output of your `free` shows
+> > a fair bit of disk cache there, but it also shows a lot of swap free,
+> > which isn't the case at oom-time.
+>
+> Yes, as i said those was from several hours later...
 
-Cheers,
---
-Daniel Reichelt
+OK, missed that.
 
-# diff -Naur linux-2.6.23.8/fs/Kconfig linux-2.6.23.8-dhr/fs/Kconfig
---- linux-2.6.23.8/fs/Kconfig   2007-11-16 19:14:27.000000000 +0100
-+++ linux-2.6.23.8-dhr/fs/Kconfig       2007-11-20 11:33:18.000000000 +0100
-@@ -918,6 +918,17 @@
-         help
-         Exports the dump image of crashed kernel in ELF format.
 
-+config PROC_SECURED_PID_DIRS
-+       bool "chmod /proc/<pid>-dirs to 550"
-+       depends on PROC_FS
-+       default n
-+       help
-+         chmod /proc/<pid>-dirs to 550 instead of 555 which provides a bit
-+         moreprivacy to users on your system as only the user's and the user's
-+         group's process details may be viewed. Other users' tasks running on
-+         the system will be completely hidden from the means of utilities like
-+         ps or lsof.
-+
- config PROC_SYSCTL
-        bool "Sysctl support (/proc/sys)" if EMBEDDED
-        depends on PROC_FS
-# diff -Naur linux-2.6.23.8/fs/proc/base.c linux-2.6.23.8-dhr/fs/proc/base.c
---- linux-2.6.23.8/fs/proc/base.c       2007-11-16 19:14:27.000000000 +0100
-+++ linux-2.6.23.8-dhr/fs/proc/base.c   2007-11-20 11:31:31.000000000 +0100
-@@ -2200,7 +2200,11 @@
-        if (!inode)
-                goto out;
+> > Unfortunately, we don't show NR_ANON_PAGES in these stats, but at a
+> > guess, I'd say that the file cache is mostly shrunk and you still don't
+> > have enough memory. trackerd probably has a memory leak in it, or else is
+> > just trying to allocate more memory than you have. Is this a regression?
+>
+> I have had it happen twice before, without tracker running...
 
-+#ifdef CONFIG_PROC_SECURED_PID_DIRS
-+       inode->i_mode = S_IFDIR|S_IRUSR|S_IRGRP|S_IXUSR|S_IXGRP;
-+#else
-        inode->i_mode = S_IFDIR|S_IRUGO|S_IXUGO;
-+#endif
-        inode->i_op = &proc_tgid_base_inode_operations;
-        inode->i_fop = &proc_tgid_base_operations;
-        inode->i_flags|=S_IMMUTABLE;
+Does the machine recover afterward, or is the memory freed up after
+the OOM kill? How about if you kill X and do a sysrq+E then sysrq+I
+(to kill all tasks)?
+
+If the memory still isn't freed after that, then we could have a
+kernel memory leak.
+
+
+> It didn't quite get to the oom stage, it just failed alot of allocations
+> while having 1.5 or more memory locked in cache.
+>
+> http://marc.info/?l=linux-kernel&m=118895576924867&w=2
+
+OK, yes this is a different case, and it is very far off the OOM
+killing stage. Atomic allocations can fail quite easily, but
+kswapd will have started up and will start freeing memory.
+
+Actually there are some patches gone into 2.6.24 that have fixed
+some corner cases with the network stack making order-1 allocations
+when it should be order-0. That might help your atomic allocation
+failures, but they aren't really a bug anyway (unless networking
+fails to recover).
+
+Thanks for reporting all this...
