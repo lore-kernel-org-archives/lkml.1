@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbXKTWJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764767AbXKTWK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763704AbXKTWJk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXKTWJb
+	id S1764767AbXKTWK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbXKTWKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:09:31 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46819 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753307AbXKTWJa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:09:30 -0500
-Date: Tue, 20 Nov 2007 22:07:09 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       zaitcev@redhat.com
-Subject: Re: [PATCH] mct232: speed, new termios and compliance cleanups
-Message-ID: <20071120220709.49b60de2@the-village.bc.nu>
-In-Reply-To: <20071120110413.5f84e092.zaitcev@redhat.com>
-References: <20071119152211.4be48986@the-village.bc.nu>
-	<20071120110413.5f84e092.zaitcev@redhat.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 20 Nov 2007 17:10:13 -0500
+Received: from main.gmane.org ([80.91.229.2]:57645 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756875AbXKTWKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 17:10:11 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: trem <tremyfr@yahoo.fr>
+Subject: Re: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
+Date: Tue, 20 Nov 2007 23:09:53 +0100
+Message-ID: <47435B31.2070304@yahoo.fr>
+References: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com> <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: atoulouse-256-1-136-84.w90-45.abo.wanadoo.fr
+User-Agent: Thunderbird 2.0.0.6 (X11/20071101)
+In-Reply-To: <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>
+Cc: linux-rt-users@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >   * we do not know how to support. We ignore them for the moment.
-> >   * XXX Rate-limit the error message, it's user triggerable.
+Steven Rostedt wrote:
+> On Fri, 16 Nov 2007, Nelson, Shannon wrote:
+>> first->async_tx.phys;
+>>> -       __list_splice(&new_chain, ioat_chan->used_desc.prev);
+>>> +       list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
+>>>
+>> NAK.
+>>
+>> These functions do insertions differently.  The 'prev' is pointing to
+>> the last valid descriptor in the queue and you really want to get the
+>> new_chain stuck on after this.  Your list_splice_tail() will insert the
+>> new_chain just before it which will muck up the order of the DMA
+>> requests.
+>>
+>> You might have more success with
+>> 	list_splice_tail(&new_chain, ioat_chan->used_desc);
+>> where used_desc points to the whole list, rather than using the .prev
+>> pointer to a specific node.
+>>
+>> Please copy me on future ioatdma related comments.
+>>
 > 
-> This XXX item is fixed by this patch, so should be removed.
-
-Ok
-
+> And people wonder why we post RT related patches to LKML. This is exactly
+> why!
 > 
-> > +		/* FIXME: Can we use any divider - should we do
-> > +		   divider = 115200/value;
-> > +		   real baud = 115200/divider */
-> >  		switch (value) {
-> >  		case 300: break;
+> Thanks for the response Shannon!
 > 
-> I do not understand this FIXME comment. What is wrong with current
-> code? The result of the function is given to the device's sequencer.
-> Do you want to get rid of the switch? Please unconfuse me.
+> -- Steve
+> 
 
-What should happen ideally and I didnt have the hw to check is that
-we take whatever baud rate the use requested (arbitary value). From that
-we compute the best divider. From the best divider we compute the actual
-speed. The actual speed is then written back into the termios structure.
+Hi
 
-(The kernel knows about a few percent off being ok and will report
-appropriately in those cases)
+I've tried this change, but it still don't compile. So I propose this patch.
 
-Alan
+regards,
+trem
+
+------------------------
+
+Index: linux-2.6.23/drivers/dma/ioat_dma.c
+===================================================================
+--- linux-2.6.23.orig/drivers/dma/ioat_dma.c
++++ linux-2.6.23/drivers/dma/ioat_dma.c
+@@ -244,7 +244,7 @@ static dma_cookie_t ioat_tx_submit(struc
+        /* write address into NextDescriptor field of last desc in chain */
+        to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
+                                                        first->async_tx.phys;
+-       __list_splice(&new_chain, ioat_chan->used_desc.prev);
++       list_splice_tail(&new_chain, &ioat_chan->used_desc);
+ 
+        ioat_chan->pending += desc_count;
+        if (ioat_chan->pending >= 4) {
+
