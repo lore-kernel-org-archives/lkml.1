@@ -1,137 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbXKTOus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXKTOvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbXKTOus (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXKTOul
+	id S1759586AbXKTOvW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXKTOvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:50:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41430 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755583AbXKTOuk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:50:40 -0500
-Date: Tue, 20 Nov 2007 06:47:47 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
-Message-ID: <20071120064747.2a8036cd@laptopd505.fenrus.org>
-In-Reply-To: <200711201837.39664.nickpiggin@yahoo.com.au>
-References: <47425EA5.7000607@rtr.ca>
-	<200711201517.16171.nickpiggin@yahoo.com.au>
-	<20071119213727.16d5917b@laptopd505.fenrus.org>
-	<200711201837.39664.nickpiggin@yahoo.com.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 Nov 2007 09:51:13 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50944 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751632AbXKTOvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 09:51:10 -0500
+Date: Tue, 20 Nov 2007 08:51:06 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Chris Friedhoff <chris@friedhoff.org>
+Cc: Serge E Hallyn <sergeh@us.ibm.com>, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@epoch.ncsc.mil>, Andrew Morgan <morgan@kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Posix file capabilities in 2.6.24rc2; now 2.6.24-rc3
+Message-ID: <20071120145106.GA6641@sergelap.austin.ibm.com>
+References: <20071113230720.22c6a036.chris@friedhoff.org> <20071113235318.GA6477@sergelap.austin.ibm.com> <20071114101251.a1f6214d.chris@friedhoff.org> <20071114180235.GA25344@sergelap.austin.ibm.com> <20071115230227.9dabbb5f.chris@friedhoff.org> <20071119143946.b0664b6c.chris@friedhoff.org> <20071119231644.GA26373@sergelap.austin.ibm.com> <20071120104609.d4f13fa0.chris@friedhoff.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071120104609.d4f13fa0.chris@friedhoff.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 18:37:39 +1100
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > actually.... no. IRQ balancing is not a "fast" decision; every time
-> > you
+Quoting Chris Friedhoff (chris@friedhoff.org):
+> On Mon, 19 Nov 2007 17:16:44 -0600
+> "Serge E. Hallyn" <sergeh@us.ibm.com> wrote:
 > 
-> I didn't say anything of the sort. But IRQ load could still fluctuate
-> a lot more rapidly than we'd like to wake up the irqbalancer.
-
-irq load fluctuates by definition. but acting on it faster isn't the
-right thing.
+> > Quoting Chris Friedhoff (chris@friedhoff.org):
+> > > Hello Serge,
+> > > 
+> > > just to let you know: with 2.6.24-rc3 I have the same problem.
+> > 
+> > Ok, so here is the flow.
+> > 
+> > First off, using runlevel 5 on FC7, using 'log out' correctly brings
+> > you back to a new login prompt.  Your problem is starting in runlevel
+> > 3, and typing 'xinit .xinitrc';  when you exit your wm, xinit is not
+> > allowed to kill X so you don't get back to your console.
+> 
+> Yes, I'm booting in a runlevel without a session manager and starting
+> my X session with xinit.
+> (slackware: console->runlevel 3; sessionmanager->runlevel 4 )
+> 
+> > 
+> > First comment is, as you point out on your homepage, you could
+> > 	setfcaps -c cap_kill+p -e /usr/bin/xinit
+> > Then xinit is allowed to kill X.  Yes xinit forks and execs a
+> > user-writable script, but of course upon the exec to start the script
+> > cap_kill is lost, so the user can't abuse this.
+> > 
+> > Since you pointed this out on your homepage, I have to assume you've
+> > decided you don't want to give cap_kill to xinit?
+> 
+> No, since I'm using capabilities and I'm very happy with it, I grant
+> cap_kill to xinit. For myself the problem is solved ...
+> 
+> > 
+> > My other question is - do we want to maintain this signal restriction?
+> > So long as a privileged process isn't dumpable, is it any more dangerous
+> > for user hallyn to kill capability-raised process owned by hallyn than
+> > it is to kill a setuid process started by hallyn?  If we decide no, then
+> > maybe we should remove cap_task_kill() as well as the cap_task_setnice(),
+> > cap_task_setioprio(), cap_task_setscheduler()?
+> > 
+> > Or maybe i've just forgotten a compelling scenario...
+> > 
+> > thanks,
+> > -serge
 > 
 > 
-> > move an interrupt around, you end up causing a really a TON of cache
-> > line bounces, and generally really bad performance
+> ... but if some user decides to configure capabilities into the 2.6.24
+> kernel or just uses such a kernel and
+> 1) is not granting cap_kill to xinit, and
+> 2) starts X by issuing xinit on the console
+> 3) ends after some time his X session, to come back to the console
 > 
-> All the more reason why the kernel should do it. When I say move it to
-> the kernel, I don't mean because I want to move IRQs 1 000 000 times
-> per second and can't sustain enough context switches to do it in
-> userspace. Userspace basically has insufficient information to do it
-> as well as kernel.
-
-like what?
-Assuming this is a "once every few seconds" decision (and really it is,
-esp for networking)....
+> he will see a different behavior compared to 2.6.23 exiting his X
+> session and (I think) believes to have a bug in the X package.
 > 
+> Andrew Morton describes the problem here, too:
+> http://lkml.org/lkml/2006/11/23/15
+> http://lkml.org/lkml/2006/11/23/19
 > 
-> > (esp if you do it 
-> > for networking ones, since you destroy the packet reassembly stuff
-> > in the tcp/ip stack).
-> >
-> > Instead, what ends up working is if you do high level categories of
-> > interrupt classes and balance within those (so that no 2 networking
-> > irqs are on the same core/package unless you have more nics than
-> > cores)
+> Am I wrong in the assumption, but should one not accept an unchanged
+> behavior with or without capabilities in the kernel regarding the
+> behavior of applications, when he is not actually using (by not setting
+> the xattr capability) capabilities with this application?
 > 
-> Sure, but you say that like it is difficult information for the kernel
-> to know about. Actually it is much easier. Note that you can still
-> bind interrupts to specific CPUs.
+> If I'm wrong, maybe a warning or hint should be given that one has to
+> grant cap_kill to xinit to come back to the console if the X session
+> was started by xinit.
 
-I assume you've read what/how irqbalance does; good luck convincing
-people that that kind of policy belongs in the kernel.
-> 
-> 
-> > etc. Balancing on a 10 second scale seems to work quite well; no
-> > need to pull that complexity into the kernel....
-> 
-> My perspective is that it isn't a good idea to have such a critical
-> piece of infrastructure outside the kernel.
+Thanks - yes, I see (I tend to get lost in my testruns).  So we're back to
+trying to do the fix I was trying to do along with the SIGCONT fix a few
+weeks ago.
 
-kernel or kernel source? If there was a good place in the kernel source
-I'd not be against moving irqbalance there. In the kernel... not needed.
-(also because on single socket machines, the irqbalancer basically has
-a one-shot task because there balancing is effectively a static setup)
+The problem is that when you run a setuid binary, its pP and pE are
+fully raised.  The following patch fixes it for me.  Chris, does it fix
+your problem?  Andrew, am I again confusing myself and doing something
+unsafe?
 
-The same ("critical piece of infrastructure') can be said about other
-things, like udev and ... even hal. Nobody is arguing for moving those
-into the kernel though....
+thanks,
+-serge
 
-> 
-> I want the kernel to balance interrupts and tasks fairly; 
+>From d0b931776c0c424e583bf736d6a2498be4eccb98 Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Tue, 20 Nov 2007 08:47:35 +0000
+Subject: [PATCH 1/1] file capabilities: don't prevent signaling setuid root programs.
 
-with irqthreads that will come for free soon.
+When an unprivileged user runs a setuid root program in !SECURE_NOROOT
+mode, fP, fI, and fE are set full on, so pP' and pE' are full on.
+Then cap_task_kill() prevents the user from signaling the setuid root
+task.  This is a change in behavior compared to when
+!CONFIG_SECURITY_FILE_CAPABILITIES.
 
->maybe move
-> interrupts closer to the tasks they are interacting with (instead of,
-> or combined with our current policy of moving tasks near the
-> interrupts, which can be much more damaging for cache and NUMA);
+This patch introduces a special check into cap_task_kill() just
+to check whether a non-root user is signaling a setuid root
+program started by the same user.  If so, then signal is allowed.
 
-interrupts and tasks have an N:M relationship.... or sometimes 1:M
-where tasks only depend on one irq. Moving the irq around then tends to
-be a loss. For NUMA, you actually very likely want the IRQ on the node
-that the IO is associdated with.
+This still leaves open the question of whether we want to go back
+to allowing users to signal binaries owned by them which had
+file capabilities set.
 
-> move
-> all interrupts to a single core when there is enough capacity and we
-> are balancing for power savings; 
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ security/commoncap.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-irqbalance does that today.
-
->do exponential interrupt balancing
-> backoff when it isn't required; etc. Not easy to do all that in
-> userspace.
-> 
-> Any reason you actually think it is a good idea, aside from the fact
-> that a userspace solution was able to be better than a crappy old
-> kernel one?
-
-I listed a few;
-1) it's policy 
-2) the memory is only needed for a short time (20 seconds or so) on
-single-socket machines
-3) it makes decisions on "subjective" information such as interrupt
-device classes that the kernel currently just doesn't have (it could
-grow that obviously), and is clearly policy information.
-
-
-
-
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 302e8d0..d20d0a6 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -543,6 +543,9 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
+ 	if (capable(CAP_KILL))
+ 		return 0;
+ 
++	if (p->euid==0 && p->uid==current->uid)
++		return 0;
++
+ 	return -EPERM;
+ }
+ #else
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.2.5
+
