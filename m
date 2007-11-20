@@ -1,94 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbXKTPU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbXKTPVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759739AbXKTPU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXKTPUv
+	id S1759727AbXKTPVf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXKTPV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:20:51 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:63167 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757146AbXKTPUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:20:50 -0500
-Date: Tue, 20 Nov 2007 16:20:47 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: "eric miao" <eric.y.miao@gmail.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
-       "Bill Gatliff" <bgat@billgatliff.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <andrew@sanpeople.com>,
-       "Tony Lindgren" <tony@atomide.com>, "Kevin Hilman" <khilman@mvista.com>,
-       "Paul Mundt" <lethal@linux-sh.org>, "Ben Dooks" <ben@trinity.fluff.org>
-Subject: Re: [patch/rfc 1/4] GPIO implementation framework
-Message-ID: <20071120162047.277c1ccd@hyperion.delvare>
-In-Reply-To: <200711170936.25524.david-b@pacbell.net>
-References: <200710291809.29936.david-b@pacbell.net>
-	<200711132036.14927.david-b@pacbell.net>
-	<20071117113855.7532e477@hyperion.delvare>
-	<200711170936.25524.david-b@pacbell.net>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Tue, 20 Nov 2007 10:21:27 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:43874 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756594AbXKTPV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:21:26 -0500
+Date: Tue, 20 Nov 2007 18:21:33 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 1/2] kill PT_PTRACED
+Message-ID: <20071120152133.GA4546@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Since the patch
 
-On Sat, 17 Nov 2007 09:36:24 -0800, David Brownell wrote:
-> On Saturday 17 November 2007, Jean Delvare wrote:
-> > On Tue, 13 Nov 2007 20:36:13 -0800, David Brownell wrote:
-> > > On Tuesday 13 November 2007, eric miao wrote:
-> > > >  	if (!requested)
-> > > > -		printk(KERN_DEBUG "GPIO-%d autorequested\n",
-> > > > -				chip->base + offset);
-> > > > +		pr_debug("GPIO-%d autorequested\n", gpio);
-> > > 
-> > > Leave the printk in ... this is the sort of thing we want
-> > > to see fixed, which becomes unlikely once you hide such
-> > > diagnostics.  And for that matter, what would be enabling
-> > > the "-DDEBUG" that would trigger a pr_debug() message?
-> > 
-> > The original code isn't correct either.
-> 
-> It's perfectly correct.  That it's an idiom you don't
-> seem to *like* but is distinct from correctness.
-> 
-> > Either this is a debug message 
-> > and indeed pr_debug() should be used, or it's not and KERN_DEBUG should
-> > be replaced by a lower log level.
-> 
-> KERN_DEBUG is what says the message level is "debug".
-> Both styles log messages at that priority level.
-> 
-> Which is distinct from saying that the message should
-> vanish from non-debug builds ... that's what pr_debug
-> and friends do, by relying implicitly on "-DDEBUG".
+	"Fix ptrace_attach()/ptrace_traceme()/de_thread() race"
+	commit f5b40e363ad6041a96e3da32281d8faa191597b9
 
-Were you trying to be funny or something? You aren't really suggesting
-that I don't know what a debug level is, and how pr_debug() works, are
-you?
+we set PT_ATTACHED and change child->parent "atomically" wrt task_list lock.
 
-> In this case, the original code was saying that the
-> message should NOT just vanish.  One reason the patch
-> was incorrect was that even on its own terms, it was
-> wrong ... since it used the "-DDEBUG" mechanism wrong,
-> and prevented the message from *EVER* appearing.
+This means we can remove the checks like "PT_ATTACHED && ->parent != ptracer"
+which were needed to catch the "ptrace attach is in progress" case. We can also
+remove the flag itself since nobody else uses it.
 
-It's perfectly correct: developers can add "#define DEBUG" manually
-before they build the code. That it's an idiom you don't seem to *like*
-is distinct from correctness.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-OK, can we stop now? David, you need to learn how to work with the
-community. The way you keep discussing every word of every reply is
-very unpleasant and not constructive at all. Whenever someone reviews
-your code, he or she is giving you something. You should be thankful
-for the help you received. Instead of that, it looks like you try to
-defend yourself against him/her. Please stop working against people
-reviewing your code, and start working _with_ them.
+--- PT/include/linux/ptrace.h~1_PT_ATTACHED	2007-07-28 16:58:17.000000000 +0400
++++ PT/include/linux/ptrace.h	2007-11-20 17:22:13.000000000 +0300
+@@ -67,7 +67,6 @@
+ #define PT_TRACE_EXEC	0x00000080
+ #define PT_TRACE_VFORK_DONE	0x00000100
+ #define PT_TRACE_EXIT	0x00000200
+-#define PT_ATTACHED	0x00000400	/* parent != real_parent */
+ 
+ #define PT_TRACE_MASK	0x000003f4
+ 
+--- PT/kernel/ptrace.c~1_PT_ATTACHED	2007-11-20 17:16:10.000000000 +0300
++++ PT/kernel/ptrace.c	2007-11-20 17:26:05.000000000 +0300
+@@ -100,8 +100,7 @@ int ptrace_check_attach(struct task_stru
+ 	 */
+ 	read_lock(&tasklist_lock);
+ 	if ((child->ptrace & PT_PTRACED) && child->parent == current &&
+-	    (!(child->ptrace & PT_ATTACHED) || child->real_parent != current)
+-	    && child->signal != NULL) {
++	     child->sighand != NULL) {
+ 		ret = 0;
+ 		spin_lock_irq(&child->sighand->siglock);
+ 		if (is_task_stopped(child)) {
+@@ -202,8 +201,7 @@ repeat:
+ 		goto bad;
+ 
+ 	/* Go */
+-	task->ptrace |= PT_PTRACED | ((task->real_parent != current)
+-				      ? PT_ATTACHED : 0);
++	task->ptrace |= PT_PTRACED;
+ 	if (capable(CAP_SYS_PTRACE))
+ 		task->ptrace |= PT_PTRACE_CAP;
+ 
+--- PT/kernel/signal.c~1_PT_ATTACHED	2007-11-20 17:16:10.000000000 +0300
++++ PT/kernel/signal.c	2007-11-20 17:27:28.000000000 +0300
+@@ -1577,11 +1577,6 @@ static inline int may_ptrace_stop(void)
+ {
+ 	if (!likely(current->ptrace & PT_PTRACED))
+ 		return 0;
+-
+-	if (unlikely(current->parent == current->real_parent &&
+-		    (current->ptrace & PT_ATTACHED)))
+-		return 0;
+-
+ 	/*
+ 	 * Are we in the middle of do_coredump?
+ 	 * If so and our tracer is also part of the coredump stopping
+--- PT/kernel/exit.c~1_PT_ATTACHED	2007-11-20 17:16:10.000000000 +0300
++++ PT/kernel/exit.c	2007-11-20 17:21:52.000000000 +0300
+@@ -1513,18 +1513,7 @@ static int wait_task_continued(struct ta
+ 
+ static inline int my_ptrace_child(struct task_struct *p)
+ {
+-	if (!(p->ptrace & PT_PTRACED))
+-		return 0;
+-	if (!(p->ptrace & PT_ATTACHED))
+-		return 1;
+-	/*
+-	 * This child was PTRACE_ATTACH'd.  We should be seeing it only if
+-	 * we are the attacher.  If we are the real parent, this is a race
+-	 * inside ptrace_attach.  It is waiting for the tasklist_lock,
+-	 * which we have to switch the parent links, but has already set
+-	 * the flags in p->ptrace.
+-	 */
+-	return (p->parent != p->real_parent);
++	return p->ptrace & PT_PTRACED;
+ }
+ 
+ static long do_wait(pid_t pid, int options, struct siginfo __user *infop,
 
-Thanks,
--- 
-Jean Delvare
