@@ -1,151 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXKTOvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbXKTOxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbXKTOvW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXKTOvN
+	id S1758146AbXKTOxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbXKTOw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:51:13 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:50944 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751632AbXKTOvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:51:10 -0500
-Date: Tue, 20 Nov 2007 08:51:06 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Chris Friedhoff <chris@friedhoff.org>
-Cc: Serge E Hallyn <sergeh@us.ibm.com>, linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@epoch.ncsc.mil>, Andrew Morgan <morgan@kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Posix file capabilities in 2.6.24rc2; now 2.6.24-rc3
-Message-ID: <20071120145106.GA6641@sergelap.austin.ibm.com>
-References: <20071113230720.22c6a036.chris@friedhoff.org> <20071113235318.GA6477@sergelap.austin.ibm.com> <20071114101251.a1f6214d.chris@friedhoff.org> <20071114180235.GA25344@sergelap.austin.ibm.com> <20071115230227.9dabbb5f.chris@friedhoff.org> <20071119143946.b0664b6c.chris@friedhoff.org> <20071119231644.GA26373@sergelap.austin.ibm.com> <20071120104609.d4f13fa0.chris@friedhoff.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071120104609.d4f13fa0.chris@friedhoff.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 20 Nov 2007 09:52:57 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:55586 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755742AbXKTOw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 09:52:56 -0500
+Subject: Re: [Fwd: MMC sub-system: SDIO block-mode with increment address
+	issue]
+From: Dean Jenkins <djenkins@mvista.co.uk>
+Reply-To: djenkins@mvista.co.uk
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071120115104.163810ea@poseidon.drzeus.cx>
+References: <1195554533.18869.111.camel@libdev3.libertesoft.co.uk>
+	 <20071120115104.163810ea@poseidon.drzeus.cx>
+Content-Type: text/plain
+Organization: MontaVista
+Date: Tue, 20 Nov 2007 14:52:37 +0000
+Message-Id: <1195570357.13874.17.camel@libdev3.libertesoft.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+8d06tWgp5zGz/n1cHJ52CdIVe86nElSFEkpD
+ nawXl0NixWn8/H7WyceYgAJ5V1gcJV5S3Se/5GfG/me2iugV2O
+ z3hZIKf1wqWjUrkF+X81Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Chris Friedhoff (chris@friedhoff.org):
-> On Mon, 19 Nov 2007 17:16:44 -0600
-> "Serge E. Hallyn" <sergeh@us.ibm.com> wrote:
+Hi Pierre,
+
+My card driver needed to set the R/W E4MI bit in the Card Capability
+register (0x08) in CCCR (function 0). Perhaps it is unnecessary ?
+
+BTW. It is easy to for the card driver to access function 0 registers by
+doing the following...
+
+...
+	int old_num = func->num;   /* note the current function number */
+
+	/* force access to function 0 area */
+	func->num = 0;
+
+	/* enable the e4mi in the card capability register */
+	x = sdio_readb(func, 0x000008, &ret);
+
+	if ( ret == 0 ) {
+		x |= 0x20;
+		sdio_writeb(func, x, 0x000008, &ret);
+	}
+
+	/* restore to original function number */
+	func->num = old_num; 
+
+...
+
+Regards,
+Dean.
+
+
+On Tue, 2007-11-20 at 11:51 +0100, Pierre Ossman wrote:
+> On Tue, 20 Nov 2007 10:28:53 +0000
+> Dean Jenkins <djenkins@...> wrote:
 > 
-> > Quoting Chris Friedhoff (chris@friedhoff.org):
-> > > Hello Serge,
-> > > 
-> > > just to let you know: with 2.6.24-rc3 I have the same problem.
+> > Hi Pierre,
 > > 
-> > Ok, so here is the flow.
+> > I've managed to find your E-mail address in the Linux kernel mailing
+> > list. I hope it is OK to directly E-mail you ?
 > > 
-> > First off, using runlevel 5 on FC7, using 'log out' correctly brings
-> > you back to a new login prompt.  Your problem is starting in runlevel
-> > 3, and typing 'xinit .xinitrc';  when you exit your wm, xinit is not
-> > allowed to kill X so you don't get back to your console.
 > 
-> Yes, I'm booting in a runlevel without a session manager and starting
-> my X session with xinit.
-> (slackware: console->runlevel 3; sessionmanager->runlevel 4 )
+> You should also find my address in the MAINTAINERS file, which is where you should look for contact info. But yes, you can contact me directly. I prefer that you also add a relevant mailing list though.
 > 
+> > I work for MontaVista Software in the UK. I guess you know that
+> > MontaVista are using the MMC/SDIO sub-system in their latest Mobilinux
+> > 5.0 product ? It is using a 2.6.21 kernel.
 > > 
-> > First comment is, as you point out on your homepage, you could
-> > 	setfcaps -c cap_kill+p -e /usr/bin/xinit
-> > Then xinit is allowed to kill X.  Yes xinit forks and execs a
-> > user-writable script, but of course upon the exec to start the script
-> > cap_kill is lost, so the user can't abuse this.
+> > Yesterday, I sent an E-mail to you (attached) to the Linux kernel
+> > mailing list. Do you have any comments to make ?
 > > 
-> > Since you pointed this out on your homepage, I have to assume you've
-> > decided you don't want to give cap_kill to xinit?
 > 
-> No, since I'm using capabilities and I'm very happy with it, I grant
-> cap_kill to xinit. For myself the problem is solved ...
+> Didn't notice it. I'll have a look.
 > 
+> > Do you have any bug reporting facility for the MMC/SDIO sub-system ? I
+> > would like to report some SDIO API limitations for the SDIO card drivers
+> > that I needed to workaround. For example, my SDIO driver needs to modify
+> > the contents of the Card Capability register in function 0 to enable
+> > block-mode support but the card driver has been restricted to only be
+> > able to use function 1. There are other registers as well that the card
+> > driver needs access to.
 > > 
-> > My other question is - do we want to maintain this signal restriction?
-> > So long as a privileged process isn't dumpable, is it any more dangerous
-> > for user hallyn to kill capability-raised process owned by hallyn than
-> > it is to kill a setuid process started by hallyn?  If we decide no, then
-> > maybe we should remove cap_task_kill() as well as the cap_task_setnice(),
-> > cap_task_setioprio(), cap_task_setscheduler()?
-> > 
-> > Or maybe i've just forgotten a compelling scenario...
-> > 
-> > thanks,
-> > -serge
 > 
+> That is by design (as you probably can tell). Letting function drivers touch card global stuff under the feet of the SDIO core is a big layering violation and bound to screw things up eventually.
 > 
-> ... but if some user decides to configure capabilities into the 2.6.24
-> kernel or just uses such a kernel and
-> 1) is not granting cap_kill to xinit, and
-> 2) starts X by issuing xinit on the console
-> 3) ends after some time his X session, to come back to the console
+> Could you explain more in detail what it is you need to fiddle with in function 0 and why?
 > 
-> he will see a different behavior compared to 2.6.23 exiting his X
-> session and (I think) believes to have a bug in the X package.
-> 
-> Andrew Morton describes the problem here, too:
-> http://lkml.org/lkml/2006/11/23/15
-> http://lkml.org/lkml/2006/11/23/19
-> 
-> Am I wrong in the assumption, but should one not accept an unchanged
-> behavior with or without capabilities in the kernel regarding the
-> behavior of applications, when he is not actually using (by not setting
-> the xattr capability) capabilities with this application?
-> 
-> If I'm wrong, maybe a warning or hint should be given that one has to
-> grant cap_kill to xinit to come back to the console if the X session
-> was started by xinit.
-
-Thanks - yes, I see (I tend to get lost in my testruns).  So we're back to
-trying to do the fix I was trying to do along with the SIGCONT fix a few
-weeks ago.
-
-The problem is that when you run a setuid binary, its pP and pE are
-fully raised.  The following patch fixes it for me.  Chris, does it fix
-your problem?  Andrew, am I again confusing myself and doing something
-unsafe?
-
-thanks,
--serge
-
->From d0b931776c0c424e583bf736d6a2498be4eccb98 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Tue, 20 Nov 2007 08:47:35 +0000
-Subject: [PATCH 1/1] file capabilities: don't prevent signaling setuid root programs.
-
-When an unprivileged user runs a setuid root program in !SECURE_NOROOT
-mode, fP, fI, and fE are set full on, so pP' and pE' are full on.
-Then cap_task_kill() prevents the user from signaling the setuid root
-task.  This is a change in behavior compared to when
-!CONFIG_SECURITY_FILE_CAPABILITIES.
-
-This patch introduces a special check into cap_task_kill() just
-to check whether a non-root user is signaling a setuid root
-program started by the same user.  If so, then signal is allowed.
-
-This still leaves open the question of whether we want to go back
-to allowing users to signal binaries owned by them which had
-file capabilities set.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/commoncap.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 302e8d0..d20d0a6 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -543,6 +543,9 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 	if (capable(CAP_KILL))
- 		return 0;
- 
-+	if (p->euid==0 && p->uid==current->uid)
-+		return 0;
-+
- 	return -EPERM;
- }
- #else
+> Rgds
 -- 
-1.5.2.5
+Dean Jenkins
+Embedded Software Engineer
+MontaVista Software (UK)
+Professional Services Division
 
