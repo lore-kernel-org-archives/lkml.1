@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbXKTNaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbXKTNa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbXKTNaO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 08:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbXKTN35
+	id S1756780AbXKTNa5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 08:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbXKTNar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 08:29:57 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:46538 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750941AbXKTN34 (ORCPT
+	Tue, 20 Nov 2007 08:30:47 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:45031 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbXKTNaq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 08:29:56 -0500
-Message-ID: <4742E14B.1080901@linux.vnet.ibm.com>
-Date: Tue, 20 Nov 2007 18:59:47 +0530
+	Tue, 20 Nov 2007 08:30:46 -0500
+Message-ID: <4742DFC3.80305@linux.vnet.ibm.com>
+Date: Tue, 20 Nov 2007 18:53:15 +0530
 From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
 To: akpm@linux-foundation.org
 CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org, mick@madwifi.org,
-       linville@tuxdriver.com, netdev@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>,
+       netdev@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45 Build Fail - net/wireless
+ driver
 References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
 In-Reply-To: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -67,6 +67,7 @@ make[1]: *** [drivers/net] Error 2
 make: *** [drivers] Error 2
 
 The patch causing this build failure, might be git-wireless.patch.
+
 -- 
 Thanks & Regards,
 Kamalesh Babulal,
