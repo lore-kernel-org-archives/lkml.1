@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbXKTXvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbXKTXv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759858AbXKTXvh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764002AbXKTXvT
+	id S1761714AbXKTXv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763620AbXKTXvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:51:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43333 "EHLO mx1.redhat.com"
+	Tue, 20 Nov 2007 18:51:44 -0500
+Received: from waste.org ([66.93.16.53]:44911 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762367AbXKTXvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:51:17 -0500
+	id S1760001AbXKTXvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:51:43 -0500
+Date: Tue, 20 Nov 2007 17:51:38 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: devzero@web.de
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: System reboot triggered by just reading a device file....!?
+Message-ID: <20071120235138.GE17536@waste.org>
+References: <2097505946@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Guillaume Chazarain <guichaz@yahoo.fr>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-In-Reply-To: Ingo Molnar's message of  Wednesday, 21 November 2007 00:45:05 +0100 <20071120234505.GF23667@elte.hu>
-References: <4743026B.2020907@openvz.org>
-	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
-	<20071120215914.GE24156@elte.hu>
-	<m1ve7wr28z.fsf@ebiederm.dsl.xmission.com>
-	<20071120223559.GA6655@elte.hu>
-	<20071120225457.B6E2D26F8BE@magilla.localdomain>
-	<20071120230106.GD24380@elte.hu>
-	<3d8471ca0711201506t6b2b88a0h9484f8a40a1f2e40@mail.gmail.com>
-	<20071120232600.F1D2F26F8BE@magilla.localdomain>
-	<47436E7F.2060901@redhat.com>
-	<20071120234505.GF23667@elte.hu>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20071120235114.0B85226F8BE@magilla.localdomain>
-Date: Tue, 20 Nov 2007 15:51:14 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <2097505946@web.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> can you see any danger to providing a /proc/self_task/ link? (or can you 
-> think of a better name/API/approach)
+On Wed, Nov 21, 2007 at 12:06:57AM +0100, devzero@web.de wrote:
+> - be root
 
-That is a poor name to choose given /proc/self/task exists as something
-else (just try writing a sentence comparing them and then read it aloud).
-Probably /proc/self/task/self is what makes the most sense structurally.
-I don't know if it matters to whatever use you are concerned with to have
-two more steps in the lookup.
+That's your first mistake.
 
-Thanks,
-Roland
+> -  cat /dev/watchdog or dd if=/dev/watchdog of=/dev/zero bs=1 count=1 or .....
+> -  wait one minute........
+> 
+> *reboot*!
+
+And that's the defined behavior of /dev/watchdog, yes. Many years too
+late to change it.
+
+> i have heard 2 opinions for now (contacted the author and also discussed on wine-devel ) that this should be expected behaviour.
+> 
+> being sysadmin quite a while, i cannot believe that (accidentally) reading a device file (being root or not - what does that matter) triggers a system reboot.
+
+If /dev/watchdog can be opened by non-root, that's an installation
+error.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
