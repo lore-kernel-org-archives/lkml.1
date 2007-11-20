@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764523AbXKTXgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbXKTXg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764523AbXKTXgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbXKTXgR
+	id S1764800AbXKTXg5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763510AbXKTXg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:36:17 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39472 "EHLO mx2.suse.de"
+	Tue, 20 Nov 2007 18:36:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36539 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754966AbXKTXgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:36:16 -0500
-Date: Tue, 20 Nov 2007 15:14:53 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: gary.hade@us.ibm.com, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Avoid creating P2P prefetch window for expansion ROMs
-Message-ID: <20071120231453.GA20462@suse.de>
-References: <4742C9D7.76E4.0078.0@novell.com>
-MIME-Version: 1.0
+	id S1763384AbXKTXgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:36:25 -0500
+Date: Tue, 20 Nov 2007 23:36:12 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Milan Broz <mbroz@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
+Message-ID: <20071120233612.GA9126@agk.fab.redhat.com>
+Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
+	Milan Broz <mbroz@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+	Torsten Kaiser <just.for.lkml@googlemail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com> <20071119075627.GB28432@elte.hu> <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com> <4741F97D.6090808@redhat.com> <64bb37e0711192255j3fabd3d9g94544b3d518828a2@mail.gmail.com> <4742F1DE.1090902@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4742C9D7.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4742F1DE.1090902@redhat.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 03:49:43AM -0700, Jan Beulich wrote:
-> This patch (in its incarnation in our SLE10SP2 tree) is causing resource
-> allocation failures on one of my machines.
+On Tue, Nov 20, 2007 at 03:40:30PM +0100, Milan Broz wrote:
+> (Note comment in code "It is permissible to free the struct
+> work_struct from inside the function that is called from it".)
+ 
+I don't understand yet how lockdep behaves if the work struct gets
+reused and the reused one finishes first.
 
-Does the latest 2.6.23 kernel also cause these same problems?
+I renamed the kcryptd functions today in an attempt to disentangle this
+code a bit more.
 
-> The condition for this is that besides ROMs behind a bridge not having
-> their base addresses assigned there's no extra space available in the
-> non-prefetch window to accommodate the ROMs' space. I therefore think
-> the change, while having a good reason, isn't complete so far, as it
-> would imply the need for checking whether space in the non-prefetch
-> window is sufficient and continuing to force the creation of a
-> prefetch window otherwise.
+  - io->pending reference counting looks correct (though used
+inconsistently when comparing READ with WRITE)
 
-Hm, I'll defer to Gary on this one :)
+  - But what happens if kcryptd_crypt_write_convert_loop() calls
+INIT_WORK/queue_work twice?
 
-thanks,
-
-greg k-h
+Alasdair
+-- 
+agk@redhat.com
