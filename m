@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbXKTKir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbXKTKkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757665AbXKTKir (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 05:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbXKTKij
+	id S1758236AbXKTKkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 05:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXKTKkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 05:38:39 -0500
-Received: from mail.univits.se ([212.247.11.167]:6742 "EHLO mail.univits.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbXKTKii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 05:38:38 -0500
-X-Greylist: delayed 1417 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Nov 2007 05:38:38 EST
-Message-ID: <4742B3A3.2050103@univits.com>
-Date: Tue, 20 Nov 2007 11:14:59 +0100
-From: =?ISO-8859-1?Q?Mikael_St=E5ldal?= 
-	<mikael.staldal-ingen-reklam@univits.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Tue, 20 Nov 2007 05:40:31 -0500
+Received: from renko.ucs.ed.ac.uk ([129.215.13.3]:40033 "EHLO
+	renko.ucs.ed.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754793AbXKTKka (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 05:40:30 -0500
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 44/59] drivers/scsi: Add missing "space"
+Date: Tue, 20 Nov 2007 10:39:44 +0000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Ali Akcaagac <aliakc@web.de>,
+       "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+       Jamie Lenehan <lenehan@twibble.org>, Oliver Neukum <oliver@neukum.name>,
+       dc395x@twibble.org, linux-scsi@vger.kernel.org
+References: <1195523627-15389-1-git-send-email-joe@perches.com> <1195523627-15389-2-git-send-email-joe@perches.com>
+In-Reply-To: <1195523627-15389-2-git-send-email-joe@perches.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Possibility to adjust the only-root-can-bind-to-port-under-1024 limit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711201039.45321.alistair@devzero.co.uk>
+X-Edinburgh-Scanned: at renko.ucs.ed.ac.uk
+    with MIMEDefang 2.52, Sophie, Sophos Anti-Virus, Clam AntiVirus
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In Linux you have to be root in order to listen to TCP or UDP ports below 1024 (the 
-well-known ports). As far as I know, this limit is hardcoded in the kernel.
+On Tuesday 20 November 2007 01:53:31 Joe Perches wrote:
+> diff --git a/drivers/scsi/NCR_D700.c b/drivers/scsi/NCR_D700.c
+> index 9e64b21..99403a6 100644
+> --- a/drivers/scsi/NCR_D700.c
+> +++ b/drivers/scsi/NCR_D700.c
+> @@ -182,7 +182,7 @@ NCR_D700_probe_one(struct NCR_D700_private *p, int
+> siop, int irq,
+>
+>  	hostdata = kzalloc(sizeof(*hostdata), GFP_KERNEL);
+>  	if (!hostdata) {
+> -		printk(KERN_ERR "NCR D700: SIOP%d: Failed to allocate host"
+> +		printk(KERN_ERR "NCR D700: SIOP%d: Failed to allocate host "
+>  		       "data, detatching\n", siop);
+>  		return -ENOMEM;
+>  	}
 
-In some cases, this limit do more harm than good, so it would be nice to be able to adjust it.
+If you're going to sneak in unrelated spelling/grammar changes, you might as 
+well do it unilaterally.
 
-FreeBSD have a pair of sysctl parameters allowing you to adjust (or effectively remove) this 
-  limit, net.inet.ip.portrange.reservedlow and net.inet.ip.portrange.reservedhigh. It would 
-be nice if something similar to net.inet.ip.portrange.reservedhigh was implemented in Linux 
-(with default value 1023).
+"detached" please.
 
-I have no patch for this, since I have never done any kernel hacking before. But it seems 
-like it should be easy to implement by replacing the PROT_SOCK constant with 
-net.inet.ip.portrange.reservedhigh + 1.
+-- 
+Cheers,
+Alistair.
 
-(See my blog post for a more elaborate discussion about this:
-http://www.staldal.nu/tech/2007/10/31/why-can-only-root-listen-to-ports-below-1024/)
-
-/Mikael
-
+137/1 Warrender Park Road, Edinburgh, UK.
