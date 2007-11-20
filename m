@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbXKTCge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbXKTCrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757071AbXKTCge (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXKTCgY
+	id S1756600AbXKTCrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXKTCrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 21:36:24 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35714 "EHLO gate.crashing.org"
+	Mon, 19 Nov 2007 21:47:13 -0500
+Received: from ozlabs.org ([203.10.76.45]:38479 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752979AbXKTCgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 21:36:22 -0500
-Subject: Re: SCSI breakage on non-cache coherent architectures
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Roland Dreier <rdreier@cisco.com>
-Cc: David Miller <davem@davemloft.net>, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rmk@arm.linux.org.uk
-In-Reply-To: <ada8x4ty8e1.fsf@cisco.com>
-References: <1195501874.6539.5.camel@pasglop>
-	 <20071119.143115.251022325.davem@davemloft.net>
-	 <1195518864.6970.23.camel@pasglop>
-	 <20071119.164611.64664648.davem@davemloft.net>  <ada8x4ty8e1.fsf@cisco.com>
-Content-Type: text/plain
-Date: Tue, 20 Nov 2007 13:35:55 +1100
-Message-Id: <1195526155.6970.32.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	id S1751192AbXKTCrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Nov 2007 21:47:12 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18242.19032.390727.850649@cargo.ozlabs.ibm.com>
+Date: Tue, 20 Nov 2007 13:45:44 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Christoph Lameter <clameter@sgi.com>, ak@suse.de,
+       akpm@linux-foundation.org, travis@sgi.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 37/45] x86_64: Support for fast per cpu operations
+In-Reply-To: <47423FB7.20800@zytor.com>
+References: <20071120011132.143632442@sgi.com>
+	<20071120011340.569486037@sgi.com>
+	<47423FB7.20800@zytor.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin writes:
 
-On Mon, 2007-11-19 at 18:10 -0800, Roland Dreier wrote:
+> There was, at some point, discussion about using the gcc TLS mechanism, 
+> which should permit even better code to be generated.  Unfortunately, it 
+> would require gcc to be able to reference %gs instead of %fs (and vice 
+> versa for i386), which I don't think is available in anything except 
+> maybe the most cutting-edge version of gcc.
 > 
-> I wrapped this ugliness up inside the macro back in what I posted in
-> 2002 (http://lkml.org/lkml/2002/6/12/234):
-> 
-> #define __dma_buffer __dma_buffer_line(__LINE__)
-> #define __dma_buffer_line(line) __dma_buffer_expand_line(line)
-> #define __dma_buffer_expand_line(line) \
->         __attribute__ ((aligned(L1_CACHE_BYTES))); \
->         char __dma_pad_ ## line [0] __attribute__
-> ((aligned(L1_CACHE_BYTES)))
-> 
-> then you just need to tag the actual member like:
-> 
->         char foo[3] __dma_buffer;
+> However, if we're doing a masssive revampt it would be good to get an 
+> idea of how to migrate to that model eventually, or why it doesn't make 
+> sense at all.
 
-That's actually not too bad ... 
+The problem I found when I tried to do that on powerpc is that gcc
+believes it can cache addresses of TLS variables.  If you try and use
+TLS accesses for per-cpu variables then you end up accessing the wrong
+cpu's variables due to that, since our "TLS" pointer can change at any
+point where preemption is enabled.
 
-I'm having a problem with reverting SCSI to use an allocation for the
-sense buffer, because it can fail and the new scso_eh_prep_cmnd() isn't
-supposed to return a failure. I've changed that but now I get into
-trying to fix the various drivers that use it without checking the
-result code and it's becoming much more complicated than initially
-thought.
+If we wanted to do per-task variables then TLS would be perfect for
+that.
 
-So I may do the above instead and revive your patch.
-
-Any objection ? James ? David ?
-
-Cheers,
-Ben.
-
-
+Paul.
