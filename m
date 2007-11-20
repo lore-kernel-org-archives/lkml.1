@@ -1,100 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760677AbXKTPwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761205AbXKTPxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760677AbXKTPwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbXKTPwW
+	id S1761205AbXKTPxE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbXKTPwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:52:22 -0500
-Received: from sacred.ru ([62.205.161.221]:41045 "EHLO sacred.ru"
+	Tue, 20 Nov 2007 10:52:51 -0500
+Received: from rtr.ca ([76.10.145.34]:1571 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755513AbXKTPwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:52:21 -0500
-Message-ID: <4743026B.2020907@openvz.org>
-Date: Tue, 20 Nov 2007 18:51:07 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
+	id S1759358AbXKTPwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:52:50 -0500
+Message-ID: <474302D0.9000509@rtr.ca>
+Date: Tue, 20 Nov 2007 10:52:48 -0500
+From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <20071119191000.GA1560@elf.ucw.cz> <200711192304.25087.rjw@sisk.pl>
-In-Reply-To: <200711192304.25087.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+References: <47425EA5.7000607@rtr.ca>	<200711201517.16171.nickpiggin@yahoo.com.au>	<20071119213727.16d5917b@laptopd505.fenrus.org>	<200711201837.39664.nickpiggin@yahoo.com.au> <20071120064747.2a8036cd@laptopd505.fenrus.org> <4743018C.1000307@rtr.ca>
+In-Reply-To: <4743018C.1000307@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 20 Nov 2007 18:51:09 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 19 of November 2007, Pavel Machek wrote:
->> Hi!
->>
->> I think that this worked before:
->>
->> root@amd:/proc# find . -name "timer_info"
->> find: WARNING: Hard link count is wrong for ./net: this may be a bug
->> in your filesystem driver.  Automatically turning on find's -noleaf
->> option.  Earlier results may have failed to include directories that
->> should have been searched.
->> root@amd:/proc#
+Mark Lord wrote:
+> Arjan van de Ven wrote:
+>> ..
+>> I listed a few;
+>> 1) it's policy 2) the memory is only needed for a short time (20 
+>> seconds or so) on
+>> single-socket machines
+>> 3) it makes decisions on "subjective" information such as interrupt
+>> device classes that the kernel currently just doesn't have (it could
+>> grow that obviously), and is clearly policy information.
+> ..
 > 
-> I'm seeing that too.
-
-I have a better things with 2.6.24-rc3 ;)
-
-# cd /proc/net
-# ls ..
-ls: reading directory ..: Not a directory
-
-and this
-
-# cd /proc
-# find
-...
-./net
-find: . changed during execution of find
-# find net
-find: net changed during execution of find
-# find net/
-<this works ok however>
-
-Moreover. Program that opens /proc/net and dumps the /proc/self/fd
-files produces the following:
-
-# cd /
-# a.out /proc/net
-...
-lr-x------  1 root root 64 Nov 20 18:02 3 -> /proc/net/net (deleted)
-...
-# cd /proc/net
-# a.out .
-...
-lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net/net (deleted)
-...
-# a.out ..
-...
-lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
-...
-
-This all is somehow related to the shadow proc files.
-E.g. the first problem (with -ENOTDIR) is due to the shadow /proc/net
-dentry doesn't implement the .readdir method:
-
-static const struct file_operations proc_net_dir_operations = {
-        .read                   = generic_read_dir,
-};
-
-And I haven't managed to find out why the rest problems
-occur...
-
-Eric, do you have fixes for it?
-
-> Rafael
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> It's much more than just "policy".
+> Distributing IRQs across available cores is *essential* functionality,
+> not an optional "extra" as this would have it be.
 > 
+> After reading some of the replies, I installed it on my malfunctioning 
+> 64-bit
+> system, but discovered it does not perform nearly as well as the kernel 
+> solution
+> in the 32-bit system does.
+> 
+> Responsiveness was jerky, and it took a long time to have any noticeable 
+> effect.
+> 
+> And in the end, it still just assigned IRQs to two of the four available 
+> cores.
+> Which still results in the task scheduler fighting against IRQs more 
+> than necessary.
+> 
+> Much of this could be due to a slow response curve in the userspace 
+> balancer (?),
+> but I have not yet examined it for such bugs.  Hopefully it also is 
+> clever enough
+> to mlock() itself, and to run at a low RT priority ?
+> It really does need to respond *quickly* to changes in IRQ load,
+> as otherwise I see dropouts on sound playback (let along video..) and 
+> the like.
+> 
+> The vast majority of Linux machines are "single package", and this software
+> appears to be designed more for multi package, and doesn't do a great 
+> job here
+> on the single package Intel cores I have (Core2duo, Core2quad).
+..
 
+All of which reminds me of perhaps *the* most important reason to keep
+core functionality like "IRQ distribution" *inside* the kernel:
+
+   It has to pass peer review on this mailing list.
+
+External utilities have no such accountability, and can generally just
+follow the whims of their maintainers at the expense of kernel performance.
+
+Not that this may be the case (or not) here, but..
+
+Cheers
