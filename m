@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXKTHA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbXKTHDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbXKTHA0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 02:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbXKTHAF
+	id S1759434AbXKTHDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 02:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbXKTHDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 02:00:05 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:44529 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755034AbXKTHAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 02:00:01 -0500
-Date: Tue, 20 Nov 2007 15:59:59 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-       James Morris <jmorris@namei.org>,
-       Networking Team <netdev@vger.kernel.org>,
-       Patrick McHardy <kaber@trash.net>, coreteam@netfilter.org,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org
-Subject: Re: [PATCH 52/59] net/ipv4: Add missing "space"
-Message-ID: <20071120065958.GD10490@verge.net.au>
-References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <f047768599df11a74301f81e61903c87417ea9e4.1195454436.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f047768599df11a74301f81e61903c87417ea9e4.1195454436.git.joe@perches.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	Tue, 20 Nov 2007 02:03:07 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48035 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753908AbXKTHDF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 02:03:05 -0500
+Date: Mon, 19 Nov 2007 23:02:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/3] tty: Add the new termios2 ioctls to the compatible
+ list.
+Message-Id: <20071119230249.874ba094.akpm@linux-foundation.org>
+In-Reply-To: <20071119125206.GA8623@osiris.boeblingen.de.ibm.com>
+References: <20071119125206.GA8623@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 05:53:39PM -0800, Joe Perches wrote:
+On Mon, 19 Nov 2007 13:52:06 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Acked-by: Simon Horman <horms@verge.net.au>
-
+> Make them depend on TCGETS2. If that one is implemented the rest
+> should be there as well.
+> 
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 > ---
->  net/ipv4/ipvs/ip_vs_core.c       |    2 +-
->  net/ipv4/netfilter/iptable_raw.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/net/ipv4/ipvs/ip_vs_core.c b/net/ipv4/ipvs/ip_vs_core.c
-> index 20c884a..8fba202 100644
-> --- a/net/ipv4/ipvs/ip_vs_core.c
-> +++ b/net/ipv4/ipvs/ip_vs_core.c
-> @@ -637,7 +637,7 @@ static int ip_vs_out_icmp(struct sk_buff *skb, int *related)
->  	verdict = NF_DROP;
->  
->  	if (IP_VS_FWD_METHOD(cp) != 0) {
-> -		IP_VS_ERR("shouldn't reach here, because the box is on the"
-> +		IP_VS_ERR("shouldn't reach here, because the box is on the "
->  			  "half connection in the tun/dr module.\n");
->  	}
->  
-> diff --git a/net/ipv4/netfilter/iptable_raw.c b/net/ipv4/netfilter/iptable_raw.c
-> index 5de6e57..f867865 100644
-> --- a/net/ipv4/netfilter/iptable_raw.c
-> +++ b/net/ipv4/netfilter/iptable_raw.c
-> @@ -66,7 +66,7 @@ ipt_local_hook(unsigned int hook,
->  	if (skb->len < sizeof(struct iphdr) ||
->  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
->  		if (net_ratelimit())
-> -			printk("iptable_raw: ignoring short SOCK_RAW"
-> +			printk("iptable_raw: ignoring short SOCK_RAW "
->  			       "packet.\n");
->  		return NF_ACCEPT;
->  	}
-> -- 
-> 1.5.3.5.652.gf192c
+>  fs/compat_ioctl.c |    6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Index: linux-2.6/fs/compat_ioctl.c
+> ===================================================================
+> --- linux-2.6.orig/fs/compat_ioctl.c
+> +++ linux-2.6/fs/compat_ioctl.c
+> @@ -1954,6 +1954,12 @@ ULONG_IOCTL(TIOCSCTTY)
+>  COMPATIBLE_IOCTL(TIOCGPTN)
+>  COMPATIBLE_IOCTL(TIOCSPTLCK)
+>  COMPATIBLE_IOCTL(TIOCSERGETLSR)
+> +#ifdef TCGETS2
+> +COMPATIBLE_IOCTL(TCGETS2)
+> +COMPATIBLE_IOCTL(TCSETS2)
+> +COMPATIBLE_IOCTL(TCSETSW2)
+> +COMPATIBLE_IOCTL(TCSETSF2)
+> +#endif
+>  /* Little f */
+>  COMPATIBLE_IOCTL(FIOCLEX)
+>  COMPATIBLE_IOCTL(FIONCLEX)
 
--- 
-Horms
-
+Should this be in 2.6.24?
