@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbXKTPLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759036AbXKTPOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758232AbXKTPLy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbXKTPLr
+	id S1759036AbXKTPOk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXKTPOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:11:47 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:35547 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754786AbXKTPLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:11:46 -0500
-Subject: Re: [PATCH 1/4] proc: fix NULL ->i_fop oops
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, devel@openvz.org,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-In-Reply-To: <20071119125139.GB15942@infradead.org>
-References: <20071116150651.GC19517@localhost.sw.ru>
-	 <20071119125139.GB15942@infradead.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 20 Nov 2007 10:05:05 -0500
-Message-Id: <1195571105.20910.31.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 10:14:33 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54130 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756406AbXKTPOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 10:14:33 -0500
+Date: Tue, 20 Nov 2007 16:14:31 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: VIA spurious hang on 2.6.23.1
+Message-ID: <Pine.LNX.4.64.0711201606330.32378@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-19 at 12:51 +0000, Christoph Hellwig wrote:
-> On Fri, Nov 16, 2007 at 06:06:51PM +0300, Alexey Dobriyan wrote:
-> > proc_kill_inodes() can clear ->i_fop in the middle of vfs_readdir resulting in
-> > NULL dereference during "file->f_op->readdir(file, buf, filler)".
-> > 
-> > The solution is to remove proc_kill_inodes() completely:
-> > a) we don't have tricky modules implementing their tricky readdir hooks which
-> >    could keeping this revoke from hell.
-> > b) In a situation when module is gone but PDE still alive, standard readdir
-> >    will return only "." and "..", because pde->next was cleared by
-> >    remove_proc_entry().
-> > c) the race proc_kill_inode() destined to prevent is not completely fixed, just
-> >    race window made smaller, because vfs_readdir() is run without sb_lock held and
-> >    without file_list_lock held. Effectively, ->i_fop is cleared at random moment,
-> >    which can't fix properly anything.
-> 
-> Nice, getting rid of this is a very good step formwards.  Unfortunately
-> we have another copy of this junk in
-> security/selinux/selinuxfs.c:sel_remove_entries() which would need the
-> same treatment.
+Hi,
 
-Can't just be dropped completely for selinux - we need a way to drop
-obsolete entries from the prior policy when we load a new policy.
 
-Is the only real problem here the clearing of f_op?  If so, we can
-likely remove that from sel_remove_entries() without harm, and fix the
-checks for it to use something more reliable.
+I've got some semi-embedded device here, a plain consumer-grade x86 with 
+a VIA Nehemiah/Eden C7. After a while it just locks up, but neither is 
+that deterministic nor does it give out kernel messages. CPU Frequency 
+Scaling (which has been known to be a problem with this CPU) is already 
+disabled.
 
--- 
-Stephen Smalley
-National Security Agency
+I tried the "nohz" boot option to but until it finally hangs (which may 
+take hours or days) I can't say for sure whether it works. It shall be 
+noticed that watching the interrupts in /proc/interrupts (using 
+/usr/bin/watch e.g.) shows that the IRQ0 interrupt does not fire at 100 
+Hz, even with nohz, but more like 40-60 Hz. Also, the LOC line in 
+/proc/interrupts is not increasing at all (presumable due to the APIC 
+emulation).
 
+dmesg:
+[    0.000000] No local APIC present or hardware disabled
+[    0.000000] mapped APIC to ffffb000 (011ec000)
+[   39.983680] Local APIC not detected. Using dummy APIC emulation.
+[   39.983426] CPU0: Centaur VIA Nehemiah stepping 08
+[   40.545396] PCI: VIA PCI bridge detected. Disabling DAC.
+[   40.545564] PCI: Bypassing VIA 8237 APIC De-Assert Message
+[   41.803665] PCI: VIA VLink IRQ fixup for 0000:00:0f.0, from 255 to 5
+
+Ideas be welcome, although I guess it's pretty much trial-and-error on 
+my side :(
+2.6.21 seemed to be a last known good one, though I'd stick with a 
+distro kernel as usual.
+
+
+thanks,
+Jan
