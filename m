@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbXKTKkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbXKTKlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbXKTKkj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 05:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXKTKkb
+	id S1758807AbXKTKlH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 05:41:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbXKTKkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 05:40:31 -0500
-Received: from renko.ucs.ed.ac.uk ([129.215.13.3]:40033 "EHLO
-	renko.ucs.ed.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754793AbXKTKka (ORCPT
+	Tue, 20 Nov 2007 05:40:55 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:53234 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752853AbXKTKky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 05:40:30 -0500
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 44/59] drivers/scsi: Add missing "space"
-Date: Tue, 20 Nov 2007 10:39:44 +0000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, Ali Akcaagac <aliakc@web.de>,
-       "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-       Jamie Lenehan <lenehan@twibble.org>, Oliver Neukum <oliver@neukum.name>,
-       dc395x@twibble.org, linux-scsi@vger.kernel.org
-References: <1195523627-15389-1-git-send-email-joe@perches.com> <1195523627-15389-2-git-send-email-joe@perches.com>
-In-Reply-To: <1195523627-15389-2-git-send-email-joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 20 Nov 2007 05:40:54 -0500
+Date: Tue, 20 Nov 2007 11:39:59 +0100
+From: Chris Friedhoff <chris@friedhoff.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc2 STD with s2disk fails to activate suspended system
+ after loading - now 2.6.24-rc3
+Message-Id: <20071120113959.315d3a16.chris@friedhoff.org>
+In-Reply-To: <200711200058.29663.rjw@sisk.pl>
+References: <20071110221629.1d180480.chris@friedhoff.org>
+	<200711191958.36570.rjw@sisk.pl>
+	<20071119234334.2b955b92.chris@friedhoff.org>
+	<200711200058.29663.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.10.14; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711201039.45321.alistair@devzero.co.uk>
-X-Edinburgh-Scanned: at renko.ucs.ed.ac.uk
-    with MIMEDefang 2.52, Sophie, Sophos Anti-Virus, Clam AntiVirus
+X-Provags-ID: V01U2FsdGVkX18zGsP8k8AjnabZNAtTZYfFjckkgikzQdtjkux
+ RApAmpXWxM8LGVXEcdiC+GGkoWTBwh11HAXF/9/TsP4iw2Zit/
+ RTVkVBcJkPbRPAaCanKWdgxs6xOqTVE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 November 2007 01:53:31 Joe Perches wrote:
-> diff --git a/drivers/scsi/NCR_D700.c b/drivers/scsi/NCR_D700.c
-> index 9e64b21..99403a6 100644
-> --- a/drivers/scsi/NCR_D700.c
-> +++ b/drivers/scsi/NCR_D700.c
-> @@ -182,7 +182,7 @@ NCR_D700_probe_one(struct NCR_D700_private *p, int
-> siop, int irq,
->
->  	hostdata = kzalloc(sizeof(*hostdata), GFP_KERNEL);
->  	if (!hostdata) {
-> -		printk(KERN_ERR "NCR D700: SIOP%d: Failed to allocate host"
-> +		printk(KERN_ERR "NCR D700: SIOP%d: Failed to allocate host "
->  		       "data, detatching\n", siop);
->  		return -ENOMEM;
->  	}
+the patch on top of 2.6.24-rc3 fixed the problem.
+now I can succesfully s2disk.
+I tested it 5 times in a row, 2 from the console and 3 from within X
 
-If you're going to sneak in unrelated spelling/grammar changes, you might as 
-well do it unilaterally.
+thanks for fixing it,
+Chris
 
-"detached" please.
 
--- 
-Cheers,
-Alistair.
+On Tue, 20 Nov 2007 00:58:29 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-137/1 Warrender Park Road, Edinburgh, UK.
+> On Monday, 19 of November 2007, Chris Friedhoff wrote:
+> > dmesg output is added.
+> > 
+> > increasing CONFIG_BLK_DEV_RAM_SIZE from 7777 to 131072 hasn't changed
+> > the non-functioning of 2.6.24-rc3
+> > 
+> > s2disk works with 2.6.23.8 ; I tested 4 cycles in a row, 2 from console
+> > and 2 from within X
+> 
+> I've attached a patch to the bugzilla entry, please test it.
+> 
+> Thanks,
+> Rafael
+
+
+--------------------
+Chris Friedhoff
+chris@friedhoff.org
