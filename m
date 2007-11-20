@@ -1,47 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbXKTHsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbXKTHtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758307AbXKTHsr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 02:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbXKTHsh
+	id S1758900AbXKTHtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 02:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXKTHsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 02:48:37 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:2595 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755248AbXKTHsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 02:48:37 -0500
-Subject: Re: [PATCH 06/59] arch/sparc: Add missing "space"
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       sparclinux@vger.kernel.org
-In-Reply-To: <20071119.234500.127324508.davem@davemloft.net>
-References: <1195523331-15303-6-git-send-email-joe@perches.com>
-	 <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
-	 <1195523331-15303-7-git-send-email-joe@perches.com>
-	 <20071119.234500.127324508.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 19 Nov 2007 23:48:36 -0800
-Message-Id: <1195544916.4675.117.camel@localhost>
+	Tue, 20 Nov 2007 02:48:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40735
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757411AbXKTHsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 02:48:41 -0500
+Date: Mon, 19 Nov 2007 23:48:40 -0800 (PST)
+Message-Id: <20071119.234840.211782071.davem@davemloft.net>
+To: joe@perches.com
+Cc: linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       netdev@vger.kernel.org, dccp@vger.kernel.org
+Subject: Re: [PATCH 51/59] net/dccp: Add missing "space"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1195523627-15389-9-git-send-email-joe@perches.com>
+References: <1195523627-15389-8-git-send-email-joe@perches.com>
+	<ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
+	<1195523627-15389-9-git-send-email-joe@perches.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-19 at 23:45 -0800, David Miller wrote:
-> From: Joe Perches <joe@perches.com>
-> Date: Mon, 19 Nov 2007 17:47:58 -0800
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> Please check your patches, for trailing white "space".
-> Adds trailing whitespace.
-> diff:10:		prom_printf("PCIC: Error, cannot map " 
-> Adds trailing whitespace.
-> diff:19:		prom_printf("PCIC: Error, cannot map " 
-> warning: 2 lines add whitespace errors.
-> I've fixed it up this time.
+From: Joe Perches <joe@perches.com>
+Date: Mon, 19 Nov 2007 17:53:38 -0800
 
-It doesn't add whitespace, but it does keep the trailing
-whitespace that's already there.
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-cheers, Joe
-
+Applied.
