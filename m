@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbXKTEiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXKTElu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbXKTEiP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 23:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXKTEiA
+	id S1756925AbXKTElu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 23:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXKTElm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 23:38:00 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47831 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751983AbXKTEh7 (ORCPT
+	Mon, 19 Nov 2007 23:41:42 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:6975 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbXKTEll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 23:37:59 -0500
-Date: Tue, 20 Nov 2007 05:37:42 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Mark Lord <lkml@rtr.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
-Message-ID: <20071120043742.GE6164@stusta.de>
-References: <47425EA5.7000607@rtr.ca> <200711201517.16171.nickpiggin@yahoo.com.au> <20071120042929.GD15227@1wt.eu>
+	Mon, 19 Nov 2007 23:41:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=CMf+xfH42ytQ1Nv/QlZwIUwk6tpbw4C23ezArQ2Mw7WKFuSt8FqJ9FU/a2C+WXlb4nNKauFWTJEqX6oUpq0+7V8EvsimGL+KaARavZBf82dYr38GGLLRmH0RIOlE988g6qYoERsVzqizUmAsiAWGHcLHfGJmXuwCuo1BT7qe4fQ=
+Message-ID: <4742657B.4050708@gmail.com>
+Date: Tue, 20 Nov 2007 09:41:31 +0500
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.11~pre071022-0etch1+lenny1) Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071120042929.GD15227@1wt.eu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: David Miller <davem@davemloft.net>
+CC: greg@kroah.com, david-b@pacbell.net,
+       linux-hotplug-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: linux-usb-devel@vger created...
+References: <3ae72650711191733r565f98dbh464b31d4497d23b2@mail.gmail.com>	<20071119.175554.211506815.davem@davemloft.net>	<20071120022915.GA16706@kroah.com> <20071119.191425.240107157.davem@davemloft.net>
+In-Reply-To: <20071119.191425.240107157.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 05:29:29AM +0100, Willy Tarreau wrote:
-> On Tue, Nov 20, 2007 at 03:17:15PM +1100, Nick Piggin wrote:
-> > On Tuesday 20 November 2007 15:12, Mark Lord wrote:
-> > > On 32-bit x86, we have CONFIG_IRQBALANCE available,
-> > > but not on 64-bit x86.  Why not?
-> > >
-> > > I ask, because this feature seems almost essential to obtaining
-> > > reasonable latencies during heavy I/O with fast devices.
-> > >
-> > > My 32-bit Core2Duo MythTV box drops audio frames without it,
-> > > but works perfectly *with* IRQBALANCE.
-> > >
-> > > My QuadCore box works very well in 32-bit mode with IRQBALANCE,
-> > > but responsiveness sucks bigtime when run in 64-bit mode (no IRQBALANCE)
-> > > during periods of multiple heavy I/O streams (USB flash drives).
-> > >
-> > > That's with both the 32 and 64 bit versions of Kubuntu Gutsy,
-> > > so the software uses pretty much identical versions either way.
-> > >
-> > > As near as I can tell, when IRQBALANCE is not configured,
-> > > all I/O device interrupts go to CPU#0.
-> > >
-> > > I don't think our CPU scheduler takes that into account when assigning
-> > > tasks to CPUs, so anything sent to CPU0 runs with very high latencies.
-> > >
-> > > Or something like that.
-> > >
-> > > Why no IRQ_BALANCE in 64-bit mode ?
-> > 
-> > For that matter, I'd like to know why it has been decided that the
-> > best place for IRQ balancing is in userspace. It should be in kernel
-> > IMO, and it would probably allow better power saving, performance,
-> > fairness, etc. if it were to be integrated with the task balancer as
-> > well.
+David Miller wrote:
+> From: Greg KH <greg@kroah.com>
+> Date: Mon, 19 Nov 2007 18:29:15 -0800
 > 
-> Agreed. When userspace has something to do with the way IRQs are
-> delivered, it's going to smell as bad as micro-kernels...
+>> linux-hotplug@vger.kernel.org would be great to have. 
+> 
+> Created, enjoy.
 
-The next step to a micro-kernel would then be hardware drivers and file 
-systems in userspace?  ;-)
-
-> Willy
-
-cu
-Adrian
+It would be nice to have the archives of this list and the nntp interface on gmane.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Alexander E. Patrakov
