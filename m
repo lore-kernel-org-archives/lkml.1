@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbXKTWRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbXKTWSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762721AbXKTWRe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 17:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761941AbXKTWQz
+	id S1759907AbXKTWSO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 17:18:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760229AbXKTWR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 17:16:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57385 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761783AbXKTWQy (ORCPT
+	Tue, 20 Nov 2007 17:17:56 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37221 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759574AbXKTWRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 17:16:54 -0500
-Date: Tue, 20 Nov 2007 14:06:10 -0800
-From: Greg KH <greg@kroah.com>
+	Tue, 20 Nov 2007 17:17:55 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, David <david@unsolicited.net>,
-       Javier Kohen <jkohen@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-Message-ID: <20071120220610.GB19101@kroah.com>
-References: <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <473F88B0.1030309@goop.org> <20071119232252.GC3528@suse.de> <47423B26.1090607@goop.org> <20071120060525.GF20436@elte.hu> <20071120170519.GB15954@kroah.com> <20071120203919.GB10008@elte.hu> <20071120210315.GC13160@kroah.com> <20071120214927.GB24156@elte.hu>
+Cc: Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.24-rc3: find complains about /proc/net
+References: <20071119191000.GA1560@elf.ucw.cz>
+	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
+	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
+	<20071120215914.GE24156@elte.hu>
+Date: Tue, 20 Nov 2007 15:17:00 -0700
+In-Reply-To: <20071120215914.GE24156@elte.hu> (Ingo Molnar's message of "Tue,
+	20 Nov 2007 22:59:14 +0100")
+Message-ID: <m1ve7wr28z.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071120214927.GB24156@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 10:49:27PM +0100, Ingo Molnar wrote:
-> 
-> * Greg KH <greg@kroah.com> wrote:
-> 
-> > On Tue, Nov 20, 2007 at 09:39:19PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Greg KH <greg@kroah.com> wrote:
-> > > 
-> > > > > but we only have cpu_clock() from v2.6.23 onwards - so we should not 
-> > > > > apply the original patch to v2.6.22. (we should not have applied 
-> > > > > your patch that started the mess to begin with - but that's another 
-> > > > > matter.)
-> > > > 
-> > > > Well, I can easily back that one out, if that is easier than adding 2 
-> > > > more patches to try to fix up the mess here.
-> > > > 
-> > > > Let me know if you feel that would be best.
-> > > 
-> > > i'd leave it alone - doing that we have in essence the softlockup 
-> > > detector turned off. Reverting to the older version might trigger false 
-> > > positives that need the new stuff.
-> > 
-> > Ok, I'll see if the current round of patches fix up everyone 
-> > complaints :)
-> 
-> so just to reiterate, to make sure we have the same plans: lets leave 
-> v2.6.22 and earlier kernels alone - and lets strive for the latest 
-> patches and code for v2.6.23 (and v2.6.24, evidently).
+Ingo Molnar <mingo@elte.hu> writes:
 
-Yes, that sounds fine to me.
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> > lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
+>> > ...
+>> 
+>> Yes all of those are nasty.  So much for my clever way of implementing 
+>> these things.  Grr. Simple hacks that almost work!
+>
+> btw., in case you feel inclined, i recently did some userspace coding 
+> and found to my surprise that /proc/self points to the parent task, not 
+> the thread itself (giving threads no real way to examine themselves). If 
+> you are hacking in this area, would it be a big trouble to add something 
+> like /proc/self-task/ or something like that? I had to use a raw gettid 
+> syscall to figure out the TID to get to /proc/*/tasks/TID/sched 
+> instrumentation info - which is quite a PITA.
 
-thanks,
+Agreed.  I have been debating with myself in the last couple of days
+if it is a bug that /proc/self uses the tgid and not the actual pid/tid
+value.
 
-greg k-h
+If I can be convinced that posix threads don't care I will happily just
+switch /proc/self, calling the current implementation a bug.
+
+I think it is a bug the real question is what are the backwards
+compatibility implications.  Do posix threads care?
+
+It appears to me that either we need to fix /proc/self or we need
+to add /proc/task-self and fix /proc/mounts to point at that.
+
+In the normal case we share all of the same things so I think it is
+a don't care.  Except that /proc/self/status | grep Pid returns the
+tgid.
+
+Hmm.  I think I am just going to send Andrew a patch for 2.6.25 that
+just fixes /proc/self.  I just fail to see how using the tgid is correct.
+The only cases we could care seem to do the wrong thing when we use the
+tgid.
+
+Eric
