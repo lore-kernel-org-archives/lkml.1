@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbXKTG4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXKTHA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbXKTG4f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbXKTGzG
+	id S1759281AbXKTHA0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 02:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbXKTHAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:55:06 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:49448 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759582AbXKTGzE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:55:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XFI8cGB/YWHKVQF3YrDPKOJaGrQerSl+dR1BI/Ybzhe+tXsG3ocUF7+jaw8F8HYb5cN0ccSxLWGkbHkjYphqGQzMh/r3ek9rwJGyMxQlsTDo8P00LpkVRLcCzFiNK8DkGsP1fq5N8yy1E7FOB5rIvhl3SSTW0E0fmqO9KDX/mAg=
-Message-ID: <64bb37e0711192255j3fabd3d9g94544b3d518828a2@mail.gmail.com>
-Date: Tue, 20 Nov 2007 07:55:02 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Milan Broz" <mbroz@redhat.com>
-Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Alasdair G Kergon" <agk@redhat.com>
-In-Reply-To: <4741F97D.6090808@redhat.com>
+	Tue, 20 Nov 2007 02:00:05 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:44529 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755034AbXKTHAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 02:00:01 -0500
+Date: Tue, 20 Nov 2007 15:59:59 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+       James Morris <jmorris@namei.org>,
+       Networking Team <netdev@vger.kernel.org>,
+       Patrick McHardy <kaber@trash.net>, coreteam@netfilter.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org
+Subject: Re: [PATCH 52/59] net/ipv4: Add missing "space"
+Message-ID: <20071120065958.GD10490@verge.net.au>
+References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <f047768599df11a74301f81e61903c87417ea9e4.1195454436.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com>
-	 <20071119075627.GB28432@elte.hu>
-	 <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
-	 <4741F97D.6090808@redhat.com>
+In-Reply-To: <f047768599df11a74301f81e61903c87417ea9e4.1195454436.git.joe@perches.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 19, 2007 10:00 PM, Milan Broz <mbroz@redhat.com> wrote:
-> Torsten Kaiser wrote:
-> > Anything I could try, apart from more boots with slub_debug=F?
+On Mon, Nov 19, 2007 at 05:53:39PM -0800, Joe Perches wrote:
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-One time it triggered with slub_debug=F, but no additional output.
-With slub_debug=FP I have not seen it again, so I can't say if that
-would yield more info.
+Acked-by: Simon Horman <horms@verge.net.au>
 
-> Please could you try which patch from the dm-crypt series cause this ?
-> (agk-dm-dm-crypt* names.)
->
-> I suspect agk-dm-dm-crypt-move-bio-submission-to-thread.patch because
-> there is one work struct used subsequently in two threads...
-> (io thread already started while crypt thread is processing lockdep_map
-> after calling f(work)...)
+> ---
+>  net/ipv4/ipvs/ip_vs_core.c       |    2 +-
+>  net/ipv4/netfilter/iptable_raw.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/net/ipv4/ipvs/ip_vs_core.c b/net/ipv4/ipvs/ip_vs_core.c
+> index 20c884a..8fba202 100644
+> --- a/net/ipv4/ipvs/ip_vs_core.c
+> +++ b/net/ipv4/ipvs/ip_vs_core.c
+> @@ -637,7 +637,7 @@ static int ip_vs_out_icmp(struct sk_buff *skb, int *related)
+>  	verdict = NF_DROP;
+>  
+>  	if (IP_VS_FWD_METHOD(cp) != 0) {
+> -		IP_VS_ERR("shouldn't reach here, because the box is on the"
+> +		IP_VS_ERR("shouldn't reach here, because the box is on the "
+>  			  "half connection in the tun/dr module.\n");
+>  	}
+>  
+> diff --git a/net/ipv4/netfilter/iptable_raw.c b/net/ipv4/netfilter/iptable_raw.c
+> index 5de6e57..f867865 100644
+> --- a/net/ipv4/netfilter/iptable_raw.c
+> +++ b/net/ipv4/netfilter/iptable_raw.c
+> @@ -66,7 +66,7 @@ ipt_local_hook(unsigned int hook,
+>  	if (skb->len < sizeof(struct iphdr) ||
+>  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+>  		if (net_ratelimit())
+> -			printk("iptable_raw: ignoring short SOCK_RAW"
+> +			printk("iptable_raw: ignoring short SOCK_RAW "
+>  			       "packet.\n");
+>  		return NF_ACCEPT;
+>  	}
+> -- 
+> 1.5.3.5.652.gf192c
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-After reverting only
-agk-dm-dm-crypt-move-bio-submission-to-thread.patch I also have not
-seen the 'held lock freed' message again.
+-- 
+Horms
 
-If it happens again with this revert, I will post that output.
-
-Thanks for the hint.
-
-Torsten
