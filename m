@@ -1,122 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbXKTPmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbXKTPoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759516AbXKTPmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 10:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXKTPmh
+	id S1760257AbXKTPoA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 10:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757032AbXKTPne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 10:42:37 -0500
-Received: from mga03.intel.com ([143.182.124.21]:64424 "EHLO mga03.intel.com"
+	Tue, 20 Nov 2007 10:43:34 -0500
+Received: from cs-studio.ru ([195.178.208.66]:57234 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbXKTPmg convert rfc822-to-8bit (ORCPT
+	id S1756951AbXKTPnc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 10:42:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,442,1188802800"; 
-   d="scan'208";a="323137285"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: RE: [patch][v2] x86, ptrace: support for branch trace store(BTS)
-Date: Tue, 20 Nov 2007 15:39:40 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF55444F71257@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <alpine.DEB.0.99999.0711200708580.765@twinlark.arctic.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch][v2] x86, ptrace: support for branch trace store(BTS)
-thread-index: AcgricgT7sDfdJG8TVqTgB+w88yb+gAATaRA
-References: <029E5BE7F699594398CA44E3DDF55444F3AEA7@swsmsx413.ger.corp.intel.com> <alpine.DEB.0.99999.0711200708580.765@twinlark.arctic.org>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "dean gaudet" <dean@arctic.org>
-Cc: <linux-kernel@vger.kernel.org>, <mingo@elte.hu>, <hpa@zytor.com>,
-       <tglx@linutronix.de>, <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 20 Nov 2007 15:39:39.0407 (UTC) FILETIME=[8FDC09F0:01C82B8B]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 20 Nov 2007 10:43:32 -0500
+Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [take8 1/4] dst: Distributed storage documentation.
+In-Reply-To: <1195572240852@2ka.mipt.ru>
+X-Mailer: gregkh_patchbomb
+Date: Tue, 20 Nov 2007 18:24:00 +0300
+Message-Id: <11955722403357@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: lkml <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7BIT
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
 
->-----Original Message-----
->From: dean gaudet [mailto:dean@arctic.org] 
->Sent: Dienstag, 20. November 2007 16:27
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; 
->hpa@zytor.com; tglx@linutronix.de; ak@suse.de; Siddha, Suresh 
->B; akpm@linux-foundation.org
->Subject: Re: [patch][v2] x86, ptrace: support for branch trace 
->store(BTS)
->
->On Tue, 20 Nov 2007, Metzger, Markus T wrote:
->
->> +__cpuinit void ptrace_bts_init_intel(struct cpuinfo_x86 *c)
->> +{
->> +	switch (c->x86) {
->> +	case 0x6:
->> +		switch (c->x86_model) {
->> +#ifdef __i386__
->> +		case 0xD:
->> +		case 0xE: /* Pentium M */
->> +			ptrace_bts_ops = ptrace_bts_ops_pentium_m;
->> +			break;
->> +#endif /* _i386_ */
->> +		case 0xF: /* Core2 */
->> +			ptrace_bts_ops = ptrace_bts_ops_core2;
->> +			break;
->> +		default:
->> +			/* sorry, don't know about them */
->> +			break;
->> +		}
->> +		break;
->> +	case 0xF:
->> +		switch (c->x86_model) {
->> +#ifdef __i386__
->> +		case 0x0:
->> +		case 0x1:
->> +		case 0x2:
->> +		case 0x3: /* Netburst */
->> +			ptrace_bts_ops = ptrace_bts_ops_netburst;
->> +			break;
->> +#endif /* _i386_ */
->> +		default:
->> +			/* sorry, don't know about them */
->> +			break;
->> +		}
->> +		break;
->
->is this right?  i thought intel family 15 models 3 and 4 
->supported amd64
->mode...
+Distributed storage documentation.
 
-That's correct. 
-In 32bit mode, they would use the BTS format that I implemented for
-Netburst. 
-In 64bit mode, they would use a slightly different format, which is not
-implemented.
+Algorithms used in the system, userspace interfaces
+(sysfs dirs and files), design and implementation details
+are described here.
 
-We might want to add support for Netburst in 64bit mode some day. 
-For today, I simply exclude Netburst for x86_64.
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
 
-regards,
-markus.
+diff --git a/Documentation/dst/algorithms.txt b/Documentation/dst/algorithms.txt
+new file mode 100644
+index 0000000..1437a6a
+--- /dev/null
++++ b/Documentation/dst/algorithms.txt
+@@ -0,0 +1,115 @@
++Each storage by itself is just a set of contiguous logical blocks, with
++allowed number of operations. Nodes, each of which has own start and size,
++are placed into storage by appropriate algorithm, which remaps
++logical sector number into real node's sector. One can create
++own algorithms, since DST has pluggable interface for that.
++Currently mirrored and linear algorithms are supported.
++
++Let's briefly describe how they work.
++
++Linear algorithm.
++Simple approach of concatenating storages into single device with
++increased size is used in this algorithm. Essentially new device
++has size equal to sum of sizes of underlying nodes and nodes are
++placed one after another.
++
++  /----- Node 1 ---\                         /------ Node 3 ----\
++start              end                     start               end
++ |==================|========================|==================|
++ |                start                     end                 |
++ |                  \------- Node 2 ---------/                  |
++ |                                                              |
++start                                                          end
++ \-------------------------- DST storage ----------------------/
++
++			        /\
++			        ||
++			        ||
++
++			   IO operations
++
++			    Figure 1. 
++     3 nodes combined into single storage using linear algorithm.
++
++Mirror algorithm.
++In this algorithms nodes are placed under each other, so when
++operation comes to the first one, it can be mirrored to all
++underlying nodes. In case of reading, actual data is obtained from
++the nearest node - algoritm keeps track of previous operation
++and knows where it was stopped, so that subsequent seek to the 
++start of the new request will take the shortest time.
++Writing is always mirrored to all underlying nodes.
++
++                  IO operations
++                       ||
++                       ||
++                       \/
++
++|---------------- DST storage -------------------|
++|      prev position                             |
++|-------|------------ Node 1 --------------------|
++|                              prev pos          |
++|-------------------- Node 2 -----|--------------|
++|prev pos                                        |
++|---|---------------- Node 3 --------------------|
++
++		Figure 2.
++   3 nodes combined into single storage using mirror algorithm.
++
++Each algorithm must implement number of callbacks,
++which must be registered during initialization time.
++
++struct dst_alg_ops
++{
++	int			(*add_node)(struct dst_node *n);
++	void			(*del_node)(struct dst_node *n);
++	int 			(*remap)(struct dst_request *req);
++	int			(*error)(struct kst_state *state, int err);
++	struct module 		*owner;
++};
++
++@add_node.
++This callback is invoked when new node is being added into the storage,
++but before node is actually added into the storage, so that it could
++be accessed from it. When it is called, all appropriate initialization
++of the underlying device is already completed (system has been connected
++to remote node or got a reference to the local block device). At this
++stage algorithm can add node into private map. 
++It must return zero on success or negative value otherwise.
++
++@del_node.
++This callback is invoked when node is being deleted from the storage,
++i.e. when its reference counter hits zero. It is called before
++any cleaning is performed.
++It must return zero on success or negative value otherwise.
++
++@remap.
++This callback is invoked each time new bio hits the storage.
++Request structure contains BIO itself, pointer to the node, which originally
++stores the whole region under given IO request, and various parameters
++used by storage core to process this block request.
++It must return zero on success or negative value otherwise. It is upto
++this method to call all cleaning if remapping failed, for example it must
++call kst_bio_endio() for given callback in case of error, which in turn
++will call bio_endio(). Note, that dst_request structure provided in this
++callback is allocated on stack, so if there is a need to use it outside
++of the given function, it must be cloned (it will happen automatically
++in state's push callback, but that copy will not be shared by any other
++user).
++
++@error.
++This callback is invoked for each error, which happend when processed
++requests for remote nodes or when talking to remote size
++of the local export node (state contains data related to data
++transfers over the network).
++If this function has fixed given error, it must return 0 or negative
++error value otherwise.
++
++@owner.
++This is module reference counter updated automatically by DST core.
++
++Algorithm must provide its name and above structure to the 
++dst_alloc_alg() function, which will return a reference to the newly
++created algorithm.
++To remove it, one needs to call dst_remove_alg() with given algorithm
++pointer.
+diff --git a/Documentation/dst/dst.txt b/Documentation/dst/dst.txt
+new file mode 100644
+index 0000000..a6ea126
+--- /dev/null
++++ b/Documentation/dst/dst.txt
+@@ -0,0 +1,69 @@
++Distributed storage. Design and implementation.
++http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
++
++	     Evgeniy Polyakov
++
++This document is intended to briefly describe design and
++implementation details of the distributed storage project,
++aimed to create ability to group physically and/or logically
++distributed storages into single device.
++
++Main operational unit in the storage is node. Node can represent
++either remote storage, connected to local machine, or local
++device, or storage exported to the outside of the system.
++Here goes small explaination of basic therms.
++
++Local node.
++This node is just a logical link between block device (with given
++major and minor numbers) and structure in the DST hierarchy,
++which represents number of sectors on the area, corresponding to given
++block device. it can be a disk, a device mapper node or stacked
++block device on top of another underlying DST nodes.
++
++Local export node.
++Essentially the same as local node, but it allows to access
++to its data via network. Remote clients can connect to given local 
++export node and read or write blocks according to its size.
++Blocks are then forwarded to underlying local node and processed
++there accordingly to the nature of the local node.
++
++Remote node.
++This type of nodes contain remotely accessible devices. One can think
++about remote nodes as remote disks, which can be connected to
++local system and combined into single storage. Remote nodes
++are presented as number of sectors accessed over the network
++by the local machine, where distributed storage is being formed.
++Remote node allows autoconfiguration - size of the storage and
++checksumming will be requested during node initialization (if remote
++node supports checksumming it will be turned on).
++
++
++Each node or set of them can be formed into single array, which
++in turn becomes a local node, which can be exported further by stacking
++a local export node on top of it.
++
++Each storage by itself is just a set of contiguous logical blocks, with
++allowed number of operations. Nodes, each of which has own start and size,
++are placed into storage by appropriate algorithm, which remaps
++logical sector number into real node's sector. One can create
++own algorithms, since DST has pluggable interface for that.
++Currently mirrored and linear algorithms are supported.
++One can find more details in Documentation/dst/algorithms.txt file.
++
++Main goal of the distributed storage is to combine remote nodes into
++single device, so each block IO request is being sent over the network
++(contrary requests for local nodes are handled by the gneric block
++layer features). Each network connection has number of variables which
++describe it (socket, list of requests, error handling and so on),
++which form kst_state structure. This network state is added into per-socket
++polling state machine, and can be processed by dedicated thread when
++becomes ready. This system forms asynchronous IO for given block
++requests. If block request can be processed without blocking, then
++no new structures are allocated and async part of the state is not used.
++
++When connection to the remote peer breaks, DST core tries to reconnect
++to failed node and no requests are marked as errorneous, instead
++they live in the queue until reconnectin is established.
++
++Userspace code, setup documentation and examples can be found on project's
++homepage above.
+diff --git a/Documentation/dst/sysfs.txt b/Documentation/dst/sysfs.txt
+new file mode 100644
+index 0000000..79d79dc
+--- /dev/null
++++ b/Documentation/dst/sysfs.txt
+@@ -0,0 +1,30 @@
++This file describes sysfs files created for each storage.
++
++1. Per-storage files.
++Each storage has its own dir /sysfs/devices/$storage_name,
++which contains following files:
++
++alg - contains name of the algorithm used to created given storage
++name - name of the storage
++nodes - map of the storage (list of nodes and their sizes and starts)
++remove_all_nodes - writable file which allows to remove all nodes from given
++	storage
++n-$start-$cookie - per node directory, where
++	$start - start of the given node in sectors,
++	$cookie - unique node's id used by DST
++
++2. Per-node files.
++Node's files are located in /sysfs/devices/$storage_name/n-$start-$cookie
++directory, described above.
++
++chunks - private file for mirroring algorithm, contains map of update/dirty
++	sectors of the node, '-' means update, '+' is dirty and has to be
++	resynced sector
++clean - writable file, writing leads to marking node as clean (in sync)
++dirty - writable file, writing leads to marking node as dirty (not in sync)
++size - size of the given node in sectors
++start - start of the given node in the storage in sectors
++type - contains type of the node in the following format: $type: $dev
++	where $type is either 'L' or 'R' - local or remote acordingly,
++	and $dev is device name for local node (/dev/sda1 for example)
++	or address of the remote node (192.168.4.81:1025 for example)
 
->
->-dean
->
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
