@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbXKTGtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbXKTGu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbXKTGtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXKTGtf
+	id S1758870AbXKTGu6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbXKTGuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:49:35 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33926 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbXKTGte (ORCPT
+	Tue, 20 Nov 2007 01:50:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40577
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752557AbXKTGut (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:49:34 -0500
-Message-ID: <4742831F.9040408@zytor.com>
-Date: Mon, 19 Nov 2007 22:47:59 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: David Miller <davem@davemloft.net>, xiyou.wangcong@gmail.com,
-       goodmenkernel@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Is there any word about this bug in gcc ?
-References: <E1IuMnZ-0003o3-00@gondolin.me.apana.org.au>
-In-Reply-To: <E1IuMnZ-0003o3-00@gondolin.me.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Nov 2007 01:50:49 -0500
+Date: Mon, 19 Nov 2007 22:50:48 -0800 (PST)
+Message-Id: <20071119.225048.111848671.davem@davemloft.net>
+To: julia@diku.dk
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/5] arch/sparc64: Add missing pci_dev_put
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0711190901330.19198@ask.diku.dk>
+References: <Pine.LNX.4.64.0711190901330.19198@ask.diku.dk>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> David Miller <davem@davemloft.net> wrote:
->> Because the compiler knows things about the inputs and can
->> thus apply optimizations that a static implementation in glibc
->> that has to handle all forms of inputs cannot.
-> 
-> On an unrelated note, I wonder if distros will be treating this
-> with the same level of urgency as security vulnerabilities,
-> especially in light of Shamir's recent note on maths errors.
-> 
+From: Julia Lawall <julia@diku.dk>
+Date: Mon, 19 Nov 2007 09:02:22 +0100 (CET)
 
-This one is definitely messy.  There is absolutely no way to know what 
-gcc has miscompiled.  It looks to me that both gcc 4.2 and 4.3 are 
-affected, any others?
+> From: Julia Lawall <julia@diku.dk>
+> 
+> There should be a pci_dev_put when breaking out of a loop that iterates
+> over calls to pci_get_device and similar functions.
+ ..
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-	-hpa
+Patch applied, but something in your email client adds
+extra spaces to the second column of several lines in your
+your patch.
+
+Please correct this before making future patch submissions.
+
+Thank you.
