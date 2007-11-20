@@ -1,64 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbXKTQRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbXKTQVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761292AbXKTQRz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759494AbXKTQRp
+	id S1760798AbXKTQVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757854AbXKTQVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:17:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54897 "EHLO mx1.redhat.com"
+	Tue, 20 Nov 2007 11:21:34 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39600 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759554AbXKTQRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:17:44 -0500
-Message-ID: <47430871.7000306@redhat.com>
-Date: Tue, 20 Nov 2007 08:16:49 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1754368AbXKTQVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 11:21:33 -0500
+Date: Tue, 20 Nov 2007 16:21:29 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 6/6] Use one zonelist that is filtered by nodemask
+Message-ID: <20071120162129.GC32313@csn.ul.ie>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> <20071109143426.23540.44459.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0711090741120.13932@schroedinger.engr.sgi.com> <20071120141953.GB32313@csn.ul.ie> <1195571680.5041.14.camel@localhost>
 MIME-Version: 1.0
-To: dean gaudet <dean@arctic.org>
-CC: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv3 0/4] sys_indirect system call
-References: <200711170531.lAH5VaXR025225@devserv.devel.redhat.com> <20071119145224.31ee5242.dada1@cosmosbay.com> <4741A7DD.1030407@redhat.com> <20071119164329.5a580b84.dada1@cosmosbay.com> <4741B047.9080601@redhat.com> <20071119171455.c05793a0.dada1@cosmosbay.com> <20071119190826.GD12650@elte.hu> <alpine.DEB.0.99999.0711200609240.765@twinlark.arctic.org>
-In-Reply-To: <alpine.DEB.0.99999.0711200609240.765@twinlark.arctic.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1195571680.5041.14.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On (20/11/07 10:14), Lee Schermerhorn didst pronounce:
+> On Tue, 2007-11-20 at 14:19 +0000, Mel Gorman wrote:
+> > On (09/11/07 07:45), Christoph Lameter didst pronounce:
+> > > On Fri, 9 Nov 2007, Mel Gorman wrote:
+> > > 
+> > > >  struct page * fastcall
+> > > >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+> > > >  		struct zonelist *zonelist)
+> > > >  {
+> > > > +	/*
+> > > > +	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> > > > +	 * cost of allocating on the stack or the stack usage becomes
+> > > > +	 * noticable, allocate the nodemasks per node at boot or compile time
+> > > > +	 */
+> > > > +	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> > > > +		nodemask_t nodemask;
+> > > 
+> > > Hmmm.. This places a potentially big structure on the stack. nodemask can 
+> > > contain up to 1024 bits which means 128 bytes. Maybe keep an array of 
+> > > gfp_thisnode nodemasks (node_nodemask?) and use node_nodemask[nid]?
+> > 
+> > Went back and revisited this. Allocating them at boot-time is below but
+> > essentially it is a silly and it makes sense to just have two zonelists
+> > where one of them is for __GFP_THISNODE. Implementation wise, this involves
+> > dropping the last patch in the set and the overall result is still a reduction
+> > in the number of zonelists.
+> 
+> Hi, Mel:
+> 
+> I'll try this out [n 24-rc2-mm1 or later]. 
 
-dean gaudet wrote:
-> as an application writer how do i access accept(2) with FD_CLOEXEC 
-> functionality?  will glibc expose an accept2() with a flags param?
+Hold off testing for the moment. Getting all the corner cases right for
+__GFP_THISNODE has turned too complicated to be considered as part of a larger
+patchset. I believe it makes sense to drop the final patch and settle with
+having two zonelists. One of these will be for __GFP_THISNODE allocations. We
+can then tackle removing that zonelist at a later date.
 
-Not yet decided.  There is the alternative to extend the accept()
-interface to have both interfaces:
+This will still remove the hack, reduce the number of zonelists and
+improve how MPOL_BIND policies are applied so it is still an overall
+win.
 
-  int accept(int, struct sockaddr *, socklen_t *);
-and
-  int accept(int, struct sockaddr *, socklen_t *, int);
+I should have a revised patchset with the final one dropped posted in a
+few hours.
 
-We can do this with type safety even in C nowadays.
+> I have a series with yet
+> another rework of policy reference counting that will be easier/cleaner
+> atop your series w/o the external zonelist hung off 'BIND policies.  So,
+> I'm hoping your series goes into -mm "real soon now".
+> 
 
+Sounds good.
 
-> if so... why don't we just have an accept2() syscall?
+> Question:  Just wondering why you didn't embed the '_THISNODE nodemask
+> in the pgdat_t--initialized at boot/node-hot-add time? 
 
-If you read the mails of my first submission you'll find that I
-explained this.  I talked to Andrew and he favored new syscalls.  But
-then I talked to Linus and he favored this approach.  Probably
-especially because it can be used for syslets as well.  And it is less
-code and data than introducing new syscalls.
+At the time, to save space in the pg_data_t structure but it is not
+worth the complexity.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+> Perhaps under
+> #ifdef CONFIG_NUMA. The size is known at build time, right?  And
+> wouldn't that be way smaller than an additional zonelist?  
+> 
 
-iD8DBQFHQwhx2ijCOnn/RHQRAnezAKCkFmGwlwDZjpfKTRSUN4yLIeGTkACgtMK/
-OcHdIaR8wbp848D3GU2iNYQ=
-=nTu9
------END PGP SIGNATURE-----
+Yes it would.
+
+> Lee
+> 
+> > 
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/gfp.h linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/gfp.h
+> > --- linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/gfp.h	2007-11-19 19:27:15.000000000 +0000
+> > +++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/gfp.h	2007-11-19 19:28:55.000000000 +0000
+> > @@ -175,7 +175,6 @@ FASTCALL(__alloc_pages(gfp_t, unsigned i
+> >  extern struct page *
+> >  FASTCALL(__alloc_pages_nodemask(gfp_t, unsigned int,
+> >  				struct zonelist *, nodemask_t *nodemask));
+> > -extern nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask);
+> >  
+> >  static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+> >  						unsigned int order)
+> > @@ -187,13 +186,10 @@ static inline struct page *alloc_pages_n
+> >  	if (nid < 0)
+> >  		nid = numa_node_id();
+> >  
+> > -	/* Use a temporary nodemask for __GFP_THISNODE allocations */
+> >  	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> > -		nodemask_t nodemask;
+> > -
+> >  		return __alloc_pages_nodemask(gfp_mask, order,
+> >  				node_zonelist(nid),
+> > -				nodemask_thisnode(nid, &nodemask));
+> > +				NODE_DATA(nid)->nodemask_thisnode);
+> >  	}
+> >  
+> >  	return __alloc_pages(gfp_mask, order, node_zonelist(nid));
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/mmzone.h linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/mmzone.h
+> > --- linux-2.6.24-rc2-mm1-040_use_one_zonelist/include/linux/mmzone.h	2007-11-19 19:27:15.000000000 +0000
+> > +++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/include/linux/mmzone.h	2007-11-19 19:28:55.000000000 +0000
+> > @@ -519,6 +519,9 @@ typedef struct pglist_data {
+> >  	struct zone node_zones[MAX_NR_ZONES];
+> >  	struct zonelist node_zonelist;
+> >  	int nr_zones;
+> > +
+> > +	/* nodemask suitable for __GFP_THISNODE */
+> > +	nodemask_t *nodemask_thisnode;
+> >  #ifdef CONFIG_FLAT_NODE_MEM_MAP
+> >  	struct page *node_mem_map;
+> >  #endif
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-040_use_one_zonelist/mm/page_alloc.c linux-2.6.24-rc2-mm1-045_use_static_nodemask/mm/page_alloc.c
+> > --- linux-2.6.24-rc2-mm1-040_use_one_zonelist/mm/page_alloc.c	2007-11-19 19:27:15.000000000 +0000
+> > +++ linux-2.6.24-rc2-mm1-045_use_static_nodemask/mm/page_alloc.c	2007-11-19 19:28:55.000000000 +0000
+> > @@ -1695,28 +1695,36 @@ got_pg:
+> >  }
+> >  
+> >  /* Creates a nodemask suitable for GFP_THISNODE allocations */
+> > -nodemask_t *nodemask_thisnode(int nid, nodemask_t *nodemask)
+> > +static inline void alloc_node_nodemask_thisnode(pg_data_t *pgdat)
+> >  {
+> > -	nodes_clear(*nodemask);
+> > -	node_set(nid, *nodemask);
+> > +	nodemask_t *nodemask_thisnode;
+> >  
+> > -	return nodemask;
+> > +	/* Only a machine with multiple nodes needs the nodemask */
+> > +	if (!NUMA_BUILD || num_online_nodes() == 1)
+> > +		return;
+> > +	
+> > +	/* Allocate the nodemask. Serious if it fails, but not world ending */
+> > +	nodemask_thisnode = alloc_bootmem_node(pgdat, sizeof(nodemask_t));
+> > +	if (!nodemask_thisnode) {
+> > +		printk(KERN_WARNING
+> > +			"thisnode nodemask allocation failed."
+> > +			"There may be sub-optimal NUMA placement.\n");
+> > +		return;
+> > +	}
+> > +
+> > +	/* Initialise the nodemask to only cover the current node */
+> > +	nodes_clear(*nodemask_thisnode);
+> > +	node_set(pgdat->node_id, *nodemask_thisnode);
+> > +	pgdat->nodemask_thisnode = nodemask_thisnode;
+> >  }
+> >  
+> >  struct page * fastcall
+> >  __alloc_pages(gfp_t gfp_mask, unsigned int order,
+> >  		struct zonelist *zonelist)
+> >  {
+> > -	/*
+> > -	 * Use a temporary nodemask for __GFP_THISNODE allocations. If the
+> > -	 * cost of allocating on the stack or the stack usage becomes
+> > -	 * noticable, allocate the nodemasks per node at boot or compile time
+> > -	 */
+> >  	if (unlikely(gfp_mask & __GFP_THISNODE)) {
+> > -		nodemask_t nodemask;
+> > -
+> > -		return __alloc_pages_internal(gfp_mask, order,
+> > -			zonelist, nodemask_thisnode(numa_node_id(), &nodemask));
+> > +		return __alloc_pages_internal(gfp_mask, order, zonelist,
+> > +			NODE_DATA(numa_node_id())->nodemask_thisnode);
+> >  	}
+> >  
+> >  	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
+> > @@ -3501,6 +3509,7 @@ void __meminit free_area_init_node(int n
+> >  	calculate_node_totalpages(pgdat, zones_size, zholes_size);
+> >  
+> >  	alloc_node_mem_map(pgdat);
+> > +	alloc_node_nodemask_thisnode(pgdat);
+> >  
+> >  	free_area_init_core(pgdat, zones_size, zholes_size);
+> >  }
+> > 
+> 
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
