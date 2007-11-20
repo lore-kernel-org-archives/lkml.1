@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbXKTFrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXKTFtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbXKTFrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 00:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXKTFrD
+	id S1757213AbXKTFtx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 00:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXKTFtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 00:47:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55956 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753510AbXKTFrA (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 00:47:00 -0500
-Date: Tue, 20 Nov 2007 06:46:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: pomac@vapor.com, Linux-kernel@vger.kernel.org
-Subject: Re: [BUG?] OOM with large cache....(x86_64, 2.6.24-rc3-git1, nohz)
-Message-ID: <20071120054648.GA20436@elte.hu>
-References: <1195520355.8601.14.camel@localhost> <200711201513.36711.nickpiggin@yahoo.com.au>
+	Tue, 20 Nov 2007 00:49:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:37087 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbXKTFtm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 00:49:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=lN3nyP8VbX1P4OzGOPJjL6uYc81Je1UIBFvxBRZ8zSfIV0tQibxbCjEsPTaxlMx6Wo9U6u6FCtBgcf8hObK/3UUD6He45PpBIA6EKtiw58DGmIJgGF3mzEKti635gDwSdetvLX4oVSbTnGIGkVaV278bj4vr3bsTeoIxzSvtH98=
+Message-ID: <47427570.5030103@gmail.com>
+Date: Tue, 20 Nov 2007 14:49:36 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711201513.36711.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2/2] sata_nv: fix ATAPI issues with memory over 4GB (v3)
+References: <473A7677.6080007@shaw.ca> <473BA332.9030406@gmail.com> <473BC5DF.1040302@shaw.ca> <474230DC.8020308@gmail.com> <47426FDC.4030800@shaw.ca>
+In-Reply-To: <47426FDC.4030800@shaw.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert Hancock wrote:
+> It looks like the problem is that even though we set the DMA mask after
+> we allocate the PRD and pad buffers, when the other port is set up, the
+> DMA mask is already over 64-bit and so it allocates its buffers over 4GB
+> and fails. I think we just need to explicitly set to 32-bit first,
+> getting the reporter to try that one now.
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Ah.. right.  That makes sense.  Thanks.
 
-> Unfortunately, we don't show NR_ANON_PAGES in these stats, [...]
-
-sidenote: the way i combat these missing pieces of instrumentation in 
-the scheduler is to add them immediately to the cfs-debug-info.sh script 
-(and to /proc/sched_debug if needed). I.e. if we get one report that 
-misses a piece of critical information is OK, but if it's two reports 
-and we still havent made it easy to report the right kind of information 
-that is our fault entirely. This constant ping-ponging for information 
-that goes on for basically every MM problem - which information could 
-have been provided in the first message (by running a single, easy to 
-download tool) is getting pretty hindering i believe.
-
-	Ingo
+-- 
+tejun
