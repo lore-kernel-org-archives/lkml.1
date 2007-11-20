@@ -1,119 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759121AbXKTCU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763358AbXKTCUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759121AbXKTCU0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 21:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbXKTCUA
+	id S1763358AbXKTCUt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 21:20:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761558AbXKTCUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 21:20:00 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:22626 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756028AbXKTCT7 (ORCPT
+	Mon, 19 Nov 2007 21:20:14 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:60495 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760232AbXKTCUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 21:19:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Jbv3S0JYSdJq/LfEQUyyCjqVxtbC/z5UXaFb0wF0NSwO6e4oTUp9IzCQs0GxL5hodkp6LiQjsX60pBpaf1oj1yTTg1V8F1iU647KE+Gd/JzHJOPjDxblfjOGSakycExR0QrWdYflYaqqC93yvw7md1vwxjJVW8TwcG3AUF+B7+I=  ;
-X-YMail-OSG: 6pNL.VAVM1kYt1LEBALVKBFU3VtnIFF27ldq58bg6iGjcA6ainNFlz0h92Ts4grWIFwrS8BIgQ--
-From: David Brownell <david-b@pacbell.net>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 46/59] drivers/usb: Add missing "space"
-Date: Mon, 19 Nov 2007 18:19:56 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Thomas Dahlmann <thomas.dahlmann@amd.com>, info-linux@geode.amd.com,
-       linux-usb-devel@lists.sourceforge.net,
-       linux-usb-users@lists.sourceforge.net
-References: <1195523627-15389-1-git-send-email-joe@perches.com> <1195523627-15389-3-git-send-email-joe@perches.com> <1195523627-15389-4-git-send-email-joe@perches.com>
-In-Reply-To: <1195523627-15389-4-git-send-email-joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 19 Nov 2007 21:20:10 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAB/TQUdMROHU/2dsb2JhbACBWw
+Date: Mon, 19 Nov 2007 21:20:07 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: clameter@sgi.com
+Cc: ak@suse.de, akpm@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 45/45] Modules: Hack to handle symbols that have a zero
+	value
+Message-ID: <20071120022007.GA16899@Krystal>
+References: <20071120011132.143632442@sgi.com> <20071120011342.426906810@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711191819.56856.david-b@pacbell.net>
+In-Reply-To: <20071120011342.426906810@sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:19:26 up 16 days,  7:24,  3 users,  load average: 0.57, 0.71,
+	1.32
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 November 2007, Joe Perches wrote:
+* clameter@sgi.com (clameter@sgi.com) wrote:
+> The module subsystem cannot handle symbols that are zero. It prints out
+> a message that these symbols are unresolved. Define a constant
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> UNRESOLVED
+> 
+> that is used to hold the value used for unresolved symbols. Set it to 1
+> (its hopefully unlikely that a symbol will have the value 1). This is necessary
+> so that the pda variable which is placed at offset 0 of the per cpu
+> segment is handled correctly.
+> 
+
+Wouldn't it be better to simply return a standard ERR_PTR(-ENO....) ?
+
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
 > ---
->  drivers/usb/atm/ueagle-atm.c    |    4 ++--
->  drivers/usb/gadget/amd5536udc.c |    2 +-
->  drivers/usb/gadget/m66592-udc.c |    2 +-
->  drivers/usb/gadget/net2280.c    |    2 +-
-
-ACK for the three USB peripheral controller drivers.
-
-
->  4 files changed, 5 insertions(+), 5 deletions(-)
+>  kernel/module.c |   15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/usb/atm/ueagle-atm.c b/drivers/usb/atm/ueagle-atm.c
-> index 389c5b1..fad5d91 100644
-> --- a/drivers/usb/atm/ueagle-atm.c
-> +++ b/drivers/usb/atm/ueagle-atm.c
-> @@ -1990,7 +1990,7 @@ static void uea_dispatch_cmv_e1(struct uea_softc *sc, struct intr_pkt *intr)
->  	return;
+> Index: linux-2.6/kernel/module.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/module.c	2007-11-19 17:08:40.563625526 -0800
+> +++ linux-2.6/kernel/module.c	2007-11-19 17:08:40.855625732 -0800
+> @@ -62,6 +62,7 @@ extern int module_sysfs_initialized;
+>  /* If this is set, the section belongs in the init part of the module */
+>  #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
 >  
->  bad2:
-> -	uea_err(INS_TO_USBDEV(sc), "unexpected cmv received,"
-> +	uea_err(INS_TO_USBDEV(sc), "unexpected cmv received, "
->  			"Function : %d, Subfunction : %d\n",
->  			E1_FUNCTION_TYPE(cmv->bFunction),
->  			E1_FUNCTION_SUBTYPE(cmv->bFunction));
-> @@ -2038,7 +2038,7 @@ static void uea_dispatch_cmv_e4(struct uea_softc *sc, struct intr_pkt *intr)
->  	return;
->  
->  bad2:
-> -	uea_err(INS_TO_USBDEV(sc), "unexpected cmv received,"
-> +	uea_err(INS_TO_USBDEV(sc), "unexpected cmv received, "
->  			"Function : %d, Subfunction : %d\n",
->  			E4_FUNCTION_TYPE(cmv->wFunction),
->  			E4_FUNCTION_SUBTYPE(cmv->wFunction));
-> diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-> index c72e962..66e10da 100644
-> --- a/drivers/usb/gadget/amd5536udc.c
-> +++ b/drivers/usb/gadget/amd5536udc.c
-> @@ -1244,7 +1244,7 @@ udc_queue(struct usb_ep *usbep, struct usb_request *usbreq, gfp_t gfp)
->  		/* stop OUT naking */
->  		if (!ep->in) {
->  			if (!use_dma && udc_rxfifo_pending) {
-> -				DBG(dev, "udc_queue(): pending bytes in"
-> +				DBG(dev, "udc_queue(): pending bytes in "
->  					"rxfifo after nyet\n");
->  				/*
->  				 * read pending bytes afer nyet:
-> diff --git a/drivers/usb/gadget/m66592-udc.c b/drivers/usb/gadget/m66592-udc.c
-> index ebc5536..20942be 100644
-> --- a/drivers/usb/gadget/m66592-udc.c
-> +++ b/drivers/usb/gadget/m66592-udc.c
-> @@ -709,7 +709,7 @@ static void irq_ep0_write(struct m66592_ep *ep, struct m66592_request *req)
->  	do {
->  		tmp = m66592_read(m66592, ep->fifoctr);
->  		if (i++ > 100000) {
-> -			printk(KERN_ERR "pipe0 is busy. maybe cpu i/o bus"
-> +			printk(KERN_ERR "pipe0 is busy. maybe cpu i/o bus "
->  				"conflict. please power off this controller.");
->  			return;
+> +#define UNRESOLVED 1
+>  /* List of modules, protected by module_mutex or preempt_disable
+>   * (add/delete uses stop_machine). */
+>  static DEFINE_MUTEX(module_mutex);
+> @@ -285,7 +286,7 @@ static unsigned long __find_symbol(const
 >  		}
-> diff --git a/drivers/usb/gadget/net2280.c b/drivers/usb/gadget/net2280.c
-> index d5d473f..33469cf 100644
-> --- a/drivers/usb/gadget/net2280.c
-> +++ b/drivers/usb/gadget/net2280.c
-> @@ -2435,7 +2435,7 @@ static void handle_stat0_irqs (struct net2280 *dev, u32 stat)
->  			break;
->  		default:
->  delegate:
-> -			VDEBUG (dev, "setup %02x.%02x v%04x i%04x l%04x"
-> +			VDEBUG (dev, "setup %02x.%02x v%04x i%04x l%04x "
->  				"ep_cfg %08x\n",
->  				u.r.bRequestType, u.r.bRequest,
->  				w_value, w_index, w_length,
-> -- 
-> 1.5.3.5.652.gf192c
+>  	}
+>  	DEBUGP("Failed to find symbol %s\n", name);
+> -	return 0;
+> +	return UNRESOLVED;
+>  }
+>  
+>  /* Search for module by name: must hold module_mutex. */
+> @@ -755,7 +756,7 @@ void __symbol_put(const char *symbol)
+>  	const unsigned long *crc;
+>  
+>  	preempt_disable();
+> -	if (!__find_symbol(symbol, &owner, &crc, 1))
+> +	if (__find_symbol(symbol, &owner, &crc, 1) == UNRESOLVED)
+>  		BUG();
+>  	module_put(owner);
+>  	preempt_enable();
+> @@ -899,7 +900,7 @@ static inline int check_modstruct_versio
+>  	const unsigned long *crc;
+>  	struct module *owner;
+>  
+> -	if (!__find_symbol("struct_module", &owner, &crc, 1))
+> +	if (__find_symbol("struct_module", &owner, &crc, 1) == UNRESOLVED)
+>  		BUG();
+>  	return check_version(sechdrs, versindex, "struct_module", mod,
+>  			     crc);
+> @@ -952,7 +953,7 @@ static unsigned long resolve_symbol(Elf_
+>  		/* use_module can fail due to OOM, or module unloading */
+>  		if (!check_version(sechdrs, versindex, name, mod, crc) ||
+>  		    !use_module(mod, owner))
+> -			ret = 0;
+> +			ret = UNRESOLVED;
+>  	}
+>  	return ret;
+>  }
+> @@ -1345,14 +1346,14 @@ static int verify_export_symbols(struct 
+>  	const unsigned long *crc;
+>  
+>  	for (i = 0; i < mod->num_syms; i++)
+> -		if (__find_symbol(mod->syms[i].name, &owner, &crc, 1)) {
+> +		if (__find_symbol(mod->syms[i].name, &owner, &crc, 1) != UNRESOLVED) {
+>  			name = mod->syms[i].name;
+>  			ret = -ENOEXEC;
+>  			goto dup;
+>  		}
+>  
+>  	for (i = 0; i < mod->num_gpl_syms; i++)
+> -		if (__find_symbol(mod->gpl_syms[i].name, &owner, &crc, 1)) {
+> +		if (__find_symbol(mod->gpl_syms[i].name, &owner, &crc, 1)!= UNRESOLVED) {
+>  			name = mod->gpl_syms[i].name;
+>  			ret = -ENOEXEC;
+>  			goto dup;
+> @@ -1402,7 +1403,7 @@ static int simplify_symbols(Elf_Shdr *se
+>  					   strtab + sym[i].st_name, mod);
+>  
+>  			/* Ok if resolved.  */
+> -			if (sym[i].st_value != 0)
+> +			if (sym[i].st_value != UNRESOLVED)
+>  				break;
+>  			/* Ok if weak.  */
+>  			if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
 > 
+> -- 
 
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
