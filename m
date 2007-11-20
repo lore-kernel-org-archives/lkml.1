@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbXKTOgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbXKTOgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbXKTOgX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 09:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbXKTOgN
+	id S1759491AbXKTOgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 09:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbXKTOgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 09:36:13 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:40784 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752101AbXKTOgM (ORCPT
+	Tue, 20 Nov 2007 09:36:21 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:38422 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757270AbXKTOgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 09:36:12 -0500
-Subject: Re: SCSI breakage on non-cache coherent architectures
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk
-In-Reply-To: <20071120082927.GA8856@alpha.franken.de>
-References: <1195450523.7022.37.camel@pasglop>
-	 <20071119.003802.100741794.davem@davemloft.net>
-	 <1195501874.6539.5.camel@pasglop>  <20071120082927.GA8856@alpha.franken.de>
-Content-Type: text/plain
-Date: Tue, 20 Nov 2007 08:36:02 -0600
-Message-Id: <1195569362.3131.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+	Tue, 20 Nov 2007 09:36:20 -0500
+Message-ID: <4742EFBE.6030407@keyaccess.nl>
+Date: Tue, 20 Nov 2007 15:31:26 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "yakui.zhao" <yakui.zhao@intel.com>, akpm <akpm@linux-foundation.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: [PATCH 2/3] PNP cleanups - Unify the pnp macros to access	resources
+ in the pnp resource table
+References: <1195552283.23700.166.camel@queen.suse.de>	 <20071120123102.03bdaa67@the-village.bc.nu> <1195568360.23700.202.camel@queen.suse.de>
+In-Reply-To: <1195568360.23700.202.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20-11-07 15:19, Thomas Renninger wrote:
 
-On Tue, 2007-11-20 at 09:29 +0100, Thomas Bogendoerfer wrote:
-> On Tue, Nov 20, 2007 at 06:51:14AM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > On Mon, 2007-11-19 at 00:38 -0800, David Miller wrote:
-> > > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Date: Mon, 19 Nov 2007 16:35:23 +1100
-> > > 
-> > > > I'm not sure what is the best way to fix that. Internally, I've done
-> > > > some test whacking some ____cacheline_aligned in the scsi_cmnd data
-> > > > structure to verify I no longer get random SLAB corruption when using my
-> > > > USB but that significantly bloats the size of the structure on archs
-> > > > such as ppc64 that don't need it and have a large cache line size.
-> > > > 
-> > > > Unfortunately, I don't think there's any existing Kconfig symbol or arch
-> > > > provided #define to tell us that we are on a non-coherent arch afaik
-> > > > that could be used to make that conditional.
-> > > > 
-> > > > Another option would be to kmalloc the buffer (wasn't it the case before
-> > > > btw ?) but I suppose some people will scream at the idea due to how the
-> > > > command pools are done...
-> > > 
-> > > You could make a ____dma_cacheline_aligned and use that.
-> > > It seems pretty reasonable.
-> > 
-> > I was thinking about that. What archs would need it ? arm, mips, what
-> > else ?
-> 
-> older parisc
+> At the end is some example code how things could get even more cleaned
+> up. It shows how I think pnp layer and one example driver would get
+> adjusted. There are not that much drivers making use of
+> pnp_resource_change...
 
-Actually, we already established on IRC that the lasi700 driver doesn't
-need this, principally because the parisc architecture doesn't do an
-invalidate for DMA_FROM_DEVICE but a flush and invalidate
-(architecturally, if you read our manuals, even pdc is entitled to write
-back dirty lines, so it's not clear there's actually an invalidate
-instruction we can use).   This is also one possible temporary fix for
-the other architectures if we can't get a different method to work
-nicely.
+The ALSA ISA-PnP drivers do in what I personally consider a bad layering 
+violation. Brought up not doing that a while ago on alsa-devel, but no 
+discussion ensued. If the PnP maintainer(s) agree with me though, I'd be 
+more than happy to rip all of that out of ALSA.
 
-James
+(added alsa-devel)
 
-
-James
-
-
+Rene.
