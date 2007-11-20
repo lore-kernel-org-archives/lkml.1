@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXKTIjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbXKTIqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbXKTIjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 03:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXKTIjC
+	id S1757196AbXKTIqb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 03:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXKTIqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 03:39:02 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53336 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751302AbXKTIjB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 03:39:01 -0500
-Date: Tue, 20 Nov 2007 00:38:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-cifs-client@lists.samba.org,
-       samba-technical@lists.samba.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.24-rc2-mm1 - smbd write fails
-Message-Id: <20071120003817.94cce1d9.akpm@linux-foundation.org>
-In-Reply-To: <47429A7B.6040802@linux.vnet.ibm.com>
-References: <47429A7B.6040802@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 03:46:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41452 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751911AbXKTIqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 03:46:23 -0500
+Date: Tue, 20 Nov 2007 09:46:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] softlockup: do the wakeup from a hrtimer
+Message-ID: <20071120084611.GA18721@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 13:57:39 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Subject: softlockup: do the wakeup from a hrtimer
+From: Ingo Molnar <mingo@elte.hu>
 
-> Hi Andrew,
-> 
-> Following calltrace is seen server, while running filesystem stress on smb mounted partition on the client machine.
-> 
-> Nov 19 18:45:52 p55lp6 smbd[3304]: [2007/11/19 18:45:52, 0] lib/util_sock.c:write_data(562)
-> Nov 19 18:45:52 p55lp6 smbd[3304]:   write_data: write failure in writing to client 9.124.111.212. Error Broken pipe
-> Nov 19 18:45:52 p55lp6 smbd[3304]: [2007/11/19 18:45:52, 0] lib/util_sock.c:send_smb(769)
-> Nov 19 18:45:52 p55lp6 smbd[3304]:   Error writing 39 bytes to client. -1. (Broken pipe)
-> Nov 19 18:47:42 p55lp6 smbd[3650]: [2007/11/19 18:47:42, 0] smbd/oplock.c:oplock_timeout_handler(351)
-> Nov 19 18:47:42 p55lp6 smbd[3650]:   Oplock break failed for file p0/d3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/deX/d3cX/d6eXXX/f8d -- replying anyway
-> Nov 19 18:47:42 p55lp6 kernel: [ 6960.261068] warning: process `smbd' gets w/ old libcap
-> Nov 19 18:47:42 p55lp6 smbd[3650]: [2007/11/19 18:47:42, 0] smbd/oplock_linux.c:linux_release_kernel_oplock(193)
-> Nov 19 18:47:43 p55lp6 smbd[3650]:   linux_release_kernel_oplock: Error when removing kernel oplock on file p0/d3XXXXXXXXXXXXXXXXXXXXXXX
-> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/deX/d3cX/d6eXXX/f8d, dev = 807, inode = 30983, file
-> _id = 501. Error w
-> Nov 19 18:48:04 p55lp6 smbd[3650]: [2007/11/19 18:48:04, 0] lib/util_sock.c:write_data(562)
-> Nov 19 18:48:04 p55lp6 smbd[3650]:   write_data: write failure in writing to client 9.124.111.212. Error Connection reset by peer
-> 
+David Miller reported soft lockup false-positives that trigger on NOHZ 
+due to CPUs idling for more than 10 seconds.
 
-So you have samba running on a 2.6.24-rc2-mm1 machine and samba is failing
-with the above messages?
+The solution is to drive the wakeup of the watchdog threads not from the 
+timer tick (which has no guaranteed frequency), but from the watchdog 
+tasks themselves.
 
+http://bugzilla.kernel.org/show_bug.cgi?id=9409
+
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/softlockup.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+Index: linux/kernel/softlockup.c
+===================================================================
+--- linux.orig/kernel/softlockup.c
++++ linux/kernel/softlockup.c
+@@ -100,10 +100,6 @@ void softlockup_tick(void)
+ 
+ 	now = get_timestamp(this_cpu);
+ 
+-	/* Wake up the high-prio watchdog task every second: */
+-	if (now > (touch_timestamp + 1))
+-		wake_up_process(per_cpu(watchdog_task, this_cpu));
+-
+ 	/* Warn about unreasonable 10+ seconds delays: */
+ 	if (now <= (touch_timestamp + softlockup_thresh))
+ 		return;
+@@ -141,7 +137,7 @@ static int watchdog(void *__bind_cpu)
+ 	while (!kthread_should_stop()) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		touch_softlockup_watchdog();
+-		schedule();
++		msleep(1000);
+ 	}
+ 
+ 	return 0;
