@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761146AbXKTSOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXKTSOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761146AbXKTSOl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbXKTSOc
+	id S1756312AbXKTSOx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760952AbXKTSOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:14:32 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:36792 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbXKTSOb (ORCPT
+	Tue, 20 Nov 2007 13:14:39 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38337 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760942AbXKTSOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:14:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=qU+PU11FA86s2+cCySDDMEIZWIPRxkiWG8HtpMOsNGFbCrKo1rA2qNzz0sPdbPHFLmhxRtd4F50ziHu7ppJp7QeCkVSQsT4mNxuUX8FoHjF2D+Qq4oKx8PIfbffI/8B+d18N8sYdOQWLmnvwdv+KDidgNgBGS22POyXOWIoGlwE=
-Date: Tue, 20 Nov 2007 12:14:21 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: linuxppc-embedded@ozlabs.org, paulus@samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Change _tlbie arguments to reflect new API
-Message-ID: <20071120121421.5f20c2c6@weaponx>
-In-Reply-To: <47431799.6010802@scram.de>
-References: <47431799.6010802@scram.de>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; powerpc-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Nov 2007 13:14:37 -0500
+Message-ID: <474323CA.9030306@zytor.com>
+Date: Tue, 20 Nov 2007 10:13:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com>
+In-Reply-To: <474305A5.7070100@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 18:21:29 +0100
-Jochen Friedrich <jochen@scram.de> wrote:
+Ulrich Drepper wrote:
+> 
+>> And I agree with all of the objections raised by both H. Pater Anvin
+>> and Eric Dumazet.
+> 
+> Eric had no arguments and HP's comments lack a viable alternative proposal.
+> 
 
-> A new pid argument has been added to _tlbie for 4xx platforms.
-> Add this argument to the 8xx path in mem.c, as well. As 8xx
-> does not need th epid information, this argument can always be 0.
+That's only because you're being, deliberately or accidentally, vague 
+about what your actual (as opposed to imagined) requirements are.
 
-This is already fixed in Paul's tree.
+The only thing concrete that I have seen is that the limitation to 6 
+system call arguments is insufficient.  This is clearly true, as 
+evidenced by things like pselect.  To which I responded that I'd *much* 
+rather see a systematized way to handle the the system call ABI beyond 6 
+arguments... the system call interface is a calling convention and 
+should be treated as such, and the last thing we need is something that 
+ends up looking like the MS-DOS kernel interface where every call has 
+its own random convention.
 
-josh
+The easy answer, to repeat myself, is to adopt the convention that for > 
+6 system calls, the sixth argument register carries a pointer to the 6+ 
+arguments.  This has minor performance disadvantages on platforms which 
+use the stack for return addresses AND uses exactly six registers for 
+arguments (a surprisingly common number.)  On those platforms we have 
+the option of either take the extra user space copies, or pick a method 
+for passing the in-memory copy in a pointer.
+
+If the whole thing about "a dozen new [system calls]" then a dozen 
+system calls added to the existing tables are better than this mess.
+
+Inside the kernel, a lot of things could be cleaned up substantially by 
+automating the generation of stubs, where necessary.  I did a lot of 
+work in klibc to automatically generate stubs of various sorts; some of 
+that work may be possible to re-use.
+
+	-hpa
