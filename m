@@ -1,41 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbXKTJNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbXKTJN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758773AbXKTJNX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 04:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbXKTJNM
+	id S1758932AbXKTJN6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 04:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbXKTJNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 04:13:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39488 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755603AbXKTJNK (ORCPT
+	Tue, 20 Nov 2007 04:13:44 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:52609 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753615AbXKTJNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 04:13:10 -0500
-Date: Tue, 20 Nov 2007 01:12:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, devel@openvz.org
-Subject: Re: [PATCH 4/4] proc: fix PDE refcounting
-Message-Id: <20071120011226.7167445b.akpm@linux-foundation.org>
-In-Reply-To: <20071116151241.GF19517@localhost.sw.ru>
-References: <20071116151241.GF19517@localhost.sw.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 04:13:42 -0500
+Message-ID: <4742A51D.5080009@cosmosbay.com>
+Date: Tue, 20 Nov 2007 10:13:01 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [PATCHv4 0/6] sys_indirect system call
+References: <200711200653.lAK6rEYP025876@devserv.devel.redhat.com>
+In-Reply-To: <200711200653.lAK6rEYP025876@devserv.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 20 Nov 2007 10:13:07 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 18:12:41 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+Ulrich Drepper a écrit :
+> wing patches provide an alternative implementation of the
+> sys_indirect system call which has been discussed a few times.
+> This no system call allows us to extend existing system call
+> interfaces with adding more system calls.
 
-> Creating PDEs with refcount 0 and ->deleted flag has problems (see below).
-> Switch to usual scheme:
-> * PDE is created with refcount 1
-> * every de_get does +1
-> * every de_put() and remove_proc_entry() do -1
-> * once refcnt reaches 0, PDE is freed.
+I am wondering if some parts are missing from your ChangeLog
+
+You apparently added in v3 a new 'flags' parameter to indirect syscall but no 
+trace of this change in Changelog, and why it was added. This seems to imply a 
+future multiplexor.
+
+And no change in the test program reflecting this 'flags' new param, so it fails.
+
+
+>   fd = syscall (__NR_indirect, &r, &i, sizeof (i));
+
+should be fd = syscall (__NR_indirect, &r, &i, sizeof (i), 0);
+
+>   int s2 = fcntl (fd, F_GETFD);
+>   int t2 = fcntl (fd, F_GETFL);
+>   printf ("new: FD_CLOEXEC %s set, NONBLOCK %s set\n",
+> 	  s2 == 0 ? "not" : "is", (t2 & O_NONBLOCK) ? "is" : "not");
+>   close (fd);
 > 
-> This elegantly fixes at least two followint races (both observed) without new
-> locks, without abusing old locks, without spreading lock_kernel():
+>   i.file_flags.flags = O_CLOEXEC;
+>   sigset_t ss;
+>   sigemptyset(&ss);
+>   FILL_IN(r, __NR_signalfd, -1, (long) &ss, 8);
+>   fd = syscall (__NR_indirect, &r, &i, sizeof (i));
 
-fs/reiserfs/procfs.c: In function 'r_start':
-fs/reiserfs/procfs.c:424: error: 'struct proc_dir_entry' has no member named 'deleted'
+same here ?
+
+>   int s3 = fcntl (fd, F_GETFD);
+>   printf ("signalfd: FD_CLOEXEC %s set\n", s3 == 0 ? "not" : "is");
+>   close (fd);
+> 
+>   FILL_IN(r, __NR_eventfd, 8);
+>   fd = syscall (__NR_indirect, &r, &i, sizeof (i));
+
+and here.
+
+>   int s4 = fcntl (fd, F_GETFD);
+>   printf ("eventfd: FD_CLOEXEC %s set\n", s4 == 0 ? "not" : "is");
+>   close (fd);
+> 
+>   return s1 != 0 || s2 == 0 || t1 != 0 || t2 == 0 || s3 == 0 || s4 == 0;
+> }
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
