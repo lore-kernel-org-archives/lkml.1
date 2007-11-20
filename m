@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbXKTGGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbXKTGIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbXKTGGj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbXKTGGM
+	id S1758617AbXKTGIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbXKTGIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:06:12 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:61482 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757548AbXKTGGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:06:08 -0500
-Message-ID: <474278A0.50803@cn.fujitsu.com>
-Date: Tue, 20 Nov 2007 14:03:12 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 20 Nov 2007 01:08:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58024 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755409AbXKTGIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 01:08:40 -0500
+Date: Tue, 20 Nov 2007 07:08:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Greg KH <greg@kroah.com>, David <david@unsolicited.net>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, gregkh@suse.de,
+       Javier Kohen <jkohen@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
+Message-ID: <20071120060808.GG20436@elte.hu>
+References: <1195323695.5240.16.camel@null.tough.com.ar> <20071117191211.GA12757@kroah.com> <473F498D.9090703@unsolicited.net> <20071117203705.GA21045@kroah.com> <20071118005538.GD26865@elte.hu> <47422AA3.7060507@redhat.com>
 MIME-Version: 1.0
-To: WANG Cong <xiyou.wangcong@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, zhengyi <goodmenkernel@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Is there any word about this bug in gcc ?
-References: <20071120.101342.85695496.goodmenzy@gmail.com> <20071120041600.GC2472@hacking> <47426C54.9020009@zytor.com> <20071120053904.GG2472@hacking>
-In-Reply-To: <20071120053904.GG2472@hacking>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47422AA3.7060507@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WANG Cong wrote:
-> On Mon, Nov 19, 2007 at 09:10:44PM -0800, H. Peter Anvin wrote:
->> WANG Cong wrote:
->>> On Tue, Nov 20, 2007 at 10:13:42AM +0800, zhengyi wrote:
->>>> Is there any relevance to the kernel ?
->>>>
->>>> I found the folowing code here:
->>>> http://linux.solidot.org/article.pl?sid=07/11/19/0512218&from=rss
->>>>
->>>> -------------------------------------------------------------------
->>>> int main( void )
->>>> {
->>>> int i=2;
->>>> if( -10*abs (i-1) == 10*abs(i-1) )
->>>>   printf ("OMG,-10==10 in linux!\n");
->>>> else
->>>>   printf ("nothing special here\n") ;
->>>>
->>>> return 0 ;
->>>> }
->>> I think no. It is considered a bug in abs(), kernel, of course,
->>> doesn't use glibc's abs().
->>>
->> Wrong.
->>
->> abs() is internal to gcc, and the above is optimized out at compile 
->> time, so any user of abs() as a function at all is vulnerable.
-> 
-> This is an urgent bug, I think.
-> 
-> And you mean abs() is not in glibc, then where is it? Built in gcc?
-> And what's more, why not put it in glibc?
-> 
 
-Gcc optimises abs() to use gcc builtin-in abs(). So if we use -fno-builin, 
-we'll get the correct result. That is to say the bug has nothing to do with
-glibc.
+* Chuck Ebbert <cebbert@redhat.com> wrote:
 
-And this bug has been fixed just several days ago.
+> On 11/17/2007 07:55 PM, Ingo Molnar wrote:
+> > * Greg KH <greg@kroah.com> wrote:
+> > 
+> >> Great, thanks for tracking this down.
+> >>
+> >> Ingo, this corrisponds to changeset 
+> >> a115d5caca1a2905ba7a32b408a6042b20179aaa in mainline.  Is that patch 
+> >> incorrect?  Should this patch in the -stable tree be reverted?
+> > 
+> > hm, there are no such problems in .24 and the cpu_clock() and other 
+> > fixes i did were not picked up. Find the missing fixes below. They 
+> > should work just fine in .23 as it has the cpu_clock() functionality 
+> > too.
+> > 
+> > [ NOTE: the most robust thing is to make the .23 version match the .24
+> >   version of kernel/softlockup.c, so i included two other harmless
+> >   changes in this diff as well. ]
+> > 
+> > 	Ingo
+> > 
+> > ----------->
+> > commit a5f2ce3c6024a5bb895647b6bd88ecae5001020a
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Tue Oct 16 23:26:08 2007 -0700
+> > 
+> > commit 43581a10075492445f65234384210492ff333eba
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Tue Oct 16 23:26:08 2007 -0700
+> 
+> Those are just cosmetic / cleanup changes.
+> 
+> Don't you need commit a3b13c23f186ecb57204580cc1f2dbe9c284953a ??
 
-http://www.nabble.com/-PATCH--Fix-PR34130,-extract_muldiv-broken-t4826688.html
+yes:
 
-> 
->> However, the Linux kernel defines abs() as a macro:
->>
->> #define abs(x) ({                               \
->>                int __x = (x);                  \
->>                (__x < 0) ? -__x : __x;         \
->>        })
->>
->> ... which means gcc never sees it.  So the kernel isn't affected, 
->> because it doesn't use *gcc's* abs().
-> 
-> Thanks for clarifying this!
-> 
-> Regards.
-> 
+> > [...] the cpu_clock() and other fixes i did were not picked up.
 
+i just forgot to attach the cpu_clock() changes - they are in a3b13c23.
+
+	Ingo
