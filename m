@@ -1,79 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbXKTQe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbXKTQfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760141AbXKTQe5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 11:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXKTQeu
+	id S1756318AbXKTQfq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 11:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbXKTQfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 11:34:50 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:34403 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbXKTQet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 11:34:49 -0500
-Date: Tue, 20 Nov 2007 19:34:57 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] proc-remove-races-from-proc_id_readdir-factor-out-tgid-increment
-Message-ID: <20071120163457.GA13021@tv-sign.ru>
-References: <20071117181549.GA1415@tv-sign.ru> <m1bq9swqyu.fsf@ebiederm.dsl.xmission.com> <20071118142047.GA360@tv-sign.ru> <m1tzniumoo.fsf@ebiederm.dsl.xmission.com> <20071119182937.GA89@tv-sign.ru> <m1ejelvrjf.fsf_-_@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ejelvrjf.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Tue, 20 Nov 2007 11:35:37 -0500
+Received: from emulex.emulex.com ([138.239.112.1]:62217 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483AbXKTQfg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 11:35:36 -0500
+Message-ID: <47430CCE.50701@emulex.com>
+Date: Tue, 20 Nov 2007 11:35:26 -0500
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Jonathan McDowell <noodles@earth.li>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, Matt_Domsch@dell.com
+Subject: Re: [PATCH] Unify sysfs filenames for firmware version
+References: <20071120133824.GD31112@earth.li>
+In-Reply-To: <20071120133824.GD31112@earth.li>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Nov 2007 16:35:26.0751 (UTC) FILETIME=[5B0832F0:01C82B93]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19, Eric W. Biederman wrote:
+The hearburn I have with these patches is that you are changing driver-specific
+attributes, not common ones as enforced/requested by a subsystem. As such, you
+are breaking a management interface for existing tools/scripts.
+
+There's been a long-standing request to create common device attributes, such as
+fw_version, but I don't think they ever made it into the kernel. Not only would
+the names be consistent, but the location would be consistent as well.
+
+I'd rather you took on that work, than proceed with these patches.
+
+-- james s
+
+
+Jonathan McDowell wrote:
+> Looking around sysfs in an attempt to pull out SCSI card firmware
+> versions I found 5 different filenames used to store the information.
+> Only one, fw_version, was used more than once. The patch below changes
+> the other drivers to use this filename too.
 > 
-> So to fix the problem this patch modifies next_tgid() to return
-> both a tgid and the task struct in question.
+> I suspect the same applies to other subsystem drivers as well. I'll look
+> at them assuming this patch is well received.
 > 
-> A structure is introduced to return these values because it is
-> slightly cleaner and easier to optimize, and the resulting code
-> is a little shorter.
-
-Nice. Perhaps we can also factor out the incrementing of iter.tgid? Lessens
-the generated code, and (imho) cleanups the source a little bit.
-
-(untested, 2.6.24-rc2-mm1 doesn't boot on my machine)
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- PT/fs/proc/base.c~	2007-11-20 19:00:05.000000000 +0300
-+++ PT/fs/proc/base.c	2007-11-20 19:06:28.000000000 +0300
-@@ -2378,6 +2378,7 @@ static struct tgid_iter next_tgid(struct
- 	rcu_read_lock();
- retry:
- 	iter.task = NULL;
-+	iter.tgid++;
- 	pid = find_ge_pid(iter.tgid, ns);
- 	if (pid) {
- 		iter.tgid = pid_nr_ns(pid, ns);
-@@ -2394,10 +2395,8 @@ retry:
- 		 * found doesn't happen to be a thread group leader.
- 		 * As we don't care in the case of readdir.
- 		 */
--		if (!iter.task || !has_group_leader_pid(iter.task)) {
--			iter.tgid += 1;
-+		if (!iter.task || !has_group_leader_pid(iter.task))
- 			goto retry;
--		}
- 		get_task_struct(iter.task);
- 	}
- 	rcu_read_unlock();
-@@ -2434,10 +2433,8 @@ int proc_pid_readdir(struct file * filp,
- 
- 	ns = filp->f_dentry->d_sb->s_fs_info;
- 	iter.task = NULL;
--	iter.tgid = filp->f_pos - TGID_OFFSET;
--	for (iter = next_tgid(ns, iter);
--	     iter.task;
--	     iter.tgid += 1, iter = next_tgid(ns, iter)) {
-+	iter.tgid = filp->f_pos - TGID_OFFSET - 1;
-+	while ((iter = next_tgid(ns, iter)).task) {
- 		filp->f_pos = iter.tgid + TGID_OFFSET;
- 		if (proc_pid_fill_cache(filp, dirent, filldir, iter) < 0) {
- 			put_task_struct(iter.task);
-
+> Signed-Off-By: Jonathan McDowell <noodles@earth.li>
+> 
+> -----
+> diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
+> index 626bb3c..ae80d04 100644
+> --- a/drivers/message/fusion/mptscsih.c
+> +++ b/drivers/message/fusion/mptscsih.c
+> @@ -3307,7 +3307,7 @@ mptscsih_version_fw_show(struct class_device *cdev, char *buf)
+>  	    (ioc->facts.FWVersion.Word & 0x0000FF00) >> 8,
+>  	    ioc->facts.FWVersion.Word & 0x000000FF);
+>  }
+> -static CLASS_DEVICE_ATTR(version_fw, S_IRUGO, mptscsih_version_fw_show, NULL);
+> +static CLASS_DEVICE_ATTR(fw_version, S_IRUGO, mptscsih_version_fw_show, NULL);
+>  
+>  static ssize_t
+>  mptscsih_version_bios_show(struct class_device *cdev, char *buf)
+> diff --git a/drivers/scsi/arcmsr/arcmsr_attr.c b/drivers/scsi/arcmsr/arcmsr_attr.c
+> index 7d7b0a5..646f24c 100644
+> --- a/drivers/scsi/arcmsr/arcmsr_attr.c
+> +++ b/drivers/scsi/arcmsr/arcmsr_attr.c
+> @@ -352,7 +352,7 @@ static CLASS_DEVICE_ATTR(host_driver_posted_cmd, S_IRUGO, arcmsr_attr_host_drive
+>  static CLASS_DEVICE_ATTR(host_driver_reset, S_IRUGO, arcmsr_attr_host_driver_reset, NULL);
+>  static CLASS_DEVICE_ATTR(host_driver_abort, S_IRUGO, arcmsr_attr_host_driver_abort, NULL);
+>  static CLASS_DEVICE_ATTR(host_fw_model, S_IRUGO, arcmsr_attr_host_fw_model, NULL);
+> -static CLASS_DEVICE_ATTR(host_fw_version, S_IRUGO, arcmsr_attr_host_fw_version, NULL);
+> +static CLASS_DEVICE_ATTR(fw_version, S_IRUGO, arcmsr_attr_host_fw_version, NULL);
+>  static CLASS_DEVICE_ATTR(host_fw_request_len, S_IRUGO, arcmsr_attr_host_fw_request_len, NULL);
+>  static CLASS_DEVICE_ATTR(host_fw_numbers_queue, S_IRUGO, arcmsr_attr_host_fw_numbers_queue, NULL);
+>  static CLASS_DEVICE_ATTR(host_fw_sdram_size, S_IRUGO, arcmsr_attr_host_fw_sdram_size, NULL);
+> diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
+> index 0844331..ed130ec 100644
+> --- a/drivers/scsi/hptiop.c
+> +++ b/drivers/scsi/hptiop.c
+> @@ -634,7 +634,7 @@ static struct class_device_attribute hptiop_attr_version = {
+>  
+>  static struct class_device_attribute hptiop_attr_fw_version = {
+>  	.attr = {
+> -		.name = "firmware-version",
+> +		.name = "fw_version",
+>  		.mode = S_IRUGO,
+>  	},
+>  	.show = hptiop_show_fw_version,
+> diff --git a/drivers/scsi/lpfc/lpfc_attr.c b/drivers/scsi/lpfc/lpfc_attr.c
+> index 80a1121..32b1d2f 100644
+> --- a/drivers/scsi/lpfc/lpfc_attr.c
+> +++ b/drivers/scsi/lpfc/lpfc_attr.c
+> @@ -888,7 +888,7 @@ static CLASS_DEVICE_ATTR(modeldesc, S_IRUGO, lpfc_modeldesc_show, NULL);
+>  static CLASS_DEVICE_ATTR(modelname, S_IRUGO, lpfc_modelname_show, NULL);
+>  static CLASS_DEVICE_ATTR(programtype, S_IRUGO, lpfc_programtype_show, NULL);
+>  static CLASS_DEVICE_ATTR(portnum, S_IRUGO, lpfc_vportnum_show, NULL);
+> -static CLASS_DEVICE_ATTR(fwrev, S_IRUGO, lpfc_fwrev_show, NULL);
+> +static CLASS_DEVICE_ATTR(fw_version, S_IRUGO, lpfc_fwrev_show, NULL);
+>  static CLASS_DEVICE_ATTR(hdw, S_IRUGO, lpfc_hdw_show, NULL);
+>  static CLASS_DEVICE_ATTR(state, S_IRUGO, lpfc_state_show, NULL);
+>  static CLASS_DEVICE_ATTR(option_rom_version, S_IRUGO,
+> -----
+> 
+> J.
+> 
