@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbXKTXRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbXKTXUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759529AbXKTXRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbXKTXRK
+	id S1759946AbXKTXUQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:20:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXKTXUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:17:10 -0500
-Received: from rtr.ca ([76.10.145.34]:1979 "EHLO mail.rtr.ca"
+	Tue, 20 Nov 2007 18:20:01 -0500
+Received: from dizzy.i200.net ([74.86.142.210]:37031 "EHLO dizzy.i200.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752132AbXKTXRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:17:09 -0500
-Message-ID: <47436AF3.1070806@rtr.ca>
-Date: Tue, 20 Nov 2007 18:17:07 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1751685AbXKTXUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:20:00 -0500
+Message-ID: <47436BA0.5050809@quo.to>
+Date: Tue, 20 Nov 2007 17:20:00 -0600
+From: Jordan Russell <jr-list-2007@quo.to>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
-References: <47425EA5.7000607@rtr.ca>	<200711201837.39664.nickpiggin@yahoo.com.au>	<20071120064747.2a8036cd@laptopd505.fenrus.org>	<200711210243.46944.nickpiggin@yahoo.com.au>	<20071120110726.4cc2995e@laptopd505.fenrus.org>	<47433D63.5080806@rtr.ca> <20071120135839.08837372@laptopd505.fenrus.org>
-In-Reply-To: <20071120135839.08837372@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>
+Subject: Re: 2.6.23.1: Random hangs during boot with "tsc" clocksource
+References: <472B59E8.3080709@quo.to> <20071106221548.c8d7b41b.akpm@linux-foundation.org>
+In-Reply-To: <20071106221548.c8d7b41b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 20 Nov 2007 15:02:43 -0500
-> Mark Lord <lkml@rtr.ca> wrote:
->> ..
+>> On Fri, 02 Nov 2007 12:10:00 -0500 Jordan Russell <jr-list-2007@quo.to> wrote:
+>> Hi,
 >>
->> Well, for my dualCore notebook, dualCore MythTV box, and QuadCore
->> desktop, the behaviour of the existing, working, 32-bit kernel
->> IRQBALANCE code outperforms the userspace utility.
+>> With 2.6.23.1 (stock and Fedora), roughly 50% of the time my system
+>> hangs indefinitely during the kernel boot process. The hangs occur in
+>> places where normally a brief delay is seen, such as when detecting
+>> serial ports, ATA devices, and USB hubs. SysRq+W, when it works, shows
+>> tasks stuck inside schedule_timeout and lock_timer_base.
 >>
->> Mostly, I suspect, due to it's much faster response to changing
->> conditions. That's something the external one could try to match, but
->> at present it seems tuned specifically for high-traffic network
->> servers, not for the average notebook or desktop.
-> 
-> I'd really like to see what it's doing before commenting on this;
-> at minimum can you give me the /proc/interrupts of the system?
-> It might a simple bug or simple missing item, not a total "scratch the
-> full system".
-..
+>> I've found, however, that if I override the default "tsc" clocksource
+>> with "acpi_pm" by adding "clocksource=acpi_pm" to the kernel command
+>> line, the system comes up fine every time. (Zero hangs in ~50 tries.)
+>>
+>> I never had to do this with stock kernels based on 2.6.22.10 and
+>> earlier, which also defaulted to "tsc" on my system.
+>>
+>> I came across this thread:
+>>   http://lkml.org/lkml/2007/10/16/339
+>> but I'm not sure if it's the same issue. I've never seen a "Clocksource
+>> tsc unstable" message, and the kernel doesn't appear to unwedge itself
+>> after 5 minutes (I waited 20 minutes once).
 
-Next time I'm doing something significant there,
-I'll collect some data for you.  Got other work now.
+[... snip cpuinfo, dmesg, config ...]
 
-But it does make sense that this mechanism cannot be longterm for
-a desktop.  Intensive loads come and go quickly there, and the
-interrupt handling has to respond in a timely fashion.
+Same problem with 2.6.23.8.
 
-It's not like a server where loads generally increase/decrease gradually.
+Are there any specific (TSC related?) patches I should try reverting?
 
-Cheers
+Would it help if I captured the dmesg/SysRq output from one of the
+hanging boots?
 
+Any other information that might be useful in getting to the bottom of this?
+
+Thanks.
+Jordan Russell
