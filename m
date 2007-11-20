@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbXKTBaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXKTBdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbXKTBaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbXKTB0o
+	id S1756702AbXKTBdw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXKTBdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:26:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55906 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759497AbXKTB0m (ORCPT
+	Mon, 19 Nov 2007 20:33:44 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:2468 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbXKTBdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Nov 2007 20:26:42 -0500
-Date: Mon, 19 Nov 2007 17:24:18 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "kernel coder" <lhrkernelcoder@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: increased number of cycles
-Message-ID: <20071119172418.3894fc25@laptopd505.fenrus.org>
-In-Reply-To: <f69849430711172131j41c21d84y2ac10759eff29eb7@mail.gmail.com>
-References: <f69849430711172131j41c21d84y2ac10759eff29eb7@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 19 Nov 2007 20:33:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FYFHy5ikkI52qYwl8yLDYSUfBVy7CqTKMhExfhl6DvWOQ+JmIYhjHJCtdv8fqmqu7IYJ9RWwTj7QJzoaUkVzvo9dkjbUEGEzB3UMXRPVof5VgqjUH6P7xCQg6hZNSeumjmzSk40T8IQAtAsTnVLuwirBapnyRObXH6HbHvDZI3k=
+Message-ID: <3ae72650711191733r565f98dbh464b31d4497d23b2@mail.gmail.com>
+Date: Tue, 20 Nov 2007 02:33:43 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: linux-usb-devel@vger created...
+Cc: greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, david-b@pacbell.net
+In-Reply-To: <20071119.161755.101979554.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20071119.144609.240248721.davem@davemloft.net>
+	 <20071119225455.GA23892@kroah.com>
+	 <20071119.161755.101979554.davem@davemloft.net>
+X-Google-Sender-Auth: 6c10eb02d61cafbe
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Nov 2007 21:31:25 -0800
-"kernel coder" <lhrkernelcoder@gmail.com> wrote:
+On Nov 20, 2007 1:17 AM, David Miller <davem@davemloft.net> wrote:
+> From: Greg KH <greg@kroah.com>
+> Date: Mon, 19 Nov 2007 14:54:55 -0800
+>
+> > Woah, the linux-usb-devel@sf.net list is NOT a subscriber-only list at
+> > all.  It's wide open with a bunch of mailman rule filter to try to
+> > handle the worst of the spam.
+> >
+> > It does complain if you try to add too many cc:s to it, but that's it,
+> > an admin (me or Stephen) will usually get around to aproving them within
+> > 24 hours.
+>
+> Ok, I stand corrected.
+>
+> > But, I have no objection to moving to vger if you want to handle the
+> > admin load.  If so, should I send you a list of addresses that were on
+> > the sf.net list so that people can be migrated?
+>
+> We don't do migrations like that, so that people:
+>
+> 1) Learn how to subscribe, and thus how to unsubscribe.
+>
+> 2) Don't get upset that they were added to a mailing list
+>    site they may not want to be one.
+>
+> So I'd ask that you send an announcement out to the old list,
+> and during a transition period you can subscribe the old
+> list onto the vger one.
+>
+> Neil B. did something similar recently for linux-nfs, perhaps
+> you can ask him how he handled it.
 
-> hi,
->         I'm trying to add some code to netif_receive_skb function in
-> dev.c file . The cycles consumed by that code was around 16 cycles on
-> Dual Core Opetron machine.I'm working on that code for last 6 months
-> now and the consumed cycles have always been around 16 cycles .I don't
-> touch any other part of kernel .
-> 
-> But for last 4 days the consumed cycles have suddenly increased to
-> around 35 cycles . I'm using RDTSC instruction to profile the
-> code.There is no change in code and the kernel version is also the
-> same .I am assuming that there  must be something wrong with hardware.
+Sounds all good. If that migration works well, please let us do the
+same for hotplug.
 
-note that profiling a section that takes this short with rdtsc is...
-not really working well in practice; you're profiling something that's
-smaller (or at least roughly the same size) than the cpu's out of order
-speculation window, so your rdtsc greatly impacts what is actually
-happening in the code.
-
-as for the change... 16->35 cycles can well be a code or data alignment
-change or even a branch misprediction due to some minor code generation
-issue.... you're looking at a small microscopic part of the universe
-after all, the butterfly in the pacific WILL influence you ;-)
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Kay
