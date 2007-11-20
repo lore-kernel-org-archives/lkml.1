@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbXKTKM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXKTKVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbXKTKM2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 05:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbXKTKLn
+	id S1756925AbXKTKVS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 05:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXKTKVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 05:11:43 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:60942 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbXKTKLl (ORCPT
+	Tue, 20 Nov 2007 05:21:04 -0500
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:60343 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752535AbXKTKVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 05:11:41 -0500
-Message-Id: <20071120101138.740825856@de.ibm.com>
-References: <20071120101046.904031933@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 20 Nov 2007 11:10:48 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 2/2] cio: Register/unregister subchannels only from kslowcrw.
-Content-Disposition: inline; filename=012-cio-kslowcrw.diff
+	Tue, 20 Nov 2007 05:21:03 -0500
+Message-ID: <4742B3EE.70000@keyaccess.nl>
+Date: Tue, 20 Nov 2007 11:16:14 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "yakui.zhao" <yakui.zhao@intel.com>
+Subject: Re: [PATCH 0/3] PNP cleanups
+References: <1195552267.23700.163.camel@queen.suse.de>
+In-Reply-To: <1195552267.23700.163.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+On 20-11-07 10:51, Thomas Renninger wrote:
 
-Make sure all subchannel handling is done on the slow path workqueue
-so that we don't have races between an old subchannel unregistering
-and a new subchannel with the same name registering.
+> I wonder whether these rather large cleanups can already be added to
+> some mainline branch.
+> 
+> There should be no functional change.
+> 
+> This could make life easier for me (not that bad, there were not that
+> much changes in the past), but mainly make it easier for others to test
+> the real patch, that should reduce memory waste in pnp layer and I
+> expect some testing (especially on older isa machines) will be
+> necessary...
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+I can volunteer some ISA-PnP testing.
 
- drivers/s390/cio/css.c        |    2 +-
- drivers/s390/cio/device_fsm.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> The intend is to unify the pnp_{port,mem,dma,irq}_... macros exposed in
+> include/linux/pnp.h and make use of them more consequently.
+> 
+> The patches apply on 2.6.24-rc2-mm1
 
-Index: quilt-2.6/drivers/s390/cio/css.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/css.c
-+++ quilt-2.6/drivers/s390/cio/css.c
-@@ -483,7 +483,7 @@ static DECLARE_WORK(css_reprobe_work, re
- void css_schedule_reprobe(void)
- {
- 	need_reprobe = 1;
--	queue_work(ccw_device_work, &css_reprobe_work);
-+	queue_work(slow_path_wq, &css_reprobe_work);
- }
- 
- EXPORT_SYMBOL_GPL(css_schedule_reprobe);
-Index: quilt-2.6/drivers/s390/cio/device_fsm.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device_fsm.c
-+++ quilt-2.6/drivers/s390/cio/device_fsm.c
-@@ -1034,7 +1034,7 @@ device_trigger_reprobe(struct subchannel
- 	if (sch->schib.pmcw.dev != cdev->private->dev_id.devno) {
- 		PREPARE_WORK(&cdev->private->kick_work,
- 			     ccw_device_move_to_orphanage);
--		queue_work(ccw_device_work, &cdev->private->kick_work);
-+		queue_work(slow_path_wq, &cdev->private->kick_work);
- 	} else
- 		ccw_device_start_id(cdev, 0);
- }
+Patches against the current -stable are generally easiest for me as my ISA
+test machines are slow enough to not enjoy frantically keeping up with the
+absolute latest and greatest on them -- but I guess I'll manage.
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Rene.
 
