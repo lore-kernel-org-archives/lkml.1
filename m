@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbXKTXPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbXKTXRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbXKTXPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXKTXPk
+	id S1759529AbXKTXRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbXKTXRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:15:40 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38408
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751955AbXKTXPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:15:39 -0500
-Date: Tue, 20 Nov 2007 15:15:38 -0800 (PST)
-Message-Id: <20071120.151538.68704351.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: greg@kroah.com, jeremy@goop.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       jkohen@users.sourceforge.net, akpm@linux-foundation.org,
-       david@unsolicited.net
-Subject: Re: [stable] Soft lockups since stable kernel upgrade to 2.6.23.8
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071120214927.GB24156@elte.hu>
-References: <20071120203919.GB10008@elte.hu>
-	<20071120210315.GC13160@kroah.com>
-	<20071120214927.GB24156@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 20 Nov 2007 18:17:10 -0500
+Received: from rtr.ca ([76.10.145.34]:1979 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752132AbXKTXRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:17:09 -0500
+Message-ID: <47436AF3.1070806@rtr.ca>
+Date: Tue, 20 Nov 2007 18:17:07 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+References: <47425EA5.7000607@rtr.ca>	<200711201837.39664.nickpiggin@yahoo.com.au>	<20071120064747.2a8036cd@laptopd505.fenrus.org>	<200711210243.46944.nickpiggin@yahoo.com.au>	<20071120110726.4cc2995e@laptopd505.fenrus.org>	<47433D63.5080806@rtr.ca> <20071120135839.08837372@laptopd505.fenrus.org>
+In-Reply-To: <20071120135839.08837372@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 20 Nov 2007 22:49:27 +0100
-
+Arjan van de Ven wrote:
+> On Tue, 20 Nov 2007 15:02:43 -0500
+> Mark Lord <lkml@rtr.ca> wrote:
+>> ..
+>>
+>> Well, for my dualCore notebook, dualCore MythTV box, and QuadCore
+>> desktop, the behaviour of the existing, working, 32-bit kernel
+>> IRQBALANCE code outperforms the userspace utility.
+>>
+>> Mostly, I suspect, due to it's much faster response to changing
+>> conditions. That's something the external one could try to match, but
+>> at present it seems tuned specifically for high-traffic network
+>> servers, not for the average notebook or desktop.
 > 
-> * Greg KH <greg@kroah.com> wrote:
-> 
-> > On Tue, Nov 20, 2007 at 09:39:19PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Greg KH <greg@kroah.com> wrote:
-> > > 
-> > > > > but we only have cpu_clock() from v2.6.23 onwards - so we should not 
-> > > > > apply the original patch to v2.6.22. (we should not have applied 
-> > > > > your patch that started the mess to begin with - but that's another 
-> > > > > matter.)
-> > > > 
-> > > > Well, I can easily back that one out, if that is easier than adding 2 
-> > > > more patches to try to fix up the mess here.
-> > > > 
-> > > > Let me know if you feel that would be best.
-> > > 
-> > > i'd leave it alone - doing that we have in essence the softlockup 
-> > > detector turned off. Reverting to the older version might trigger false 
-> > > positives that need the new stuff.
-> > 
-> > Ok, I'll see if the current round of patches fix up everyone 
-> > complaints :)
-> 
-> so just to reiterate, to make sure we have the same plans: lets leave 
-> v2.6.22 and earlier kernels alone - and lets strive for the latest 
-> patches and code for v2.6.23 (and v2.6.24, evidently).
+> I'd really like to see what it's doing before commenting on this;
+> at minimum can you give me the /proc/interrupts of the system?
+> It might a simple bug or simple missing item, not a total "scratch the
+> full system".
+..
 
-I've validated that those patches make 2.6.23 behave on my
-Niagara box.
+Next time I'm doing something significant there,
+I'll collect some data for you.  Got other work now.
 
-Thanks.
+But it does make sense that this mechanism cannot be longterm for
+a desktop.  Intensive loads come and go quickly there, and the
+interrupt handling has to respond in a timely fashion.
+
+It's not like a server where loads generally increase/decrease gradually.
+
+Cheers
+
