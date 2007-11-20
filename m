@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbXKTBSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbXKTBSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbXKTBSU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Nov 2007 20:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbXKTBNt
+	id S1757941AbXKTBSf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Nov 2007 20:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXKTBNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Nov 2007 20:13:49 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49845 "EHLO relay.sgi.com"
+	Mon, 19 Nov 2007 20:13:50 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49848 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753954AbXKTBNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754068AbXKTBNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Nov 2007 20:13:35 -0500
-Message-Id: <20071120011335.036003167@sgi.com>
+Message-Id: <20071120011335.271090379@sgi.com>
 References: <20071120011132.143632442@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Nov 2007 17:11:46 -0800
+Date: Mon, 19 Nov 2007 17:11:47 -0800
 From: clameter@sgi.com
 From: Christoph Lameter <clameter@sgi.com>
 To: ak@suse.de
@@ -20,107 +20,75 @@ Cc: akpm@linux-foundation.org
 Cc: travis@sgi.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: [rfc 14/45] cpu alloc: ACPI cstate handling conversion
-Content-Disposition: inline; filename=0022-cpu-alloc-ACPI-cstate-handling-conversion.patch
+Subject: [rfc 15/45] cpu alloc: genhd statistics conversion
+Content-Disposition: inline; filename=0023-cpu-alloc-genhd-statistics-conversion.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- arch/x86/kernel/acpi/cstate.c              |    9 +++++----
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    7 ++++---
- drivers/acpi/processor_perflib.c           |    4 ++--
- 3 files changed, 11 insertions(+), 9 deletions(-)
+ include/linux/genhd.h |   16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/acpi/cstate.c
+Index: linux-2.6/include/linux/genhd.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/cstate.c	2007-11-15 21:18:09.238904115 -0800
-+++ linux-2.6/arch/x86/kernel/acpi/cstate.c	2007-11-15 21:25:30.499154221 -0800
-@@ -87,7 +87,7 @@ int acpi_processor_ffh_cstate_probe(unsi
- 	if (reg->bit_offset != NATIVE_CSTATE_BEYOND_HALT)
- 		return -1;
+--- linux-2.6.orig/include/linux/genhd.h	2007-11-18 14:38:24.285456612 -0800
++++ linux-2.6/include/linux/genhd.h	2007-11-18 22:04:47.428523761 -0800
+@@ -158,21 +158,21 @@ struct disk_attribute {
+  */
+ #ifdef	CONFIG_SMP
+ #define __disk_stat_add(gendiskp, field, addnd) 	\
+-	(per_cpu_ptr(gendiskp->dkstats, smp_processor_id())->field += addnd)
++	__CPU_ADD(gendiskp->dkstats->field, addnd)
  
--	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
-+	percpu_entry = CPU_PTR(cpu_cstate_entry, cpu);
- 	percpu_entry->states[cx->index].eax = 0;
- 	percpu_entry->states[cx->index].ecx = 0;
+ #define disk_stat_read(gendiskp, field)					\
+ ({									\
+ 	typeof(gendiskp->dkstats->field) res = 0;			\
+ 	int i;								\
+ 	for_each_possible_cpu(i)					\
+-		res += per_cpu_ptr(gendiskp->dkstats, i)->field;	\
++		res += CPU_PTR(gendiskp->dkstats, i)->field;	\
+ 	res;								\
+ })
  
-@@ -138,7 +138,7 @@ void acpi_processor_ffh_cstate_enter(str
- 	unsigned int cpu = smp_processor_id();
- 	struct cstate_entry *percpu_entry;
+ static inline void disk_stat_set_all(struct gendisk *gendiskp, int value)	{
+ 	int i;
+ 	for_each_possible_cpu(i)
+-		memset(per_cpu_ptr(gendiskp->dkstats, i), value,
++		memset(CPU_PTR(gendiskp->dkstats, i), value,
+ 				sizeof (struct disk_stats));
+ }		
+ 				
+@@ -187,11 +187,7 @@ static inline void disk_stat_set_all(str
+ #endif
  
--	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
-+	percpu_entry = CPU_PTR(cpu_cstate_entry, cpu);
- 	mwait_idle_with_hints(percpu_entry->states[cx->index].eax,
- 	                      percpu_entry->states[cx->index].ecx);
- }
-@@ -150,13 +150,14 @@ static int __init ffh_cstate_init(void)
- 	if (c->x86_vendor != X86_VENDOR_INTEL)
- 		return -1;
+ #define disk_stat_add(gendiskp, field, addnd)			\
+-	do {							\
+-		preempt_disable();				\
+-		__disk_stat_add(gendiskp, field, addnd);	\
+-		preempt_enable();				\
+-	} while (0)
++	_CPU_ADD(gendiskp->dkstats->field, addnd);
  
--	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
-+	cpu_cstate_entry = CPU_ALLOC(struct cstate_entry,
-+					GFP_KERNEL|__GFP_ZERO);
- 	return 0;
- }
- 
- static void __exit ffh_cstate_exit(void)
+ #define __disk_stat_dec(gendiskp, field) __disk_stat_add(gendiskp, field, -1)
+ #define disk_stat_dec(gendiskp, field) disk_stat_add(gendiskp, field, -1)
+@@ -209,7 +205,7 @@ static inline void disk_stat_set_all(str
+ #ifdef  CONFIG_SMP
+ static inline int init_disk_stats(struct gendisk *disk)
  {
--	free_percpu(cpu_cstate_entry);
-+	CPU_FREE(cpu_cstate_entry);
- 	cpu_cstate_entry = NULL;
- }
+-	disk->dkstats = alloc_percpu(struct disk_stats);
++	disk->dkstats = CPU_ALLOC(struct disk_stats, GFP_KERNEL | __GFP_ZERO);
+ 	if (!disk->dkstats)
+ 		return 0;
+ 	return 1;
+@@ -217,7 +213,7 @@ static inline int init_disk_stats(struct
  
-Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2007-11-15 21:18:09.246904080 -0800
-+++ linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2007-11-15 21:25:30.499154221 -0800
-@@ -513,7 +513,8 @@ static int __init acpi_cpufreq_early_ini
+ static inline void free_disk_stats(struct gendisk *disk)
  {
- 	dprintk("acpi_cpufreq_early_init\n");
- 
--	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
-+	acpi_perf_data = CPU_ALLOC(struct acpi_processor_performance,
-+						GFP_KERNEL|__GFP_ZERO);
- 	if (!acpi_perf_data) {
- 		dprintk("Memory allocation error for acpi_perf_data.\n");
- 		return -ENOMEM;
-@@ -569,7 +570,7 @@ static int acpi_cpufreq_cpu_init(struct 
- 	if (!data)
- 		return -ENOMEM;
- 
--	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
-+	data->acpi_data = CPU_PTR(acpi_perf_data, cpu);
- 	drv_data[cpu] = data;
- 
- 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
-@@ -782,7 +783,7 @@ static void __exit acpi_cpufreq_exit(voi
- 
- 	cpufreq_unregister_driver(&acpi_cpufreq_driver);
- 
--	free_percpu(acpi_perf_data);
-+	CPU_FREE(acpi_perf_data);
- 
- 	return;
+-	free_percpu(disk->dkstats);
++	CPU_FREE(disk->dkstats);
  }
-Index: linux-2.6/drivers/acpi/processor_perflib.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/processor_perflib.c	2007-11-15 21:18:09.254904773 -0800
-+++ linux-2.6/drivers/acpi/processor_perflib.c	2007-11-15 21:25:30.499154221 -0800
-@@ -567,12 +567,12 @@ int acpi_processor_preregister_performan
- 			continue;
- 		}
- 
--		if (!performance || !percpu_ptr(performance, i)) {
-+		if (!performance || !CPU_PTR(performance, i)) {
- 			retval = -EINVAL;
- 			continue;
- 		}
- 
--		pr->performance = percpu_ptr(performance, i);
-+		pr->performance = CPU_PTR(performance, i);
- 		cpu_set(i, pr->performance->shared_cpu_map);
- 		if (acpi_processor_get_psd(pr)) {
- 			retval = -EINVAL;
+ #else	/* CONFIG_SMP */
+ static inline int init_disk_stats(struct gendisk *disk)
 
 -- 
