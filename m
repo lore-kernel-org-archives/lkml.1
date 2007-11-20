@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbXKTSW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXKTSY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbXKTSW3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 13:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759554AbXKTSWU
+	id S1759980AbXKTSY7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 13:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXKTSYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 13:22:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56828 "EHLO mx1.redhat.com"
+	Tue, 20 Nov 2007 13:24:52 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:37283 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758945AbXKTSWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 13:22:19 -0500
-Message-ID: <474324AE.3070404@redhat.com>
-Date: Tue, 20 Nov 2007 10:17:18 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752484AbXKTSYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 13:24:51 -0500
+Message-ID: <47432666.6070503@oracle.com>
+Date: Tue, 20 Nov 2007 10:24:38 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-To: Zach Brown <zach.brown@oracle.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
        tglx@linutronix.de, torvalds@linux-foundation.org
-Subject: Re: [PATCHv4 0/6] sys_indirect system call
-References: <200711200653.lAK6rEYP025876@devserv.devel.redhat.com> <4742A51D.5080009@cosmosbay.com> <4743071A.9050408@redhat.com> <4743229F.2060805@oracle.com>
-In-Reply-To: <4743229F.2060805@oracle.com>
-X-Enigmail-Version: 0.95.0
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com>
+In-Reply-To: <474323CA.9030306@zytor.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Zach Brown wrote:
-> I'm sure the additional parameter will be needed, and it might be pretty
-> involved.  I think the current notion of syslets needs, at the very least:
+> That's only because you're being, deliberately or accidentally, vague
+> about what your actual (as opposed to imagined) requirements are.
 
-All correct.  I just want to point out that the proposed interface is
-sufficiently prepared for this and that there is no need to wait adding
-this initial, synchronous syscall stuff before the syslet stuff is
-ready.  These interface changes are security-relevant and should be
-added ASAP.
+Maybe I can help by summarizing how syslets fit in to this.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Currently the syslet patches add a single submission call which includes
+an argument which is a structure which duplicates the system call ABI.
+The submission syscall in the kernel does some syslet specific work
+which amounts to verifying state and storing it in the task_struct.  It
+then has to unpack the system call arguments from this submission
+syscall argument and call the specified system call.
 
-iD8DBQFHQySu2ijCOnn/RHQRAnQqAKCz0JzvmAeEcL8m77jbEYAZ4ZFWXwCgpfvE
-do7pJGn9XBu9jfQhfLkxQSc=
-=eX6m
------END PGP SIGNATURE-----
+Every architecture will need helpers, then, on either side.  They'll
+need to pack their arguments into the struct and then unpack and call in
+the kernel.  The PPC64 guys have already expressed concern about this.
+
+It's, in effect, adding the syslet arguments to every single system call.
+
+So, instead of duplicating the system call ABI in the argument to a
+syslet submission syscall, we could pass the syslet arguments via this
+indirect parameters convention.  This, hopefully, will reduce complexity
+by reducing the number of places that we have to muck around with the
+sycall ABI.
+
+That's the high level summary, anyway.  I'm working on the simplest
+expression of this mechanism at the moment.  We'll have code to argue
+about before the silly thanksgiving break, I hope.
+
+- z
