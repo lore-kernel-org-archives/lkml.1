@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbXKTG4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbXKTG4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759946AbXKTG4K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 01:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbXKTGyf
+	id S1760074AbXKTG4f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 01:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbXKTGzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 01:54:35 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:44518 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759503AbXKTGye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 01:54:34 -0500
-Date: Tue, 20 Nov 2007 15:54:33 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Jes Sorensen <jes@sgi.com>,
-       Tony Luck <tony.luck@intel.com>, linux-altix@sgi.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 01/59] arch/ia64: Add missing "space"
-Message-ID: <20071120065431.GC10490@verge.net.au>
-References: <1195523331-15303-1-git-send-email-joe@perches.com> <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
+	Tue, 20 Nov 2007 01:55:06 -0500
+Received: from nz-out-0506.google.com ([64.233.162.237]:49448 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759582AbXKTGzE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 01:55:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XFI8cGB/YWHKVQF3YrDPKOJaGrQerSl+dR1BI/Ybzhe+tXsG3ocUF7+jaw8F8HYb5cN0ccSxLWGkbHkjYphqGQzMh/r3ek9rwJGyMxQlsTDo8P00LpkVRLcCzFiNK8DkGsP1fq5N8yy1E7FOB5rIvhl3SSTW0E0fmqO9KDX/mAg=
+Message-ID: <64bb37e0711192255j3fabd3d9g94544b3d518828a2@mail.gmail.com>
+Date: Tue, 20 Nov 2007 07:55:02 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Milan Broz" <mbroz@redhat.com>
+Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Alasdair G Kergon" <agk@redhat.com>
+In-Reply-To: <4741F97D.6090808@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com>
+	 <20071119075627.GB28432@elte.hu>
+	 <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
+	 <4741F97D.6090808@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
+On Nov 19, 2007 10:00 PM, Milan Broz <mbroz@redhat.com> wrote:
+> Torsten Kaiser wrote:
+> > Anything I could try, apart from more boots with slub_debug=F?
 
-> diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
-> index 5fd65d8..90518e4 100644
-> --- a/arch/ia64/kernel/kprobes.c
-> +++ b/arch/ia64/kernel/kprobes.c
-> @@ -182,8 +182,8 @@ static int __kprobes unsupported_inst(uint template, uint  slot,
->  	qp = kprobe_inst & 0x3f;
->  	if (is_cmp_ctype_unc_inst(template, slot, major_opcode, kprobe_inst)) {
->  		if (slot == 1 && qp)  {
-> -			printk(KERN_WARNING "Kprobes on cmp unc"
-> -					"instruction on slot 1 at <0x%lx>"
-> +			printk(KERN_WARNING "Kprobes on cmp unc "
-> +					"instruction on slot 1 at <0x%lx> "
->  					"is not supported\n", addr);
->  			return -EINVAL;
->  
-> @@ -221,8 +221,8 @@ static int __kprobes unsupported_inst(uint template, uint  slot,
->  			 * bit 12 to be equal to 1
->  			 */
->  			if (slot == 1 && qp) {
-> -				printk(KERN_WARNING "Kprobes on test bit"
-> -						"instruction on slot at <0x%lx>"
-> +				printk(KERN_WARNING "Kprobes on test bit "
-> +						"instruction on slot at <0x%lx> "
->  						"is not supported\n", addr);
->  				return -EINVAL;
->  			}
+One time it triggered with slub_debug=F, but no additional output.
+With slub_debug=FP I have not seen it again, so I can't say if that
+would yield more info.
 
-Is it really neccessary for this fragment to create a line that
-is greater than 80 characters long? Persumably the entire reason
-that the printk line was split in the first place was to avoid
-a long line.
+> Please could you try which patch from the dm-crypt series cause this ?
+> (agk-dm-dm-crypt* names.)
+>
+> I suspect agk-dm-dm-crypt-move-bio-submission-to-thread.patch because
+> there is one work struct used subsequently in two threads...
+> (io thread already started while crypt thread is processing lockdep_map
+> after calling f(work)...)
 
-[snip]
+After reverting only
+agk-dm-dm-crypt-move-bio-submission-to-thread.patch I also have not
+seen the 'held lock freed' message again.
 
--- 
-Horms
+If it happens again with this revert, I will post that output.
 
+Thanks for the hint.
+
+Torsten
