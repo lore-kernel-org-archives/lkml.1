@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbXKUWmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbXKUWna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbXKUWmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 17:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbXKUWlv
+	id S1757354AbXKUWna (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 17:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbXKUWnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 17:41:51 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54670 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752685AbXKUWlu convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 17:41:50 -0500
-Date: Wed, 21 Nov 2007 14:41:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-Message-Id: <20071121144116.c932727b.akpm@linux-foundation.org>
-In-Reply-To: <4744A6F2.4030302@free.fr>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4744A6F2.4030302@free.fr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 21 Nov 2007 17:43:23 -0500
+Received: from smtp.cce.hp.com ([161.114.21.22]:47570 "EHLO
+	ccerelrim01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753655AbXKUWnW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 17:43:22 -0500
+X-Greylist: delayed 1577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 17:43:22 EST
+Subject: Error returns not handled correctly by sysfs.c:subsys_attr_store()
+From: Andrew Patterson <andrew.patterson@hp.com>
+Reply-To: andrew.patterson@hp.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-hotplug@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 21 Nov 2007 15:16:59 -0700
+Message-Id: <1195683419.16019.225.camel@grinch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.11.21.134728
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007 22:45:22 +0100
-Laurent Riffard <laurent.riffard@free.fr> wrote:
+The buf in fs/sysfs.c:subsys_attr_store() does not seem to be updated
+correctly when returning a negative value (indicating that an error
+condition has occurred) is returned.  If a negative value is returned,
+the next subsequent call to subsys_attr_store will have the contents of
+buf appended to the previous call.  Example: I have modified the
+sd.c:sd_store_allow_restart to always print out the contents of the buf
+and return an error using the following patch:
 
-> Le 21.11.2007 05:45, Andrew Morton a écrit :
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/
-> 
-> Hello, 
-> 
-> My system hangs shortly after I logged in Gnome desktop. SysRq-W shows
-> that a bunch of task are blocked in "D" state, they seem to wait for
-> some I/O completion. I can try to hand-copy some data if requested.
-> 
-> I found these messages in dmesg:
-> 
-> ~$ grep -C2 end_request dmesg-2.6.24-rc3-mm1 
-> EXT3-fs: mounted filesystem with ordered data mode.
-> sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sda, sector 16460
-> ReiserFS: sda7: found reiserfs format "3.6" with standard journal
-> ReiserFS: sda7: using ordered data mode
-> --
-> ReiserFS: sda7: Using r5 hash to sort names
-> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdb, sector 19632
-> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
-> end_request: I/O error, dev sdb, sector 40037363
-> Adding 1048568k swap on /dev/mapper/vglinux1-lvswap.  Priority:-1 extents:1 across:1048568k
-> lp0: using parport0 (interrupt-driven).
-> 
-> These errors occur *only* with 2.6.24-rc3-mm1, they are 100% reproducible.
-> 2.6.24-rc3 and 2.6.24-rc2-mm1 are fine.
-> 
-> Maybe something is broken in pata_via driver ?
-> 
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -183,6 +183,9 @@ static ssize_t sd_store_allow_restart(struct class_device *c
+        struct scsi_disk *sdkp = to_scsi_disk(cdev);
+        struct scsi_device *sdp = sdkp->device;
+ 
++       printk(KERN_ERR "buf_ptr = 0x%p, buf = %s, count = %u\n", buf, buf, coun
++       return -EINVAL;
++
+        if (!capable(CAP_SYS_ADMIN))
+                return -EACCES;
 
-Could be - libata-reimplement-ata_acpi_cbl_80wire-using-ata_acpi_gtm_xfermask.patch
-and pata_amd-pata_via-de-couple-programming-of-pio-mwdma-and-udma-timings.patch
-touch pata_via.c.
+I get the following output when writing invalid values to the
+allow_restart sysfs file:
+
+# echo x > /sys/class/scsi_disk/4:0:0:0/allow_restart
+bash: echo: write error: Invalid argument
+# echo y > /sys/class/scsi_disk/4:0:0:0/allow_restart
+bash: echo: write error: Invalid argument
+# echo z > /sys/class/scsi_disk/4:0:0:0/allow_restart
+bash: echo: write error: Invalid argument
+
+And the console output shows:
+
+buf_ptr = 0xe00001004bdb0000, buf = x
+, count = 2
+buf_ptr = 0xe00001004bdb0000, buf = x
+, count = 2
+buf_ptr = 0xe00001004bdb0000, buf = x
+y
+, count = 4
+buf_ptr = 0xe00001004bdb0000, buf = x
+y
+, count = 4
+buf_ptr = 0xe00001004caf0000, buf = x
+y
+z
+, count = 6
+buf_ptr = 0xe00001004caf0000, buf = x
+y
+z
+, count = 6
+
+and the same append problem occurs when using another sysfs file:
+
+# echo xyzzy > /sys/class/scsi_disk/4:0:1:0/allow_restart
+bash: echo: write error: Invalid argument
+
+buf_ptr = 0xe00001004caf0000, buf = x
+y
+z
+xyzzy
+, count = 12
+
+I found this problem in 2.6.24-rc3 and and an earlier version of 2.6.23.
+
+This seems to work correctly on 2.6.18 (at least with the RHEL5 kernel I
+did some testing with), i.e. the contents of buf from the previous
+failed called are thrown away/overwritten. I looked through sysfs.c to
+see if I could find anything obvious but could not see anything.
+Perhaps this is handled at a higher level. 
+
+-- 
+Andrew Patterson
+Hewlett-Packard
+
