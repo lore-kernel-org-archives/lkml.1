@@ -1,78 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbXKUOCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbXKUOIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758446AbXKUOCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 09:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbXKUOCG
+	id S1758153AbXKUOIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 09:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXKUOIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 09:02:06 -0500
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:35091 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753477AbXKUOCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 09:02:05 -0500
-Message-ID: <47443A83.2020607@lougher.demon.co.uk>
-Date: Wed, 21 Nov 2007 14:02:43 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       maximilian attems <max@stro.at>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [ANN] Squashfs 3.3 released
-References: <472EFACA.1090308@lougher.demon.co.uk> <20071105115624.GJ14432@baikonur.stro.at> <4731E880.6010303@lougher.demon.co.uk> <20071120235048.GA15764@redhat.com>
-In-Reply-To: <20071120235048.GA15764@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Nov 2007 09:08:09 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:63311 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753624AbXKUOIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 09:08:07 -0500
+Subject: [patch 1/1] selinux:  do not clear f_op when removing entries
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, devel@openvz.org,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
+In-Reply-To: <20071120151731.GA20322@infradead.org>
+References: <20071116150651.GC19517@localhost.sw.ru>
+	 <20071119125139.GB15942@infradead.org>
+	 <1195571105.20910.31.camel@moss-spartans.epoch.ncsc.mil>
+	 <20071120151731.GA20322@infradead.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 21 Nov 2007 09:01:36 -0500
+Message-Id: <1195653696.759.29.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-
+On Tue, 2007-11-20 at 15:17 +0000, Christoph Hellwig wrote:
+> On Tue, Nov 20, 2007 at 10:05:05AM -0500, Stephen Smalley wrote:
+> > > Nice, getting rid of this is a very good step formwards.  Unfortunately
+> > > we have another copy of this junk in
+> > > security/selinux/selinuxfs.c:sel_remove_entries() which would need the
+> > > same treatment.
+> > 
+> > Can't just be dropped completely for selinux - we need a way to drop
+> > obsolete entries from the prior policy when we load a new policy.
+> > 
+> > Is the only real problem here the clearing of f_op?  If so, we can
+> > likely remove that from sel_remove_entries() without harm, and fix the
+> > checks for it to use something more reliable.
 > 
-> The biggest problem we've seen with it (asides from having to rediff
-> it every time we rebase when there isn't a newer upstream)
+> f_op removal is the biggest issue.  It can't really work and this is the
+> last instance.  But in general having some half-backed attempts at revoke
+> is never a good idea.
 
-Yes, this is mainly my fault.  There was a gap of 10 months between the 
-3.2 release in January this year, and the latest in November. With the 
-rate of new kernel releases this wasn't really acceptable because the 
-January release was stuck with a patch for kernels no newer than 2.6.20. 
-I received numerous complaints about it.
+Do not clear f_op when removing entries since it isn't safe to do.
 
-Some of you may be aware that I started work at Canonical, and this left 
-almost no spare-time to work on Squashfs for 9 months.
+Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
 
->is complaints
-> along the lines of "my Fedora 7 kernel can't unpack squashfs images
-> from Fedora 5"
-> (s/Fedora 5/other random older distros/ )
->
+---
 
-Squashfs has backwards compatibility with older versions, and it should 
-mount all older versions back to 2.0 (released May 2004). Unfortunately 
-RedHat grabbed a CVS version of Squashfs just before the 3.0 release. 
-This was development code, and release testing showed it
-had a bug where it couldn't mount older versions. It was fixed for
-release.
+ security/selinux/selinuxfs.c |   28 +---------------------------
+ 1 file changed, 1 insertion(+), 27 deletions(-)
 
-> If the format is now stable however, it would be great to get it upstream.
-> 
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+index f5f3e6d..ac6fe99 100644
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -838,10 +838,6 @@ static ssize_t sel_read_bool(struct file *filep, char __user *buf,
+ 
+ 	ret = -EFAULT;
+ 
+-	/* check to see if this file has been deleted */
+-	if (!filep->f_op)
+-		goto out;
+-
+ 	if (count > PAGE_SIZE) {
+ 		ret = -EINVAL;
+ 		goto out;
+@@ -882,10 +878,6 @@ static ssize_t sel_write_bool(struct file *filep, const char __user *buf,
+ 	if (length)
+ 		goto out;
+ 
+-	/* check to see if this file has been deleted */
+-	if (!filep->f_op)
+-		goto out;
+-
+ 	if (count >= PAGE_SIZE) {
+ 		length = -ENOMEM;
+ 		goto out;
+@@ -940,10 +932,6 @@ static ssize_t sel_commit_bools_write(struct file *filep,
+ 	if (length)
+ 		goto out;
+ 
+-	/* check to see if this file has been deleted */
+-	if (!filep->f_op)
+-		goto out;
+-
+ 	if (count >= PAGE_SIZE) {
+ 		length = -ENOMEM;
+ 		goto out;
+@@ -982,11 +970,9 @@ static const struct file_operations sel_commit_bools_ops = {
+ 	.write          = sel_commit_bools_write,
+ };
+ 
+-/* partial revoke() from fs/proc/generic.c proc_kill_inodes */
+ static void sel_remove_entries(struct dentry *de)
+ {
+-	struct list_head *p, *node;
+-	struct super_block *sb = de->d_sb;
++	struct list_head *node;
+ 
+ 	spin_lock(&dcache_lock);
+ 	node = de->d_subdirs.next;
+@@ -1006,18 +992,6 @@ static void sel_remove_entries(struct dentry *de)
+ 	}
+ 
+ 	spin_unlock(&dcache_lock);
+-
+-	file_list_lock();
+-	list_for_each(p, &sb->s_files) {
+-		struct file * filp = list_entry(p, struct file, f_u.fu_list);
+-		struct dentry * dentry = filp->f_path.dentry;
+-
+-		if (dentry->d_parent != de) {
+-			continue;
+-		}
+-		filp->f_op = NULL;
+-	}
+-	file_list_unlock();
+ }
+ 
+ #define BOOL_DIR_NAME "booleans"
 
-The move from the 2.0 format to the later 3.0 format was mainly forced 
-by the demands of the Linux kernel mailing list when I first submitted 
-it early 2005.  There was no other way to incorporate demands for larger 
-than 4GB filesystems, and provide support for "." and ".." in readdir 
-without modifying the filesystem format.
 
-Unfortunately the move to fixed little endian filesystem will involve 
-another filesystem layout change.  The current filesystem layout still 
-uses packed bitfield structures, and it is impossible to swap these 
-using the standard kernel swap macros.  Removal of my routines that can 
-properly swap packed bitfield structures is another change demanded by 
-the Linux kernel mailing list.
-
-Once the little endian work has been done, and hopefully once it is in 
-the kernel, I don't anticipate any further layout changes.
-
-Phillip
+-- 
+Stephen Smalley
+National Security Agency
 
