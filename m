@@ -1,217 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbXKUNDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbXKUNHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbXKUNDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 08:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbXKUNDW
+	id S1757146AbXKUNHt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 08:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKUNHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 08:03:22 -0500
-Received: from sacred.ru ([62.205.161.221]:42257 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751745AbXKUNDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 08:03:21 -0500
-Message-ID: <47442C66.8040403@openvz.org>
-Date: Wed, 21 Nov 2007 16:02:30 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 21 Nov 2007 08:07:41 -0500
+Received: from odyssey.analogic.com ([204.178.40.5]:4919 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbXKUNHk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 08:07:40 -0500
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH][IPC] Uninline some code from util.h
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 21 Nov 2007 16:02:34 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 21 Nov 2007 13:06:36.0946 (UTC) FILETIME=[59196F20:01C82C3F]
+Content-class: urn:content-classes:message
+Subject: Re: [KERNEL]: Avoid divide in IS_ALIGN
+Date: Wed, 21 Nov 2007 08:06:36 -0500
+Message-ID: <Pine.LNX.4.61.0711210800140.25473@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0711201625570.21839@chaos.analogic.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [KERNEL]: Avoid divide in IS_ALIGN
+thread-index: AcgsP1kjYD7QaE2uTX+49McKlVA5hg==
+References: <20071120135607.GA18346@gondor.apana.org.au> <Pine.LNX.4.61.0711201625570.21839@chaos.analogic.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ipc_lock_check_down(), ipc_lock_check() and ipcget() seem
-too large to be inline. Besides, they give no optimization
-being inline as they perform calls inside in any case.
 
-Moving them into ipc/util.c saves 500 bytes of vmlinux and
-shortens IPC internal API.
+On Tue, 20 Nov 2007, Richard B. Johnson wrote:
 
-$ ./scripts/bloat-o-meter vmlinux-orig vmlinux
-add/remove: 3/2 grow/shrink: 0/10 up/down: 490/-989 (-499)
-function                                     old     new   delta
-ipcget                                         -     392    +392
-ipc_lock_check_down                            -      49     +49
-ipc_lock_check                                 -      49     +49
-sys_semget                                   119     105     -14
-sys_shmget                                   108      86     -22
-sys_msgget                                   100      78     -22
-do_msgsnd                                    665     631     -34
-do_msgrcv                                    680     644     -36
-do_shmat                                     771     733     -38
-sys_msgctl                                  1302    1229     -73
-ipcget_new                                    80       -     -80
-sys_semtimedop                              1534    1452     -82
-sys_semctl                                  2034    1922    -112
-sys_shmctl                                  1919    1765    -154
-ipcget_public                                322       -    -322
+> On Tue, 20 Nov 2007, Herbert Xu wrote:
+>
+>> Hi:
+>> 
+>> [KERNEL]: Avoid divide in IS_ALIGN
+>> 
+>> I was happy to discover the brand new IS_ALIGN macro and quickly
+>> used it in my code.  To my dismay I found that the generated code
+>> used division to perform the test.
+>> 
+>> This patch fixes it by changing the % test to an &.  This avoids
+>> the division.
+>> 
+>> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+>> 
+>> Cheers,
+>> -- 
+>> Visit Openswan at http://www.openswan.org/
+>> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+>> Home Page: http://gondor.apana.org.au/~herbert/
+>> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+>> --
+>> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+>> index 94bc996..39b3fa6 100644
+>> --- a/include/linux/kernel.h
+>> +++ b/include/linux/kernel.h
+>> @@ -35,7 +35,7 @@ extern const char linux_proc_banner[];
+>> #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+>> #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+>> #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), 
+>> (a)))
+>> -#define IS_ALIGNED(x,a)		(((x) % ((typeof(x))(a))) == 0)
+>> +#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
+>> 
+>
+> Your macro modification is wrong.
 
-The ipcget() growth is the result of gcc in-lining of
-currently static ipcget_new/_public.
+There was a brain fart on the explaination of why it's wrong.
+Here is a better explaination.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Executing this script.............
 
----
+cat <<EOF >/tmp/xxx.c
+#include <stdio.h>
 
-diff --git a/ipc/util.c b/ipc/util.c
-index 5432b8e..910db77 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -248,7 +248,7 @@ int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
-  *	This routine is called by sys_msgget, sys_semget() and sys_shmget()
-  *	when the key is IPC_PRIVATE.
-  */
--int ipcget_new(struct ipc_namespace *ns, struct ipc_ids *ids,
-+static int ipcget_new(struct ipc_namespace *ns, struct ipc_ids *ids,
- 		struct ipc_ops *ops, struct ipc_params *params)
- {
- 	int err;
-@@ -312,7 +312,7 @@ static int ipc_check_perms(struct kern_ipc_perm *ipcp, struct ipc_ops *ops,
-  *
-  *	On success, the ipc id is returned.
-  */
--int ipcget_public(struct ipc_namespace *ns, struct ipc_ids *ids,
-+static int ipcget_public(struct ipc_namespace *ns, struct ipc_ids *ids,
- 		struct ipc_ops *ops, struct ipc_params *params)
- {
- 	struct kern_ipc_perm *ipcp;
-@@ -710,6 +710,57 @@ struct kern_ipc_perm *ipc_lock_down(struct ipc_ids *ids, int id)
- 	return out;
- }
- 
-+struct kern_ipc_perm *ipc_lock_check_down(struct ipc_ids *ids, int id)
-+{
-+	struct kern_ipc_perm *out;
-+
-+	out = ipc_lock_down(ids, id);
-+	if (IS_ERR(out))
-+		return out;
-+
-+	if (ipc_checkid(out, id)) {
-+		ipc_unlock(out);
-+		return ERR_PTR(-EIDRM);
-+	}
-+
-+	return out;
-+}
-+
-+struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id)
-+{
-+	struct kern_ipc_perm *out;
-+
-+	out = ipc_lock(ids, id);
-+	if (IS_ERR(out))
-+		return out;
-+
-+	if (ipc_checkid(out, id)) {
-+		ipc_unlock(out);
-+		return ERR_PTR(-EIDRM);
-+	}
-+
-+	return out;
-+}
-+
-+/**
-+ * ipcget - Common sys_*get() code
-+ * @ns : namsepace
-+ * @ids : IPC identifier set
-+ * @ops : operations to be called on ipc object creation, permission checks
-+ *        and further checks
-+ * @params : the parameters needed by the previous operations.
-+ *
-+ * Common routine called by sys_msgget(), sys_semget() and sys_shmget().
-+ */
-+int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
-+			struct ipc_ops *ops, struct ipc_params *params)
-+{
-+	if (params->key == IPC_PRIVATE)
-+		return ipcget_new(ns, ids, ops, params);
-+	else
-+		return ipcget_public(ns, ids, ops, params);
-+}
-+
- #ifdef __ARCH_WANT_IPC_PARSE_VERSION
- 
- 
-diff --git a/ipc/util.h b/ipc/util.h
-index fc6b729..ca245fa 100644
---- a/ipc/util.h
-+++ b/ipc/util.h
-@@ -131,10 +131,6 @@ int ipc_parse_version (int *cmd);
- extern void free_msg(struct msg_msg *msg);
- extern struct msg_msg *load_msg(const void __user *src, int len);
- extern int store_msg(void __user *dest, struct msg_msg *msg, int len);
--extern int ipcget_new(struct ipc_namespace *, struct ipc_ids *,
--			struct ipc_ops *, struct ipc_params *);
--extern int ipcget_public(struct ipc_namespace *, struct ipc_ids *,
--			struct ipc_ops *, struct ipc_params *);
- 
- static inline int ipc_buildid(int id, int seq)
- {
-@@ -163,57 +159,9 @@ static inline void ipc_unlock(struct kern_ipc_perm *perm)
- 	rcu_read_unlock();
- }
- 
--static inline struct kern_ipc_perm *ipc_lock_check_down(struct ipc_ids *ids,
--						int id)
--{
--	struct kern_ipc_perm *out;
--
--	out = ipc_lock_down(ids, id);
--	if (IS_ERR(out))
--		return out;
--
--	if (ipc_checkid(out, id)) {
--		ipc_unlock(out);
--		return ERR_PTR(-EIDRM);
--	}
--
--	return out;
--}
--
--static inline struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids,
--						int id)
--{
--	struct kern_ipc_perm *out;
--
--	out = ipc_lock(ids, id);
--	if (IS_ERR(out))
--		return out;
--
--	if (ipc_checkid(out, id)) {
--		ipc_unlock(out);
--		return ERR_PTR(-EIDRM);
--	}
--
--	return out;
--}
--
--/**
-- * ipcget - Common sys_*get() code
-- * @ns : namsepace
-- * @ids : IPC identifier set
-- * @ops : operations to be called on ipc object creation, permission checks
-- *        and further checks
-- * @params : the parameters needed by the previous operations.
-- *
-- * Common routine called by sys_msgget(), sys_semget() and sys_shmget().
-- */
--static inline int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
--			struct ipc_ops *ops, struct ipc_params *params)
--{
--	if (params->key == IPC_PRIVATE)
--		return ipcget_new(ns, ids, ops, params);
--	else
--		return ipcget_public(ns, ids, ops, params);
--}
-+struct kern_ipc_perm *ipc_lock_check_down(struct ipc_ids *ids, int id);
-+struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id);
-+int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
-+			struct ipc_ops *ops, struct ipc_params *params);
- 
- #endif
+#define IS_ALIGNED(x,a)		(((x) % ((typeof(x))(a))) == 0)
+#define _IS_ALIGNED(x, a)	(((x) & ((typeof(x))(a) - 1)) == 0)
 
+int main()
+{
+    int i;
+    long p = 0x12345678;
+    for(i=1; i< 0x11; i++)
+        printf("Old = %d, new = %d\n", IS_ALIGNED(p, i), _IS_ALIGNED(p, i));
+     return 0;
+}
+EOF
+gcc -Wall -o /tmp/xxx /tmp/xxx.c
+/tmp/xxx
+
+... produces:
+Old = 1, new = 1
+Old = 1, new = 1
+Old = 1, new = 1
+Old = 1, new = 1
+Old = 0, new = 1
+Old = 1, new = 1
+Old = 0, new = 1
+Old = 1, new = 1
+Old = 1, new = 0
+Old = 0, new = 0
+Old = 0, new = 0
+Old = 1, new = 0
+Old = 0, new = 0
+Old = 0, new = 0
+Old = 0, new = 0
+Old = 0, new = 0
+
+Which is clearly different.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
