@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXKUQSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbXKUQSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbXKUQSc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760893AbXKUQRL
+	id S1757412AbXKUQSs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 11:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761144AbXKUQR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:17:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47388 "EHLO mx1.redhat.com"
+	Wed, 21 Nov 2007 11:17:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47404 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760750AbXKUQRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 11:17:07 -0500
+	id S1761508AbXKUQR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 11:17:27 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 6/9] MN10300: Allocate serial port UART IDs for on-chip serial
-	ports [2.6.24-rc3-mm1]
+Subject: [PATCH 9/9] MN10300: Fix MTD JEDEC probe so that the ASB2303 bootprom
+	can be detected [2.6.24-rc3-mm1]
 To: akpm@linux-foundation.org
 Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
        linux-kernel@vger.kernel.org
-Date: Wed, 21 Nov 2007 16:16:57 +0000
-Message-ID: <20071121161657.1097.13476.stgit@warthog.procyon.org.uk>
+Date: Wed, 21 Nov 2007 16:17:13 +0000
+Message-ID: <20071121161713.1097.43033.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071121161632.1097.9556.stgit@warthog.procyon.org.uk>
 References: <20071121161632.1097.9556.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,28 +30,40 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocate serial port UART type IDs for the MN10300 on-chip serial ports.
+Fix MTD JEDEC probe so that the ASB2303 bootprom can be accessed.  This is
+presumably required because the bootprom is normally write-protected and so
+the normal flash probes don't work as they require the ability to write to the
+flash to send it commands.
+
+In the condition of the excluded if-statement, uaddr is 1.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Alan Cox <alan@redhat.com>
 ---
 
- include/linux/serial_core.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/mtd/chips/jedec_probe.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 5a895f2..de569cf 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -152,6 +152,10 @@
- /* Blackfin SPORT */
- #define PORT_BFIN_SPORT		79
+diff --git a/drivers/mtd/chips/jedec_probe.c b/drivers/mtd/chips/jedec_probe.c
+index 5074b5e..01a0550 100644
+--- a/drivers/mtd/chips/jedec_probe.c
++++ b/drivers/mtd/chips/jedec_probe.c
+@@ -1883,11 +1883,18 @@ static inline __u8 finfo_uaddr(const struct amd_flash_info *finfo, int device_ty
  
-+/* MN10300 on-chip UART numbers */
-+#define PORT_MN10300		80
-+#define PORT_MN10300_CTS	81
-+
- #ifdef __KERNEL__
+ 	uaddr = finfo->uaddr[uaddr_idx];
  
- #include <linux/compiler.h>
++	/* the MN10300 ASB2303 board doesn't detect its bootprom if this test
++	 * is allowed to take place, presumably because the flash is
++	 * write-protected and so cannot be commanded for the purposes of
++	 * probing
++	 */
++#ifndef CONFIG_MN10300_UNIT_ASB2303
+ 	if (uaddr != MTD_UADDR_NOT_SUPPORTED ) {
+ 		/* ASSERT("The unlock addresses for non-8-bit mode
+ 		   are bollocks. We don't really need an array."); */
+ 		uaddr = finfo->uaddr[0];
+ 	}
++#endif
+ 
+  uaddr_done:
+ 	return uaddr;
 
