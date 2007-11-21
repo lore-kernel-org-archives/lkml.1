@@ -1,78 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbXKUItX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbXKUIul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760360AbXKUItX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 03:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbXKUItP
+	id S1760353AbXKUIul (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 03:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbXKUIud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 03:49:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50576 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752957AbXKUItO (ORCPT
+	Wed, 21 Nov 2007 03:50:33 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:34897 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755703AbXKUIuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 03:49:14 -0500
-Date: Wed, 21 Nov 2007 00:49:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 21 Nov 2007 03:50:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eCyqRgR4MQ1QRlgcJVf4OVsNyIg3wfFqvv4PVsfJGzOr4AuYmEZ6PfRd22vRmTBc9bwt4eGgPQE6ejfWx/AYPa2Z8j0SMMSv4PyaYjerj2GuZnJQnskczL0piosd9stm3Zl84B5FNO1TWZSlZZ7zuglKu3WlfX2ilQA1OtN1cPQ=
+Message-ID: <b637ec0b0711210050x1fbd741bi9c7550b4ef611598@mail.gmail.com>
+Date: Wed, 21 Nov 2007 09:50:31 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1 (sync is slow ?)
-Message-Id: <20071121004909.6157bb9a.akpm@linux-foundation.org>
-In-Reply-To: <20071121174215.caff4551.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<20071121174215.caff4551.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20071120215313.GD24156@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071119151756.GA25446@elte.hu>
+	 <b637ec0b0711201238i746ca9bala3812ca93479c6fa@mail.gmail.com>
+	 <20071120204103.GC10008@elte.hu>
+	 <b637ec0b0711201247m4038a2cds5924ddbd43db6f8e@mail.gmail.com>
+	 <20071120215313.GD24156@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007 17:42:15 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi
 
-> Hi, Andrew
-> 
-> I got following result in 'sync' command.
-> It was too slow. (memory controller config is off ;)
-> I attaches my .config.
-> ==
-> [2.6.24-rc3-mm1]
-> [kamezawa@dr-test2 ~]$ dd if=/dev/zero of=./tmpfile bs=4096 count=100000
-> 100000+0 records in
-> 100000+0 records out
-> 409600000 bytes (410 MB) copied, 1.46706 seconds, 279 MB/s
-> [kamezawa@dr-test2 ~]$ time sync
-> 
-> real    3m6.440s
-> user    0m0.000s
-> sys     0m0.133s
-> 
-> 
-> on, 2.6.23-rc2-mm1, 2.6.23-rc3 there was no problem.
-> ==
-> [2.6.24-rc3]
-> [kamezawa@dr-test2 ~]$ dd if=/dev/zero of=tmpfile bs=4096 count=100000
-> 100000+0 records in
-> 100000+0 records out
-> 409600000 bytes (410 MB) copied, 2.07717 seconds, 197 MB/s
-> [kamezawa@dr-test2 ~]$ time sync
-> 
-> real    0m9.935s
-> user    0m0.001s
-> sys     0m0.113s
-> 
-> [2.6.24-rc3]
-> [kamezawa@dr-test2 ~]$ dd if=/dev/zero of=./tmpfile bs=4096 count=100000
-> 100000+0 records in
-> 100000+0 records out
-> 409600000 bytes (410 MB) copied, 1.37147 seconds, 299 MB/s
-> [kamezawa@dr-test2 ~]$ time sync[2.6.24-rc2-mm1]
-> 
-> 
-> real    0m11.718s
-> user    0m0.000s
-> sys     0m0.138s
+On Nov 20, 2007 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
+<snip>
+> > >
+> > > curious: what scheduler/kernel version have you used before?
+> >
+> > I was using 2.6.23.1 with ck patches.
+>
+> are you sure? The last -ck patch i can find is for .22:
+>
+>   http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/
+>
+> or have they been forward ported? (if yes, do you have an URL for that)
+>
+> (my guess is you used the 2.6.23.1 scheduler (CFS), so the improvement
+> you felt on the laptop is relative to 2.6.23-vanilla in essence - which
+> is good news.)
 
-Well I wonder how we did that.
+Well, it seems that Matthew has been faster than me :-) Yes, I got -ck
+patches from kamikaze sources.
 
-It seems OK here from a quick test (i386, ext3-on-IDE).
+>
+> > > > Just a question: does the patch include the fix (divide by
+> > > > zero....) you just posted in the stable review for 2.6.23.9?
+> > >
+> > > yeah.
+> >
+> > OK, thanks. Have you already tried to apply the patch to 2.6.23.9?
+> > Shall we expect some other rejects?
+>
+> hm:
+>
+> The latest stable version of the Linux kernel is:           2.6.23.8
+>
+> so there's no 23.9 yet.
+>
+>         Ingo
+>
 
-Maybe device driver/block breakage?
+I meant the 23.9 patches that Greg KH posted some hours ago for
+review. I guess I will find myself in a couple of days.
+
+To answer your latest mail, again I don't have numbers but from my
+point ov view:
+
+23.1 < 23.1+ck < 23.8+cfs.24
+
+where 23.1+ck is slightly better than vanilla 23.1 and 23.8+cfs.24 is
+much better than 23.1+ck.
+
+My workload is pretty standard, F8+kde+firefox+kmail+amsn, some kernel
+compile and so on.
+
+Regards,
+Fabio
