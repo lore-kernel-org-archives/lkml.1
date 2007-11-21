@@ -1,175 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbXKUQTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbXKUQTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762720AbXKUQTK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:19:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761530AbXKUQR3
+	id S1762851AbXKUQTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 11:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757169AbXKUQTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:17:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47406 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761523AbXKUQR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 11:17:27 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 8/9] MN10300: Add platform MTD support for the ASB2303 board
-	[2.6.24-rc3-mm1]
-To: akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Wed, 21 Nov 2007 16:17:08 +0000
-Message-ID: <20071121161708.1097.43927.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20071121161632.1097.9556.stgit@warthog.procyon.org.uk>
-References: <20071121161632.1097.9556.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.13
+	Wed, 21 Nov 2007 11:19:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:65227 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756909AbXKUQTT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 11:19:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:newsgroups:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=pM5FJjkTok7RQz5CFRdZnEhcu+n+ETp7KMVcQ2mKp3EinEXjpiq7JWe6LKxPwNhaUpQ+/3x1CRZznmajrgdNaOBl9X0uYcu1H4nA/wEVpCoagnYQjo5mcROxg/1Xdz1LXs1CVCGKjpVGUDGe2lcwODYjVkzTV4dJ1dLNK4Nsvm8=
+Message-ID: <47445A79.7020902@gmail.com>
+Date: Wed, 21 Nov 2007 21:19:05 +0500
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.11~pre071022-0etch1+lenny1) Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Newsgroups: gmane.linux.kernel
+To: Nix <nix@esperi.org.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, xiyou.wangcong@gmail.com,
+       goodmenkernel@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Is there any word about this bug in gcc ?
+References: <E1IuMnZ-0003o3-00@gondolin.me.apana.org.au>	<4742831F.9040408@zytor.com> <877ikc1v3a.fsf@hades.wkstn.nix> <47442FA9.6020600@gmail.com>
+In-Reply-To: <47442FA9.6020600@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add platform MTD support for the ASB2303 board.
+I wrote:
+> Nix wrote:
+>> Possible hits (I'm not sure what the folder would do with this: the
+>> extra level of brackets in the way might affect things but I don't think
+>> so):
+>>
+>> ./libtheora/libtheora/lib/enc/pp.c:      TmpMod = 32 + QValue - 
+>> 2*(abs(Src[j+Pitch]-Src[j]));
+>> ./libtheora/libtheora/lib/enc/pp.c:      TmpMod = 32 + QValue - 
+>> 2*(abs(Src[j+1]-Src[j]));
+> 
+> This did emit a warning, I have already reported it: 
+> https://trac.xiph.org/ticket/1260
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+And on IRC, they explained that it is a piece of code that never gets called. So 
+not a hit.
 
- arch/mn10300/configs/asb2303_defconfig |    5 +-
- arch/mn10300/unit-asb2303/Makefile     |    2 -
- arch/mn10300/unit-asb2303/flash.c      |  100 ++++++++++++++++++++++++++++++++
- 3 files changed, 105 insertions(+), 2 deletions(-)
-
-diff --git a/arch/mn10300/configs/asb2303_defconfig b/arch/mn10300/configs/asb2303_defconfig
-index 0189a05..ca9876a 100644
---- a/arch/mn10300/configs/asb2303_defconfig
-+++ b/arch/mn10300/configs/asb2303_defconfig
-@@ -282,7 +282,10 @@ CONFIG_MTD_CFI_UTIL=y
- # Mapping drivers for chip access
- #
- # CONFIG_MTD_COMPLEX_MAPPINGS is not set
--# CONFIG_MTD_PHYSMAP is not set
-+CONFIG_MTD_PHYSMAP=y
-+CONFIG_MTD_PHYSMAP_START=0x8000000
-+CONFIG_MTD_PHYSMAP_LEN=0x0
-+CONFIG_MTD_PHYSMAP_BANKWIDTH=2
- # CONFIG_MTD_PLATRAM is not set
- 
- #
-diff --git a/arch/mn10300/unit-asb2303/Makefile b/arch/mn10300/unit-asb2303/Makefile
-index 03e579f..38a5bb4 100644
---- a/arch/mn10300/unit-asb2303/Makefile
-+++ b/arch/mn10300/unit-asb2303/Makefile
-@@ -3,4 +3,4 @@
- # Makefile for the ASB2303 board
- #
- ###############################################################################
--obj-y   := unit-init.o smc91111.o leds.o
-+obj-y   := unit-init.o smc91111.o flash.o leds.o
-diff --git a/arch/mn10300/unit-asb2303/flash.c b/arch/mn10300/unit-asb2303/flash.c
-new file mode 100644
-index 0000000..17fe083
---- /dev/null
-+++ b/arch/mn10300/unit-asb2303/flash.c
-@@ -0,0 +1,100 @@
-+/* Handle mapping of the flash on the ASB2303 board
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/physmap.h>
-+
-+#define ASB2303_PROM_ADDR	0xA0000000	/* Boot PROM */
-+#define ASB2303_PROM_SIZE	(2 * 1024 * 1024)
-+#define ASB2303_FLASH_ADDR	0xA4000000	/* System Flash */
-+#define ASB2303_FLASH_SIZE	(32 * 1024 * 1024)
-+#define ASB2303_CONFIG_ADDR	0xA6000000	/* System Config EEPROM */
-+#define ASB2303_CONFIG_SIZE	(8 * 1024)
-+
-+/*
-+ * default MTD partition table for both main flash devices, expected to be
-+ * overridden by RedBoot
-+ */
-+static struct mtd_partition asb2303_partitions[] = {
-+	{
-+		.name		= "Bootloader",
-+		.size		= 0x00040000,
-+		.offset		= 0,
-+		.mask_flags	= MTD_CAP_ROM /* force read-only */
-+	}, {
-+		.name		= "Kernel",
-+		.size		= 0x00400000,
-+		.offset		= 0x00040000,
-+	}, {
-+		.name		= "Filesystem",
-+		.size		= MTDPART_SIZ_FULL,
-+		.offset		= 0x00440000
-+	}
-+};
-+
-+/*
-+ * the ASB2303 Boot PROM definition
-+ */
-+static struct physmap_flash_data asb2303_bootprom_data = {
-+	.width		= 2,
-+	.nr_parts	= 1,
-+	.parts		= asb2303_partitions,
-+};
-+
-+static struct resource asb2303_bootprom_resource = {
-+	.start		= ASB2303_PROM_ADDR,
-+	.end		= ASB2303_PROM_ADDR + ASB2303_PROM_SIZE,
-+	.flags		= IORESOURCE_MEM,
-+};
-+
-+static struct platform_device asb2303_bootprom = {
-+	.name		= "physmap-flash",
-+	.id		= 0,
-+	.dev.platform_data = &asb2303_bootprom_data,
-+	.num_resources	= 1,
-+	.resource	= &asb2303_bootprom_resource,
-+};
-+
-+/*
-+ * the ASB2303 System Flash definition
-+ */
-+static struct physmap_flash_data asb2303_sysflash_data = {
-+	.width		= 4,
-+	.nr_parts	= 1,
-+	.parts		= asb2303_partitions,
-+};
-+
-+static struct resource asb2303_sysflash_resource = {
-+	.start		= ASB2303_FLASH_ADDR,
-+	.end		= ASB2303_FLASH_ADDR + ASB2303_FLASH_SIZE,
-+	.flags		= IORESOURCE_MEM,
-+};
-+
-+static struct platform_device asb2303_sysflash = {
-+	.name		= "physmap-flash",
-+	.id		= 1,
-+	.dev.platform_data = &asb2303_sysflash_data,
-+	.num_resources	= 1,
-+	.resource	= &asb2303_sysflash_resource,
-+};
-+
-+/*
-+ * register the ASB2303 flashes
-+ */
-+static int __init asb2303_mtd_init(void)
-+{
-+	platform_device_register(&asb2303_bootprom);
-+	platform_device_register(&asb2303_sysflash);
-+	return 0;
-+}
-+
-+module_init(asb2303_mtd_init);
-
+-- 
+Alexander E. Patrakov
