@@ -1,126 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbXKUVCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbXKUVF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbXKUVCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 16:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXKUVCL
+	id S1755173AbXKUVF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 16:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXKUVFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 16:02:11 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:48116 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751096AbXKUVCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 16:02:10 -0500
-Date: Wed, 21 Nov 2007 13:02:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: Modules: Handle symbols that have a zero value
-In-Reply-To: <20071121133821.GA26686@Krystal>
-Message-ID: <Pine.LNX.4.64.0711211300590.3625@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0711202154430.31617@schroedinger.engr.sgi.com>
- <20071121133821.GA26686@Krystal>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 Nov 2007 16:05:51 -0500
+Received: from main.gmane.org ([80.91.229.2]:55780 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbXKUVFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 16:05:50 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: network driver usage count
+Date: Wed, 21 Nov 2007 13:04:45 -0800
+Organization: Linux Foundation
+Message-ID: <20071121130445.569d2176@freepuppy.rosehill>
+References: <87hcjf9yd4.fsf@tac.ki.iif.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <87hcjf9yd4.fsf@tac.ki.iif.hu>
+X-Newsreader: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, Mathieu Desnoyers wrote:
+On Wed, 21 Nov 2007 20:45:11 +0100
+Ferenc Wagner <wferi@niif.hu> wrote:
 
-> return -ENOENT;
+> Hi!
 > 
-> directly ?
+> Under 2.6.23.1, my lsmod output shows this:
 > 
-> (ERR_PTR() in linux/err.h is a simple cast from long to void*).
+> $ lsmod | grep tg3
+> tg3                   100580  0 
+> 
+> The usage count is zero, even though it drives my two physical
+> interfaces:
+> 
+> $ ls -l /sys/class/net/eth-gb?/device/driver
+> lrwxrwxrwx 1 root root 0 2007-11-21 19:58 /sys/class/net/eth-gb1/device/driver -> ../../../bus/pci/drivers/tg3
+> lrwxrwxrwx 1 root root 0 2007-11-21 19:58 /sys/class/net/eth-gb2/device/driver -> ../../../bus/pci/drivers/tg3
+> 
+> These interfaces are up and bonded together, but that doesn't seem to
+> matter at all.  I also checked other machines, the network driver
+> (tg3, e1000) usage counts are always zero under various recent 2.6
+> kernels, but nonzero under 2.4.21 for example.
+> 
+> And really, the module could be removed, cutting my ssh session. :)
+> 
+> Was this made possible intentionally?  If yes, why?
 
-Right and there is also IS_ERR_VALUE. Thanks for the feedback. New 
-version:
+Yes, so devices can be removed at anytime.
 
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
 
-Modules: Handle symbols that have a zero value
-
-The module subsystem cannot handle symbols that are zero. If symbols are
-present that have a zero value then the module resolver prints out
-a message that these symbols are unresolved.
-
-Use ERR_PTR to return an error code instead of 0. This is a bit awkward
-since the addresses are handled as unsigned longs. So we need to convert
-them everywhere.
-
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Kay Sievers <kay.sievers@vrfy.org
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- kernel/module.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/kernel/module.c
-===================================================================
---- linux-2.6.orig/kernel/module.c	2007-11-21 12:58:33.095608448 -0800
-+++ linux-2.6/kernel/module.c	2007-11-21 13:00:30.199108674 -0800
-@@ -285,7 +285,7 @@ static unsigned long __find_symbol(const
- 		}
- 	}
- 	DEBUGP("Failed to find symbol %s\n", name);
--	return 0;
-+	return -ENOENT;
- }
- 
- /* Search for module by name: must hold module_mutex. */
-@@ -756,7 +756,7 @@ void __symbol_put(const char *symbol)
- 	const unsigned long *crc;
- 
- 	preempt_disable();
--	if (!__find_symbol(symbol, &owner, &crc, 1))
-+	if (IS_ERR_VALUE(__find_symbol(symbol, &owner, &crc, 1)))
- 		BUG();
- 	module_put(owner);
- 	preempt_enable();
-@@ -902,7 +902,8 @@ static inline int check_modstruct_versio
- 	const unsigned long *crc;
- 	struct module *owner;
- 
--	if (!__find_symbol("struct_module", &owner, &crc, 1))
-+	if (IS_ERR_VALUE(__find_symbol("struct_module",
-+						&owner, &crc, 1)))
- 		BUG();
- 	return check_version(sechdrs, versindex, "struct_module", mod,
- 			     crc);
-@@ -955,7 +956,7 @@ static unsigned long resolve_symbol(Elf_
- 		/* use_module can fail due to OOM, or module unloading */
- 		if (!check_version(sechdrs, versindex, name, mod, crc) ||
- 		    !use_module(mod, owner))
--			ret = 0;
-+			ret = -EINVAL;
- 	}
- 	return ret;
- }
-@@ -1348,14 +1349,16 @@ static int verify_export_symbols(struct 
- 	const unsigned long *crc;
- 
- 	for (i = 0; i < mod->num_syms; i++)
--		if (__find_symbol(mod->syms[i].name, &owner, &crc, 1)) {
-+		if (!IS_ERR_VALUE(__find_symbol(mod->syms[i].name,
-+							&owner, &crc, 1))) {
- 			name = mod->syms[i].name;
- 			ret = -ENOEXEC;
- 			goto dup;
- 		}
- 
- 	for (i = 0; i < mod->num_gpl_syms; i++)
--		if (__find_symbol(mod->gpl_syms[i].name, &owner, &crc, 1)) {
-+		if (!IS_ERR_VALUE(__find_symbol(mod->gpl_syms[i].name,
-+							&owner, &crc, 1))) {
- 			name = mod->gpl_syms[i].name;
- 			ret = -ENOEXEC;
- 			goto dup;
-@@ -1405,7 +1408,7 @@ static int simplify_symbols(Elf_Shdr *se
- 					   strtab + sym[i].st_name, mod);
- 
- 			/* Ok if resolved.  */
--			if (sym[i].st_value != 0)
-+			if (!IS_ERR_VALUE(sym[i].st_value))
- 				break;
- 			/* Ok if weak.  */
- 			if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
