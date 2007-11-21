@@ -1,117 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbXKUBYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbXKUBYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932574AbXKUBYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763666AbXKUBOs
+	id S932672AbXKUBYp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764929AbXKUBQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:14:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46744 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765614AbXKUBOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:14:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: Re: apm emulation driver broken ?
-Date: Wed, 21 Nov 2007 02:32:30 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711182322.41354.rjw@sisk.pl> <47418A00.1000704@gmail.com>
-In-Reply-To: <47418A00.1000704@gmail.com>
+	Tue, 20 Nov 2007 20:16:16 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:48514 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763538AbXKUBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 20:16:14 -0500
+Date: Tue, 20 Nov 2007 17:16:11 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: akpm@linux-foundation.org, travis@sgi.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 08/45] cpu alloc: x86 support
+In-Reply-To: <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0711201703570.29648@schroedinger.engr.sgi.com>
+References: <20071120011132.143632442@sgi.com> <200711201301.25373.ak@suse.de>
+ <Pine.LNX.4.64.0711201228180.26745@schroedinger.engr.sgi.com>
+ <200711202159.36377.ak@suse.de> <Pine.LNX.4.64.0711201325130.27539@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711210232.30575.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 19 of November 2007, Franck Bui-Huu wrote:
-> Rafael J. Wysocki wrote:
-> > On Sunday, 18 of November 2007, Franck Bui-Huu wrote:
-> >> Rafael J. Wysocki wrote:
-> >> See the call to wait_even() made by apm_ioctl(). If any processes
-> >> run this, it will prevent the system to suspend...
-> > 
-> > True, but does it actually happen in practice?
-> > 
-> 
-> when several processes are waiting for a suspend event.
-> 
-> > 
-> > At this point the second branch of the "if (as->suspend_state == SUSPEND_READ)"
-> > can be fixed by replacing wait_event_interruptible() with
-> > wait_event_freezable(), 
-> 
-> yes
-> 
-> > but the fix for the first branch depends on whether or
-> > not the wait_event() is really necessary.
-> 
-> As I said I don't know. It's probably time to put some people
-> on CC but don't know who though.
+But one can subtract too... Hmmm... So the cpu area 0 could be put at
+the beginning of the 2GB kernel area and then grow downwards from 
+0xffffffff80000000. The cost in terms of code is one subtract
+instruction for each per_cpu() or CPU_PTR()
 
-OK, never mind.  I think the patch below is the right fix.
+The next thing doward from 0xffffffff80000000 is the vmemmap at 
+0xffffe20000000000, so ~32TB. If we leave 16TB for the vmemmap
+(a 16TB vmmemmap be able to map 2^(44 - 6 + 12) = 2^50 bytes 
+more than currently supported by the processors)
 
+then the remaining 16TB could be used to map 1GB per cpu for a 16k config. 
+That is wildly overdoing it. Guess we could just do it with 1M anyways. 
+Just to be safe we could do 128M. 128M x 16k = 2TB?
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Would such a configuration be okay?
 
-The APM emulation is currently broken as a result of commit
-831441862956fffa17b9801db37e6ea1650b0f69
-"Freezer: make kernel threads nonfreezable by default"
-that removed the PF_NOFREEZE annotations from apm_ioctl() without adding
-the appropriate freezer hooks.  Fix it and remove the unnecessary variable flags
-from apm_ioctl().
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/char/apm-emulation.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/drivers/char/apm-emulation.c
-===================================================================
---- linux-2.6.orig/drivers/char/apm-emulation.c
-+++ linux-2.6/drivers/char/apm-emulation.c
-@@ -295,7 +295,6 @@ static int
- apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg)
- {
- 	struct apm_user *as = filp->private_data;
--	unsigned long flags;
- 	int err = -EINVAL;
  
- 	if (!as->suser || !as->writer)
-@@ -331,10 +330,16 @@ apm_ioctl(struct inode * inode, struct f
- 			 * Wait for the suspend/resume to complete.  If there
- 			 * are pending acknowledges, we wait here for them.
- 			 */
--			flags = current->flags;
-+			freezer_do_not_count();
- 
- 			wait_event(apm_suspend_waitqueue,
- 				   as->suspend_state == SUSPEND_DONE);
-+
-+			/*
-+			 * Since we are waiting until the suspend is done, the
-+			 * try_to_freeze() in freezer_count() will not trigger
-+			 */
-+			freezer_count();
- 		} else {
- 			as->suspend_state = SUSPEND_WAIT;
- 			mutex_unlock(&state_lock);
-@@ -362,14 +367,10 @@ apm_ioctl(struct inode * inode, struct f
- 			 * Wait for the suspend/resume to complete.  If there
- 			 * are pending acknowledges, we wait here for them.
- 			 */
--			flags = current->flags;
--
--			wait_event_interruptible(apm_suspend_waitqueue,
-+			wait_event_freezable(apm_suspend_waitqueue,
- 					 as->suspend_state == SUSPEND_DONE);
- 		}
- 
--		current->flags = flags;
--
- 		mutex_lock(&state_lock);
- 		err = as->suspend_result;
- 		as->suspend_state = SUSPEND_NONE;
+
