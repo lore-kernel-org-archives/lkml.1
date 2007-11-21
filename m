@@ -1,82 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbXKUTsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbXKUTv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbXKUTsw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXKUTso
+	id S1755404AbXKUTv5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXKUTvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:48:44 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:36956 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbXKUTsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:48:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mjWJXQ+yD38tfPsH6+DgGnLYfOpIzqKmSRduriPXJZM/+y7zFxLuaHVqAa2kYzmfbZ/iHxRppBceriZNkUwtvhoHMPpYLHuD2VqrgDfELz9vq+CZ13DsRMc2CCpdqNgvklmDy/uRdlUqoN1/qhfAzWH/wqmtbf9Xr0ZLF44FZSU=
-Message-ID: <64bb37e0711211148x5383e1d3n3bd7fd86bb68d7d@mail.gmail.com>
-Date: Wed, 21 Nov 2007 20:48:42 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "Andy Whitcroft" <apw@shadowen.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>, linux-acpi@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <200711211422.32908.lenb@kernel.org>
+	Wed, 21 Nov 2007 14:51:46 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50533 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752521AbXKUTvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:51:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 3/3 -mm] kexec based hibernation -v6: kexec hibernate/resume
+Date: Wed, 21 Nov 2007 21:09:31 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1195455769.10291.26.camel@caritas-dev.intel.com> <200711210100.32631.rjw@sisk.pl> <1195632306.29280.7.camel@caritas-dev.intel.com>
+In-Reply-To: <1195632306.29280.7.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	 <4743CC0B.9000508@linux.vnet.ibm.com>
-	 <20071120221839.faab108e.akpm@linux-foundation.org>
-	 <200711211422.32908.lenb@kernel.org>
+Message-Id: <200711212109.32925.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 21, 2007 8:22 PM, Len Brown <lenb@kernel.org> wrote:
-> On Wednesday 21 November 2007 01:18, Andrew Morton wrote:
-> > On Wed, 21 Nov 2007 11:41:23 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->
-> > > SMP alternatives: switching to UP code
-> > > ACPI: Core revision 20070126
-> > > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
->
-> did previous kernels print this too?
+On Wednesday, 21 of November 2007, Huang, Ying wrote:
+> On Wed, 2007-11-21 at 01:00 +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, 20 of November 2007, Huang, Ying wrote:
+> > > On Tue, 2007-11-20 at 03:24 +0100, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 20 of November 2007, Huang, Ying wrote:
+> > > > > On Mon, 2007-11-19 at 19:22 +0100, Rafael J. Wysocki wrote:
+> > > > > > > +#ifdef CONFIG_KEXEC
+> > > > > > > +static void kexec_hibernate_power_down(void)
+> > > > > > > +{
+> > > > > > > +	switch (hibernation_mode) {
+> > > > > > > +	case HIBERNATION_TEST:
+> > > > > > > +	case HIBERNATION_TESTPROC:
+> > > > > > > +		break;
+> > > > > > > +	case HIBERNATION_REBOOT:
+> > > > > > > +		machine_restart(NULL);
+> > > > > > > +		break;
+> > > > > > > +	case HIBERNATION_PLATFORM:
+> > > > > > > +		if (!hibernation_ops)
+> > > > > > > +			break;
+> > > > > > > +		hibernation_ops->enter();
+> > > > > > 
+> > > > > > hibernation_platform_enter() should be used here (as of the current mainline).
+> > > > > 
+> > > > > The power_down will be called with interrupt disabled, device suspended,
+> > > > > non-boot CPU disabled. But the latest hibernate_platform_enter calls the
+> > > > > device_suspend, disable_nonboot_cpus etc function. So, I use
+> > > > > hibernation_ops->enter() directly instead of
+> > > > > hibernation_platform_enter().
+> > > > 
+> > > > Hm, you need to call device_power_down(PMSG_SUSPEND) before
+> > > > hibernation_ops->enter().
+> > > > 
+> > > > Also, all of the ACPI global calls need to be carried out before that and the
+> > > > devices should be suspended rather than shut down in that case.
+> > > > 
+> > > > That's why hibernation_platform_enter() has been introduced, BTW.
+> > > 
+> > > Situation is a little different between u/swsusp and khiberantion.
+> > > 
+> > > u/swsusp:
+> > > 
+> > > platform_start();
+> > > suspend console();
+> > > device_suspend(PMSG_FREEZE);
+> > > platform_pre_snapshot();
+> > > disable_nonboot_cpus();
+> > > local_irq_disable();
+> > > device_power_down(PMSG_FREEZE);
+> > > /* create snapshot */
+> > > device_power_up();
+> > > local_irq_enable();
+> > > enable_nonboot_cpus();
+> > > platform_finish();
+> > > device_resume();
+> > > resume_console();
+> > > /* write the image out */
+> > > hibernation_ops->start();
+> > > suspend_console();
+> > > device_suspend(PMSG_SUSPEND);
+> > > hibernation_ops->prepare();
+> > > disable_nonboot_cpus();
+> > > local_irq_disable();
+> > > device_power_down(PMSG_SUSPEND);
+> > > hibernation_ops->enter();
+> > > 
+> > > khibernation:
+> > > 
+> > > suspend_console();
+> > > platform_start();
+> > > device_suspend(PMSG_FREEZE);
+> > > platform_pre_snapshot();
+> > > disable_nonboot_cpus();
+> > > local_irq_disable();
+> > > device_power_down(PMSG_FREEZE);
+> > > /* jump to kexeced (hibernating) kernel */
+> > > /* in kexeced kernel */
+> > > device_power_up();
+> > > local_irq_eanble();
+> > > enable_nonboot_cpus();
+> > 
+> > You should call platform_finish() here, or device_resume() will not work
+> > appropriately on some systems.
+> > 
+> > However, after platform_finish() has been executed, the ACPI firmware will
+> > assume that the hibernation has been canceled, so you need to tell it that
+> > you'd like to go into the low power state after all.
+> > 
+> > > device_resume();
+> > > resume_console();
+> > > /* write the image */
+> > 
+> > For this reason, you have to call hibernation_ops->start() once again
+> > and the other functions like in the swsusp case, in that order.
+> > 
+> > > suspend_console();
+> > > device_suspend(PMSG_FREEZE);
+> > > disable_nonboot_cpus();
+> > > local_irq_disable();
+> > > device_power_down(PMSG_FREEZE);
+> > > /* jump to original (hibernated) kernel */
+> > 
+> > This looks too fragile to my eyes.
+> > 
+> > Why don't you call hibernation_ops->enter() directly from the "kexeced" kernel?
+> 
+> I don't know whether there are ACPI global state inside Linux kernel. So
+> I restrict all ACPI method calling in original kernel. If the ACPI
+> global state in Linux kernel is not a issue, I can call
+> hibernation_ops->enter() directly in the "kexeced" kernel.
 
-Not since my last BIOS upgrade.
+Well, I can't say to what extent the Linux ACPI tracks the global state.
+Still, even if it does, you don't need to jump back to the hibernated kernel
+just to power off the system.
 
-This is from what dmesg's I still had laying around:
-2.6.22-rc6-mm1: No
-2.6.23-rc1-mm1, 2.6.23-rc2-mm1, 2.6.23-rc3-mm1: Yes
-2.6.23-rc3-mm1 after BIOS upgrade: No
-2.6.23-rc4-mm1...2.6.24-rc2-mm1: No
+Actually, if you really want to include ACPI into the picture, which I'm not
+sure is the best idea at this point, you should use all of the appropriate
+ACPI hooks in the kexeced kernel and you shouldn't get back to the hibernated
+kernel after you've saved the image.
 
-> > > Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
-> >
-> > ACPI or x86 breakage, I guess.
->
-> If you suspect ACPI breakage, then try "acpi=off" or "acpi=noirq".
-
-ACPI doesn't look guilty.
-acpi=noirq:
-[   39.905884] Freeing SMP alternatives: 28k freed
-[   39.910674] ACPI: Core revision 20070126
-[   39.916542] ACPI: setting ELCR to 0e20 (from 0c20)
-[   39.921855] ExtINT not setup in hardware but reported by MP table
-[   39.928244] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-[   39.934586] Kernel panic - not syncing: IO-APIC + timer doesn't
-work! Try using the 'noapic' kernel parameter
-[   39.934587]
-
-acpi=off:
-[    0.000000] Freeing SMP alternatives: 28k freed
-[    0.000000] ExtINT not setup in hardware but reported by MP table
-[    0.000000] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-[    0.000000] Kernel panic - not syncing: IO-APIC + timer doesn't
-work! Try using the 'noapic' kernel parameter
-[    0.000000]
-
-Torsten
+Regards,
+Rafael
