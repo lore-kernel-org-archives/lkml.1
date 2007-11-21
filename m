@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbXKUMpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbXKUMqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758248AbXKUMpr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 07:45:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXKUMpd
+	id S1757200AbXKUMqf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 07:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbXKUMq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 07:45:33 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:38634 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbXKUMpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 07:45:33 -0500
-Date: Wed, 21 Nov 2007 07:45:32 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: netdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC/PATCH] SO_NO_CHECK for IPv6
-Message-ID: <20071121124532.GA17263@havoc.gtf.org>
-MIME-Version: 1.0
+	Wed, 21 Nov 2007 07:46:26 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2110 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754067AbXKUMqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 07:46:24 -0500
+Date: Wed, 21 Nov 2007 12:45:03 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: 2.6.24 regression:  hibernation hangs on "Suspending console" in low-battery condition
+Message-ID: <20071121124503.GB5474@ucw.cz>
+References: <200711052201.17150.arvidjaar@mail.ru> <200711112010.24874.rjw@sisk.pl> <200711170001.46710.arvidjaar@mail.ru> <200711162233.52910.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <200711162233.52910.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-SO_NO_CHECK support for IPv6 appeared to be missing. This is presented,
-based on a reading of net/ipv4/udp.c.
+> > > > It works. Subjectively I have relatively long pause after first Suspending console
+> > > > message (where it hangs otherwise), according to dmesg timestamp it is about
+> > > > 1 second before next messages appear. Also last two times I tried it writeout
+> > > > of suspend image was really slow; it was both with and without battery. Reading
+> > > > on resume in really in order of magnitude faster.
+> > > > 
+> > > > But manual STD so far works both on AC (with or without battery) or on battery.
+> > > > 
+> > > > Of course it is possible that battery gets exhausted during STD, but system
+> > > > is not switched off. Rather I would suspect something like ACPI notification
+> > > > that comes during freeze ...
+> > > 
+> > > Frankly, I'm suspecting a deadlock in the ACPI code.
+> > > 
+> > > Please try to make kpowersave start hibernation a bit earlier and see what
+> > > happens.
+> > > 
+> > > What's your critical time now?
+> > > 
+> > > 
+> > 
+> > it was set to 5%. Setting it to 10% makes it work, but it just confirms what I
+> > said before - suspend-to-RAM in normal battery conditions (or without battery)
+> > works.
+> 
+> Yes.
 
-I wonder if IPv4's CHECKSUM_PARTIAL check from udp_push_pending_frames()
-also needs to be copied to IPv6?
-
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- net/ipv6/udp.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/net/ipv6/udp.c b/net/ipv6/udp.c
-index ee1cc3f..7927e69 100644
---- a/net/ipv6/udp.c
-+++ b/net/ipv6/udp.c
-@@ -538,9 +538,14 @@ static int udp_v6_push_pending_frames(struct sock *sk)
- 	uh->len = htons(up->len);
- 	uh->check = 0;
- 
--	if (up->pcflag)
-+	if (up->pcflag)					/*     UDP-Lite      */
- 		csum = udplite_csum_outgoing(sk, skb);
--	 else
-+
-+	else if (sk->sk_no_check == UDP_CSUM_NOXMIT) {	/* UDP csum disabled */
-+		skb->ip_summed = CHECKSUM_NONE;
-+		goto send;
-+
-+	} else
- 		csum = udp_csum_outgoing(sk, skb);
- 
- 	/* add protocol-dependent pseudo-header */
-@@ -549,6 +554,7 @@ static int udp_v6_push_pending_frames(struct sock *sk)
- 	if (uh->check == 0)
- 		uh->check = CSUM_MANGLED_0;
- 
-+send:
- 	err = ip6_push_pending_frames(sk);
- out:
- 	up->len = 0;
+I have something similar in suse bugzilla, but there the claim is 'it
+always works if I trigger it manually'.
+						Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
