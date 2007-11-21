@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXKUFES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbXKUFEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbXKUFES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 00:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbXKUFDu
+	id S1753146AbXKUFEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 00:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXKUFD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 00:03:50 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:48887
+	Wed, 21 Nov 2007 00:03:57 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:48894
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753356AbXKUFDs (ORCPT
+	by vger.kernel.org with ESMTP id S1754246AbXKUFDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 00:03:48 -0500
+	Wed, 21 Nov 2007 00:03:54 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 1/4] Fix optimized search
+Subject: [PATCH 2/4] RT: Add sched-domain roots
 To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>
 Cc: Christoph Lameter <clameter@sgi.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Gregory Haskins <ghaskins@novell.com>
-Date: Tue, 20 Nov 2007 23:44:06 -0500
-Message-ID: <20071121044406.6315.82159.stgit@novell1.haskins.net>
+Date: Tue, 20 Nov 2007 23:44:11 -0500
+Message-ID: <20071121044411.6315.36658.stgit@novell1.haskins.net>
 In-Reply-To: <20071121043648.6315.29246.stgit@novell1.haskins.net>
 References: <20071121043648.6315.29246.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,52 +27,213 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Include cpu 0 in the search, and eliminate the redundant cpu_set since
-the bit should already be set in the mask.
+We add the notion of a root-domain which will be used later to rescope
+global variables to per-domain variables.  Each exclusive cpuset
+essentially defines an island domain by fully partitioning the member cpus
+from any other cpuset.  However, we currently still maintain some
+policy/state as global variables which transcend all cpusets.  Consider,
+for instance, rt-overload state.
+
+Whenever a new exclusive cpuset is created, we also create a new
+root-domain object and move each cpu member to the root-domain's span.
+By default the system creates a single root-domain with all cpus as
+members (mimicking the global state we have today).
+
+We add some plumbing for storing class specific data in our root-domain.
+Whenever a RQ is switching root-domains (because of repartitioning) we
+give each sched_class the opportunity to remove any state from its old
+domain and add state to the new one.  This logic doesn't have any clients
+yet but it will later in the series.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Christoph Lameter <clameter@sgi.com>
+CC: Paul Jackson <pj@sgi.com>
+CC: Simon Derr <simon.derr@bull.net>
 ---
 
- kernel/sched_rt.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ include/linux/sched.h |    3 ++
+ kernel/sched.c        |   89 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 89 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 28feeff..fbf4fb1 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -297,7 +297,7 @@ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
- static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- {
- 	int       lowest_prio = -1;
--	int       lowest_cpu  = 0;
-+	int       lowest_cpu  = -1;
- 	int       count       = 0;
- 	int       cpu;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 19d9f3f..0ba221e 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -845,6 +845,9 @@ struct sched_class {
+ 	void (*task_tick) (struct rq *rq, struct task_struct *p);
+ 	void (*task_new) (struct rq *rq, struct task_struct *p);
+ 	void (*set_cpus_allowed)(struct task_struct *p, cpumask_t *newmask);
++
++	void (*join_domain)(struct rq *rq);
++	void (*leave_domain)(struct rq *rq);
+ };
  
-@@ -319,7 +319,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 			 * and the count==1 will cause the algorithm
- 			 * to use the first bit found.
- 			 */
--			if (lowest_cpu) {
-+			if (lowest_cpu != -1) {
- 				cpus_clear(*lowest_mask);
- 				cpu_set(rq->cpu, *lowest_mask);
- 			}
-@@ -335,7 +335,6 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 				lowest_cpu = cpu;
- 				count = 0;
- 			}
--			cpu_set(rq->cpu, *lowest_mask);
- 			count++;
- 		} else
- 			cpu_clear(cpu, *lowest_mask);
-@@ -346,7 +345,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 	 * runqueues that were of higher prio than
- 	 * the lowest_prio.
+ struct load_weight {
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e685402..fb619fb 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -276,6 +276,17 @@ struct rt_rq {
+ 	int overloaded;
+ };
+ 
++#ifdef CONFIG_SMP
++
++struct root_domain {
++	atomic_t refcount;
++	cpumask_t span;
++};
++
++struct root_domain def_root_domain;
++
++#endif
++
+ /*
+  * This is the main, per-CPU runqueue data structure.
+  *
+@@ -333,6 +344,7 @@ struct rq {
+ 	atomic_t nr_iowait;
+ 
+ #ifdef CONFIG_SMP
++	struct root_domain  *rd;
+ 	struct sched_domain *sd;
+ 
+ 	/* For active balancing */
+@@ -5718,11 +5730,68 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+ 	return 1;
+ }
+ 
++static void rq_attach_root(struct rq *rq, struct root_domain *rd)
++{
++	unsigned long flags;
++	const struct sched_class *class;
++
++	spin_lock_irqsave(&rq->lock, flags);
++
++	if (rq->rd) {
++		struct root_domain *old_rd = rq->rd;
++
++		for (class = sched_class_highest; class; class = class->next)
++			if (class->leave_domain)
++				class->leave_domain(rq);
++
++		if (atomic_dec_and_test(&old_rd->refcount))
++			kfree(old_rd);
++	}
++
++	atomic_inc(&rd->refcount);
++	rq->rd = rd;
++
++	for (class = sched_class_highest; class; class = class->next)
++		if (class->join_domain)
++			class->join_domain(rq);
++
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
++static void init_rootdomain(struct root_domain *rd, cpumask_t *map)
++{
++	memset(rd, 0, sizeof(*rd));
++
++	rd->span = *map;
++}
++
++static void init_defrootdomain(void)
++{
++	cpumask_t cpus = CPU_MASK_ALL;
++
++	init_rootdomain(&def_root_domain, &cpus);
++	atomic_set(&def_root_domain.refcount, 1);
++}
++
++static struct root_domain *alloc_rootdomain(cpumask_t *map)
++{
++	struct root_domain *rd;
++
++	rd = kmalloc(sizeof(*rd), GFP_KERNEL);
++	if (!rd)
++		return NULL;
++
++	init_rootdomain(rd, map);
++
++	return rd;
++}
++
+ /*
+  * Attach the domain 'sd' to 'cpu' as its base domain.  Callers must
+  * hold the hotplug lock.
+  */
+-static void cpu_attach_domain(struct sched_domain *sd, int cpu)
++static void cpu_attach_domain(struct sched_domain *sd,
++			      struct root_domain *rd, int cpu)
+ {
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct sched_domain *tmp;
+@@ -5747,6 +5816,7 @@ static void cpu_attach_domain(struct sched_domain *sd, int cpu)
+ 
+ 	sched_domain_debug(sd, cpu);
+ 
++	rq_attach_root(rq, rd);
+ 	rcu_assign_pointer(rq->sd, sd);
+ }
+ 
+@@ -6115,6 +6185,7 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+ static int build_sched_domains(const cpumask_t *cpu_map)
+ {
+ 	int i;
++	struct root_domain *rd;
+ #ifdef CONFIG_NUMA
+ 	struct sched_group **sched_group_nodes = NULL;
+ 	int sd_allnodes = 0;
+@@ -6131,6 +6202,12 @@ static int build_sched_domains(const cpumask_t *cpu_map)
+ 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
+ #endif
+ 
++	rd = alloc_rootdomain(cpu_map);
++	if (!rd) {
++		printk(KERN_WARNING "Cannot alloc root domain\n");
++		return -ENOMEM;
++	}
++
+ 	/*
+ 	 * Set up domains for cpus specified by the cpu_map.
  	 */
--	if (lowest_cpu) {
-+	if (lowest_cpu != -1) {
- 		/*
- 		 * Perhaps we could add another cpumask op to
- 		 * zero out bits. Like cpu_zero_bits(cpumask, nrbits);
+@@ -6347,7 +6424,7 @@ static int build_sched_domains(const cpumask_t *cpu_map)
+ #else
+ 		sd = &per_cpu(phys_domains, i);
+ #endif
+-		cpu_attach_domain(sd, i);
++		cpu_attach_domain(sd, rd, i);
+ 	}
+ 
+ 	return 0;
+@@ -6405,7 +6482,7 @@ static void detach_destroy_domains(const cpumask_t *cpu_map)
+ 	unregister_sched_domain_sysctl();
+ 
+ 	for_each_cpu_mask(i, *cpu_map)
+-		cpu_attach_domain(NULL, i);
++		cpu_attach_domain(NULL, &def_root_domain, i);
+ 	synchronize_sched();
+ 	arch_destroy_sched_domains(cpu_map);
+ }
+@@ -6641,6 +6718,10 @@ void __init sched_init(void)
+ 	int highest_cpu = 0;
+ 	int i, j;
+ 
++#ifdef CONFIG_SMP
++	init_defrootdomain();
++#endif
++
+ 	for_each_possible_cpu(i) {
+ 		struct rt_prio_array *array;
+ 		struct rq *rq;
+@@ -6680,6 +6761,8 @@ void __init sched_init(void)
+ 			rq->cpu_load[j] = 0;
+ #ifdef CONFIG_SMP
+ 		rq->sd = NULL;
++		rq->rd = NULL;
++		rq_attach_root(rq, &def_root_domain);
+ 		rq->active_balance = 0;
+ 		rq->next_balance = jiffies;
+ 		rq->push_cpu = 0;
 
