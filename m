@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXKUTEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbXKUTGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbXKUTEQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXKUTEC
+	id S1755101AbXKUTGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:06:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXKUTGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:04:02 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:48442 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbXKUTEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:04:00 -0500
-Date: Wed, 21 Nov 2007 14:03:50 -0500
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Chris Wedgwood <cw@f00f.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc2 XFS nfsd hang
-Message-ID: <20071121190350.GA28029@fieldses.org>
-References: <20071114070400.GA25708@puku.stupidest.org> <20071114152952.GA4210@infradead.org> <20071114173922.GC14254@fieldses.org> <20071114174419.GA15271@infradead.org> <20071114175322.GD14254@fieldses.org> <20071114180241.GA16656@infradead.org> <20071114180838.GE14254@fieldses.org> <20071121150746.GB8454@infradead.org>
+	Wed, 21 Nov 2007 14:06:42 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:9645 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752328AbXKUTGl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:06:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eAT1+MdofQ2E0N1U6+rDIS/spUcDv7yk+3R+3AlaBQFK+GmLEbGQAWh18WSDJ11LuSEEUvwtZMaV1SUySJF2Tdr9/gPiGY2U9omzE2YtXtzJJWsUTBAQ6/NcL/xliUB159mHlgi1QJujwbRnuA5suLH2QruVHVERPiB0MZMSJr8=
+Message-ID: <d00698fb0711211106l4fe6223ega7ca160106a6e09b@mail.gmail.com>
+Date: Wed, 21 Nov 2007 20:06:40 +0100
+From: noah <noah123@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+In-Reply-To: <20071121004545.512ad3ea@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071121150746.GB8454@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com>
+	 <20071120220512.46b9e975@the-village.bc.nu>
+	 <d00698fb0711201416n30b54d26kd8d5887896d3da83@mail.gmail.com>
+	 <20071121004545.512ad3ea@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 21, 2007 at 03:07:46PM +0000, Christoph Hellwig wrote:
-> On Wed, Nov 14, 2007 at 01:08:38PM -0500, J. Bruce Fields wrote:
-> > > Personally I'd prefer it to only grow a struct stat or rather it's members
-> > > But the nfsd code currently expects a dentry so this might require some
-> > > major refactoring.
-> > 
-> > Well, we need to check for mountpoints, for example, so I don't see any
-> > way out of needing a dentry.  What's the drawback?
-> 
-> You're right - we'd probably need the dentry.  The drawback is that
-> we need to always get it in the dcache.  Which might be a good thing
-> depending on the workload.
+2007/11/21, Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> > I've had other freezes before but this was the first time I was able
+> > to see what was actually going on.
+> > IRQ 21 appears to be shared between sata_nv and ethernet.
+> >
+> > Does this mean my hardware/BIOS is broken somehow?
+>
+> Not neccessarily. It could a bug in one of the drivers using IRQ 21
+> (sata_nv or the nvidia ethernet), it could be another inactive device, or
+> it could be a hardware funny.
 
-In any case, if the new api were only used by nfsd for now, then there'd
-be no change here.
+How can I tell if there's an inactive device?
 
-Seems like it might be worth a try.
+> Nvidia stuff can be quite hard to diagnose as we have no documentation
+> but we can try. The first question is whether it is network or disk
+> triggered - seeing if heavy loads to one or the other trigger the problem
+> might be a first plan.
 
---b.
+I haven't managed to trigger it again yet but at the time the CPU was
+heavily loaded and I was re-indexing a database which caused a lot of
+disk activity. I'm quite confident the network was pretty much idle at
+the time.
+
+  -- noah
