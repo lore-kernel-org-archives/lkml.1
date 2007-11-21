@@ -1,47 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbXKUUN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXKUUOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbXKUUN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 15:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbXKUUMN
+	id S1755834AbXKUUOd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 15:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbXKUUOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 15:12:13 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42706 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753911AbXKUUML (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 15:12:11 -0500
-Date: Wed, 21 Nov 2007 12:12:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dave Hansen <haveblue@us.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mbligh@google.com
-Subject: Re: [PATCH] Cast page_to_pfn to unsigned long in CONFIG_SPARSEMEM
-In-Reply-To: <1195507183.27759.150.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0711211211390.2971@schroedinger.engr.sgi.com>
-References: <20071113194025.150641834@polymtl.ca>  <1195160783.7078.203.camel@localhost>
- <20071115215142.GA7825@Krystal>  <1195164977.27759.10.camel@localhost>
- <20071116144742.GA17255@Krystal>  <1195495626.27759.119.camel@localhost>
- <20071119185258.GA998@Krystal>  <1195501381.27759.127.camel@localhost>
- <20071119195257.GA3440@Krystal>  <1195502983.27759.134.camel@localhost>
- <20071119202023.GA5086@Krystal>  <20071119130801.bd7b7021.akpm@linux-foundation.org>
- <1195507183.27759.150.camel@localhost>
+	Wed, 21 Nov 2007 15:14:22 -0500
+Received: from mx12.go2.pl ([193.17.41.142]:50240 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753294AbXKUUOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 15:14:21 -0500
+Message-ID: <4744921A.6000801@o2.pl>
+Date: Wed, 21 Nov 2007 21:16:26 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Petr Baudis <pasky@suse.cz>
+CC: "J. Bruce Fields" <bfields@fieldses.org>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: gitweb: kernel versions in the history (feature request,	probably)
+References: <20071120142042.GA4157@ff.dom.local> <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl> <20071121032009.GB4175@fieldses.org> <20071121075217.GA1642@ff.dom.local> <20071121151831.GO1001@machine.or.cz>
+In-Reply-To: <20071121151831.GO1001@machine.or.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Nov 2007, Dave Hansen wrote:
+Petr Baudis wrote, On 11/21/2007 04:18 PM:
 
-> Which comes from:
->         
->         config OUT_OF_LINE_PFN_TO_PAGE
->                 def_bool X86_64
->                 depends on DISCONTIGMEM
->         
-> and only on x86_64.  Perhaps it can go away with the
-> discontig->sparsemem-vmemmap conversion.
+> On Wed, Nov 21, 2007 at 08:52:17AM +0100, Jarek Poplawski wrote:
+>> ...
+>> tags
+>> 4 days ago 	v2.6.24-rc3 	Linux 2.6.24-rc3
+>> 2 weeks ago 	v2.6.24-rc2 	Linux 2.6.24-rc2
+>> 4 weeks ago 	v2.6.24-rc1 	Linux 2.6.24-rc1
+>> 6 weeks ago 	v2.6.23 	Linux 2.6.23
+>>
+>> which drives me crazy, because, without looking at the calendar, and
+>> calculator, I don't really know which month was 6 weeks ago, and 4
+>> days ago, either!
+> 
+> I have myself never been sure if the relative times are a good idea or
+> not. :-) Sometimes I hate them, sometimes they are more convenient...
+> 
+> At any rate, if you click at the tag name, you should get tag page with
+> full date.
 
-The discontig/flatmem removal patch for x86_64 in mm already removes this.
+
+So, it's so easy! Great! It seems I've to get used to this clicking
+more. It seems I've become too cautious with this, when I've really
+- really, waited after each click there. (I mean a few months ago,
+and my connection was the same; sometimes, one such click took one
+whole break for coffee.)
+
+I seems, there are simply two kinds of people wrt. calendar/time. I'm
+usually happy if I can figure by myself which day of week is today, but
+I wouldn't even try with something like 4 days ago. But I understand
+I'm not the brightest here...
+
+So, maybe, some day, with: linux-kernel-for-dummies.org such things
+could be reconsidered...
+
+> 
+>> So, I go to the: http://www.eu.kernel.org/pub/linux/kernel/v2.6/, 
+>> do some scrolling, look at this:
+>> ChangeLog-2.6.23             09-Oct-2007 20:38  3.8M  
+>>
+>> and only now I can guess, this napi patch didn't manage to 2.6.23.
+>> Of course, usually I've to do a few more clicks and reading to make
+>> sure where it really started.
+>>
+>> So, this could suggest this 2007-10-10 (probably stored with time
+>> too), could be useful here... but it seems, I'm wrong.
+> 
+> Yes, there are three scenarios:
+> 
+> (i) The patch has been _created_ after the release date. It can't be in
+> the release.
+> (ii) The patch has been created before the release date, but _committed_
+> after the release date. It can't be in the release either.
+> (iii) The patch has been committed before the release date. It _still_
+> might not be in the release if it comes from a different branch.
+> Imagine, say, tglx accepting the patch in his branch, then Linus
+> releasing new kernel version, and only _then_ Linus merging tglx's
+> branch.
+> 
+> So the time information isn't really too useful if you want to be any
+> sort of reliable.
+> 
+>> Of course, this problem doesn't look so hard if we forget about
+>> git internals: I can imagine keeping a simple database, which
+>> could simply retrieve commit numbers from these ChangeLogs, and
+>> connecting this with gitweb's commit page as well... For
+>> performance reasons, doing it only for stable and testing, so with
+>> -rc 'precision' would be very helpful too.
+> 
+> It isn't too hard if we don't forget about git internals either. It's
+> just that getting this information might not be cheap. But maybe I'm
+> wrong and this won't be a problem for sane projects. Someone should post
+> a patch. ;-)
+
+
+It looks, after Kay's notice, my main problem is solved. And your current
+explanations are also very precious to me. Probably some things considered
+here could be done a bit better in the future, but I guess there is enough
+urgent work with git or kernel too, so let's say it's OK for now!
+
+Thanks every good git people!
+Jarek P.
+
+ 
+
 
