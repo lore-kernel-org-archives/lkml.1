@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbXKUQbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbXKUQkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759927AbXKUQbY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbXKUQbQ
+	id S1757282AbXKUQkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 11:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXKUQj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:31:16 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:46711 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754581AbXKUQbP (ORCPT
+	Wed, 21 Nov 2007 11:39:57 -0500
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:57474 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753866AbXKUQj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 11:31:15 -0500
-Date: Wed, 21 Nov 2007 11:31:13 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: Oliver Neukum <oliver@neukum.org>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>, Mark Lord <lkml@rtr.ca>,
-       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] USB deadlock after resume
-In-Reply-To: <d9def9db0711210637x6fd5ad09o549b787639690d55@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0711211128380.3226-100000@iolanthe.rowland.org>
+	Wed, 21 Nov 2007 11:39:56 -0500
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 1/2][2.6.24] ehea: Improve tx packets counting
+Date: Wed, 21 Nov 2007 17:37:58 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711211737.58789.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, Markus Rechberger wrote:
+Using own tx_packets counter instead of firmware counters.
 
-> > > it's not just usb_set_interface that hangs actually.
-> > > It seems to hang at
-> > >
-> > > wait_event(usb_kill_urb_queue, atomic_read(&urb->use_count) == 0);
-> > >
-> > > in drivers/usb/core/urb.c after resuming. I disabled access to the usb
-> > > subsystem in the uvc driver, although connecting any other usb storage
-> > > fails too, just at the same point.
-> >
-> > Which URB is usb_kill_urb() called for?
-> >
-> 
-> it's the usb_control_message which calls usb_kill_urb if I haven't got
-> it wrong. (if you're looking for some other information please let me
-> know)
-> Although, I got a bit further with it. The error seems to happen
-> earlier already.
-> If I load the driver, and do not access the device after suspending
-> all usb_control commands fail with -71 eproto.
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-That's very strange.  Getting -71 errors is understandable; it 
-indicates that the device can't handle being suspended.  But the 
-wait_event() line still shouldn't hang.  If it does, it indicates that 
-there's something wrong with the USB host controller, not just the 
-device.
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |    9 +++++++--
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-Can you try testing this on a different sort of computer?
-
-Alan Stern
-
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index f78e5bf..5935899 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0080"
++#define DRV_VERSION	"EHEA_0082"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index f0319f1..d2f715d 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -136,7 +136,7 @@ static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+ 	struct ehea_port *port = netdev_priv(dev);
+ 	struct net_device_stats *stats = &port->stats;
+ 	struct hcp_ehea_port_cb2 *cb2;
+-	u64 hret, rx_packets;
++	u64 hret, rx_packets, tx_packets;
+ 	int i;
+ 
+ 	memset(stats, 0, sizeof(*stats));
+@@ -162,7 +162,11 @@ static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+ 	for (i = 0; i < port->num_def_qps; i++)
+ 		rx_packets += port->port_res[i].rx_packets;
+ 
+-	stats->tx_packets = cb2->txucp + cb2->txmcp + cb2->txbcp;
++	tx_packets = 0;
++	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
++		tx_packets += port->port_res[i].tx_packets;
++
++	stats->tx_packets = tx_packets;
+ 	stats->multicast = cb2->rxmcp;
+ 	stats->rx_errors = cb2->rxuerr;
+ 	stats->rx_bytes = cb2->rxo;
+@@ -2000,6 +2004,7 @@ static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	}
+ 
+ 	ehea_post_swqe(pr->qp, swqe);
++	pr->tx_packets++;
+ 
+ 	if (unlikely(atomic_read(&pr->swqe_avail) <= 1)) {
+ 		spin_lock_irqsave(&pr->netif_queue, flags);
+-- 
+1.5.2
