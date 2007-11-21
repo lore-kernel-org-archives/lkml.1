@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbXKUPiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbXKUPtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbXKUPiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 10:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750696AbXKUPh5
+	id S1757991AbXKUPtD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 10:49:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXKUPsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 10:37:57 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56668 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbXKUPh4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 10:37:56 -0500
-Date: Wed, 21 Nov 2007 16:37:55 +0100
-From: Jan Kara <jack@suse.cz>
-To: Dave Bailey <dsbailey@pacbell.net>
-Cc: linux-kernel@vger.kernel.org, Evgeniy Dushistov <dushistov@mail.ru>
-Subject: Re: Problem with ufs nextstep in 2.6.18 (debian)
-Message-ID: <20071121153755.GB3963@atrey.karlin.mff.cuni.cz>
-References: <4743438F.3000904@pacbell.net>
+	Wed, 21 Nov 2007 10:48:54 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:38753 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754977AbXKUPsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 10:48:53 -0500
+Date: Wed, 21 Nov 2007 09:48:49 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: casey@schaufler-ca.com, chrisw@sous-sol.org, darwish.07@gmail.com,
+       jmorris@namei.org, method@manicmethod.com, morgan@kernel.org,
+       paul.moore@hp.com, sds@tycho.nsa.gov
+Subject: Re: +
+	smack-version-11c-simplified-mandatory-access-control-kernel.patch
+	added to -mm tree
+Message-ID: <20071121154849.GA7195@sergelap.austin.ibm.com>
+References: <200711202206.lAKM6BlW025868@imap1.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4743438F.3000904@pacbell.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200711202206.lAKM6BlW025868@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This problem has been around since kernel 2.6.16, and I see it in
-> 2.6.23.1-10.fc7. It occurs in the ufs_check_page function of ufs/dir.c
-> at the Espan test, which seems unnecessary for NextStep/OpenStep
-> files systems. The following patch preserves the test for other file
-> systems and makes the mount useful for NextStep/OpenStep:
-> (against the 2.6.23.1-10.fc7 source tree)
-> 
-> dsb@Zeno-Dyn[1012]$ diff dir.c dir.c.orig
-> 108,110d107
-> <       unsigned mnext = UFS_SB(sb)->s_mount_opt &
-> <         (UFS_MOUNT_UFSTYPE_NEXTSTEP || UFS_MOUNT_UFSTYPE_NEXTSTEP_CD ||
-> <          UFS_MOUNT_UFSTYPE_OPENSTEP);
-> 131c128
-> <               if ((mnext == 0) & (((offs + rec_len - 1) ^ offs) & 
-> ~chunk_mask))
-> ---
-> >               if (((offs + rec_len - 1) ^ offs) & ~chunk_mask)
-  Thanks for your contribution but we cannot take it as is - at least
-Signed-off-by line is missing and the patch should also be in unified
-diff format. Please read linux/Documentation/SubmittingPatches...
-Thanks.
+Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
+> +/*
+> + * There are not enough CAP bits available to make this
+> + * real, so Casey borrowed the capability that looks to
+> + * him like it has the best balance of similarity amd
+> + * low use.
+> + */
+> +#define CAP_MAC_OVERRIDE CAP_LINUX_IMMUTABLE
 
-							Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Hey Casey,
+
+note that 64-bit capabilities are now in -mm, so you could grab your own
+capability.
+
+-serge
