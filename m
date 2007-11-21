@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXKUFTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbXKUFc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbXKUFTA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 00:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXKUFSw
+	id S1754258AbXKUFc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 00:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXKUFcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 00:18:52 -0500
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:27038 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751141AbXKUFSv convert rfc822-to-8bit (ORCPT
+	Wed, 21 Nov 2007 00:32:48 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:12462 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbXKUFcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 00:18:51 -0500
-Message-Id: <4743785D.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 21 Nov 2007 00:14:21 -0500
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix optimized search
-References: <20071121021057.GA24815@goodmis.org>
- <20071121030838.16020.59975.stgit@novell1.haskins.net>
- <4743B0F4.8000302@redhat.com> <20071121042635.GB24815@goodmis.org>
-In-Reply-To: <20071121042635.GB24815@goodmis.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 21 Nov 2007 00:32:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J8aL6pixGFXGKLB2XepsGKMEPfcZXVMLxowgMlpxi9WMEMP+PzsswrTSPmfe2EXu/p+oUMj174IwzJagGgYZXk5bcuDtRjldXV9hMh/Lq29W5yGE8onplwWvw4okbRIQJku7ePJ0+JPtHC0zG6nI3KUZib8TCgcWCi2dAlFVdfA=
+Message-ID: <d9def9db0711202132q2c5a9b46k79c00da68250db3b@mail.gmail.com>
+Date: Wed, 21 Nov 2007 06:32:46 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: USB deadlock after resume
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       "Laurent Pinchart" <laurentp@cse-semaphore.com>
+In-Reply-To: <4743B160.7060007@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <d9def9db0711201347u2786fe0ev96b2fb43fc2954e9@mail.gmail.com>
+	 <4743B160.7060007@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Nov 20, 2007 at 11:26 PM, in message
-<20071121042635.GB24815@goodmis.org>, Steven Rostedt <rostedt@goodmis.org>
-wrote: 
-> On Tue, Nov 20, 2007 at 11:15:48PM -0500, Steven Rostedt wrote:
->> Gregory Haskins wrote:
->>> I spied a few more issues from http://lkml.org/lkml/2007/11/20/590.
->>> Patch is below..
->>
->> Thanks, but I have one update...
->>
-> 
-> Here's the updated patch.
-> 
-> Oh, and Gregory, please email me at my rostedt@goodmis.org account. It
-> has better filters ;-)
-> 
-> This series is at:
-> 
->   http://rostedt.homelinux.com/rt/rt-balance-patches-v6.tar.bz2
+On 11/21/07, Mark Lord <lkml@rtr.ca> wrote:
+> Markus Rechberger wrote:
+> > Hi,
+> >
+> > I'm looking at the linux uvc driver, and noticed after resuming my
+> ..
+>
+> Pardon me.. what is the "uvc" driver?  Which module/source file is that?
+>
 
-Ah..mails crossed. ;)  Ignore my patch #1 from the 0/4 series I just sent out.
+http://linux-uvc.berlios.de/ it's not yet included in the kernel
+sources although many distributions already ship it.
+A "dry" run putting the device into sleep mode works fine (I added a
+proc interface for calling those suspend/resume function).
 
-Regards,
--Greg
-
+Markus
