@@ -1,113 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbXKUT2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbXKUT2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754568AbXKUT2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:28:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXKUT16
+	id S1755808AbXKUT2a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbXKUT2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:27:58 -0500
-Received: from mx12.go2.pl ([193.17.41.142]:58773 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752162AbXKUT15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:27:57 -0500
-Message-ID: <47448726.6060709@o2.pl>
-Date: Wed, 21 Nov 2007 20:29:42 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Wed, 21 Nov 2007 14:28:04 -0500
+Received: from cfif3.ist.utl.pt ([193.136.161.44]:32843 "EHLO cfif3.ist.utl.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752415AbXKUT2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:28:00 -0500
+X-Greylist: delayed 3720 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 14:28:00 EST
+From: paulo@cfif3.ist.utl.pt
+Message-Id: <200711211825.lALIPp5U002919@cfif3.ist.utl.pt>
+Subject: kernel BUG at fs/inode.c
+To: linux-kernel@vger.kernel.org
+Date: Wed, 21 Nov 2007 18:25:51 +0000 (WET)
+Reply-to: paulo.nogueira@ist.utl.pt
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: "J. Bruce Fields" <bfields@fieldses.org>, Petr Baudis <pasky@suse.cz>,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: gitweb: kernel versions in the history (feature request, probably)
-References: <20071120142042.GA4157@ff.dom.local>	 <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl>	 <20071121032009.GB4175@fieldses.org>	 <20071121075217.GA1642@ff.dom.local> <3ae72650711210806v1e7daa2fq729a7593def99ef7@mail.gmail.com>
-In-Reply-To: <3ae72650711210806v1e7daa2fq729a7593def99ef7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote, On 11/21/2007 05:06 PM:
 
-> On Nov 21, 2007 8:52 AM, Jarek Poplawski <jarkao2@o2.pl> wrote:
->> On Tue, Nov 20, 2007 at 10:20:09PM -0500, J. Bruce Fields wrote:
->>> On Wed, Nov 21, 2007 at 12:30:23AM +0100, Jarek Poplawski wrote:
->>>> I don't know git, but it seems, at least if done for web only, this
->>>> shouldn't be so 'heavy'. It could be a 'simple' translation of commit
->>>> date by querying a small database with kernel versions & dates.
->>> If I create a commit in my linux working repo today, but Linus doesn't
->>> merge it into his repository until after he releases 2.6.24, then my
->>> commit will be created with an earlier date than 2.6.24, even though it
->>> isn't included until 2.6.25.
->>>
->>> So you have to actually examine the history graph to figure this out
->>> this sort of thing.
->> Of course, you are right, and I probably miss something, but to be
->> sure we think about the same thing let's look at some example: so, I
->> open a page with current Linus' tree, go to something titled:
->> /pub/scm / linux/kernel/git/torvalds/linux-2.6.git / history
->>
->> and see:
->> 2007-10-10 Stephen Hemminger [NET]: Make NAPI polling independent ...
->> and just below something with 2007-08-14 date.
->>
->> Accidentally, I can remember this patch introduced many changes, and
->> this big interval in dates suggests some waiting. Then I look at the
->> commit, and there are 2 dates visible, so the patch really was created
->> earlier. Then I go back to:
->> /pub/scm / linux/kernel/git/torvalds/linux-2.6.git / summary
->>
->> and at the bottom I can see this:
->>
->> ...
->> tags
->> 4 days ago      v2.6.24-rc3     Linux 2.6.24-rc3
->> 2 weeks ago     v2.6.24-rc2     Linux 2.6.24-rc2
->> 4 weeks ago     v2.6.24-rc1     Linux 2.6.24-rc1
->> 6 weeks ago     v2.6.23         Linux 2.6.23
->>
->> which drives me crazy, because, without looking at the calendar, and
->> calculator, I don't really know which month was 6 weeks ago, and 4
->> days ago, either!
->>
->> So, I go to the: http://www.eu.kernel.org/pub/linux/kernel/v2.6/,
->> do some scrolling, look at this:
->> ChangeLog-2.6.23             09-Oct-2007 20:38  3.8M
->>
->> and only now I can guess, this napi patch didn't manage to 2.6.23.
->> Of course, usually I've to do a few more clicks and reading to make
->> sure where it really started.
->>
->> So, this could suggest this 2007-10-10 (probably stored with time
->> too), could be useful here... but it seems, I'm wrong.
->>
->> Of course, this problem doesn't look so hard if we forget about
->> git internals: I can imagine keeping a simple database, which
->> could simply retrieve commit numbers from these ChangeLogs, and
->> connecting this with gitweb's commit page as well... For
->> performance reasons, doing it only for stable and testing, so with
->> -rc 'precision' would be very helpful too.
-> 
-> The "plain" view of the patch has the "version" included:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=bea3348eef27e6044b6161fd04c3152215f96411
-> 
->   From: Stephen Hemminger <shemminger@linux-foundation.org>
->   Date: Wed, 3 Oct 2007 23:41:36 +0000 (-0700)
->   Subject: [NET]: Make NAPI polling independent of struct net_device objects.
->   X-Git-Tag: v2.6.24-rc1~1454^2~841
-> 
-> Is that what you are looking for?
-> 
 
-YeeeS!!! You are a genius with eagle's eyes!
+  hi,
 
-I've suspected from the beginning something like this has to be
-there... And I really tried to find this before sending this. But,
-as a matter of fact I didn't even try this "plain" or rather "raw",
-because I've somehow thought "raw" is just plain text, so the same
-only without html tags!? So, now I know, and it's enough to me. But,
-... maybe it should be on this "complex" page as well?
+ This is to report a kernel bug that appeared while using the
+ non-standard kernel 2.6.24-rc1-git10, which I was using for
+ the purpose of helping to debug a different problem.
+ I am not sure if the problem is easily reproducible... if
+ needed I'll try with the latest fc7 kernel.
 
-Thanks very much,
-Jarek P.
+ The dump listed below was extracted from /var/log/messages
+ and was generated after copying > 1GB of data to a DVD-RAM,
+ udf format. When it seemed to have stopped (after 2 hours!)
+ I issued the eject command. It then seemed to write more
+ data to the disk (possibly part of the data had not been
+ really copied, and it was syncing) and a few minutes after
+ this notice came up.
 
-PS: I hope eagles can see in English at least the same as in Polish,
-and more than I can see in my dictionary now!
+  best regards
+   Paulo Nogueira
+
+  PS please cc replies to me
+
+
+
+Nov 20 23:30:23 *** kernel: kernel BUG at fs/inode.c:191!
+Nov 20 23:30:23 *** kernel: invalid opcode: 0000 [1] SMP 
+Nov 20 23:30:23 *** kernel: CPU 1 
+Nov 20 23:30:23 *** kernel: Modules linked in: udf usb_storage autofs4 sunrpc cpufreq_ondemand reiserfs dm_mirror dm_mod video output sbs sbshc battery ac power_supply ipv6 snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd sr_mod button forcedeth soundcore cdrom k8temp pcspkr snd_page_alloc pata_amd hwmon i2c_nforce2 i2c_core sg sata_nv ata_generic libata sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd
+Nov 20 23:30:23 *** kernel: Pid: 11762, comm: umount Not tainted 2.6.24-rc1-git10 #0
+Nov 20 23:30:23 *** kernel: RIP: 0010:[<ffffffff810a9886>]  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+Nov 20 23:30:23 *** kernel: RSP: 0018:ffff81001ac47dd8  EFLAGS: 00010202
+Nov 20 23:30:23 *** kernel: RAX: 0000000000000001 RBX: ffff81010ac0b548 RCX: ffff81010ac0b548
+Nov 20 23:30:23 *** kernel: RDX: 0000000000000007 RSI: ffff81010ac0b750 RDI: ffff81010ac0b548
+Nov 20 23:30:23 *** kernel: RBP: ffff81010ac0b548 R08: 8000000000000000 R09: ffffffff81405a18
+Nov 20 23:30:23 *** kernel: R10: 0000000000000000 R11: ffff81001ac47d58 R12: 00000000000001ba
+Nov 20 23:30:23 *** kernel: R13: ffff81001ac47e18 R14: ffff81001aba6068 R15: 0000000000000000
+Nov 20 23:30:23 *** kernel: FS:  00002b38ac69f6c0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
+Nov 20 23:30:23 *** kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+Nov 20 23:30:23 *** kernel: CR2: 00000000008cb370 CR3: 000000001ac6a000 CR4: 00000000000006e0
+Nov 20 23:30:23 *** kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Nov 20 23:30:23 *** kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Nov 20 23:30:23 *** kernel: Process umount (pid: 11762, threadinfo ffff81001ac46000, task ffff81010492c000)
+Nov 20 23:30:23 *** kernel: Stack:  ffff81010ac0b558 ffffffff810a9e84 0000000000000018 ffff8101059af048
+Nov 20 23:30:23 *** kernel:  ffff81010610a8c0 0000000000004a57 ffff81010610a8c0 ffffffff810aa160
+Nov 20 23:30:23 *** kernel:  ffff81010ac0b7d8 ffff81001aba6058 0000000000000000 ffff81010610a800
+Nov 20 23:30:23 *** kernel: Call Trace:
+Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
+Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
+Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
+Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
+Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
+Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
+Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
+Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
+Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
+Nov 20 23:30:23 *** kernel: 
+Nov 20 23:30:23 *** kernel: 
+Nov 20 23:30:23 *** kernel: Code: 0f 0b eb fe 48 89 df e8 e7 39 04 00 48 8b 83 f8 00 00 00 48 
+Nov 20 23:30:23 *** kernel: RIP  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+Nov 20 23:30:23 *** kernel:  RSP <ffff81001ac47dd8>
+Nov 20 23:30:23 *** kernel: WARNING: at kernel/exit.c:917 do_exit()
+Nov 20 23:30:23 *** kernel: 
+Nov 20 23:30:23 *** kernel: Call Trace:
+Nov 20 23:30:23 *** kernel:  [<ffffffff8103c55a>] do_exit+0x4f/0x768
+Nov 20 23:30:23 *** kernel:  [<ffffffff8100d64d>] kernel_math_error+0x0/0x71
+Nov 20 23:30:23 *** kernel:  [<ffffffff8100da73>] do_invalid_op+0x85/0x8f
+Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+Nov 20 23:30:23 *** kernel:  [<ffffffff8104bd77>] bit_waitqueue+0x10/0x9f
+Nov 20 23:30:23 *** kernel:  [<ffffffff8104be44>] wake_up_bit+0x11/0x22
+Nov 20 23:30:23 *** kernel:  [<ffffffff810b23cf>] __writeback_single_inode+0x2a5/0x2b7
+Nov 20 23:30:23 *** kernel:  [<ffffffff882cb85c>] :udf:udf_current_aext+0xe8/0x143
+Nov 20 23:30:23 *** kernel:  [<ffffffff81251039>] error_exit+0x0/0x51
+Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+Nov 20 23:30:23 *** kernel:  [<ffffffff810a9882>] destroy_inode+0x9/0x47
+Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
+Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
+Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
+Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
+Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
+Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
+Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
+Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
+Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
+Nov 20 23:30:23 *** kernel: 
+
+
