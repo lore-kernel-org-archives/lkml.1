@@ -1,87 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbXKUHwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbXKUH41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758441AbXKUHwn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 02:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXKUHwe
+	id S1758040AbXKUH41 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 02:56:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXKUH4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 02:52:34 -0500
-Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:36074 "EHLO
-	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbXKUHwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 02:52:33 -0500
-Date: Wed, 21 Nov 2007 08:52:27 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Alejandro Martinez Ruiz <alex@flawedcode.org>
-Subject: Re: [patch 02/13] dio: ARRAY_SIZE() cleanup
-In-Reply-To: <474355BE.8030409@student.ltu.se>
-Message-ID: <Pine.LNX.4.64.0711210851050.5240@anakin>
-References: <20071118101336.330321764@mail.of.borg> <20071118101446.793269838@mail.of.borg>
- <474355BE.8030409@student.ltu.se>
+	Wed, 21 Nov 2007 02:56:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34104 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752701AbXKUH4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 02:56:18 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 07/18] x86 vDSO: vdso32 build
+In-Reply-To: Sam Ravnborg's message of  Wednesday, 21 November 2007 08:32:46 +0100 <20071121073246.GA449@uranus.ravnborg.org>
+References: <20071119215944.01B7C26F8BE@magilla.localdomain>
+	<20071119220532.029FC26F8BE@magilla.localdomain>
+	<20071121060201.GA32304@uranus.ravnborg.org>
+	<20071121071015.B8E3A26F8BE@magilla.localdomain>
+	<20071121073246.GA449@uranus.ravnborg.org>
+Emacs: because one operating system isn't enough.
+Message-Id: <20071121075542.308ED26F8BE@magilla.localdomain>
+Date: Tue, 20 Nov 2007 23:55:42 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007, Richard Knutsson wrote:
-> Geert Uytterhoeven wrote:
-> 
-> > -#define NUMNAMES (sizeof(names) / sizeof(struct dioname))
-> > +#define NUMNAMES ARRAY_SIZE(names)
-> 
-> Why not replace NUMNAMES?
+> I assume that if an error happened in a pipe set -e; would catch it.
+> But I did not check that - I normally just adds set -e; without much thought.
 
-Good idea! Updated patch below.
-
----
-
-Subject: dio: ARRAY_SIZE() cleanup
-
-From: Alejandro Martinez Ruiz <alex@flawedcode.org>
-
-dio: ARRAY_SIZE() cleanup
-
-[Geert: eliminate NUMNAMES, as suggested by Richard Knutsson ]
-
-Signed-off-by: Alejandro Martinez Ruiz <alex@flawedcode.org>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/dio/dio.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
---- a/drivers/dio/dio.c
-+++ b/drivers/dio/dio.c
-@@ -88,8 +88,6 @@ static struct dioname names[] = 
- #undef DIONAME
- #undef DIOFBNAME
- 
--#define NUMNAMES (sizeof(names) / sizeof(struct dioname))
--
- static const char *unknowndioname 
-         = "unknown DIO board -- please email <linux-m68k@lists.linux-m68k.org>!";
- 
-@@ -97,7 +95,7 @@ static const char *dio_getname(int id)
- {
-         /* return pointer to a constant string describing the board with given ID */
- 	unsigned int i;
--        for (i = 0; i < NUMNAMES; i++)
-+        for (i = 0; i < ARRAY_SIZE(names); i++)
-                 if (names[i].id == id) 
-                         return names[i].name;
- 
+No, you need set -o pipefail for that (which is a bashism).
 
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+Roland
