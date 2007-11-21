@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbXKUDaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbXKUDf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbXKUDaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 22:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbXKUD36
+	id S1756173AbXKUDf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 22:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXKUDfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 22:29:58 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:38983
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752174AbXKUD36 (ORCPT
+	Tue, 20 Nov 2007 22:35:51 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:64106 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbXKUDfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 22:29:58 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH] Fix optimized search
-To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Date: Tue, 20 Nov 2007 22:10:10 -0500
-Message-ID: <20071121030838.16020.59975.stgit@novell1.haskins.net>
-In-Reply-To: <20071121021057.GA24815@goodmis.org>
-References: <20071121021057.GA24815@goodmis.org>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 22:35:50 -0500
+Date: Tue, 20 Nov 2007 19:38:27 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] CPUFREQ: powernow-k8 print pstate instead of fid/did for
+ family 10h
+To: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200711201938.28110.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I spied a few more issues from http://lkml.org/lkml/2007/11/20/590.
+[PATCH] CPUFREQ: powernow-k8 print pstate instead of fid/did for family 10h
 
-Patch is below..
+powernow-k8: Found 1 Quad-Core AMD Opteron(tm) Processor 8354 processors (4 cpu cores) (version 2.20.00)
+powernow-k8:    0 : fid 0x0 did 0x0 (2200 MHz)
+powernow-k8:    1 : fid 0x0 did 0x0 (2000 MHz)
+powernow-k8:    2 : fid 0x0 did 0x0 (1700 MHz)
+powernow-k8:    3 : fid 0x0 did 0x0 (1400 MHz)
+powernow-k8:    4 : fid 0x0 did 0x0 (1100 MHz)
 
-Regards,
--Greg
+actually index for CPU_HW_PSTATE is pstate instead of fid/vid
+So print it out as pstate.
 
------------------
+powernow-k8: Found 1 Quad-Core AMD Opteron(tm) Processor 8354 processors (4 cpu cores) (version 2.20.00)
+powernow-k8:    0 : pstate 0 (2200 MHz)
+powernow-k8:    1 : pstate 1 (2000 MHz)
+powernow-k8:    2 : pstate 2 (1700 MHz)
+powernow-k8:    3 : pstate 3 (1400 MHz)
+powernow-k8:    4 : pstate 4 (1100 MHz)
 
-Include cpu 0 in the search, and eliminate the redundant cpu_set since
-the bit should already be set in the mask.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- kernel/sched_rt.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 28feeff..fbf4fb1 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -297,7 +297,7 @@ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
- static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- {
- 	int       lowest_prio = -1;
--	int       lowest_cpu  = 0;
-+	int       lowest_cpu  = -1;
- 	int       count       = 0;
- 	int       cpu;
- 
-@@ -319,7 +319,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 			 * and the count==1 will cause the algorithm
- 			 * to use the first bit found.
- 			 */
--			if (lowest_cpu) {
-+			if (lowest_cpu != -1) {
- 				cpus_clear(*lowest_mask);
- 				cpu_set(rq->cpu, *lowest_mask);
- 			}
-@@ -335,7 +335,6 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 				lowest_cpu = cpu;
- 				count = 0;
- 			}
--			cpu_set(rq->cpu, *lowest_mask);
- 			count++;
- 		} else
- 			cpu_clear(cpu, *lowest_mask);
-@@ -346,7 +345,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 	 * runqueues that were of higher prio than
- 	 * the lowest_prio.
- 	 */
--	if (lowest_cpu) {
-+	if (lowest_cpu != -1) {
- 		/*
- 		 * Perhaps we could add another cpumask op to
- 		 * zero out bits. Like cpu_zero_bits(cpumask, nrbits);
-
+Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -578,10 +578,9 @@ static void print_basics(struct powernow
+ 	for (j = 0; j < data->numps; j++) {
+ 		if (data->powernow_table[j].frequency != CPUFREQ_ENTRY_INVALID) {
+ 			if (cpu_family == CPU_HW_PSTATE) {
+-				printk(KERN_INFO PFX "   %d : fid 0x%x did 0x%x (%d MHz)\n",
++				printk(KERN_INFO PFX "   %d : pstate %d (%d MHz)\n",
+ 					j,
+-					(data->powernow_table[j].index & 0xff00) >> 8,
+-					(data->powernow_table[j].index & 0xff0000) >> 16,
++					data->powernow_table[j].index,
+ 					data->powernow_table[j].frequency/1000);
+ 			} else {
+ 				printk(KERN_INFO PFX "   %d : fid 0x%x (%d MHz), vid 0x%x\n",
