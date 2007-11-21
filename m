@@ -1,82 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761783AbXKTXmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbXKTXmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761783AbXKTXmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 18:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbXKTXmW
+	id S1764271AbXKTXmv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 18:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762170AbXKTXmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 18:42:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34253 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Nov 2007 18:42:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46355 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756450AbXKTXmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 18:42:21 -0500
-Date: Wed, 21 Nov 2007 00:41:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Zach Brown <zach.brown@oracle.com>, Ulrich Drepper <drepper@redhat.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-Message-ID: <20071120234151.GD23667@elte.hu>
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <47432666.6070503@oracle.com> <474331B7.6020802@zytor.com> <20071120222227.GH24156@elte.hu> <47436D07.2070203@zytor.com>
+	id S1760850AbXKTXma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 18:42:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 3/3 -mm] kexec based hibernation -v6: kexec hibernate/resume
+Date: Wed, 21 Nov 2007 01:00:31 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1195455769.10291.26.camel@caritas-dev.intel.com> <200711200324.31180.rjw@sisk.pl> <1195527033.11955.50.camel@caritas-dev.intel.com>
+In-Reply-To: <1195527033.11955.50.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47436D07.2070203@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200711210100.32631.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, 20 of November 2007, Huang, Ying wrote:
+> On Tue, 2007-11-20 at 03:24 +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, 20 of November 2007, Huang, Ying wrote:
+> > > On Mon, 2007-11-19 at 19:22 +0100, Rafael J. Wysocki wrote:
+> > > > > +#ifdef CONFIG_KEXEC
+> > > > > +static void kexec_hibernate_power_down(void)
+> > > > > +{
+> > > > > +	switch (hibernation_mode) {
+> > > > > +	case HIBERNATION_TEST:
+> > > > > +	case HIBERNATION_TESTPROC:
+> > > > > +		break;
+> > > > > +	case HIBERNATION_REBOOT:
+> > > > > +		machine_restart(NULL);
+> > > > > +		break;
+> > > > > +	case HIBERNATION_PLATFORM:
+> > > > > +		if (!hibernation_ops)
+> > > > > +			break;
+> > > > > +		hibernation_ops->enter();
+> > > > 
+> > > > hibernation_platform_enter() should be used here (as of the current mainline).
+> > > 
+> > > The power_down will be called with interrupt disabled, device suspended,
+> > > non-boot CPU disabled. But the latest hibernate_platform_enter calls the
+> > > device_suspend, disable_nonboot_cpus etc function. So, I use
+> > > hibernation_ops->enter() directly instead of
+> > > hibernation_platform_enter().
+> > 
+> > Hm, you need to call device_power_down(PMSG_SUSPEND) before
+> > hibernation_ops->enter().
+> > 
+> > Also, all of the ACPI global calls need to be carried out before that and the
+> > devices should be suspended rather than shut down in that case.
+> > 
+> > That's why hibernation_platform_enter() has been introduced, BTW.
+> 
+> Situation is a little different between u/swsusp and khiberantion.
+> 
+> u/swsusp:
+> 
+> platform_start();
+> suspend console();
+> device_suspend(PMSG_FREEZE);
+> platform_pre_snapshot();
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_FREEZE);
+> /* create snapshot */
+> device_power_up();
+> local_irq_enable();
+> enable_nonboot_cpus();
+> platform_finish();
+> device_resume();
+> resume_console();
+> /* write the image out */
+> hibernation_ops->start();
+> suspend_console();
+> device_suspend(PMSG_SUSPEND);
+> hibernation_ops->prepare();
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_SUSPEND);
+> hibernation_ops->enter();
+> 
+> khibernation:
+> 
+> suspend_console();
+> platform_start();
+> device_suspend(PMSG_FREEZE);
+> platform_pre_snapshot();
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_FREEZE);
+> /* jump to kexeced (hibernating) kernel */
+> /* in kexeced kernel */
+> device_power_up();
+> local_irq_eanble();
+> enable_nonboot_cpus();
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+You should call platform_finish() here, or device_resume() will not work
+appropriately on some systems.
 
->> Why not just pin down the current ABI that there's 6 syscall 
->> parameters _and not more_?
->
-> Because we have already violated it.  There are system calls that need 
-> more than 6 arguments: we need *a* convention.  Worse, we're not 
-> actually talking 6 *arguments*, we're talking 6 *words*; on 32-bit 
-> platforms a single argument can occupy two words.
+However, after platform_finish() has been executed, the ACPI firmware will
+assume that the hibernation has been canceled, so you need to tell it that
+you'd like to go into the low power state after all.
 
-i think you are at least partly wrong here. Multiplexing/demultiplexing 
-can go on infinitely - for example sys_write(fd, size, buf) can be 
-thought of as a function call that passes in fd, size and a variable 
-number of arguments of the data to be written.
+> device_resume();
+> resume_console();
+> /* write the image */
 
-in that sense capping function arguments at 6 is _sensible_ because it 
-prefers _simple_ interfaces. When i wrote syslets i did a syscall number 
-of arguments histogram:
+For this reason, you have to call hibernation_ops->start() once again
+and the other functions like in the swsusp case, in that order.
 
-  #args   #syscalls
-  -----------------
-      0       22
-      1       51
-      2       83
-      3       85
-      4       40
-      5       23
-      6        8
+> suspend_console();
+> device_suspend(PMSG_FREEZE);
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_FREEZE);
+> /* jump to original (hibernated) kernel */
 
+This looks too fragile to my eyes.
 
-Fortunately what we see today is that 80% of all syscalls have 4 or less 
-parameters. (yes, there are a few 6-parameter syscalls that arguably 
-hurt, but still, it's the exception not the rule)
+Why don't you call hibernation_ops->enter() directly from the "kexeced" kernel?
 
-this histogram shows a healthy bell curve which is _not_ limited by the 
-arguments limit of 6, but by common sense! If the 6-arguments limit was 
-a problem then we'd see a pile-up of 6-param syscalls.
-
-so i believe you should start thinking about lots-of-arguments syscalls 
-as an exception not as something that needs to fit into some generic 
-ABI. (Especially as most schemes that were supposed to handle this 
-problem would hurt the sane 4-parameter (or less) syscall case too.)
-
-	Ingo
+Rafael
