@@ -1,75 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbXKUB0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763308AbXKUBcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764181AbXKUB0K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbXKUBVn
+	id S1763308AbXKUBcu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756463AbXKUBcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:21:43 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:6229 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932434AbXKUBVj (ORCPT
+	Tue, 20 Nov 2007 20:32:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53170
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755204AbXKUBci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:21:39 -0500
-Date: Tue, 20 Nov 2007 19:21:36 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-In-reply-to: <fa.QqYdKsBUWKSLLGXmxJCAtZxLYnE@ifi.uio.no>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Message-id: <47438820.5010300@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.zy7JwM3jsOSgOCtqK2+rvFfdGjQ@ifi.uio.no>
- <fa.Zx9jkdx74KRPk1qghLrg9BCvfFU@ifi.uio.no>
- <fa.1TKmo5fKBZfHOQYq1bH4uMxOQek@ifi.uio.no>
- <fa.fjJG0rd93RGzZ4PSv/glscvAI0A@ifi.uio.no>
- <fa.7XLWa+gAWL3Q6I3O+hiS4UfcWpM@ifi.uio.no>
- <fa.QqYdKsBUWKSLLGXmxJCAtZxLYnE@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 20 Nov 2007 20:32:38 -0500
+Date: Tue, 20 Nov 2007 17:32:37 -0800 (PST)
+Message-Id: <20071120.173237.64412778.davem@davemloft.net>
+To: gorcunov@gmail.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH] SPARC64: check for possible NULL pointer dereference
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071120172833.GB7275@cvg>
+References: <20071120172833.GB7275@cvg>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Could you elaborate a bit on how the semantics of returning the
-> wrong information are more useful?
-> 
-> In particular if a thread does the logical equivalent of:
-> grep Pid: /proc/self/status.  It always get the tgid despite
-> having a different process id.
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Date: Tue, 20 Nov 2007 20:28:33 +0300
 
-The POSIX-defined userspace concept of a PID requires that all threads 
-appear to have the same PID. This is something that Linux didn't comply 
-with under the old LinuxThreads implementation and was finally fixed 
-with NPTL. This isn't a POSIX-defined interface, but I assume it's 
-trying to be consistent with getpid(), etc.
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> 
+> This patch adds checking for possible NULL pointer dereference
+> if of_find_property() failed.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-> How can that possibly be useful or correct?
-> 
-> From the kernel side I really think the current semantics of /proc/self
-> in the context of threads is a bug and confusing.  All of the kernel
-> developers first reaction when this was pointed out was that this
-> is a regression.
-> 
-> If it is truly useful to user space we can preserve this API design
-> bug forever.  I just want to make certain we are not being bug
-> compatible without a good reason.
-> 
-> Currently we have several kernel side bugs with threaded
-> programs because /proc/self does not do the intuitive thing.  Unless
-> something has changed recently selinux will cause accesses by a
-> non-leader thread to fail when accessing files through /proc/self.
-> 
-> So far the more I look at the current /proc/self behavior the
-> more I am convinced it is broken, and useless.  Please help me see
-> where it is useful, so we can justify keeping it.
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Applied, thanks.
