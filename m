@@ -1,60 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbXKUSTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbXKUSVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbXKUSTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 13:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXKUSTe
+	id S1756427AbXKUSVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 13:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXKUSVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 13:19:34 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:44414 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751802AbXKUSTd (ORCPT
+	Wed, 21 Nov 2007 13:21:33 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:25895 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbXKUSVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 13:19:33 -0500
-Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
-From: Zachary Amsden <zach@vmware.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Anthony Liguori <aliguori@us.ibm.com>, kvm-devel@lists.sourceforge.net,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       Eric Van Hensbergen <ericvanhensbergen@us.ibm.com>
-In-Reply-To: <4743DAA4.70800@qumranet.com>
-References: <11944899922822-git-send-email-aliguori@us.ibm.com>
-	 <11944900141678-git-send-email-aliguori@us.ibm.com>
-	 <11944900152750-git-send-email-aliguori@us.ibm.com>
-	 <11944900163817-git-send-email-aliguori@us.ibm.com>
-	 <4742F6B7.20503@qumranet.com>	<474300AD.4060509@us.ibm.com>
-	 <4743076F.8000105@qumranet.com> <47435CCB.1050506@us.ibm.com>
-	 <4743DAA4.70800@qumranet.com>
+	Wed, 21 Nov 2007 13:21:32 -0500
+X-Greylist: delayed 546 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 13:21:32 EST
+Subject: Re: [PATCH 5/6] Have zonelist contains structs with both a zone
+	pointer and zone_idx
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org
+In-Reply-To: <20071121004028.10789.46824.sendpatchset@skynet.skynet.ie>
+References: <20071121003848.10789.18030.sendpatchset@skynet.skynet.ie>
+	 <20071121004028.10789.46824.sendpatchset@skynet.skynet.ie>
 Content-Type: text/plain
-Date: Wed, 21 Nov 2007 10:22:57 -0800
-Message-Id: <1195669377.6352.247.camel@bodhitayantram.eng.vmware.com>
+Organization: HP/OSLO
+Date: Wed, 21 Nov 2007 13:12:27 -0500
+Message-Id: <1195668748.5294.13.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-21 at 09:13 +0200, Avi Kivity wrote:
+Mel:
 
-> Where the device is implemented is an implementation detail that should 
-> be hidden from the guest, isn't that one of the strengths of 
-> virtualization?  Two examples: a file-based block device implemented in 
-> qemu gives you fancy file formats with encryption and compression, while 
-> the same device implemented in the kernel gives you a low-overhead path 
-> directly to a zillion-disk SAN volume.  Or a user-level network device 
-> capable of running with the slirp stack and no permissions vs. the 
-> kernel device running copyless most of the time and using a dma engine 
-> for the rest but requiring you to be good friends with the admin.
+Are the comparisons noted below correct--i.e., '>' rather than '<'?  I'm
+trying to understand how this matches the comments and code.  Doesn't
+look right to me, but I could be missing something. 
+
+Lee
+
+On Wed, 2007-11-21 at 00:40 +0000, Mel Gorman wrote:
+> Filtering zonelists requires very frequent use of zone_idx(). This is costly
+> as it involves a lookup of another structure and a substraction operation. As
+> the zone_idx is often required, it should be quickly accessible.  The node
+> idx could also be stored here if it was found that accessing zone->node is
+> significant which may be the case on workloads where nodemasks are heavily
+> used.
 > 
-> The user should expect zero reconfigurations moving a VM from one model 
-> to the other.
-
-I think that is pretty insightful, and indeed, is probably the only
-reason we would ever consider using a virtio based driver.
-
-But is this really a virtualization problem, and is virtio the right
-place to solve it?  Doesn't I/O hotplug with multipathing or NIC teaming
-provide the same infrastructure in a way that is useful in more than
-just a virtualization context?
-
-Zach
+> This patch introduces a struct zoneref to store a zone pointer and a zone
+> index.  The zonelist then consists of an array of these struct zonerefs which
+> are looked up as necessary. Helpers are given for accessing the zone index
+> as well as the node index.
+> 
+> [kamezawa.hiroyu@jp.fujitsu.com: Suggested struct zoneref instead of embedding information in pointers]
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Christoph Lameter <clameter@sgi.com>
+> Acked-by: David Rientjes <rientjes@google.com>
+> ---
+> 
+>  arch/parisc/mm/init.c  |    2 -
+>  fs/buffer.c            |    6 ++--
+>  include/linux/mmzone.h |   64 ++++++++++++++++++++++++++++++++++++------
+>  include/linux/oom.h    |    4 +-
+>  kernel/cpuset.c        |    4 +-
+>  mm/hugetlb.c           |    3 +-
+>  mm/mempolicy.c         |   36 ++++++++++++++----------
+>  mm/oom_kill.c          |   45 ++++++++++++++----------------
+>  mm/page_alloc.c        |   66 ++++++++++++++++++++++++--------------------
+>  mm/slab.c              |    2 -
+>  mm/slub.c              |    2 -
+>  mm/vmscan.c            |    6 ++--
+>  12 files changed, 149 insertions(+), 91 deletions(-)
+> 
+<snip>
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-010_use_two_zonelists/include/linux/mmzone.h linux-2.6.24-rc2-mm1-020_zoneid_zonelist/include/linux/mmzone.h
+> --- linux-2.6.24-rc2-mm1-010_use_two_zonelists/include/linux/mmzone.h	2007-11-20 23:27:04.000000000 +0000
+> +++ linux-2.6.24-rc2-mm1-020_zoneid_zonelist/include/linux/mmzone.h	2007-11-20 23:27:34.000000000 +0000
+> @@ -469,6 +469,15 @@ struct zonelist_cache;
+>  #endif
+>  
+>  /*
+> + * This struct contains information about a zone in a zonelist. It is stored
+> + * here to avoid dereferences into large structures and lookups of tables
+> + */
+> +struct zoneref {
+> +	struct zone *zone;	/* Pointer to actual zone */
+> +	int zone_idx;		/* zone_idx(zoneref->zone) */
+> +};
+> +
+> +/*
+>   * One allocation request operates on a zonelist. A zonelist
+>   * is a list of zones, the first one is the 'goal' of the
+>   * allocation, the other zones are fallback zones, in decreasing
+> @@ -476,11 +485,18 @@ struct zonelist_cache;
+>   *
+>   * If zlcache_ptr is not NULL, then it is just the address of zlcache,
+>   * as explained above.  If zlcache_ptr is NULL, there is no zlcache.
+> + * *
+> + * To speed the reading of the zonelist, the zonerefs contain the zone index
+> + * of the entry being read. Helper functions to access information given
+> + * a struct zoneref are
+> + *
+> + * zonelist_zone()	- Return the struct zone * for an entry in _zonerefs
+> + * zonelist_zone_idx()	- Return the index of the zone for an entry
+> + * zonelist_node_idx()	- Return the index of the node for an entry
+>   */
+> -
+>  struct zonelist {
+>  	struct zonelist_cache *zlcache_ptr;		     // NULL or &zlcache
+> -	struct zone *zones[MAX_ZONES_PER_ZONELIST + 1];      // NULL delimited
+> +	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
+>  #ifdef CONFIG_NUMA
+>  	struct zonelist_cache zlcache;			     // optional ...
+>  #endif
+> @@ -713,26 +729,52 @@ extern struct zone *next_zone(struct zon
+>  	     zone;					\
+>  	     zone = next_zone(zone))
+>  
+> +static inline struct zone *zonelist_zone(struct zoneref *zoneref)
+> +{
+> +	return zoneref->zone;
+> +}
+> +
+> +static inline int zonelist_zone_idx(struct zoneref *zoneref)
+> +{
+> +	return zoneref->zone_idx;
+> +}
+> +
+> +static inline int zonelist_node_idx(struct zoneref *zoneref)
+> +{
+> +#ifdef CONFIG_NUMA
+> +	/* zone_to_nid not available in this context */
+> +	return zoneref->zone->node;
+> +#else
+> +	return 0;
+> +#endif /* CONFIG_NUMA */
+> +}
+> +
+> +static inline void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
+> +{
+> +	zoneref->zone = zone;
+> +	zoneref->zone_idx = zone_idx(zone);
+> +}
+> +
+>  /* Returns the first zone at or below highest_zoneidx in a zonelist */
+> -static inline struct zone **first_zones_zonelist(struct zonelist *zonelist,
+> +static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
+>  					enum zone_type highest_zoneidx)
+>  {
+> -	struct zone **z;
+> +	struct zoneref *z;
+>  
+>  	/* Find the first suitable zone to use for the allocation */
+> -	z = zonelist->zones;
+> -	while (*z && zone_idx(*z) > highest_zoneidx)
+> +	z = zonelist->_zonerefs;
+> +	while (zonelist_zone_idx(z) > highest_zoneidx)
+!!! HERE:                             ^
+>  		z++;
+>  
+>  	return z;
+>  }
+>  
+>  /* Returns the next zone at or below highest_zoneidx in a zonelist */
+> -static inline struct zone **next_zones_zonelist(struct zone **z,
+> +static inline struct zoneref *next_zones_zonelist(struct zoneref *z,
+>  					enum zone_type highest_zoneidx)
+>  {
+>  	/* Find the next suitable zone to use for the allocation */
+> -	while (*z && zone_idx(*z) > highest_zoneidx)
+> +	while (zonelist_zone_idx(z) > highest_zoneidx)
+!!! and HERE:                         ^
+>  		z++;
+>  
+>  	return z;
+> @@ -748,9 +790,11 @@ static inline struct zone **next_zones_z
+>   * This iterator iterates though all zones at or below a given zone index.
+>   */
+>  #define for_each_zone_zonelist(zone, z, zlist, highidx) \
+> -	for (z = first_zones_zonelist(zlist, highidx), zone = *z++;	\
+> +	for (z = first_zones_zonelist(zlist, highidx),			\
+> +					zone = zonelist_zone(z++);	\
+>  		zone;							\
+> -		z = next_zones_zonelist(z, highidx), zone = *z++)
+> +		z = next_zones_zonelist(z, highidx),			\
+> +					zone = zonelist_zone(z++))
+>  
+>  #ifdef CONFIG_SPARSEMEM
+>  #include <asm/sparsemem.h>
+<snip>
 
