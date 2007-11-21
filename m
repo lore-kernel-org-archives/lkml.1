@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbXKUWxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbXKUXGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbXKUWxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 17:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbXKUWxH
+	id S1756353AbXKUXGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 18:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbXKUXGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 17:53:07 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40951 "EHLO smtps.tip.net.au"
+	Wed, 21 Nov 2007 18:06:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49363 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbXKUWxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 17:53:06 -0500
-Date: Thu, 22 Nov 2007 09:52:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc3-mm1- powerpc link failure
-Message-Id: <20071122095256.dd5b6e39.sfr@canb.auug.org.au>
-In-Reply-To: <4743E706.6010504@linux.vnet.ibm.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4743E706.6010504@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	id S1754597AbXKUXGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 18:06:00 -0500
+Subject: Re: [PATCH 3/3] PNP cleanups - Version 2 - Pass struct pnp_dev to
+	pnp_clean_resource_table for cleanup reasons
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "yakui.zhao" <yakui.zhao@intel.com>
+In-Reply-To: <20071121181318.75ceeb4d@the-village.bc.nu>
+References: <1195581124.23700.262.camel@queen.suse.de>
+	 <20071120180007.1ebe11a2@the-village.bc.nu> <4743372A.6030400@keyaccess.nl>
+	 <20071120221812.47fb5645@the-village.bc.nu> <4743EE5E.4070301@keyaccess.nl>
+	 <1195638201.23700.285.camel@queen.suse.de>
+	 <20071121181318.75ceeb4d@the-village.bc.nu>
+Content-Type: text/plain
+Date: Thu, 22 Nov 2007 00:05:57 +0100
+Message-Id: <1195686357.3760.28.camel@queen.suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5"
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2007-11-21 at 18:13 +0000, Alan Cox wrote:
+> > > in the pnp_dev. That is, the resources are tied to the device, with struct 
+> > > pnp_resource_table being no more than a handy container to group them under 
+> > > a single name.
+> > Putting the count into struct resource does not make sense.
+> 
+> Can you explain that claim ?
+The additional variable would only make sense for the pnp layer, or only
+for the pnp resource table in the pnp layer, but struct resource is used
+at much more places...
+It is meant for System Memory and IO port resources in general, why
+waste bytes and an additional name at all places it is used, just for
+the pnp resource table?
 
-On Wed, 21 Nov 2007 13:36:30 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
-m.com> wrote:
->
-> The kernel build fails on powerpc while linking,
+> > The idea is to not rely on the exact pnp resource table structure and
+> > abstracting this to macros. If krealloc approach works,
+> > dev->res.port_resource[i].start would even still work, if not, it's
+> > easier to alter the pnp resource table and the macros internally.
+> 
+> Externally in drivers yes. Internally in code no - it makes the code
+> harder to work with.
+> 
+> > > Yes, I dont know how he intends to deal with this (nor, in fact, just how 
+> > > dynamic things are supposed to end up to begin with) so over to Thomas.
+> > Krealloc should only get used at early pnp init time, when the BIOS
+> > structures are parsed. The devices shouldn't be active then...
+> > A bit of a problem, as said, could be the sysfs interfaces, there it
+> > must be insured krealloc is not used anymore.
+> 
+> I don't think its that simple but that can be dealt with one the changes
+> are in place if the objects are sensibly laid out.
 
-Only for allyesconfig (or maybe some other config that builds a lot of
-stuff in.
+I hope it is, stay tuned there will come something soon...
+If it's not that easy, another structure would be needed and every
+dev->res.port_resource[i].start and friends need to be touched (I don't
+see how this could still be resolved in a simple array then...).
 
->   AS      .tmp_kallsyms3.o
->   LD      vmlinux.o
-> ld: TOC section size exceeds 64k
-> make: *** [vmlinux.o] Error 1
->=20
-> The patch posted at http://lkml.org/lkml/2007/11/13/414, solves this=20
-> failure.
+    Thomas
 
-However, that patch needs more testing especially to figure out what
-performance effects it has.  i.e. not for merging, yet.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHRLbMTgG2atn1QN8RAv3JAJ0elWher97gDR4ohd9+9yNOAj27IgCcDCBD
-xKL2XNiv9EK/IUoswd4ILUc=
-=Wmga
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5--
