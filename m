@@ -1,112 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbXKUT2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbXKUT3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755808AbXKUT2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbXKUT2E
+	id S1755314AbXKUT3k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXKUT3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:28:04 -0500
-Received: from cfif3.ist.utl.pt ([193.136.161.44]:32843 "EHLO cfif3.ist.utl.pt"
+	Wed, 21 Nov 2007 14:29:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50448 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752415AbXKUT2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:28:00 -0500
-X-Greylist: delayed 3720 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 14:28:00 EST
-From: paulo@cfif3.ist.utl.pt
-Message-Id: <200711211825.lALIPp5U002919@cfif3.ist.utl.pt>
-Subject: kernel BUG at fs/inode.c
-To: linux-kernel@vger.kernel.org
-Date: Wed, 21 Nov 2007 18:25:51 +0000 (WET)
-Reply-to: paulo.nogueira@ist.utl.pt
-X-Mailer: ELM [version 2.5 PL6]
+	id S1752126AbXKUT3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:29:31 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
+Date: Wed, 21 Nov 2007 20:47:12 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200706300859.47133.arvidjaar@mail.ru> <200709091907.14642.rjw@sisk.pl> <200711212012.33403.arvidjaar@mail.ru>
+In-Reply-To: <200711212012.33403.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711212047.13464.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday, 21 of November 2007, Andrey Borzenkov wrote:
+> On Sunday 09 September 2007, Rafael J. Wysocki wrote:
+> > On Sunday, 9 September 2007 16:00, Andrey Borzenkov wrote:
+> > > On Sunday 01 July 2007, Rafael J. Wysocki wrote:
+> > > > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
+> > > > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
+> > > > > suspend to disk :)
+> > > > >
+> > > > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
+> > > > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
+> > > > > libata with pata_ali driver.
+> > > > >
+> > > > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
+> > > > > system hung at least once in every rcX. Up to rc6 those lockups were
+> > > > > absolutely silent (black screen without reaction to any key). In rc6 I
+> > > > > just got something different. After resume I got on screem:
+> > > > >
+> > > > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
+> > > > > swsusp: Basic memory bitmaps created
+> > > > > swsusp: Basic memory bitmaps freed
+> > > > >
+> > > > > After that it just sits there doing nothing. Ther was brief sound of HDD
+> > > > > but I suspect it was related more to power-on. System was responding to
+> > > > > power-on button press:
+> > > > >
+> > > > > ACPI Error (event-0305): No installed handler for fixed event [00000002
+> > > > > 20070125]
+> > > > >
+> > > > > And SysRq was functioning.
+> > > >
+> > > > That probably means that there's a deadlock somewhere in there.
+> > > >
+> > > > > Unfortunately I do not have serial console so I
+> > > > > copy manually stacks from several last screens of output; I have tried to
+> > > > > make a photo but right now my kbluetooth is refusing to work at all so I
+> > > > > cannot transfer them :( (but I suspect quality would be too bad anyway)
+> > > > >
+> > > > > laptop_mode D
+> > > > > 	io_schedule+0xe/0x20
+> > > >
+> > > > Looks suspicious to me.  Can you identify what line of code this points to?
+> > > >
+> > > > > 	sync_buffer+0x35/0x40
+> > > > > 	__wait_on_bit+0x45/0x70
+> > > > > 	out_of_line_wait_on_bit+0x6c/0x80
+> > > > > 	__wait_on_buffer+0x27/0x30
+> > > > > 	search_by_key+0x15e/0x1250 [reiserfs]
+> > > > > 	reiserfs_read_locked_inode+0x64/0x570 [reiserfs]
+> > > > > 	reiserfs_iget+0x7e/0xa0 [reiserfs]
+> > > > > 	reiserfs_lookup+0xc7/0x120 [reiserfs]
+> > > > > 	do_lookup+0x138/0x180
+> > > > > 	__link_path_walk+0x787/0xce0
+> > > > > 	link_path_walk+0x44/0xc0
+> > > > > 	path_walk+0x18/0x20
+> > > > > 	do_path_lookup_0x88/0x210
+> > > > > 	__path_lookupintent_open+0x4d/0x90
+> > > > > 	path_lookup_open+0x1f/0x30
+> > > > > 	open_exec+0x28/0xb0
+> > > > > 	do_execve+0x36/0x1d0
+> > > > > 	sys_execve+0x2e/0x80
+> > > > > 	sysenter_past_esp+0x5f/0x99
+> > > > >
+> > > > > 90clock D
+> > > > > 	__mutex_lock_slow_path+0xa1/0x290
+> > > > > 	mutex_lock+0x21/0x30
+> > > > > 	do_lookup+0xa1/0x180
+> > > > > 	__link_path_walk+0x44/0xc0
+> > > > > 	path_walk+0x18/0x20
+> > > > > 	do_path_lookup+0x78/0x210
+> > > > > 	__user_walk_fd+0x38/0x50
+> > > > > 	vfs_stat_fd+0x21/0x50
+> > > > > 	vfs_stat+0x11/0x20
+> > > > > 	sys_stat64+0x14/0x30
+> > > > > 	sysenter_past_esp+0x5f/0x99
+> > > > >
+> > > > > alsactl D
+> > > > > 	io_schedule+0xe/0x20
+> > > >
+> > > > Same here.  Hmm.
+> > > >
+> > > > > 	sync_page+0x35/0x40
+> > > > > 	__wait_on_bit_lock+0x3f/0x70
+> > > > > 	__lock_page+0x68/0x70
+> > > > > 	filemap_nopage+0x16c/0x300
+> > > > > 	__handle_mm_faul+0x1d7/0x610
+> > > > > 	do_page_fault+0x1d7/0x610
+> > > > > 	error_code+0x6a/0x70
+> > > > > 	padzero+0x1f/0x30
+> > > > > 	load_elf_binary+0x743/0x1ab0
+> > > > > 	search_binary_handler+0x7b/0x1f0
+> > > > > 	do_execve+0x137/0x1d0
+> > > > > 	sys_execve+0x2e/0x80
+> > > > > 	sysenter_past_esp+0x5f/0x90
+> > > > >
+> > > > > After that I could remount, sync and reboot using SysRq (well, after
+> > > > > reboot it still insisted on replaying insane number of transactions so
+> > > > > may be it did *not* remount / ro after all). Before reboot there was
+> > > > > brief output that resembled lockdep warnings, but it went too fast to be
+> > > > > readable.
+> > > > >
+> > > > > usual stuff follows
+> > > >
+> > > > I see you're using CFQ as the default IO scheduler.  Can you please switch
+> > > > to AS and see if that changes anything?
+> > > >
+> > > 
+> > > I just had the same lockup on resume using AS with 2.6.23-rc5.
+> > 
+> > Hm.  Does your root partition sit on reiserfs?
+> 
+> I already answered this but yes, I do.
+> 
+> > 
+> > 
+> 
+> just had it again on 2.6.24-rc3. Same thing - keys working (to some extent)
+> Alt-SysRq allows me to reboot; unfortunately I switched (unintentionally)
+> from resume message to tty1 and it was in funny state so SysRq-t was lost but
+> I pretty much suspect it be the same.
+> 
+> well, not sure how to debug problem that pops up once in three-four release ...
 
+And you never know when it happens ...
 
-  hi,
+I have no idea.  It's probably related to your hardware configuration somehow,
+as it doesn't seem to be reproducible in general.
 
- This is to report a kernel bug that appeared while using the
- non-standard kernel 2.6.24-rc1-git10, which I was using for
- the purpose of helping to debug a different problem.
- I am not sure if the problem is easily reproducible... if
- needed I'll try with the latest fc7 kernel.
-
- The dump listed below was extracted from /var/log/messages
- and was generated after copying > 1GB of data to a DVD-RAM,
- udf format. When it seemed to have stopped (after 2 hours!)
- I issued the eject command. It then seemed to write more
- data to the disk (possibly part of the data had not been
- really copied, and it was syncing) and a few minutes after
- this notice came up.
-
-  best regards
-   Paulo Nogueira
-
-  PS please cc replies to me
-
-
-
-Nov 20 23:30:23 *** kernel: kernel BUG at fs/inode.c:191!
-Nov 20 23:30:23 *** kernel: invalid opcode: 0000 [1] SMP 
-Nov 20 23:30:23 *** kernel: CPU 1 
-Nov 20 23:30:23 *** kernel: Modules linked in: udf usb_storage autofs4 sunrpc cpufreq_ondemand reiserfs dm_mirror dm_mod video output sbs sbshc battery ac power_supply ipv6 snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd sr_mod button forcedeth soundcore cdrom k8temp pcspkr snd_page_alloc pata_amd hwmon i2c_nforce2 i2c_core sg sata_nv ata_generic libata sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd
-Nov 20 23:30:23 *** kernel: Pid: 11762, comm: umount Not tainted 2.6.24-rc1-git10 #0
-Nov 20 23:30:23 *** kernel: RIP: 0010:[<ffffffff810a9886>]  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-Nov 20 23:30:23 *** kernel: RSP: 0018:ffff81001ac47dd8  EFLAGS: 00010202
-Nov 20 23:30:23 *** kernel: RAX: 0000000000000001 RBX: ffff81010ac0b548 RCX: ffff81010ac0b548
-Nov 20 23:30:23 *** kernel: RDX: 0000000000000007 RSI: ffff81010ac0b750 RDI: ffff81010ac0b548
-Nov 20 23:30:23 *** kernel: RBP: ffff81010ac0b548 R08: 8000000000000000 R09: ffffffff81405a18
-Nov 20 23:30:23 *** kernel: R10: 0000000000000000 R11: ffff81001ac47d58 R12: 00000000000001ba
-Nov 20 23:30:23 *** kernel: R13: ffff81001ac47e18 R14: ffff81001aba6068 R15: 0000000000000000
-Nov 20 23:30:23 *** kernel: FS:  00002b38ac69f6c0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
-Nov 20 23:30:23 *** kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Nov 20 23:30:23 *** kernel: CR2: 00000000008cb370 CR3: 000000001ac6a000 CR4: 00000000000006e0
-Nov 20 23:30:23 *** kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-Nov 20 23:30:23 *** kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Nov 20 23:30:23 *** kernel: Process umount (pid: 11762, threadinfo ffff81001ac46000, task ffff81010492c000)
-Nov 20 23:30:23 *** kernel: Stack:  ffff81010ac0b558 ffffffff810a9e84 0000000000000018 ffff8101059af048
-Nov 20 23:30:23 *** kernel:  ffff81010610a8c0 0000000000004a57 ffff81010610a8c0 ffffffff810aa160
-Nov 20 23:30:23 *** kernel:  ffff81010ac0b7d8 ffff81001aba6058 0000000000000000 ffff81010610a800
-Nov 20 23:30:23 *** kernel: Call Trace:
-Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
-Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
-Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
-Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
-Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
-Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
-Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
-Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
-Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
-Nov 20 23:30:23 *** kernel: 
-Nov 20 23:30:23 *** kernel: 
-Nov 20 23:30:23 *** kernel: Code: 0f 0b eb fe 48 89 df e8 e7 39 04 00 48 8b 83 f8 00 00 00 48 
-Nov 20 23:30:23 *** kernel: RIP  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-Nov 20 23:30:23 *** kernel:  RSP <ffff81001ac47dd8>
-Nov 20 23:30:23 *** kernel: WARNING: at kernel/exit.c:917 do_exit()
-Nov 20 23:30:23 *** kernel: 
-Nov 20 23:30:23 *** kernel: Call Trace:
-Nov 20 23:30:23 *** kernel:  [<ffffffff8103c55a>] do_exit+0x4f/0x768
-Nov 20 23:30:23 *** kernel:  [<ffffffff8100d64d>] kernel_math_error+0x0/0x71
-Nov 20 23:30:23 *** kernel:  [<ffffffff8100da73>] do_invalid_op+0x85/0x8f
-Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-Nov 20 23:30:23 *** kernel:  [<ffffffff8104bd77>] bit_waitqueue+0x10/0x9f
-Nov 20 23:30:23 *** kernel:  [<ffffffff8104be44>] wake_up_bit+0x11/0x22
-Nov 20 23:30:23 *** kernel:  [<ffffffff810b23cf>] __writeback_single_inode+0x2a5/0x2b7
-Nov 20 23:30:23 *** kernel:  [<ffffffff882cb85c>] :udf:udf_current_aext+0xe8/0x143
-Nov 20 23:30:23 *** kernel:  [<ffffffff81251039>] error_exit+0x0/0x51
-Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-Nov 20 23:30:23 *** kernel:  [<ffffffff810a9882>] destroy_inode+0x9/0x47
-Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
-Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
-Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
-Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
-Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
-Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
-Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
-Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
-Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
-Nov 20 23:30:23 *** kernel: 
-
-
+Regards,
+Rafael
