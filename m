@@ -1,154 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759105AbXKUKoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbXKUKuC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759105AbXKUKoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 05:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXKUKoG
+	id S1760658AbXKUKuC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 05:50:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXKUKty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 05:44:06 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63093 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753218AbXKUKoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 05:44:05 -0500
-Date: Wed, 21 Nov 2007 11:43:52 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Nelson, Shannon" <shannon.nelson@intel.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>, "Olof Johansson" <olof@lixom.net>
-Subject: Re: [PATCH] dmaengine: Simple DMA memcpy test client
-Message-ID: <20071121114352.454c4d05@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C03752493@orsmsx418.amr.corp.intel.com>
-References: <1195558354-23150-1-git-send-email-hskinnemoen@atmel.com>
-	<BAE9DCEF64577A439B3A37F36F9B691C03752493@orsmsx418.amr.corp.intel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 21 Nov 2007 05:49:54 -0500
+Received: from sacred.ru ([62.205.161.221]:42186 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753484AbXKUKtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 05:49:53 -0500
+Message-ID: <47440D3D.3040609@openvz.org>
+Date: Wed, 21 Nov 2007 13:49:33 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] Don't forget to unlock uids_mutex on error paths
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 21 Nov 2007 13:49:37 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 09:34:38 -0800
-"Nelson, Shannon" <shannon.nelson@intel.com> wrote:
+The commit
 
-> >-----Original Message-----
-> >From: Haavard Skinnemoen [mailto:hskinnemoen@atmel.com] 
+commit 5cb350baf580017da38199625b7365b1763d7180
+Author: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Date:   Mon Oct 15 17:00:14 2007 +0200
 
-> >+#define TEST_BUF_SIZE		(16384)
-> 
-> You might make this a module parameter so we can test with various
-> sizes.
+    sched: group scheduling, sysfs tunables
 
-Good idea.
+introduced the uids_mutex and the helpers to lock/unlock it.
+Unfortunately, the error paths of alloc_uid() were not patched
+to unlock it.
 
-> >+static enum dma_state_client
-> >+dmatest_event(struct dma_client *client, struct dma_chan *chan,
-> >+		enum dma_state state)
-> >+{
-> >+	struct dmatest		*test = to_dmatest(client);
-> >+	enum dma_state_client	ack = DMA_DUP;
-> 
-> DMA_NAK is better default for DMA_RESOURCE_AVAILABLE once you've got the
-> channel you want, as that will stop DMAEngine from handing you more, and
-> doesn't bother the DMA_RESOURCE_REMOVED process.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-Right. I'll fix that.
+---
 
-> >+
-> >+	spin_lock(&test->lock);
-> >+	switch (state) {
-> >+	case DMA_RESOURCE_AVAILABLE:
-> >+		if (!test->chan) {
-> >+			printk(KERN_INFO "dmatest: Got channel %s\n",
-> >+				chan->dev.bus_id);
-> >+			test->chan = chan;
-> >+			wake_up_interruptible(&test->wq);
-> >+			ack = DMA_ACK;
-> >+		}
-> >+		break;
-> 
-> Do you ever want to test a specific channel?  Is there a way to identify
-> specific channels, perhaps by checking the PCI bus/chan/func?  This
-> could be useful in debugging specific hardware issues - a frilly extra
-> feature and very HW specific, but potentially useful.  I suppose this
-> might also depend upon your hardware - is there more than one channel in
-> your gizmo?
+diff --git a/kernel/user.c b/kernel/user.c
+index 56327ee..3549c4b 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -343,8 +343,11 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		struct user_struct *new;
+ 
+ 		new = kmem_cache_alloc(uid_cachep, GFP_KERNEL);
+-		if (!new)
++		if (!new) {
++			uids_mutex_unlock();
+ 			return NULL;
++		}
++
+ 		new->uid = uid;
+ 		atomic_set(&new->__count, 1);
+ 		atomic_set(&new->processes, 0);
+@@ -361,6 +364,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 
+ 		if (alloc_uid_keyring(new, current) < 0) {
+ 			kmem_cache_free(uid_cachep, new);
++			uids_mutex_unlock();
+ 			return NULL;
+ 		}
+ 
+@@ -368,6 +372,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 			key_put(new->uid_keyring);
+ 			key_put(new->session_keyring);
+ 			kmem_cache_free(uid_cachep, new);
++			uids_mutex_unlock();
+ 			return NULL;
+ 		}
+ 
+-- 
+1.5.3.4
 
-Yes, my gizmo has three channels, but they're all identical with
-respect to the basic memcpy() functionality. I suppose we could add a
-module parameter to specify the bus_id of the channel to be tested.
-
-Another nice feature would be to start multiple threads exercising
-several channels in parallel. In its current form, this module probably
-won't find many hard-to-debug race conditions...
-
-> >+
-> >+	case DMA_RESOURCE_REMOVED:
-> >+		if (test->chan == chan) {
-> 
-> Should you use your test->lock here? 
-
-The whole switch() block runs with test->lock held.
-
-> >+			printk(KERN_INFO "dmatest: Lost channel %s\n",
-> >+				chan->dev.bus_id);
-> >+			test->chan = NULL;
-> >+			ack = DMA_ACK;
-> >+		}
-> >+		break;
-> >+
-> >+	default:
-> 
-> Since this is a test program, perhaps a printk() here might be useful...
-
-Yes, probably. Maybe we should even handle suspend/resume as well...
-
-> >+	for (;;) {
-> >+		DEFINE_WAIT(chan_wait);
-> >+
-> >+		pr_debug("dmatest: Waiting for a channel...\n");
-> >+		for (;;) {
-> >+			spin_lock(&test->lock);
-> >+			prepare_to_wait(&test->wq, &chan_wait,
-> >+					TASK_UNINTERRUPTIBLE);
-> 
-> Hmmm - so the only way to trigger the loop is to remove then add a
-> channel, basically rmmod and insmod your dma driver?  It would be nice
-> to have a method to trigger more than one test, maybe even a stream of
-> copy requests.  Or am I asking for too many features?  :-)
-
-No, it will keep going until the channel is removed. It will prepare to
-wait, check if it's already got a channel and if so, break out
-immediately and run a test. Otherwise, it will call schedule() and wait
-for the event callback to wake it up.
-
-> >+			if (kthread_should_stop()) {
-> >+				should_stop = true;
-> >+				break;
-> >+			}
-> >+
-> >+			if (test->chan) {
-> >+				chan = test->chan;
-> >+				dma_chan_get(chan);
-> 
-> I suppose you are doing this extra get and put to be absolutely sure the
-> channel doesn't disappear out from under you, even though your
-> dmatest_event() already ACK'd the removal, right?
-
-The idea is that when someone attempts to remove a channel in the
-middle of a test, the extra dma_chan_get() will make sure that the
-channel isn't actually removed until the test is done. The event
-callback will set test->chan to NULL, thus putting the thread to sleep
-the next time around. It will also ACK the removal, causing the
-reference count to drop so that when the currently running test is done
-and dma_chan_put() is called, the channel will be released.
-
-I guess we could NAK the removal, but that means we need some way to
-signal the thread that it needs to call dma_chan_put() at some point. I
-think the current code is nice and symmetric since adding and removing
-channels is handled in mostly the same way.
-
-> Thanks for posting this.
-
-Thanks for reviewing :-)
-
-Håvard
