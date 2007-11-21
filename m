@@ -1,410 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXKUGiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbXKUGjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756919AbXKUGiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 01:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXKUGiJ
+	id S1758212AbXKUGjL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 01:39:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbXKUGi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 01:38:09 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39032 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbXKUGiG (ORCPT
+	Wed, 21 Nov 2007 01:38:56 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:43055 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751955AbXKUGix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 01:38:06 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-Date: Tue, 20 Nov 2007 23:36:52 -0700
-In-Reply-To: <4743026B.2020907@openvz.org> (Pavel Emelyanov's message of "Tue,
-	20 Nov 2007 18:51:07 +0300")
-Message-ID: <m1hcjgp0jf.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 21 Nov 2007 01:38:53 -0500
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: linux-rt-users@vger.kernel.org
+Subject: [PREEMPT_RT] LOCK_STAT and kexec: general protection fault
+Date: Wed, 21 Nov 2007 12:08:38 +0530
+User-Agent: KMail/1.9.4
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711211208.38776.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Below is a preliminary patch.  It solves the directory issue but it doesn't
-play well with proc_mnt and proc_flush_task.  It works by simply caching the
-network namespace when we mount proc so we don't have to be fancy and dynamic.
+On RT kernel, When CONFIG_LOCK_STAT is enabled, trying to load the kdump 
+kernel (kexec -p) causes a kernel panic. I have seen slightly varying 
+backtraces, but I see general protection fault every time.
 
-Something for the discussion anyway.
+Hardware: x86_64, 4CPUs, LS20 blade.
+Kernel: 2.6.23.1-rt11.
 
-I will start sorting out what makes sense tomorrow.
+I don't see this problem on non-rt kernels.
 
-Eric
+Kernstopped custom tracer.
+general protection fault: 0000 [1] PREEMPT SMP
+CPU 3
+Modules linked in: ipmi_devintf ipmi_si ipmi_msghandler autofs4 hidp rfcomm 
+l2cap bluetooth sunrpc nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 
+xt_state iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter 
+ip6_tables x_tables ipv6 dm_mirror dm_multipath dm_mod video output sbs dock 
+battery ac parport_pc lp parport joydev sg amd_rng rtc_cmos i2c_amd756 k8temp 
+shpchp i2c_core rtc_core tg3 hwmon serio_raw rtc_lib button mptspi mptscsih 
+scsi_transport_spi mptbase sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd 
+uhci_hcd
+Pid: 3540, comm: kexec Not tainted 2.6.23.1-rt11 #2
+RIP: 0010:[<ffffffff8025ae13>]  [<ffffffff8025ae13>] 
+__lock_acquire+0x6b2/0xca0
+RSP: 0018:ffff8102118d7eb8  EFLAGS: 00010092
+RAX: 0bbda08e8f9f3119 RBX: ffff8101fb4defd0 RCX: ffffffff80e31110
+RDX: 0bbda08e8f9f3119 RSI: 000000000000000a RDI: 0000000000000001
+RBP: ffff8102118d7f18 R08: 0000000000000002 R09: 0000000000000001
+R10: ffffffff80275659 R11: fffffffffffff000 R12: 00000000000000e6
+R13: ffff8101fb4de7c0 R14: 0000000000000000 R15: 00000000001225dc
+FS:  00002b55f6778b00(0000) GS:ffff810211fbb940(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00000032fc494ff0 CR3: 00000001fbfa0000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process kexec (pid: 3540, threadinfo ffff8101fb518000, task ffff8101fb4de7c0)
+Stack:  00000001b434a540 0000000000000002 0000000000000000 ffffffff8068dc90
+ ffffffff80234dd8 ffff8102118d7f00 000000000000000a 0000000000000046
+ ffffffff8068dc78 0000000000000003 ffffffff8068dc78 00000000001225dc
+Call Trace:
+ <IRQ>  [<ffffffff80234dd8>] wake_up_process+0x12/0x14
+ [<ffffffff8025b45f>] lock_acquire+0x5e/0x77
+ [<ffffffff80275659>] handle_edge_irq+0x29/0x158
+ [<ffffffff804a1690>] __spin_lock+0x35/0x62
+ [<ffffffff80275659>] handle_edge_irq+0x29/0x158
+ [<ffffffff8020e5d2>] do_IRQ+0x80/0xea
+ [<ffffffff8020c4a6>] ret_from_intr+0x0/0xf
+ <EOI>  [<ffffffff8033b647>] copy_user_generic_string+0x17/0x40
+ [<ffffffff80267f74>] sys_kexec_load+0x501/0x5dd
+ [<ffffffff8020f17a>] syscall_trace_enter+0x95/0x99
+ [<ffffffff8020c0f7>] tracesys+0xdc/0xe1
 
+INFO: lockdep is turned off.
 
->From f359fde2469ba8be2123a465e788a83c7e6831e9 Mon Sep 17 00:00:00 2001
-From: Eric W. Biederman <ebiederm@xmission.com>
-Date: Tue, 20 Nov 2007 19:36:05 -0700
-Subject: [PATCH] proc: Fix /proc/net directory listings.
+Code: 48 8b 10 0f 18 0a 48 39 c8 75 e4 f0 ff 0d 1b 5a 39 00 79 0d 
+RIP  [<ffffffff8025ae13>] __lock_acquire+0x6b2/0xca0
+ RSP <ffff8102118d7eb8>
+Kernel panic - not syncing: Fatal exception
 
-Having proc dynamically display the contents of /proc/net is
-hard.  So make life simpler by capturing the network namespace
-when we mount proc and only displaying that network namespace.
+Call Trace:
+ <IRQ>  [<ffffffff8023af69>] panic+0xaf/0x16e
+ [<ffffffff802322d6>] task_rq_lock+0x42/0x74
+ [<ffffffff804a0e7c>] rt_spin_unlock+0x1e/0x50
+ [<ffffffff804a0e7c>] rt_spin_unlock+0x1e/0x50
+ [<ffffffff804a2de0>] oops_end+0x69/0x72
+ [<ffffffff8020d776>] die+0x4a/0x54
+ [<ffffffff804a3440>] do_general_protection+0x116/0x11f
+ [<ffffffff80258281>] put_lock_stats+0x2b/0x2d
+ [<ffffffff804a294d>] error_exit+0x0/0x96
+ [<ffffffff80275659>] handle_edge_irq+0x29/0x158
+ [<ffffffff8025ae13>] __lock_acquire+0x6b2/0xca0
+ [<ffffffff80234dd8>] wake_up_process+0x12/0x14
+ [<ffffffff8025b45f>] lock_acquire+0x5e/0x77
+ [<ffffffff80275659>] handle_edge_irq+0x29/0x158
+ [<ffffffff804a1690>] __spin_lock+0x35/0x62
+ [<ffffffff80275659>] handle_edge_irq+0x29/0x158
+ [<ffffffff8020e5d2>] do_IRQ+0x80/0xea
+ [<ffffffff8020c4a6>] ret_from_intr+0x0/0xf
+ <EOI>  [<ffffffff8033b647>] copy_user_generic_string+0x17/0x40
+ [<ffffffff80267f74>] sys_kexec_load+0x501/0x5dd
+ [<ffffffff8020f17a>] syscall_trace_enter+0x95/0x99
+ [<ffffffff8020c0f7>] tracesys+0xdc/0xe1
 
----
- fs/proc/base.c          |    8 ++--
- fs/proc/generic.c       |    4 ++-
- fs/proc/internal.h      |   13 +++++++
- fs/proc/proc_net.c      |   89 ++++-------------------------------------------
- fs/proc/root.c          |   50 ++++++++++++++++++--------
- include/linux/proc_fs.h |    4 ++
- 6 files changed, 66 insertions(+), 102 deletions(-)
+INFO: lockdep is turned off.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index aeaf0d0..9d4f06a 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2395,7 +2395,7 @@ struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct
- 	if (tgid == ~0U)
- 		goto out;
- 
--	ns = dentry->d_sb->s_fs_info;
-+	ns = proc_sbi(dentry->d_sb)->pid_ns;
- 	rcu_read_lock();
- 	task = find_task_by_pid_ns(tgid, ns);
- 	if (task)
-@@ -2476,7 +2476,7 @@ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir)
- 			goto out;
- 	}
- 
--	ns = filp->f_dentry->d_sb->s_fs_info;
-+	ns = proc_sbi(filp->f_dentry->d_sb)->pid_ns;
- 	tgid = filp->f_pos - TGID_OFFSET;
- 	for (task = next_tgid(tgid, ns);
- 	     task;
-@@ -2615,7 +2615,7 @@ static struct dentry *proc_task_lookup(struct inode *dir, struct dentry * dentry
- 	if (tid == ~0U)
- 		goto out;
- 
--	ns = dentry->d_sb->s_fs_info;
-+	ns = proc_sbi(dentry->d_sb)->pid_ns;
- 	rcu_read_lock();
- 	task = find_task_by_pid_ns(tid, ns);
- 	if (task)
-@@ -2758,7 +2758,7 @@ static int proc_task_readdir(struct file * filp, void * dirent, filldir_t filldi
- 	/* f_version caches the tgid value that the last readdir call couldn't
- 	 * return. lseek aka telldir automagically resets f_version to 0.
- 	 */
--	ns = filp->f_dentry->d_sb->s_fs_info;
-+	ns = proc_sbi(filp->f_dentry->d_sb)->pid_ns;
- 	tid = (int)filp->f_version;
- 	filp->f_version = 0;
- 	for (task = first_tid(leader, tid, pos - 2, ns);
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 1bdb624..b58f0ec 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -398,7 +398,9 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
- 				continue;
- 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
- 				unsigned int ino = de->low_ino;
--
-+				
-+				if (de->shadow_proc)
-+					de = de->shadow_proc(dentry->d_sb, de);
- 				de_get(de);
- 				spin_unlock(&proc_subdir_lock);
- 				error = -EINVAL;
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 1820eb2..a26f115 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -11,6 +11,18 @@
- 
- #include <linux/proc_fs.h>
- 
-+struct pid_namespace;
-+struct net;
-+struct proc_sb_info {
-+	struct pid_namespace *pid_ns;
-+	struct net	     *net_ns;
-+};
-+
-+static inline struct proc_sb_info *proc_sbi(struct super_block *sb)
-+{
-+	return sb->s_fs_info;
-+}
-+
- #ifdef CONFIG_PROC_SYSCTL
- extern int proc_sys_init(void);
- #else
-@@ -78,3 +90,4 @@ static inline int proc_fd(struct inode *inode)
- {
- 	return PROC_I(inode)->fd;
- }
-+
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index 131f9c6..8a82e29 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -50,89 +50,15 @@ struct net *get_proc_net(const struct inode *inode)
- }
- EXPORT_SYMBOL_GPL(get_proc_net);
- 
--static struct proc_dir_entry *proc_net_shadow;
-+static struct proc_dir_entry *shadow_pde;
- 
--static struct dentry *proc_net_shadow_dentry(struct dentry *parent,
--						struct proc_dir_entry *de)
-+static struct proc_dir_entry *proc_net_shadow(struct super_block *sb,
-+					      struct proc_dir_entry *de)
- {
--	struct dentry *shadow = NULL;
--	struct inode *inode;
--	if (!de)
--		goto out;
--	de_get(de);
--	inode = proc_get_inode(parent->d_inode->i_sb, de->low_ino, de);
--	if (!inode)
--		goto out_de_put;
--	shadow = d_alloc_name(parent, de->name);
--	if (!shadow)
--		goto out_iput;
--	shadow->d_op = parent->d_op; /* proc_dentry_operations */
--	d_instantiate(shadow, inode);
--out:
--	return shadow;
--out_iput:
--	iput(inode);
--out_de_put:
--	de_put(de);
--	goto out;
--}
--
--static void *proc_net_follow_link(struct dentry *parent, struct nameidata *nd)
--{
--	struct net *net = current->nsproxy->net_ns;
--	struct dentry *shadow;
--	shadow = proc_net_shadow_dentry(parent, net->proc_net);
--	if (!shadow)
--		return ERR_PTR(-ENOENT);
--
--	dput(nd->dentry);
--	/* My dentry count is 1 and that should be enough as the
--	 * shadow dentry is thrown away immediately.
--	 */
--	nd->dentry = shadow;
--	return NULL;
-+	struct proc_sb_info *sbi = proc_sbi(sb);
-+	return sbi->net_ns->proc_net;
- }
- 
--static struct dentry *proc_net_lookup(struct inode *dir, struct dentry *dentry,
--				      struct nameidata *nd)
--{
--	struct net *net = current->nsproxy->net_ns;
--	struct dentry *shadow;
--
--	shadow = proc_net_shadow_dentry(nd->dentry, net->proc_net);
--	if (!shadow)
--		return ERR_PTR(-ENOENT);
--
--	dput(nd->dentry);
--	nd->dentry = shadow;
--
--	return shadow->d_inode->i_op->lookup(shadow->d_inode, dentry, nd);
--}
--
--static int proc_net_setattr(struct dentry *dentry, struct iattr *iattr)
--{
--	struct net *net = current->nsproxy->net_ns;
--	struct dentry *shadow;
--	int ret;
--
--	shadow = proc_net_shadow_dentry(dentry->d_parent, net->proc_net);
--	if (!shadow)
--		return -ENOENT;
--	ret = shadow->d_inode->i_op->setattr(shadow, iattr);
--	dput(shadow);
--	return ret;
--}
--
--static const struct file_operations proc_net_dir_operations = {
--	.read			= generic_read_dir,
--};
--
--static struct inode_operations proc_net_dir_inode_operations = {
--	.follow_link	= proc_net_follow_link,
--	.lookup		= proc_net_lookup,
--	.setattr	= proc_net_setattr,
--};
--
- static __net_init int proc_net_ns_init(struct net *net)
- {
- 	struct proc_dir_entry *root, *netd, *net_statd;
-@@ -185,9 +111,8 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
- 
- int __init proc_net_init(void)
- {
--	proc_net_shadow = proc_mkdir("net", NULL);
--	proc_net_shadow->proc_iops = &proc_net_dir_inode_operations;
--	proc_net_shadow->proc_fops = &proc_net_dir_operations;
-+	shadow_pde = proc_mkdir("net", NULL);
-+	shadow_pde->shadow_proc = proc_net_shadow;
- 
- 	return register_pernet_subsys(&proc_net_ns_ops);
- }
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index ec9cb3b..e60ac83 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -19,6 +19,7 @@
- #include <linux/smp_lock.h>
- #include <linux/mount.h>
- #include <linux/pid_namespace.h>
-+#include <net/net_namespace.h>
- 
- #include "internal.h"
- 
-@@ -26,15 +27,23 @@ struct proc_dir_entry *proc_bus, *proc_root_fs, *proc_root_driver;
- 
- static int proc_test_super(struct super_block *sb, void *data)
- {
--	return sb->s_fs_info == data;
-+	struct proc_sb_info *sbi = proc_sbi(sb), *info = data;
-+	return	(sbi->pid_ns == info->pid_ns) &&
-+		(sbi->net_ns == info->net_ns);
- }
- 
- static int proc_set_super(struct super_block *sb, void *data)
- {
--	struct pid_namespace *ns;
--
--	ns = (struct pid_namespace *)data;
--	sb->s_fs_info = get_pid_ns(ns);
-+	
-+	struct proc_sb_info *new, *info = data;
-+	
-+	new = kzalloc(sizeof(*new), GFP_KERNEL);
-+	if (!new)
-+		return -ENOMEM;
-+	*new = *info;
-+	get_pid_ns(new->pid_ns);
-+	get_net(new->net_ns);
-+	sb->s_fs_info = new;
- 	return set_anon_super(sb, NULL);
- }
- 
-@@ -43,7 +52,7 @@ static int proc_get_sb(struct file_system_type *fs_type,
- {
- 	int err;
- 	struct super_block *sb;
--	struct pid_namespace *ns;
-+	struct proc_sb_info info, *sbi;
- 	struct proc_inode *ei;
- 
- 	if (proc_mnt) {
-@@ -57,12 +66,14 @@ static int proc_get_sb(struct file_system_type *fs_type,
- 			ei->pid = find_get_pid(1);
- 	}
- 
-+	info.pid_ns = current->nsproxy->pid_ns;
-+	info.net_ns = current->nsproxy->net_ns;
- 	if (flags & MS_KERNMOUNT)
--		ns = (struct pid_namespace *)data;
-+		sbi = data;
- 	else
--		ns = current->nsproxy->pid_ns;
-+		sbi = &info;
- 
--	sb = sget(fs_type, proc_test_super, proc_set_super, ns);
-+	sb = sget(fs_type, proc_test_super, proc_set_super, sbi);
- 	if (IS_ERR(sb))
- 		return PTR_ERR(sb);
- 
-@@ -78,12 +89,13 @@ static int proc_get_sb(struct file_system_type *fs_type,
- 		ei = PROC_I(sb->s_root->d_inode);
- 		if (!ei->pid) {
- 			rcu_read_lock();
--			ei->pid = get_pid(find_pid_ns(1, ns));
-+			ei->pid = get_pid(find_pid_ns(1, sbi->pid_ns));
- 			rcu_read_unlock();
- 		}
- 
- 		sb->s_flags |= MS_ACTIVE;
--		ns->proc_mnt = mnt;
-+		if (!sbi->pid_ns->proc_mnt)
-+			sbi->pid_ns->proc_mnt = mnt;
- 	}
- 
- 	return simple_set_mnt(mnt, sb);
-@@ -91,11 +103,13 @@ static int proc_get_sb(struct file_system_type *fs_type,
- 
- static void proc_kill_sb(struct super_block *sb)
- {
--	struct pid_namespace *ns;
-+	struct proc_sb_info *sbi;
- 
--	ns = (struct pid_namespace *)sb->s_fs_info;
-+	sbi = proc_sbi(sb);
- 	kill_anon_super(sb);
--	put_pid_ns(ns);
-+	put_pid_ns(sbi->pid_ns);
-+	put_net(sbi->net_ns);
-+	kfree(sbi);
- }
- 
- static struct file_system_type proc_fs_type = {
-@@ -106,13 +120,16 @@ static struct file_system_type proc_fs_type = {
- 
- void __init proc_root_init(void)
- {
-+	struct proc_sb_info info;
- 	int err = proc_init_inodecache();
- 	if (err)
- 		return;
- 	err = register_filesystem(&proc_fs_type);
- 	if (err)
- 		return;
--	proc_mnt = kern_mount_data(&proc_fs_type, &init_pid_ns);
-+	info.pid_ns = &init_pid_ns;
-+	info.net_ns = current->nsproxy->net_ns;
-+	proc_mnt = kern_mount_data(&proc_fs_type, &info);
- 	err = PTR_ERR(proc_mnt);
- 	if (IS_ERR(proc_mnt)) {
- 		unregister_filesystem(&proc_fs_type);
-@@ -214,8 +231,11 @@ struct proc_dir_entry proc_root = {
- 
- int pid_ns_prepare_proc(struct pid_namespace *ns)
- {
-+	struct proc_sb_info info;
- 	struct vfsmount *mnt;
- 
-+	info.pid_ns = ns;
-+	info.net_ns = current->nsproxy->net_ns;
- 	mnt = kern_mount_data(&proc_fs_type, ns);
- 	if (IS_ERR(mnt))
- 		return PTR_ERR(mnt);
-diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index 2b3c1d8..c22c558 100644
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -48,6 +48,9 @@ typedef	int (read_proc_t)(char *page, char **start, off_t off,
- typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
- 			   unsigned long count, void *data);
- typedef int (get_info_t)(char *, char **, off_t, int);
-+struct proc_dir_entry;
-+typedef struct proc_dir_entry *(shadow_proc_t)(struct super_block *sb,
-+						  struct proc_dir_entry *pde);
- 
- struct proc_dir_entry {
- 	unsigned int low_ino;
-@@ -79,6 +82,7 @@ struct proc_dir_entry {
- 	int pde_users;	/* number of callers into module in progress */
- 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
- 	struct completion *pde_unload_completion;
-+	shadow_proc_t *shadow_proc;
- };
- 
- struct kcore_list {
--- 
-1.5.3.rc6.17.g1911
-
+Thanks,
+Sripathi.
