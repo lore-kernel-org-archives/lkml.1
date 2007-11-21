@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763076AbXKUBO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbXKUBPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763076AbXKUBO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765424AbXKUBNu
+	id S1765680AbXKUBPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXKUBNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:13:50 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:45696 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763329AbXKUBNq (ORCPT
+	Tue, 20 Nov 2007 20:13:48 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:59819 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762937AbXKUBNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Nov 2007 20:13:46 -0500
-Message-Id: <20071121011251.425055221@goodmis.org>
+Message-Id: <20071121011249.817096909@goodmis.org>
 References: <20071121010054.663842380@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 20 Nov 2007 20:01:10 -0500
+Date: Tue, 20 Nov 2007 20:01:00 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v4 16/20] Avoid overload
-Content-Disposition: inline; filename=rt-balance-avoid-overloading.patch
+Subject: [PATCH v4 06/20] wake up balance RT
+Content-Disposition: inline; filename=rt-balance-wakeup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the searching for a run queue by a waking RT task
-to try to pick another runqueue if the currently running task
-is an RT task.
+This patch adds pushing of overloaded RT tasks from a runqueue that is
+having tasks (most likely RT tasks) added to the run queue.
 
-The reason is that RT tasks behave different than normal
-tasks. Preempting a normal task to run a RT task to keep
-its cache hot is fine, because the preempted non-RT task
-may wait on that same runqueue to run again unless the
-migration thread comes along and pulls it off.
-
-RT tasks behave differently. If one is preempted, it makes
-an active effort to continue to run. So by having a high
-priority task preempt a lower priority RT task, that lower
-RT task will then quickly try to run on another runqueue.
-This will cause that lower RT task to replace its nice
-hot cache (and TLB) with a completely cold one. This is
-for the hope that the new high priority RT task will keep
- its cache hot.
-
-Remeber that this high priority RT task was just woken up.
-So it may likely have been sleeping for several milliseconds,
-and will end up with a cold cache anyway. RT tasks run till
-they voluntarily stop, or are preempted by a higher priority
-task. This means that it is unlikely that the woken RT task
-will have a hot cache to wake up to. So pushing off a lower
-RT task is just killing its cache for no good reason.
+TODO: We don't cover the case of waking of new RT tasks (yet).
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
 
- kernel/sched_rt.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ kernel/sched.c    |    3 +++
+ kernel/sched_rt.c |   10 ++++++++++
+ 2 files changed, 13 insertions(+)
 
+Index: linux-compile.git/kernel/sched.c
+===================================================================
+--- linux-compile.git.orig/kernel/sched.c	2007-11-20 19:52:59.000000000 -0500
++++ linux-compile.git/kernel/sched.c	2007-11-20 19:53:00.000000000 -0500
+@@ -22,6 +22,8 @@
+  *              by Peter Williams
+  *  2007-05-06  Interactivity improvements to CFS by Mike Galbraith
+  *  2007-07-01  Group scheduling enhancements by Srivatsa Vaddagiri
++ *  2007-10-22  RT overload balancing by Steven Rostedt
++ *                 (with thanks to Gregory Haskins)
+  */
+ 
+ #include <linux/mm.h>
+@@ -1635,6 +1637,7 @@ out_activate:
+ 
+ out_running:
+ 	p->state = TASK_RUNNING;
++	wakeup_balance_rt(rq, p);
+ out:
+ 	task_rq_unlock(rq, &flags);
+ 
 Index: linux-compile.git/kernel/sched_rt.c
 ===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:53:10.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:53:11.000000000 -0500
-@@ -157,11 +157,23 @@ static int select_task_rq_rt(struct task
- 	struct rq *rq = task_rq(p);
+--- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:52:59.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:53:00.000000000 -0500
+@@ -555,6 +555,15 @@ static void schedule_tail_balance_rt(str
+ 	}
+ }
  
- 	/*
--	 * If the task will not preempt the RQ, try to find a better RQ
--	 * before we even activate the task
-+	 * If the current task is an RT task, then
-+	 * try to see if we can wake this RT task up on another
-+	 * runqueue. Otherwise simply start this RT task
-+	 * on its current runqueue.
-+	 *
-+	 * We want to avoid overloading runqueues. Even if
-+	 * the RT task is of higher priority than the current RT task.
-+	 * RT tasks behave differently than other tasks. If
-+	 * one gets preempted, we try to push it off to another queue.
-+	 * So trying to keep a preempting RT task on the same
-+	 * cache hot CPU will force the running RT task to
-+	 * a cold CPU. So we waste all the cache for the lower
-+	 * RT task in hopes of saving some of a RT task
-+	 * that is just being woken and probably will have
-+	 * cold cache anyway.
- 	 */
--	if ((p->prio >= rq->rt.highest_prio)
--	    && (p->nr_cpus_allowed > 1)) {
-+	if (unlikely(rt_task(rq->curr))) {
- 		int cpu = find_lowest_rq(p);
++
++static void wakeup_balance_rt(struct rq *rq, struct task_struct *p)
++{
++	if (unlikely(rt_task(p)) &&
++	    !task_running(rq, p) &&
++	    (p->prio >= rq->curr->prio))
++		push_rt_tasks(rq);
++}
++
+ /*
+  * Load-balancing iterator. Note: while the runqueue stays locked
+  * during the whole iteration, the current task might be
+@@ -662,6 +671,7 @@ move_one_task_rt(struct rq *this_rq, int
+ #else /* CONFIG_SMP */
+ # define schedule_tail_balance_rt(rq)	do { } while (0)
+ # define schedule_balance_rt(rq, prev)	do { } while (0)
++# define wakeup_balance_rt(rq, p)	do { } while (0)
+ #endif /* CONFIG_SMP */
  
- 		return (cpu == -1) ? task_cpu(p) : cpu;
+ static void task_tick_rt(struct rq *rq, struct task_struct *p)
 
 -- 
