@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbXKUOXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbXKUO0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758308AbXKUOXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 09:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXKUOXm
+	id S1759519AbXKUO0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 09:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXKUO0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 09:23:42 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:63660 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbXKUOXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 09:23:41 -0500
-Date: Wed, 21 Nov 2007 08:23:38 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB	(v2)
-In-reply-to: <1195648784.11490.0.camel@kayak.wul.qc.ec.gc.ca>
-To: vincent.fortier1@ec.gc.ca
-Cc: ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <47443F6A.3050205@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <47438248.7030704@shaw.ca>
- <1195648784.11490.0.camel@kayak.wul.qc.ec.gc.ca>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 21 Nov 2007 09:26:41 -0500
+Received: from s2.ukfsn.org ([217.158.120.143]:47063 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753624AbXKUO0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 09:26:40 -0500
+To: benh@kernel.crashing.org
+Cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
+       Dennis Munsie <dmunsie@cecropia.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: radeonfb i2c regression post-2.6.18.
+References: <1195427766.7022.18.camel@pasglop>
+From: Roger Leigh <rleigh@whinlatter.ukfsn.org>
+Date: Wed, 21 Nov 2007 09:42:09 +0000
+In-Reply-To: <1195427766.7022.18.camel@pasglop> (Benjamin Herrenschmidt's message of "Mon\, 19 Nov 2007 10\:16\:06 +1100")
+Message-ID: <87oddoaqa6.fsf@hardknott.home>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vincent Fortier wrote:
-> Le mardi 20 novembre 2007 à 18:56 -0600, Robert Hancock a écrit :
->> This fixes some problems with ATAPI devices on nForce4 controllers in ADMA
->> mode on systems with memory located above 4GB. We need to delay setting the
->> 64-bit DMA mask until the PRD table and padding buffer are allocated so that
->> they don't get allocated above 4GB and break legacy mode (which is needed for
->> ATAPI devices). Also, explicitly set a 32-bit DMA mask before allocating the
->> legacy buffers since setting the DMA mask affects both ports and we need to
->> ensure the second port's buffers are allocated properly (fixes a problem
->> with the previous version of this patch).
->>
->> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
->>
-> 
-> Would this be worth sending to stable team for 2.6.22 & 2.6.23 ?
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-Likely (after it gets merged), those versions would have the same bug..
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+> On Sun, 2007-11-18 at 21:58 +0000, Roger Leigh wrote:
+>> Hi folks,
+>>=20
+>> I'm using an Apple Cinema Display connected via DVI to an Apple Mac
+>> Mini with Radeon 9200 graphics. This used to work fine, but with
+>> kernels >=3D 2.6.19, the monitor powers off as soon as the framebuffer
+>> is initialised, making for a less than usable system. I've tested
+>> with 2.6.(19|2[012]), and I didn't see any related changes in 2.6.23.
+>
+>    .../...
+>
+> Can you try the patch from Jean that I pasted below and let us know if
+> it helps ? It looks like the releasing of the i2c lines may have been
+> done backward.
+
+This patch fixes the problem.  The monitor stays powered on during the
+switch to the framebuffer.
+
+
+Thanks,
+Roger
+
+=2D-=20
+  .''`.  Roger Leigh
+ : :' :  Debian GNU/Linux             http://people.debian.org/~rleigh/
+ `. `'   Printing on GNU/Linux?       http://gutenprint.sourceforge.net/
+   `-    GPG Public Key: 0x25BFB848   Please GPG sign your mail.
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHQ/11VcFcaSW/uEgRApIBAKDlOxkHy+ItRHnVDKCxY2k1zUYN1gCgxw6V
+XKgee3XvZSYeaqGqghclnYg=
+=9Fig
+-----END PGP SIGNATURE-----
+--=-=-=--
