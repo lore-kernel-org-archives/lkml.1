@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbXKUTB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXKUTCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbXKUTB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXKUTBw
+	id S1752841AbXKUTCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXKUTC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:01:52 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35804 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751862AbXKUTBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:01:51 -0500
-Date: Wed, 21 Nov 2007 11:01:43 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-In-Reply-To: <200711211408.17078.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0711211051230.2468@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <200711210236.33460.ak@suse.de>
- <Pine.LNX.4.64.0711201758350.30224@schroedinger.engr.sgi.com>
- <200711211408.17078.ak@suse.de>
+	Wed, 21 Nov 2007 14:02:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50318 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751596AbXKUTC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:02:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [lm-sensors] broken suspend [Was: 2.6.24-rc2-mm1]
+Date: Wed, 21 Nov 2007 20:19:43 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Rudolf Marek <r.marek@assembler.cz>, Jiri Slaby <jirislaby@gmail.com>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0711211053140.3226-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0711211053140.3226-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711212019.45071.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, Andi Kleen wrote:
-
-> The whole mapping for all CPUs cannot fit into 2GB of course, but the reference 
-> linker managed range can.
-
-Ok so you favor the solution where we subtract smp_processor_id() << 
-shift?
-
-> > The offset relative to %gs cannot be used if you have a loop and are 
-> > calculating the addresses for all instances. That is what we are talking 
-> > about. The CPU_xxx operations that are using the %gs register are fine and 
-> > are not affected by the changes we are discussing.
+On Wednesday, 21 of November 2007, Alan Stern wrote:
+> On Wed, 21 Nov 2007, Rafael J. Wysocki wrote:
 > 
-> Sure it can -- you just get the base address from a global array
-> and then add the offset
-
-Ok so generalize the data_offset for that case? I noted that other arches 
-and i386 have a similar solution there. I fiddled around some more and 
-found that the overhead that the subtraction introduces is equivalent to 
-loading an 8 byte constant of the base.
-
-Keeping the usage of data_offset can avoid the shift and the add for the 
-__get_cpu_var case that needs CPU_PTR( ..., smp_processor_id()) because 
-the load from data_offset avoid the shifting and adding of 
-smp_processor_id().
-
-For the loops this is not useful since the compiler can move the 
-loading of the base pointer outside of the loop )if CPU_PTR needs to load 
-an 8 byte constant pointers).
-
-With loading the 8 byte base the loops actually become:
-
-sum = 0
-ptr = CPU_AREA_BASE
-while base < NR_CPUS << shift {
-	sum = *ptr
-	ptr += 1 << shift
-}
-
-So I think we need to go with the implementation where CPU_PTR(var, cpu) 
-is
-
-CPU_AREA_BASE + cpu << shift + var_offset
-
-The CPU_AREA_BASE will be loaded into a register. The var_offset usually 
-ends up being an offset in a mov instruction.
-
+> > > Is it possible to unregister a driver on CPU_DOWN_PREPARE_FROZEN?
 > > 
-> > > Then the reference data would be initdata and eventually freed.
-> > > That is similar to how the current per cpu data works.
+> > No.  In that case the suspend core is holding the device's mutex and your
+> > attempt to unregister it will deadlock with it.
 > > 
-> > Yes that is also how the current patchset works. I just do not understand 
-> > what you want changed.
+> > Do you _have_ _to_ unregister the device at all?  Why don't you just leave
+> > it registered on CPU_DOWN_PREPARE_FROZEN?  The CPU is not going away
+> > physically in this case and it's _guaranteed_ that _cpu_up() will be called on
+> > it as soon as the hibernation image is ready or we are back from suspend.
 > 
-> Anyways i think your current scheme cannot work (too much VM, placed at the wrong 
-> place; some wrong assumptions).
+> This leaves the device registered if for some reason the number of CPUs 
+> after resuming from hibernation is smaller than the number of CPUs 
+> before hibernation.  Of course, in theory that's never supposed to 
+> happen...
 
-The constant pointer solution fixes that. No need to despair.
+Yes, that clearly would be a bug.
 
+Rafael
