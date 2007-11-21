@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbXKUBoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXKUCIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762869AbXKUBoN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758203AbXKUBny
+	id S1752631AbXKUCIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 21:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXKUCIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:43:54 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51756 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755544AbXKUBnx (ORCPT
+	Tue, 20 Nov 2007 21:08:42 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36360 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750702AbXKUCIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:43:53 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <fa.zy7JwM3jsOSgOCtqK2+rvFfdGjQ@ifi.uio.no>
-	<fa.Zx9jkdx74KRPk1qghLrg9BCvfFU@ifi.uio.no>
-	<fa.1TKmo5fKBZfHOQYq1bH4uMxOQek@ifi.uio.no>
-	<fa.fjJG0rd93RGzZ4PSv/glscvAI0A@ifi.uio.no>
-	<fa.7XLWa+gAWL3Q6I3O+hiS4UfcWpM@ifi.uio.no>
-	<fa.QqYdKsBUWKSLLGXmxJCAtZxLYnE@ifi.uio.no> <47438820.5010300@shaw.ca>
-Date: Tue, 20 Nov 2007 18:41:56 -0700
-In-Reply-To: <47438820.5010300@shaw.ca> (Robert Hancock's message of "Tue, 20
-	Nov 2007 19:21:36 -0600")
-Message-ID: <m1pry4pe6z.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 20 Nov 2007 21:08:42 -0500
+Date: Tue, 20 Nov 2007 18:08:38 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: akpm@linux-foundation.org, travis@sgi.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 08/45] cpu alloc: x86 support
+In-Reply-To: <200711210236.33460.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0711201758350.30224@schroedinger.engr.sgi.com>
+References: <20071120011132.143632442@sgi.com>
+ <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0711201703570.29648@schroedinger.engr.sgi.com>
+ <200711210236.33460.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock <hancockr@shaw.ca> writes:
+On Wed, 21 Nov 2007, Andi Kleen wrote:
 
-> Eric W. Biederman wrote:
->> Could you elaborate a bit on how the semantics of returning the
->> wrong information are more useful?
->>
->> In particular if a thread does the logical equivalent of:
->> grep Pid: /proc/self/status.  It always get the tgid despite
->> having a different process id.
->
-> The POSIX-defined userspace concept of a PID requires that all threads appear to
-> have the same PID. This is something that Linux didn't comply with under the old
-> LinuxThreads implementation and was finally fixed with NPTL. This isn't a
-> POSIX-defined interface, but I assume it's trying to be consistent with
-> getpid(), etc.
+> On Wednesday 21 November 2007 02:16:11 Christoph Lameter wrote:
+> > But one can subtract too... 
+> 
+> The linker cannot subtract (unless you add a new relocation types) 
 
+The compiler knows and emits assembly to compensate.
 
-Linux exports two fields in /proc/self/status:
-Tgid:   32698
-Pid:    32698
+> All you need is a 2MB area (16MB is too large if you really
+> want 16k CPUs someday) somewhere in the -2GB or probably better
+> in +2GB. Then the linker puts stuff in there and you use
+> the offsets for referencing relative to %gs.
 
-The tgid maps to the posix concept.  The pid is this context is the
-thread id.
+2MB * 16k = 32GB. Even with 4k cpus we will have 2M * 4k = 8GB both do
+not fit in the 2GB area.
 
-So it seems broken to me to return the same thread id for different threads.
+The offset relative to %gs cannot be used if you have a loop and are 
+calculating the addresses for all instances. That is what we are talking 
+about. The CPU_xxx operations that are using the %gs register are fine and 
+are not affected by the changes we are discussing.
 
-Eric
+> Then for all CPUs (including CPU #0) you put the real mapping
+> somewhere else, copy the reference data there (which also doesn't need
+> to be on the offset the linker assigned, just on a constant offset
+> from it somewhere in the normal kernel data) and off you go.
+
+Real mapping? We have constant offsets after this patchset. I do not get 
+what you are planning here.
+
+> Then the reference data would be initdata and eventually freed.
+> That is similar to how the current per cpu data works.
+
+Yes that is also how the current patchset works. I just do not understand 
+what you want changed.
+
