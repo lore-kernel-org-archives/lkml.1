@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbXKULeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761403AbXKULhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760912AbXKULeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 06:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbXKULeL
+	id S1761403AbXKULhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 06:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbXKULhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 06:34:11 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:59657 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755841AbXKULeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 06:34:09 -0500
-From: Andre Haupt <andre@bitwigglers.org>
+	Wed, 21 Nov 2007 06:37:10 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:49283 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755453AbXKULhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 06:37:08 -0500
+Date: Wed, 21 Nov 2007 03:37:03 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, drzeus-mmc@drzeus.cx, nico@cam.org,
-       Andre Haupt <andre@bitwigglers.org>
-Subject: [PATCH] sdio_uart: fix sign of paramter status in sdio_uart_receive_chars()
-Date: Wed, 21 Nov 2007 12:33:45 +0100
-Message-Id: <11956448251191-git-send-email-andre@bitwigglers.org>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: n
-References: n
-X-Provags-ID: V01U2FsdGVkX18iCmhP+aHckBtVjUhjyIbqigKQcsPBIkruluM
- KFVGBEyOXS6xfKGWNWf2OE9gQ7dV8IpUIbUs2GqwXxS5FhNoJh
- TBg5l8IkwVmBT6ms72I2/7nxl2csEiPIRqh0HWJtLQ=
+Cc: Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: [patch][v2] x86, ptrace: support for branch trace store(BTS)
+Message-ID: <20071121113703.GD30184@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think, the status paramter should be unsigned. Is this correct?
-This also fixes a sparse warning about different signedness.
-Only compile tested, because i do not have the hardware.
+Hi,
 
-From: Andre Haupt <andre@bitwigglers.org>
-Signed-off-by: Andre Haupt <andre@bitwigglers.org>
----
- drivers/mmc/card/sdio_uart.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> >and it seems like this patch and perfmon2 are going to have to 
+> >live with 
+> >each other... since they both require the use of the DS save area...
+> 
+> Hmmm, this might require some synchronization between those two.
+> 
+> Do you know how (accesses to) MSR's are managed by the kernel?
 
-diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index d552de6..eeea84c 100644
---- a/drivers/mmc/card/sdio_uart.c
-+++ b/drivers/mmc/card/sdio_uart.c
-@@ -386,7 +386,7 @@ static void sdio_uart_stop_rx(struct sdio_uart_port *port)
- 	sdio_out(port, UART_IER, port->ier);
- }
- 
--static void sdio_uart_receive_chars(struct sdio_uart_port *port, int *status)
-+static void sdio_uart_receive_chars(struct sdio_uart_port *port, unsigned int *status)
- {
- 	struct tty_struct *tty = port->tty;
- 	unsigned int ch, flag;
+There is a simple MSR allocator in the nmi watchdog code. It is very
+simple though and was only intended for performance counters originally
+so you might need to enhance it first for complicated things.
+
+I agree it needs to be extended to manage other not necessarily contiguous
+MSR registers.
+
+As for BTS, I am happy to see this resource exposed for debugging purposes.
+
+Note that it could also be used for performance monitoring purposes and it
+could be exploited by the perfmon2 subsystem via a new sampling format. This
+way one could for instance figure out the path that led to a cache miss. Of
+course, this requires that some filtering be applied to BTS which today does
+not differentiate loop vs. function branches, AFAIR. The current cost can
+be mitigated by using a long sampling period and by monitoring longer.
+
 -- 
-1.4.4.4
-
+-Stephane
