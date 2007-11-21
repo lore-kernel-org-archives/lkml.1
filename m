@@ -1,110 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbXKULPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761813AbXKULP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761639AbXKULPA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 06:15:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbXKULOm
+	id S1761813AbXKULP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 06:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbXKULPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 06:14:42 -0500
-Received: from sacred.ru ([62.205.161.221]:42093 "EHLO sacred.ru"
+	Wed, 21 Nov 2007 06:15:05 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:36446 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757150AbXKULOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 06:14:40 -0500
-Message-ID: <47441302.6070300@openvz.org>
-Date: Wed, 21 Nov 2007 14:14:10 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1761649AbXKULPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 06:15:03 -0500
+Date: Wed, 21 Nov 2007 12:14:57 +0100 (MET)
+From: Julia Lawall <julia@diku.dk>
+To: marcel@holtmann.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/bluetooth: Convert kfree/kfree_skb to dev_kfree_skb_irq
+Message-ID: <Pine.LNX.4.58.0711211213350.1184@pc-041.diku.dk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Cedric Le Goater <clg@fr.ibm.com>
-Subject: [PATCH (resend)][DOCUMENTATION] The namespaces compatibility list
- doc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 21 Nov 2007 14:14:10 +0300 (MSK)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From time to time people begin discussions about how the
-namespaces are working/going-to-work together.
+From: Julia Lawall <julia@diku.dk>
 
-Ted T'so proposed to create some document that describes what
-problems user may have when he/she creates some new namespace,
-but keeps others shared. I liked this idea, so here's the 
-initial version of such a document with the problems I currently 
-have in mind and can describe somewhat audibly - the "namespaces 
-compatibility list".
+When values of type struct sk_buff * are freed from within an interrupt
+handler, dev_kfree_skb_irq should be used rather than kfree or kfree_skb.
 
-The Documentation/namespaces/ directory is about to contain more
-docs about the namespaces stuff.
+In most of the cases below, the function containing the free ends up as a
+URB completion callback.  Such callbacks are called from an interrupt
+handler.  In drivers/bluetooth/btsdio.c, the enclosing function is
+ultimately referenced from the second argument of sdio_claim_irq, which is
+also used as an interrupt handler.
 
-Thanks to Cedirc for notes and spell checks on the doc, to Daniel
-for additional info about IPC and User namespaces interaction
-and to Randy, who alluded me to using a spell checker before
-sending the documentation :)
+All of these cases except the last were fixed using the following semantic
+patch (http://www.emn.fr/x-info/coccinelle/).
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+// <smpl>
+@rule1@
+identifier f;
+@@
 
+f(...) {
+<+...
+   kfree_skb(...)
+...+>
+}
+
+@ call @
+identifier rule1.f;
+@@
+
+(
+usb_fill_bulk_urb(...,f,...)
+|
+usb_fill_control_urb(...,f,...)
+|
+usb_fill_int_urb(...,f,...)
+)
+
+@ toplevel @
+identifier rule1.f;
+struct urb u;
+@@
+
+u.complete = f;
+
+@ depends on call || toplevel @
+identifier rule1.f;
+expression E;
+@@
+
+f(...) {
+<...
+-  kfree_skb(E)
++  dev_kfree_skb_irq(E)
+...>
+}
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-index 0a2b12e..b4a0908 100644
---- a/Documentation/00-INDEX
-+++ b/Documentation/00-INDEX
-@@ -265,6 +265,8 @@ mtrr.txt
- 	- how to use PPro Memory Type Range Registers to increase performance.
- mutex-design.txt
- 	- info on the generic mutex subsystem.
-+namespaces/
-+	- directory with various information about namespaces
- nbd.txt
- 	- info on a TCP implementation of a network block device.
- netlabel/
-diff --git a/Documentation/namespaces/compatibility-list.txt b/Documentation/namespaces/compatibility-list.txt
-new file mode 100644
-index 0000000..d0e8cc3
---- /dev/null
-+++ b/Documentation/namespaces/compatibility-list.txt
-@@ -0,0 +1,39 @@
-+	Namespaces compatibility list
-+
-+This document contains the information about the problems user
-+may have when creating tasks living in different namespaces.
-+
-+Here's the summary. This matrix shows the known problems, that
-+occur when tasks share some namespace (the columns) while living
-+in different other namespaces (the rows):
-+
-+	UTS	IPC	VFS	PID	User	Net
-+UTS	 X
-+IPC		 X	 1
-+VFS			 X
-+PID		 1	 1	 X
-+User		 2	 2		 X
-+Net						 X
-+
-+1. Both the IPC and the PID namespaces provide IDs to address
-+   object inside the kernel. E.g. semaphore with IPCID or
-+   process group with pid.
-+
-+   In both cases, tasks shouldn't try exposing this ID to some
-+   other task living in a different namespace via a shared filesystem
-+   or IPC shmem/message. The fact is that this ID is only valid
-+   within the namespace it was obtained in and may refer to some
-+   other object in another namespace.
-+
-+2. Intentionally, two equal user IDs in different user namespaces
-+   should not be equal from the VFS point of view. In other
-+   words, user 10 in one user namespace shouldn't have the same
-+   access permissions to files, belonging to user 10 in another
-+   namespace.
-+
-+   The same is true for the IPC namespaces being shared - two users
-+   from different user namespaces should not access the same IPC objects
-+   even having equal UIDs.
-+
-+   But currently this is not so.
-+
+diff -u -p a/drivers/bluetooth/bfusb.c b/drivers/bluetooth/bfusb.c
+--- a/drivers/bluetooth/bfusb.c 2007-06-02 22:32:10.000000000 +0200
++++ b/drivers/bluetooth/bfusb.c 2007-11-21 09:28:22.000000000 +0100
+@@ -396,7 +396,7 @@ static void bfusb_rx_complete(struct urb
+ 	}
+
+ 	skb_unlink(skb, &data->pending_q);
+-	kfree_skb(skb);
++	dev_kfree_skb_irq(skb);
+
+ 	bfusb_rx_submit(data, urb);
+
+diff -u -p a/drivers/bluetooth/bpa10x.c b/drivers/bluetooth/bpa10x.c
+--- a/drivers/bluetooth/bpa10x.c 2007-11-01 10:30:39.000000000 +0100
++++ b/drivers/bluetooth/bpa10x.c 2007-11-21 09:28:23.000000000 +0100
+@@ -190,7 +190,7 @@ static void bpa10x_tx_complete(struct ur
+ done:
+ 	kfree(urb->setup_packet);
+
+-	kfree_skb(skb);
++	dev_kfree_skb_irq(skb);
+ }
+
+ static void bpa10x_rx_complete(struct urb *urb)
+diff -u -p a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
+--- a/drivers/bluetooth/hci_usb.c 2007-10-22 11:25:05.000000000 +0200
++++ b/drivers/bluetooth/hci_usb.c 2007-11-21 09:28:26.000000000 +0100
+@@ -733,7 +733,7 @@ static void hci_usb_tx_complete(struct u
+ 	atomic_dec(__pending_tx(husb, _urb->type));
+
+ 	urb->transfer_buffer = NULL;
+-	kfree_skb((struct sk_buff *) _urb->priv);
++	dev_kfree_skb_irq((struct sk_buff*) _urb->priv);
+
+ 	if (!test_bit(HCI_RUNNING, &hdev->flags))
+ 		return;
+diff -u -p a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+--- a/drivers/bluetooth/btusb.c 2007-11-01 10:30:39.000000000 +0100
++++ b/drivers/bluetooth/btusb.c 2007-11-21 09:28:26.000000000 +0100
+@@ -254,7 +254,7 @@ static void btusb_tx_complete(struct urb
+ done:
+ 	kfree(urb->setup_packet);
+
+-	kfree_skb(skb);
++	dev_kfree_skb_irq(skb);
+ }
+
+ static int btusb_open(struct hci_dev *hdev)
+diff -u -p a/drivers/bluetooth/btsdio.c b/drivers/bluetooth/btsdio.c
+--- a/drivers/bluetooth/btsdio.c	2007-11-01 10:30:39.000000000 +0100
++++ b/drivers/bluetooth/btsdio.c	2007-11-21 11:25:48.000000000 +0100
+@@ -152,7 +152,7 @@ static int btsdio_rx_packet(struct btsdi
+
+ 	err = sdio_readsb(data->func, skb->data, REG_RDAT, len - 4);
+ 	if (err < 0) {
+-		kfree(skb);
++		dev_kfree_skb_irq(skb);
+ 		return err;
+ 	}
+
+@@ -163,7 +163,7 @@ static int btsdio_rx_packet(struct btsdi
+
+ 	err = hci_recv_frame(skb);
+ 	if (err < 0) {
+-		kfree(skb);
++		dev_kfree_skb_irq(skb);
+ 		return err;
+ 	}
+
