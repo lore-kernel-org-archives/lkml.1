@@ -1,100 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764882AbXKUBOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762897AbXKUBOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764882AbXKUBOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763341AbXKUBNq
+	id S1762897AbXKUBOg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760706AbXKUBNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:13:46 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:37378 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759757AbXKUBNp (ORCPT
+	Tue, 20 Nov 2007 20:13:47 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:45693 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760426AbXKUBNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:13:45 -0500
-Message-Id: <20071121011249.493691409@goodmis.org>
+	Tue, 20 Nov 2007 20:13:46 -0500
+Message-Id: <20071121011249.172284337@goodmis.org>
 References: <20071121010054.663842380@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 20 Nov 2007 20:00:58 -0500
+Date: Tue, 20 Nov 2007 20:00:56 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v4 04/20] RT overloaded runqueues accounting
-Content-Disposition: inline; filename=rt-overload.patch
+Subject: [PATCH v4 02/20] track highest prio queued on runqueue
+Content-Disposition: inline; filename=add-rq-highest-prio.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an RT overload accounting system. When a runqueue has
-more than one RT task queued, it is marked as overloaded. That is that it
-is a candidate to have RT tasks pulled from it.
+This patch adds accounting to each runqueue to keep track of the
+highest prio task queued on the run queue. We only care about
+RT tasks, so if the run queue does not contain any active RT tasks
+its priority will be considered MAX_RT_PRIO.
+
+This information will be used for later patches.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
 
- kernel/sched_rt.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ kernel/sched.c    |    3 +++
+ kernel/sched_rt.c |   18 ++++++++++++++++++
+ 2 files changed, 21 insertions(+)
 
+Index: linux-compile.git/kernel/sched.c
+===================================================================
+--- linux-compile.git.orig/kernel/sched.c	2007-11-20 19:52:50.000000000 -0500
++++ linux-compile.git/kernel/sched.c	2007-11-20 19:52:55.000000000 -0500
+@@ -267,6 +267,8 @@ struct rt_rq {
+ 	int rt_load_balance_idx;
+ 	struct list_head *rt_load_balance_head, *rt_load_balance_curr;
+ 	unsigned long rt_nr_running;
++	/* highest queued rt task prio */
++	int highest_prio;
+ };
+ 
+ /*
+@@ -6776,6 +6778,7 @@ void __init sched_init(void)
+ 		rq->cpu = i;
+ 		rq->migration_thread = NULL;
+ 		INIT_LIST_HEAD(&rq->migration_queue);
++		rq->rt.highest_prio = MAX_RT_PRIO;
+ #endif
+ 		atomic_set(&rq->nr_iowait, 0);
+ 
 Index: linux-compile.git/kernel/sched_rt.c
 ===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:52:56.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:52:57.000000000 -0500
-@@ -3,6 +3,38 @@
-  * policies)
-  */
- 
+--- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:52:50.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:52:55.000000000 -0500
+@@ -29,6 +29,10 @@ static inline void inc_rt_tasks(struct t
+ {
+ 	WARN_ON(!rt_task(p));
+ 	rq->rt.rt_nr_running++;
 +#ifdef CONFIG_SMP
-+static cpumask_t rt_overload_mask;
-+static atomic_t rto_count;
-+static inline int rt_overloaded(void)
-+{
-+	return atomic_read(&rto_count);
-+}
-+static inline cpumask_t *rt_overload(void)
-+{
-+	return &rt_overload_mask;
-+}
-+static inline void rt_set_overload(struct rq *rq)
-+{
-+	cpu_set(rq->cpu, rt_overload_mask);
-+	/*
-+	 * Make sure the mask is visible before we set
-+	 * the overload count. That is checked to determine
-+	 * if we should look at the mask. It would be a shame
-+	 * if we looked at the mask, but the mask was not
-+	 * updated yet.
-+	 */
-+	wmb();
-+	atomic_inc(&rto_count);
-+}
-+static inline void rt_clear_overload(struct rq *rq)
-+{
-+	/* the order here really doesn't matter */
-+	atomic_dec(&rto_count);
-+	cpu_clear(rq->cpu, rt_overload_mask);
-+}
++	if (p->prio < rq->rt.highest_prio)
++		rq->rt.highest_prio = p->prio;
 +#endif /* CONFIG_SMP */
+ }
+ 
+ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
+@@ -36,6 +40,20 @@ static inline void dec_rt_tasks(struct t
+ 	WARN_ON(!rt_task(p));
+ 	WARN_ON(!rq->rt.rt_nr_running);
+ 	rq->rt.rt_nr_running--;
++#ifdef CONFIG_SMP
++	if (rq->rt.rt_nr_running) {
++		struct rt_prio_array *array;
 +
- /*
-  * Update the current task's runtime statistics. Skip current tasks that
-  * are not in our scheduling class.
-@@ -32,6 +64,8 @@ static inline void inc_rt_tasks(struct t
- #ifdef CONFIG_SMP
- 	if (p->prio < rq->rt.highest_prio)
- 		rq->rt.highest_prio = p->prio;
-+	if (rq->rt.rt_nr_running > 1)
-+		rt_set_overload(rq);
- #endif /* CONFIG_SMP */
++		WARN_ON(p->prio < rq->rt.highest_prio);
++		if (p->prio == rq->rt.highest_prio) {
++			/* recalculate */
++			array = &rq->rt.active;
++			rq->rt.highest_prio =
++				sched_find_first_bit(array->bitmap);
++		} /* otherwise leave rq->highest prio alone */
++	} else
++		rq->rt.highest_prio = MAX_RT_PRIO;
++#endif /* CONFIG_SMP */
  }
  
-@@ -53,6 +87,8 @@ static inline void dec_rt_tasks(struct t
- 		} /* otherwise leave rq->highest prio alone */
- 	} else
- 		rq->rt.highest_prio = MAX_RT_PRIO;
-+	if (rq->rt.rt_nr_running < 2)
-+		rt_clear_overload(rq);
- #endif /* CONFIG_SMP */
- }
- 
+ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
 
 -- 
