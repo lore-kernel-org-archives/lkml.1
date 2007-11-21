@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbXKUQSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbXKUQTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbXKUQSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761144AbXKUQR2
+	id S1762720AbXKUQTK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 11:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761530AbXKUQR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:17:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47404 "EHLO mx1.redhat.com"
+	Wed, 21 Nov 2007 11:17:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47406 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761508AbXKUQR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761523AbXKUQR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Nov 2007 11:17:27 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 9/9] MN10300: Fix MTD JEDEC probe so that the ASB2303 bootprom
-	can be detected [2.6.24-rc3-mm1]
+Subject: [PATCH 8/9] MN10300: Add platform MTD support for the ASB2303 board
+	[2.6.24-rc3-mm1]
 To: akpm@linux-foundation.org
 Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
        linux-kernel@vger.kernel.org
-Date: Wed, 21 Nov 2007 16:17:13 +0000
-Message-ID: <20071121161713.1097.43033.stgit@warthog.procyon.org.uk>
+Date: Wed, 21 Nov 2007 16:17:08 +0000
+Message-ID: <20071121161708.1097.43927.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071121161632.1097.9556.stgit@warthog.procyon.org.uk>
 References: <20071121161632.1097.9556.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,40 +30,146 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix MTD JEDEC probe so that the ASB2303 bootprom can be accessed.  This is
-presumably required because the bootprom is normally write-protected and so
-the normal flash probes don't work as they require the ability to write to the
-flash to send it commands.
-
-In the condition of the excluded if-statement, uaddr is 1.
+Add platform MTD support for the ASB2303 board.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- drivers/mtd/chips/jedec_probe.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/mn10300/configs/asb2303_defconfig |    5 +-
+ arch/mn10300/unit-asb2303/Makefile     |    2 -
+ arch/mn10300/unit-asb2303/flash.c      |  100 ++++++++++++++++++++++++++++++++
+ 3 files changed, 105 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mtd/chips/jedec_probe.c b/drivers/mtd/chips/jedec_probe.c
-index 5074b5e..01a0550 100644
---- a/drivers/mtd/chips/jedec_probe.c
-+++ b/drivers/mtd/chips/jedec_probe.c
-@@ -1883,11 +1883,18 @@ static inline __u8 finfo_uaddr(const struct amd_flash_info *finfo, int device_ty
+diff --git a/arch/mn10300/configs/asb2303_defconfig b/arch/mn10300/configs/asb2303_defconfig
+index 0189a05..ca9876a 100644
+--- a/arch/mn10300/configs/asb2303_defconfig
++++ b/arch/mn10300/configs/asb2303_defconfig
+@@ -282,7 +282,10 @@ CONFIG_MTD_CFI_UTIL=y
+ # Mapping drivers for chip access
+ #
+ # CONFIG_MTD_COMPLEX_MAPPINGS is not set
+-# CONFIG_MTD_PHYSMAP is not set
++CONFIG_MTD_PHYSMAP=y
++CONFIG_MTD_PHYSMAP_START=0x8000000
++CONFIG_MTD_PHYSMAP_LEN=0x0
++CONFIG_MTD_PHYSMAP_BANKWIDTH=2
+ # CONFIG_MTD_PLATRAM is not set
  
- 	uaddr = finfo->uaddr[uaddr_idx];
- 
-+	/* the MN10300 ASB2303 board doesn't detect its bootprom if this test
-+	 * is allowed to take place, presumably because the flash is
-+	 * write-protected and so cannot be commanded for the purposes of
-+	 * probing
-+	 */
-+#ifndef CONFIG_MN10300_UNIT_ASB2303
- 	if (uaddr != MTD_UADDR_NOT_SUPPORTED ) {
- 		/* ASSERT("The unlock addresses for non-8-bit mode
- 		   are bollocks. We don't really need an array."); */
- 		uaddr = finfo->uaddr[0];
- 	}
-+#endif
- 
-  uaddr_done:
- 	return uaddr;
+ #
+diff --git a/arch/mn10300/unit-asb2303/Makefile b/arch/mn10300/unit-asb2303/Makefile
+index 03e579f..38a5bb4 100644
+--- a/arch/mn10300/unit-asb2303/Makefile
++++ b/arch/mn10300/unit-asb2303/Makefile
+@@ -3,4 +3,4 @@
+ # Makefile for the ASB2303 board
+ #
+ ###############################################################################
+-obj-y   := unit-init.o smc91111.o leds.o
++obj-y   := unit-init.o smc91111.o flash.o leds.o
+diff --git a/arch/mn10300/unit-asb2303/flash.c b/arch/mn10300/unit-asb2303/flash.c
+new file mode 100644
+index 0000000..17fe083
+--- /dev/null
++++ b/arch/mn10300/unit-asb2303/flash.c
+@@ -0,0 +1,100 @@
++/* Handle mapping of the flash on the ASB2303 board
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
++
++#define ASB2303_PROM_ADDR	0xA0000000	/* Boot PROM */
++#define ASB2303_PROM_SIZE	(2 * 1024 * 1024)
++#define ASB2303_FLASH_ADDR	0xA4000000	/* System Flash */
++#define ASB2303_FLASH_SIZE	(32 * 1024 * 1024)
++#define ASB2303_CONFIG_ADDR	0xA6000000	/* System Config EEPROM */
++#define ASB2303_CONFIG_SIZE	(8 * 1024)
++
++/*
++ * default MTD partition table for both main flash devices, expected to be
++ * overridden by RedBoot
++ */
++static struct mtd_partition asb2303_partitions[] = {
++	{
++		.name		= "Bootloader",
++		.size		= 0x00040000,
++		.offset		= 0,
++		.mask_flags	= MTD_CAP_ROM /* force read-only */
++	}, {
++		.name		= "Kernel",
++		.size		= 0x00400000,
++		.offset		= 0x00040000,
++	}, {
++		.name		= "Filesystem",
++		.size		= MTDPART_SIZ_FULL,
++		.offset		= 0x00440000
++	}
++};
++
++/*
++ * the ASB2303 Boot PROM definition
++ */
++static struct physmap_flash_data asb2303_bootprom_data = {
++	.width		= 2,
++	.nr_parts	= 1,
++	.parts		= asb2303_partitions,
++};
++
++static struct resource asb2303_bootprom_resource = {
++	.start		= ASB2303_PROM_ADDR,
++	.end		= ASB2303_PROM_ADDR + ASB2303_PROM_SIZE,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device asb2303_bootprom = {
++	.name		= "physmap-flash",
++	.id		= 0,
++	.dev.platform_data = &asb2303_bootprom_data,
++	.num_resources	= 1,
++	.resource	= &asb2303_bootprom_resource,
++};
++
++/*
++ * the ASB2303 System Flash definition
++ */
++static struct physmap_flash_data asb2303_sysflash_data = {
++	.width		= 4,
++	.nr_parts	= 1,
++	.parts		= asb2303_partitions,
++};
++
++static struct resource asb2303_sysflash_resource = {
++	.start		= ASB2303_FLASH_ADDR,
++	.end		= ASB2303_FLASH_ADDR + ASB2303_FLASH_SIZE,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device asb2303_sysflash = {
++	.name		= "physmap-flash",
++	.id		= 1,
++	.dev.platform_data = &asb2303_sysflash_data,
++	.num_resources	= 1,
++	.resource	= &asb2303_sysflash_resource,
++};
++
++/*
++ * register the ASB2303 flashes
++ */
++static int __init asb2303_mtd_init(void)
++{
++	platform_device_register(&asb2303_bootprom);
++	platform_device_register(&asb2303_sysflash);
++	return 0;
++}
++
++module_init(asb2303_mtd_init);
 
