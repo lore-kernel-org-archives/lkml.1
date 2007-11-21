@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbXKULHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbXKULL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760845AbXKULHd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 06:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbXKULH0
+	id S1761406AbXKULL7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 06:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbXKULLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 06:07:26 -0500
-Received: from sacred.ru ([62.205.161.221]:57583 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752338AbXKULHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 06:07:25 -0500
-Message-ID: <4744113B.5010309@openvz.org>
-Date: Wed, 21 Nov 2007 14:06:35 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 21 Nov 2007 06:11:52 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:12950 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753666AbXKULLv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 06:11:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SyR5U/ejOtCoL8E60Gt1x1zFEbp0sjUfYsWljQu7RvMn+aQ35OqYXcaLxudKmnRVrOayFGPj/VGn/M0t5WaAAe37YI0rctvysngB8IHMi1i7bYgRQ/RXGA8NQ6IvvqiiVUmtdonjcJfH25V3OgJjQaTEF6MslgzadKf8MWHA4xA=
+Message-ID: <b637ec0b0711210311w348e10bcqb435ec88d8a11e30@mail.gmail.com>
+Date: Wed, 21 Nov 2007 12:11:49 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071121103951.GA5788@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH] Isolate the UTS namespace's domainname and hostname back
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 21 Nov 2007 14:06:36 +0300 (MSK)
+Content-Disposition: inline
+References: <20071119151756.GA25446@elte.hu>
+	 <b637ec0b0711201238i746ca9bala3812ca93479c6fa@mail.gmail.com>
+	 <20071120204103.GC10008@elte.hu>
+	 <b637ec0b0711201247m4038a2cds5924ddbd43db6f8e@mail.gmail.com>
+	 <20071120215313.GD24156@elte.hu>
+	 <b637ec0b0711210050x1fbd741bi9c7550b4ef611598@mail.gmail.com>
+	 <20071121103951.GA5788@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit
+Hi
 
-commit 7d69a1f4a72b18876c99c697692b78339d491568
-Author: Cedric Le Goater <clg@fr.ibm.com>
-Date:   Sun Jul 15 23:40:58 2007 -0700
+On Nov 21, 2007 11:39 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Fabio Comolli <fabio.comolli@gmail.com> wrote:
+>
+> > To answer your latest mail, again I don't have numbers but from my
+> > point ov view:
+> >
+> > 23.1 < 23.1+ck < 23.8+cfs.24
+> >
+> > where 23.1+ck is slightly better than vanilla 23.1 and 23.8+cfs.24 is
+> > much better than 23.1+ck.
+> >
+> > My workload is pretty standard, F8+kde+firefox+kmail+amsn, some kernel
+> > compile and so on.
+>
+> do you remember which particular workload improved the most, and in
+> roughly whatway? (no need for numbers - subjective impressions are
+> accurate enough for this)
+>
 
-    remove CONFIG_UTS_NS and CONFIG_IPC_NS
+Firefox, especially when multiple tabs are open. Sometimes I used to
+experience some latencies that with cfs.24 are gone.
 
-accidentally removed the code, that prevented the uts->hostname
-and uts->domainname values from being overwritten from another
-namespace. In other words, setting hostname/domainname via sysfs 
-(echo xxx > /proc/sys/kernel/(host|domain)name) cased the new
-value to be set in init UTS namespace only.
+>         Ingo
+>
 
-Return the isolation back.
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
-diff --git a/kernel/utsname_sysctl.c b/kernel/utsname_sysctl.c
-index c76c064..fe3a56c 100644
---- a/kernel/utsname_sysctl.c
-+++ b/kernel/utsname_sysctl.c
-@@ -18,6 +18,10 @@
- static void *get_uts(ctl_table *table, int write)
- {
- 	char *which = table->data;
-+	struct uts_namespace *uts_ns;
-+
-+	uts_ns = current->nsproxy->uts_ns;
-+	which = (which - (char *)&init_uts_ns) + (char *)uts_ns;
- 
- 	if (!write)
- 		down_read(&uts_sem);
+Regards,
+Fabio
