@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbXKUEu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbXKUFDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989AbXKUEu0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 23:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbXKUEuO
+	id S1754210AbXKUFDx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 00:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbXKUFDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 23:50:14 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:34104 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751745AbXKUEuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 23:50:12 -0500
-Date: Tue, 20 Nov 2007 20:50:12 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Chinner <dgc@sgi.com>
-cc: Christoph Hellwig <hch@infradead.org>, ak@suse.de,
-       akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 18/45] cpu alloc: XFS counters
-In-Reply-To: <20071121044711.GF995458@sgi.com>
-Message-ID: <Pine.LNX.4.64.0711202048380.30966@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <20071120011335.975705216@sgi.com>
- <20071120081230.GA1324@infradead.org> <Pine.LNX.4.64.0711201238010.26745@schroedinger.engr.sgi.com>
- <20071121044711.GF995458@sgi.com>
+	Wed, 21 Nov 2007 00:03:44 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:48882
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751672AbXKUFDo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 00:03:44 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/4] more RT balancing enhancements
+To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Date: Tue, 20 Nov 2007 23:44:01 -0500
+Message-ID: <20071121043648.6315.29246.stgit@novell1.haskins.net>
+In-Reply-To: <20071121010054.663842380@goodmis.org>
+References: <20071121010054.663842380@goodmis.org>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, David Chinner wrote:
+These are patches that apply to the end of the v5 series annouced here:
 
-> Seeing as I didn't notice this patchest changed XFS (where's the cc?)
-> until I saw hch's question I'd appreciate a pointer to that discussion
-> as it's long been deleted from my mailbox.
+http://lkml.org/lkml/2007/11/20/558
 
-http://marc.info/?t=119438263500009&r=2&w=2
+Steven,
+    These are patches that I could not finish in time to get in with the v4
+    release. 
 
+Ingo,
+    If you accept the prior work submitted by Steven and myself, please also
+    consider this series.
+
+Comments/feedback welcome!
+
+Regards,
+-Greg 
