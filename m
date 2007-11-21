@@ -1,187 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXKURMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXKURMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbXKURMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 12:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXKURMI
+	id S1758825AbXKURMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 12:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbXKURMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 12:12:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50328 "EHLO mx1.redhat.com"
+	Wed, 21 Nov 2007 12:12:41 -0500
+Received: from mx30.mail.ru ([194.67.23.238]:2483 "EHLO mx30.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbXKURMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 12:12:05 -0500
-Message-ID: <47446690.5090808@redhat.com>
-Date: Wed, 21 Nov 2007 12:10:40 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1753073AbXKURMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 12:12:39 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
+Date: Wed, 21 Nov 2007 20:12:32 +0300
+User-Agent: KMail/1.9.7
+Cc: michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
+References: <200706300859.47133.arvidjaar@mail.ru> <200709091800.05756.arvidjaar@mail.ru> <200709091907.14642.rjw@sisk.pl>
+In-Reply-To: <200709091907.14642.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Jordan Russell <jr-list-2007@quo.to>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: 2.6.23.1: Random hangs during boot with "tsc" clocksource
-References: <472B59E8.3080709@quo.to> <20071106221548.c8d7b41b.akpm@linux-foundation.org> <47436BA0.5050809@quo.to>
-In-Reply-To: <47436BA0.5050809@quo.to>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart5617617.fmx4kDvy3x";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200711212012.33403.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/20/2007 06:20 PM, Jordan Russell wrote:
->>> On Fri, 02 Nov 2007 12:10:00 -0500 Jordan Russell <jr-list-2007@quo.to> wrote:
->>> Hi,
->>>
->>> With 2.6.23.1 (stock and Fedora), roughly 50% of the time my system
->>> hangs indefinitely during the kernel boot process. The hangs occur in
->>> places where normally a brief delay is seen, such as when detecting
->>> serial ports, ATA devices, and USB hubs. SysRq+W, when it works, shows
->>> tasks stuck inside schedule_timeout and lock_timer_base.
-> 
-> Same problem with 2.6.23.8.
-> 
-> Are there any specific (TSC related?) patches I should try reverting?
-> 
-> Would it help if I captured the dmesg/SysRq output from one of the
-> hanging boots?
-> 
-> Any other information that might be useful in getting to the bottom of this?
-> 
+--nextPart5617617.fmx4kDvy3x
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Did you try this one? You are seeing problems with preemption disabled,
-but it's at least worth trying.
+On Sunday 09 September 2007, Rafael J. Wysocki wrote:
+> On Sunday, 9 September 2007 16:00, Andrey Borzenkov wrote:
+> > On Sunday 01 July 2007, Rafael J. Wysocki wrote:
+> > > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
+> > > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
+> > > > suspend to disk :)
+> > > >
+> > > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + sin=
+gle
+> > > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserf=
+s,
+> > > > libata with pata_ali driver.
+> > > >
+> > > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-=
+rc
+> > > > system hung at least once in every rcX. Up to rc6 those lockups were
+> > > > absolutely silent (black screen without reaction to any key). In rc=
+6 I
+> > > > just got something different. After resume I got on screem:
+> > > >
+> > > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
+> > > > swsusp: Basic memory bitmaps created
+> > > > swsusp: Basic memory bitmaps freed
+> > > >
+> > > > After that it just sits there doing nothing. Ther was brief sound o=
+f HDD
+> > > > but I suspect it was related more to power-on. System was respondin=
+g to
+> > > > power-on button press:
+> > > >
+> > > > ACPI Error (event-0305): No installed handler for fixed event [0000=
+0002
+> > > > 20070125]
+> > > >
+> > > > And SysRq was functioning.
+> > >
+> > > That probably means that there's a deadlock somewhere in there.
+> > >
+> > > > Unfortunately I do not have serial console so I
+> > > > copy manually stacks from several last screens of output; I have tr=
+ied to
+> > > > make a photo but right now my kbluetooth is refusing to work at all=
+ so I
+> > > > cannot transfer them :( (but I suspect quality would be too bad any=
+way)
+> > > >
+> > > > laptop_mode D
+> > > > 	io_schedule+0xe/0x20
+> > >
+> > > Looks suspicious to me.  Can you identify what line of code this poin=
+ts to?
+> > >
+> > > > 	sync_buffer+0x35/0x40
+> > > > 	__wait_on_bit+0x45/0x70
+> > > > 	out_of_line_wait_on_bit+0x6c/0x80
+> > > > 	__wait_on_buffer+0x27/0x30
+> > > > 	search_by_key+0x15e/0x1250 [reiserfs]
+> > > > 	reiserfs_read_locked_inode+0x64/0x570 [reiserfs]
+> > > > 	reiserfs_iget+0x7e/0xa0 [reiserfs]
+> > > > 	reiserfs_lookup+0xc7/0x120 [reiserfs]
+> > > > 	do_lookup+0x138/0x180
+> > > > 	__link_path_walk+0x787/0xce0
+> > > > 	link_path_walk+0x44/0xc0
+> > > > 	path_walk+0x18/0x20
+> > > > 	do_path_lookup_0x88/0x210
+> > > > 	__path_lookupintent_open+0x4d/0x90
+> > > > 	path_lookup_open+0x1f/0x30
+> > > > 	open_exec+0x28/0xb0
+> > > > 	do_execve+0x36/0x1d0
+> > > > 	sys_execve+0x2e/0x80
+> > > > 	sysenter_past_esp+0x5f/0x99
+> > > >
+> > > > 90clock D
+> > > > 	__mutex_lock_slow_path+0xa1/0x290
+> > > > 	mutex_lock+0x21/0x30
+> > > > 	do_lookup+0xa1/0x180
+> > > > 	__link_path_walk+0x44/0xc0
+> > > > 	path_walk+0x18/0x20
+> > > > 	do_path_lookup+0x78/0x210
+> > > > 	__user_walk_fd+0x38/0x50
+> > > > 	vfs_stat_fd+0x21/0x50
+> > > > 	vfs_stat+0x11/0x20
+> > > > 	sys_stat64+0x14/0x30
+> > > > 	sysenter_past_esp+0x5f/0x99
+> > > >
+> > > > alsactl D
+> > > > 	io_schedule+0xe/0x20
+> > >
+> > > Same here.  Hmm.
+> > >
+> > > > 	sync_page+0x35/0x40
+> > > > 	__wait_on_bit_lock+0x3f/0x70
+> > > > 	__lock_page+0x68/0x70
+> > > > 	filemap_nopage+0x16c/0x300
+> > > > 	__handle_mm_faul+0x1d7/0x610
+> > > > 	do_page_fault+0x1d7/0x610
+> > > > 	error_code+0x6a/0x70
+> > > > 	padzero+0x1f/0x30
+> > > > 	load_elf_binary+0x743/0x1ab0
+> > > > 	search_binary_handler+0x7b/0x1f0
+> > > > 	do_execve+0x137/0x1d0
+> > > > 	sys_execve+0x2e/0x80
+> > > > 	sysenter_past_esp+0x5f/0x90
+> > > >
+> > > > After that I could remount, sync and reboot using SysRq (well, after
+> > > > reboot it still insisted on replaying insane number of transactions=
+ so
+> > > > may be it did *not* remount / ro after all). Before reboot there was
+> > > > brief output that resembled lockdep warnings, but it went too fast =
+to be
+> > > > readable.
+> > > >
+> > > > usual stuff follows
+> > >
+> > > I see you're using CFQ as the default IO scheduler.  Can you please s=
+witch
+> > > to AS and see if that changes anything?
+> > >
+> >=20
+> > I just had the same lockup on resume using AS with 2.6.23-rc5.
+>=20
+> Hm.  Does your root partition sit on reiserfs?
 
+I already answered this but yes, I do.
 
+>=20
+>=20
 
-From: Marin Mitov <mitov@issp.bas.bg>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]new_TSC_based_delay_tsc()
-Cc: Ingo Molnar <mingo@elte.hu>
-Date: 	Tue, 20 Nov 2007 21:32:27 +0200
+just had it again on 2.6.24-rc3. Same thing - keys working (to some extent)
+Alt-SysRq allows me to reboot; unfortunately I switched (unintentionally)
+from resume message to tty1 and it was in funny state so SysRq-t was lost b=
+ut
+I pretty much suspect it be the same.
 
-Hi all,
+well, not sure how to debug problem that pops up once in three-four release=
+ ...
 
-Please ignore the previous patch with the same subject.
-It has a bug that can manifest itself in the very exotic case
-when each do {} while() iteration executes on different cpu
-leading to potentially infinite loop.
+--nextPart5617617.fmx4kDvy3x
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-This is a patch based on the Ingo's idea/patch to track 
-delay_tsc() migration to another cpu by comparing 
-smp_processor_id(). It is against kernel-2.6.24-rc3.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-What is different:
-1. Using unsigned (instead of long) to unify for i386/x86_64.
-2. Minimal preempt_disable/enable() critical sections
-   (more room for preemption)
-3. some statements have been rearranged, to account for
-    possible under/overflow of left/TSC
+iD8DBQBHRGcBR6LMutpd94wRAnfGAJ9OJxycLj5kejFwx3fOtuCRMuAj/wCdHiZN
+Kt9OR0g7ROFIrgNTrrLpAIk=
+=NOkh
+-----END PGP SIGNATURE-----
 
-Tested on both: 32/64 bit SMP PREEMPT kernel-2.6.24-rc3
-
-Comments, please.
-
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-=========================================
---- a/arch/x86/lib/delay_32.c	2007-11-18 08:14:05.000000000 +0200
-+++ b/arch/x86/lib/delay_32.c	2007-11-20 19:03:52.000000000 +0200
-@@ -38,18 +38,42 @@
- 		:"0" (loops));
- }
- 
--/* TSC based delay: */
-+/* TSC based delay:
-+ *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- static void delay_tsc(unsigned long loops)
- {
--	unsigned long bclock, now;
-+	unsigned prev, prev_1, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
-+
-+	preempt_disable();
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--	preempt_disable();		/* TSC's are per-cpu */
--	rdtscl(bclock);
- 	do {
- 		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
-+		preempt_disable();
-+		rdtscl(prev_1);
-+		cpu = smp_processor_id();
- 		rdtscl(now);
--	} while ((now-bclock) < loops);
--	preempt_enable();
-+		preempt_enable();
-+
-+		if (prev_cpu != cpu){
-+			/*
-+			 * We have migrated, forget prev_cpu's tsc reading
-+			 */
-+			prev = prev_1;
-+			prev_cpu = cpu;
-+		}
-+	} while ((now-prev) < left);
- }
- 
- /*
---- a/arch/x86/lib/delay_64.c	2007-11-18 08:14:40.000000000 +0200
-+++ b/arch/x86/lib/delay_64.c	2007-11-20 19:47:29.000000000 +0200
-@@ -26,18 +26,42 @@
- 	return 0;
- }
- 
-+/* TSC based delay:
-+ *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- void __delay(unsigned long loops)
- {
--	unsigned bclock, now;
-+	unsigned prev, prev_1, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
-+
-+	preempt_disable();
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--	preempt_disable();		/* TSC's are pre-cpu */
--	rdtscl(bclock);
- 	do {
--		rep_nop(); 
-+		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
-+		preempt_disable();
-+		rdtscl(prev_1);
-+		cpu = smp_processor_id();
- 		rdtscl(now);
--	}
--	while ((now-bclock) < loops);
--	preempt_enable();
-+		preempt_enable();
-+
-+		if (prev_cpu != cpu){
-+			/*
-+			 * We have migrated, forget prev_cpu's tsc reading
-+			 */
-+			 prev = prev_1;
-+			 prev_cpu = cpu;
-+		}
-+	} while ((now-prev) < left);
- }
- EXPORT_SYMBOL(__delay);
- 
+--nextPart5617617.fmx4kDvy3x--
