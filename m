@@ -1,115 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbXKUGjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbXKUGmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbXKUGjL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 01:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbXKUGi4
+	id S1757862AbXKUGmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 01:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXKUGmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 01:38:56 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:43055 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751955AbXKUGix (ORCPT
+	Wed, 21 Nov 2007 01:42:04 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57685 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbXKUGmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 01:38:53 -0500
-From: Sripathi Kodi <sripathik@in.ibm.com>
-To: linux-rt-users@vger.kernel.org
-Subject: [PREEMPT_RT] LOCK_STAT and kexec: general protection fault
-Date: Wed, 21 Nov 2007 12:08:38 +0530
-User-Agent: KMail/1.9.4
-Cc: linux-kernel@vger.kernel.org
+	Wed, 21 Nov 2007 01:42:01 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Dinakar Guniguntala [imap]" <dino@in.ibm.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>
+Subject: Re: Futexes and network filesystems.
+References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org>
+	<4729E936.4040400@redhat.com> <4729EB3C.9050102@openvz.org>
+	<472A6D91.1020300@redhat.com> <472AD7D6.80900@openvz.org>
+	<20071102010419.23f3db5c.akpm@linux-foundation.org>
+	<1194024622.6271.108.camel@localhost>
+	<alpine.LFD.0.999.0711021038480.3342@woody.linux-foundation.org>
+	<20071103201251.GB26366@elte.hu>
+	<m1ir3wr0jj.fsf_-_@ebiederm.dsl.xmission.com>
+	<79EA1EBC-895B-4AFC-92EB-05E46C6AAEF5@mac.com>
+Date: Tue, 20 Nov 2007 23:30:58 -0700
+In-Reply-To: <79EA1EBC-895B-4AFC-92EB-05E46C6AAEF5@mac.com> (Kyle Moffett's
+	message of "Wed, 21 Nov 2007 01:16:27 -0500")
+Message-ID: <m1lk8sp0t9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711211208.38776.sripathik@in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Kyle Moffett <mrmacman_g4@mac.com> writes:
 
-On RT kernel, When CONFIG_LOCK_STAT is enabled, trying to load the kdump 
-kernel (kexec -p) causes a kernel panic. I have seen slightly varying 
-backtraces, but I see general protection fault every time.
+> On Nov 20, 2007, at 17:53:52, Er ic W. Biederman wrote:
+>> I had a chance to think about this a bit more, and realized that the problem
+>> is that futexes don't appear to work on network  filesystems, even if the
+>> network filesystems provide coherent  shared memory.
+>>
+>> It seems to me that we need to have a call that gets a unique token for a
+>> process for each filesystem per filesystem for use in futexes  (especially
+>> robust futexes).  Say get_fs_task_id(const char *path);
+>>
+>> On local filesystems this could just be the pid as we use today, but for
+>> filesystems that can be accessed from contexts with  potentially overlapping
+>> pid values this could be something else.   It is an extra syscall in the
+>> preparation path, but it should be hardly more expensive the current getpid().
+>>
+>> Once we have fixed the futex infrastructure to be able to handle futexes on
+>> network filesystems, the pid namespace case will be  trivial to implement.
+>
+> Actually, I would think that get_vm_task_id(void *addr) would be a more useful
+> interface.  The call would still be a relatively simple  lookup to find the
+> struct file associated with the particular virtual  mapping, but it would be
+> race-free from the perspective of userspace  and would not require that we
+> somehow figure out the file descriptor  associated with a particular mmap()
+> (which may be closed by this  point in time).  Useful extension would be the
+> get_fd_task_id(int fd) and get_fs_task_id(const char *path), but those are less
+> important.
 
-Hardware: x86_64, 4CPUs, LS20 blade.
-Kernel: 2.6.23.1-rt11.
+You are probably right.  The important thing is that we get an interface where
+user space can cache the result.  Or else you totally loose the benefit of
+avoiding trapping into the kernel.
 
-I don't see this problem on non-rt kernels.
+> The other important thing is to ensure that somehow the numbers are considered
+> unique only within the particular domain of a container,  such that you can
+> migrate a container from one system to another even  using a simple local ext3
+> filesystem (on a networked block device)  and still be able to have things work
+> properly even after the  migration.  Naturally this would only work with an
+> upgraded libc but  I think that's a reasonable requirement to enforce for
+> migration of  futexes and cross-network futexes.
 
-Kernstopped custom tracer.
-general protection fault: 0000 [1] PREEMPT SMP
-CPU 3
-Modules linked in: ipmi_devintf ipmi_si ipmi_msghandler autofs4 hidp rfcomm 
-l2cap bluetooth sunrpc nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 
-xt_state iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter 
-ip6_tables x_tables ipv6 dm_mirror dm_multipath dm_mod video output sbs dock 
-battery ac parport_pc lp parport joydev sg amd_rng rtc_cmos i2c_amd756 k8temp 
-shpchp i2c_core rtc_core tg3 hwmon serio_raw rtc_lib button mptspi mptscsih 
-scsi_transport_spi mptbase sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd 
-uhci_hcd
-Pid: 3540, comm: kexec Not tainted 2.6.23.1-rt11 #2
-RIP: 0010:[<ffffffff8025ae13>]  [<ffffffff8025ae13>] 
-__lock_acquire+0x6b2/0xca0
-RSP: 0018:ffff8102118d7eb8  EFLAGS: 00010092
-RAX: 0bbda08e8f9f3119 RBX: ffff8101fb4defd0 RCX: ffffffff80e31110
-RDX: 0bbda08e8f9f3119 RSI: 000000000000000a RDI: 0000000000000001
-RBP: ffff8102118d7f18 R08: 0000000000000002 R09: 0000000000000001
-R10: ffffffff80275659 R11: fffffffffffff000 R12: 00000000000000e6
-R13: ffff8101fb4de7c0 R14: 0000000000000000 R15: 00000000001225dc
-FS:  00002b55f6778b00(0000) GS:ffff810211fbb940(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00000032fc494ff0 CR3: 00000001fbfa0000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process kexec (pid: 3540, threadinfo ffff8101fb518000, task ffff8101fb4de7c0)
-Stack:  00000001b434a540 0000000000000002 0000000000000000 ffffffff8068dc90
- ffffffff80234dd8 ffff8102118d7f00 000000000000000a 0000000000000046
- ffffffff8068dc78 0000000000000003 ffffffff8068dc78 00000000001225dc
-Call Trace:
- <IRQ>  [<ffffffff80234dd8>] wake_up_process+0x12/0x14
- [<ffffffff8025b45f>] lock_acquire+0x5e/0x77
- [<ffffffff80275659>] handle_edge_irq+0x29/0x158
- [<ffffffff804a1690>] __spin_lock+0x35/0x62
- [<ffffffff80275659>] handle_edge_irq+0x29/0x158
- [<ffffffff8020e5d2>] do_IRQ+0x80/0xea
- [<ffffffff8020c4a6>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8033b647>] copy_user_generic_string+0x17/0x40
- [<ffffffff80267f74>] sys_kexec_load+0x501/0x5dd
- [<ffffffff8020f17a>] syscall_trace_enter+0x95/0x99
- [<ffffffff8020c0f7>] tracesys+0xdc/0xe1
+Well. The numbers are unique per filesystem.  Which is what should save you.
+The numbers can't simply be unique per container.
 
-INFO: lockdep is turned off.
+> Even for network filesystems which don't implement coherent shared memory, you
+> might add a memexcl() system call which (when used by  multiple cooperating
+> processes) ensures that a given page is only  ever mapped by at most one
+> computer accessing a given network filesystem.  The page-outs and page-ins when
+> shuttling that page  across the network would be expensive, but I believe the
+> cost would  be reasonable for many applications and it would allow traditional
+> atomic ops on the mapped pages to take and release futexes in the  uncontended
+> case.
 
-Code: 48 8b 10 0f 18 0a 48 39 c8 75 e4 f0 ff 0d 1b 5a 39 00 79 0d 
-RIP  [<ffffffff8025ae13>] __lock_acquire+0x6b2/0xca0
- RSP <ffff8102118d7eb8>
-Kernel panic - not syncing: Fatal exception
+Sounds reasonable to me. 
 
-Call Trace:
- <IRQ>  [<ffffffff8023af69>] panic+0xaf/0x16e
- [<ffffffff802322d6>] task_rq_lock+0x42/0x74
- [<ffffffff804a0e7c>] rt_spin_unlock+0x1e/0x50
- [<ffffffff804a0e7c>] rt_spin_unlock+0x1e/0x50
- [<ffffffff804a2de0>] oops_end+0x69/0x72
- [<ffffffff8020d776>] die+0x4a/0x54
- [<ffffffff804a3440>] do_general_protection+0x116/0x11f
- [<ffffffff80258281>] put_lock_stats+0x2b/0x2d
- [<ffffffff804a294d>] error_exit+0x0/0x96
- [<ffffffff80275659>] handle_edge_irq+0x29/0x158
- [<ffffffff8025ae13>] __lock_acquire+0x6b2/0xca0
- [<ffffffff80234dd8>] wake_up_process+0x12/0x14
- [<ffffffff8025b45f>] lock_acquire+0x5e/0x77
- [<ffffffff80275659>] handle_edge_irq+0x29/0x158
- [<ffffffff804a1690>] __spin_lock+0x35/0x62
- [<ffffffff80275659>] handle_edge_irq+0x29/0x158
- [<ffffffff8020e5d2>] do_IRQ+0x80/0xea
- [<ffffffff8020c4a6>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8033b647>] copy_user_generic_string+0x17/0x40
- [<ffffffff80267f74>] sys_kexec_load+0x501/0x5dd
- [<ffffffff8020f17a>] syscall_trace_enter+0x95/0x99
- [<ffffffff8020c0f7>] tracesys+0xdc/0xe1
-
-INFO: lockdep is turned off.
-
-Thanks,
-Sripathi.
+Eric
