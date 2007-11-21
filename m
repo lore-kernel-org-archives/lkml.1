@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765179AbXKUBZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbXKUB0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765179AbXKUBZa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbXKUBUH
+	id S1764181AbXKUB0K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:26:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbXKUBVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:20:07 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39180 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932103AbXKUBUF (ORCPT
+	Tue, 20 Nov 2007 20:21:43 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:6229 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932434AbXKUBVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:20:05 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
+	Tue, 20 Nov 2007 20:21:39 -0500
+Date: Tue, 20 Nov 2007 19:21:36 -0600
+From: Robert Hancock <hancockr@shaw.ca>
 Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-Date: Tue, 20 Nov 2007 18:19:12 -0700
-In-Reply-To: <4743026B.2020907@openvz.org> (Pavel Emelyanov's message of "Tue,
-	20 Nov 2007 18:51:07 +0300")
-Message-ID: <m1tzngpf8v.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-reply-to: <fa.QqYdKsBUWKSLLGXmxJCAtZxLYnE@ifi.uio.no>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Guillaume Chazarain <guichaz@yahoo.fr>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Message-id: <47438820.5010300@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.zy7JwM3jsOSgOCtqK2+rvFfdGjQ@ifi.uio.no>
+ <fa.Zx9jkdx74KRPk1qghLrg9BCvfFU@ifi.uio.no>
+ <fa.1TKmo5fKBZfHOQYq1bH4uMxOQek@ifi.uio.no>
+ <fa.fjJG0rd93RGzZ4PSv/glscvAI0A@ifi.uio.no>
+ <fa.7XLWa+gAWL3Q6I3O+hiS4UfcWpM@ifi.uio.no>
+ <fa.QqYdKsBUWKSLLGXmxJCAtZxLYnE@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+Eric W. Biederman wrote:
+> Could you elaborate a bit on how the semantics of returning the
+> wrong information are more useful?
+> 
+> In particular if a thread does the logical equivalent of:
+> grep Pid: /proc/self/status.  It always get the tgid despite
+> having a different process id.
 
-> Rafael J. Wysocki wrote:
->> On Monday, 19 of November 2007, Pavel Machek wrote:
->>> Hi!
->>>
->>> I think that this worked before:
->>>
->>> root@amd:/proc# find . -name "timer_info"
->>> find: WARNING: Hard link count is wrong for ./net: this may be a bug
->>> in your filesystem driver.  Automatically turning on find's -noleaf
->>> option.  Earlier results may have failed to include directories that
->>> should have been searched.
->>> root@amd:/proc#
->> 
->> I'm seeing that too.
->
-> I have a better things with 2.6.24-rc3 ;)
->
-> # cd /proc/net
-> # ls ..
-> ls: reading directory ..: Not a directory
->
-> and this
->
-> # cd /proc
-> # find
-> ...
-> ./net
-> find: . changed during execution of find
-> # find net
-> find: net changed during execution of find
-> # find net/
-> <this works ok however>
->
-> Moreover. Program that opens /proc/net and dumps the /proc/self/fd
-> files produces the following:
->
-> # cd /
-> # a.out /proc/net
-> ...
-> lr-x------  1 root root 64 Nov 20 18:02 3 -> /proc/net/net (deleted)
-> ...
-> # cd /proc/net
-> # a.out .
-> ...
-> lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net/net (deleted)
-> ...
-> # a.out ..
-> ...
-> lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
-> ...
->
-> This all is somehow related to the shadow proc files.
-> E.g. the first problem (with -ENOTDIR) is due to the shadow /proc/net
-> dentry doesn't implement the .readdir method:
->
-> static const struct file_operations proc_net_dir_operations = {
->         .read                   = generic_read_dir,
-> };
->
-> And I haven't managed to find out why the rest problems
-> occur...
->
-> Eric, do you have fixes for it?
+The POSIX-defined userspace concept of a PID requires that all threads 
+appear to have the same PID. This is something that Linux didn't comply 
+with under the old LinuxThreads implementation and was finally fixed 
+with NPTL. This isn't a POSIX-defined interface, but I assume it's 
+trying to be consistent with getpid(), etc.
 
-Duh.  There is one other possible solution I forgot to mention and
-at least as a first pass it should be relatively simple.  Have the
-mount of proc capture the network namespace.  I'm not certain
-if it is what we want long term but it should be simple and relatively
-easy to implement.
+> How can that possibly be useful or correct?
+> 
+> From the kernel side I really think the current semantics of /proc/self
+> in the context of threads is a bug and confusing.  All of the kernel
+> developers first reaction when this was pointed out was that this
+> is a regression.
+> 
+> If it is truly useful to user space we can preserve this API design
+> bug forever.  I just want to make certain we are not being bug
+> compatible without a good reason.
+> 
+> Currently we have several kernel side bugs with threaded
+> programs because /proc/self does not do the intuitive thing.  Unless
+> something has changed recently selinux will cause accesses by a
+> non-leader thread to fail when accessing files through /proc/self.
+> 
+> So far the more I look at the current /proc/self behavior the
+> more I am convinced it is broken, and useless.  Please help me see
+> where it is useful, so we can justify keeping it.
 
-I don't like capturing the network namespace when we mount proc but
-it is easier then implementing /proc/self/net.  Which is the other
-real alternative.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Eric
