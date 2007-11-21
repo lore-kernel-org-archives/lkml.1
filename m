@@ -1,136 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbXKUJEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbXKUJFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759483AbXKUJEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 04:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbXKUJEL
+	id S1760627AbXKUJFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 04:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758509AbXKUJEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 04:04:11 -0500
-Received: from nic2.axis.se ([193.13.178.10]:48082 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754391AbXKUJEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 04:04:07 -0500
-Date: Wed, 21 Nov 2007 10:03:46 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>, sam@ravnborg.org,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org,
-       Jan Dittmer <jdi@l4x.org>
-Subject: [PATCH] CRIS: avoid using arch links in Kconfig
-Message-ID: <20071121090346.GD14797@axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 21 Nov 2007 04:04:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55129 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759148AbXKUJEa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 04:04:30 -0500
+Date: Wed, 21 Nov 2007 01:04:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Avi Kivity <avi@qumranet.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.24-rc3-mm1 make headers_check fails
+Message-Id: <20071121010409.27fbbc56.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0711210350050.10132@localhost.localdomain>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	<4743EB52.1040205@linux.vnet.ibm.com>
+	<20071120163240.e54beed6.akpm@linux-foundation.org>
+	<4743EF47.5000203@linux.vnet.ibm.com>
+	<4743EFF8.9010307@qumranet.com>
+	<alpine.LFD.0.9999.0711210350050.10132@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Improve including of architecture dependent Kconfig files.
+On Wed, 21 Nov 2007 03:52:08 -0500 (EST) "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
 
-- Always include the architecture dependent Kconfig files.
-- Wrap architecture dependent Kconfig files inside an appropriate
-  "if ETRAX_ARCH_Vxx" block.
+> On Wed, 21 Nov 2007, Avi Kivity wrote:
+> 
+> > Kamalesh Babulal wrote:
+> > > Andrew Morton wrote:
+> > >
+> > > > On Wed, 21 Nov 2007 13:54:50 +0530 Kamalesh Babulal
+> > > > <kamalesh@linux.vnet.ibm.com> wrote:
+> > > >
+> > > >
+> > > > > The make headers_check fails,
+> > > > >
+> > > > >   CHECK   include/linux/usb/gadgetfs.h
+> > > > >   CHECK   include/linux/usb/ch9.h
+> > > > >   CHECK   include/linux/usb/cdc.h
+> > > > >   CHECK   include/linux/usb/audio.h
+> > > > >   CHECK   include/linux/kvm.h
+> > > > > /root/kernels/linux-2.6.24-rc3/usr/include/linux/kvm.h requires
+> > > > > asm/kvm.h, which does not exist in exported headers
+> > > > >
+> > > > hm, works for me, on i386 and x86_64.  What's different over there?
+> > > >
+> > > Hi Andrew,
+> > >
+> > > It fails on the powerpc box, with allyesconfig option.
+> >
+> > How do we fix this?  Export linux/kvm.h only on x86?  Seems ugly.
+> 
+> i'm sure i'm going to humiliate myself for asking this, but shouldn't
+> i be able to reproduce the above by just running:
+> 
+>   $ make ARCH=powerpc headers_install/headers_check
+> 
+> we've sort of had this discussion before where, IIRC, you should be
+> able to generate the appropriate arch-specific headers without having
+> the corresponding toolchain, no?  so why can't i reproduce that error
+> on my x86 box?
+> 
 
-This makes it possible to run the configuration even without the arch links,
-which are created later in the build process.
+I can.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
-
----
- Kconfig                  |    5 +++--
- arch-v10/Kconfig         |    4 ++++
- arch-v10/drivers/Kconfig |    4 ++++
- arch-v32/Kconfig         |    4 ++++
- arch-v32/drivers/Kconfig |    4 ++++
- 5 files changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
-index 222da15..d296e55 100644
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -150,6 +150,7 @@ config ETRAX_FLASH_BUSWIDTH
- 	  Width in bytes of the Flash bus (1, 2 or 4). Is usually 2.
- 
- source arch/cris/arch-v10/Kconfig
-+source arch/cris/arch-v32/Kconfig
- 
- endmenu
- 
-@@ -157,8 +158,8 @@ source "net/Kconfig"
- 
- # bring in ETRAX built-in drivers
- menu "Drivers for built-in interfaces"
--# arch/cris/arch is a symlink to correct arch (arch-v10 or arch-v32)
--source arch/cris/arch/drivers/Kconfig
-+source arch/cris/arch-v10/drivers/Kconfig
-+source arch/cris/arch-v32/drivers/Kconfig
- 
- endmenu
- 
-diff --git a/arch/cris/arch-v10/Kconfig b/arch/cris/arch-v10/Kconfig
-index f1ce6f6..1d61fae 100644
---- a/arch/cris/arch-v10/Kconfig
-+++ b/arch/cris/arch-v10/Kconfig
-@@ -1,3 +1,5 @@
-+if ETRAX_ARCH_V10
-+
- # ETRAX 100LX v1 has a MMU "feature" requiring a low mapping
- config CRIS_LOW_MAP
- 	bool
-@@ -451,3 +453,5 @@ config ETRAX_POWERBUTTON_BIT
- 	default "25"
- 	help
- 	  Configure where power button is connected.
-+
-+endif
-diff --git a/arch/cris/arch-v10/drivers/Kconfig b/arch/cris/arch-v10/drivers/Kconfig
-index faf8b4d..6011ff4 100644
---- a/arch/cris/arch-v10/drivers/Kconfig
-+++ b/arch/cris/arch-v10/drivers/Kconfig
-@@ -1,3 +1,5 @@
-+if ETRAX_ARCH_V10
-+
- config ETRAX_ETHERNET
- 	bool "Ethernet support"
- 	depends on ETRAX_ARCH_V10
-@@ -845,3 +847,5 @@ config ETRAX_DS1302_TRICKLE_CHARGE
- 	  1 = 2kohm, 2 = 4kohm, 3 = 4kohm
- 	  4 = 1 diode, 8 = 2 diodes
- 	  Allowed values are (increasing current): 0, 11, 10, 9, 7, 6, 5
-+
-+endif
-diff --git a/arch/cris/arch-v32/Kconfig b/arch/cris/arch-v32/Kconfig
-index 4f79d8e..d8acaa9 100644
---- a/arch/cris/arch-v32/Kconfig
-+++ b/arch/cris/arch-v32/Kconfig
-@@ -1,3 +1,5 @@
-+if ETRAX_ARCH_V32
-+
- config ETRAX_DRAM_VIRTUAL_BASE
- 	hex
- 	depends on ETRAX_ARCH_V32
-@@ -294,3 +296,5 @@ config ETRAX_DEF_GIO_PE_OUT
- 	help
- 	  Configures the initial data for the general port E bits.  Most
- 	  products should use 00000 here.
-+
-+endif
-diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
-index 7f72d7c..7952ee8 100644
---- a/arch/cris/arch-v32/drivers/Kconfig
-+++ b/arch/cris/arch-v32/drivers/Kconfig
-@@ -1,3 +1,5 @@
-+if ETRAX_ARCH_V32
-+
- config ETRAX_ETHERNET
- 	bool "Ethernet support"
- 	depends on ETRAX_ARCH_V32
-@@ -622,3 +624,5 @@ config ETRAX_STREAMCOPROC
- 	help
- 	  This option enables a driver for the stream co-processor
- 	  for cryptographic operations.
-+
-+endif
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+setenv ARCH powerpc
+make mrproper
+make allmodconfig
+make headers_check
