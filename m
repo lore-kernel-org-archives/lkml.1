@@ -1,186 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXKURMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXKUROU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbXKURMu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 12:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbXKURMl
+	id S1759212AbXKUROU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 12:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXKUROH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 12:12:41 -0500
-Received: from mx30.mail.ru ([194.67.23.238]:2483 "EHLO mx30.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753073AbXKURMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 12:12:39 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
-Date: Wed, 21 Nov 2007 20:12:32 +0300
-User-Agent: KMail/1.9.7
-Cc: michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-References: <200706300859.47133.arvidjaar@mail.ru> <200709091800.05756.arvidjaar@mail.ru> <200709091907.14642.rjw@sisk.pl>
-In-Reply-To: <200709091907.14642.rjw@sisk.pl>
+	Wed, 21 Nov 2007 12:14:07 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:10890 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751745AbXKUROE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 12:14:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ggCWnw2khOrBe0AZfCnHcrs5bUKvioSyEL2U6/v0GOqD3oAA3A5F/49W/LR5kNSjHQGaB/Emd/el/zBQ1jjjBAvgxYeI3FWiqKmi1NsRfqWGYjr2xiuvlvjtLtqwe3L+g3FlrLpk6yXc3Bg78zKWvBoBLnKya/hrXDNNIuu34pQ=
+Message-ID: <d9def9db0711210914m47885980gffd789d30a817b88@mail.gmail.com>
+Date: Wed, 21 Nov 2007 18:14:01 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] USB deadlock after resume
+Cc: "Oliver Neukum" <oliver@neukum.org>,
+       "Laurent Pinchart" <laurentp@cse-semaphore.com>,
+       "Mark Lord" <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.44L0.0711211128380.3226-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5617617.fmx4kDvy3x";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711212012.33403.arvidjaar@mail.ru>
+Content-Disposition: inline
+References: <d9def9db0711210637x6fd5ad09o549b787639690d55@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0711211128380.3226-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5617617.fmx4kDvy3x
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Sunday 09 September 2007, Rafael J. Wysocki wrote:
-> On Sunday, 9 September 2007 16:00, Andrey Borzenkov wrote:
-> > On Sunday 01 July 2007, Rafael J. Wysocki wrote:
-> > > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
-> > > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
-> > > > suspend to disk :)
+On 11/21/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Wed, 21 Nov 2007, Markus Rechberger wrote:
+>
+> > > > it's not just usb_set_interface that hangs actually.
+> > > > It seems to hang at
 > > > >
-> > > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + sin=
-gle
-> > > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserf=
-s,
-> > > > libata with pata_ali driver.
+> > > > wait_event(usb_kill_urb_queue, atomic_read(&urb->use_count) == 0);
 > > > >
-> > > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-=
-rc
-> > > > system hung at least once in every rcX. Up to rc6 those lockups were
-> > > > absolutely silent (black screen without reaction to any key). In rc=
-6 I
-> > > > just got something different. After resume I got on screem:
-> > > >
-> > > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
-> > > > swsusp: Basic memory bitmaps created
-> > > > swsusp: Basic memory bitmaps freed
-> > > >
-> > > > After that it just sits there doing nothing. Ther was brief sound o=
-f HDD
-> > > > but I suspect it was related more to power-on. System was respondin=
-g to
-> > > > power-on button press:
-> > > >
-> > > > ACPI Error (event-0305): No installed handler for fixed event [0000=
-0002
-> > > > 20070125]
-> > > >
-> > > > And SysRq was functioning.
+> > > > in drivers/usb/core/urb.c after resuming. I disabled access to the usb
+> > > > subsystem in the uvc driver, although connecting any other usb storage
+> > > > fails too, just at the same point.
 > > >
-> > > That probably means that there's a deadlock somewhere in there.
+> > > Which URB is usb_kill_urb() called for?
 > > >
-> > > > Unfortunately I do not have serial console so I
-> > > > copy manually stacks from several last screens of output; I have tr=
-ied to
-> > > > make a photo but right now my kbluetooth is refusing to work at all=
- so I
-> > > > cannot transfer them :( (but I suspect quality would be too bad any=
-way)
-> > > >
-> > > > laptop_mode D
-> > > > 	io_schedule+0xe/0x20
-> > >
-> > > Looks suspicious to me.  Can you identify what line of code this poin=
-ts to?
-> > >
-> > > > 	sync_buffer+0x35/0x40
-> > > > 	__wait_on_bit+0x45/0x70
-> > > > 	out_of_line_wait_on_bit+0x6c/0x80
-> > > > 	__wait_on_buffer+0x27/0x30
-> > > > 	search_by_key+0x15e/0x1250 [reiserfs]
-> > > > 	reiserfs_read_locked_inode+0x64/0x570 [reiserfs]
-> > > > 	reiserfs_iget+0x7e/0xa0 [reiserfs]
-> > > > 	reiserfs_lookup+0xc7/0x120 [reiserfs]
-> > > > 	do_lookup+0x138/0x180
-> > > > 	__link_path_walk+0x787/0xce0
-> > > > 	link_path_walk+0x44/0xc0
-> > > > 	path_walk+0x18/0x20
-> > > > 	do_path_lookup_0x88/0x210
-> > > > 	__path_lookupintent_open+0x4d/0x90
-> > > > 	path_lookup_open+0x1f/0x30
-> > > > 	open_exec+0x28/0xb0
-> > > > 	do_execve+0x36/0x1d0
-> > > > 	sys_execve+0x2e/0x80
-> > > > 	sysenter_past_esp+0x5f/0x99
-> > > >
-> > > > 90clock D
-> > > > 	__mutex_lock_slow_path+0xa1/0x290
-> > > > 	mutex_lock+0x21/0x30
-> > > > 	do_lookup+0xa1/0x180
-> > > > 	__link_path_walk+0x44/0xc0
-> > > > 	path_walk+0x18/0x20
-> > > > 	do_path_lookup+0x78/0x210
-> > > > 	__user_walk_fd+0x38/0x50
-> > > > 	vfs_stat_fd+0x21/0x50
-> > > > 	vfs_stat+0x11/0x20
-> > > > 	sys_stat64+0x14/0x30
-> > > > 	sysenter_past_esp+0x5f/0x99
-> > > >
-> > > > alsactl D
-> > > > 	io_schedule+0xe/0x20
-> > >
-> > > Same here.  Hmm.
-> > >
-> > > > 	sync_page+0x35/0x40
-> > > > 	__wait_on_bit_lock+0x3f/0x70
-> > > > 	__lock_page+0x68/0x70
-> > > > 	filemap_nopage+0x16c/0x300
-> > > > 	__handle_mm_faul+0x1d7/0x610
-> > > > 	do_page_fault+0x1d7/0x610
-> > > > 	error_code+0x6a/0x70
-> > > > 	padzero+0x1f/0x30
-> > > > 	load_elf_binary+0x743/0x1ab0
-> > > > 	search_binary_handler+0x7b/0x1f0
-> > > > 	do_execve+0x137/0x1d0
-> > > > 	sys_execve+0x2e/0x80
-> > > > 	sysenter_past_esp+0x5f/0x90
-> > > >
-> > > > After that I could remount, sync and reboot using SysRq (well, after
-> > > > reboot it still insisted on replaying insane number of transactions=
- so
-> > > > may be it did *not* remount / ro after all). Before reboot there was
-> > > > brief output that resembled lockdep warnings, but it went too fast =
-to be
-> > > > readable.
-> > > >
-> > > > usual stuff follows
-> > >
-> > > I see you're using CFQ as the default IO scheduler.  Can you please s=
-witch
-> > > to AS and see if that changes anything?
-> > >
-> >=20
-> > I just had the same lockup on resume using AS with 2.6.23-rc5.
->=20
-> Hm.  Does your root partition sit on reiserfs?
+> >
+> > it's the usb_control_message which calls usb_kill_urb if I haven't got
+> > it wrong. (if you're looking for some other information please let me
+> > know)
+> > Although, I got a bit further with it. The error seems to happen
+> > earlier already.
+> > If I load the driver, and do not access the device after suspending
+> > all usb_control commands fail with -71 eproto.
+>
+> That's very strange.  Getting -71 errors is understandable; it
+> indicates that the device can't handle being suspended.  But the
+> wait_event() line still shouldn't hang.  If it does, it indicates that
+> there's something wrong with the USB host controller, not just the
+> device.
+>
+> Can you try testing this on a different sort of computer?
+>
 
-I already answered this but yes, I do.
+Not really, suspending doesn't work at all on my other notebook it
+just freezes..
+I'm basically trying to get that driver work on my eee PC [1], it's
+cheap and tiny so I don't expect anything special in there..
+The system is preloaded with Xandros (it's debian etch with a few
+custom applications) and linux 2.6.21.4.
 
->=20
->=20
+The system still locks up, although only if I leave the video
+application running during suspending. I don't have to reload the
+driver anymore after resuming if the video node doesn't get accessed
+(I'm looking for races in the uvc driver at the moment).
 
-just had it again on 2.6.24-rc3. Same thing - keys working (to some extent)
-Alt-SysRq allows me to reboot; unfortunately I switched (unintentionally)
-from resume message to tty1 and it was in funny state so SysRq-t was lost b=
-ut
-I pretty much suspect it be the same.
+thanks,
+Markus
 
-well, not sure how to debug problem that pops up once in three-four release=
- ...
-
---nextPart5617617.fmx4kDvy3x
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHRGcBR6LMutpd94wRAnfGAJ9OJxycLj5kejFwx3fOtuCRMuAj/wCdHiZN
-Kt9OR0g7ROFIrgNTrrLpAIk=
-=NOkh
------END PGP SIGNATURE-----
-
---nextPart5617617.fmx4kDvy3x--
+[1] http://eeepc.asus.com
