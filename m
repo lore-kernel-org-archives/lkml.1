@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbXKUBgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765574AbXKUBiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763329AbXKUBgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbXKUBgj
+	id S1765574AbXKUBiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758854AbXKUBiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:36:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55324 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbXKUBgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:36:38 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-Date: Wed, 21 Nov 2007 02:36:33 +0100
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-References: <20071120011132.143632442@sgi.com> <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0711201703570.29648@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711201703570.29648@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 20 Nov 2007 20:38:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51726
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758622AbXKUBiF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 20:38:05 -0500
+Date: Tue, 20 Nov 2007 17:38:04 -0800 (PST)
+Message-Id: <20071120.173804.34897945.davem@davemloft.net>
+To: the.sator@gmail.com
+Cc: linux-kernel@vger.kernel.org, kuznet@ms2.inr.ac.ru, jmorris@namei.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH][v2] net/ipv4/arp.c: Fix arp reply when sender ip 0
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <cac0ab7d0711200828n3548fadn48cce2837ed6a7c6@mail.gmail.com>
+References: <cac0ab7d0711200828n3548fadn48cce2837ed6a7c6@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711210236.33460.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 November 2007 02:16:11 Christoph Lameter wrote:
-> But one can subtract too... 
+From: "Jonas Danielsson" <the.sator@gmail.com>
+Date: Tue, 20 Nov 2007 17:28:22 +0100
 
-The linker cannot subtract (unless you add a new relocation types) 
-
-> Hmmm... So the cpu area 0 could be put at 
-> the beginning of the 2GB kernel area and then grow downwards from 
-> 0xffffffff80000000. The cost in terms of code is one subtract
-> instruction for each per_cpu() or CPU_PTR()
+> Fix arp reply when received arp probe with sender ip 0.
 > 
-> The next thing doward from 0xffffffff80000000 is the vmemmap at 
-> 0xffffe20000000000, so ~32TB. If we leave 16TB for the vmemmap
-> (a 16TB vmmemmap be able to map 2^(44 - 6 + 12) = 2^50 bytes 
-> more than currently supported by the processors)
+> Send arp reply with target ip address 0.0.0.0 and target hardware address
+> set to hardware address of requester. Previously sent reply with target
+> ip address and target hardware address set to same as source fields.
 > 
-> then the remaining 16TB could be used to map 1GB per cpu for a 16k config. 
-> That is wildly overdoing it. Guess we could just do it with 1M anyways. 
-> Just to be safe we could do 128M. 128M x 16k = 2TB?
 > 
-> Would such a configuration be okay?
+> Signed-off-by: Jonas Danielsson <the.sator@gmail.com>
+> Acked-by: Alexey Kuznetov <kuznet@ms2.inr.ac.ru>
 
-I'm not sure I really understand your problem.
+I'm applying this but you gmail folks really have to get your
+act together when submitting patches.  The patches from gmail
+accounts come out corrupted 9 times out of 10.
 
-All you need is a 2MB area (16MB is too large if you really
-want 16k CPUs someday) somewhere in the -2GB or probably better
-in +2GB. Then the linker puts stuff in there and you use
-the offsets for referencing relative to %gs.
+This time line breaks were added and all tab characters were
+turned into spaces.
 
-But %gs can be located wherever you want in the end,
-at a completely different address than you told the linker.
-All you're interested in were offsets anyways.
-
-Then for all CPUs (including CPU #0) you put the real mapping
-somewhere else, copy the reference data there (which also doesn't need
-to be on the offset the linker assigned, just on a constant offset
-from it somewhere in the normal kernel data) and off you go.
-
-Then the reference data would be initdata and eventually freed.
-That is similar to how the current per cpu data works.
-
--Andi
+Please correct this before any future patch submissions.
