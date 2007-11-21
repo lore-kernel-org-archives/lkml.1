@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761305AbXKUK6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbXKUK7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761305AbXKUK6X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 05:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbXKUK6I
+	id S1761235AbXKUK7a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 05:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbXKUK7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 05:58:08 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:15930 "EHLO
+	Wed, 21 Nov 2007 05:59:23 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:18983 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755175AbXKUK6H (ORCPT
+	with ESMTP id S1755546AbXKUK7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 05:58:07 -0500
+	Wed, 21 Nov 2007 05:59:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iyXGjhtt6WhKArJxNGxXYyH24Nu7Y50P4w74Hva7hN1djwLzbZhWdNEw8/FSR4NnoxZ+Todya3X7XzLVuVBqmoRreFygL8KbgZ/iqtRQlD6YEXEikS6V6TJ20gDcK9tCY/VE8Kh416I2mQI4YXhvgC3/FvPtlzd6Itplqn7o50E=
-Message-ID: <aa79d98a0711210258t3e6f5532oe710c04b93b06c8@mail.gmail.com>
-Date: Wed, 21 Nov 2007 13:58:06 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [PATCH] PPC: trivial fix of missed increment on counter
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Kumar Gala" <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-In-Reply-To: <aa79d98a0711210056n6cc951atf4c6af5be26c1ed0@mail.gmail.com>
+        b=JxtN/jmkmtCycvjVb2IlORCjI1zoFcC8wRldnx10tUl/KkdVuL4GTE2tOilCllpqhCxtfirpQsCQ1z44oXNfPBdi9rUqMsfb2qTHO570YBHrl9MFPZFMsK9c/ci/AA5trDI+AzWN89fI3nhBKnzXSeAkU3XauHmONp6ekqy0A2U=
+Message-ID: <d9def9db0711210259v5d06590w7754aeb508632c77@mail.gmail.com>
+Date: Wed, 21 Nov 2007 11:59:22 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: USB deadlock after resume
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       "Laurent Pinchart" <laurentp@cse-semaphore.com>
+In-Reply-To: <d9def9db0711202132q2c5a9b46k79c00da68250db3b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <aa79d98a0711210056n6cc951atf4c6af5be26c1ed0@mail.gmail.com>
+References: <d9def9db0711201347u2786fe0ev96b2fb43fc2954e9@mail.gmail.com>
+	 <4743B160.7060007@rtr.ca>
+	 <d9def9db0711202132q2c5a9b46k79c00da68250db3b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/21/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> This patch does fix missed increment on counter
+On 11/21/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> On 11/21/07, Mark Lord <lkml@rtr.ca> wrote:
+> > Markus Rechberger wrote:
+> > > Hi,
+> > >
+> > > I'm looking at the linux uvc driver, and noticed after resuming my
+> > ..
+> >
+> > Pardon me.. what is the "uvc" driver?  Which module/source file is that?
+> >
 >
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
-> Sorry for that nonstandart patch submission - I've only access
-> to gmail with Internet Explorer on my work. If that is not OK - will resend
-> the patch today evening with mutt.
+> http://linux-uvc.berlios.de/ it's not yet included in the kernel
+> sources although many distributions already ship it.
+> A "dry" run putting the device into sleep mode works fine (I added a
+> proc interface for calling those suspend/resume function).
 >
->
-Oops - it seems the patch is corrupted a bit. Drop it please - will
-resend today evening. Sorry.
 
-Cyrill
+it's not just usb_set_interface that hangs actually.
+It seems to hang at
+
+wait_event(usb_kill_urb_queue, atomic_read(&urb->use_count) == 0);
+
+in drivers/usb/core/urb.c after resuming. I disabled access to the usb
+subsystem in the uvc driver, although connecting any other usb storage
+fails too, just at the same point.
+
+The hardware is:
+00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #1 (rev 04) (8086:2658)
+
+Markus
