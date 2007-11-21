@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXKUCXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbXKUC0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbXKUCXw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 21:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbXKUCXn
+	id S1754840AbXKUC0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 21:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXKUC0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 21:23:43 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:15473 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbXKUCXm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 21:23:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=isv4DK15jEBTif126a9frYsLrijSCORlazAJ/5K/ePBEVrKvsSo3j2zHk+prXaK6u/+okpVQD4c3mz+hai+a3v+vi7jbc5zOZHY1Y7fFWihjyRaLIhFePXIAG4WrfHY4n7MpGFGwihOSuwAbP+VqQKUJfuB8rGVoxbgNxPas178=
-Message-ID: <f17812d70711201823w6201bf88uf6268aaee3a32312@mail.gmail.com>
-Date: Wed, 21 Nov 2007 10:23:41 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: ian <spyro@f2s.com>
-Subject: Re: [patch] 0/4 Support for Toshiba TMIO multifunction devices
-Cc: "Dmitry Baryshkov" <dbaryshkov@gmail.com>,
-       "ARM Linux" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1195597252.2329.70.camel@wirenth>
+	Tue, 20 Nov 2007 21:26:13 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56130 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750953AbXKUC0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 21:26:12 -0500
+Message-ID: <4743973D.4090604@pobox.com>
+Date: Tue, 20 Nov 2007 21:26:05 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Tejun Heo <htejun@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+References: <474112B8.6050505@gmail.com>
+In-Reply-To: <474112B8.6050505@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1195591234.2329.52.camel@wirenth> <474359E3.2020603@gmail.com>
-	 <1195597252.2329.70.camel@wirenth>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roughly went through the patch, looks good, here comes the remind, though :-)
+Tejun Heo wrote:
+> These are upstream patches I collected while Jeff is away.  Thanks.
+> 
+> * workaround for ATAPI tape drives
+> * detection/suspend workarounds for several laptops
+> * ICH8/9 port_enable fix
+> 
+> ata_piix controller ID reorganization is included to ease the fixes.
+> 
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/tj/libata-dev.git upstream-linus
+> 
+> to receive the following updates:
+> 
+>  drivers/ata/ata_piix.c    |   87 ++++++++++++++++++++++++++++------------
+>  drivers/ata/libata-core.c |  100 +++++++---------------------------------------
+>  drivers/ata/libata-eh.c   |   95 -------------------------------------------
+>  drivers/ata/libata-scsi.c |    3 -
+>  drivers/ata/pata_sis.c    |    1 
+>  include/linux/libata.h    |    5 --
+>  6 files changed, 81 insertions(+), 210 deletions(-)
+> 
+> Adrian Bunk (1):
+>       libata: remove unused functions
+> 
+> Albert Lee (2):
+>       libata: workaround DRQ=1 ERR=1 for ATAPI tape drives
+>       libata: use ATA_HORKAGE_STUCK_ERR for ATAPI tape drives
+> 
+> Gabriel C (1):
+>       pata_sis.c: Add Packard Bell EasyNote K5305 to laptops
+> 
+> Mark Lord (1):
+>       libata-scsi: be tolerant of 12-byte ATAPI commands in 16-byte CDBs
+> 
+> Tejun Heo (3):
+>       ata_piix: add SATELLITE U205 to broken suspend list
+>       ata_piix: reorganize controller IDs
+>       ata_piix: port enable for the first SATA controller of ICH8 is 0xf not 0x3
+> 
+> Thomas Rohwer (1):
+>       ata_piix: only enable the first port on apple macbook pro
 
-1. is it possible to use some name other than "soc_core", maybe
-"tmio_core" so that
-other multifunction chips sharing a core base will live easier.
+Just to make sure, I pulled this into #upstream-fixes.  If Linus already 
+picked it up, great.  Otherwise I'll make sure it goes upstream.
 
-2. those C++ style comments "//" are not so pleasant...
-
-- eric
-
-On Nov 21, 2007 6:20 AM, ian <spyro@f2s.com> wrote:
-> On Wed, 2007-11-21 at 01:04 +0300, Dmitry Baryshkov wrote:
-> > Just to note, that there is an alternative implementation for at least
-> > the tc6393 chip devices. Most current version of those patches can be
-> > found in the OpenEmbedded monotone.
->
-> Yes, this is true. The core code in both cases originates from my and
-> Dirks work.
->
-> I'd just like to get something pushed up to mainline so that work can
-> begin on expanding the number of chips supported.
->
-> This would include the ASICs found in many iPAQ PDAs (their MMC module
-> seems to be an IRQ-less TMIO chip).
->
-> I havent submitted the subdevice drivers yet, only the base/core
-> drivers.
->
-> The OE versions probably have better USB and video subdevice support
-> (which I shall evaluate as I go on), wheras the NAND flash and MMC
-> drivers in hh.org are probably more up to date (I run root on SD usinf
-> the hh.org tmio_mmc driver on all three of the MFD chips in this patch
-> series on a daily basis).
->
-> merging the best of these patch series is my goal and it shouldnt be too
-> hard.
->
->
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+	Jeff
 
 
 
--- 
-Cheers
-- eric
