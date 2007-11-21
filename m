@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXKURDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbXKUREX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbXKURDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 12:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbXKURDo
+	id S1757253AbXKUREX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 12:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbXKUREP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 12:03:44 -0500
-Received: from main.gmane.org ([80.91.229.2]:49672 "EHLO ciao.gmane.org"
+	Wed, 21 Nov 2007 12:04:15 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44788 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751141AbXKURDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 12:03:43 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jakub Narebski <jnareb@gmail.com>
-Subject: Re: gitweb: kernel versions in the history (feature request, probably)
-Followup-To: gmane.comp.version-control.git
-Date: Wed, 21 Nov 2007 17:44:21 +0100
-Organization: At home
-Message-ID: <fi1n94$l8r$1@ger.gmane.org>
-References: <20071120142042.GA4157@ff.dom.local> <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl> <20071121032009.GB4175@fieldses.org> <20071121075217.GA1642@ff.dom.local> <20071121151831.GO1001@machine.or.cz>
-Mime-Version: 1.0
+	id S1755499AbXKUREO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 12:04:14 -0500
+Date: Wed, 21 Nov 2007 11:04:11 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       casey@schaufler-ca.com, chrisw@sous-sol.org, darwish.07@gmail.com,
+       jmorris@namei.org, method@manicmethod.com, morgan@kernel.org,
+       paul.moore@hp.com
+Subject: Re: +
+	smack-version-11c-simplified-mandatory-access-control-kernel.patch
+	added to -mm tree
+Message-ID: <20071121170411.GA8511@sergelap.austin.ibm.com>
+References: <200711202206.lAKM6BlW025868@imap1.linux-foundation.org> <20071121154849.GA7195@sergelap.austin.ibm.com> <1195660319.759.50.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: abxf19.neoplus.adsl.tpnet.pl
-Mail-Copies-To: Jakub Narebski <jnareb@gmail.com>
-User-Agent: KNode/0.10.2
-Cc: git@vger.kernel.org
+Content-Disposition: inline
+In-Reply-To: <1195660319.759.50.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Baudis wrote:
-
-> On Wed, Nov 21, 2007 at 08:52:17AM +0100, Jarek Poplawski wrote:
->> ...
->> tags
->> 4 days ago   v2.6.24-rc3     Linux 2.6.24-rc3
->> 2 weeks ago  v2.6.24-rc2     Linux 2.6.24-rc2
->> 4 weeks ago  v2.6.24-rc1     Linux 2.6.24-rc1
->> 6 weeks ago  v2.6.23         Linux 2.6.23
->> 
->> which drives me crazy, because, without looking at the calendar, and
->> calculator, I don't really know which month was 6 weeks ago, and 4
->> days ago, either!
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> On Wed, 2007-11-21 at 09:48 -0600, Serge E. Hallyn wrote:
+> > Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
+> > > +/*
+> > > + * There are not enough CAP bits available to make this
+> > > + * real, so Casey borrowed the capability that looks to
+> > > + * him like it has the best balance of similarity amd
+> > > + * low use.
+> > > + */
+> > > +#define CAP_MAC_OVERRIDE CAP_LINUX_IMMUTABLE
+> > 
+> > Hey Casey,
+> > 
+> > note that 64-bit capabilities are now in -mm, so you could grab your own
+> > capability.
 > 
-> I have myself never been sure if the relative times are a good idea or
-> not. :-) Sometimes I hate them, sometimes they are more convenient...
+> Which brings up an interesting question - what to do with
+> security-module-specific capabilities?  CAP_MAC_OVERRIDE is specific to
+> Smack - other MAC modules like SELinux won't honor it.  Maybe it should
+> be CAP_SMACK_OVERRIDE.
 
-Additionally if we want support caching in gitweb, and not need to rewrite
-cached file, then we should use absolute time everywhere in gitweb (perhaps
-rewriting to relative using JavaScript, or output filter,...).
+Yeah, I was thinking it would be renamed to something smack-specific.
+The concept of CAP_MAC_OVERRIDE is pretty general, but then users may
+for just that reason expect the capability to also let them override
+selinux and other capabilities.
 
-There is some cutoff where gitweb stops displaying relative time and
-displays date; gitweb should also always provide absolute date in tooltip
-on mouseover (in title attribute), if it does not then it is a bug.
+For instance the capabilities equivalent to a CAP_MAC_OVERRIDE would
+probably be CAP_SETPCAP, since it can be used to add capabilities back
+into your inheritable set.  But we wouldn't want to share one capability
+for CAP_SETPCAP and CAP_SMACK_OVERRIDE.  CAP_SETPCAP does let you regain
+CAP_SMACK_OVERRIDE, but a process could have CAP_SMACK_OVERRIDE but be
+denied CAP_NET_ADMIN for instance, or heck even CAP_DAC_OVERRIDE.
 
-[...]
->> Of course, this problem doesn't look so hard if we forget about
->> git internals: I can imagine keeping a simple database, which
->> could simply retrieve commit numbers from these ChangeLogs, and
->> connecting this with gitweb's commit page as well... For
->> performance reasons, doing it only for stable and testing, so with
->> -rc 'precision' would be very helpful too.
-> 
-> It isn't too hard if we don't forget about git internals either. It's
-> just that getting this information might not be cheap. But maybe I'm
-> wrong and this won't be a problem for sane projects. Someone should post
-> a patch. ;-)
+So short answer is: I agree :)
 
-Perhaps the following solution would be good idea:
- 1. use git-describe to find nearest commit
- 2. if it took long / if the distance from tag is large
-    then make some special tag denoting calculated git-describe e.g.
-    in tag name
- 3. if found tag is helper tag created in previous step, recaulculate
-    true git-describe from it, or just output closest contained tag.
-This needs write access to repository, although can be done using simple
-database... what do you think?
-
--- 
-Jakub Narebski
-Warsaw, Poland
-ShadeHawk on #git
-
-
+thanks,
+-serge
