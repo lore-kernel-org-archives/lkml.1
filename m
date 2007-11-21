@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764874AbXKUABi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765000AbXKUACW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764874AbXKUABi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 19:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbXKUABb
+	id S1765000AbXKUACW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 19:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757730AbXKUACN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 19:01:31 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:59264 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755587AbXKUABa convert rfc822-to-8bit (ORCPT
+	Tue, 20 Nov 2007 19:02:13 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47860 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752396AbXKUACN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 19:01:30 -0500
-Date: Wed, 21 Nov 2007 01:01:27 +0100
-Message-Id: <2097618015@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: System reboot triggered by just reading a device file....!?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18YK/lJI6Ih5UoQQDxqbjF7ln0A8/Kv4IRocgb2Qo1l5fbp1
- NN3Me+88HYOOwjbgN8VtaisJff67nJmLOWJ2BAS9Wchk3lFHXs=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Tue, 20 Nov 2007 19:02:13 -0500
+Subject: Re: [PATCH 13/18] x86 vDSO: ia32 sysenter_return
+From: Zachary Amsden <zach@vmware.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071119220622.C5ED026F8BE@magilla.localdomain>
+References: <20071119215944.01B7C26F8BE@magilla.localdomain>
+	 <20071119220622.C5ED026F8BE@magilla.localdomain>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 16:05:34 -0800
+Message-Id: <1195603534.6352.231.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->There is.. it's called "root privileges".
-yes, true.
+On Mon, 2007-11-19 at 14:06 -0800, Roland McGrath wrote:
+> This changes the 64-bit kernel's support for the 32-bit sysenter
+> instruction to use stored fields rather than constants for the
+> user-mode return address, as the 32-bit kernel does.  This adds a
+> sysenter_return field to struct thread_info, as 32-bit has.  There
+> is no observable effect from this yet.  It makes the assembly code
+> independent of the 32-bit vDSO mapping address, paving the way for
+> making the vDSO address vary as it does on the 32-bit kernel.
 
-but - regardless of being a windows app or not - what if you want to take a look on your system as a whole, especially when using some tool which graphically shows how and where your diskspace is being used?  if i let this run from ordinary useraccount it would get lot`s of "permission denied"  and then it`s only telling half of the truth.....
+I hope you won't carry the dependency of COMPAT_VDSO over to 64-bit when
+that happens.
 
->I'd say running pretty much anything through Wine as root is 
-> not a good idea, a Windows app could hose the system without even 
-> meaning to through exactly such things.
-yes, true indeed. but maybe wine has an option to sandbox the windows app to do only r/o access.  if that feature doesn`t exist, (set r/o flag to dosdevices) maybe it would be an useful addon.
-but that`s OT here....
+> @@ -104,7 +103,7 @@ ENTRY(ia32_sysenter_target)
+>  	pushfq
+>  	CFI_ADJUST_CFA_OFFSET 8
+>  	/*CFI_REL_OFFSET rflags,0*/
+> -	movl	$VSYSCALL32_SYSEXIT, %r10d
+> +	movl	8*3-THREAD_SIZE+threadinfo_sysenter_return(%rsp), %r10d
 
+8*3-THREAD_SIZE is not very intuitive.  Can you add a comment on the
+math?
 
-> -----Ursprüngliche Nachricht-----
-> Von: "Robert Hancock" <hancockr@shaw.ca>
-> Gesendet: 21.11.07 00:35:23
-> An: devzero@web.de
-> CC: linux-kernel@vger.kernel.org
-> Betreff: Re: System reboot triggered by just reading a device file....!?
-
-
-> 
-> devzero@web.de wrote:
-> > good evening, 
-> > 
-> > i stumbled over some funny issue when trying windirstat (like KDirStat) with wine.
-> > 
-> > after running that tool for a while my system rebooted. i could reproduce this with every run.
-> > 
-> > after some deep investigation (i thought i had stability issues with my system and spent more than an hour on this) i found out, that the reboot is being triggered by iTCO_wdt ( /dev/watchdog )
-> > 
-> > this is how to reproduce:
-> > 
-> > - be root
-> > -  cat /dev/watchdog or dd if=/dev/watchdog of=/dev/zero bs=1 count=1 or .....
-> > -  wait one minute........
-> > 
-> > *reboot*!
-> > 
-> > i have heard 2 opinions for now (contacted the author and also discussed on wine-devel ) that this should be expected behaviour.
-> 
-> Yes, it is. It's a watchdog device, it's meant to reboot the machine if 
-> whatever task is poking the watchdog dies.
-> 
-> > being sysadmin quite a while, i cannot believe that (accidentally) reading a device file (being root or not - what does that matter) triggers a system reboot.
-> > 
-> > ok - when i`m root , i shouldn`t do stupid things and be careful, but i thought reading/crawling trough a filesystem (r/o, btw.) with some tool which is built to do exactly this wasn`t so stupid - even from within wine.
-> 
-> I would say that running a Windows tool that opens up and reads random 
-> files, on the /dev directory tree, as root, probably does qualify as 
-> "stupid". I'd say running pretty much anything through Wine as root is 
-> not a good idea, a Windows app could hose the system without even 
-> meaning to through exactly such things.
-> 
-> > 
-> > think of an admin writing a quick&dirty script for intrusion detection (find / -exec md5sum {} \; >/tmp/need-no-tripwire) and forgetting to exclude /dev, /sys or /proc appropriately......
-> > think of someone exporting "/" via samba (readonly) and then navigating trough the /dev directory....
-> > 
-> > stupid?
-> > i don`t think so.....i have seen worse things...... :)
-> > 
-> > should someone get punished  by an accidental system reboot and should he need to spend his time on this to investigate why this happens?
-> > 
-> > i`d wish there would be some fence around this or iTCO_wdt /dev/watchdog not being active after a default desktop installation.
-> 
-> There is.. it's called "root privileges".
-> 
-> > 
-> > i`d be interested if i`m the only one who thinks this is strange/dangerous behaviour.
-> > 
-> > regards
-> > roland
-> 
-> 
-> -- 
-> Robert Hancock      Saskatoon, SK, Canada
-> To email, remove "nospam" from hancockr@nospamshaw.ca
-> Home Page: http://www.roberthancock.com/
-> 
-> 
-
-
-__________________________________________________________________________
-Erweitern Sie FreeMail zu einem noch leistungsstärkeren E-Mail-Postfach!		
-Mehr Infos unter http://produkte.web.de/club/?mc=021131
+Zach
 
