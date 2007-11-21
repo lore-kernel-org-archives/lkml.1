@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbXKUShw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbXKUSiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753385AbXKUShw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 13:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXKUSho
+	id S1755337AbXKUSiL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 13:38:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXKUShu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 13:37:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48976 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751936AbXKUShn (ORCPT
+	Wed, 21 Nov 2007 13:37:50 -0500
+Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:60385 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752855AbXKUSht (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 13:37:43 -0500
-Date: Wed, 21 Nov 2007 10:34:59 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       Don Zickus <dzickus@redhat.com>
-Subject: Re: [PATCH] Add the word 'Warning' in check_nmi_watchdog() output
-Message-ID: <20071121103459.0b9b0302@laptopd505.fenrus.org>
-In-Reply-To: <1195665260-14641-1-git-send-email-dzickus@redhat.com>
-References: <1195665260-14641-1-git-send-email-dzickus@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Wed, 21 Nov 2007 13:37:49 -0500
+Date: Wed, 21 Nov 2007 19:37:45 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH 15/59] drivers/hwmon: Add missing "space"
+Message-ID: <20071121193745.00f31f21@hyperion.delvare>
+In-Reply-To: <1195523331-15303-16-git-send-email-joe@perches.com>
+References: <1195523331-15303-1-git-send-email-joe@perches.com>
+	<1195523331-15303-2-git-send-email-joe@perches.com>
+	<1195523331-15303-3-git-send-email-joe@perches.com>
+	<1195523331-15303-4-git-send-email-joe@perches.com>
+	<1195523331-15303-5-git-send-email-joe@perches.com>
+	<1195523331-15303-6-git-send-email-joe@perches.com>
+	<1195523331-15303-7-git-send-email-joe@perches.com>
+	<1195523331-15303-8-git-send-email-joe@perches.com>
+	<1195523331-15303-9-git-send-email-joe@perches.com>
+	<1195523331-15303-10-git-send-email-joe@perches.com>
+	<1195523331-15303-11-git-send-email-joe@perches.com>
+	<1195523331-15303-12-git-send-email-joe@perches.com>
+	<1195523331-15303-13-git-send-email-joe@perches.com>
+	<1195523331-15303-14-git-send-email-joe@perches.com>
+	<1195523331-15303-15-git-send-email-joe@perches.com>
+	<1195523331-15303-16-git-send-email-joe@perches.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007 12:14:20 -0500
-Don Zickus <dzickus@redhat.com> wrote:
+Hi Joe,
 
-> Our automated test suite looks for keywords like error, fail, warning
-> in the boot log.  In the case when the nmi watchdog is determined to
-> be stuck in check_nmi_watchdog(), none of those keywords are
-> displayed.
+On Mon, 19 Nov 2007 17:48:07 -0800, Joe Perches wrote:
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/hwmon/vt8231.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/hwmon/vt8231.c b/drivers/hwmon/vt8231.c
+> index 2196a84..f876617 100644
+> --- a/drivers/hwmon/vt8231.c
+> +++ b/drivers/hwmon/vt8231.c
+> @@ -504,7 +504,7 @@ static ssize_t set_fan_div(struct device *dev, struct device_attribute *attr,
+>  	case 4: data->fan_div[nr] = 2; break;
+>  	case 8: data->fan_div[nr] = 3; break;
+>  	default:
+> -		dev_err(dev, "fan_div value %ld not supported."
+> +		dev_err(dev, "fan_div value %ld not supported. "
+>  		        "Choose one of 1, 2, 4 or 8!\n", val);
+>  		mutex_unlock(&data->update_lock);
+>  		return -EINVAL;
 
+Obviously correct, thanks.
 
-please make it at least consistent with the other kernel level bad
-things, and use "WARNING:"....
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+-- 
+Jean Delvare
