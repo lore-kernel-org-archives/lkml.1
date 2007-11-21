@@ -1,124 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbXKUOwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761445AbXKUOwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760638AbXKUOwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 09:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbXKUOw1
+	id S1761445AbXKUOwt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 09:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760836AbXKUOwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 09:52:27 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:59040 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754085AbXKUOw0 (ORCPT
+	Wed, 21 Nov 2007 09:52:40 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:19949 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760825AbXKUOwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 09:52:26 -0500
-MIME-Version: 1.0
-Date: Wed, 21 Nov 2007 08:52:21 -0600
-From: Felipe Balbi <me@felipebalbi.com>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Oliver Neukum <oliver@neukum.org>, Mark Lord <lkml@rtr.ca>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       Laurent Pinchart <laurentp@cse-semaphore.com>
+	Wed, 21 Nov 2007 09:52:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pjdpexhWc0t9qDUtc7hzuQfXZkCw8nLDSFLbtm9bvZHq02BcxFsy8jn2nJDQaJiSZ9GkuEGZHcY20/pf2aoauJSwHWfQRu9zBOOnUvaPlhE8zE6ul83KyHBImT91skz8LenDluLN5F9EE7yfWSpov2XeUJP6lbYJlyUcB+IYMwI=
+Message-ID: <d9def9db0711210652v3cc6fbd7ta4650e0b8f61f422@mail.gmail.com>
+Date: Wed, 21 Nov 2007 15:52:37 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
 Subject: Re: USB deadlock after resume
-In-Reply-To: <d9def9db0711210637x6fd5ad09o549b787639690d55@mail.gmail.com>
-References: <d9def9db0711210637x6fd5ad09o549b787639690d55@mail.gmail.com>
-Message-ID: <8eac96a88d4f5eea94927c0e64eaac36@felipebalbi.com>
-User-Agent: FelipeBalbi.com Webmail
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+Cc: "Mark Lord" <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net,
+       "Laurent Pinchart" <laurentp@cse-semaphore.com>
+In-Reply-To: <d9def9db0711210642h23db950vdc0fe1b9802e3e8b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d9def9db0711201347u2786fe0ev96b2fb43fc2954e9@mail.gmail.com>
+	 <d9def9db0711202132q2c5a9b46k79c00da68250db3b@mail.gmail.com>
+	 <d9def9db0711210259v5d06590w7754aeb508632c77@mail.gmail.com>
+	 <200711211246.39441.oliver@neukum.org>
+	 <d9def9db0711210637x6fd5ad09o549b787639690d55@mail.gmail.com>
+	 <d9def9db0711210642h23db950vdc0fe1b9802e3e8b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, 21 Nov 2007 15:37:20 +0100, "Markus Rechberger"
-<mrechberger@gmail.com> wrote:
-> On 11/21/07, Oliver Neukum <oliver@neukum.org> wrote:
->> Am Mittwoch 21 November 2007 schrieb Markus Rechberger:
->> > On 11/21/07, Markus Rechberger <mrechberger@gmail.com> wrote:
->> > > On 11/21/07, Mark Lord <lkml@rtr.ca> wrote:
->> > > > Markus Rechberger wrote:
->> > > > > Hi,
->> > > > >
->> > > > > I'm looking at the linux uvc driver, and noticed after resuming
+On 11/21/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> On 11/21/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> > On 11/21/07, Oliver Neukum <oliver@neukum.org> wrote:
+> > > Am Mittwoch 21 November 2007 schrieb Markus Rechberger:
+> > > > On 11/21/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> > > > > On 11/21/07, Mark Lord <lkml@rtr.ca> wrote:
+> > > > > > Markus Rechberger wrote:
+> > > > > > > Hi,
+> > > > > > >
+> > > > > > > I'm looking at the linux uvc driver, and noticed after resuming
 > my
->> > > > ..
->> > > >
->> > > > Pardon me.. what is the "uvc" driver?  Which module/source file is
->> that?
->> > > >
->> > >
->> > > http://linux-uvc.berlios.de/ it's not yet included in the kernel
->> > > sources although many distributions already ship it.
->> > > A "dry" run putting the device into sleep mode works fine (I added a
->> > > proc interface for calling those suspend/resume function).
->> > >
->> >
->> > it's not just usb_set_interface that hangs actually.
->> > It seems to hang at
->> >
->> > wait_event(usb_kill_urb_queue, atomic_read(&urb->use_count) == 0);
->> >
->> > in drivers/usb/core/urb.c after resuming. I disabled access to the usb
->> > subsystem in the uvc driver, although connecting any other usb storage
->> > fails too, just at the same point.
->>
->> Which URB is usb_kill_urb() called for?
->>
-> 
-> it's the usb_control_message which calls usb_kill_urb if I haven't got
-> it wrong. (if you're looking for some other information please let me
-> know)
-> Although, I got a bit further with it. The error seems to happen
-> earlier already.
-> If I load the driver, and do not access the device after suspending
-> all usb_control commands fail with -71 eproto.
+> > > > > > ..
+> > > > > >
+> > > > > > Pardon me.. what is the "uvc" driver?  Which module/source file is
+> > > that?
+> > > > > >
+> > > > >
+> > > > > http://linux-uvc.berlios.de/ it's not yet included in the kernel
+> > > > > sources although many distributions already ship it.
+> > > > > A "dry" run putting the device into sleep mode works fine (I added a
+> > > > > proc interface for calling those suspend/resume function).
+> > > > >
+> > > >
+> > > > it's not just usb_set_interface that hangs actually.
+> > > > It seems to hang at
+> > > >
+> > > > wait_event(usb_kill_urb_queue, atomic_read(&urb->use_count) == 0);
+> > > >
+> > > > in drivers/usb/core/urb.c after resuming. I disabled access to the usb
+> > > > subsystem in the uvc driver, although connecting any other usb storage
+> > > > fails too, just at the same point.
+> > >
+> > > Which URB is usb_kill_urb() called for?
+> > >
+> >
+> > it's the usb_control_message which calls usb_kill_urb if I haven't got
+> > it wrong. (if you're looking for some other information please let me
+> > know)
+> > Although, I got a bit further with it. The error seems to happen
+> > earlier already.
+> > If I load the driver, and do not access the device after suspending
+> > all usb_control commands fail with -71 eproto.
+> >
+> > Reloading the driver doesn't help at tht point, only reconnecting the
+> > device does.
+> >
+> > The data is transfered using bulk transfer.
+> >
+>
+> Do you know any good way for performing a softreset within the driver?
+> The video application should get a continuous datastream after
+> resuming the notebook, so the driver shouldn't be unloaded.
+> The driver also keeps a list of previous camera settings which should
+> be set up again after resuming. Stopping the video application and
+> reattaching the device using ACPI (this board supports reconnecting
+> the device using ACPI) should be avoided.
+>
 
-This device shouldn't be suspended. AFAIK it should have auto_suspend
-disabled
-by default.
+ok usb_reset_device() did the job after resuming. First problem solved.
 
-Try adding this device to drivers/usb/core/quirks.c with
-USB_QUIRK_NO_AUTOSUSPEND flag set. Something like:
-
-diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index d42c561..729eb4b 100644
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -45,6 +45,9 @@ static const struct usb_device_id usb_quirk_list[] = {
-        /* SKYMEDI USB_DRIVE */
-        { USB_DEVICE(0x1516, 0x8628), .driver_info = USB_QUIRK_RESET_RESUME
-},
- 
-+       /* Your device */
-+       { USB_DEVICE(0x0000, 0x0000), .driver_info =
-USB_QUIRK_NO_AUTOSUSPEND },
-+
-        { }  /* terminating entry must be last */
- };
-
-
-
-> 
-> Reloading the driver doesn't help at tht point, only reconnecting the
-> device does.
-> 
-> The data is transfered using bulk transfer.
-> 
-> Markus
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Best Regards,
-
-Felipe Balbi
-http://felipebalbi.com
-me@felipebalbi.com
-
+Markus
