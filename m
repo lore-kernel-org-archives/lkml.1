@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbXKUAtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbXKUAvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762997AbXKUAtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 19:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759167AbXKUAtK
+	id S1765680AbXKUAvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 19:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbXKUAvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 19:49:10 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58217 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758376AbXKUAtH (ORCPT
+	Tue, 20 Nov 2007 19:51:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:49282 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757363AbXKUAvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 19:49:07 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Guillaume Chazarain <guichaz@yahoo.fr>,
-       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <4743026B.2020907@openvz.org>
-	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
-	<20071120215914.GE24156@elte.hu>
-	<m1ve7wr28z.fsf@ebiederm.dsl.xmission.com>
-	<20071120223559.GA6655@elte.hu>
-	<20071120225457.B6E2D26F8BE@magilla.localdomain>
-	<20071120230106.GD24380@elte.hu>
-	<3d8471ca0711201506t6b2b88a0h9484f8a40a1f2e40@mail.gmail.com>
-	<20071120232600.F1D2F26F8BE@magilla.localdomain>
-	<47436E7F.2060901@redhat.com> <20071120234505.GF23667@elte.hu>
-	<20071120235114.0B85226F8BE@magilla.localdomain>
-Date: Tue, 20 Nov 2007 17:47:32 -0700
-In-Reply-To: <20071120235114.0B85226F8BE@magilla.localdomain> (Roland
-	McGrath's message of "Tue, 20 Nov 2007 15:51:14 -0800 (PST)")
-Message-ID: <m1y7cspgpn.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 20 Nov 2007 19:51:14 -0500
+Message-ID: <47438025.5080407@zytor.com>
+Date: Tue, 20 Nov 2007 16:47:33 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mark Lord <lkml@rtr.ca>, Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+References: <200711201837.39664.nickpiggin@yahoo.com.au> <20071120064747.2a8036cd@laptopd505.fenrus.org> <20071120220110.GF24156@elte.hu> <47436C43.6010200@rtr.ca> <20071120232723.GB23667@elte.hu> <47436ECD.3050004@zytor.com> <20071120234725.GH23667@elte.hu> <474372BC.2000609@zytor.com> <20071121000742.GN23667@elte.hu> <474379C1.2040703@zytor.com> <20071121003629.GA20765@elte.hu>
+In-Reply-To: <20071121003629.GA20765@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath <roland@redhat.com> writes:
+Ingo Molnar wrote:
+> 
+> i took that "Nope" as referring to my impression - but you in fact meant 
+> that i am not wrong? :-) So nothing to see here. single-bzImage initrd 
+> was and is possible, so we could in fact move chunks of system-related 
+> userland (such as irqbalanced) into the kernel proper?
+> 
 
->> can you see any danger to providing a /proc/self_task/ link? (or can you 
->> think of a better name/API/approach)
->
-> That is a poor name to choose given /proc/self/task exists as something
-> else (just try writing a sentence comparing them and then read it aloud).
-> Probably /proc/self/task/self is what makes the most sense structurally.
-> I don't know if it matters to whatever use you are concerned with to have
-> two more steps in the lookup.
+Yes, it should be quite straightforward.
 
-Well the only case it could matter is if you aren't allowed to access
-/proc/<tgid> which I think may actually be the current selinux behavior.
-
-So if we can't fix /proc/self we need to introduce /proc/task-self at
-the top level, just to be certain we don't run into weird cases like
-that.  Otherwise /proc/self/task/self sounds like a wonderful suggestion.
-
-Eric
+	-hpa
