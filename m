@@ -1,309 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932510AbXKUBWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932559AbXKUBXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932510AbXKUBWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764962AbXKUBOJ
+	id S932559AbXKUBXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:23:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765395AbXKUBOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:14:09 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:61576 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759907AbXKUBNw (ORCPT
+	Tue, 20 Nov 2007 20:14:10 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:45800 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765475AbXKUBNw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Nov 2007 20:13:52 -0500
-Message-Id: <20071121011249.662344517@goodmis.org>
+Message-Id: <20071121011251.913977352@goodmis.org>
 References: <20071121010054.663842380@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 20 Nov 2007 20:00:59 -0500
+Date: Tue, 20 Nov 2007 20:01:13 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v4 05/20] pull RT tasks
-Content-Disposition: inline; filename=rt-balance-pull-tasks.patch
+Subject: [PATCH v4 19/20] Optimize out cpu_clears
+Content-Disposition: inline; filename=rt-balance-optimize-cpu-search.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the algorithm to pull tasks from RT overloaded runqueues.
-
-When a pull RT is initiated, all overloaded runqueues are examined for
-a RT task that is higher in prio than the highest prio task queued on the
-target runqueue. If another runqueue holds a RT task that is of higher
-prio than the highest prio task on the target runqueue is found it is pulled
-to the target runqueue.
+This patch removes several cpumask operations by keeping track
+of the first of the CPUS that is of the lowest priority. When
+the search for the lowest priority runqueue is completed, all
+the bits up to the first CPU with the lowest priority runqueue
+is cleared.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
 ---
+ kernel/sched_rt.c |   35 +++++++++++++++++++++++++----------
+ 1 file changed, 25 insertions(+), 10 deletions(-)
 
- kernel/sched.c    |    2 
- kernel/sched_rt.c |  187 ++++++++++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 178 insertions(+), 11 deletions(-)
-
-Index: linux-compile.git/kernel/sched.c
-===================================================================
---- linux-compile.git.orig/kernel/sched.c	2007-11-20 19:52:56.000000000 -0500
-+++ linux-compile.git/kernel/sched.c	2007-11-20 19:52:59.000000000 -0500
-@@ -3646,6 +3646,8 @@ need_resched_nonpreemptible:
- 		switch_count = &prev->nvcsw;
- 	}
- 
-+	schedule_balance_rt(rq, prev);
-+
- 	if (unlikely(!rq->nr_running))
- 		idle_balance(cpu, rq);
- 
 Index: linux-compile.git/kernel/sched_rt.c
 ===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:52:57.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:52:59.000000000 -0500
-@@ -176,8 +176,17 @@ static void put_prev_task_rt(struct rq *
- static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
- static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep);
- 
-+static int pick_rt_task(struct rq *rq, struct task_struct *p, int cpu)
-+{
-+	if (!task_running(rq, p) &&
-+	    (cpu < 0 || cpu_isset(cpu, p->cpus_allowed)))
-+		return 1;
-+	return 0;
-+}
-+
- /* Return the second highest RT task, NULL otherwise */
--static struct task_struct *pick_next_highest_task_rt(struct rq *rq)
-+static struct task_struct *pick_next_highest_task_rt(struct rq *rq,
-+						     int cpu)
- {
- 	struct rt_prio_array *array = &rq->rt.active;
- 	struct task_struct *next;
-@@ -196,26 +205,36 @@ static struct task_struct *pick_next_hig
- 	}
- 
- 	queue = array->queue + idx;
-+	BUG_ON(list_empty(queue));
-+
- 	next = list_entry(queue->next, struct task_struct, run_list);
--	if (unlikely(next != rq->curr))
--		return next;
-+	if (unlikely(pick_rt_task(rq, next, cpu)))
-+		goto out;
- 
- 	if (queue->next->next != queue) {
- 		/* same prio task */
- 		next = list_entry(queue->next->next, struct task_struct, run_list);
--		return next;
-+		if (pick_rt_task(rq, next, cpu))
-+			goto out;
- 	}
- 
-+ retry:
- 	/* slower, but more flexible */
- 	idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
--	if (unlikely(idx >= MAX_RT_PRIO)) {
--		WARN_ON(1); /* rt_nr_running was 2 and above! */
-+	if (unlikely(idx >= MAX_RT_PRIO))
- 		return NULL;
--	}
- 
- 	queue = array->queue + idx;
--	next = list_entry(queue->next, struct task_struct, run_list);
-+	BUG_ON(list_empty(queue));
-+
-+	list_for_each_entry(next, queue, run_list) {
-+		if (pick_rt_task(rq, next, cpu))
-+			goto out;
-+	}
-+
-+	goto retry;
- 
-+ out:
- 	return next;
+--- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:53:15.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:53:17.000000000 -0500
+@@ -293,22 +293,20 @@ static struct task_struct *pick_next_hig
  }
  
-@@ -302,13 +321,15 @@ static int push_rt_task(struct rq *this_
+ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
+-static DEFINE_PER_CPU(cpumask_t, valid_cpu_mask);
  
- 	assert_spin_locked(&this_rq->lock);
+ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ {
+-	int       cpu;
+-	cpumask_t *valid_mask = &__get_cpu_var(valid_cpu_mask);
+ 	int       lowest_prio = -1;
++	int       lowest_cpu  = 0;
+ 	int       count       = 0;
++	int       cpu;
  
--	next_task = pick_next_highest_task_rt(this_rq);
-+	next_task = pick_next_highest_task_rt(this_rq, -1);
- 	if (!next_task)
- 		return 0;
- 
-  retry:
--	if (unlikely(next_task == this_rq->curr))
-+	if (unlikely(next_task == this_rq->curr)) {
-+		WARN_ON(1);
- 		return 0;
-+	}
+-	cpus_clear(*lowest_mask);
+-	cpus_and(*valid_mask, cpu_online_map, task->cpus_allowed);
++	cpus_and(*lowest_mask, cpu_online_map, task->cpus_allowed);
  
  	/*
- 	 * It's possible that the next_task slipped in of
-@@ -332,7 +353,7 @@ static int push_rt_task(struct rq *this_
- 		 * so it is possible that next_task has changed.
- 		 * If it has, then try again.
- 		 */
--		task = pick_next_highest_task_rt(this_rq);
-+		task = pick_next_highest_task_rt(this_rq, -1);
- 		if (unlikely(task != next_task) && task && paranoid--) {
- 			put_task_struct(next_task);
- 			next_task = task;
-@@ -375,6 +396,149 @@ static void push_rt_tasks(struct rq *rq)
- 		;
- }
+ 	 * Scan each rq for the lowest prio.
+ 	 */
+-	for_each_cpu_mask(cpu, *valid_mask) {
++	for_each_cpu_mask(cpu, *lowest_mask) {
+ 		struct rq *rq = cpu_rq(cpu);
  
-+static int pull_rt_task(struct rq *this_rq)
-+{
-+	struct task_struct *next;
-+	struct task_struct *p;
-+	struct rq *src_rq;
-+	cpumask_t *rto_cpumask;
-+	int this_cpu = this_rq->cpu;
-+	int cpu;
-+	int ret = 0;
-+
-+	assert_spin_locked(&this_rq->lock);
+ 		/* We look for lowest RT prio or non-rt CPU */
+@@ -325,13 +323,30 @@ static int find_lowest_cpus(struct task_
+ 			if (rq->rt.highest_prio > lowest_prio) {
+ 				/* new low - clear old data */
+ 				lowest_prio = rq->rt.highest_prio;
+-				if (count) {
+-					cpus_clear(*lowest_mask);
+-					count = 0;
+-				}
++				lowest_cpu = cpu;
++				count = 0;
+ 			}
+ 			cpu_set(rq->cpu, *lowest_mask);
+ 			count++;
++		} else
++			cpu_clear(cpu, *lowest_mask);
++	}
 +
 +	/*
-+	 * If cpusets are used, and we have overlapping
-+	 * run queue cpusets, then this algorithm may not catch all.
-+	 * This is just the price you pay on trying to keep
-+	 * dirtying caches down on large SMP machines.
++	 * Clear out all the set bits that represent
++	 * runqueues that were of higher prio than
++	 * the lowest_prio.
 +	 */
-+	if (likely(!rt_overloaded()))
-+		return 0;
-+
-+	next = pick_next_task_rt(this_rq);
-+
-+	rto_cpumask = rt_overload();
-+
-+	for_each_cpu_mask(cpu, *rto_cpumask) {
-+		if (this_cpu == cpu)
-+			continue;
-+
-+		src_rq = cpu_rq(cpu);
-+		if (unlikely(src_rq->rt.rt_nr_running <= 1)) {
-+			/*
-+			 * It is possible that overlapping cpusets
-+			 * will miss clearing a non overloaded runqueue.
-+			 * Clear it now.
-+			 */
-+			if (double_lock_balance(this_rq, src_rq)) {
-+				/* unlocked our runqueue lock */
-+				struct task_struct *old_next = next;
-+				next = pick_next_task_rt(this_rq);
-+				if (next != old_next)
-+					ret = 1;
-+			}
-+			if (likely(src_rq->rt.rt_nr_running <= 1))
-+				/*
-+				 * Small chance that this_rq->curr changed
-+				 * but it's really harmless here.
-+				 */
-+				rt_clear_overload(this_rq);
-+			else
-+				/*
-+				 * Heh, the src_rq is now overloaded, since
-+				 * we already have the src_rq lock, go straight
-+				 * to pulling tasks from it.
-+				 */
-+				goto try_pulling;
-+			spin_unlock(&src_rq->lock);
-+			continue;
-+		}
-+
++	if (lowest_cpu) {
 +		/*
-+		 * We can potentially drop this_rq's lock in
-+		 * double_lock_balance, and another CPU could
-+		 * steal our next task - hence we must cause
-+		 * the caller to recalculate the next task
-+		 * in that case:
++		 * Perhaps we could add another cpumask op to
++		 * zero out bits. Like cpu_zero_bits(cpumask, nrbits);
++		 * Then that could be optimized to use memset and such.
 +		 */
-+		if (double_lock_balance(this_rq, src_rq)) {
-+			struct task_struct *old_next = next;
-+			next = pick_next_task_rt(this_rq);
-+			if (next != old_next)
-+				ret = 1;
-+		}
-+
-+		/*
-+		 * Are there still pullable RT tasks?
-+		 */
-+		if (src_rq->rt.rt_nr_running <= 1) {
-+			spin_unlock(&src_rq->lock);
-+			continue;
-+		}
-+
-+ try_pulling:
-+		p = pick_next_highest_task_rt(src_rq, this_cpu);
-+
-+		/*
-+		 * Do we have an RT task that preempts
-+		 * the to-be-scheduled task?
-+		 */
-+		if (p && (!next || (p->prio < next->prio))) {
-+			WARN_ON(p == src_rq->curr);
-+			WARN_ON(!p->se.on_rq);
-+
-+			/*
-+			 * There's a chance that p is higher in priority
-+			 * than what's currently running on its cpu.
-+			 * This is just that p is wakeing up and hasn't
-+			 * had a chance to schedule. We only pull
-+			 * p if it is lower in priority than the
-+			 * current task on the run queue or
-+			 * this_rq next task is lower in prio than
-+			 * the current task on that rq.
-+			 */
-+			if (p->prio < src_rq->curr->prio ||
-+			    (next && next->prio < src_rq->curr->prio))
-+				goto bail;
-+
-+			ret = 1;
-+
-+			deactivate_task(src_rq, p, 0);
-+			set_task_cpu(p, this_cpu);
-+			activate_task(this_rq, p, 0);
-+			/*
-+			 * We continue with the search, just in
-+			 * case there's an even higher prio task
-+			 * in another runqueue. (low likelyhood
-+			 * but possible)
-+			 */
-+
-+			/*
-+			 * Update next so that we won't pick a task
-+			 * on another cpu with a priority lower (or equal)
-+			 * than the one we just picked.
-+			 */
-+			next = p;
-+
-+		}
-+ bail:
-+		spin_unlock(&src_rq->lock);
-+	}
-+
-+	return ret;
-+}
-+
-+static void schedule_balance_rt(struct rq *rq,
-+				struct task_struct *prev)
-+{
-+	/* Try to pull RT tasks here if we lower this rq's prio */
-+	if (unlikely(rt_task(prev)) &&
-+	    rq->rt.highest_prio > prev->prio)
-+		pull_rt_task(rq);
-+}
-+
- static void schedule_tail_balance_rt(struct rq *rq)
- {
- 	/*
-@@ -497,6 +661,7 @@ move_one_task_rt(struct rq *this_rq, int
- }
- #else /* CONFIG_SMP */
- # define schedule_tail_balance_rt(rq)	do { } while (0)
-+# define schedule_balance_rt(rq, prev)	do { } while (0)
- #endif /* CONFIG_SMP */
++		for_each_cpu_mask(cpu, *lowest_mask) {
++			if (cpu >= lowest_cpu)
++				break;
++			cpu_clear(cpu, *lowest_mask);
+ 		}
+ 	}
  
- static void task_tick_rt(struct rq *rq, struct task_struct *p)
 
 -- 
