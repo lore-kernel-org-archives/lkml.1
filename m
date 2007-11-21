@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbXKUFEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbXKUFEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753146AbXKUFEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 00:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXKUFD5
+	id S1757639AbXKUFEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 00:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbXKUFEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 00:03:57 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:48894
+	Wed, 21 Nov 2007 00:04:01 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:48900
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754246AbXKUFDy (ORCPT
+	by vger.kernel.org with ESMTP id S1755178AbXKUFD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 00:03:54 -0500
+	Wed, 21 Nov 2007 00:03:59 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/4] RT: Add sched-domain roots
+Subject: [PATCH 3/4] RT: Only balance our RT tasks within our root-domain
 To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <srostedt@redhat.com>
 Cc: Christoph Lameter <clameter@sgi.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Gregory Haskins <ghaskins@novell.com>
-Date: Tue, 20 Nov 2007 23:44:11 -0500
-Message-ID: <20071121044411.6315.36658.stgit@novell1.haskins.net>
+Date: Tue, 20 Nov 2007 23:44:16 -0500
+Message-ID: <20071121044416.6315.71088.stgit@novell1.haskins.net>
 In-Reply-To: <20071121043648.6315.29246.stgit@novell1.haskins.net>
 References: <20071121043648.6315.29246.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,213 +27,170 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We add the notion of a root-domain which will be used later to rescope
-global variables to per-domain variables.  Each exclusive cpuset
-essentially defines an island domain by fully partitioning the member cpus
-from any other cpuset.  However, we currently still maintain some
-policy/state as global variables which transcend all cpusets.  Consider,
-for instance, rt-overload state.
+We move the rt-overload data as the first global to per-domain
+reclassification.  This limits the scope of overload related cache-line
+bouncing to stay with a specified partition instead of affecting all
+cpus in the system.
 
-Whenever a new exclusive cpuset is created, we also create a new
-root-domain object and move each cpu member to the root-domain's span.
-By default the system creates a single root-domain with all cpus as
-members (mimicking the global state we have today).
+Finally, we limit the scope of find_lowest_cpu searches to the domain
+instead of the entire system.  Note that we would always respect domain
+boundaries even without this patch, but we first would scan potentially
+all cpus before whittling the list down.  Now we can avoid looking at
+RQs that are out of scope, again reducing cache-line hits.
 
-We add some plumbing for storing class specific data in our root-domain.
-Whenever a RQ is switching root-domains (because of repartitioning) we
-give each sched_class the opportunity to remove any state from its old
-domain and add state to the new one.  This logic doesn't have any clients
-yet but it will later in the series.
+Note: In some cases, task->cpus_allowed will effectively reduce our search
+to within our domain.  However, I believe there are cases where the
+cpus_allowed mask may be all ones and therefore we err on the side of
+caution.  If it can be optimized later, so be it.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 CC: Christoph Lameter <clameter@sgi.com>
-CC: Paul Jackson <pj@sgi.com>
-CC: Simon Derr <simon.derr@bull.net>
 ---
 
- include/linux/sched.h |    3 ++
- kernel/sched.c        |   89 +++++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 89 insertions(+), 3 deletions(-)
+ kernel/sched.c    |    2 ++
+ kernel/sched_rt.c |   65 +++++++++++++++++++++++++++++++++++------------------
+ 2 files changed, 45 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 19d9f3f..0ba221e 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -845,6 +845,9 @@ struct sched_class {
- 	void (*task_tick) (struct rq *rq, struct task_struct *p);
- 	void (*task_new) (struct rq *rq, struct task_struct *p);
- 	void (*set_cpus_allowed)(struct task_struct *p, cpumask_t *newmask);
-+
-+	void (*join_domain)(struct rq *rq);
-+	void (*leave_domain)(struct rq *rq);
- };
- 
- struct load_weight {
 diff --git a/kernel/sched.c b/kernel/sched.c
-index e685402..fb619fb 100644
+index fb619fb..578c186 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -276,6 +276,17 @@ struct rt_rq {
- 	int overloaded;
+@@ -281,6 +281,8 @@ struct rt_rq {
+ struct root_domain {
+ 	atomic_t refcount;
+ 	cpumask_t span;
++	cpumask_t rto_mask;
++	atomic_t  rto_count;
  };
  
-+#ifdef CONFIG_SMP
-+
-+struct root_domain {
-+	atomic_t refcount;
-+	cpumask_t span;
-+};
-+
-+struct root_domain def_root_domain;
-+
-+#endif
-+
- /*
-  * This is the main, per-CPU runqueue data structure.
-  *
-@@ -333,6 +344,7 @@ struct rq {
- 	atomic_t nr_iowait;
- 
- #ifdef CONFIG_SMP
-+	struct root_domain  *rd;
- 	struct sched_domain *sd;
- 
- 	/* For active balancing */
-@@ -5718,11 +5730,68 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
- 	return 1;
- }
- 
-+static void rq_attach_root(struct rq *rq, struct root_domain *rd)
-+{
-+	unsigned long flags;
-+	const struct sched_class *class;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+
-+	if (rq->rd) {
-+		struct root_domain *old_rd = rq->rd;
-+
-+		for (class = sched_class_highest; class; class = class->next)
-+			if (class->leave_domain)
-+				class->leave_domain(rq);
-+
-+		if (atomic_dec_and_test(&old_rd->refcount))
-+			kfree(old_rd);
-+	}
-+
-+	atomic_inc(&rd->refcount);
-+	rq->rd = rd;
-+
-+	for (class = sched_class_highest; class; class = class->next)
-+		if (class->join_domain)
-+			class->join_domain(rq);
-+
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+
-+static void init_rootdomain(struct root_domain *rd, cpumask_t *map)
-+{
-+	memset(rd, 0, sizeof(*rd));
-+
-+	rd->span = *map;
-+}
-+
-+static void init_defrootdomain(void)
-+{
-+	cpumask_t cpus = CPU_MASK_ALL;
-+
-+	init_rootdomain(&def_root_domain, &cpus);
-+	atomic_set(&def_root_domain.refcount, 1);
-+}
-+
-+static struct root_domain *alloc_rootdomain(cpumask_t *map)
-+{
-+	struct root_domain *rd;
-+
-+	rd = kmalloc(sizeof(*rd), GFP_KERNEL);
-+	if (!rd)
-+		return NULL;
-+
-+	init_rootdomain(rd, map);
-+
-+	return rd;
-+}
-+
- /*
-  * Attach the domain 'sd' to 'cpu' as its base domain.  Callers must
-  * hold the hotplug lock.
+ struct root_domain def_root_domain;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index fbf4fb1..3495762 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -4,20 +4,18 @@
   */
--static void cpu_attach_domain(struct sched_domain *sd, int cpu)
-+static void cpu_attach_domain(struct sched_domain *sd,
-+			      struct root_domain *rd, int cpu)
- {
- 	struct rq *rq = cpu_rq(cpu);
- 	struct sched_domain *tmp;
-@@ -5747,6 +5816,7 @@ static void cpu_attach_domain(struct sched_domain *sd, int cpu)
  
- 	sched_domain_debug(sd, cpu);
- 
-+	rq_attach_root(rq, rd);
- 	rcu_assign_pointer(rq->sd, sd);
- }
- 
-@@ -6115,6 +6185,7 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
- static int build_sched_domains(const cpumask_t *cpu_map)
- {
- 	int i;
-+	struct root_domain *rd;
- #ifdef CONFIG_NUMA
- 	struct sched_group **sched_group_nodes = NULL;
- 	int sd_allnodes = 0;
-@@ -6131,6 +6202,12 @@ static int build_sched_domains(const cpumask_t *cpu_map)
- 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
- #endif
- 
-+	rd = alloc_rootdomain(cpu_map);
-+	if (!rd) {
-+		printk(KERN_WARNING "Cannot alloc root domain\n");
-+		return -ENOMEM;
-+	}
-+
- 	/*
- 	 * Set up domains for cpus specified by the cpu_map.
- 	 */
-@@ -6347,7 +6424,7 @@ static int build_sched_domains(const cpumask_t *cpu_map)
- #else
- 		sd = &per_cpu(phys_domains, i);
- #endif
--		cpu_attach_domain(sd, i);
-+		cpu_attach_domain(sd, rd, i);
- 	}
- 
- 	return 0;
-@@ -6405,7 +6482,7 @@ static void detach_destroy_domains(const cpumask_t *cpu_map)
- 	unregister_sched_domain_sysctl();
- 
- 	for_each_cpu_mask(i, *cpu_map)
--		cpu_attach_domain(NULL, i);
-+		cpu_attach_domain(NULL, &def_root_domain, i);
- 	synchronize_sched();
- 	arch_destroy_sched_domains(cpu_map);
- }
-@@ -6641,6 +6718,10 @@ void __init sched_init(void)
- 	int highest_cpu = 0;
- 	int i, j;
- 
-+#ifdef CONFIG_SMP
-+	init_defrootdomain();
-+#endif
-+
- 	for_each_possible_cpu(i) {
- 		struct rt_prio_array *array;
- 		struct rq *rq;
-@@ -6680,6 +6761,8 @@ void __init sched_init(void)
- 			rq->cpu_load[j] = 0;
  #ifdef CONFIG_SMP
- 		rq->sd = NULL;
-+		rq->rd = NULL;
-+		rq_attach_root(rq, &def_root_domain);
- 		rq->active_balance = 0;
- 		rq->next_balance = jiffies;
- 		rq->push_cpu = 0;
+-static cpumask_t rt_overload_mask;
+-static atomic_t rto_count;
+-static inline int rt_overloaded(void)
++
++static inline int rt_overloaded(struct rq *rq)
+ {
+-	return atomic_read(&rto_count);
++	return atomic_read(&rq->rd->rto_count);
+ }
+-static inline cpumask_t *rt_overload(void)
++static inline cpumask_t *rt_overload(struct rq *rq)
+ {
+-	return &rt_overload_mask;
++	return &rq->rd->rto_mask;
+ }
+ static inline void rt_set_overload(struct rq *rq)
+ {
+-	rq->rt.overloaded = 1;
+-	cpu_set(rq->cpu, rt_overload_mask);
++	cpu_set(rq->cpu, rq->rd->rto_mask);
+ 	/*
+ 	 * Make sure the mask is visible before we set
+ 	 * the overload count. That is checked to determine
+@@ -26,22 +24,25 @@ static inline void rt_set_overload(struct rq *rq)
+ 	 * updated yet.
+ 	 */
+ 	wmb();
+-	atomic_inc(&rto_count);
++	atomic_inc(&rq->rd->rto_count);
+ }
+ static inline void rt_clear_overload(struct rq *rq)
+ {
+ 	/* the order here really doesn't matter */
+-	atomic_dec(&rto_count);
+-	cpu_clear(rq->cpu, rt_overload_mask);
+-	rq->rt.overloaded = 0;
++	atomic_dec(&rq->rd->rto_count);
++	cpu_clear(rq->cpu, rq->rd->rto_mask);
+ }
+ 
+ static void update_rt_migration(struct rq *rq)
+ {
+-	if (rq->rt.rt_nr_migratory && (rq->rt.rt_nr_running > 1))
++	if (rq->rt.rt_nr_migratory && (rq->rt.rt_nr_running > 1)) {
+ 		rt_set_overload(rq);
+-	else
++		rq->rt.overloaded = 1;
++	} else {
+ 		rt_clear_overload(rq);
++		rq->rt.overloaded = 0;
++	}
++	
+ }
+ #endif /* CONFIG_SMP */
+ 
+@@ -304,6 +305,15 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ 	cpus_and(*lowest_mask, cpu_online_map, task->cpus_allowed);
+ 
+ 	/*
++	 * Yes, I know doing two cpus_and() kind of sucks, especially on
++	 * those very large SMP systems.  We are going for correctness now,
++	 * optimization later.  A later patch will add rd->online to cache
++	 * the subset of rd->span that are online and then we can collapse
++	 * these two mask operations into one
++	 */
++	cpus_and(*lowest_mask, *lowest_mask, task_rq(task)->rd->span);
++
++	/*
+ 	 * Scan each rq for the lowest prio.
+ 	 */
+ 	for_each_cpu_mask(cpu, *lowest_mask) {
+@@ -584,18 +594,12 @@ static int pull_rt_task(struct rq *this_rq)
+ 
+ 	assert_spin_locked(&this_rq->lock);
+ 
+-	/*
+-	 * If cpusets are used, and we have overlapping
+-	 * run queue cpusets, then this algorithm may not catch all.
+-	 * This is just the price you pay on trying to keep
+-	 * dirtying caches down on large SMP machines.
+-	 */
+-	if (likely(!rt_overloaded()))
++	if (likely(!rt_overloaded(this_rq)))
+ 		return 0;
+ 
+ 	next = pick_next_task_rt(this_rq);
+ 
+-	rto_cpumask = rt_overload();
++	rto_cpumask = rt_overload(this_rq);
+ 
+ 	for_each_cpu_mask(cpu, *rto_cpumask) {
+ 		if (this_cpu == cpu)
+@@ -814,6 +818,20 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p)
+ 	}
+ }
+ 
++/* Assumes rq->lock is held */
++static void join_domain_rt(struct rq *rq)
++{
++	if (rq->rt.overloaded)
++		rt_set_overload(rq);
++}
++
++/* Assumes rq->lock is held */
++static void leave_domain_rt(struct rq *rq)
++{
++	if (rq->rt.overloaded)
++		rt_clear_overload(rq);
++}
++
+ static void set_curr_task_rt(struct rq *rq)
+ {
+ 	struct task_struct *p = rq->curr;
+@@ -843,4 +861,7 @@ const struct sched_class rt_sched_class = {
+ 
+ 	.set_curr_task          = set_curr_task_rt,
+ 	.task_tick		= task_tick_rt,
++
++	.join_domain            = join_domain_rt,
++	.leave_domain           = leave_domain_rt,
+ };
 
