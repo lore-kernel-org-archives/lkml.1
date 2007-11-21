@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXKUTCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXKUTEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbXKUTCf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXKUTC1
+	id S1754492AbXKUTEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXKUTEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:02:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50318 "EHLO ogre.sisk.pl"
+	Wed, 21 Nov 2007 14:04:02 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:48442 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbXKUTC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:02:26 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [lm-sensors] broken suspend [Was: 2.6.24-rc2-mm1]
-Date: Wed, 21 Nov 2007 20:19:43 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Rudolf Marek <r.marek@assembler.cz>, Jiri Slaby <jirislaby@gmail.com>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0711211053140.3226-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711211053140.3226-100000@iolanthe.rowland.org>
+	id S1751153AbXKUTEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:04:00 -0500
+Date: Wed, 21 Nov 2007 14:03:50 -0500
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Chris Wedgwood <cw@f00f.org>, linux-xfs@oss.sgi.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc2 XFS nfsd hang
+Message-ID: <20071121190350.GA28029@fieldses.org>
+References: <20071114070400.GA25708@puku.stupidest.org> <20071114152952.GA4210@infradead.org> <20071114173922.GC14254@fieldses.org> <20071114174419.GA15271@infradead.org> <20071114175322.GD14254@fieldses.org> <20071114180241.GA16656@infradead.org> <20071114180838.GE14254@fieldses.org> <20071121150746.GB8454@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711212019.45071.rjw@sisk.pl>
+In-Reply-To: <20071121150746.GB8454@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 21 of November 2007, Alan Stern wrote:
-> On Wed, 21 Nov 2007, Rafael J. Wysocki wrote:
-> 
-> > > Is it possible to unregister a driver on CPU_DOWN_PREPARE_FROZEN?
+On Wed, Nov 21, 2007 at 03:07:46PM +0000, Christoph Hellwig wrote:
+> On Wed, Nov 14, 2007 at 01:08:38PM -0500, J. Bruce Fields wrote:
+> > > Personally I'd prefer it to only grow a struct stat or rather it's members
+> > > But the nfsd code currently expects a dentry so this might require some
+> > > major refactoring.
 > > 
-> > No.  In that case the suspend core is holding the device's mutex and your
-> > attempt to unregister it will deadlock with it.
-> > 
-> > Do you _have_ _to_ unregister the device at all?  Why don't you just leave
-> > it registered on CPU_DOWN_PREPARE_FROZEN?  The CPU is not going away
-> > physically in this case and it's _guaranteed_ that _cpu_up() will be called on
-> > it as soon as the hibernation image is ready or we are back from suspend.
+> > Well, we need to check for mountpoints, for example, so I don't see any
+> > way out of needing a dentry.  What's the drawback?
 > 
-> This leaves the device registered if for some reason the number of CPUs 
-> after resuming from hibernation is smaller than the number of CPUs 
-> before hibernation.  Of course, in theory that's never supposed to 
-> happen...
+> You're right - we'd probably need the dentry.  The drawback is that
+> we need to always get it in the dcache.  Which might be a good thing
+> depending on the workload.
 
-Yes, that clearly would be a bug.
+In any case, if the new api were only used by nfsd for now, then there'd
+be no change here.
 
-Rafael
+Seems like it might be worth a try.
+
+--b.
