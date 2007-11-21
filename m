@@ -1,48 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbXKUBYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765179AbXKUBZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbXKUBYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764929AbXKUBQQ
+	id S1765179AbXKUBZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:25:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbXKUBUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:16:16 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:48514 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763538AbXKUBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:16:14 -0500
-Date: Tue, 20 Nov 2007 17:16:11 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-In-Reply-To: <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0711201703570.29648@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <200711201301.25373.ak@suse.de>
- <Pine.LNX.4.64.0711201228180.26745@schroedinger.engr.sgi.com>
- <200711202159.36377.ak@suse.de> <Pine.LNX.4.64.0711201325130.27539@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com>
+	Tue, 20 Nov 2007 20:20:07 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39180 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932103AbXKUBUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 20:20:05 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.24-rc3: find complains about /proc/net
+References: <20071119191000.GA1560@elf.ucw.cz>
+	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
+Date: Tue, 20 Nov 2007 18:19:12 -0700
+In-Reply-To: <4743026B.2020907@openvz.org> (Pavel Emelyanov's message of "Tue,
+	20 Nov 2007 18:51:07 +0300")
+Message-ID: <m1tzngpf8v.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-But one can subtract too... Hmmm... So the cpu area 0 could be put at
-the beginning of the 2GB kernel area and then grow downwards from 
-0xffffffff80000000. The cost in terms of code is one subtract
-instruction for each per_cpu() or CPU_PTR()
+Pavel Emelyanov <xemul@openvz.org> writes:
 
-The next thing doward from 0xffffffff80000000 is the vmemmap at 
-0xffffe20000000000, so ~32TB. If we leave 16TB for the vmemmap
-(a 16TB vmmemmap be able to map 2^(44 - 6 + 12) = 2^50 bytes 
-more than currently supported by the processors)
+> Rafael J. Wysocki wrote:
+>> On Monday, 19 of November 2007, Pavel Machek wrote:
+>>> Hi!
+>>>
+>>> I think that this worked before:
+>>>
+>>> root@amd:/proc# find . -name "timer_info"
+>>> find: WARNING: Hard link count is wrong for ./net: this may be a bug
+>>> in your filesystem driver.  Automatically turning on find's -noleaf
+>>> option.  Earlier results may have failed to include directories that
+>>> should have been searched.
+>>> root@amd:/proc#
+>> 
+>> I'm seeing that too.
+>
+> I have a better things with 2.6.24-rc3 ;)
+>
+> # cd /proc/net
+> # ls ..
+> ls: reading directory ..: Not a directory
+>
+> and this
+>
+> # cd /proc
+> # find
+> ...
+> ./net
+> find: . changed during execution of find
+> # find net
+> find: net changed during execution of find
+> # find net/
+> <this works ok however>
+>
+> Moreover. Program that opens /proc/net and dumps the /proc/self/fd
+> files produces the following:
+>
+> # cd /
+> # a.out /proc/net
+> ...
+> lr-x------  1 root root 64 Nov 20 18:02 3 -> /proc/net/net (deleted)
+> ...
+> # cd /proc/net
+> # a.out .
+> ...
+> lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net/net (deleted)
+> ...
+> # a.out ..
+> ...
+> lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
+> ...
+>
+> This all is somehow related to the shadow proc files.
+> E.g. the first problem (with -ENOTDIR) is due to the shadow /proc/net
+> dentry doesn't implement the .readdir method:
+>
+> static const struct file_operations proc_net_dir_operations = {
+>         .read                   = generic_read_dir,
+> };
+>
+> And I haven't managed to find out why the rest problems
+> occur...
+>
+> Eric, do you have fixes for it?
 
-then the remaining 16TB could be used to map 1GB per cpu for a 16k config. 
-That is wildly overdoing it. Guess we could just do it with 1M anyways. 
-Just to be safe we could do 128M. 128M x 16k = 2TB?
+Duh.  There is one other possible solution I forgot to mention and
+at least as a first pass it should be relatively simple.  Have the
+mount of proc capture the network namespace.  I'm not certain
+if it is what we want long term but it should be simple and relatively
+easy to implement.
 
-Would such a configuration be okay?
+I don't like capturing the network namespace when we mount proc but
+it is easier then implementing /proc/self/net.  Which is the other
+real alternative.
 
- 
-
+Eric
