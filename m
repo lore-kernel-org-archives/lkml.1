@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXKUMvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760393AbXKUMyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbXKUMvu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 07:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXKUMvl
+	id S1760393AbXKUMyh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 07:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbXKUMy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 07:51:41 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3825 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754204AbXKUMvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 07:51:41 -0500
-Date: Wed, 21 Nov 2007 12:51:19 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@tglx.de
-Subject: Re: [patch] Printk kernel version in WARN_ON
-Message-ID: <20071121125119.GC5474@ucw.cz>
-References: <20071117101552.2a7f34cb@laptopd505.fenrus.org> <20071117102720.251107d7.akpm@linux-foundation.org> <20071117103947.5b2052f8@laptopd505.fenrus.org> <20071117104652.8240af62.akpm@linux-foundation.org> <20071117113501.5e3e0d43@laptopd505.fenrus.org> <20071117194240.GD8568@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071117194240.GD8568@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 21 Nov 2007 07:54:29 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60352 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755655AbXKUMy3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 07:54:29 -0500
+Message-ID: <4744295C.1090804@keyaccess.nl>
+Date: Wed, 21 Nov 2007 13:49:32 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<20071121145838.c66a6393.kamezawa.hiroyu@jp.fujitsu.com> <20071120220841.218dac46.akpm@linux-foundation.org>
+In-Reply-To: <20071120220841.218dac46.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.0 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2007-11-17 20:42:40, Sam Ravnborg wrote:
-> On Sat, Nov 17, 2007 at 11:35:01AM -0800, Arjan van de Ven wrote:
-> > On Sat, 17 Nov 2007 10:46:52 -0800
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > > by ... not too much at least, gcc ought to be quite good at merging
-> > > > same-strings into one, so it's just one extra pointer argument
-> > > > 
-> > > 
-> > > I think I knew that.  At 1000 callsites.
-> > 
-> > ok so how about putting the same into dump_stack() instead? (see below)
-> > added bonus is that it's now present for all dumps that use
-> > dump_stack(), not just WARN_ON()
-> > (the format I copied from the exact line used by oopses)
-> 
-> This solved the "zillion files being rebuild" issue I mentioned.
-> So from that angle it is better.
-> 
-> And I notice you use the namespace aware helpers to access the
-> kernelrelease string - I assume this is better than direct use
-> of UTS_RELEASE.
+On 21-11-07 07:08, Andrew Morton wrote:
 
-I'm not sure... namespace-aware kernel release seems like madness to
-me. This stackdump is from 2.6.10, but the other stackdump is from
-2.6.20 running at the same machine at the same time?! Why do namespace
-helpers touch UTS_RELEASE.
+>> fix (for my config ?) is attached.
+>>
+>> =
+>> This was necessary to build.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>>  arch/ia64/lib/Makefile |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> Index: linux-2.6.24-rc3-mm1/arch/ia64/lib/Makefile
+>> ===================================================================
+>> --- linux-2.6.24-rc3-mm1.orig/arch/ia64/lib/Makefile
+>> +++ linux-2.6.24-rc3-mm1/arch/ia64/lib/Makefile
+>> @@ -2,7 +2,7 @@
+>>  # Makefile for ia64-specific library routines..
+>>  #
+>>  
+>> -obj-y := io.o copy_page-export.o
+>> +obj-y := io.o
+>>  
+>>  lib-y := __divsi3.o __udivsi3.o __modsi3.o __umodsi3.o			\
+>>  	__divdi3.o __udivdi3.o __moddi3.o __umoddi3.o			\
+> 
+> erp.  Actually, it should be this:
+> 
+> --- a/arch/ia64/lib/Makefile~ia64-export-copy_page-to-modules-fix-fix
+> +++ a/arch/ia64/lib/Makefile
+> @@ -2,7 +2,7 @@
+>  # Makefile for ia64-specific library routines..
+>  #
+>  
+> -obj-y := io.o copy_page-export.o
+> +obj-y := io.o
+>  
+>  lib-y := __divsi3.o __udivsi3.o __modsi3.o __umodsi3.o			\
+>  	__divdi3.o __udivdi3.o __moddi3.o __umoddi3.o			\
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Devil's in the invisible details? :-?
+
+Rene.
+
