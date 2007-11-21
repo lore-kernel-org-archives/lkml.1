@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbXKUHbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbXKUHgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759985AbXKUHbZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 02:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759211AbXKUHbF
+	id S1758892AbXKUHgo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 02:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbXKUHgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 02:31:05 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48913 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758751AbXKUHbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 02:31:03 -0500
-Date: Wed, 21 Nov 2007 08:32:46 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/18] x86 vDSO: vdso32 build
-Message-ID: <20071121073246.GA449@uranus.ravnborg.org>
-References: <20071119215944.01B7C26F8BE@magilla.localdomain> <20071119220532.029FC26F8BE@magilla.localdomain> <20071121060201.GA32304@uranus.ravnborg.org> <20071121071015.B8E3A26F8BE@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 Nov 2007 02:36:36 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:42726 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755742AbXKUHgf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 02:36:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nZ82ZnISFg+y0pf/k2/DKNHNG7JNm8c3cfHSxzhs4L7oWTyzrQGtjgV66RNFxuvLtss8DeE9xlNyDuR48Yqw4+Co8uB9ijGjExk9vWrZtxAhDT7qyQN9R5kq2bao+2vs1t0r6PxRR+han7cMwzrPb3W5S21fxlwih9bqLJ039hA=
+Message-ID: <21d7e9970711202336m2e4f998fgc13df8a3a74101e4@mail.gmail.com>
+Date: Wed, 21 Nov 2007 17:36:33 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Prospects of DRM TTM making it into 2.6.24?
+Cc: "Dave Airlie" <airlied@linux.ie>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071119141554.649b590e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071121071015.B8E3A26F8BE@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+References: <alpine.DEB.0.82.0711192151010.1284@skynet.skynet.ie>
+	 <20071119141554.649b590e.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 11:10:15PM -0800, Roland McGrath wrote:
-> > > +# This makes sure the $(obj) subdirectory exists even though vdso32/
-> > > +# is not a kbuild sub-make subdirectory.
-> > > +override obj-dirs = $(dir $(obj)) $(obj)/vdso32/
-> > 
-> > Should we teach kbuild to create dirs specified in targets?
-> > Or we could 'fix' it so you do not need the override.
-> 
-> Something cleaner would be nice, yes.  I'll leave it to you to decide.
+> >
+> > I also have a few AGP changes I need to line up to support the chipset
+> > flushing work I've done to support TTM properly..
+> >
+>
+> Did anything happen with that null-pointer deref I was hitting?
+>
 
-OK - if I come up with something smart I will convert the vdso stuff.
+I've rebased the patches in my tree along with a chunk I missed which
+should make your patch unnecessary.
 
-> 
-> > use "set -e; in front of this shell script to bail out early
-> > in case of errors.
-> 
-> Back when I knew something about make, all commands ran with sh -ec.
-> Ah, progress.  Anyway, the one you cited does not have any commands that
-> aren't tested with && or if already.  set -e would have no effect.
-I assume that if an error happened in a pipe set -e; would catch it.
-But I did not check that - I normally just adds set -e; without much thought.
+Do you pull my agp-mm tree into -mm?
 
-	Sam
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6 agp-mm
+if not..
+
+Dave.
