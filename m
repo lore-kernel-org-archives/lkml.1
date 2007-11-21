@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbXKUROp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbXKURVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759953AbXKUROp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 12:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXKUROg
+	id S1756045AbXKURVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 12:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXKURVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 12:14:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50439 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752101AbXKUROf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 12:14:35 -0500
-From: Don Zickus <dzickus@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: tglx@linutronix.de, mingo@redhat.com, Don Zickus <dzickus@redhat.com>
-Subject: [PATCH] Add the word 'Warning' in check_nmi_watchdog() output
-Date: Wed, 21 Nov 2007 12:14:20 -0500
-Message-Id: <1195665260-14641-1-git-send-email-dzickus@redhat.com>
-X-Mailer: git-send-email 1.5.3.5.562.g2544e
+	Wed, 21 Nov 2007 12:21:07 -0500
+Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:40731 "HELO
+	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751052AbXKURVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 12:21:05 -0500
+X-YMail-OSG: CDmiQVoVM1lzTQFZqkLjuu1nLFYISriSJfuvFLOej8S48FFAkAORJY8JcKfaNlQ8BoG0Rik1sw--
+X-RocketYMMF: rancidfat
+Date: Wed, 21 Nov 2007 09:21:04 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: + smack-version-11c-simplified-mandatory-access-control-kernel.patch added to -mm tree
+To: Stephen Smalley <sds@tycho.nsa.gov>, "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, casey@schaufler-ca.com, chrisw@sous-sol.org,
+       darwish.07@gmail.com, jmorris@namei.org, method@manicmethod.com,
+       morgan@kernel.org, paul.moore@hp.com,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <1195660319.759.50.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <383368.46196.qm@web36605.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Our automated test suite looks for keywords like error, fail, warning in the
-boot log.  In the case when the nmi watchdog is determined to be stuck in
-check_nmi_watchdog(), none of those keywords are displayed.
 
-This patch adds a keyword, 'Warning, so it makes it easier to notice when the nmi
-watchdog isn't working correctly.
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-No technical changes have been made.  Compiler tested.
+> On Wed, 2007-11-21 at 09:48 -0600, Serge E. Hallyn wrote:
+> > Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
+> > > +/*
+> > > + * There are not enough CAP bits available to make this
+> > > + * real, so Casey borrowed the capability that looks to
+> > > + * him like it has the best balance of similarity amd
+> > > + * low use.
+> > > + */
+> > > +#define CAP_MAC_OVERRIDE CAP_LINUX_IMMUTABLE
+> > 
+> > Hey Casey,
+> > 
+> > note that 64-bit capabilities are now in -mm, so you could grab your own
+> > capability.
 
-Signed-off-by: Don Zickus <dzickus@redhat.com>
----
- arch/x86/kernel/nmi_32.c |    2 +-
- arch/x86/kernel/nmi_64.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+A proposal with merit. I'll do it.
 
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index 600fd40..47448ac 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -105,7 +105,7 @@ static int __init check_nmi_watchdog(void)
- 		if (!per_cpu(wd_enabled, cpu))
- 			continue;
- 		if (nmi_count(cpu) - prev_nmi_count[cpu] <= 5) {
--			printk("CPU#%d: NMI appears to be stuck (%d->%d)!\n",
-+			printk("CPU#%d: Warning NMI appears to be stuck (%d->%d)!\n",
- 				cpu,
- 				prev_nmi_count[cpu],
- 				nmi_count(cpu));
-diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
-index a576fd7..a460d4a 100644
---- a/arch/x86/kernel/nmi_64.c
-+++ b/arch/x86/kernel/nmi_64.c
-@@ -109,7 +109,7 @@ int __init check_nmi_watchdog (void)
- 		if (!per_cpu(wd_enabled, cpu))
- 			continue;
- 		if (cpu_pda(cpu)->__nmi_count - counts[cpu] <= 5) {
--			printk("CPU#%d: NMI appears to be stuck (%d->%d)!\n",
-+			printk("CPU#%d: Warning NMI appears to be stuck (%d->%d)!\n",
- 			       cpu,
- 			       counts[cpu],
- 			       cpu_pda(cpu)->__nmi_count);
--- 
-1.5.3.5.562.g2544e
+> Which brings up an interesting question - what to do with
+> security-module-specific capabilities? CAP_MAC_OVERRIDE is specific to
+> Smack - other MAC modules like SELinux won't honor it.  Maybe it should
+> be CAP_SMACK_OVERRIDE.
 
+But what about the MAC modules like Smack that do honor it?
+They shouldn't be using a module specific capability, so
+calling it CAP_SMACK_OVERRIDE isn't right because then the
+SecureWare* port would have to introduce CAP_SECUREWARE_OVERRIDE
+and bam, there go all your shiny new capability values. Further,
+Smack isn't what's overridden by CAP_MAC_OVERRIDE, it's the
+access control check, which is not the same thing at all at all.
+SELinux ignoring CAP_MAC_OVERRIDE is perfectly within the
+restrictive model of the LSM. If someone ported the Trusted
+Irix 4 MLS system as an LSM** having CAP_MAC_OVERRIDE wouldn't
+have to allow read of higher labeled files, as the policy on that
+system never allowed that, even for privileged processes.
+
+SELinux has every right to make it's own choices regarding how
+it behaves relative to any specific capability because it is
+allowed to restrict access in any way it sees fit. I think that
+you would get in trouble if you changed the value of a capability
+on a task within the LSM, because that will impact the "usual"
+access checks, but I wouldn't expect to see you doing that.
+SELinux has gone in a different direction on privileged operations
+than capabilities, so it's not surprising that the two schemes
+don't look like they're meshing very well in this case.
+
+----
+*  SecureWare was an MLS "kit". The MLS version of HP/UX was based
+   on it, and the Macintosh version got the first ever CMW evaluation.
+   SELinux took many of the same design approaches as SecureWare,
+   and in it's early versions bore a somewhat frightening resemblence
+   to the earlier system.
+
+** Trix4 allowed a privileged process to write lower labeled files,
+   but not read higher labeled files. That way any files that got
+   created "by accident" were assured to be labeled at least as high
+   as the data they contained.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
