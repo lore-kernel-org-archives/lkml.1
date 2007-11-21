@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765717AbXKUAoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765519AbXKUAsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765717AbXKUAoB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 19:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765523AbXKUAnb
+	id S1765519AbXKUAsA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 19:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758376AbXKUArr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 19:43:31 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49482 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765480AbXKUAn3 (ORCPT
+	Tue, 20 Nov 2007 19:47:47 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58234 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755233AbXKUArq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 19:43:29 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, Guillaume Chazarain <guichaz@yahoo.fr>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc3: find complains about /proc/net
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-	<m11wakshyz.fsf@ebiederm.dsl.xmission.com>
-	<20071120215914.GE24156@elte.hu>
-	<m1ve7wr28z.fsf@ebiederm.dsl.xmission.com>
-	<20071120223559.GA6655@elte.hu>
-	<20071120225457.B6E2D26F8BE@magilla.localdomain>
-	<20071120230106.GD24380@elte.hu>
-	<3d8471ca0711201506t6b2b88a0h9484f8a40a1f2e40@mail.gmail.com>
-	<20071120232600.F1D2F26F8BE@magilla.localdomain>
-	<47436E7F.2060901@redhat.com>
-Date: Tue, 20 Nov 2007 17:41:35 -0700
-In-Reply-To: <47436E7F.2060901@redhat.com> (Ulrich Drepper's message of "Tue,
-	20 Nov 2007 15:32:15 -0800")
-Message-ID: <m14pfgqvk0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Nov 2007 19:47:46 -0500
+Date: Wed, 21 Nov 2007 00:45:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: noah <noah123@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+Message-ID: <20071121004545.512ad3ea@the-village.bc.nu>
+In-Reply-To: <d00698fb0711201416n30b54d26kd8d5887896d3da83@mail.gmail.com>
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com>
+	<20071120220512.46b9e975@the-village.bc.nu>
+	<d00698fb0711201416n30b54d26kd8d5887896d3da83@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper <drepper@redhat.com> writes:
+> I've had other freezes before but this was the first time I was able
+> to see what was actually going on.
+> IRQ 21 appears to be shared between sata_nv and ethernet.
+> 
+> Does this mean my hardware/BIOS is broken somehow?
 
-> Roland McGrath wrote:
->> Oh, it seems it has indeed been that way for a very long time, so I was
->> mistaken.  It still seems a little odd to me.  Ulrich can say definitively
->> whether the kind of concern I mentioned really matters one way or the other
->> for glibc.
->
-> glibc cannot survive (at least NPTL) if somebody uses funny CLONE_*
-> flags to separate various pieces of information, e.g., file descriptors.
->  So, all the information in each thread's /proc/self should be identical.
+Not neccessarily. It could a bug in one of the drivers using IRQ 21
+(sata_nv or the nvidia ethernet), it could be another inactive device, or
+it could be a hardware funny.
 
-Which seems to confirm that glibc and native pthread can't care.
+Nvidia stuff can be quite hard to diagnose as we have no documentation
+but we can try. The first question is whether it is network or disk
+triggered - seeing if heavy loads to one or the other trigger the problem
+might be a first plan.
 
-> When the information is not the same, the current semantics seems to be
-> more useful.  So I guess, no change is the way to go here.
 
-Could you elaborate a bit on how the semantics of returning the
-wrong information are more useful?
-
-In particular if a thread does the logical equivalent of:
-grep Pid: /proc/self/status.  It always get the tgid despite
-having a different process id.
-
-How can that possibly be useful or correct?
-
->From the kernel side I really think the current semantics of /proc/self
-in the context of threads is a bug and confusing.  All of the kernel
-developers first reaction when this was pointed out was that this
-is a regression.
-
-If it is truly useful to user space we can preserve this API design
-bug forever.  I just want to make certain we are not being bug
-compatible without a good reason.
-
-Currently we have several kernel side bugs with threaded
-programs because /proc/self does not do the intuitive thing.  Unless
-something has changed recently selinux will cause accesses by a
-non-leader thread to fail when accessing files through /proc/self.
-
-So far the more I look at the current /proc/self behavior the
-more I am convinced it is broken, and useless.  Please help me see
-where it is useful, so we can justify keeping it.
-
-Thanks,
-Eric
+Alan
