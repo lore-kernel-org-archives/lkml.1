@@ -1,109 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbXKUQFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXKUQGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbXKUQFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbXKUQFn
+	id S1760183AbXKUQGz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 11:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbXKUQGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:05:43 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:47703 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753402AbXKUQFm (ORCPT
+	Wed, 21 Nov 2007 11:06:44 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:22105 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756093AbXKUQGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 11:05:42 -0500
-Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Alasdair G Kergon <agk@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071121155842.GA864@tv-sign.ru>
-References: <20071120234605.GG23667@elte.hu>
-	 <20071121155842.GA864@tv-sign.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-21xRRuQNUkb1fHfQZ0Bl"
-Date: Wed, 21 Nov 2007 17:06:13 +0100
-Message-Id: <1195661173.12000.46.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 21 Nov 2007 11:06:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ZvEkGWDtK/lAyKmuOb5vt4Ru18w5D6EVxaSW2a3OJm5ovzthQoZImzuhwOZnF7no5XVrh7bQt0cig+l+x8Pf+Yto4Xi/RiEG8IqyhbQJhYEdx6TPW/yGWlkzdqseAFaMUt8RbY9/ejKkFGIxRrLjLYvbISqm9KPdNrzOiTMNUgg=
+Message-ID: <3ae72650711210806v1e7daa2fq729a7593def99ef7@mail.gmail.com>
+Date: Wed, 21 Nov 2007 17:06:39 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Jarek Poplawski" <jarkao2@o2.pl>
+Subject: Re: gitweb: kernel versions in the history (feature request, probably)
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, "Petr Baudis" <pasky@suse.cz>,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+In-Reply-To: <20071121075217.GA1642@ff.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071120142042.GA4157@ff.dom.local>
+	 <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl>
+	 <20071121032009.GB4175@fieldses.org>
+	 <20071121075217.GA1642@ff.dom.local>
+X-Google-Sender-Auth: 2c2bf681d6592546
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-21xRRuQNUkb1fHfQZ0Bl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-> > Ok, then I have question: Is the following pseudocode correct
-> > (and problem is in lock validation which checks something
-> > already initialized for another queue) or reusing work_struct
-> > is not permitted from inside called work function ?
+On Nov 21, 2007 8:52 AM, Jarek Poplawski <jarkao2@o2.pl> wrote:
+> On Tue, Nov 20, 2007 at 10:20:09PM -0500, J. Bruce Fields wrote:
+> > On Wed, Nov 21, 2007 at 12:30:23AM +0100, Jarek Poplawski wrote:
+> > > I don't know git, but it seems, at least if done for web only, this
+> > > shouldn't be so 'heavy'. It could be a 'simple' translation of commit
+> > > date by querying a small database with kernel versions & dates.
 > >
-> > (Note comment in code "It is permissible to free the struct
-> > work_struct from inside the function that is called from it".)
+> > If I create a commit in my linux working repo today, but Linus doesn't
+> > merge it into his repository until after he releases 2.6.24, then my
+> > commit will be created with an earlier date than 2.6.24, even though it
+> > isn't included until 2.6.25.
 > >
-> > struct work_struct work;
-> > struct workqueue_struct *a, *b;
-> >
-> > do_b(*work)
-> > {
-> >         /* do something else */
-> > }
-> >
-> > do_a(*work)
-> > {
-> >         /* do something */
-> >         INIT_WORK(&work, do_b);
-> >         queue_work(b, &work);
-> > }
-> >
-> >
-> > INIT_WORK(&work, do_a);
-> > queue_work(a, &work);
->=20
-> (just in case, in that particular case PREPARE_WORK() should be used)
->=20
-> INIT_WORK(w) can be used if we know that "w" is not pending, and nobody
-> else can write to this work (say, queue_work(w) or cancel_work_sync(w)).
-> So currently the code above should work correctly.
->=20
-> However, I'd say it is not correct, INIT_WORK() can throw out some debug
-> info for example, or the implementation could be changed.
->=20
-> I'm not sure about CONFIG_LOCKDEP (Johannes cc'ed). INIT_WORK() does
-> lockdep_init_map(->lockdep_map) but run_workqueue() has a local copy,
-> looks ok.
+> > So you have to actually examine the history graph to figure this out
+> > this sort of thing.
+>
+> Of course, you are right, and I probably miss something, but to be
+> sure we think about the same thing let's look at some example: so, I
+> open a page with current Linus' tree, go to something titled:
+> /pub/scm / linux/kernel/git/torvalds/linux-2.6.git / history
+>
+> and see:
+> 2007-10-10 Stephen Hemminger [NET]: Make NAPI polling independent ...
+> and just below something with 2007-08-14 date.
+>
+> Accidentally, I can remember this patch introduced many changes, and
+> this big interval in dates suggests some waiting. Then I look at the
+> commit, and there are 2 dates visible, so the patch really was created
+> earlier. Then I go back to:
+> /pub/scm / linux/kernel/git/torvalds/linux-2.6.git / summary
+>
+> and at the bottom I can see this:
+>
+> ...
+> tags
+> 4 days ago      v2.6.24-rc3     Linux 2.6.24-rc3
+> 2 weeks ago     v2.6.24-rc2     Linux 2.6.24-rc2
+> 4 weeks ago     v2.6.24-rc1     Linux 2.6.24-rc1
+> 6 weeks ago     v2.6.23         Linux 2.6.23
+>
+> which drives me crazy, because, without looking at the calendar, and
+> calculator, I don't really know which month was 6 weeks ago, and 4
+> days ago, either!
+>
+> So, I go to the: http://www.eu.kernel.org/pub/linux/kernel/v2.6/,
+> do some scrolling, look at this:
+> ChangeLog-2.6.23             09-Oct-2007 20:38  3.8M
+>
+> and only now I can guess, this napi patch didn't manage to 2.6.23.
+> Of course, usually I've to do a few more clicks and reading to make
+> sure where it really started.
+>
+> So, this could suggest this 2007-10-10 (probably stored with time
+> too), could be useful here... but it seems, I'm wrong.
+>
+> Of course, this problem doesn't look so hard if we forget about
+> git internals: I can imagine keeping a simple database, which
+> could simply retrieve commit numbers from these ChangeLogs, and
+> connecting this with gitweb's commit page as well... For
+> performance reasons, doing it only for stable and testing, so with
+> -rc 'precision' would be very helpful too.
 
-We explicitly need to use a copy of the lockdep_map for "locking" the
-work struct as per the quoted comment. So as far as I can tell, what
-INIT_WORK() is doing here is changing an at that point unused copy of
-the lockdep map so I think it should be fine. Not sure about the other
-fine points nor why you'd want this though :)
+The "plain" view of the patch has the "version" included:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=bea3348eef27e6044b6161fd04c3152215f96411
 
-johannes
+  From: Stephen Hemminger <shemminger@linux-foundation.org>
+  Date: Wed, 3 Oct 2007 23:41:36 +0000 (-0700)
+  Subject: [NET]: Make NAPI polling independent of struct net_device objects.
+  X-Git-Tag: v2.6.24-rc1~1454^2~841
 
---=-21xRRuQNUkb1fHfQZ0Bl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Is that what you are looking for?
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR0RXdKVg1VMiehFYAQLjYQ/5AbDtMq6cvtDAxJPmSDExXlwCtOLVIlmf
-DXrqBxvU5Jkp68W2Xwq/Fr73LadV4ouuFArCCeNeekGbIvYjQQcZYfPWnEz5mqsC
-He9G02nXn0hlzMEP6qouU/QYw+6L5LG5StaV0eDtznWThn+ylGe9Ci1NT30Co0pQ
-Iiqkb2QDVPH4Y1O2OuV1EJxgXVEjvHPAaW3uy4S3YjGkn/r7d5e3EdZb6KPIlLKT
-Nr9YeWeEkrtpX6O9XkjQCfAf0DDh9XsPShmi9RYfmFskRBo1UG9B5hWnwPmWkBYG
-tw68hdAPveAMsw8xnP+T8zDr7/xwHPtSu5XHk+xNZeyFbMRGZTeJAF+nEYMmC5+z
-w/VVSq0VaUpsBfBVB8FMKVvx2f7/o99JTxvhGAv0ERyqnUwtR/xwpiB74FXss1qX
-/zh/VK0mpy/QkQ/ejz66C7aVBZTl7xFzOdRsuoSMaAPkR8fuXylLKwabite/vySx
-Tym2kxMdgdog2GJtPlAzFDaEg2jYAytBE4n+OQSHF/MsPwq361bA+KDH+LE5VwR/
-+M2LVYAgfcXw1hR8v6N48EkkkFIAw8ImuiAawVxRimMeJdlPsvzk2WHHNjKaNPyT
-FFkr579Yc7GqYJU0ijfKAL7EXKHYJ7b4deiETFEUk43+0JeT7H9oWdD0zhwSy/fJ
-rl2phP9SkrA=
-=K3Ce
------END PGP SIGNATURE-----
-
---=-21xRRuQNUkb1fHfQZ0Bl--
-
+Kay
