@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXKUUmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbXKUUrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbXKUUmL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 15:42:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbXKUUl5
+	id S1753901AbXKUUrM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 15:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXKUUq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 15:41:57 -0500
-Received: from www.tglx.de ([62.245.132.106]:36133 "EHLO www.tglx.de"
+	Wed, 21 Nov 2007 15:46:56 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:38390 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753063AbXKUUl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 15:41:56 -0500
-Date: Wed, 21 Nov 2007 21:41:25 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Don Zickus <dzickus@redhat.com>
-cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-Subject: Re: [PATCH] Add the word 'Warning' in check_nmi_watchdog() output
-In-Reply-To: <20071121184403.GD12071@redhat.com>
-Message-ID: <alpine.LFD.0.9999.0711212137380.25057@localhost.localdomain>
-References: <1195665260-14641-1-git-send-email-dzickus@redhat.com> <20071121103459.0b9b0302@laptopd505.fenrus.org> <20071121184403.GD12071@redhat.com>
+	id S1750712AbXKUUq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 15:46:56 -0500
+Message-ID: <47449932.3090801@oracle.com>
+Date: Wed, 21 Nov 2007 12:46:42 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+CC: linux-fsdevel@vger.kernel.org, Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]loop cleanup in fs/namespace.c - repost
+References: <47447184.6040805@gmail.com> <474481B9.9000603@oracle.com> <47448D0A.1040405@gmail.com>
+In-Reply-To: <47448D0A.1040405@gmail.com>
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, Don Zickus wrote:
 
-> On Wed, Nov 21, 2007 at 10:34:59AM -0800, Arjan van de Ven wrote:
-> > On Wed, 21 Nov 2007 12:14:20 -0500
-> > Don Zickus <dzickus@redhat.com> wrote:
-> > 
-> > > Our automated test suite looks for keywords like error, fail, warning
-> > > in the boot log.  In the case when the nmi watchdog is determined to
-> > > be stuck in check_nmi_watchdog(), none of those keywords are
-> > > displayed.
-> > 
-> > 
-> > please make it at least consistent with the other kernel level bad
-> > things, and use "WARNING:"....
+>> This doesn't look fine.  Did you test this?
 > 
-> Good point.  I'll repost.
+> Oops, my fault. Of course, I tested the patch, but kernel modules are
+> disabled in my test setup, so I missed the error.
 
-Before you repost, please add an appropriate KERN_WARN prefix to the
-printk and run your patch through scripts/checkpatch.pl.
+:)
 
-	tglx
+> Enclosed to this message is a new patch, which replaces the goto-loop by
+> the while-based one, but leaves the EXPORT_SYMBOL macro intact.
+
+It certainly looks OK to me now, for whatever that's worth.
+
+You probably want to wait 'till the next merge window to get it in,
+though.  It's just a cleanup and so shouldn't go in this late in the -rc
+line.
+
+Maybe Andrew will be willing to queue it until that time in -mm.
+
+- z
