@@ -1,49 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXKUTYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbXKUT2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbXKUTYd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXKUTYY
+	id S1754568AbXKUT2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXKUT16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:24:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49400 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbXKUTYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:24:23 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Date: Wed, 21 Nov 2007 14:22:32 -0500
-User-Agent: KMail/1.9.5
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-acpi@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <4743CC0B.9000508@linux.vnet.ibm.com> <20071120221839.faab108e.akpm@linux-foundation.org>
-In-Reply-To: <20071120221839.faab108e.akpm@linux-foundation.org>
+	Wed, 21 Nov 2007 14:27:58 -0500
+Received: from mx12.go2.pl ([193.17.41.142]:58773 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752162AbXKUT15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:27:57 -0500
+Message-ID: <47448726.6060709@o2.pl>
+Date: Wed, 21 Nov 2007 20:29:42 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: "J. Bruce Fields" <bfields@fieldses.org>, Petr Baudis <pasky@suse.cz>,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: gitweb: kernel versions in the history (feature request, probably)
+References: <20071120142042.GA4157@ff.dom.local>	 <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl>	 <20071121032009.GB4175@fieldses.org>	 <20071121075217.GA1642@ff.dom.local> <3ae72650711210806v1e7daa2fq729a7593def99ef7@mail.gmail.com>
+In-Reply-To: <3ae72650711210806v1e7daa2fq729a7593def99ef7@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711211422.32908.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 November 2007 01:18, Andrew Morton wrote:
-> On Wed, 21 Nov 2007 11:41:23 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Kay Sievers wrote, On 11/21/2007 05:06 PM:
 
-> > SMP alternatives: switching to UP code
-> > ACPI: Core revision 20070126
-> > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-
-did previous kernels print this too?
-
-> > Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
+> On Nov 21, 2007 8:52 AM, Jarek Poplawski <jarkao2@o2.pl> wrote:
+>> On Tue, Nov 20, 2007 at 10:20:09PM -0500, J. Bruce Fields wrote:
+>>> On Wed, Nov 21, 2007 at 12:30:23AM +0100, Jarek Poplawski wrote:
+>>>> I don't know git, but it seems, at least if done for web only, this
+>>>> shouldn't be so 'heavy'. It could be a 'simple' translation of commit
+>>>> date by querying a small database with kernel versions & dates.
+>>> If I create a commit in my linux working repo today, but Linus doesn't
+>>> merge it into his repository until after he releases 2.6.24, then my
+>>> commit will be created with an earlier date than 2.6.24, even though it
+>>> isn't included until 2.6.25.
+>>>
+>>> So you have to actually examine the history graph to figure this out
+>>> this sort of thing.
+>> Of course, you are right, and I probably miss something, but to be
+>> sure we think about the same thing let's look at some example: so, I
+>> open a page with current Linus' tree, go to something titled:
+>> /pub/scm / linux/kernel/git/torvalds/linux-2.6.git / history
+>>
+>> and see:
+>> 2007-10-10 Stephen Hemminger [NET]: Make NAPI polling independent ...
+>> and just below something with 2007-08-14 date.
+>>
+>> Accidentally, I can remember this patch introduced many changes, and
+>> this big interval in dates suggests some waiting. Then I look at the
+>> commit, and there are 2 dates visible, so the patch really was created
+>> earlier. Then I go back to:
+>> /pub/scm / linux/kernel/git/torvalds/linux-2.6.git / summary
+>>
+>> and at the bottom I can see this:
+>>
+>> ...
+>> tags
+>> 4 days ago      v2.6.24-rc3     Linux 2.6.24-rc3
+>> 2 weeks ago     v2.6.24-rc2     Linux 2.6.24-rc2
+>> 4 weeks ago     v2.6.24-rc1     Linux 2.6.24-rc1
+>> 6 weeks ago     v2.6.23         Linux 2.6.23
+>>
+>> which drives me crazy, because, without looking at the calendar, and
+>> calculator, I don't really know which month was 6 weeks ago, and 4
+>> days ago, either!
+>>
+>> So, I go to the: http://www.eu.kernel.org/pub/linux/kernel/v2.6/,
+>> do some scrolling, look at this:
+>> ChangeLog-2.6.23             09-Oct-2007 20:38  3.8M
+>>
+>> and only now I can guess, this napi patch didn't manage to 2.6.23.
+>> Of course, usually I've to do a few more clicks and reading to make
+>> sure where it really started.
+>>
+>> So, this could suggest this 2007-10-10 (probably stored with time
+>> too), could be useful here... but it seems, I'm wrong.
+>>
+>> Of course, this problem doesn't look so hard if we forget about
+>> git internals: I can imagine keeping a simple database, which
+>> could simply retrieve commit numbers from these ChangeLogs, and
+>> connecting this with gitweb's commit page as well... For
+>> performance reasons, doing it only for stable and testing, so with
+>> -rc 'precision' would be very helpful too.
 > 
-> ACPI or x86 breakage, I guess.
+> The "plain" view of the patch has the "version" included:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=bea3348eef27e6044b6161fd04c3152215f96411
+> 
+>   From: Stephen Hemminger <shemminger@linux-foundation.org>
+>   Date: Wed, 3 Oct 2007 23:41:36 +0000 (-0700)
+>   Subject: [NET]: Make NAPI polling independent of struct net_device objects.
+>   X-Git-Tag: v2.6.24-rc1~1454^2~841
+> 
+> Is that what you are looking for?
+> 
 
-If you suspect ACPI breakage, then try "acpi=off" or "acpi=noirq".
+YeeeS!!! You are a genius with eagle's eyes!
 
-thanks,
--Len
+I've suspected from the beginning something like this has to be
+there... And I really tried to find this before sending this. But,
+as a matter of fact I didn't even try this "plain" or rather "raw",
+because I've somehow thought "raw" is just plain text, so the same
+only without html tags!? So, now I know, and it's enough to me. But,
+... maybe it should be on this "complex" page as well?
+
+Thanks very much,
+Jarek P.
+
+PS: I hope eagles can see in English at least the same as in Polish,
+and more than I can see in my dictionary now!
