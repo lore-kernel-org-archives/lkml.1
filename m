@@ -1,72 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbXKUDLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbXKUDUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbXKUDLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 22:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXKUDLe
+	id S1754886AbXKUDUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 22:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXKUDUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 22:11:34 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:12554 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbXKUDLd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 22:11:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ZRK2Xw6+2yK0/awn+jS1NgtLQg1HrIu0st6aGocEtkftgZEoXXIIXNUZ0wQfrKY8xRgFhe+vkTxy7JOE7fLz8vHRNimBFtLYXZo6EHNdchyOnBkK7wOyvBcdvK93995Z+hE5e5U2W+07je+8zVnBnHkWWEHV5X5C89VWmSS6C54=
-Message-ID: <118833cc0711201911r3684937p38823649639e0a57@mail.gmail.com>
-Date: Tue, 20 Nov 2007 22:11:31 -0500
-From: "Morten Welinder" <mwelinder@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Inotify fails to send IN_ATTRIB events
-Cc: rlove@rlove.org, "Linus Torvalds" <torvalds@linux-foundation.org>
+	Tue, 20 Nov 2007 22:20:19 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:46366 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752161AbXKUDUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 22:20:17 -0500
+Date: Tue, 20 Nov 2007 22:20:09 -0500
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Petr Baudis <pasky@suse.cz>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: gitweb: kernel versions in the history (feature request,
+	probably)
+Message-ID: <20071121032009.GB4175@fieldses.org>
+References: <20071120142042.GA4157@ff.dom.local> <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <47436E0F.6080003@o2.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am seeing missing inotify IN_ATTRIB events in the following situation:
+On Wed, Nov 21, 2007 at 12:30:23AM +0100, Jarek Poplawski wrote:
+> I don't know git, but it seems, at least if done for web only, this
+> shouldn't be so 'heavy'. It could be a 'simple' translation of commit
+> date by querying a small database with kernel versions & dates.
 
-1. "touch foo"
+If I create a commit in my linux working repo today, but Linus doesn't
+merge it into his repository until after he releases 2.6.24, then my
+commit will be created with an earlier date than 2.6.24, even though it
+isn't included until 2.6.25.
 
-2. Make inotify watch "foo"
+So you have to actually examine the history graph to figure this out
+this sort of thing.
 
-3. "ln foo bar"
-   --> Link count changed so I should have gotten an IN_ATTRIB.
-
-4. "rm foo"
-   --> Link count changed so I should have gotten an IN_ATTRIB.  (Or
-IN_DELETE_SELF;
-   I don't care which.)
-
-5. "ln bar foo && rm bar"
-   --> Still no events.
-
-6. "mv foo bar"
-   --> I get IN_MOVED_SELF.  Good!
-
-7. "mv bar foo"
-   --> I get IN_MOVED_SELF.  Good!
-
-
-3+4 is pretty much the same as 6, so I really ought to be told that my
-file has changed
-name.  I don't really care much about getting notified about 3, but
-for completeness
-it ought to be handled.
-
-As far as I can see, the only way to be told about 4 is to put a watch
-on the directory in
-which foo resides.  That is inelegant and has an inherent race condition.
-
-This is with "Linux version 2.6.22.12-0.1-default" (SuSE 10.3)
-
-Looking at current source, fs/namei.c, I notice that vfs_rename has a
-fsnotify_move call
-(which notified directory as well as files) whereas sys_link only has
-a fsnotify_create call
-(which notified the directory only).
-
-Morten
+--b.
