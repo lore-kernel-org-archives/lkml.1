@@ -1,74 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbXKTUfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762852AbXKTUg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762829AbXKTUfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 15:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbXKTUfX
+	id S1762852AbXKTUg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 15:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbXKTUgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 15:35:23 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:56438 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760531AbXKTUfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 15:35:22 -0500
-Date: Tue, 20 Nov 2007 12:35:22 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-In-Reply-To: <200711201301.25373.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0711201228180.26745@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com> <200711200416.32954.ak@suse.de>
- <Pine.LNX.4.64.0711191945260.21813@schroedinger.engr.sgi.com>
- <200711201301.25373.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 Nov 2007 15:36:16 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:53919 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbXKTUgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 15:36:15 -0500
+Subject: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds
+	with sense info
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com, neela.kolli@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 21 Nov 2007 08:40:56 +0000
+Message-Id: <1195634456.5855.9.camel@dhcp-75-884.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 20 Nov 2007 20:36:00.0583 (UTC) FILETIME=[F6442D70:01C82BB4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007, Andi Kleen wrote:
+Sense buffer ptr data type in the ioctl path is reverted back to u32 *
+for x86 and x86_64 as in previous versions of driver. For IA64 it will
+be unsigned long *. Compile time flag added for ia64 for this.
 
-> > So I think we have a 2GB area right?
-> 
-> For everything that needs the -31bit offsets; that is everything linked
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-Of course.
+---
+Documentation/scsi/ChangeLog.megaraid_sas |   15 +++++++++++++++
+drivers/scsi/megaraid/megaraid_sas.c      |   14 ++++++++++----
+drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+ 3 files changed, 28 insertions(+), 7 deletions(-)
 
-> > 1GB kernel
-> > 1GB - 1x per cpu area (128M?) modules?
-> > cpu aree 0
-> > ---- 2GB limit
-> > cpu area 1
-> > cpu area 2
-> > ....
-> >
-> > For that we would need to move the kernel down a bit. Can we do that?
-> 
-> The kernel model requires kernel and modules and everything else
-> linked be in negative -31bit space. That is how the kernel code model is 
-> defined.
-
-Right so I could move the kernel to
-
-#define __PAGE_OFFSET     _AC(0xffff810000000000, UL)
-#define __START_KERNEL_map_AC(0xfffffff800000000, UL)
-#define KERNEL_TEXT_START _AC(0xfffffff800000000, UL) 30 bits = 1GB for kernel text
-#define MODULES_VADDR     _AC(0xfffffff880000000, UL) 30 bits = 1GB for modules
-#define MODULES_END       _AC(0xfffffff8f0000000, UL)
-#define CPU_AREA_BASE     _AC(0xfffffff8f0000000, UL) 31 bits 256MB for cpu area 0
-#define CPU_AREA_BASE1	  _AC(0xfffffff900000000, UL) More cpu areas for higher numbered processors
-#define CPU_AREA_END	  _AC(0xffffffffffff0000, UL)
-
-> You could in theory move the modules, but then you would need to implement
-> a full PIC dynamic linker for them  first and also increase runtime overhead
-> for them because they would need to use a GOT/PLT.
-
-Why is it not possible to move the kernel lower while keeping bit 31 1?
-
-> I suspect all of this  would cause far more overhead all over the kernel than 
-> you could ever save with the per cpu data in your fast paths.
-
-Moving the kernel down a bit seems to be trivial without any of the weird 
-solutions.
+diff -rupN linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+--- linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas	2007-11-20 17:50:13.000000000 -0500
++++ linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas	2007-11-20 21:37:16.000000000 -0500
+@@ -1,3 +1,18 @@
++1 Release Date    : Thur. Nov. 19 16:30:43 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang
++
++2 Current Version : 00.00.03.17-RC1
++3 Older Version   : 00.00.03.16
++
++1. Fix random failure of DCDB cmds with sense info.
++
++Fix: 	sense buffer ptr data type in the ioctl path is reverted back
++	to u32 * for x86, x86_64 as in previous versions of driver.
++	For IA64 it will be unsigned long *. Compile time flag added
++	for ia64 for this.
++
+ 1 Release Date    : Thur. Nov. 07 16:30:43 PST 2007 -
+ 			(emaild-id:megaraidlinux@lsi.com)
+ 			Sumant Patro
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-11-20 17:50:13.000000000 -0500
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-11-20 17:50:13.000000000 -0500
+@@ -10,7 +10,7 @@
+  *	   2 of the License, or (at your option) any later version.
+  *
+  * FILE		: megaraid_sas.c
+- * Version	: v00.00.03.16-rc1
++ * Version	: v00.00.03.17-rc1
+  *
+  * Authors:
+  *	(email-id : megaraidlinux@lsi.com)
+@@ -3020,10 +3020,16 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 		 * sense buffer address
+ 		 */
+ 		sense_buff = (unsigned long *) ((unsigned long)ioc->frame.raw +
+-								ioc->sense_off);
+-
+-		if (copy_to_user((void __user *)(unsigned long)(*sense_buff),
++					ioc->sense_off);
++		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
++					ioc->sense_off);
++#if defined(__ia64__)
++		if (copy_to_user((void __user *)((unsigned long)(*sense_buff)),
++				sense, ioc->sense_len)) {
++#else
++		if (copy_to_user((void __user *)((unsigned long)(*sense_ptr)),
+ 				sense, ioc->sense_len)) {
++#endif
+ 			printk(KERN_ERR "megasas: Failed to copy out to user "
+ 					"sense data\n");
+ 			error = -EFAULT;
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-11-20 17:50:13.000000000 -0500
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-11-20 17:50:13.000000000 -0500
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION				"00.00.03.16-rc1"
+-#define MEGASAS_RELDATE				"Nov. 07, 2007"
+-#define MEGASAS_EXT_VERSION			"Thu. Nov. 07 10:09:32 PDT 2007"
++#define MEGASAS_VERSION				"00.00.03.17-rc1"
++#define MEGASAS_RELDATE				"Nov. 19, 2007"
++#define MEGASAS_EXT_VERSION			"Mon. Nov. 19 10:09:32 PDT 2007"
+ 
+ /*
+  * Device IDs
 
