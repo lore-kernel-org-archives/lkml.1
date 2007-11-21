@@ -1,122 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXKUCJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbXKUCL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbXKUCJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 21:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbXKUCJt
+	id S1753939AbXKUCL5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 21:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbXKUCLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 21:09:49 -0500
-Received: from mail.clusterfs.com ([74.0.229.162]:56629 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbXKUCJs (ORCPT
+	Tue, 20 Nov 2007 21:11:49 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:54931 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXKUCLt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 21:09:48 -0500
-Date: Tue, 20 Nov 2007 19:09:45 -0700
-From: Andreas Dilger <adilger@sun.com>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: coyli@suse.de, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext4: dir inode reservation V3
-Message-ID: <20071121020945.GB8087@webber.adilger.int>
-Mail-Followup-To: Mingming Cao <cmm@us.ibm.com>, coyli@suse.de,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <4739B0C0.3060907@suse.de> <1195524061.4177.17.camel@localhost.localdomain> <47425F0B.3030604@suse.de> <1195590124.8471.17.camel@localhost.localdomain>
+	Tue, 20 Nov 2007 21:11:49 -0500
+Date: Tue, 20 Nov 2007 21:10:57 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@sgi.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v4 19/20] Optimize out cpu_clears
+Message-ID: <20071121021057.GA24815@goodmis.org>
+References: <20071121010054.663842380@goodmis.org> <20071121011251.913977352@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1195590124.8471.17.camel@localhost.localdomain>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071121011251.913977352@goodmis.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 20, 2007  12:22 -0800, Mingming Cao wrote:
-> On Tue, 2007-11-20 at 12:14 +0800, Coly Li wrote:
-> > Mingming Cao wrote:
-> > > On Tue, 2007-11-13 at 22:12 +0800, Coly Li wrote:
-> > The hole is (s_dir_ireserve_nr - 1), not N * s_dir_ireserve_nr. Because
-> > directory inode will also use a inode slot from reserved area, reset
-> > slots number for files is (s_dir_ireserve_nr - 1).  Except for the
-> > reserved inodes number, your understanding exactly matches my idea.
-> 
-> The performance gain on large number of directories looks interesting,
-> but I am afraid this makes the uninitialized block group feature less
-> useful (to speed up fsck) than before:( The reserved inode will cause
-> the unused inode watermark higher than before, and spread the
-> directories over to other block groups earlier than before. Maybe it
-> worth it...not sure.
+On Tue, Nov 20, 2007 at 08:01:13PM -0500, Steven Rostedt wrote:
+>  
+>  static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
+> -static DEFINE_PER_CPU(cpumask_t, valid_cpu_mask);
+>  
+>  static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+>  {
+> -	int       cpu;
+> -	cpumask_t *valid_mask = &__get_cpu_var(valid_cpu_mask);
+>  	int       lowest_prio = -1;
+> +	int       lowest_cpu  = 0;
+>  	int       count       = 0;
+> +	int       cpu;
+>  
+> -	cpus_clear(*lowest_mask);
+> -	cpus_and(*valid_mask, cpu_online_map, task->cpus_allowed);
+> +	cpus_and(*lowest_mask, cpu_online_map, task->cpus_allowed);
+>  
+>  	/*
+>  	 * Scan each rq for the lowest prio.
+>  	 */
+> -	for_each_cpu_mask(cpu, *valid_mask) {
+> +	for_each_cpu_mask(cpu, *lowest_mask) {
+>  		struct rq *rq = cpu_rq(cpu);
+>  
+>  		/* We look for lowest RT prio or non-rt CPU */
+> @@ -325,13 +323,30 @@ static int find_lowest_cpus(struct task_
+>  			if (rq->rt.highest_prio > lowest_prio) {
+>  				/* new low - clear old data */
+>  				lowest_prio = rq->rt.highest_prio;
+> -				if (count) {
+> -					cpus_clear(*lowest_mask);
+> -					count = 0;
+> -				}
 
-My original thoughts on the design for this were slightly different:
-- that the per-directory reserved window would scale with the size of
-  the directory, so that even (or especially) with htree directories the 
-  inodes would be kept in hash-ordered sets to speed up stat/unlink
-- it would be possible/desirable to re-use the existing block bitmap
-  reservation code to handle inode bitmap reservation for directories
-  while those directories are in-core.  We already have the mechanisms
-  for this, "all" that would need to change is have the reservation code
-  point at the inode bitmaps but I don't know how easy that is
-- after an unmount/remount it would be desirable to re-use the same blocks
-  for getting good hash->inode mappings, wherein lies the problem of
-  compatibility
+Gregory Haskins pointed out to me that this logic is slightly wrong. I
+originally wrote this patch before adding his "count" patch optimization.
+I did not take into account that on finding a non RT queue, we may leave
+on some extra bits because the clear_cpus is not preformed if count is
+zero. And count gets set to zero here. Which means that we don't clean
+up.
 
-One possible solutions for the restart problem is searching the directory
-leaf block in which an inode is being added for the inode numbers and try
-to use those as a goal for the inode allocation...  Has a minor problem
-with ordering, because usually the inode is allocated before the dirent
-is created, but isn't impossible to fix (e.g. find dirent slot first,
-keep a pointer to it, check for inode goals, and then fill in dirent
-inum after allocating inode)
+The fix is to check for lowest_cpus > 0 instead of count on finding an
+non-RT runqueue. This lets us know that we need to clear the mask.
+Otherwise, if lowest_cpus == 0, then we can return the mask untouched.
+The proper bit would already be set, and the return of 1 will have
+the rest of the algorithm use the first bit.
 
-> > >> 5, Performance number
-> > >> On a Core-Duo, 2MB DDM memory, 7200 RPM SATA PC, I built a 50GB ext4
-> > >> partition, and tried to create 50000 directories, and create 15 (1KB)
-> > >> files in each directory alternatively. After a remount, I tried to
-> > >> remove all the directories and files recursively by a 'rm -rf'.
-> > >> Below is the benchmark result,
-> > >> 		normal ext4			ext4 with dir inode reservation
-> > >> 	mount options:	-o data=writeback	-o data=writeback,dir_ireserve=low
-> > >> 	Create dirs:	real    0m49.101s	real    2m59.703s
-> > >> 	Create files:	real    24m17.962s	real    21m8.161s
-> > >> 	Unlink all:	real    24m43.788s	real    17m29.862s
+Below is the updated patch. The full series is at:
 
-One likely reason that the create dirs step is slower is that this is
-doing a lot more IO than in the past.  Only a single inode in each
-inode table block is being used, so that means that a lot of empty
-bytes are being read and written (maybe 16x as much data in this case).
+  http://rostedt.homelinux.com/rt/rt-balance-patches-v5.tar.bz2
 
-Also, in what order are you creating files in the directories?  If you
-are creating them in directory order like:
 
-	for (f = 0; f < 15; f++)
-		for (i = 0; i < 50000; i++)
-			touch dir$i/f$f
+> +				lowest_cpu = cpu;
+> +				count = 0;
+>  			}
+>  			cpu_set(rq->cpu, *lowest_mask);
+>  			count++;
 
-then it is completely unsurprising that directory reservation is faster
-at file create/unlink because those inodes are now contiguous at the
-expense of having gaps in the inode sequence.  Creating 15 files per
-directory is of course the optimum test case also.
 
-How does this patch behave with benchmarks like dbench, mongo, postmark?
 
-> It would be nice to remember the last allocated bit for each block
-> group, so we don't have to start from bit 0 (in the worse case scan the
-> entire block group) for every single directory. Probably this can be
-> saved in the in-core block group descriptor.  Right now the in core
-> block group descriptor structure is the same on-disk block-group
-> structure though, it might worth to separate them and provide load/store
-> helper functions.
+From: Steven Rostedt <srostedt@redhat.com>
 
-Note that mballoc already creates an in-memory struct for each group.
-I think the initialization of this should be moved outside of mballoc
-so that it can be used for other purposes as you propose.
+This patch removes several cpumask operations by keeping track
+of the first of the CPUS that is of the lowest priority. When
+the search for the lowest priority runqueue is completed, all
+the bits up to the first CPU with the lowest priority runqueue
+is cleared.
 
-Eric had a benchmark where creating many files/subdirs would cause
-a huge slowdown because of bitmap searching, and having a per-group
-pointer with the first free inode (or last allocated inode might be
-less work to track) would speed this up a lot. 
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Software Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+---
+ kernel/sched_rt.c |   48 ++++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 36 insertions(+), 12 deletions(-)
 
+Index: linux-compile.git/kernel/sched_rt.c
+===================================================================
+--- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:53:15.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2007-11-20 20:35:04.000000000 -0500
+@@ -293,29 +293,36 @@ static struct task_struct *pick_next_hig
+ }
+ 
+ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
+-static DEFINE_PER_CPU(cpumask_t, valid_cpu_mask);
+ 
+ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ {
+-	int       cpu;
+-	cpumask_t *valid_mask = &__get_cpu_var(valid_cpu_mask);
+ 	int       lowest_prio = -1;
++	int       lowest_cpu  = 0;
+ 	int       count       = 0;
++	int       cpu;
+ 
+-	cpus_clear(*lowest_mask);
+-	cpus_and(*valid_mask, cpu_online_map, task->cpus_allowed);
++	cpus_and(*lowest_mask, cpu_online_map, task->cpus_allowed);
+ 
+ 	/*
+ 	 * Scan each rq for the lowest prio.
+ 	 */
+-	for_each_cpu_mask(cpu, *valid_mask) {
++	for_each_cpu_mask(cpu, *lowest_mask) {
+ 		struct rq *rq = cpu_rq(cpu);
+ 
+ 		/* We look for lowest RT prio or non-rt CPU */
+ 		if (rq->rt.highest_prio >= MAX_RT_PRIO) {
+-			if (count)
++			/*
++			 * if we already found a low RT queue
++			 * and now we found this non-rt queue
++			 * clear the mask and set our bit.
++			 * Otherwise just return the queue as is
++			 * and the count==1 will cause the algorithm
++			 * to use the first bit found.
++			 */
++			if (lowest_cpu) {
+ 				cpus_clear(*lowest_mask);
+-			cpu_set(rq->cpu, *lowest_mask);
++				cpu_set(rq->cpu, *lowest_mask);
++			}
+ 			return 1;
+ 		}
+ 
+@@ -325,13 +332,30 @@ static int find_lowest_cpus(struct task_
+ 			if (rq->rt.highest_prio > lowest_prio) {
+ 				/* new low - clear old data */
+ 				lowest_prio = rq->rt.highest_prio;
+-				if (count) {
+-					cpus_clear(*lowest_mask);
+-					count = 0;
+-				}
++				lowest_cpu = cpu;
++				count = 0;
+ 			}
+ 			cpu_set(rq->cpu, *lowest_mask);
+ 			count++;
++		} else
++			cpu_clear(cpu, *lowest_mask);
++	}
++
++	/*
++	 * Clear out all the set bits that represent
++	 * runqueues that were of higher prio than
++	 * the lowest_prio.
++	 */
++	if (lowest_cpu) {
++		/*
++		 * Perhaps we could add another cpumask op to
++		 * zero out bits. Like cpu_zero_bits(cpumask, nrbits);
++		 * Then that could be optimized to use memset and such.
++		 */
++		for_each_cpu_mask(cpu, *lowest_mask) {
++			if (cpu >= lowest_cpu)
++				break;
++			cpu_clear(cpu, *lowest_mask);
+ 		}
+ 	}
+ 
