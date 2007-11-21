@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbXKUMvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXKUMvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbXKUMvV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 07:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXKUMvN
+	id S1761485AbXKUMvu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 07:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXKUMvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 07:51:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53111 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbXKUMvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 07:51:12 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071120184048.2b8c82cd.akpm@linux-foundation.org>
-References: <20071120184048.2b8c82cd.akpm@linux-foundation.org> <20071120125029.dfd58d83.akpm@linux-foundation.org> <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <4742FACF.7040906@linux.vnet.ibm.com> <21076.1195608768@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 21 Nov 2007 12:49:34 +0000
-Message-ID: <24561.1195649374@redhat.com>
+	Wed, 21 Nov 2007 07:51:41 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3825 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754204AbXKUMvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 07:51:41 -0500
+Date: Wed, 21 Nov 2007 12:51:19 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@tglx.de
+Subject: Re: [patch] Printk kernel version in WARN_ON
+Message-ID: <20071121125119.GC5474@ucw.cz>
+References: <20071117101552.2a7f34cb@laptopd505.fenrus.org> <20071117102720.251107d7.akpm@linux-foundation.org> <20071117103947.5b2052f8@laptopd505.fenrus.org> <20071117104652.8240af62.akpm@linux-foundation.org> <20071117113501.5e3e0d43@laptopd505.fenrus.org> <20071117194240.GD8568@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071117194240.GD8568@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat 2007-11-17 20:42:40, Sam Ravnborg wrote:
+> On Sat, Nov 17, 2007 at 11:35:01AM -0800, Arjan van de Ven wrote:
+> > On Sat, 17 Nov 2007 10:46:52 -0800
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > > by ... not too much at least, gcc ought to be quite good at merging
+> > > > same-strings into one, so it's just one extra pointer argument
+> > > > 
+> > > 
+> > > I think I knew that.  At 1000 callsites.
+> > 
+> > ok so how about putting the same into dump_stack() instead? (see below)
+> > added bonus is that it's now present for all dumps that use
+> > dump_stack(), not just WARN_ON()
+> > (the format I copied from the exact line used by oopses)
+> 
+> This solved the "zillion files being rebuild" issue I mentioned.
+> So from that angle it is better.
+> 
+> And I notice you use the namespace aware helpers to access the
+> kernelrelease string - I assume this is better than direct use
+> of UTS_RELEASE.
 
-> So... what went wrong with broken-out-2007-11-20-01-45.tar.gz?
+I'm not sure... namespace-aware kernel release seems like madness to
+me. This stackdump is from 2.6.10, but the other stackdump is from
+2.6.20 running at the same machine at the same time?! Why do namespace
+helpers touch UTS_RELEASE.
 
-It differs too much from Linus's base.
-
-> But sometimes it doesn't work out very well.  There's lot of stuff
-> outstanding again.  Immediate problems are from an x86 exec randomisation
-> thingy in git-x86 and pie-executable-randomization.patch in -mm, which both
-> hit on binfmt_elf.c
-
-Hmmm...  I can't apply your combined patch:
-
-	ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/2.6.24-rc3-mm1.bz2
-
-to Linus's GIT tree.  Quite a few errors occur.  Do you just use Linus's
-released tarball as a base?
-
-David
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
