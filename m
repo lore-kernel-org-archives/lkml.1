@@ -1,101 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXKUQoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbXKUQyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbXKUQoI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbXKUQn7
+	id S1756158AbXKUQyc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 11:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXKUQyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:43:59 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:54673 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbXKUQn6 (ORCPT
+	Wed, 21 Nov 2007 11:54:23 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:36582 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbXKUQyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 11:43:58 -0500
-From: Thomas Klein <osstklei@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 2/2][2.6.24] ehea: Reworked rcv queue handling to log only fatal errors
-Date: Wed, 21 Nov 2007 17:42:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Wed, 21 Nov 2007 11:54:23 -0500
+Date: Wed, 21 Nov 2007 08:54:15 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Huang <jamesclhuang@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com
+Subject: Re: __rcu_process_callbacks() in Linux 2.6
+Message-ID: <20071121165415.GA20130@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <922177.2692.qm@web83824.mail.sp1.yahoo.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200711211742.27706.osstklei@de.ibm.com>
+In-Reply-To: <922177.2692.qm@web83824.mail.sp1.yahoo.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prevent driver from brawly logging packet checksum errors.
+On Tue, Nov 20, 2007 at 07:43:09PM -0800, James Huang wrote:
+> Please disregard the previous email.
+> 
+> 
+> In the latest Linux 2.6 RCU implementation, __rcu_process_callbacks() is coded as follows: 
+> 
+> 
+> 422 static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+> 423                                        struct rcu_data *rdp)
+> 424 {
+> 425        if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch)) {
+> 426                *rdp->donetail = rdp->curlist;
+> 427                rdp->donetail = rdp->curtail;
+> 428                rdp->curlist = NULL;
+> 429                rdp->curtail = &rdp->curlist;
+> 430        }
+> 431 
+> 432        if (rdp->nxtlist && !rdp->curlist) {
+> 433                local_irq_disable();
+> 434                rdp->curlist = rdp->nxtlist;
+> 435                rdp->curtail = rdp->nxttail;
+> 436                rdp->nxtlist = NULL;
+> 437                rdp->nxttail = &rdp->nxtlist;
+> 438                local_irq_enable();
+> 439 
+> 440                /*
+> 441                  * start the next batch of callbacks
+> 442                  */
+> 443 
+> 444                /* determine batch number */
+> 445                rdp->batch = rcp->cur + 1;
+> 446                /* see the comment and corresponding wmb() in
+> 447                  * the rcu_start_batch()
+> 448                  */
+> 449                smp_rmb();
+> 450 
+> 451                if (!rcp->next_pending) {
+> 452                        /* and start it/schedule start if it's a new batch */
+> 453                        spin_lock(&rcp->lock);
+> 454                        rcp->next_pending = 1;
+> 455                        rcu_start_batch(rcp);
+> 456                        spin_unlock(&rcp->lock);
+> 457                }
+> 458        }
+> 459 
+> 460        rcu_check_quiescent_state(rcp, rdp);
+> 461        if (rdp->donelist)
+> 462                rcu_do_batch(rdp);
+> 463 }
+> 
+> 
+> The question is how does the update of rdp->batch at line 445 guarantee to observe the most updated value of rcp->cur??
+> The issue is that there is no memory barrier/locking before line 445.
+> So I think the following sequence of events in chronological order is possible:
+> 
+> Assume initially rcp->cur = 100, this current batch value is visible to every CPU, and batch 100 has completed 
+> (i.e. rcp->completed = 100, rcp->next_pending = 0,  rcp->cpumask = 0, and for each CPU, rdp->quiescbatch = 100, rdp->qs_pending = 0, rdp->passed_quiesc = 1)
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
----
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |   11 +++++------
- drivers/net/ehea/ehea_qmr.h  |    4 ++--
- 3 files changed, 8 insertions(+), 9 deletions(-)
+> CPU 0: 
+> --------- 
+>              call_rcu(): a callback inserted into rdp->nxtlist;                     
+> 
+>              timer interrupt 
+>                 call rcu_pending(), return true  ( ! rdp->curlist && rdp->nxtlist)
+>                 call rcu_check_callbacks() 
+>                      schedule per CPU rcu_tasklet
+> 
+>                 __rcu_process_callbacks()
+>                            move callbacks from nxtlist to curlist;
+>                            rdp->batch = 101
+>                            lock rcp->lock
+>                            rcp->next_pending = 1
+>                            call rcu_start_batch()
+>                                  find the current batch has completed and next batch pending;
+>                                  rcp->next_pending = 0
+>                                  update rcp->cur to 101 and initialize rcp->cpumask;                  <----- time t1
+>                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>                            unlock rcp->lock
+>                               
+> CPU 1:
+> ---------  
+>              timer interrupt 
+>                   call rcu_pending(), return true (asume observing rcp->cur = 101 != rdp->quiescbatch) 
+>                   
+>                   call rcu_check_callbacks() 
+>                        schedule per CPU rcu_tasklet
+> 
+>                  __rcu_process_callbacks()
+>                        call rcu_check_quisecent_state()
+>                              find rdp->quiescbatch != rcp->cur
+>                              set rdp->qs_pending = 1
+>                              set rdp->passed_quiesc = 0
+>                              set rdp->quiescbatch = 101 (rcp->cur)
+> 
+>              Another timer interrupt
+>                  call rcu_pending(), return true (rdp->qs_pending == 1)  
+>                  call rcu_check_callbacks() 
+>                        (assume in user mode)                         <-- time t2  pass quiescent state
+>                        ~~~~~~~~~~~~~~~~~~                             ~~~~~~~~~~~~~~~~~~~~~~
+>                        rdp->passed_quiesc = 1
+>                        schedule per CPU rcu_tasklet
+>             
+>                  __rcu_process_callbacks()
+>                        call rcu_check_quisecent_state()
+>                              find rdp->qs_pending == 1 && rdp-> passed_quiesc == 1
+>                              set rdp->qs_pending = 0
+>                              lock rcp->lock
+>                              call cpu_quite()
+>                                     clear bit in the rcp->cpumask set up by CPU 0 at time t1
+>                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>                              unlock rcp->lock
+> 
+> CPU 2:
+> ---------  
+>              call_rcu(): a callback inserted into rdp->nxtlist;     <--- time t3
+>              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>              
+>              timer interrupt 
+>                  call rcu_pending(), return true ( ! rdp->curlist && rdp->nxtlist)
+>                  call rcu_check_callbacks() 
+>                       schedule per CPU rcu_tasklet
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 5935899..ea67615 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0082"
-+#define DRV_VERSION	"EHEA_0083"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index d2f715d..869e160 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -410,11 +410,6 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
- 	if (cqe->status & EHEA_CQE_STAT_ERR_CRC)
- 		pr->p_stats.err_frame_crc++;
- 
--	if (netif_msg_rx_err(pr->port)) {
--		ehea_error("CQE Error for QP %d", pr->qp->init_attr.qp_nr);
--		ehea_dump(cqe, sizeof(*cqe), "CQE");
--	}
--
- 	if (rq == 2) {
- 		*processed_rq2 += 1;
- 		skb = get_skb_by_index(pr->rq2_skba.arr, pr->rq2_skba.len, cqe);
-@@ -426,7 +421,11 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
- 	}
- 
- 	if (cqe->status & EHEA_CQE_STAT_FAT_ERR_MASK) {
--		ehea_error("Critical receive error. Resetting port.");
-+		if (netif_msg_rx_err(pr->port)) {
-+			ehea_error("Critical receive error for QP %d. "
-+				   "Resetting port.", pr->qp->init_attr.qp_nr);
-+			ehea_dump(cqe, sizeof(*cqe), "CQE");
-+		}
- 		schedule_work(&pr->port->reset_task);
- 		return 1;
- 	}
-diff --git a/drivers/net/ehea/ehea_qmr.h b/drivers/net/ehea/ehea_qmr.h
-index 562de0e..bc62d38 100644
---- a/drivers/net/ehea/ehea_qmr.h
-+++ b/drivers/net/ehea/ehea_qmr.h
-@@ -145,8 +145,8 @@ struct ehea_rwqe {
- #define EHEA_CQE_VLAN_TAG_XTRACT   0x0400
- 
- #define EHEA_CQE_TYPE_RQ           0x60
--#define EHEA_CQE_STAT_ERR_MASK     0x720F
--#define EHEA_CQE_STAT_FAT_ERR_MASK 0x1F
-+#define EHEA_CQE_STAT_ERR_MASK     0x700F
-+#define EHEA_CQE_STAT_FAT_ERR_MASK 0xF
- #define EHEA_CQE_STAT_ERR_TCP      0x4000
- #define EHEA_CQE_STAT_ERR_IP       0x2000
- #define EHEA_CQE_STAT_ERR_CRC      0x1000
--- 
-1.5.2
+The tasklet_schedule() code calls test_and_set_bit(), which is an
+atomic operation that returns a value.  It therefore implies a memory
+barrier, so that if the prior call_rcu() at time t3 "happens after"
+CPU 1's quiescent state at time t2 (which, due to locking, must follow
+the update to rcp->cur at time t1), then the access to rcp->cur at time
+t4 must see the new value of rcp->cur.
+
+This is admittedly a bit subtle and perhaps a bit fragile.  Manfred,
+Dipankar, would it be worth putting an explicit memory barrier somewhere
+in this sequence, or is there another memory barrier that I forgetting?
+
+							Thanx, Paul
+
+>                  calls __rcu_process_callbacks()
+>                      move callbacks from nxtlist to curlist; (including the callback inserted at time t3)
+>                      rdp->batch = rcp->cur + 1;                         <--- time t4
+>                      ~~~~~~~~~~~~~~~~~~~~
+> 
+> At time t4, CPU 2 might observe rcp->cpu as 100 and set rdp->batch to 101.
+> So CPU 2 essentially started its batch 101 (includes a callback inserted at time t3) after CPU 1 passed its quiescent state (at time t2) for batch 101.
+> 
+> Isn't this an issue???  Am I missing something?
+> Thanks for pointing me to the right direction.
+> 
+> 
+> -- James Huang
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
