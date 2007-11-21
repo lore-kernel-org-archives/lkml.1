@@ -1,68 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbXKUDf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbXKUDnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbXKUDf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 22:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXKUDfv
+	id S1756319AbXKUDnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 22:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXKUDnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 22:35:51 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:64106 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbXKUDfu (ORCPT
+	Tue, 20 Nov 2007 22:43:11 -0500
+Received: from web83824.mail.sp1.yahoo.com ([69.147.85.111]:29873 "HELO
+	web83824.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752342AbXKUDnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 22:35:50 -0500
-Date: Tue, 20 Nov 2007 19:38:27 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] CPUFREQ: powernow-k8 print pstate instead of fid/did for
- family 10h
-To: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Mark Langsdorf <mark.langsdorf@amd.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200711201938.28110.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Tue, 20 Nov 2007 22:43:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=Yk7DaQGD2Z+ExjtGwOLumz0I6MkGI9aeUlkKMz2+1z5gNjqecqdYx51IN/M0yc7urx5bmzSR/60LuvevSersRzeNB9k5nH3IjSOJi6H/gQHteJRDH0u1sAFCWDc2m0vBzpEIE50K/+KrNJ1MwqNrOZxAbadVpCTsggeTWA/6GSM=;
+X-YMail-OSG: SEepWpQVM1kJ_.EsY1ntE43Y5oEOvrX_djmoxnTwGl9M619Z3M3H9JadjSpfh.TmpXby3gdYtA--
+X-Mailer: YahooMailRC/818.27 YahooMailWebService/0.7.152
+Date: Tue, 20 Nov 2007 19:43:09 -0800 (PST)
+From: James Huang <jamesclhuang@yahoo.com>
+Subject: Re: __rcu_process_callbacks() in Linux 2.6
+To: linux-kernel@vger.kernel.org
+Cc: jamesclhuang@yahoo.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <922177.2692.qm@web83824.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] CPUFREQ: powernow-k8 print pstate instead of fid/did for family 10h
+Please disregard the previous email.
 
-powernow-k8: Found 1 Quad-Core AMD Opteron(tm) Processor 8354 processors (4 cpu cores) (version 2.20.00)
-powernow-k8:    0 : fid 0x0 did 0x0 (2200 MHz)
-powernow-k8:    1 : fid 0x0 did 0x0 (2000 MHz)
-powernow-k8:    2 : fid 0x0 did 0x0 (1700 MHz)
-powernow-k8:    3 : fid 0x0 did 0x0 (1400 MHz)
-powernow-k8:    4 : fid 0x0 did 0x0 (1100 MHz)
 
-actually index for CPU_HW_PSTATE is pstate instead of fid/vid
-So print it out as pstate.
+In the latest Linux 2.6 RCU implementation, __rcu_process_callbacks() is coded as follows: 
 
-powernow-k8: Found 1 Quad-Core AMD Opteron(tm) Processor 8354 processors (4 cpu cores) (version 2.20.00)
-powernow-k8:    0 : pstate 0 (2200 MHz)
-powernow-k8:    1 : pstate 1 (2000 MHz)
-powernow-k8:    2 : pstate 2 (1700 MHz)
-powernow-k8:    3 : pstate 3 (1400 MHz)
-powernow-k8:    4 : pstate 4 (1100 MHz)
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+422 static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+423                                        struct rcu_data *rdp)
+424 {
+425        if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch)) {
+426                *rdp->donetail = rdp->curlist;
+427                rdp->donetail = rdp->curtail;
+428                rdp->curlist = NULL;
+429                rdp->curtail = &rdp->curlist;
+430        }
+431 
+432        if (rdp->nxtlist && !rdp->curlist) {
+433                local_irq_disable();
+434                rdp->curlist = rdp->nxtlist;
+435                rdp->curtail = rdp->nxttail;
+436                rdp->nxtlist = NULL;
+437                rdp->nxttail = &rdp->nxtlist;
+438                local_irq_enable();
+439 
+440                /*
+441                  * start the next batch of callbacks
+442                  */
+443 
+444                /* determine batch number */
+445                rdp->batch = rcp->cur + 1;
+446                /* see the comment and corresponding wmb() in
+447                  * the rcu_start_batch()
+448                  */
+449                smp_rmb();
+450 
+451                if (!rcp->next_pending) {
+452                        /* and start it/schedule start if it's a new batch */
+453                        spin_lock(&rcp->lock);
+454                        rcp->next_pending = 1;
+455                        rcu_start_batch(rcp);
+456                        spin_unlock(&rcp->lock);
+457                }
+458        }
+459 
+460        rcu_check_quiescent_state(rcp, rdp);
+461        if (rdp->donelist)
+462                rcu_do_batch(rdp);
+463 }
 
-Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -578,10 +578,9 @@ static void print_basics(struct powernow
- 	for (j = 0; j < data->numps; j++) {
- 		if (data->powernow_table[j].frequency != CPUFREQ_ENTRY_INVALID) {
- 			if (cpu_family == CPU_HW_PSTATE) {
--				printk(KERN_INFO PFX "   %d : fid 0x%x did 0x%x (%d MHz)\n",
-+				printk(KERN_INFO PFX "   %d : pstate %d (%d MHz)\n",
- 					j,
--					(data->powernow_table[j].index & 0xff00) >> 8,
--					(data->powernow_table[j].index & 0xff0000) >> 16,
-+					data->powernow_table[j].index,
- 					data->powernow_table[j].frequency/1000);
- 			} else {
- 				printk(KERN_INFO PFX "   %d : fid 0x%x (%d MHz), vid 0x%x\n",
+
+The question is how does the update of rdp->batch at line 445 guarantee to observe the most updated value of rcp->cur??
+The issue is that there is no memory barrier/locking before line 445.
+So I think the following sequence of events in chronological order is possible:
+
+Assume initially rcp->cur = 100, this current batch value is visible to every CPU, and batch 100 has completed 
+(i.e. rcp->completed = 100, rcp->next_pending = 0,  rcp->cpumask = 0, and for each CPU, rdp->quiescbatch = 100, rdp->qs_pending = 0, rdp->passed_quiesc = 1)
+ 
+ 
+CPU 0: 
+--------- 
+             call_rcu(): a callback inserted into rdp->nxtlist;                     
+ 
+             timer interrupt 
+                call rcu_pending(), return true  ( ! rdp->curlist && rdp->nxtlist)
+                call rcu_check_callbacks() 
+                     schedule per CPU rcu_tasklet
+ 
+                __rcu_process_callbacks()
+                           move callbacks from nxtlist to curlist;
+                           rdp->batch = 101
+                           lock rcp->lock
+                           rcp->next_pending = 1
+                           call rcu_start_batch()
+                                 find the current batch has completed and next batch pending;
+                                 rcp->next_pending = 0
+                                 update rcp->cur to 101 and initialize rcp->cpumask;                  <----- time t1
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                           unlock rcp->lock
+                              
+CPU 1:
+---------  
+             timer interrupt 
+                  call rcu_pending(), return true (asume observing rcp->cur = 101 != rdp->quiescbatch) 
+                  
+                  call rcu_check_callbacks() 
+                       schedule per CPU rcu_tasklet
+ 
+                 __rcu_process_callbacks()
+                       call rcu_check_quisecent_state()
+                             find rdp->quiescbatch != rcp->cur
+                             set rdp->qs_pending = 1
+                             set rdp->passed_quiesc = 0
+                             set rdp->quiescbatch = 101 (rcp->cur)
+ 
+             Another timer interrupt
+                 call rcu_pending(), return true (rdp->qs_pending == 1)  
+                 call rcu_check_callbacks() 
+                       (assume in user mode)                         <-- time t2  pass quiescent state
+                       ~~~~~~~~~~~~~~~~~~                             ~~~~~~~~~~~~~~~~~~~~~~
+                       rdp->passed_quiesc = 1
+                       schedule per CPU rcu_tasklet
+            
+                 __rcu_process_callbacks()
+                       call rcu_check_quisecent_state()
+                             find rdp->qs_pending == 1 && rdp-> passed_quiesc == 1
+                             set rdp->qs_pending = 0
+                             lock rcp->lock
+                             call cpu_quite()
+                                    clear bit in the rcp->cpumask set up by CPU 0 at time t1
+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             unlock rcp->lock
+
+CPU 2:
+---------  
+             call_rcu(): a callback inserted into rdp->nxtlist;     <--- time t3
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             
+             timer interrupt 
+                 call rcu_pending(), return true ( ! rdp->curlist && rdp->nxtlist)
+                 call rcu_check_callbacks() 
+                      schedule per CPU rcu_tasklet
+                                
+                 calls __rcu_process_callbacks()
+                     move callbacks from nxtlist to curlist; (including the callback inserted at time t3)
+                     rdp->batch = rcp->cur + 1;                         <--- time t4
+                     ~~~~~~~~~~~~~~~~~~~~
+
+At time t4, CPU 2 might observe rcp->cpu as 100 and set rdp->batch to 101.
+So CPU 2 essentially started its batch 101 (includes a callback inserted at time t3) after CPU 1 passed its quiescent state (at time t2) for batch 101.
+
+Isn't this an issue???  Am I missing something?
+Thanks for pointing me to the right direction.
+
+
+-- James Huang
