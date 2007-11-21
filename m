@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765975AbXKUBk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbXKUBoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765975AbXKUBk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760106AbXKUBkK
+	id S1762869AbXKUBoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758203AbXKUBny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:40:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50432 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759734AbXKUBkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:40:09 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071120125029.dfd58d83.akpm@linux-foundation.org>
-References: <20071120125029.dfd58d83.akpm@linux-foundation.org> <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <4742FACF.7040906@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 21 Nov 2007 01:32:48 +0000
-Message-ID: <21076.1195608768@redhat.com>
+	Tue, 20 Nov 2007 20:43:54 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51756 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755544AbXKUBnx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 20:43:53 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Guillaume Chazarain <guichaz@yahoo.fr>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.24-rc3: find complains about /proc/net
+References: <fa.zy7JwM3jsOSgOCtqK2+rvFfdGjQ@ifi.uio.no>
+	<fa.Zx9jkdx74KRPk1qghLrg9BCvfFU@ifi.uio.no>
+	<fa.1TKmo5fKBZfHOQYq1bH4uMxOQek@ifi.uio.no>
+	<fa.fjJG0rd93RGzZ4PSv/glscvAI0A@ifi.uio.no>
+	<fa.7XLWa+gAWL3Q6I3O+hiS4UfcWpM@ifi.uio.no>
+	<fa.QqYdKsBUWKSLLGXmxJCAtZxLYnE@ifi.uio.no> <47438820.5010300@shaw.ca>
+Date: Tue, 20 Nov 2007 18:41:56 -0700
+In-Reply-To: <47438820.5010300@shaw.ca> (Robert Hancock's message of "Tue, 20
+	Nov 2007 19:21:36 -0600")
+Message-ID: <m1pry4pe6z.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Robert Hancock <hancockr@shaw.ca> writes:
 
-> > The patch
-> > aout-suppress-aout-library-support-if-config_arch_supports_aout.patch,
-> > creates a struct exec in linux/a.out.h and asm/a.out.h already has it, for
-> > the struct related warnings.
-
-Nothing should be including {asm,linux}/a.out.h unless it absolutely needs it.
-I removed all the places it did so extraneously, after moving out STACK_TOP.
-
-> OK, I've had it with trying to get that patch to vaguely work.  I'll drop
-> it and will then fix up the extensive dependency trail which it drags along
-> behind it.
-> 
-> David, please do not bring it back until it has had a *lot* of testing.
-
-It compiles for all the archs for which I have a compiler, and the x86_64 and
-i386 kernels all build and boot for the following combinations of AOUT
-configs:
-
-	x86_64	CONFIG_IA32_AOUT=n
-		CONFIG_IA32_AOUT=y
-		CONFIG_IA32_AOUT=m
-	i386	CONFIG_BINFMT_AOUT=n
-		CONFIG_BINFMT_AOUT=y
-		CONFIG_BINFMT_AOUT=m
-
-It seems I had forgetten to include:
-
-	config ARCH_SUPPORTS_AOUT
-		def_bool y
-
-in arch/x86/Kconfig, but it builds without that too for both subarchs.
-
-The kernel also builds and boots for MN10300 and FRV.
+> Eric W. Biederman wrote:
+>> Could you elaborate a bit on how the semantics of returning the
+>> wrong information are more useful?
+>>
+>> In particular if a thread does the logical equivalent of:
+>> grep Pid: /proc/self/status.  It always get the tgid despite
+>> having a different process id.
+>
+> The POSIX-defined userspace concept of a PID requires that all threads appear to
+> have the same PID. This is something that Linux didn't comply with under the old
+> LinuxThreads implementation and was finally fixed with NPTL. This isn't a
+> POSIX-defined interface, but I assume it's trying to be consistent with
+> getpid(), etc.
 
 
-The problem is that your -mm patchset doesn't match Linus's as a base.  I'm
-still not sure what the right procedure is for that.  I can give you some
-altered patches, but there's no guarantee you'll be able to pass them on to
-Linus without breaking his tree.  What do *you* want?
+Linux exports two fields in /proc/self/status:
+Tgid:   32698
+Pid:    32698
 
-David
+The tgid maps to the posix concept.  The pid is this context is the
+thread id.
+
+So it seems broken to me to return the same thread id for different threads.
+
+Eric
