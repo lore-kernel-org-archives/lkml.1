@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbXKUKdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbXKUKkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759790AbXKUKdp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 05:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbXKUKdh
+	id S1759790AbXKUKkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 05:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXKUKj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 05:33:37 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:42225 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbXKUKdg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 05:33:36 -0500
-Date: Wed, 21 Nov 2007 05:31:26 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Avi Kivity <avi@qumranet.com>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.24-rc3-mm1 make headers_check fails
-In-Reply-To: <474405AA.2070608@qumranet.com>
-Message-ID: <alpine.LFD.0.9999.0711210530480.13226@localhost.localdomain>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <4743EB52.1040205@linux.vnet.ibm.com> <20071120163240.e54beed6.akpm@linux-foundation.org> <4743EF47.5000203@linux.vnet.ibm.com> <4743EFF8.9010307@qumranet.com> <20071121095821.GB1070@uranus.ravnborg.org>
- <474401BB.2020204@qumranet.com> <474405AA.2070608@qumranet.com>
+	Wed, 21 Nov 2007 05:39:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60720 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753927AbXKUKj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 05:39:58 -0500
+Date: Wed, 21 Nov 2007 11:39:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
+	v2.6.23.8, v2.6.22.13, v2.6.21.7
+Message-ID: <20071121103951.GA5788@elte.hu>
+References: <20071119151756.GA25446@elte.hu> <b637ec0b0711201238i746ca9bala3812ca93479c6fa@mail.gmail.com> <20071120204103.GC10008@elte.hu> <b637ec0b0711201247m4038a2cds5924ddbd43db6f8e@mail.gmail.com> <20071120215313.GD24156@elte.hu> <b637ec0b0711210050x1fbd741bi9c7550b4ef611598@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b637ec0b0711210050x1fbd741bi9c7550b4ef611598@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, Avi Kivity wrote:
 
-> headers_check continues to complain.  Is the only recourse to add
-> asm/kvm.h for all archs?
+* Fabio Comolli <fabio.comolli@gmail.com> wrote:
 
-that's what's happened with other header files.  see asm-*/auxvec.h,
-for example.
+> To answer your latest mail, again I don't have numbers but from my 
+> point ov view:
+> 
+> 23.1 < 23.1+ck < 23.8+cfs.24
+> 
+> where 23.1+ck is slightly better than vanilla 23.1 and 23.8+cfs.24 is 
+> much better than 23.1+ck.
+> 
+> My workload is pretty standard, F8+kde+firefox+kmail+amsn, some kernel 
+> compile and so on.
 
-rday
---
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+do you remember which particular workload improved the most, and in 
+roughly whatway? (no need for numbers - subjective impressions are 
+accurate enough for this)
 
-http://crashcourse.ca
-========================================================================
+	Ingo
