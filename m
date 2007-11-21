@@ -1,158 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbXKUT3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXKUTde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbXKUT3k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 14:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXKUT3c
+	id S1755296AbXKUTde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 14:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXKUTd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 14:29:32 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50448 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752126AbXKUT3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 14:29:31 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
-Date: Wed, 21 Nov 2007 20:47:12 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200706300859.47133.arvidjaar@mail.ru> <200709091907.14642.rjw@sisk.pl> <200711212012.33403.arvidjaar@mail.ru>
-In-Reply-To: <200711212012.33403.arvidjaar@mail.ru>
+	Wed, 21 Nov 2007 14:33:26 -0500
+Received: from mx4.access-company.com ([12.7.175.32]:54767 "EHLO
+	mx3.access-company.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752663AbXKUTdZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 14:33:25 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711212047.13464.rjw@sisk.pl>
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2 ] Add support LZO in mkcramfs tool
+Date: Wed, 21 Nov 2007 11:32:03 -0800
+Message-ID: <6F917B35767E8F468DE04F5A6EA90D89040108@ussunex02.svl.access-company.com>
+In-Reply-To: <20071120011221.GK11527@petra.dvoda.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2 ] Add support LZO in mkcramfs tool
+Thread-Index: AcgrEmhbf6CUXkYySlqvZGAO8jJd5ABYqqlQ
+References: <1193441160.17726.18.camel@vince-desktop> <20071120011221.GK11527@petra.dvoda.cz>
+From: "Vince Kim" <Vince.Kim@access-company.com>
+To: "Karel Zak" <kzak@redhat.com>
+Cc: <linux-kernel@vger.kernel.org>, "Richard Purdie" <rpurdie@openedhand.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=4.65.5502:2.3.11,1.2.37,4.0.164 definitions=2007-11-21_09:2007-11-19,2007-11-21,2007-11-21 signatures=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=3.1.0-0708230000 definitions=main-0711210116
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 21 of November 2007, Andrey Borzenkov wrote:
-> On Sunday 09 September 2007, Rafael J. Wysocki wrote:
-> > On Sunday, 9 September 2007 16:00, Andrey Borzenkov wrote:
-> > > On Sunday 01 July 2007, Rafael J. Wysocki wrote:
-> > > > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
-> > > > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
-> > > > > suspend to disk :)
-> > > > >
-> > > > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
-> > > > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
-> > > > > libata with pata_ali driver.
-> > > > >
-> > > > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
-> > > > > system hung at least once in every rcX. Up to rc6 those lockups were
-> > > > > absolutely silent (black screen without reaction to any key). In rc6 I
-> > > > > just got something different. After resume I got on screem:
-> > > > >
-> > > > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
-> > > > > swsusp: Basic memory bitmaps created
-> > > > > swsusp: Basic memory bitmaps freed
-> > > > >
-> > > > > After that it just sits there doing nothing. Ther was brief sound of HDD
-> > > > > but I suspect it was related more to power-on. System was responding to
-> > > > > power-on button press:
-> > > > >
-> > > > > ACPI Error (event-0305): No installed handler for fixed event [00000002
-> > > > > 20070125]
-> > > > >
-> > > > > And SysRq was functioning.
-> > > >
-> > > > That probably means that there's a deadlock somewhere in there.
-> > > >
-> > > > > Unfortunately I do not have serial console so I
-> > > > > copy manually stacks from several last screens of output; I have tried to
-> > > > > make a photo but right now my kbluetooth is refusing to work at all so I
-> > > > > cannot transfer them :( (but I suspect quality would be too bad anyway)
-> > > > >
-> > > > > laptop_mode D
-> > > > > 	io_schedule+0xe/0x20
-> > > >
-> > > > Looks suspicious to me.  Can you identify what line of code this points to?
-> > > >
-> > > > > 	sync_buffer+0x35/0x40
-> > > > > 	__wait_on_bit+0x45/0x70
-> > > > > 	out_of_line_wait_on_bit+0x6c/0x80
-> > > > > 	__wait_on_buffer+0x27/0x30
-> > > > > 	search_by_key+0x15e/0x1250 [reiserfs]
-> > > > > 	reiserfs_read_locked_inode+0x64/0x570 [reiserfs]
-> > > > > 	reiserfs_iget+0x7e/0xa0 [reiserfs]
-> > > > > 	reiserfs_lookup+0xc7/0x120 [reiserfs]
-> > > > > 	do_lookup+0x138/0x180
-> > > > > 	__link_path_walk+0x787/0xce0
-> > > > > 	link_path_walk+0x44/0xc0
-> > > > > 	path_walk+0x18/0x20
-> > > > > 	do_path_lookup_0x88/0x210
-> > > > > 	__path_lookupintent_open+0x4d/0x90
-> > > > > 	path_lookup_open+0x1f/0x30
-> > > > > 	open_exec+0x28/0xb0
-> > > > > 	do_execve+0x36/0x1d0
-> > > > > 	sys_execve+0x2e/0x80
-> > > > > 	sysenter_past_esp+0x5f/0x99
-> > > > >
-> > > > > 90clock D
-> > > > > 	__mutex_lock_slow_path+0xa1/0x290
-> > > > > 	mutex_lock+0x21/0x30
-> > > > > 	do_lookup+0xa1/0x180
-> > > > > 	__link_path_walk+0x44/0xc0
-> > > > > 	path_walk+0x18/0x20
-> > > > > 	do_path_lookup+0x78/0x210
-> > > > > 	__user_walk_fd+0x38/0x50
-> > > > > 	vfs_stat_fd+0x21/0x50
-> > > > > 	vfs_stat+0x11/0x20
-> > > > > 	sys_stat64+0x14/0x30
-> > > > > 	sysenter_past_esp+0x5f/0x99
-> > > > >
-> > > > > alsactl D
-> > > > > 	io_schedule+0xe/0x20
-> > > >
-> > > > Same here.  Hmm.
-> > > >
-> > > > > 	sync_page+0x35/0x40
-> > > > > 	__wait_on_bit_lock+0x3f/0x70
-> > > > > 	__lock_page+0x68/0x70
-> > > > > 	filemap_nopage+0x16c/0x300
-> > > > > 	__handle_mm_faul+0x1d7/0x610
-> > > > > 	do_page_fault+0x1d7/0x610
-> > > > > 	error_code+0x6a/0x70
-> > > > > 	padzero+0x1f/0x30
-> > > > > 	load_elf_binary+0x743/0x1ab0
-> > > > > 	search_binary_handler+0x7b/0x1f0
-> > > > > 	do_execve+0x137/0x1d0
-> > > > > 	sys_execve+0x2e/0x80
-> > > > > 	sysenter_past_esp+0x5f/0x90
-> > > > >
-> > > > > After that I could remount, sync and reboot using SysRq (well, after
-> > > > > reboot it still insisted on replaying insane number of transactions so
-> > > > > may be it did *not* remount / ro after all). Before reboot there was
-> > > > > brief output that resembled lockdep warnings, but it went too fast to be
-> > > > > readable.
-> > > > >
-> > > > > usual stuff follows
-> > > >
-> > > > I see you're using CFQ as the default IO scheduler.  Can you please switch
-> > > > to AS and see if that changes anything?
-> > > >
-> > > 
-> > > I just had the same lockup on resume using AS with 2.6.23-rc5.
-> > 
-> > Hm.  Does your root partition sit on reiserfs?
-> 
-> I already answered this but yes, I do.
-> 
-> > 
-> > 
-> 
-> just had it again on 2.6.24-rc3. Same thing - keys working (to some extent)
-> Alt-SysRq allows me to reboot; unfortunately I switched (unintentionally)
-> from resume message to tty1 and it was in funny state so SysRq-t was lost but
-> I pretty much suspect it be the same.
-> 
-> well, not sure how to debug problem that pops up once in three-four release ...
 
-And you never know when it happens ...
+Thanks for the comment.
 
-I have no idea.  It's probably related to your hardware configuration somehow,
-as it doesn't seem to be reproducible in general.
+I will look through it.
 
-Regards,
-Rafael
+Vince
+
+-----Original Message-----
+From: Karel Zak [mailto:kzak@redhat.com] 
+Sent: Monday, November 19, 2007 5:12 PM
+To: Vince Kim
+Cc: linux-kernel@vger.kernel.org; "Richard Purdie
+[rpurdie"@openedhand.com
+Subject: Re: [PATCH 2/2 ] Add support LZO in mkcramfs tool
+
+On Fri, Oct 26, 2007 at 04:26:00PM -0700, vince kim wrote:
+> This patch adds support LZO compression in mkcramfs tool, so it can
+> generate a cramfs image compress with LZO.
+> To compile mkcramfs with this patch, liblzo2-dev package must be
+> installed.
+> 
+> The patch is created against mkcramfs tool ver 1.1 which can be found
+> at:
+> http://sourceforge.net/projects/cramfs/
+
+ Ah...
+
+    Latest     1.1 Notes (2002-02-24 00:00)
+
+ ...seems like a zombie project.
+
+
+ I think many Linux distributions use mkfs.cramfs from
+ util-linux[-ng].
+
+ git://git.kernel.org/pub/scm/utils/util-linux-ng/util-linux-ng.git
+
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
