@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbXKUIR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbXKUIZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbXKUIR4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 03:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbXKUIRs
+	id S1758992AbXKUIZQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 03:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbXKUIZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 03:17:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60137 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751036AbXKUIRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 03:17:48 -0500
-Date: Wed, 21 Nov 2007 17:17:22 +0900 (JST)
-Message-Id: <20071121.171722.155742542.jet@gyve.org>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org
-Subject: [patch] remove description for non existing parameter in
- generic_set_mtrr
-From: Masatake YAMATO <jet@gyve.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1.50 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 21 Nov 2007 03:25:03 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:59207 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753303AbXKUIZA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 03:25:00 -0500
+Message-ID: <4743EB52.1040205@linux.vnet.ibm.com>
+Date: Wed, 21 Nov 2007 13:54:50 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.24-rc3-mm1 make headers_check fails
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+In-Reply-To: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-`do_safe' parameter is not in generic_set_mtrr but explained.
-Maybe someone forgot removing.
+Hi Andrew,
+
+The make headers_check fails,
+
+  CHECK   include/linux/usb/gadgetfs.h
+  CHECK   include/linux/usb/ch9.h
+  CHECK   include/linux/usb/cdc.h
+  CHECK   include/linux/usb/audio.h
+  CHECK   include/linux/kvm.h
+/root/kernels/linux-2.6.24-rc3/usr/include/linux/kvm.h requires asm/kvm.h, which does not exist in exported headers
+make[2]: *** [/root/kernels/linux-2.6.24-rc3/usr/include/linux/.check.kvm.h] Error 1
+make[1]: *** [linux] Error 2
+make: *** [headers_check] Error 2
 
 
-Signed-off-by: Masatake YAMATO <jet@gyve.org>
-
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 992f08d..e0c0676 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -417,8 +417,6 @@ static void generic_set_mtrr(unsigned int reg, unsigned long base,
-     <base> The base address of the region.
-     <size> The size of the region. If this is 0 the region is disabled.
-     <type> The type of the region.
--    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
--    be done externally.
-     [RETURNS] Nothing.
- */
- {
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
