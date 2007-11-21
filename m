@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765311AbXKUAij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbXKUAjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765311AbXKUAij (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 19:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXKUAib
+	id S1760673AbXKUAjE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 19:39:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXKUAiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 19:38:31 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:34901 "EHLO gir.skynet.ie"
+	Tue, 20 Nov 2007 19:38:51 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:34928 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbXKUAia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 19:38:30 -0500
+	id S1752654AbXKUAiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 19:38:50 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Lee.Schermerhorn@hp.com, clameter@sgi.com
-Cc: Mel Gorman <mel@csn.ul.ie>, kamezawa.hiroyu@jp.fujit,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Message-Id: <20071121003827.10654.53286.sendpatchset@skynet.skynet.ie>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org
+Message-Id: <20071121003848.10789.18030.sendpatchset@skynet.skynet.ie>
 Subject: [PATCH 0/6] Use two zonelists per node instead of multiple zonelists v10
-Date: Wed, 21 Nov 2007 00:38:27 +0000 (GMT)
+Date: Wed, 21 Nov 2007 00:38:48 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
