@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765574AbXKUBiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765975AbXKUBk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765574AbXKUBiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758854AbXKUBiI
+	id S1765975AbXKUBk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760106AbXKUBkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:38:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51726
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758622AbXKUBiF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:38:05 -0500
-Date: Tue, 20 Nov 2007 17:38:04 -0800 (PST)
-Message-Id: <20071120.173804.34897945.davem@davemloft.net>
-To: the.sator@gmail.com
-Cc: linux-kernel@vger.kernel.org, kuznet@ms2.inr.ac.ru, jmorris@namei.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH][v2] net/ipv4/arp.c: Fix arp reply when sender ip 0
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <cac0ab7d0711200828n3548fadn48cce2837ed6a7c6@mail.gmail.com>
-References: <cac0ab7d0711200828n3548fadn48cce2837ed6a7c6@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Nov 2007 20:40:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50432 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759734AbXKUBkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 20:40:09 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071120125029.dfd58d83.akpm@linux-foundation.org>
+References: <20071120125029.dfd58d83.akpm@linux-foundation.org> <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <4742FACF.7040906@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45.tar.gz uploaded
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 21 Nov 2007 01:32:48 +0000
+Message-ID: <21076.1195608768@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jonas Danielsson" <the.sator@gmail.com>
-Date: Tue, 20 Nov 2007 17:28:22 +0100
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Fix arp reply when received arp probe with sender ip 0.
+> > The patch
+> > aout-suppress-aout-library-support-if-config_arch_supports_aout.patch,
+> > creates a struct exec in linux/a.out.h and asm/a.out.h already has it, for
+> > the struct related warnings.
+
+Nothing should be including {asm,linux}/a.out.h unless it absolutely needs it.
+I removed all the places it did so extraneously, after moving out STACK_TOP.
+
+> OK, I've had it with trying to get that patch to vaguely work.  I'll drop
+> it and will then fix up the extensive dependency trail which it drags along
+> behind it.
 > 
-> Send arp reply with target ip address 0.0.0.0 and target hardware address
-> set to hardware address of requester. Previously sent reply with target
-> ip address and target hardware address set to same as source fields.
-> 
-> 
-> Signed-off-by: Jonas Danielsson <the.sator@gmail.com>
-> Acked-by: Alexey Kuznetov <kuznet@ms2.inr.ac.ru>
+> David, please do not bring it back until it has had a *lot* of testing.
 
-I'm applying this but you gmail folks really have to get your
-act together when submitting patches.  The patches from gmail
-accounts come out corrupted 9 times out of 10.
+It compiles for all the archs for which I have a compiler, and the x86_64 and
+i386 kernels all build and boot for the following combinations of AOUT
+configs:
 
-This time line breaks were added and all tab characters were
-turned into spaces.
+	x86_64	CONFIG_IA32_AOUT=n
+		CONFIG_IA32_AOUT=y
+		CONFIG_IA32_AOUT=m
+	i386	CONFIG_BINFMT_AOUT=n
+		CONFIG_BINFMT_AOUT=y
+		CONFIG_BINFMT_AOUT=m
 
-Please correct this before any future patch submissions.
+It seems I had forgetten to include:
+
+	config ARCH_SUPPORTS_AOUT
+		def_bool y
+
+in arch/x86/Kconfig, but it builds without that too for both subarchs.
+
+The kernel also builds and boots for MN10300 and FRV.
+
+
+The problem is that your -mm patchset doesn't match Linus's as a base.  I'm
+still not sure what the right procedure is for that.  I can give you some
+altered patches, but there's no guarantee you'll be able to pass them on to
+Linus without breaking his tree.  What do *you* want?
+
+David
