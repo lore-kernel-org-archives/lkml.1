@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765286AbXKUAe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764908AbXKUAhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765286AbXKUAe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 19:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbXKUAeS
+	id S1764908AbXKUAhJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 19:37:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXKUAg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 19:34:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44752 "EHLO mx1.redhat.com"
+	Tue, 20 Nov 2007 19:36:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59564 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756500AbXKUAeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 19:34:17 -0500
+	id S1752791AbXKUAg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 19:36:56 -0500
+Date: Wed, 21 Nov 2007 01:36:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mark Lord <lkml@rtr.ca>, Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+Message-ID: <20071121003629.GA20765@elte.hu>
+References: <200711201837.39664.nickpiggin@yahoo.com.au> <20071120064747.2a8036cd@laptopd505.fenrus.org> <20071120220110.GF24156@elte.hu> <47436C43.6010200@rtr.ca> <20071120232723.GB23667@elte.hu> <47436ECD.3050004@zytor.com> <20071120234725.GH23667@elte.hu> <474372BC.2000609@zytor.com> <20071121000742.GN23667@elte.hu> <474379C1.2040703@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Zachary Amsden <zach@vmware.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/18] x86 vDSO: ia32 sysenter_return
-In-Reply-To: Zachary Amsden's message of  Tuesday, 20 November 2007 16:05:34 -0800 <1195603534.6352.231.camel@bodhitayantram.eng.vmware.com>
-References: <20071119215944.01B7C26F8BE@magilla.localdomain>
-	<20071119220622.C5ED026F8BE@magilla.localdomain>
-	<1195603534.6352.231.camel@bodhitayantram.eng.vmware.com>
-X-Zippy-Says: Alright, you!!  Imitate a WOUNDED SEAL pleading for a PARKING SPACE!!
-Message-Id: <20071121003413.D25F726F8BE@magilla.localdomain>
-Date: Tue, 20 Nov 2007 16:34:13 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <474379C1.2040703@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > @@ -104,7 +103,7 @@ ENTRY(ia32_sysenter_target)
-> >  	pushfq
-> >  	CFI_ADJUST_CFA_OFFSET 8
-> >  	/*CFI_REL_OFFSET rflags,0*/
-> > -	movl	$VSYSCALL32_SYSEXIT, %r10d
-> > +	movl	8*3-THREAD_SIZE+threadinfo_sysenter_return(%rsp), %r10d
-> 
-> 8*3-THREAD_SIZE is not very intuitive.  Can you add a comment on the
-> math?
 
-When you are reading the whole stretch of code right there, and not just
-the patch, it's fairly obvious that it matches the three pushes right there.
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
+> Ingo Molnar wrote:
+>> * H. Peter Anvin <hpa@zytor.com> wrote:
+>>
+>>>>> Nope.  It runs inside an initramfs, of course; that initramfs is linked 
+>>>>> into the kernel binary.
+>>>> would be nice to have a single-image variant for all of this. having the 
+>>>> separate initrd was always trouble - and it's pointless as well. (we 
+>>>> rarely update the initrd without updating the vmlinuz as well)
+>>> We do.  Am I missing something?
+>>
+>> do we have a single-image way of getting both the kernel image and the 
+>> initram set up at once? What i know of is a two-image approach: vmlinuz 
+>> and initrd.
+>>
+>
+> Yes, we do.  The initramfs can be linked into the kernel image.  The 
+> unified klibc build tree does that by default.
 
-Thanks,
-Roland
+argh. Guess i misread your answer:
+
+>>>>>> nor do i - i was under the impression that klibc was able to work 
+>>>>>> out of a bzImage too? Am i wrong?
+>>>>> Nope.  It runs inside an initramfs, of course; that initramfs is linked 
+>>>>> into the kernel binary.
+
+i took that "Nope" as referring to my impression - but you in fact meant 
+that i am not wrong? :-) So nothing to see here. single-bzImage initrd 
+was and is possible, so we could in fact move chunks of system-related 
+userland (such as irqbalanced) into the kernel proper?
+
+	Ingo
