@@ -1,90 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbXKUBPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765925AbXKUBQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765680AbXKUBPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:15:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXKUBNs
+	id S1765925AbXKUBQJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:16:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763941AbXKUBNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:13:48 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:59819 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762937AbXKUBNq (ORCPT
+	Tue, 20 Nov 2007 20:13:52 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:36562 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765383AbXKUBNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:13:46 -0500
-Message-Id: <20071121011249.817096909@goodmis.org>
+	Tue, 20 Nov 2007 20:13:47 -0500
+Message-Id: <20071121011250.937147946@goodmis.org>
 References: <20071121010054.663842380@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 20 Nov 2007 20:01:00 -0500
+Date: Tue, 20 Nov 2007 20:01:07 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v4 06/20] wake up balance RT
-Content-Disposition: inline; filename=rt-balance-wakeup.patch
+Subject: [PATCH v4 13/20] RT: Pre-route RT tasks on wakeup
+Content-Disposition: inline; filename=sched-pre-route-on-wakeup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds pushing of overloaded RT tasks from a runqueue that is
-having tasks (most likely RT tasks) added to the run queue.
+From: Gregory Haskins <ghaskins@novell.com>
 
-TODO: We don't cover the case of waking of new RT tasks (yet).
+In the original patch series that Steven Rostedt and I worked on together,
+we both took different approaches to low-priority wakeup path.  I utilized
+"pre-routing" (push the task away to a less important RQ before activating)
+approach, while Steve utilized a "post-routing" approach.  The advantage of
+my approach is that you avoid the overhead of a wasted activate/deactivate
+cycle and peripherally related burdens.  The advantage of Steve's method is
+that it neatly solves an issue preventing a "pull" optimization from being
+deployed.
 
+In the end, we ended up deploying Steve's idea.  But it later dawned on me
+that we could get the best of both worlds by deploying both ideas together,
+albeit slightly modified.
+
+The idea is simple:  Use a "light-weight" lookup for pre-routing, since we
+only need to approximate a good home for the task.  And we also retain the
+post-routing push logic to clean up any inaccuracies caused by a condition
+of "priority mistargeting" caused by the lightweight lookup.  Most of the
+time, the pre-routing should work and yield lower overhead.  In the cases
+where it doesnt, the post-router will bat cleanup.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
 
- kernel/sched.c    |    3 +++
- kernel/sched_rt.c |   10 ++++++++++
- 2 files changed, 13 insertions(+)
+ kernel/sched_rt.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-Index: linux-compile.git/kernel/sched.c
-===================================================================
---- linux-compile.git.orig/kernel/sched.c	2007-11-20 19:52:59.000000000 -0500
-+++ linux-compile.git/kernel/sched.c	2007-11-20 19:53:00.000000000 -0500
-@@ -22,6 +22,8 @@
-  *              by Peter Williams
-  *  2007-05-06  Interactivity improvements to CFS by Mike Galbraith
-  *  2007-07-01  Group scheduling enhancements by Srivatsa Vaddagiri
-+ *  2007-10-22  RT overload balancing by Steven Rostedt
-+ *                 (with thanks to Gregory Haskins)
-  */
- 
- #include <linux/mm.h>
-@@ -1635,6 +1637,7 @@ out_activate:
- 
- out_running:
- 	p->state = TASK_RUNNING;
-+	wakeup_balance_rt(rq, p);
- out:
- 	task_rq_unlock(rq, &flags);
- 
 Index: linux-compile.git/kernel/sched_rt.c
 ===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:52:59.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:53:00.000000000 -0500
-@@ -555,6 +555,15 @@ static void schedule_tail_balance_rt(str
- 	}
+--- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:53:07.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:53:08.000000000 -0500
+@@ -148,8 +148,27 @@ yield_task_rt(struct rq *rq)
  }
  
+ #ifdef CONFIG_SMP
++static int find_lowest_rq(struct task_struct *task);
 +
-+static void wakeup_balance_rt(struct rq *rq, struct task_struct *p)
-+{
-+	if (unlikely(rt_task(p)) &&
-+	    !task_running(rq, p) &&
-+	    (p->prio >= rq->curr->prio))
-+		push_rt_tasks(rq);
-+}
+ static int select_task_rq_rt(struct task_struct *p, int sync)
+ {
++	struct rq *rq = task_rq(p);
 +
- /*
-  * Load-balancing iterator. Note: while the runqueue stays locked
-  * during the whole iteration, the current task might be
-@@ -662,6 +671,7 @@ move_one_task_rt(struct rq *this_rq, int
- #else /* CONFIG_SMP */
- # define schedule_tail_balance_rt(rq)	do { } while (0)
- # define schedule_balance_rt(rq, prev)	do { } while (0)
-+# define wakeup_balance_rt(rq, p)	do { } while (0)
++	/*
++	 * If the task will not preempt the RQ, try to find a better RQ
++	 * before we even activate the task
++	 */
++	if ((p->prio >= rq->rt.highest_prio)
++	    && (p->nr_cpus_allowed > 1)) {
++		int cpu = find_lowest_rq(p);
++
++		return (cpu == -1) ? task_cpu(p) : cpu;
++	}
++
++	/*
++	 * Otherwise, just let it ride on the affined RQ and the
++	 * post-schedule router will push the preempted task away
++	 */
+ 	return task_cpu(p);
+ }
  #endif /* CONFIG_SMP */
- 
- static void task_tick_rt(struct rq *rq, struct task_struct *p)
 
 -- 
