@@ -1,158 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932599AbXKUBXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbXKUBYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932599AbXKUBXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 20:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763094AbXKUBOM
+	id S932574AbXKUBYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 20:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763666AbXKUBOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 20:14:12 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:60059 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763282AbXKUBOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 20:14:04 -0500
-Message-Id: <20071121011249.984603310@goodmis.org>
-References: <20071121010054.663842380@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 20 Nov 2007 20:01:01 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <clameter@sgi.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v4 07/20] disable CFS RT load balancing.
-Content-Disposition: inline; filename=disable-CFS-rt-balance.patch
+	Tue, 20 Nov 2007 20:14:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46744 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765614AbXKUBOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 20:14:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Subject: Re: apm emulation driver broken ?
+Date: Wed, 21 Nov 2007 02:32:30 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com> <200711182322.41354.rjw@sisk.pl> <47418A00.1000704@gmail.com>
+In-Reply-To: <47418A00.1000704@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711210232.30575.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we now take an active approach to load balancing, we don't need to
-balance RT tasks via CFS. In fact, this code was found to pull RT tasks
-away from CPUS that the active movement performed, resulting in
-large latencies.
+On Monday, 19 of November 2007, Franck Bui-Huu wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday, 18 of November 2007, Franck Bui-Huu wrote:
+> >> Rafael J. Wysocki wrote:
+> >> See the call to wait_even() made by apm_ioctl(). If any processes
+> >> run this, it will prevent the system to suspend...
+> > 
+> > True, but does it actually happen in practice?
+> > 
+> 
+> when several processes are waiting for a suspend event.
+> 
+> > 
+> > At this point the second branch of the "if (as->suspend_state == SUSPEND_READ)"
+> > can be fixed by replacing wait_event_interruptible() with
+> > wait_event_freezable(), 
+> 
+> yes
+> 
+> > but the fix for the first branch depends on whether or
+> > not the wait_event() is really necessary.
+> 
+> As I said I don't know. It's probably time to put some people
+> on CC but don't know who though.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+OK, never mind.  I think the patch below is the right fix.
+
+
 ---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
- kernel/sched_rt.c |   95 ++----------------------------------------------------
- 1 file changed, 4 insertions(+), 91 deletions(-)
+The APM emulation is currently broken as a result of commit
+831441862956fffa17b9801db37e6ea1650b0f69
+"Freezer: make kernel threads nonfreezable by default"
+that removed the PF_NOFREEZE annotations from apm_ioctl() without adding
+the appropriate freezer hooks.  Fix it and remove the unnecessary variable flags
+from apm_ioctl().
 
-Index: linux-compile.git/kernel/sched_rt.c
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/char/apm-emulation.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+Index: linux-2.6/drivers/char/apm-emulation.c
 ===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2007-11-20 19:53:00.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2007-11-20 19:53:01.000000000 -0500
-@@ -564,109 +564,22 @@ static void wakeup_balance_rt(struct rq 
- 		push_rt_tasks(rq);
- }
- 
--/*
-- * Load-balancing iterator. Note: while the runqueue stays locked
-- * during the whole iteration, the current task might be
-- * dequeued so the iterator has to be dequeue-safe. Here we
-- * achieve that by always pre-iterating before returning
-- * the current task:
-- */
--static struct task_struct *load_balance_start_rt(void *arg)
--{
--	struct rq *rq = arg;
--	struct rt_prio_array *array = &rq->rt.active;
--	struct list_head *head, *curr;
--	struct task_struct *p;
--	int idx;
--
--	idx = sched_find_first_bit(array->bitmap);
--	if (idx >= MAX_RT_PRIO)
--		return NULL;
--
--	head = array->queue + idx;
--	curr = head->prev;
--
--	p = list_entry(curr, struct task_struct, run_list);
--
--	curr = curr->prev;
--
--	rq->rt.rt_load_balance_idx = idx;
--	rq->rt.rt_load_balance_head = head;
--	rq->rt.rt_load_balance_curr = curr;
--
--	return p;
--}
--
--static struct task_struct *load_balance_next_rt(void *arg)
--{
--	struct rq *rq = arg;
--	struct rt_prio_array *array = &rq->rt.active;
--	struct list_head *head, *curr;
--	struct task_struct *p;
--	int idx;
--
--	idx = rq->rt.rt_load_balance_idx;
--	head = rq->rt.rt_load_balance_head;
--	curr = rq->rt.rt_load_balance_curr;
--
--	/*
--	 * If we arrived back to the head again then
--	 * iterate to the next queue (if any):
--	 */
--	if (unlikely(head == curr)) {
--		int next_idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
--
--		if (next_idx >= MAX_RT_PRIO)
--			return NULL;
--
--		idx = next_idx;
--		head = array->queue + idx;
--		curr = head->prev;
--
--		rq->rt.rt_load_balance_idx = idx;
--		rq->rt.rt_load_balance_head = head;
--	}
--
--	p = list_entry(curr, struct task_struct, run_list);
--
--	curr = curr->prev;
--
--	rq->rt.rt_load_balance_curr = curr;
--
--	return p;
--}
--
- static unsigned long
- load_balance_rt(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 		unsigned long max_load_move,
- 		struct sched_domain *sd, enum cpu_idle_type idle,
- 		int *all_pinned, int *this_best_prio)
+--- linux-2.6.orig/drivers/char/apm-emulation.c
++++ linux-2.6/drivers/char/apm-emulation.c
+@@ -295,7 +295,6 @@ static int
+ apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg)
  {
--	struct rq_iterator rt_rq_iterator;
--
--	rt_rq_iterator.start = load_balance_start_rt;
--	rt_rq_iterator.next = load_balance_next_rt;
--	/* pass 'busiest' rq argument into
--	 * load_balance_[start|next]_rt iterators
--	 */
--	rt_rq_iterator.arg = busiest;
--
--	return balance_tasks(this_rq, this_cpu, busiest, max_load_move, sd,
--			     idle, all_pinned, this_best_prio, &rt_rq_iterator);
-+	/* don't touch RT tasks */
-+	return 0;
- }
+ 	struct apm_user *as = filp->private_data;
+-	unsigned long flags;
+ 	int err = -EINVAL;
  
- static int
- move_one_task_rt(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 		 struct sched_domain *sd, enum cpu_idle_type idle)
- {
--	struct rq_iterator rt_rq_iterator;
+ 	if (!as->suser || !as->writer)
+@@ -331,10 +330,16 @@ apm_ioctl(struct inode * inode, struct f
+ 			 * Wait for the suspend/resume to complete.  If there
+ 			 * are pending acknowledges, we wait here for them.
+ 			 */
+-			flags = current->flags;
++			freezer_do_not_count();
+ 
+ 			wait_event(apm_suspend_waitqueue,
+ 				   as->suspend_state == SUSPEND_DONE);
++
++			/*
++			 * Since we are waiting until the suspend is done, the
++			 * try_to_freeze() in freezer_count() will not trigger
++			 */
++			freezer_count();
+ 		} else {
+ 			as->suspend_state = SUSPEND_WAIT;
+ 			mutex_unlock(&state_lock);
+@@ -362,14 +367,10 @@ apm_ioctl(struct inode * inode, struct f
+ 			 * Wait for the suspend/resume to complete.  If there
+ 			 * are pending acknowledges, we wait here for them.
+ 			 */
+-			flags = current->flags;
 -
--	rt_rq_iterator.start = load_balance_start_rt;
--	rt_rq_iterator.next = load_balance_next_rt;
--	rt_rq_iterator.arg = busiest;
+-			wait_event_interruptible(apm_suspend_waitqueue,
++			wait_event_freezable(apm_suspend_waitqueue,
+ 					 as->suspend_state == SUSPEND_DONE);
+ 		}
+ 
+-		current->flags = flags;
 -
--	return iter_move_one_task(this_rq, this_cpu, busiest, sd, idle,
--				  &rt_rq_iterator);
-+	/* don't touch RT tasks */
-+	return 0;
- }
- #else /* CONFIG_SMP */
- # define schedule_tail_balance_rt(rq)	do { } while (0)
-
--- 
+ 		mutex_lock(&state_lock);
+ 		err = as->suspend_result;
+ 		as->suspend_state = SUSPEND_NONE;
