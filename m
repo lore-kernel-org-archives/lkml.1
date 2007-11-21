@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXKUFv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbXKUF4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbXKUFv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 00:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbXKUFvt
+	id S1754230AbXKUF4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 00:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXKUF4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 00:51:49 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:22758 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbXKUFvs (ORCPT
+	Wed, 21 Nov 2007 00:56:11 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35014 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbXKUF4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 00:51:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KnE6yWJj4483d4NbdVT8M2rh1/pd2yS/1NAMhM3Fcj+pndKWVOXeym3V7G8ZvzicnBRvG/4jt6YC5jNlL6ih5Z482a7c8U0cDbldI0hhND3braBUTJPGWYCfjMM3TGIUTX49V7fYk2KLd3q97WKb3cnXrT+cvPUPuQvIAXIri9Q=
-Message-ID: <a8e1da0711202151t6c9d52acjf1f876085b95dfce@mail.gmail.com>
-Date: Wed, 21 Nov 2007 13:51:47 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc3-mm1
+	Wed, 21 Nov 2007 00:56:10 -0500
+Date: Wed, 21 Nov 2007 14:58:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1
+Message-Id: <20071121145838.c66a6393.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, andrew
+I met.
 
-modpost failed for me:
-  MODPOST 360 modules
-ERROR: "empty_zero_page" [drivers/kvm/kvm.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+<stdin>:1389:2: warning: #warning syscall revokeat not implemented
+<stdin>:1393:2: warning: #warning syscall frevoke not implemented
+  CHK     include/linux/compile.h
+make[1]: *** No rule to make target `arch/ia64/lib/copy_page-export.o', needed by `arch/ia64/lib/built-in.o'.  Stop.
+make: *** [arch/ia64/lib] Error 2
 
-Regards
-dave
+fix (for my config ?) is attached.
+
+=
+This was necessary to build.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ arch/ia64/lib/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.24-rc3-mm1/arch/ia64/lib/Makefile
+===================================================================
+--- linux-2.6.24-rc3-mm1.orig/arch/ia64/lib/Makefile
++++ linux-2.6.24-rc3-mm1/arch/ia64/lib/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for ia64-specific library routines..
+ #
+ 
+-obj-y := io.o copy_page-export.o
++obj-y := io.o
+ 
+ lib-y := __divsi3.o __udivsi3.o __modsi3.o __umodsi3.o			\
+ 	__divdi3.o __udivdi3.o __moddi3.o __umoddi3.o			\
+
