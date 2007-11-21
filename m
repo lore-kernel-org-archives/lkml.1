@@ -1,67 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXKUCIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXKUCJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbXKUCIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 21:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXKUCIm
+	id S1753391AbXKUCJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 21:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbXKUCJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 21:08:42 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36360 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750702AbXKUCIm (ORCPT
+	Tue, 20 Nov 2007 21:09:49 -0500
+Received: from mail.clusterfs.com ([74.0.229.162]:56629 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbXKUCJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 21:08:42 -0500
-Date: Tue, 20 Nov 2007 18:08:38 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: akpm@linux-foundation.org, travis@sgi.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-In-Reply-To: <200711210236.33460.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0711201758350.30224@schroedinger.engr.sgi.com>
-References: <20071120011132.143632442@sgi.com>
- <Pine.LNX.4.64.0711201607460.29220@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0711201703570.29648@schroedinger.engr.sgi.com>
- <200711210236.33460.ak@suse.de>
+	Tue, 20 Nov 2007 21:09:48 -0500
+Date: Tue, 20 Nov 2007 19:09:45 -0700
+From: Andreas Dilger <adilger@sun.com>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: coyli@suse.de, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext4: dir inode reservation V3
+Message-ID: <20071121020945.GB8087@webber.adilger.int>
+Mail-Followup-To: Mingming Cao <cmm@us.ibm.com>, coyli@suse.de,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <4739B0C0.3060907@suse.de> <1195524061.4177.17.camel@localhost.localdomain> <47425F0B.3030604@suse.de> <1195590124.8471.17.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1195590124.8471.17.camel@localhost.localdomain>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Nov 2007, Andi Kleen wrote:
-
-> On Wednesday 21 November 2007 02:16:11 Christoph Lameter wrote:
-> > But one can subtract too... 
+On Nov 20, 2007  12:22 -0800, Mingming Cao wrote:
+> On Tue, 2007-11-20 at 12:14 +0800, Coly Li wrote:
+> > Mingming Cao wrote:
+> > > On Tue, 2007-11-13 at 22:12 +0800, Coly Li wrote:
+> > The hole is (s_dir_ireserve_nr - 1), not N * s_dir_ireserve_nr. Because
+> > directory inode will also use a inode slot from reserved area, reset
+> > slots number for files is (s_dir_ireserve_nr - 1).  Except for the
+> > reserved inodes number, your understanding exactly matches my idea.
 > 
-> The linker cannot subtract (unless you add a new relocation types) 
+> The performance gain on large number of directories looks interesting,
+> but I am afraid this makes the uninitialized block group feature less
+> useful (to speed up fsck) than before:( The reserved inode will cause
+> the unused inode watermark higher than before, and spread the
+> directories over to other block groups earlier than before. Maybe it
+> worth it...not sure.
 
-The compiler knows and emits assembly to compensate.
+My original thoughts on the design for this were slightly different:
+- that the per-directory reserved window would scale with the size of
+  the directory, so that even (or especially) with htree directories the 
+  inodes would be kept in hash-ordered sets to speed up stat/unlink
+- it would be possible/desirable to re-use the existing block bitmap
+  reservation code to handle inode bitmap reservation for directories
+  while those directories are in-core.  We already have the mechanisms
+  for this, "all" that would need to change is have the reservation code
+  point at the inode bitmaps but I don't know how easy that is
+- after an unmount/remount it would be desirable to re-use the same blocks
+  for getting good hash->inode mappings, wherein lies the problem of
+  compatibility
 
-> All you need is a 2MB area (16MB is too large if you really
-> want 16k CPUs someday) somewhere in the -2GB or probably better
-> in +2GB. Then the linker puts stuff in there and you use
-> the offsets for referencing relative to %gs.
+One possible solutions for the restart problem is searching the directory
+leaf block in which an inode is being added for the inode numbers and try
+to use those as a goal for the inode allocation...  Has a minor problem
+with ordering, because usually the inode is allocated before the dirent
+is created, but isn't impossible to fix (e.g. find dirent slot first,
+keep a pointer to it, check for inode goals, and then fill in dirent
+inum after allocating inode)
 
-2MB * 16k = 32GB. Even with 4k cpus we will have 2M * 4k = 8GB both do
-not fit in the 2GB area.
+> > >> 5, Performance number
+> > >> On a Core-Duo, 2MB DDM memory, 7200 RPM SATA PC, I built a 50GB ext4
+> > >> partition, and tried to create 50000 directories, and create 15 (1KB)
+> > >> files in each directory alternatively. After a remount, I tried to
+> > >> remove all the directories and files recursively by a 'rm -rf'.
+> > >> Below is the benchmark result,
+> > >> 		normal ext4			ext4 with dir inode reservation
+> > >> 	mount options:	-o data=writeback	-o data=writeback,dir_ireserve=low
+> > >> 	Create dirs:	real    0m49.101s	real    2m59.703s
+> > >> 	Create files:	real    24m17.962s	real    21m8.161s
+> > >> 	Unlink all:	real    24m43.788s	real    17m29.862s
 
-The offset relative to %gs cannot be used if you have a loop and are 
-calculating the addresses for all instances. That is what we are talking 
-about. The CPU_xxx operations that are using the %gs register are fine and 
-are not affected by the changes we are discussing.
+One likely reason that the create dirs step is slower is that this is
+doing a lot more IO than in the past.  Only a single inode in each
+inode table block is being used, so that means that a lot of empty
+bytes are being read and written (maybe 16x as much data in this case).
 
-> Then for all CPUs (including CPU #0) you put the real mapping
-> somewhere else, copy the reference data there (which also doesn't need
-> to be on the offset the linker assigned, just on a constant offset
-> from it somewhere in the normal kernel data) and off you go.
+Also, in what order are you creating files in the directories?  If you
+are creating them in directory order like:
 
-Real mapping? We have constant offsets after this patchset. I do not get 
-what you are planning here.
+	for (f = 0; f < 15; f++)
+		for (i = 0; i < 50000; i++)
+			touch dir$i/f$f
 
-> Then the reference data would be initdata and eventually freed.
-> That is similar to how the current per cpu data works.
+then it is completely unsurprising that directory reservation is faster
+at file create/unlink because those inodes are now contiguous at the
+expense of having gaps in the inode sequence.  Creating 15 files per
+directory is of course the optimum test case also.
 
-Yes that is also how the current patchset works. I just do not understand 
-what you want changed.
+How does this patch behave with benchmarks like dbench, mongo, postmark?
+
+> It would be nice to remember the last allocated bit for each block
+> group, so we don't have to start from bit 0 (in the worse case scan the
+> entire block group) for every single directory. Probably this can be
+> saved in the in-core block group descriptor.  Right now the in core
+> block group descriptor structure is the same on-disk block-group
+> structure though, it might worth to separate them and provide load/store
+> helper functions.
+
+Note that mballoc already creates an in-memory struct for each group.
+I think the initialization of this should be moved outside of mballoc
+so that it can be used for other purposes as you propose.
+
+Eric had a benchmark where creating many files/subdirs would cause
+a huge slowdown because of bitmap searching, and having a per-group
+pointer with the first free inode (or last allocated inode might be
+less work to track) would speed this up a lot. 
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Software Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
