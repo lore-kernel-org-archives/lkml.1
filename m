@@ -1,131 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbXKUNHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXKUNIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbXKUNHt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 08:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKUNHl
+	id S1758134AbXKUNIe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 08:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbXKUNI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 08:07:41 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:4919 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbXKUNHk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 08:07:40 -0500
+	Wed, 21 Nov 2007 08:08:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:48895 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751198AbXKUNI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 08:08:26 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [rfc 08/45] cpu alloc: x86 support
+Date: Wed, 21 Nov 2007 14:08:16 +0100
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, travis@sgi.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+References: <20071120011132.143632442@sgi.com> <200711210236.33460.ak@suse.de> <Pine.LNX.4.64.0711201758350.30224@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711201758350.30224@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 21 Nov 2007 13:06:36.0946 (UTC) FILETIME=[59196F20:01C82C3F]
-Content-class: urn:content-classes:message
-Subject: Re: [KERNEL]: Avoid divide in IS_ALIGN
-Date: Wed, 21 Nov 2007 08:06:36 -0500
-Message-ID: <Pine.LNX.4.61.0711210800140.25473@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.61.0711201625570.21839@chaos.analogic.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [KERNEL]: Avoid divide in IS_ALIGN
-thread-index: AcgsP1kjYD7QaE2uTX+49McKlVA5hg==
-References: <20071120135607.GA18346@gondor.apana.org.au> <Pine.LNX.4.61.0711201625570.21839@chaos.analogic.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711211408.17078.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 20 Nov 2007, Richard B. Johnson wrote:
+> > All you need is a 2MB area (16MB is too large if you really
+> > want 16k CPUs someday) somewhere in the -2GB or probably better
+> > in +2GB. Then the linker puts stuff in there and you use
+> > the offsets for referencing relative to %gs.
+> 
+> 2MB * 16k = 32GB. Even with 4k cpus we will have 2M * 4k = 8GB both do
+> not fit in the 2GB area.
 
-> On Tue, 20 Nov 2007, Herbert Xu wrote:
->
->> Hi:
->> 
->> [KERNEL]: Avoid divide in IS_ALIGN
->> 
->> I was happy to discover the brand new IS_ALIGN macro and quickly
->> used it in my code.  To my dismay I found that the generated code
->> used division to perform the test.
->> 
->> This patch fixes it by changing the % test to an &.  This avoids
->> the division.
->> 
->> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->> 
->> Cheers,
->> -- 
->> Visit Openswan at http://www.openswan.org/
->> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
->> Home Page: http://gondor.apana.org.au/~herbert/
->> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
->> --
->> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->> index 94bc996..39b3fa6 100644
->> --- a/include/linux/kernel.h
->> +++ b/include/linux/kernel.h
->> @@ -35,7 +35,7 @@ extern const char linux_proc_banner[];
->> #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
->> #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
->> #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), 
->> (a)))
->> -#define IS_ALIGNED(x,a)		(((x) % ((typeof(x))(a))) == 0)
->> +#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
->> 
->
-> Your macro modification is wrong.
+I was referring here to the 16MB/CPU you proposed originally which will not fit 
+into _any_  kernel area for 16k CPUs. 
 
-There was a brain fart on the explaination of why it's wrong.
-Here is a better explaination.
+The whole mapping for all CPUs cannot fit into 2GB of course, but the reference 
+linker managed range can.
 
-Executing this script.............
+> The offset relative to %gs cannot be used if you have a loop and are 
+> calculating the addresses for all instances. That is what we are talking 
+> about. The CPU_xxx operations that are using the %gs register are fine and 
+> are not affected by the changes we are discussing.
 
-cat <<EOF >/tmp/xxx.c
-#include <stdio.h>
+Sure it can -- you just get the base address from a global array
+and then add the offset
 
-#define IS_ALIGNED(x,a)		(((x) % ((typeof(x))(a))) == 0)
-#define _IS_ALIGNED(x, a)	(((x) & ((typeof(x))(a) - 1)) == 0)
+> 
+> > Then the reference data would be initdata and eventually freed.
+> > That is similar to how the current per cpu data works.
+> 
+> Yes that is also how the current patchset works. I just do not understand 
+> what you want changed.
 
-int main()
-{
-    int i;
-    long p = 0x12345678;
-    for(i=1; i< 0x11; i++)
-        printf("Old = %d, new = %d\n", IS_ALIGNED(p, i), _IS_ALIGNED(p, i));
-     return 0;
-}
-EOF
-gcc -Wall -o /tmp/xxx /tmp/xxx.c
-/tmp/xxx
+Anyways i think your current scheme cannot work (too much VM, placed at the wrong 
+place; some wrong assumptions).
 
-... produces:
-Old = 1, new = 1
-Old = 1, new = 1
-Old = 1, new = 1
-Old = 1, new = 1
-Old = 0, new = 1
-Old = 1, new = 1
-Old = 0, new = 1
-Old = 1, new = 1
-Old = 1, new = 0
-Old = 0, new = 0
-Old = 0, new = 0
-Old = 1, new = 0
-Old = 0, new = 0
-Old = 0, new = 0
-Old = 0, new = 0
-Old = 0, new = 0
+But since I seem unable to communicate this to you I'll stop commenting
+and let you find it out the hard way. Have fun.
 
-Which is clearly different.
-
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-Andi
