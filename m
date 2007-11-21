@@ -1,184 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbXKUQyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXKURDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbXKUQyc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 11:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXKUQyX
+	id S1755366AbXKURDw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 12:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbXKURDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 11:54:23 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36582 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbXKUQyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 11:54:23 -0500
-Date: Wed, 21 Nov 2007 08:54:15 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: James Huang <jamesclhuang@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com
-Subject: Re: __rcu_process_callbacks() in Linux 2.6
-Message-ID: <20071121165415.GA20130@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <922177.2692.qm@web83824.mail.sp1.yahoo.com>
-MIME-Version: 1.0
+	Wed, 21 Nov 2007 12:03:44 -0500
+Received: from main.gmane.org ([80.91.229.2]:49672 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751141AbXKURDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 12:03:43 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jakub Narebski <jnareb@gmail.com>
+Subject: Re: gitweb: kernel versions in the history (feature request, probably)
+Followup-To: gmane.comp.version-control.git
+Date: Wed, 21 Nov 2007 17:44:21 +0100
+Organization: At home
+Message-ID: <fi1n94$l8r$1@ger.gmane.org>
+References: <20071120142042.GA4157@ff.dom.local> <20071120215904.GF1001@machine.or.cz> <47436E0F.6080003@o2.pl> <20071121032009.GB4175@fieldses.org> <20071121075217.GA1642@ff.dom.local> <20071121151831.GO1001@machine.or.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <922177.2692.qm@web83824.mail.sp1.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: abxf19.neoplus.adsl.tpnet.pl
+Mail-Copies-To: Jakub Narebski <jnareb@gmail.com>
+User-Agent: KNode/0.10.2
+Cc: git@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 07:43:09PM -0800, James Huang wrote:
-> Please disregard the previous email.
+Petr Baudis wrote:
+
+> On Wed, Nov 21, 2007 at 08:52:17AM +0100, Jarek Poplawski wrote:
+>> ...
+>> tags
+>> 4 days ago   v2.6.24-rc3     Linux 2.6.24-rc3
+>> 2 weeks ago  v2.6.24-rc2     Linux 2.6.24-rc2
+>> 4 weeks ago  v2.6.24-rc1     Linux 2.6.24-rc1
+>> 6 weeks ago  v2.6.23         Linux 2.6.23
+>> 
+>> which drives me crazy, because, without looking at the calendar, and
+>> calculator, I don't really know which month was 6 weeks ago, and 4
+>> days ago, either!
 > 
+> I have myself never been sure if the relative times are a good idea or
+> not. :-) Sometimes I hate them, sometimes they are more convenient...
+
+Additionally if we want support caching in gitweb, and not need to rewrite
+cached file, then we should use absolute time everywhere in gitweb (perhaps
+rewriting to relative using JavaScript, or output filter,...).
+
+There is some cutoff where gitweb stops displaying relative time and
+displays date; gitweb should also always provide absolute date in tooltip
+on mouseover (in title attribute), if it does not then it is a bug.
+
+[...]
+>> Of course, this problem doesn't look so hard if we forget about
+>> git internals: I can imagine keeping a simple database, which
+>> could simply retrieve commit numbers from these ChangeLogs, and
+>> connecting this with gitweb's commit page as well... For
+>> performance reasons, doing it only for stable and testing, so with
+>> -rc 'precision' would be very helpful too.
 > 
-> In the latest Linux 2.6 RCU implementation, __rcu_process_callbacks() is coded as follows: 
-> 
-> 
-> 422 static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
-> 423                                        struct rcu_data *rdp)
-> 424 {
-> 425        if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch)) {
-> 426                *rdp->donetail = rdp->curlist;
-> 427                rdp->donetail = rdp->curtail;
-> 428                rdp->curlist = NULL;
-> 429                rdp->curtail = &rdp->curlist;
-> 430        }
-> 431 
-> 432        if (rdp->nxtlist && !rdp->curlist) {
-> 433                local_irq_disable();
-> 434                rdp->curlist = rdp->nxtlist;
-> 435                rdp->curtail = rdp->nxttail;
-> 436                rdp->nxtlist = NULL;
-> 437                rdp->nxttail = &rdp->nxtlist;
-> 438                local_irq_enable();
-> 439 
-> 440                /*
-> 441                  * start the next batch of callbacks
-> 442                  */
-> 443 
-> 444                /* determine batch number */
-> 445                rdp->batch = rcp->cur + 1;
-> 446                /* see the comment and corresponding wmb() in
-> 447                  * the rcu_start_batch()
-> 448                  */
-> 449                smp_rmb();
-> 450 
-> 451                if (!rcp->next_pending) {
-> 452                        /* and start it/schedule start if it's a new batch */
-> 453                        spin_lock(&rcp->lock);
-> 454                        rcp->next_pending = 1;
-> 455                        rcu_start_batch(rcp);
-> 456                        spin_unlock(&rcp->lock);
-> 457                }
-> 458        }
-> 459 
-> 460        rcu_check_quiescent_state(rcp, rdp);
-> 461        if (rdp->donelist)
-> 462                rcu_do_batch(rdp);
-> 463 }
-> 
-> 
-> The question is how does the update of rdp->batch at line 445 guarantee to observe the most updated value of rcp->cur??
-> The issue is that there is no memory barrier/locking before line 445.
-> So I think the following sequence of events in chronological order is possible:
-> 
-> Assume initially rcp->cur = 100, this current batch value is visible to every CPU, and batch 100 has completed 
-> (i.e. rcp->completed = 100, rcp->next_pending = 0,  rcp->cpumask = 0, and for each CPU, rdp->quiescbatch = 100, rdp->qs_pending = 0, rdp->passed_quiesc = 1)
+> It isn't too hard if we don't forget about git internals either. It's
+> just that getting this information might not be cheap. But maybe I'm
+> wrong and this won't be a problem for sane projects. Someone should post
+> a patch. ;-)
+
+Perhaps the following solution would be good idea:
+ 1. use git-describe to find nearest commit
+ 2. if it took long / if the distance from tag is large
+    then make some special tag denoting calculated git-describe e.g.
+    in tag name
+ 3. if found tag is helper tag created in previous step, recaulculate
+    true git-describe from it, or just output closest contained tag.
+This needs write access to repository, although can be done using simple
+database... what do you think?
+
+-- 
+Jakub Narebski
+Warsaw, Poland
+ShadeHawk on #git
 
 
-> CPU 0: 
-> --------- 
->              call_rcu(): a callback inserted into rdp->nxtlist;                     
-> 
->              timer interrupt 
->                 call rcu_pending(), return true  ( ! rdp->curlist && rdp->nxtlist)
->                 call rcu_check_callbacks() 
->                      schedule per CPU rcu_tasklet
-> 
->                 __rcu_process_callbacks()
->                            move callbacks from nxtlist to curlist;
->                            rdp->batch = 101
->                            lock rcp->lock
->                            rcp->next_pending = 1
->                            call rcu_start_batch()
->                                  find the current batch has completed and next batch pending;
->                                  rcp->next_pending = 0
->                                  update rcp->cur to 101 and initialize rcp->cpumask;                  <----- time t1
->                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->                            unlock rcp->lock
->                               
-> CPU 1:
-> ---------  
->              timer interrupt 
->                   call rcu_pending(), return true (asume observing rcp->cur = 101 != rdp->quiescbatch) 
->                   
->                   call rcu_check_callbacks() 
->                        schedule per CPU rcu_tasklet
-> 
->                  __rcu_process_callbacks()
->                        call rcu_check_quisecent_state()
->                              find rdp->quiescbatch != rcp->cur
->                              set rdp->qs_pending = 1
->                              set rdp->passed_quiesc = 0
->                              set rdp->quiescbatch = 101 (rcp->cur)
-> 
->              Another timer interrupt
->                  call rcu_pending(), return true (rdp->qs_pending == 1)  
->                  call rcu_check_callbacks() 
->                        (assume in user mode)                         <-- time t2  pass quiescent state
->                        ~~~~~~~~~~~~~~~~~~                             ~~~~~~~~~~~~~~~~~~~~~~
->                        rdp->passed_quiesc = 1
->                        schedule per CPU rcu_tasklet
->             
->                  __rcu_process_callbacks()
->                        call rcu_check_quisecent_state()
->                              find rdp->qs_pending == 1 && rdp-> passed_quiesc == 1
->                              set rdp->qs_pending = 0
->                              lock rcp->lock
->                              call cpu_quite()
->                                     clear bit in the rcp->cpumask set up by CPU 0 at time t1
->                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->                              unlock rcp->lock
-> 
-> CPU 2:
-> ---------  
->              call_rcu(): a callback inserted into rdp->nxtlist;     <--- time t3
->              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->              
->              timer interrupt 
->                  call rcu_pending(), return true ( ! rdp->curlist && rdp->nxtlist)
->                  call rcu_check_callbacks() 
->                       schedule per CPU rcu_tasklet
-
-The tasklet_schedule() code calls test_and_set_bit(), which is an
-atomic operation that returns a value.  It therefore implies a memory
-barrier, so that if the prior call_rcu() at time t3 "happens after"
-CPU 1's quiescent state at time t2 (which, due to locking, must follow
-the update to rcp->cur at time t1), then the access to rcp->cur at time
-t4 must see the new value of rcp->cur.
-
-This is admittedly a bit subtle and perhaps a bit fragile.  Manfred,
-Dipankar, would it be worth putting an explicit memory barrier somewhere
-in this sequence, or is there another memory barrier that I forgetting?
-
-							Thanx, Paul
-
->                  calls __rcu_process_callbacks()
->                      move callbacks from nxtlist to curlist; (including the callback inserted at time t3)
->                      rdp->batch = rcp->cur + 1;                         <--- time t4
->                      ~~~~~~~~~~~~~~~~~~~~
-> 
-> At time t4, CPU 2 might observe rcp->cpu as 100 and set rdp->batch to 101.
-> So CPU 2 essentially started its batch 101 (includes a callback inserted at time t3) after CPU 1 passed its quiescent state (at time t2) for batch 101.
-> 
-> Isn't this an issue???  Am I missing something?
-> Thanks for pointing me to the right direction.
-> 
-> 
-> -- James Huang
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
