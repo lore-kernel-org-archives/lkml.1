@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbXKUFIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXKUFTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbXKUFIm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 00:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXKUFId
+	id S1755446AbXKUFTA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 00:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXKUFSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 00:08:33 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4894 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752141AbXKUFIc (ORCPT
+	Wed, 21 Nov 2007 00:18:52 -0500
+Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:27038 "EHLO
+	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751141AbXKUFSv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 00:08:32 -0500
-Date: Wed, 21 Nov 2007 12:54:56 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Patrick McHardy <kaber@trash.net>
-Cc: johnpol@2ka.mipt.ru, linux-crypto@vger.kernel.org, mb@bu3sch.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [HIFN 00/03]: RNG support v2
-Message-ID: <20071121045456.GA26429@gondor.apana.org.au>
-References: <20071118213241.9217.7696.sendpatchset@localhost.localdomain>
+	Wed, 21 Nov 2007 00:18:51 -0500
+Message-Id: <4743785D.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 21 Nov 2007 00:14:21 -0500
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix optimized search
+References: <20071121021057.GA24815@goodmis.org>
+ <20071121030838.16020.59975.stgit@novell1.haskins.net>
+ <4743B0F4.8000302@redhat.com> <20071121042635.GB24815@goodmis.org>
+In-Reply-To: <20071121042635.GB24815@goodmis.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20071118213241.9217.7696.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 18, 2007 at 10:32:52PM +0100, Patrick McHardy wrote:
-> These patches add support for using the HIFN rng.
+>>> On Tue, Nov 20, 2007 at 11:26 PM, in message
+<20071121042635.GB24815@goodmis.org>, Steven Rostedt <rostedt@goodmis.org>
+wrote: 
+> On Tue, Nov 20, 2007 at 11:15:48PM -0500, Steven Rostedt wrote:
+>> Gregory Haskins wrote:
+>>> I spied a few more issues from http://lkml.org/lkml/2007/11/20/590.
+>>> Patch is below..
+>>
+>> Thanks, but I have one update...
+>>
+> 
+> Here's the updated patch.
+> 
+> Oh, and Gregory, please email me at my rostedt@goodmis.org account. It
+> has better filters ;-)
+> 
+> This series is at:
+> 
+>   http://rostedt.homelinux.com/rt/rt-balance-patches-v6.tar.bz2
 
-All applied.  Thanks a lot Patrick!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Ah..mails crossed. ;)  Ignore my patch #1 from the 0/4 series I just sent out.
+
+Regards,
+-Greg
+
