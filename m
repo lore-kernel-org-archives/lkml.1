@@ -1,73 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764908AbXKUAhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765311AbXKUAij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764908AbXKUAhJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Nov 2007 19:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXKUAg5
+	id S1765311AbXKUAij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Nov 2007 19:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXKUAib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Nov 2007 19:36:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59564 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Nov 2007 19:38:31 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:34901 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752791AbXKUAg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Nov 2007 19:36:56 -0500
-Date: Wed, 21 Nov 2007 01:36:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Mark Lord <lkml@rtr.ca>, Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
-Message-ID: <20071121003629.GA20765@elte.hu>
-References: <200711201837.39664.nickpiggin@yahoo.com.au> <20071120064747.2a8036cd@laptopd505.fenrus.org> <20071120220110.GF24156@elte.hu> <47436C43.6010200@rtr.ca> <20071120232723.GB23667@elte.hu> <47436ECD.3050004@zytor.com> <20071120234725.GH23667@elte.hu> <474372BC.2000609@zytor.com> <20071121000742.GN23667@elte.hu> <474379C1.2040703@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474379C1.2040703@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751960AbXKUAia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Nov 2007 19:38:30 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, kamezawa.hiroyu@jp.fujit,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Message-Id: <20071121003827.10654.53286.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use two zonelists per node instead of multiple zonelists v10
+Date: Wed, 21 Nov 2007 00:38:27 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This release brings the number of zonelists to two instead of one. Getting
+all the corner cases right for __GFP_THISNODE and one zonelist was turning
+into a complicated mess. Not only was it affecting too many paths but it
+reached the point where it should be reviewed as a standalone change.
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+Much of the aims of the earlier sets are met by having two zonelists. The
+hack is still removed, the number of zonelists is reduced and the MPOL_BIND
+policy still behaves sensibly. I believe this to be a reasonable starting
+point leaving the full one-zonelist approach to be tackled later.
 
-> Ingo Molnar wrote:
->> * H. Peter Anvin <hpa@zytor.com> wrote:
->>
->>>>> Nope.  It runs inside an initramfs, of course; that initramfs is linked 
->>>>> into the kernel binary.
->>>> would be nice to have a single-image variant for all of this. having the 
->>>> separate initrd was always trouble - and it's pointless as well. (we 
->>>> rarely update the initrd without updating the vmlinuz as well)
->>> We do.  Am I missing something?
->>
->> do we have a single-image way of getting both the kernel image and the 
->> initram set up at once? What i know of is a two-image approach: vmlinuz 
->> and initrd.
->>
->
-> Yes, we do.  The initramfs can be linked into the kernel image.  The 
-> unified klibc build tree does that by default.
+There were a few bugs and issues highlighed from reviews fixed up which
+are briefly described in the changelog.
 
-argh. Guess i misread your answer:
+There are concerns over the stability of mainline and -mm at the moment
+and the evidence is on http://test.kernel.org so we should verify for sure
+it is still ok. The set passes a slightly modified numactl regression test
+on x86_64. The slight modification was required because numastat behaves
+differently than the regression test expects (nodes in reverse order). Lee,
+can you confirm it still hasn't regressed with your tests before another
+attempt is made to push it please?
 
->>>>>> nor do i - i was under the impression that klibc was able to work 
->>>>>> out of a bzImage too? Am i wrong?
->>>>> Nope.  It runs inside an initramfs, of course; that initramfs is linked 
->>>>> into the kernel binary.
+Changelog since V9
+  o Rebase to 2.6.24-rc2-mm1
+  o Lookup the nodemask for each allocator callsite in mempolicy.c
+  o Update NUMA statistics based on preferred zone, not first zonelist entry
+  o When __GFP_THISNODE is specified with MPOL_BIND and the current node is
+    not in the allowed nodemask, the first node in the mask will be used
+  o Stick with using two zonelists instead of one because of excessive
+    complexity with corner cases
 
-i took that "Nope" as referring to my impression - but you in fact meant 
-that i am not wrong? :-) So nothing to see here. single-bzImage initrd 
-was and is possible, so we could in fact move chunks of system-related 
-userland (such as irqbalanced) into the kernel proper?
+Changelog since V8
+  o Rebase to 2.6.24-rc2
+  o Added ack for the OOM changes
+  o Behave correctly when GFP_THISNODE and a node ID are specified
+  o Clear up warning over type of nodes_intersects() function
 
-	Ingo
+Changelog since V7
+  o Rebase to 2.6.23-rc8-mm2
+
+Changelog since V6
+  o Fix build bug in relation to memory controller combined with one-zonelist
+  o Use while() instead of a stupid looking for()
+  o Instead of encoding zone index information in a pointer, this version
+    introduces a structure that stores a zone pointer and its index 
+
+Changelog since V5
+  o Rebase to 2.6.23-rc4-mm1
+  o Drop patch that replaces inline functions with macros
+
+Changelog since V4
+  o Rebase to -mm kernel. Host of memoryless patches collisions dealt with
+  o Do not call wakeup_kswapd() for every zone in a zonelist
+  o Dropped the FASTCALL removal
+  o Have cursor in iterator advance earlier
+  o Use nodes_and in cpuset_nodes_valid_mems_allowed()
+  o Use defines instead of inlines, noticably better performance on gcc-3.4
+    No difference on later compilers such as gcc 4.1
+  o Dropped gfp_skip patch until it is proven to be of benefit. Tests are
+    currently inconclusive but it definitly consumes at least one cache
+    line
+
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
+
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
+
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists.
+
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist.
+
+The second patch introduces a helper function node_zonelist() for looking
+up the appropriate zonelist for a GFP mask which simplifies patches later
+in the set.
+
+The third patch replaces multiple zonelists with two zonelists that are
+filtered. The two zonelists are due to the fact that the memoryless patchset
+introduces a second set of zonelists for __GFP_THISNODE.
+
+The fourth patch introduces helper macros for retrieving the zone and node indices of entries in a zonelist.
+
+The final patch introduces filtering of the zonelists based on a nodemask. Two
+zonelists exist per node, one for normal allocations and one for __GFP_THISNODE.
+
+Performance results varied depending on the machine configuration but were
+usually small performance gains. In real workloads the gain/loss will depend
+on how much the userspace portion of the benchmark benefits from having more
+cache available due to reduced referencing of zonelists.
+
+These are the range of performance losses/gains when running against
+2.6.24-rc2-mm1. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+			     loss   to  gain
+Total CPU time on Kernbench: -1.54% to  0.54%
+Elapsed   time on Kernbench: -0.75% to  0.42%
+page_test from aim9:         -8.23% to 10.71%
+brk_test  from aim9:         -3.32% to  4.78%
+fork_test from aim9:         -0.44% to  0.38%
+exec_test from aim9:         -0.95% to  1.11%
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
