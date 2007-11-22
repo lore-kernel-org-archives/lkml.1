@@ -1,145 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbXKVSK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbXKVSLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbXKVSK4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 13:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbXKVSKs
+	id S1753998AbXKVSLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 13:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXKVSLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 13:10:48 -0500
-Received: from waste.org ([66.93.16.53]:49598 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbXKVSKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 13:10:47 -0500
-Date: Thu, 22 Nov 2007 12:10:29 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, xfs-oss <xfs@oss.sgi.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071122181029.GR19691@waste.org>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <20071122025726.GG17536@waste.org> <20071122034106.GV114266761@sgi.com> <20071122072549.GQ19691@waste.org> <20071122103159.GW114266761@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122103159.GW114266761@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 22 Nov 2007 13:11:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54124 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbXKVSLe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 13:11:34 -0500
+Subject: Re: RTL2831U kernel driver
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: kernel@beer.org.uk
+Cc: linux-kernel@vger.kernel.org,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>
+In-Reply-To: <40711.127.0.0.1.1195734828.squirrel@127.0.0.1>
+References: <40711.127.0.0.1.1195734828.squirrel@127.0.0.1>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 22 Nov 2007 16:11:21 -0200
+Message-Id: <1195755081.4810.23.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 09:31:59PM +1100, David Chinner wrote:
-[...]
-> > In other words, I/O priority is per-spindle and not per-filesystem and
-> > thus this change has consequences that leak outside the filesystem in
-> > question. That's bad.
+Em Qui, 2007-11-22 às 12:33 +0000, Vic escreveu:
+> Hi All.
 > 
-> This has nothing to do with this patch - it's a problem with sharing
-> a single resource in a RT system between two non-deterministic
-> constructs. e.g. I can put two ext3 filesystems on the one spindle,
-> run two completely independent RT workloads on the different
-> filesystems and have one workload DOS the other due to differences
-> in priority at the spindle.
-
-Sure. And it's up to the RT system designer not to do something stupid
-like that. The problem is that your patch potentially promotes a
-non-RT I/O activity to an RT one without regard to the rest of the
-system.
-
-Stop for a moment and look at all the kernel threads on the system. If
-your argument was sensible, we'd have raised various of these threads
-to (CPU) RT ages ago. But if we do, we actually royally foul up things
-that have tried to carefully isolate themselves from SCHED_NORMAL
-tasks. If a kernel thread preempted our watchdog or our data
-collection process because it was trying to service a lower priority
-task, that would be fatally broken.
-
-As kernel engineers, we -do not know- the absolute importance of a
-given subsystem in the wider scheme of things. Thus we have no
-business promoting anything outside the "normal" range into RT unless
-explicitly asked to (eg chrt) or if we're actually doing real deadlock
-avoidance.
-
-> That's not a bug in ext3 or the I/O priority mechanism - that's bad
-> system design. Put the filesystems on different spindles and the
-> problem goes away.
-
-And so do all your PVR sales. Two spindles is economically impossible
-on a set-top PVR.
-
-And I rather expect this all also applies to having XFS volumes on top
-of LVM + RAID5 along with other filesystems but I haven't looked
-closely.
-
-> > I'd further add that the kernel internals probably shouldn't wander
-> > into RT priority levels unless it's actually doing priority
-> > inheritance, otherwise it's quite likely to upset the careful
-> > considerations of the RT system designer's priority schemes.
+> Sorry for the breach of netiquette - I'm not subscribed to the list
+> (please CC: me on anything important!), but I'm not really up to much a s
+> a kernel contributor...
 > 
-> Even if issuing RT I/O will guarantee problems in a RT system?
-
-Absolutely (unless we're actually going to do priority inheritance).
-The only person who can know the real RT requirements of a system is
-the system's designer. If he wants to boost the priority of XFS I/O
-threads into RT, he should be allowed to, but it shouldn't happen
-automatically.
-
-Consider someone concurrently running a database on a filesystem and
-an RT data collection task direct to a separate partition. RT I/O may
-currently allow them to successfully
-
-> We've put this cool RT I/O prioritisation mechanism in the I/O layer
-> without any consideration of what it means for the filesystems that
-> the I/O must pass through first.  The design defines I/O
-> prioritsation from a *process* POV and it ignores the fact that the
-> filesystem might not work effectively under such prioritisation
-> mechanism.
+> Anyway - here's the reason for my posting. I've got a kernel driver for
+> the RTL2831U device (a DVB-T device) from Realtek. Just this morning, I
+> got an email from them agreeing to release it under GPL.
 > 
-> An example, perhaps.
-> 
-> If you're smart about the way your application does its multi-stream
-> RT write I/O you preallocate the space and use direct I/O.  But even
-> though you've preallocated the space, in XFS you still need
-> transactions to work because you have to mark the extent you just
-> wrote to as written.
->
-> This conversion happens during I/O completion (i.e. in a workqueue)
-> so it doesn't have the *process* priority to force out log I/O at the same
-> priority as the RT thread. Hence once all the log buffers are queued
-> for I/O, the transaction system blocks all the I/O completion workqueues
-> and all the RT write I/O stops completing and your application, which
-> is doing synchronous direct I/O into preallocated regions hangs.....
+> It currently has no copright notices at all
 
-Perfectly understood. And that's fine. A system designer is allowed to
-shoot himself in the foot.
+Kernel is GPLv2. So, the driver should be released under GPLv2 only or
+GPLv2 or later.
+
+>  - I think I should add Realtek attributions to it.
+
+I would be better if someone from Realtek could send the driver. Anyway,
+any driver submitted to kernel should be signed with a SOB. 
+
+There's a guide on how to submit a driver to kernel. For convenience,
+they are briefly summarized at
+http://linuxtv.org/v4lwiki/index.php/How_to_submit_patches
+
+> Then what should I do?
+
+It would be nice if you can subscribe to Linux DVB mailing [1] list and
+post the driver there. The list is open to users and to developers, so,
+maybe it would be interesting for you to participate there.
+
+[1] http://www.linuxtv.org/cgi-bin/mailman/listinfo/linux-dvb
+
+If you are not willing to subscribe to DVB ML, please copy V4L/DVB
+maintainers mailing list[2] on this subject. This list allows you to
+post even not being a subscriber.
+
+[2] v4l-dvb-maintainer@linuxtv.org
+
+It is important to submit the driver either to DVB or V4L/DVB
+maintainers ML, since this will allow all developers to take a look at
+the driver, checking for eventual issues, and helping to improve it.
+Several developers are not subscribed to LKML (or don't read it
+regularly).
  
-> Hence the only way to give the log I/O enough priority to be issued
-> is to give the I/O a higher priority than anything that is running
-> at the time.
->
-> This is not a problem the I/O scheduler can solve - it is a result
-> of the mechanism used to transfer priority from process context to
-> I/o context. The needs of the filesystem is the key thing that is
-> missing here - you can't do RT I/O if the filesystem backs up....
+Cheers,
+Mauro
 
-I don't think there's any fundamental reason the I/O subsystem or
-filesystems can't be taught to handle priority inversion, which is
-much more acceptable and general fix.
-
-> > Now consider that you're
-> > recording and playing back multiple HD streams on low-margin set-top
-> > hardware and you'll see that making this work -at all- means lots of
-> > I/O tuning.
-> 
-> Yes, it does. But along the same lines, sustaining multiple
-> uncompressed 2k and 4k streams (i.e. multiple GB/s of throughput)
-> takes a lot of I/O tuning. We had to design a whole new allocator to
-> tune the I/O patterns to make it work....
-
-..which makes it fairly attractive to PVR folks until you go mucking
-with RT behind their backs.
-
-If I've got XFS on filesystems A and B on the same spindle (or volume
-group?) and my real RT I/O takes place only on B, then I want log
-flushing to happen in RT on B. But -never on A-. If I can do this with
-a tunable, I'm perfectly happy.
-
--- 
-Mathematics is the supreme nostalgia of our time.
