@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbXKWAft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbXKWAnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbXKWAft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 19:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbXKWAfl
+	id S1754979AbXKWAnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 19:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbXKWAnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 19:35:41 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:53127 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbXKWAfk (ORCPT
+	Thu, 22 Nov 2007 19:43:05 -0500
+Received: from mfbak.jpl.nasa.gov ([137.78.160.179]:56654 "EHLO
+	mfbak.jpl.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbXKWAnD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 19:35:40 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 22 Nov 2007 16:35:38 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Where is the new timerfd?
-In-Reply-To: <20071122162430.48f55995.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
-References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
- <Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
- <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
- <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
- <20071122162430.48f55995.akpm@linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 22 Nov 2007 19:43:03 -0500
+X-Greylist: delayed 2786 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Nov 2007 19:43:03 EST
+Message-ID: <20071122155633.nzkk5gfz4go8ogc8@webmail.jpl.nasa.gov>
+Date: Thu, 22 Nov 2007 15:56:33 -0800
+From: niessner@jpl.nasa.gov
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Where is the interrupt going?
+References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
+	<9a8748490711211816g5df5a81age77ad28c7382a11b@mail.gmail.com>
+In-Reply-To: <9a8748490711211816g5df5a81age77ad28c7382a11b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+X-Source-IP: webmail1.jpl.nasa.gov [137.78.160.101]
+X-Source-Sender: niessner@jpl.nasa.gov
+X-AUTH: Authorized
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Nov 2007, Andrew Morton wrote:
 
-> On Thu, 22 Nov 2007 11:46:13 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
-> > 
-> > > On Nov 22, 2007 6:34 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
-> > > >
-> > > > > Hey Davide,
-> > > > >
-> > > > > Where is the new timerfd API.  In 2.6.24-rc3, I see the *old* API...
-> > > >
-> > > > Maybe Andrew stuffed the turkey with it? :) It was there. I remeber it was
-> > > > merged. Some screw up reverted it?
-> > > 
-> > > t looks that way.
-> > 
-> > I'm looking at the log now. It never went in actually. Andrew-san, what 
-> > happened?
-> > 
-> 
-> Last I recall, we removed the API for 2.6.23 because we intended to do a
-> different interface for 2.6.24.
-> 
-> But I don't recall seeing any timerfd patches in maybe a month.
+I do not think so. I have printk (KERN_NOTICE ...) scattered  
+throughout to make sure the ioctl() is succeeding and to print out  
+registers on the hardware. Those are showing up in /var/log/messages  
+without a hitch. If there is a setting for printk in interrupts, then  
+maybe because I would not know the macro to look for in the  
+configuration.
 
-Was sent on Sep 23, Subject: new timerfd API
-Do you want me to repost?
+Quoting Jesper Juhl <jesper.juhl@gmail.com>, on Wed 21 Nov 2007  
+06:16:45 PM PST:
 
-
-
-- Davide
+> On 22/11/2007, Al Niessner <Al.Niessner@jpl.nasa.gov> wrote:
+>>
+>> Quickly stated, I have a piece of hardware on the PCI bus that is
+>> generating an interrupt (can watch it with a scope) but my handler is
+>> not being called (no printk in /var/log/messages). So, where has the
+>> interrupt gone?
+>>
+> Just to rule out the trivial causes. Could it be that you've simply
+> not configured your system to log messages at the loglevel that your
+> printk() is using?
+>
+> --
+> Jesper Juhl <jesper.juhl@gmail.com>
+> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+> Plain text mails only, please      http://www.expita.com/nomime.html
+>
 
 
