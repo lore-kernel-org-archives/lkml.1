@@ -1,598 +1,551 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbXKVCpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbXKVCpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbXKVCpd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 21:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbXKVCnZ
+	id S1757683AbXKVCpv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 21:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbXKVCne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 21:43:25 -0500
-Received: from mx1.suse.de ([195.135.220.2]:58882 "EHLO mx1.suse.de"
+	Wed, 21 Nov 2007 21:43:34 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37778 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbXKVCnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 21:43:13 -0500
+	id S1751741AbXKVCnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 21:43:16 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20071122343.446909000@suse.de>
 In-Reply-To: <20071122343.446909000@suse.de>
 To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
        rusty@rustcorp.com.au
-Subject: [PATCH RFC] [6/9] Implement namespace checking in modpost
-Message-Id: <20071122024311.CC9E314D68@wotan.suse.de>
-Date: Thu, 22 Nov 2007 03:43:11 +0100 (CET)
+Subject: [PATCH RFC] [9/9] Add a inet namespace
+Message-Id: <20071122024315.09E8114D68@wotan.suse.de>
+Date: Thu, 22 Nov 2007 03:43:14 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This checks the namespaces at build time in modpost
+Shared by IP, IPv6, DCCP, UDPLITE, SCTP. 
+
+The symbols used by tunnel modules weren't put into any name space
+because there are quite a lot of them.
 
 ---
- scripts/mod/modpost.c |  344 ++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 317 insertions(+), 27 deletions(-)
+ net/core/fib_rules.c            |    9 ++++--
+ net/ipv4/af_inet.c              |   52 ++++++++++++++++++++++++----------------
+ net/ipv4/arp.c                  |    1 
+ net/ipv4/icmp.c                 |   10 +++----
+ net/ipv4/inet_connection_sock.c |   40 +++++++++++++++---------------
+ net/ipv4/inet_diag.c            |    4 +--
+ net/ipv4/inet_hashtables.c      |    8 +++---
+ net/ipv4/inet_timewait_sock.c   |   12 ++++-----
+ net/ipv4/ip_input.c             |    2 -
+ net/ipv4/ip_output.c            |    7 +++--
+ net/ipv4/ip_sockglue.c          |   10 +++----
+ 11 files changed, 86 insertions(+), 69 deletions(-)
 
-Index: linux/scripts/mod/modpost.c
+Index: linux/net/ipv4/af_inet.c
 ===================================================================
---- linux.orig/scripts/mod/modpost.c
-+++ linux/scripts/mod/modpost.c
-@@ -1,8 +1,9 @@
--/* Postprocess module symbol versions
-+/* Postprocess module symbol versions and do various other module checks.
-  *
-  * Copyright 2003       Kai Germaschewski
-  * Copyright 2002-2004  Rusty Russell, IBM Corporation
-  * Copyright 2006       Sam Ravnborg
-+ * Copyright 2007	Andi Kleen, SUSE Labs (changes licensed GPLv2 only)
-  * Based in part on module-init-tools/depmod.c,file2alias
-  *
-  * This software may be used and distributed according to the terms
-@@ -12,9 +13,13 @@
-  */
- 
- #include <ctype.h>
-+#include <assert.h>
- #include "modpost.h"
- #include "../../include/linux/license.h"
- 
-+#define NS_SEPARATOR '.'
-+#define NS_SEPARATOR_STRING "."
-+
- /* Are we using CONFIG_MODVERSIONS? */
- int modversions = 0;
- /* Warn about undefined symbols? (do so if we have vmlinux) */
-@@ -27,6 +32,9 @@ static int external_module = 0;
- static int vmlinux_section_warnings = 1;
- /* Only warn about unresolved symbols */
- static int warn_unresolved = 0;
-+/* Fixing those would cause too many ifdefs -- off by default. */
-+static int warn_missing_modules = 0;
-+
- /* How a symbol is exported */
- enum export {
- 	export_plain,      export_unused,     export_gpl,
-@@ -105,19 +113,43 @@ static struct module *find_module(char *
- 	return mod;
+--- linux.orig/net/ipv4/af_inet.c
++++ linux/net/ipv4/af_inet.c
+@@ -218,7 +218,7 @@ out:
  }
  
--static struct module *new_module(char *modname)
-+static const char *basename(const char *s)
-+{
-+	char *p = strrchr(s, '/');
-+	if (p)
-+		return p + 1;
-+	return s;
-+}
-+
-+static struct module *find_module_base(char *modname)
- {
- 	struct module *mod;
--	char *p, *s;
+ u32 inet_ehash_secret __read_mostly;
+-EXPORT_SYMBOL(inet_ehash_secret);
++EXPORT_SYMBOL_NS(inet, inet_ehash_secret);
  
--	mod = NOFAIL(malloc(sizeof(*mod)));
--	memset(mod, 0, sizeof(*mod));
--	p = NOFAIL(strdup(modname));
-+	for (mod = modules; mod; mod = mod->next) {
-+		if (strcmp(basename(mod->name), modname) == 0)
-+			break;
-+	}
-+	return mod;
-+}
+ /*
+  * inet_ehash_secret must be set exactly once
+@@ -235,7 +235,7 @@ void build_ehash_secret(void)
+ 		inet_ehash_secret = rnd;
+ 	spin_unlock_bh(&inetsw_lock);
+ }
+-EXPORT_SYMBOL(build_ehash_secret);
++EXPORT_SYMBOL_NS(inet, build_ehash_secret);
  
-+static void strip_o(char *p)
-+{
-+	char *s;
- 	/* strip trailing .o */
- 	if ((s = strrchr(p, '.')) != NULL)
- 		if (strcmp(s, ".o") == 0)
- 			*s = '\0';
-+}
-+
-+static struct module *new_module(char *modname)
-+{
-+	struct module *mod;
-+	char *p;
-+
-+	mod = NOFAIL(malloc(sizeof(*mod)));
-+	memset(mod, 0, sizeof(*mod));
-+	p = NOFAIL(strdup(modname));
-+	strip_o(p);
- 
- 	/* add to list */
- 	mod->name = p;
-@@ -132,10 +164,12 @@ static struct module *new_module(char *m
-  * struct symbol is also used for lists of unresolved symbols */
- 
- #define SYMBOL_HASH_SIZE 1024
-+#define NSALLOW_HASH_SIZE 64
- 
- struct symbol {
- 	struct symbol *next;
- 	struct module *module;
-+	const char *namespace;
- 	unsigned int crc;
- 	int crc_valid;
- 	unsigned int weak:1;
-@@ -147,10 +181,19 @@ struct symbol {
- 	char name[0];
- };
- 
-+struct nsallow {
-+	struct nsallow *next;
-+	struct module *mod;
-+	struct module *orig;
-+	int ref;
-+	char name[0];
-+};
-+
- static struct symbol *symbolhash[SYMBOL_HASH_SIZE];
-+static struct nsallow *nsallowhash[NSALLOW_HASH_SIZE];
- 
- /* This is based on the hash agorithm from gdbm, via tdb */
--static inline unsigned int tdb_hash(const char *name)
-+static unsigned int tdb_hash(const char *name)
- {
- 	unsigned value;	/* Used to compute the hash value.  */
- 	unsigned   i;	/* Used to cycle through random values. */
-@@ -192,21 +235,67 @@ static struct symbol *new_symbol(const c
- 	return new;
+ /*
+  *	Create an inet socket.
+@@ -1127,7 +1127,7 @@ int inet_sk_rebuild_header(struct sock *
+ 	return err;
  }
  
--static struct symbol *find_symbol(const char *name)
-+static struct symbol *find_symbol(const char *name, const char *ns)
+-EXPORT_SYMBOL(inet_sk_rebuild_header);
++EXPORT_SYMBOL_NS(inet,inet_sk_rebuild_header);
+ 
+ static int inet_gso_send_check(struct sk_buff *skb)
  {
--	struct symbol *s;
-+	struct symbol *s, *match;
- 
- 	/* For our purposes, .foo matches foo.  PPC64 needs this. */
- 	if (name[0] == '.')
- 		name++;
- 
-+	match = NULL;
- 	for (s = symbolhash[tdb_hash(name) % SYMBOL_HASH_SIZE]; s; s=s->next) {
-+		if (strcmp(s->name, name) == 0) {
-+			match = s;
-+			if (ns && s->namespace && strcmp(s->namespace, ns))
-+				continue;
-+			return s;
-+		}
-+	}
-+	return ns ? NULL : match;
-+}
-+
-+static struct nsallow *find_nsallow(const char *name, struct module *mod)
-+{
-+	struct nsallow *s;
-+
-+	for (s = nsallowhash[tdb_hash(name)%NSALLOW_HASH_SIZE]; s; s=s->next) {
-+		if (strcmp(s->name, name) == 0 && s->mod == mod)
-+			return s;
-+	}
-+	return NULL;
-+}
-+
-+static struct nsallow *find_nsallow_name(const char *name)
-+{
-+	struct nsallow *s;
-+
-+	for (s = nsallowhash[tdb_hash(name)%NSALLOW_HASH_SIZE]; s; s=s->next) {
- 		if (strcmp(s->name, name) == 0)
- 			return s;
+@@ -1235,6 +1235,8 @@ unsigned long snmp_fold_field(void *mib[
  	}
- 	return NULL;
+ 	return res;
  }
++/* AK: Not in inet namespace because they're a generic facility. Probably
++   should be in another file though. */
+ EXPORT_SYMBOL_GPL(snmp_fold_field);
  
-+static struct nsallow *
-+new_nsallow(const char *name, struct module *module, struct module *orig)
-+{
-+	unsigned int hash;
-+	struct nsallow *new;
-+	unsigned len;
-+
-+	len = sizeof(struct nsallow) + strlen(name) + 1;
-+	new = NOFAIL(malloc(len));
-+	new->mod = module;
-+	new->orig = orig;
-+	new->ref = 0;
-+	strcpy(new->name, name);
-+	hash = tdb_hash(name) % NSALLOW_HASH_SIZE;
-+	new->next = nsallowhash[hash];
-+	nsallowhash[hash] = new;
-+	return new;
-+}
-+
- static struct {
- 	const char *str;
- 	enum export export;
-@@ -253,27 +342,103 @@ static enum export export_from_sec(struc
- 		return export_unknown;
- }
+ int snmp_mib_init(void *ptr[2], size_t mibsize, size_t mibalign)
+@@ -1499,20 +1501,30 @@ static int __init ipv4_proc_init(void)
  
-+/* Check if all the name space that allows referencing the symbol's
-+   namespace is in the same module as the export. This makes sure a
-+   module doesn't allow itself into a namespace (the kernel checks
-+   this too) */
-+static void check_export_namespace(struct symbol *s)
-+{
-+	const char *namespace = s->namespace;
-+	struct nsallow *nsa = find_nsallow_name(namespace);
-+	if (!nsa) {
-+		warn("%s: namespace %s used for export `%s', but no module "
-+		     "for it allowed\n", s->module->name, namespace, s->name);
-+	}
-+	for (; nsa; nsa = nsa->next) {
-+		if (strcmp(nsa->name, namespace))
-+			continue;
-+		if (nsa->orig == s->module) {
-+			nsa->ref++;
-+			return;
-+		}
-+	}
-+	merror("No module allowed for namespace %s in %s exporting %s\n",
-+		namespace,
-+		s->module->name,
-+		s->name);
-+}
-+
-+static void check_nsallow_referenced(void)
-+{
-+	int i;
-+	struct nsallow *nsa;
-+	for (i = 0; i < NSALLOW_HASH_SIZE; i++) {
-+		for (nsa = nsallowhash[i]; nsa; nsa = nsa->next)
-+			if (nsa->ref == 0 && !nsa->mod->skip) {
-+				warn("%s: namespace %s allowed for module %s, "
-+				     "but no exports using it\n",
-+				     nsa->orig->name,
-+				     nsa->name,
-+				     nsa->mod->name);
-+			}
-+	}
-+}
-+
-+static const char *sep_ns(const char **name)
-+{
-+	char *p;
-+	const char *s = strchr(*name, NS_SEPARATOR);
-+	if (!s)
-+		return NULL;
-+	*name = NOFAIL(strdup(*name));
-+	p = strchr(*name, NS_SEPARATOR);
-+	*p = '\0';
-+	return p + 1;
-+}
-+
-+static int deep_streq(const char *a, const char *b)
-+{
-+	if (a == b)
-+		return 1;
-+	if (!a || !b)
-+		return 0;
-+	return !strcmp(a, b);
-+}
-+
- /**
-  * Add an exported symbol - it may have already been added without a
-  * CRC, in this case just update the CRC
-  **/
--static struct symbol *sym_add_exported(const char *name, struct module *mod,
-+static struct symbol *sym_add_exported(const char *oname, struct module *mod,
- 				       enum export export)
- {
--	struct symbol *s = find_symbol(name);
-+	const char *name = oname;
-+	const char *namespace = sep_ns(&name);
-+	struct symbol *s = find_symbol(name, namespace);
+ MODULE_ALIAS_NETPROTO(PF_INET);
  
- 	if (!s) {
- 		s = new_symbol(name, mod, export);
-+		s->namespace = namespace;
- 	} else {
- 		if (!s->preloaded) {
- 			warn("%s: '%s' exported twice. Previous export "
--			     "was in %s%s\n", mod->name, name,
-+			     "was in %s%s\n", mod->name, oname,
- 			     s->module->name,
- 			     is_vmlinux(s->module->name) ?"":".ko");
-+			if (!deep_streq(s->namespace, namespace)) {
-+				warn("%s: New namespace '%s' of '%s' doesn't "
-+				     "match existing namespace '%s'\n",
-+				     s->module->name,
-+				     namespace ?: "",
-+				     s->name ?: "???",
-+				     s->namespace ?: "");
-+			}
- 		} else {
- 			/* In case Modules.symvers was out of date */
- 			s->module = mod;
- 		}
-+		if (name != oname)
-+			free((char *)name);
+-EXPORT_SYMBOL(inet_accept);
+-EXPORT_SYMBOL(inet_bind);
+-EXPORT_SYMBOL(inet_dgram_connect);
+-EXPORT_SYMBOL(inet_dgram_ops);
+-EXPORT_SYMBOL(inet_getname);
+-EXPORT_SYMBOL(inet_ioctl);
+-EXPORT_SYMBOL(inet_listen);
+-EXPORT_SYMBOL(inet_register_protosw);
+-EXPORT_SYMBOL(inet_release);
+-EXPORT_SYMBOL(inet_sendmsg);
+-EXPORT_SYMBOL(inet_shutdown);
+-EXPORT_SYMBOL(inet_sock_destruct);
+-EXPORT_SYMBOL(inet_stream_connect);
+-EXPORT_SYMBOL(inet_stream_ops);
+-EXPORT_SYMBOL(inet_unregister_protosw);
+-EXPORT_SYMBOL(net_statistics);
+-EXPORT_SYMBOL(sysctl_ip_nonlocal_bind);
++MODULE_NAMESPACE_ALLOW(inet, ipv6);
++MODULE_NAMESPACE_ALLOW(inet, udplite);
++MODULE_NAMESPACE_ALLOW(inet, dccp_ipv6);
++MODULE_NAMESPACE_ALLOW(inet, dccp_ipv4);
++MODULE_NAMESPACE_ALLOW(inet, dccp);
++MODULE_NAMESPACE_ALLOW(inet, sctp);
++
++/* RED-PEN: would be better to fix wanrouter */
++MODULE_NAMESPACE_ALLOW(inet, wanrouter);
++
++EXPORT_SYMBOL_NS(inet,inet_accept);
++EXPORT_SYMBOL_NS(inet,inet_bind);
++EXPORT_SYMBOL_NS(inet,inet_dgram_connect);
++EXPORT_SYMBOL_NS(inet,inet_dgram_ops);
++EXPORT_SYMBOL_NS(inet,inet_getname);
++EXPORT_SYMBOL_NS(inet,inet_ioctl);
++EXPORT_SYMBOL_NS(inet,inet_listen);
++EXPORT_SYMBOL_NS(inet,inet_register_protosw);
++EXPORT_SYMBOL_NS(inet,inet_release);
++EXPORT_SYMBOL_NS(inet,inet_sendmsg);
++EXPORT_SYMBOL_NS(inet,inet_shutdown);
++EXPORT_SYMBOL_NS(inet,inet_sock_destruct);
++EXPORT_SYMBOL_NS(inet,inet_stream_connect);
++EXPORT_SYMBOL_NS(inet,inet_stream_ops);
++EXPORT_SYMBOL_NS(inet,inet_unregister_protosw);
++EXPORT_SYMBOL_NS(inet,net_statistics);
++EXPORT_SYMBOL_NS(inet,sysctl_ip_nonlocal_bind);
+Index: linux/net/ipv4/arp.c
+===================================================================
+--- linux.orig/net/ipv4/arp.c
++++ linux/net/ipv4/arp.c
+@@ -1406,6 +1406,7 @@ static int __init arp_proc_init(void)
+ 
+ #endif /* CONFIG_PROC_FS */
+ 
++/* No namespace because those are used by various drivers */
+ EXPORT_SYMBOL(arp_broken_ops);
+ EXPORT_SYMBOL(arp_find);
+ EXPORT_SYMBOL(arp_create);
+Index: linux/net/ipv4/icmp.c
+===================================================================
+--- linux.orig/net/ipv4/icmp.c
++++ linux/net/ipv4/icmp.c
+@@ -1101,7 +1101,7 @@ void __init icmp_init(struct net_proto_f
  	}
- 	s->preloaded = 0;
- 	s->vmlinux   = is_vmlinux(mod->name);
-@@ -282,13 +447,58 @@ static struct symbol *sym_add_exported(c
- 	return s;
  }
  
--static void sym_update_crc(const char *name, struct module *mod,
-+static struct module *
-+nsmodule(const char *name, int sep, const char *namespace, struct module *orig)
-+{
-+	struct module *mod;
-+	char *modname = NOFAIL(malloc(sep + 1));
-+
-+	memcpy(modname, name, sep);
-+	modname[sep] = 0;
-+	mod = find_module_base(modname);
-+	if (!mod) {
-+		if (warn_missing_modules)
-+			warn("%s: Namespace allow for %s references unknown"
-+		    	 " module %.*s\n", orig->name, namespace, sep, name);
-+		mod = new_module(modname);
-+		mod->skip = 1;
-+	} else {
-+		free(modname);
-+	}
-+	return mod;
-+}
-+
-+static void sym_add_nsallow(const char *name, struct module *orig)
-+{
-+	struct module *mod;
-+	int sep;
-+	const char *namespace;
-+
-+	sep = strcspn(name, NS_SEPARATOR_STRING);
-+	if (name[sep] == 0 || sep == 0) {
-+		warn("%s: Namespace allow '%s' incorrectly formatted\n",
-+			orig->name, name);
-+		return;
-+	}
-+	namespace = name + sep + 1;
-+	mod = nsmodule(name, sep, namespace, orig);
-+	if (!find_nsallow(namespace, mod))
-+		new_nsallow(namespace, mod, orig);
-+}
-+
-+static void sym_update_crc(const char *oname, struct module *mod,
- 			   unsigned int crc, enum export export)
- {
--	struct symbol *s = find_symbol(name);
-+	const char *name = oname;
-+	const char *namespace = sep_ns(&name);
-+	struct symbol *s = find_symbol(name, namespace);
+-EXPORT_SYMBOL(icmp_err_convert);
+-EXPORT_SYMBOL(icmp_send);
+-EXPORT_SYMBOL(icmp_statistics);
+-EXPORT_SYMBOL(xrlim_allow);
++EXPORT_SYMBOL_NS(inet, icmp_err_convert);
++EXPORT_SYMBOL_NS(inet, icmp_send);
++EXPORT_SYMBOL_NS(inet, icmp_statistics);
++EXPORT_SYMBOL_NS(inet, xrlim_allow);
+Index: linux/net/ipv4/inet_connection_sock.c
+===================================================================
+--- linux.orig/net/ipv4/inet_connection_sock.c
++++ linux/net/ipv4/inet_connection_sock.c
+@@ -26,7 +26,7 @@
  
--	if (!s)
-+	if (!s) {
- 		s = new_symbol(name, mod, export);
-+	} else if (oname != name) {
-+		assert(deep_streq(s->namespace, namespace));
-+		free((char *)name);
-+	}
- 	s->crc = crc;
- 	s->crc_valid = 1;
- }
-@@ -456,6 +666,22 @@ static void parse_elf_finish(struct elf_
- 
- #define CRC_PFX     MODULE_SYMBOL_PREFIX "__crc_"
- #define KSYMTAB_PFX MODULE_SYMBOL_PREFIX "__ksymtab_"
-+#define NSALLOW_PFX MODULE_SYMBOL_PREFIX "__knamespace_"
-+
-+
-+static void handle_nsallow(struct module *mod, struct elf_info *info,
-+			       Elf_Sym *sym, const char *symname)
-+{
-+	switch (sym->st_shndx) {
-+	case SHN_COMMON:
-+	case SHN_ABS:
-+	case SHN_UNDEF:
-+		break;
-+	default:
-+		if (!strncmp(symname, NSALLOW_PFX, sizeof(NSALLOW_PFX)-1))
-+			sym_add_nsallow(symname + sizeof(NSALLOW_PFX) - 1, mod);
-+	}
-+}
- 
- static void handle_modversions(struct module *mod, struct elf_info *info,
- 			       Elf_Sym *sym, const char *symname)
-@@ -507,17 +733,25 @@ static void handle_modversions(struct mo
+ #ifdef INET_CSK_DEBUG
+ const char inet_csk_timer_bug_msg[] = "inet_csk BUG: unknown timer value\n";
+-EXPORT_SYMBOL(inet_csk_timer_bug_msg);
++EXPORT_SYMBOL_NS(inet, inet_csk_timer_bug_msg);
  #endif
  
- 		if (memcmp(symname, MODULE_SYMBOL_PREFIX,
--			   strlen(MODULE_SYMBOL_PREFIX)) == 0)
--			mod->unres = alloc_symbol(symname +
--						  strlen(MODULE_SYMBOL_PREFIX),
-+			   strlen(MODULE_SYMBOL_PREFIX)) == 0) {
-+			const int plen = strlen(MODULE_SYMBOL_PREFIX);
-+			const char *name = symname + plen;
-+			const char *namespace = sep_ns(&name);
-+
-+			mod->unres = alloc_symbol(name,
- 						  ELF_ST_BIND(sym->st_info) == STB_WEAK,
- 						  mod->unres);
-+			mod->unres->namespace = namespace;
-+		}
- 		break;
- 	default:
- 		/* All exported symbols */
- 		if (memcmp(symname, KSYMTAB_PFX, strlen(KSYMTAB_PFX)) == 0) {
--			sym_add_exported(symname + strlen(KSYMTAB_PFX), mod,
--					export);
-+			struct symbol *s;
-+			s = sym_add_exported(symname + strlen(KSYMTAB_PFX), mod,
-+					     export);
-+			if (s->namespace)
-+				check_export_namespace(s);
- 		}
- 		if (strcmp(symname, MODULE_SYMBOL_PREFIX "init_module") == 0)
- 			mod->has_init = 1;
-@@ -1261,11 +1495,16 @@ static void read_symbols(char *modname)
- 	struct elf_info info = { };
- 	Elf_Sym *sym;
+ /*
+@@ -73,7 +73,7 @@ int inet_csk_bind_conflict(const struct 
+ 	return node != NULL;
+ }
  
-+	char m[strlen(modname) + 1];
-+	strcpy(m, modname);
-+	strip_o(m);
-+
-+	mod = find_module(m);
-+	assert(mod != NULL);
-+
- 	if (!parse_elf(&info, modname))
- 		return;
+-EXPORT_SYMBOL_GPL(inet_csk_bind_conflict);
++EXPORT_SYMBOL_NS(inet, inet_csk_bind_conflict);
  
--	mod = new_module(modname);
--
- 	/* When there's no vmlinux, don't print warnings about
- 	 * unresolved symbols (since there'll be too many ;) */
- 	if (is_vmlinux(modname)) {
-@@ -1285,6 +1524,12 @@ static void read_symbols(char *modname)
- 					   "license", license);
- 	}
+ /* Obtain a reference to a local port for the given sock,
+  * if snum is zero it means select any available local port.
+@@ -170,7 +170,7 @@ fail:
+ 	return ret;
+ }
  
-+	/* First process all nsallows to check them against the symbols */
-+	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
-+		symname = info.strtab + sym->st_name;
-+		handle_nsallow(mod, &info, sym, symname);
-+	}
-+
- 	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
- 		symname = info.strtab + sym->st_name;
+-EXPORT_SYMBOL_GPL(inet_csk_get_port);
++EXPORT_SYMBOL_NS(inet, inet_csk_get_port);
  
-@@ -1384,13 +1629,39 @@ static void check_for_unused(enum export
+ /*
+  * Wait for an incoming connection, avoid race conditions. This must be called
+@@ -263,7 +263,7 @@ out_err:
+ 	goto out;
+ }
+ 
+-EXPORT_SYMBOL(inet_csk_accept);
++EXPORT_SYMBOL_NS(inet, inet_csk_accept);
+ 
+ /*
+  * Using different timers for retransmit, delayed acks and probes
+@@ -292,7 +292,7 @@ void inet_csk_init_xmit_timers(struct so
+ 	icsk->icsk_pending = icsk->icsk_ack.pending = 0;
+ }
+ 
+-EXPORT_SYMBOL(inet_csk_init_xmit_timers);
++EXPORT_SYMBOL_NS(inet, inet_csk_init_xmit_timers);
+ 
+ void inet_csk_clear_xmit_timers(struct sock *sk)
+ {
+@@ -305,21 +305,21 @@ void inet_csk_clear_xmit_timers(struct s
+ 	sk_stop_timer(sk, &sk->sk_timer);
+ }
+ 
+-EXPORT_SYMBOL(inet_csk_clear_xmit_timers);
++EXPORT_SYMBOL_NS(inet, inet_csk_clear_xmit_timers);
+ 
+ void inet_csk_delete_keepalive_timer(struct sock *sk)
+ {
+ 	sk_stop_timer(sk, &sk->sk_timer);
+ }
+ 
+-EXPORT_SYMBOL(inet_csk_delete_keepalive_timer);
++EXPORT_SYMBOL_NS(inet, inet_csk_delete_keepalive_timer);
+ 
+ void inet_csk_reset_keepalive_timer(struct sock *sk, unsigned long len)
+ {
+ 	sk_reset_timer(sk, &sk->sk_timer, jiffies + len);
+ }
+ 
+-EXPORT_SYMBOL(inet_csk_reset_keepalive_timer);
++EXPORT_SYMBOL_NS(inet, inet_csk_reset_keepalive_timer);
+ 
+ struct dst_entry* inet_csk_route_req(struct sock *sk,
+ 				     const struct request_sock *req)
+@@ -352,7 +352,7 @@ struct dst_entry* inet_csk_route_req(str
+ 	return &rt->u.dst;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_route_req);
++EXPORT_SYMBOL_NS(inet, inet_csk_route_req);
+ 
+ static inline u32 inet_synq_hash(const __be32 raddr, const __be16 rport,
+ 				 const u32 rnd, const u32 synq_hsize)
+@@ -394,7 +394,7 @@ struct request_sock *inet_csk_search_req
+ 	return req;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_search_req);
++EXPORT_SYMBOL_NS(inet, inet_csk_search_req);
+ 
+ void inet_csk_reqsk_queue_hash_add(struct sock *sk, struct request_sock *req,
+ 				   unsigned long timeout)
+@@ -411,7 +411,7 @@ void inet_csk_reqsk_queue_hash_add(struc
+ /* Only thing we need from tcp.h */
+ extern int sysctl_tcp_synack_retries;
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_reqsk_queue_hash_add);
++EXPORT_SYMBOL_NS(inet, inet_csk_reqsk_queue_hash_add);
+ 
+ void inet_csk_reqsk_queue_prune(struct sock *parent,
+ 				const unsigned long interval,
+@@ -500,7 +500,7 @@ void inet_csk_reqsk_queue_prune(struct s
+ 		inet_csk_reset_keepalive_timer(parent, interval);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_reqsk_queue_prune);
++EXPORT_SYMBOL_NS(inet, inet_csk_reqsk_queue_prune);
+ 
+ struct sock *inet_csk_clone(struct sock *sk, const struct request_sock *req,
+ 			    const gfp_t priority)
+@@ -528,7 +528,7 @@ struct sock *inet_csk_clone(struct sock 
+ 	return newsk;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_clone);
++EXPORT_SYMBOL_NS(inet, inet_csk_clone);
+ 
+ /*
+  * At this point, there should be no process reference to this
+@@ -559,7 +559,7 @@ void inet_csk_destroy_sock(struct sock *
+ 	sock_put(sk);
+ }
+ 
+-EXPORT_SYMBOL(inet_csk_destroy_sock);
++EXPORT_SYMBOL_NS(inet, inet_csk_destroy_sock);
+ 
+ int inet_csk_listen_start(struct sock *sk, const int nr_table_entries)
+ {
+@@ -594,7 +594,7 @@ int inet_csk_listen_start(struct sock *s
+ 	return -EADDRINUSE;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_listen_start);
++EXPORT_SYMBOL_NS(inet, inet_csk_listen_start);
+ 
+ /*
+  *	This routine closes sockets which have been at least partially
+@@ -649,7 +649,7 @@ void inet_csk_listen_stop(struct sock *s
+ 	BUG_TRAP(!sk->sk_ack_backlog);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_listen_stop);
++EXPORT_SYMBOL_NS(inet, inet_csk_listen_stop);
+ 
+ void inet_csk_addr2sockaddr(struct sock *sk, struct sockaddr *uaddr)
+ {
+@@ -661,7 +661,7 @@ void inet_csk_addr2sockaddr(struct sock 
+ 	sin->sin_port		= inet->dport;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_addr2sockaddr);
++EXPORT_SYMBOL_NS(inet, inet_csk_addr2sockaddr);
+ 
+ int inet_csk_ctl_sock_create(struct socket **sock, unsigned short family,
+ 			     unsigned short type, unsigned char protocol)
+@@ -680,7 +680,7 @@ int inet_csk_ctl_sock_create(struct sock
+ 	return rc;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_ctl_sock_create);
++EXPORT_SYMBOL_NS(inet, inet_csk_ctl_sock_create);
+ 
+ #ifdef CONFIG_COMPAT
+ int inet_csk_compat_getsockopt(struct sock *sk, int level, int optname,
+@@ -695,7 +695,7 @@ int inet_csk_compat_getsockopt(struct so
+ 					     optval, optlen);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_compat_getsockopt);
++EXPORT_SYMBOL_NS(inet, inet_csk_compat_getsockopt);
+ 
+ int inet_csk_compat_setsockopt(struct sock *sk, int level, int optname,
+ 			       char __user *optval, int optlen)
+@@ -709,5 +709,5 @@ int inet_csk_compat_setsockopt(struct so
+ 					     optval, optlen);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_csk_compat_setsockopt);
++EXPORT_SYMBOL_NS(inet, inet_csk_compat_setsockopt);
+ #endif
+Index: linux/net/ipv4/ip_output.c
+===================================================================
+--- linux.orig/net/ipv4/ip_output.c
++++ linux/net/ipv4/ip_output.c
+@@ -669,7 +669,7 @@ fail:
+ 	return err;
+ }
+ 
+-EXPORT_SYMBOL(ip_fragment);
++EXPORT_SYMBOL_NS(inet,ip_fragment);
+ 
+ int
+ ip_generic_getfrag(void *from, char *to, int offset, int len, int odd, struct sk_buff *skb)
+@@ -1409,6 +1409,7 @@ void __init ip_init(void)
+ #endif
+ }
+ 
+-EXPORT_SYMBOL(ip_generic_getfrag);
+-EXPORT_SYMBOL(ip_queue_xmit);
++EXPORT_SYMBOL_NS(inet,ip_generic_getfrag);
++EXPORT_SYMBOL_NS(inet,ip_queue_xmit);
++/* ip_send_check is widely used by netfilter modules */
+ EXPORT_SYMBOL(ip_send_check);
+Index: linux/net/ipv4/inet_diag.c
+===================================================================
+--- linux.orig/net/ipv4/inet_diag.c
++++ linux/net/ipv4/inet_diag.c
+@@ -873,7 +873,7 @@ int inet_diag_register(const struct inet
+ out:
+ 	return err;
+ }
+-EXPORT_SYMBOL_GPL(inet_diag_register);
++EXPORT_SYMBOL_NS(inet, inet_diag_register);
+ 
+ void inet_diag_unregister(const struct inet_diag_handler *h)
+ {
+@@ -888,7 +888,7 @@ void inet_diag_unregister(const struct i
+ 
+ 	synchronize_rcu();
+ }
+-EXPORT_SYMBOL_GPL(inet_diag_unregister);
++EXPORT_SYMBOL_NS(inet, inet_diag_unregister);
+ 
+ static int __init inet_diag_init(void)
+ {
+Index: linux/net/ipv4/inet_hashtables.c
+===================================================================
+--- linux.orig/net/ipv4/inet_hashtables.c
++++ linux/net/ipv4/inet_hashtables.c
+@@ -86,7 +86,7 @@ void inet_put_port(struct inet_hashinfo 
+ 	local_bh_enable();
+ }
+ 
+-EXPORT_SYMBOL(inet_put_port);
++EXPORT_SYMBOL_NS(inet, inet_put_port);
+ 
+ /*
+  * This lock without WQ_FLAG_EXCLUSIVE is good on UP and it can be very bad on SMP.
+@@ -116,7 +116,7 @@ void inet_listen_wlock(struct inet_hashi
  	}
  }
  
-+/* Check if symbol reference to S from module SYMMOD is allowed in namespace */
-+static void check_symbol_ns(struct symbol *s, struct module *symmod,
-+			    const char *symmodname)
-+{
-+	const char *namespace = s->namespace;
-+	struct nsallow *nsa;
-+	int sep;
-+
-+	if (is_vmlinux(symmodname))
-+		return;
-+	nsa = find_nsallow(namespace, symmod);
-+	if (nsa)
-+		return;
-+	sep = strcspn(s->name, NS_SEPARATOR_STRING);
-+	if (!find_nsallow_name(namespace)) {
-+		warn("%s: Unknown namespace %s referenced from `%.*s'\n",
-+		     symmodname, namespace, sep, s->name);
-+	} else {
-+		merror("%s: module not allowed to reference symbol "
-+		       "'%.*s' in namespace %s\n",
-+		       symmodname,
-+		       sep, s->name,
-+		       namespace);
-+	}
-+}
-+
- static void check_exports(struct module *mod)
+-EXPORT_SYMBOL(inet_listen_wlock);
++EXPORT_SYMBOL_NS(inet, inet_listen_wlock);
+ 
+ /*
+  * Don't inline this cruft. Here are some nice properties to exploit here. The
+@@ -188,7 +188,7 @@ sherry_cache:
+ 	read_unlock(&hashinfo->lhash_lock);
+ 	return sk;
+ }
+-EXPORT_SYMBOL_GPL(__inet_lookup_listener);
++EXPORT_SYMBOL_NS(inet, __inet_lookup_listener);
+ 
+ /* called with local bh disabled */
+ static int __inet_check_established(struct inet_timewait_death_row *death_row,
+@@ -364,4 +364,4 @@ out:
+ 	}
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_hash_connect);
++EXPORT_SYMBOL_NS(inet, inet_hash_connect);
+Index: linux/net/ipv4/ip_input.c
+===================================================================
+--- linux.orig/net/ipv4/ip_input.c
++++ linux/net/ipv4/ip_input.c
+@@ -453,4 +453,4 @@ out:
+ 	return NET_RX_DROP;
+ }
+ 
+-EXPORT_SYMBOL(ip_statistics);
++EXPORT_SYMBOL_NS(inet, ip_statistics);
+Index: linux/net/core/fib_rules.c
+===================================================================
+--- linux.orig/net/core/fib_rules.c
++++ linux/net/core/fib_rules.c
+@@ -100,7 +100,7 @@ errout:
+ 	return err;
+ }
+ 
+-EXPORT_SYMBOL_GPL(fib_rules_register);
++EXPORT_SYMBOL_NS(fib, fib_rules_register);
+ 
+ static void cleanup_ops(struct fib_rules_ops *ops)
  {
- 	struct symbol *s, *exp;
+@@ -135,7 +135,7 @@ out:
+ 	return err;
+ }
  
- 	for (s = mod->unres; s; s = s->next) {
- 		const char *basename;
--		exp = find_symbol(s->name);
-+		exp = find_symbol(s->name, s->namespace);
- 		if (!exp || exp->module == mod)
- 			continue;
- 		basename = strrchr(mod->name, '/');
-@@ -1398,6 +1669,8 @@ static void check_exports(struct module 
- 			basename++;
- 		else
- 			basename = mod->name;
-+		if (s->namespace)
-+			check_symbol_ns(s, mod, basename);
- 		if (!mod->gpl_compatible)
- 			check_for_gpl_usage(exp->export, basename, exp->name);
- 		check_for_unused(exp->export, basename, exp->name);
-@@ -1437,14 +1710,18 @@ static int add_versions(struct buffer *b
- 	int err = 0;
+-EXPORT_SYMBOL_GPL(fib_rules_unregister);
++EXPORT_SYMBOL_NS(fib, fib_rules_unregister);
  
- 	for (s = mod->unres; s; s = s->next) {
--		exp = find_symbol(s->name);
-+		exp = find_symbol(s->name, s->namespace);
- 		if (!exp || exp->module == mod) {
- 			if (have_vmlinux && !s->weak) {
- 				if (warn_unresolved) {
--					warn("\"%s\" [%s.ko] undefined!\n",
-+					warn("\"%s%s%s\" [%s.ko] undefined!\n",
-+					 	s->namespace ?: "",
-+						s->namespace ? ":" : "",
- 					     s->name, mod->name);
- 				} else {
--					merror("\"%s\" [%s.ko] undefined!\n",
-+					merror("\"%s%s%s\" [%s.ko] undefined!\n",
-+					 	s->namespace ?: "",
-+						s->namespace ? ":" : "",
- 					          s->name, mod->name);
- 					err = 1;
- 				}
-@@ -1606,7 +1883,7 @@ static void read_dump(const char *fname,
- 			if (is_vmlinux(modname)) {
- 				have_vmlinux = 1;
- 			}
--			mod = new_module(NOFAIL(strdup(modname)));
-+			mod = new_module(modname);
- 			mod->skip = 1;
- 		}
- 		s = sym_add_exported(symname, mod, export_no(export));
-@@ -1660,6 +1937,7 @@ int main(int argc, char **argv)
- 	char *dump_write = NULL;
- 	int opt;
- 	int err;
-+	int c;
+ static int fib_rule_match(struct fib_rule *rule, struct fib_rules_ops *ops,
+ 			  struct flowi *fl, int flags)
+@@ -195,7 +195,7 @@ out:
+ 	return err;
+ }
  
- 	while ((opt = getopt(argc, argv, "i:I:mso:aw")) != -1) {
- 		switch(opt) {
-@@ -1685,6 +1963,9 @@ int main(int argc, char **argv)
- 			case 'w':
- 				warn_unresolved = 1;
- 				break;
-+			case 'M':
-+				warn_missing_modules = 1;
-+				break;
- 			default:
- 				exit(1);
- 		}
-@@ -1695,6 +1976,12 @@ int main(int argc, char **argv)
- 	if (module_read)
- 		read_dump(module_read, 0);
+-EXPORT_SYMBOL_GPL(fib_rules_lookup);
++EXPORT_SYMBOL_NS(fib, fib_rules_lookup);
  
-+	for (c = optind; c < argc; c++) {
-+		char s[strlen(argv[c]) + 1];
-+		strcpy(s, argv[c]);
-+		new_module(s);
-+	}
+ static int validate_rulemsg(struct fib_rule_hdr *frh, struct nlattr **tb,
+ 			    struct fib_rules_ops *ops)
+@@ -658,3 +658,6 @@ static int __init fib_rules_init(void)
+ }
+ 
+ subsys_initcall(fib_rules_init);
 +
- 	while (optind < argc) {
- 		read_symbols(argv[optind++]);
- 	}
-@@ -1705,6 +1992,9 @@ int main(int argc, char **argv)
- 		check_exports(mod);
- 	}
++MODULE_NAMESPACE_ALLOW(fib, ipv6);
++MODULE_NAMESPACE_ALLOW(fib, decnet);
+Index: linux/net/ipv4/inet_timewait_sock.c
+===================================================================
+--- linux.orig/net/ipv4/inet_timewait_sock.c
++++ linux/net/ipv4/inet_timewait_sock.c
+@@ -85,7 +85,7 @@ void __inet_twsk_hashdance(struct inet_t
+ 	write_unlock(lock);
+ }
  
-+	if (warn_unresolved)
-+		check_nsallow_referenced();
-+
- 	err = 0;
+-EXPORT_SYMBOL_GPL(__inet_twsk_hashdance);
++EXPORT_SYMBOL_NS(inet, __inet_twsk_hashdance);
  
- 	for (mod = modules; mod; mod = mod->next) {
+ struct inet_timewait_sock *inet_twsk_alloc(const struct sock *sk, const int state)
+ {
+@@ -117,7 +117,7 @@ struct inet_timewait_sock *inet_twsk_all
+ 	return tw;
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_twsk_alloc);
++EXPORT_SYMBOL_NS(inet, inet_twsk_alloc);
+ 
+ /* Returns non-zero if quota exceeded.  */
+ static int inet_twdr_do_twkill_work(struct inet_timewait_death_row *twdr,
+@@ -192,7 +192,7 @@ out:
+ 	spin_unlock(&twdr->death_lock);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_twdr_hangman);
++EXPORT_SYMBOL_NS(inet, inet_twdr_hangman);
+ 
+ extern void twkill_slots_invalid(void);
+ 
+@@ -225,7 +225,7 @@ void inet_twdr_twkill_work(struct work_s
+ 	}
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_twdr_twkill_work);
++EXPORT_SYMBOL_NS(inet, inet_twdr_twkill_work);
+ 
+ /* These are always called from BH context.  See callers in
+  * tcp_input.c to verify this.
+@@ -326,7 +326,7 @@ void inet_twsk_schedule(struct inet_time
+ 	spin_unlock(&twdr->death_lock);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_twsk_schedule);
++EXPORT_SYMBOL_NS(inet, inet_twsk_schedule);
+ 
+ void inet_twdr_twcal_tick(unsigned long data)
+ {
+@@ -382,4 +382,4 @@ out:
+ 	spin_unlock(&twdr->death_lock);
+ }
+ 
+-EXPORT_SYMBOL_GPL(inet_twdr_twcal_tick);
++EXPORT_SYMBOL_NS(inet, inet_twdr_twcal_tick);
+Index: linux/net/ipv4/ip_sockglue.c
+===================================================================
+--- linux.orig/net/ipv4/ip_sockglue.c
++++ linux/net/ipv4/ip_sockglue.c
+@@ -943,7 +943,7 @@ int compat_ip_setsockopt(struct sock *sk
+ 	return err;
+ }
+ 
+-EXPORT_SYMBOL(compat_ip_setsockopt);
++EXPORT_SYMBOL_NS(inet, compat_ip_setsockopt);
+ #endif
+ 
+ /*
+@@ -1206,10 +1206,10 @@ int compat_ip_getsockopt(struct sock *sk
+ 	return err;
+ }
+ 
+-EXPORT_SYMBOL(compat_ip_getsockopt);
++EXPORT_SYMBOL_NS(inet, compat_ip_getsockopt);
+ #endif
+ 
+-EXPORT_SYMBOL(ip_cmsg_recv);
++EXPORT_SYMBOL_NS(inet, ip_cmsg_recv);
+ 
+-EXPORT_SYMBOL(ip_getsockopt);
+-EXPORT_SYMBOL(ip_setsockopt);
++EXPORT_SYMBOL_NS(inet, ip_getsockopt);
++EXPORT_SYMBOL_NS(inet, ip_setsockopt);
