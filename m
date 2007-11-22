@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbXKVCrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbXKVCr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757831AbXKVCrA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 21:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXKVCoG
+	id S1755203AbXKVCr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 21:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbXKVCoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 21:44:06 -0500
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:47150 "EHLO mo10.iij4u.or.jp"
+	Wed, 21 Nov 2007 21:44:08 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:50989 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756645AbXKVCoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756667AbXKVCoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Nov 2007 21:44:03 -0500
-Date: Thu, 22 Nov 2007 11:43:26 +0900
+Date: Thu, 22 Nov 2007 11:43:22 +0900
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Cc: akpm@linux-foundation.org, James.Bottomley@HansenPartnership.com,
        jens.axboe@oracle.com, greg@kroah.com, jeff@garzik.org
 Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH -mm 2/4] PCI: add dma segment boundary support
+Subject: [PATCH -mm 1/4] add accessors for segment_boundary_mask in
+ device_dma_parameters
 From: FUJITA Tomonori <tomof@acm.org>
 In-Reply-To: <522edb7703e4a70374b0c689cd7bae659fb0908b.tomof@acm.org>
 References: <522edb7703e4a70374b0c689cd7bae659fb0908b.tomof@acm.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071122113934N.tomof@acm.org>
+Message-Id: <20071122113834B.tomof@acm.org>
 X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds PCI's accessor for segment_boundary_mask in
-device_dma_parameters.
+This adds new accessors for segment_boundary_mask in
+device_dma_parameters structure in the same way I did for
+max_segment_size. So we can easily change where to place struct
+device_dma_parameters in the future.
 
-The default segment_boundary is set to 0xffffffff, same to the block
-layer's default value (and the scsi mid layer uses the same value).
+dma_get_segment boundary returns 0xffffffff if dma_parms in struct
+device isn't set up properly. 0xffffffff is the default value used in
+the block layer and the scsi mid layer.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- drivers/pci/pci.c   |    8 ++++++++
- drivers/pci/probe.c |    1 +
- include/linux/pci.h |    2 ++
- 3 files changed, 11 insertions(+), 0 deletions(-)
+ include/linux/dma-mapping.h |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index de623cf..3b7e0e0 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1435,6 +1435,14 @@ int pci_set_dma_max_seg_size(struct pci_dev *dev, unsigned int size)
- EXPORT_SYMBOL(pci_set_dma_max_seg_size);
- #endif
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 71972ca..7d157ed 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -75,6 +75,21 @@ static inline unsigned int dma_set_max_seg_size(struct device *dev,
+ 		return -EIO;
+ }
  
-+#ifndef HAVE_ARCH_PCI_SET_DMA_SEGMENT_BOUNDARY
-+int pci_set_dma_seg_boundary(struct pci_dev *dev, unsigned long mask)
++static inline unsigned long dma_get_seg_boundary(struct device *dev)
 +{
-+	return dma_set_seg_boundary(&dev->dev, mask);
++	return dev->dma_parms ?
++		dev->dma_parms->segment_boundary_mask : 0xffffffff;
 +}
-+EXPORT_SYMBOL(pci_set_dma_seg_boundary);
-+#endif
 +
- /**
-  * pcix_get_max_mmrbc - get PCI-X maximum designed memory read byte count
-  * @dev: PCI device to query
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index aa343e1..2e8b539 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -987,6 +987,7 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
- 	dev->dev.coherent_dma_mask = 0xffffffffull;
- 
- 	pci_set_dma_max_seg_size(dev, 65536);
-+	pci_set_dma_seg_boundary(dev, 0xffffffff);
- 
- 	/* Fix up broken headers */
- 	pci_fixup_device(pci_fixup_header, dev);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index d56d0b6..a05a843 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -567,6 +567,7 @@ void pci_msi_off(struct pci_dev *dev);
- int pci_set_dma_mask(struct pci_dev *dev, u64 mask);
- int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask);
- int pci_set_dma_max_seg_size(struct pci_dev *dev, unsigned int size);
-+int pci_set_dma_seg_boundary(struct pci_dev *dev, unsigned long mask);
- int pcix_get_max_mmrbc(struct pci_dev *dev);
- int pcix_get_mmrbc(struct pci_dev *dev);
- int pcix_set_mmrbc(struct pci_dev *dev, int mmrbc);
-@@ -753,6 +754,7 @@ static inline int pci_enable_device(struct pci_dev *dev) { return -EIO; }
- static inline void pci_disable_device(struct pci_dev *dev) { }
- static inline int pci_set_dma_mask(struct pci_dev *dev, u64 mask) { return -EIO; }
- static inline int pci_set_dma_max_seg_size(struct pci_dev *dev, unsigned int size) { return -EIO; }
-+static inline int pci_set_dma_seg_boundary(struct pci_dev *dev, unsigned long mask) { return -EIO; }
- static inline int pci_assign_resource(struct pci_dev *dev, int i) { return -EBUSY;}
- static inline int __pci_register_driver(struct pci_driver *drv, struct module *owner) { return 0;}
- static inline int pci_register_driver(struct pci_driver *drv) { return 0;}
++static inline int dma_set_seg_boundary(struct device *dev, unsigned long mask)
++{
++	if (dev->dma_parms) {
++		dev->dma_parms->segment_boundary_mask = mask;
++		return 0;
++	} else
++		return -EIO;
++}
++
+ /* flags for the coherent memory api */
+ #define	DMA_MEMORY_MAP			0x01
+ #define DMA_MEMORY_IO			0x02
 -- 
 1.5.3.4
 
