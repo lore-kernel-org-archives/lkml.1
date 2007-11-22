@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbXKVSkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbXKVSsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbXKVSkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 13:40:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbXKVSkq
+	id S1753436AbXKVSsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 13:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXKVSsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 13:40:46 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:33870 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbXKVSkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 13:40:46 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] 2.6.24-rc3-mm1: usb mouse doesn't work
-Date: Thu, 22 Nov 2007 19:41:44 +0200
-User-Agent: KMail/1.9.7
-References: <Pine.LNX.4.44L0.0711221202490.31699-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711221202490.31699-100000@netrider.rowland.org>
-Cc: linux-kernel@vger.kernel.org
+	Thu, 22 Nov 2007 13:48:10 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:61135 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbXKVSsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 13:48:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PuKVUZx2E0TbyM+m/WLV6sbPO79epp2JanxKugBqIeC6ZOgSvLJVmcjdWn08o0RqxsvmiyKlsOcUOvMSV7QTY0i/xA48xX4mPwStMx7O8tKMlVkMIzOrt55ViRZNcUGSZ+IgD5Qa9wwOJcLDSkTsGFnq6uNOBHC57TYWZSIjjdA=
+Message-ID: <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
+Date: Thu, 22 Nov 2007 19:48:07 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: Where is the new timerfd?
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711221941.44646.mitov@issp.bas.bg>
+References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
+	 <Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 November 2007 07:07:00 pm you wrote:
-> On Thu, 22 Nov 2007, Kirill A. Shutemov wrote:
-> > > > uhci_hcd 0000:00:1d.3: UHCI Host Controller
-> > > > uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
-> > > > uhci_hcd 0000:00:1d.3: irq 7, io base 0x0000bf20
-> > > > usb usb4: configuration #1 chosen from 1 choice
-> > > > hub 4-0:1.0: USB hub found
-> > > > hub 4-0:1.0: 2 ports detected
-> > > > usb usb4: new device found, idVendor=0000, idProduct=0000
-> > > > usb usb4: new device strings: Mfr=3, Product=2, SerialNumber=1
-> > > > usb usb4: Product: UHCI Host Controller
-> > > > usb usb4: Manufacturer: Linux 2.6.24-kas-alt1 uhci_hcd
-> > > > usb usb4: SerialNumber: 0000:00:1d.3
-> > > > uhci_hcd 0000:00:1d.3: FGR not stopped yet!
-> > >
-> > > I've had some strangenesses with USB lately.  Sometimes running `lsusb'
-> > > makes the USB system notice a newly attached device.
-> >
-> > No. But I have new messages in dmesg:
-> >
-> > uhci_hcd 0000:00:1d.3: FGR not stopped yet!
-> > uhci_hcd 0000:00:1d.2: FGR not stopped yet!
-> > uhci_hcd 0000:00:1d.1: FGR not stopped yet!
-> > uhci_hcd 0000:00:1d.0: FGR not stopped yet!
-> >
-> > > Is that "FGR not stopped yet!" messgae new behaviour?
-> >
-> > It is a new message since 2.6.24-rc3. I have never try -mm tree before.
+On Nov 22, 2007 6:34 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Thu, 22 Nov 2007, Michael Kerrisk wrote:
 >
-> These messages could indicate a timing problem.  You can see the code
-> that writes the messages near the end of wakeup_rh() in
-> drivers/usb/host/uhci-hcd.c.
+> > Hey Davide,
+> >
+> > Where is the new timerfd API.  In 2.6.24-rc3, I see the *old* API...
 >
-> The message gets written if the controller hardware hasn't turned off a
-> particular bit after a 4-us delay.  If the udelay() function wasn't
-> working right, it could cause this problem.
+> Maybe Andrew stuffed the turkey with it? :) It was there. I remeber it was
+> merged. Some screw up reverted it?
 
-udelay() _is_ OK for 2.6.24-rc3, so it is not the cause of the problem
-
-Marin Mitov
->
-> Alan Stern
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
+t looks that way.
