@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbXKVB6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbXKVCOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbXKVB6t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 20:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbXKVB6l
+	id S1755355AbXKVCOc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 21:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXKVCOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 20:58:41 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42109 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753383AbXKVB6l (ORCPT
+	Wed, 21 Nov 2007 21:14:24 -0500
+Received: from there.is.no.cabal.ca ([134.117.69.58]:40306 "EHLO
+	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbXKVCOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 20:58:41 -0500
-Date: Thu, 22 Nov 2007 01:56:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Al Niessner <Al.Niessner@jpl.nasa.gov>
-Cc: linux-kernel@vger.kernel.org
+	Wed, 21 Nov 2007 21:14:23 -0500
+Date: Wed, 21 Nov 2007 21:14:22 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Al Niessner <Al.Niessner@jpl.nasa.gov>, linux-kernel@vger.kernel.org
 Subject: Re: Where is the interrupt going?
-Message-ID: <20071122015625.0e33acfc@the-village.bc.nu>
-In-Reply-To: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
-References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071122021422.GA9265@fattire.cabal.ca>
+References: <1195693710.5544.240.camel@morte.jpl.nasa.gov> <20071122015625.0e33acfc@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071122015625.0e33acfc@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> status = request_irq (apcsi[i].board_irq,
->                                       apc8620_handler,
->                                       IRQF_DISABLED,
+On Thu, Nov 22, 2007 at 01:56:25AM +0000, Alan Cox wrote:
+> > status = request_irq (apcsi[i].board_irq,
+> >                                       apc8620_handler,
+> >                                       IRQF_DISABLED,
+> 
+> You set IRQF_DISABLED
+> 
+> Do you then enable the interrupt anywhere later on ?
+> 
 
-You set IRQF_DISABLED
+IRQF_DISABLED just means that the handler is atomic wrt other local
+interrupts. Shouldn't be the cause of this.
 
-Do you then enable the interrupt anywhere later on ?
-
-Alan
+cheers,
+	Kyle
