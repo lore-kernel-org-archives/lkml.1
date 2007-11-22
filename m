@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbXKVCr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbXKVCrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbXKVCr3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 21:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbXKVCoI
+	id S1757334AbXKVCrp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 21:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbXKVCoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 21:44:08 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:50989 "EHLO mo11.iij4u.or.jp"
+	Wed, 21 Nov 2007 21:44:11 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:50993 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756667AbXKVCoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 21:44:03 -0500
-Date: Thu, 22 Nov 2007 11:43:22 +0900
+	id S1752072AbXKVCoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 21:44:04 -0500
+Date: Thu, 22 Nov 2007 11:43:35 +0900
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Cc: akpm@linux-foundation.org, James.Bottomley@HansenPartnership.com,
        jens.axboe@oracle.com, greg@kroah.com, jeff@garzik.org
 Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH -mm 1/4] add accessors for segment_boundary_mask in
- device_dma_parameters
+Subject: [PATCH -mm 4/4] call dma_set_seg_boundary in __scsi_alloc_queue
 From: FUJITA Tomonori <tomof@acm.org>
 In-Reply-To: <522edb7703e4a70374b0c689cd7bae659fb0908b.tomof@acm.org>
 References: <522edb7703e4a70374b0c689cd7bae659fb0908b.tomof@acm.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071122113834B.tomof@acm.org>
+Message-Id: <20071122114218Q.tomof@acm.org>
 X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds new accessors for segment_boundary_mask in
-device_dma_parameters structure in the same way I did for
-max_segment_size. So we can easily change where to place struct
-device_dma_parameters in the future.
+This is a one-line patch to add the following to __scsi_alloc_queue():
 
-dma_get_segment boundary returns 0xffffffff if dma_parms in struct
-device isn't set up properly. 0xffffffff is the default value used in
-the block layer and the scsi mid layer.
+dma_set_seg_boundary(dev, shost->dma_boundary);
+
+This is the simplest approach but the result looks odd,
+__scsi_alloc_queue() does:
+
+blk_queue_segment_boundary(q, shost->dma_boundary);
+dma_set_seg_boundary(dev, shost->dma_boundary);
+blk_queue_max_segment_size(q, dma_get_max_seg_size(dev));
+
+I think that it would be better to set up segment boundary in the same
+way as we did for the maximum segment size. That is, removing
+shost->dma_boundary and LLDs call pci_set_dma_seg_boundary (or its
+friends).
+
+Then __scsi_alloc_queue() can set up both limits in the same way:
+
+blk_queue_segment_boundary(q, dma_get_seg_boundary(dev));
+blk_queue_max_segment_size(q, dma_get_max_seg_size(dev));
+
+killing dma_boundary in scsi_host_template needs a large patch for
+libata (dma_boundary is used by only libata and sym53c8xx). I'll send
+a patch to do that if it is acceptable. James and Jeff?
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- include/linux/dma-mapping.h |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ drivers/scsi/scsi_lib.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 71972ca..7d157ed 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -75,6 +75,21 @@ static inline unsigned int dma_set_max_seg_size(struct device *dev,
- 		return -EIO;
- }
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 733176d..2a15a3b 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1767,6 +1767,7 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
+ 	blk_queue_max_sectors(q, shost->max_sectors);
+ 	blk_queue_bounce_limit(q, scsi_calculate_bounce_limit(shost));
+ 	blk_queue_segment_boundary(q, shost->dma_boundary);
++	dma_set_seg_boundary(dev, shost->dma_boundary);
  
-+static inline unsigned long dma_get_seg_boundary(struct device *dev)
-+{
-+	return dev->dma_parms ?
-+		dev->dma_parms->segment_boundary_mask : 0xffffffff;
-+}
-+
-+static inline int dma_set_seg_boundary(struct device *dev, unsigned long mask)
-+{
-+	if (dev->dma_parms) {
-+		dev->dma_parms->segment_boundary_mask = mask;
-+		return 0;
-+	} else
-+		return -EIO;
-+}
-+
- /* flags for the coherent memory api */
- #define	DMA_MEMORY_MAP			0x01
- #define DMA_MEMORY_IO			0x02
+ 	blk_queue_max_segment_size(q, dma_get_max_seg_size(dev));
+ 
 -- 
 1.5.3.4
 
