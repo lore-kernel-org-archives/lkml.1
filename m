@@ -1,81 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbXKVKmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbXKVKqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752882AbXKVKmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 05:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXKVKlw
+	id S1753332AbXKVKqG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 05:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXKVKpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 05:41:52 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:64621 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbXKVKlw (ORCPT
+	Thu, 22 Nov 2007 05:45:55 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:1459 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXKVKpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 05:41:52 -0500
-Subject: MMC/SDIO sub-system: block mode versus byte mode
-From: Dean Jenkins <djenkins@mvista.co.uk>
-Reply-To: djenkins@mvista.co.uk
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: MontaVista
-Date: Thu, 22 Nov 2007 10:41:43 +0000
-Message-Id: <1195728103.20691.125.camel@libdev3.libertesoft.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
+	Thu, 22 Nov 2007 05:45:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=BfTNBN7gI4gdsFZEz24ZJ7obDFYR7cHnGVkx03wNKCzq3et3U3MMO0aHIm72/iRRq+tEMYhcSd10xvdUMNsVv69hzizPpnumyWii1VLESuhAcytsNIdmVZ6/Bmwo/r4eEGOXBrwuVNQbTkm/JjAv5AdQ51g0iS++6LlI8H8vLjo=
+Message-ID: <47455DEE.4050107@gmail.com>
+Date: Thu, 22 Nov 2007 11:46:06 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: davej@codemonkey.org.uk
+CC: cpufreq@lists.linux.org.uk,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: cpufreq deadlock (?sysfs related?)
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18kGn1rIEXwHeilrgym0bAAIW6d9vYwsUAZnYb
- MY9KoyCToIT+697g31ZWkxWm4O35MzOgwsCMQeKNDG/9wZYgyS
- w6wtwKbsu5EJd+Y3c0R3Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+Hi,
 
-I've been checking my SDIO CMD53 data transfers and I notice the
-following:
+some people hit this bug, I'm able to reproduce it too, but I'm out of ideas
+what could have cause it. Here are some traces of D processes:
 
-block size = 256 bytes for my SDIO card.
+tee           D ffff8100041e3c28     0 15798  13503
+ ffff8100041e3bc8 0000000000000086 0000000000000000 ffffffff804a007b
+ ffff8100041e3be8 ffff8100029d8000 ffff810001fc9560 ffffffff8828e094
+ ffff810008af1ba0 ffff8100029d8000 ffff810001fc9560 ffff81002ae74e40
+Call Trace:
+ [<ffffffff804a007b>] thread_return+0x0/0x5a5
+ [<ffffffff8828e094>] :cpufreq_stats:cpufreq_stats_update+0x54/0x70 /*
+_spin_unlock */
+ [<ffffffff804a0731>] wait_for_completion+0xa1/0xf0
+ [<ffffffff8022ee90>] default_wake_function+0x0/0x10
+ [<ffffffff802d583f>] sysfs_addrm_finish+0x1ef/0x270 /* wait_for_completion */
+ [<ffffffff802d3fb6>] sysfs_hash_and_remove+0xa6/0xc0
+ [<ffffffff880120cc>] :cpufreq_userspace:cpufreq_governor_userspace+0xac/0x220
+ [<ffffffff803c4cd2>] __cpufreq_governor+0x32/0x110
+ [<ffffffff803c56f3>] __cpufreq_set_policy+0x113/0x180
+ [<ffffffff803c5852>] store_scaling_governor+0xf2/0x200
+ [<ffffffff803c5f50>] handle_update+0x0/0x10
 
-transfers of 256 bytes uses byte mode ( I expected block mode )
-transfers of 512 bytes uses block mode ( because blocks = 2 )
+here started the scheduled work ^^^
 
->From the SD spec a single block transfer seems to be valid.
+ [<ffffffff8026a2c3>] __alloc_pages+0x73/0x320 /* get_page_from_freelist */
+ [<ffffffff803c662b>] store+0x7b/0x90 /* fattr->store(), holding write sem */
+ [<ffffffff802d46ef>] sysfs_write_file+0xcf/0x150
+ [<ffffffff8028c778>] vfs_write+0xc8/0x170
+ [<ffffffff8028ce53>] sys_write+0x53/0x90
+ [<ffffffff8020bd6e>] system_call+0x7e/0x83
 
-I notice the function mmc_io_rw_extended() in sdio_ops.c seems to select
-byte mode when the transfer size is 512 or less when the blocks
-parameter variable is 1. In fact blocks is never 0.
+tee           D 0000000000000000     0 15800  22179
+ ffff8100058b7e28 0000000000000086 0000000000000000 001bdcd0000f32a0
+ 0000000000000000 ffff810005f8ce40 ffff810001fd6e40 0000000000000001
+ 0000000101281d48 000000008057bec0 0000000000000003 000280d000000000
+Call Trace:
+ [<ffffffff804a1ed9>] __down_write_nested+0x79/0xc0
+ [<ffffffff803c5e21>] lock_policy_rwsem_write+0x41/0x80
+ [<ffffffff803c660c>] store+0x5c/0x90
+ [<ffffffff802d46ef>] sysfs_write_file+0xcf/0x150
+ [<ffffffff8028c778>] vfs_write+0xc8/0x170
+ [<ffffffff8028ce53>] sys_write+0x53/0x90
+ [<ffffffff8020bd6e>] system_call+0x7e/0x83
 
-Therefore is this a feature or a bug that prevents 256 bytes being sent
-in block mode when it is a single complete 1 block of data ?
+cat           D 0000000000000000     0 15801  13587
+ ffff810008f69e38 0000000000000082 0000000000000000 ffffffff8026a119
+ ffffffff80624fa0 ffff810005f8d560 ffffffff805703a0 ffffffff8057bec0
+ 0000000101282286 0000000000000000 0000000000000003 000000010697e4a0
+Call Trace:
+ [<ffffffff8026a119>] get_page_from_freelist+0x339/0x470
+ [<ffffffff804a1fa9>] __down_read+0x79/0xb2 /* schedule */
+ [<ffffffff803c6681>] lock_policy_rwsem_read+0x41/0x80
+ [<ffffffff803c67cd>] show+0x4d/0x80
+ [<ffffffff802d4bed>] sysfs_read_file+0x9d/0x150
+ [<ffffffff8028c8e5>] vfs_read+0xc5/0x160
+ [<ffffffff8028cdc3>] sys_read+0x53/0x90
+ [<ffffffff8020bd6e>] system_call+0x7e/0x83
 
-If it is a bug then I suggest the sdio_io_rw_ext_helper() in sdio_io.c
-be able to select byte mode by setting blocks to 0 and then blocks can
-be set to 1 to select block mode for a single block.
+I reproduced it by executing these 3 scripts:
+#!/bin/bash
 
-Have I missed something ?
+while true
+do
+echo userspace | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+sleep 2
+echo performance | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+sleep 4
+echo ondemand | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+sleep 10
+done
 
-Technically, there is a bug in sdio_io_rw_ext_helper() in sdio_io.c
+#!/bin/bash
 
-211		while (remainder > func->cur_blksize) {
+while true
+do
+echo userspace | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+for (( a = 0; a < 10000; a++ )); do echo aaa >/dev/null; done
+echo performance | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+for (( a = 0; a < 11500; a++ )); do echo aaa >/dev/null; done
+echo ondemand | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+sleep 1
+done
 
-should be, = missing
+#!/bin/bash
 
-211		while (remainder >= func->cur_blksize) {
+while true
+do cat /sys/devices/system/cpu/*/cpufreq/*
+sleep 10
+done
 
-however the resulting call to mmc_io_rw_extended() is the same as blocks
-= 1 for both the "block mode" while loop (with the "fix") and the "byte
-mode" while loop (without the "fix"). The "byte mode" while loop has a
-hard coded value of 1 for the blocks parameter. So the bug is masked. As
-I said above, I think the "byte mode" should use a value of 0 for the
-blocks parameter.
+This was on 2.6.23, however it is known to be also in older kernels. I
+suspect same race between wait_for_completion and complete() -- it wakes
+only one process, but not the other in sysfs/dir.c (would complete_all
+help?)? Any ideas?
 
-What do you think ?
+Here are events workers (seems OK):
+events/1      S 0000000000000000     0 13126      2
+ ffff81003fe71ec0 0000000000000046 0000000000000000 0000000000000202
+ ffff810001e120c0 ffff81003d821560 ffff810001fd6e40 00000000ffffffff
+ 00000001012df7e1 0000000080248f2a 0000000000000003 ffff810001e120c8
+Call Trace:
+ [<ffffffff80249060>] worker_thread+0x0/0x130
+ [<ffffffff80249165>] worker_thread+0x105/0x130
+ [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
+ [<ffffffff80249060>] worker_thread+0x0/0x130
+ [<ffffffff80249060>] worker_thread+0x0/0x130
+ [<ffffffff8024c71b>] kthread+0x4b/0x80
+ [<ffffffff8020cbb8>] child_rip+0xa/0x12
+ [<ffffffff8024c6d0>] kthread+0x0/0x80
+ [<ffffffff8020cbae>] child_rip+0x0/0x12
 
-Regards,
-Dean. 
+events/0      S 0000000000000000     0     7      2
+ ffff81003ff0bec0 0000000000000046 0000000000000000 0000000000000202
+ ffff810001e0a0c0 ffff810001fd7560 ffffffff805703a0 00000000ffffffff
+ 00000001012df7c6 0000000080248f2a 0000000000000003 ffff810001e0a0c8
+Call Trace:
+ [<ffffffff80249060>] worker_thread+0x0/0x130
+ [<ffffffff80249165>] worker_thread+0x105/0x130
+ [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
+ [<ffffffff80249060>] worker_thread+0x0/0x130
+ [<ffffffff80249060>] worker_thread+0x0/0x130
+ [<ffffffff8024c71b>] kthread+0x4b/0x80
+ [<ffffffff8020cbb8>] child_rip+0xa/0x12
+ [<ffffffff8024c6d0>] kthread+0x0/0x80
+ [<ffffffff8020cbae>] child_rip+0x0/0x12
 
+I'm now trying to reproduce this with LOCKDEP on, but it's not easy to get
+to that state.
+
+thanks,
 -- 
-Dean Jenkins
-Embedded Software Engineer
-MontaVista Software (UK)
-Professional Services Division
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
 
