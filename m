@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbXKVSXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbXKVSaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbXKVSXt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 13:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXKVSXk
+	id S1753803AbXKVSaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 13:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXKVSaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 13:23:40 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60395 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbXKVSXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 13:23:39 -0500
-From: Andi Kleen <ak@suse.de>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Thu, 22 Nov 2007 19:19:10 +0100
-User-Agent: KMail/1.9.1
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711221456.22297.rusty@rustcorp.com.au> <a8e1da0711220041v3d3c27d2pf7f326185666420d@mail.gmail.com>
-In-Reply-To: <a8e1da0711220041v3d3c27d2pf7f326185666420d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Nov 2007 13:30:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42466 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbXKVSaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 13:30:09 -0500
+Date: Thu, 22 Nov 2007 10:29:51 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Why is FIBMAP ioctl root only?
+Message-ID: <20071122102951.24e4e781@laptopd505.fenrus.org>
+In-Reply-To: <20071122181714.GB6299@atrey.karlin.mff.cuni.cz>
+References: <20071122181714.GB6299@atrey.karlin.mff.cuni.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711221919.11071.ak@suse.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 22 Nov 2007 19:17:14 +0100
+Jan Kara <jack@suse.cz> wrote:
 
-> Andy, I like your idea.  IMHO, as Rusty said a simple EXPORT_SYMBOL_TO
-> is better.
+>   Hi,
+> 
+>   I guess subject says it all - why is FIBMAP ioctl restricted only to
+> root (CAP_SYS_RAWIO)? Corresponding ioctl for XFS is allowed without
+> any special capabilities so we are inconsistent here too...
+>   Would anyone mind if the check is removed?
 
-I don't think so. e.g. tcpcong would be very very messy this way.
+probably principle of least privilege; the location on physical media
+for a file is clearly something internal to the OS, and non-trusted
+users normally don't have any business knowing that. 
 
-> And I wonder if it is possible to export to something like  the struct
-> device_driver? If it's possible then it will not limited to modules.
+I can't think of any immediate exploitable thing with it, but I'm sure
+attackers would find a way to use it to increase their privilege once
+they can do something like "write 512 bytes to a disk address of my
+choice".. (but then again it's game over mostly already)
 
-Not sure I follow you. Can you expand? 
+> 
+> 								Honza
 
--Andi
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
