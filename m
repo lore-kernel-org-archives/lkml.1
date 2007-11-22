@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbXKVDw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbXKVDy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbXKVDw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 22:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXKVDws
+	id S1756657AbXKVDy4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 22:54:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXKVDys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 22:52:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42680 "EHLO mx1.redhat.com"
+	Wed, 21 Nov 2007 22:54:48 -0500
+Received: from gw.goop.org ([64.81.55.164]:34349 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbXKVDwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 22:52:47 -0500
-Date: Wed, 21 Nov 2007 22:52:37 -0500
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071122035237.GB15764@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	sam@ravnborg.org, rusty@rustcorp.com.au
-References: <20071122343.446909000@suse.de>
+	id S1752543AbXKVDys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 22:54:48 -0500
+Message-ID: <4744FD87.7010301@goop.org>
+Date: Wed, 21 Nov 2007 19:54:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122343.446909000@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: freeze vs freezer
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 03:43:06AM +0100, Andi Kleen wrote:
+It seems that a process blocked in a write to an xfs filesystem due to
+xfs_freeze cannot be frozen by the freezer.
 
- > There seems to be rough consensus that the kernel currently has too many 
- > exported symbols. A lot of these exports are generally usable utility 
- > functions or important driver interfaces; but another large part are functions
- > intended by only one or two very specific modules for a very specific purpose.
- > One example is the TCP code. It has most of its internals exported, but 
- > only for use by tcp_ipv6.c (and now a few more by the TCP/IP congestion modules) 
- > But it doesn't make sense to include these exported for a specific module
- > functions into a broader "kernel interface".   External modules assume
- > they can use these functions, but they were never intended for that.
- > 
- > This patch allows to export symbols only for specific modules by 
- > introducing symbol name spaces. A module name space has a white
- > list of modules that are allowed to import symbols for it; all others
- > can't use the symbols.
+I see this if I suspend my laptop while doing something xfs-filesystem
+intensive, like a kernel build.  My suspend scripts freeze the XFS
+filesystem (as Dave said I should), which presumably blocks some writer,
+and then the freezer times out and fails to complete.
 
-I really like this patchset.   Definitely a step in the right direction imo.
-Looks like some nits there that checkpatch will probably pick up on,
-but otherwise, looks very straightforward too.
+Here's part of the process dump the freezer does when it times out:
 
-Kudos.
+cc1           D 00000000     0 18138  18137
+       dd5f1e24 00200082 00000002 00000000 ecdeeb00 ecdeec64 c200f280 00000001 
+       009c09a0 dd5f1e0c dd5f1e0c 0000000f 00000000 00000000 00000000 dd5f1e74 
+       c7beb480 dd5f1e88 dd5f1ea8 c0228d97 e8889540 dd5f1e38 c015b75d dd5f1e44 
+Call Trace:
+ [<c0228d97>] xfs_write+0xf4/0x6d9
+ [<c0226038>] xfs_file_aio_write+0x53/0x5b
+ [<c0171c15>] do_sync_write+0xae/0xec
+ [<c0172343>] vfs_write+0xa4/0x120
+ [<c01728d7>] sys_write+0x3b/0x60
+ [<c0106fae>] sysenter_past_esp+0x6b/0xa1
+ =======================
 
-	Dave
 
--- 
-http://www.codemonkey.org.uk
+I haven't looked at how to fix this yet.  I only just worked out why I
+was getting suspend failures.
+
+    J
