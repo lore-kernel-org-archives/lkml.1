@@ -1,85 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbXKVLnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbXKVLvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbXKVLnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 06:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbXKVLnB
+	id S1753375AbXKVLvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 06:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbXKVLv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 06:43:01 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:40629 "EHLO smtp.drzeus.cx"
+	Thu, 22 Nov 2007 06:51:28 -0500
+Received: from mx2.suse.de ([195.135.220.15]:59602 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752118AbXKVLnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 06:43:00 -0500
-Date: Thu, 22 Nov 2007 12:42:44 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: djenkins@mvista.co.uk
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: MMC/SDIO sub-system: block mode versus byte mode
-Message-ID: <20071122124244.4d3808be@poseidon.drzeus.cx>
-In-Reply-To: <1195728103.20691.125.camel@libdev3.libertesoft.co.uk>
-References: <1195728103.20691.125.camel@libdev3.libertesoft.co.uk>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751596AbXKVLv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 06:51:27 -0500
+From: Andi Kleen <ak@suse.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Date: Thu, 22 Nov 2007 12:46:23 +0100
+User-Agent: KMail/1.9.1
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <20071122343.446909000@suse.de> <200711221456.22297.rusty@rustcorp.com.au>
+In-Reply-To: <200711221456.22297.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711221246.23994.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Nov 2007 10:41:43 +0000
-Dean Jenkins <djenkins@mvista.co.uk> wrote:
+On Thursday 22 November 2007 04:56, Rusty Russell wrote:
 
-> Hi Pierre,
-> 
-> I've been checking my SDIO CMD53 data transfers and I notice the
-> following:
-> 
-> block size = 256 bytes for my SDIO card.
-> 
-> transfers of 256 bytes uses byte mode ( I expected block mode )
-> transfers of 512 bytes uses block mode ( because blocks = 2 )
-> 
-> From the SD spec a single block transfer seems to be valid.
-> 
+>     This is an interesting idea, thanks for the code!  My only question is
+> whether we can get most of this benefit by dropping the indirection of
+> namespaces and have something like "EXPORT_SYMBOL_TO(sym, modname)"?  It
+> doesn't work so well for exporting to a group of modules, but that seems
+> a reasonable line to draw anyway.
 
-Both are valid, which is the source of the problem. The API was designed under the assumption that hardware actually followed the register interface and didn't distinguish between byte and block transfers. Unfortunately, it seems to be quite common that they do. Your situation is a problematic corner case.
+That would explode quickly already even for my example "inet" namespace.
+It already has several modules.  I don't think so much duplication would be a 
+good idea.
 
-> 
-> If it is a bug then I suggest the sdio_io_rw_ext_helper() in sdio_io.c
-> be able to select byte mode by setting blocks to 0 and then blocks can
-> be set to 1 to select block mode for a single block.
-> 
-
-I'm afraid I don't follow. Do you want to add another parameter? Even if you do, sdio_io_rw_ext_helper() is an internal API. Changing it won't make things better for the function drivers.
-
-> 
-> Technically, there is a bug in sdio_io_rw_ext_helper() in sdio_io.c
-> 
-> 211		while (remainder > func->cur_blksize) {
-> 
-> should be, = missing
-> 
-> 211		while (remainder >= func->cur_blksize) {
-> 
-
-Unless some hardware is quirky in the opposite way and needs to be able to do byte transfer of 256 bytes. Proper cards won't care either way, but as you can see, we can't support both types of buggy cards.
-
-> however the resulting call to mmc_io_rw_extended() is the same as blocks
-> = 1 for both the "block mode" while loop (with the "fix") and the "byte
-> mode" while loop (without the "fix"). The "byte mode" while loop has a
-> hard coded value of 1 for the blocks parameter. So the bug is masked. As
-> I said above, I think the "byte mode" should use a value of 0 for the
-> blocks parameter.
-> 
-
-Ah. mmc_io_rw_extended() is indeed broken in that it can't do single block requests. That should be fixed.
-
-However, it still won't affect what your function driver can do as mmc_io_rw_extended() is a bunch of layers down.
-
-I guess I'll have to consider adding a more low-level API. The big problem with such a call would be that it can fail requests because the host or card cannot satisfy them. So a function driver using such an API would have to use a much more defensive programming (which can incur a performance hit).
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+-Andi
