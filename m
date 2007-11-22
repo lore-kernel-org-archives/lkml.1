@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbXKVMBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbXKVMBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbXKVMBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 07:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbXKVMBE
+	id S1754762AbXKVMBd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 07:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbXKVMBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 07:01:04 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:35923 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751506AbXKVMBD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 07:01:03 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAIb+REdMROHU/2dsb2JhbACBWw
-Date: Thu, 22 Nov 2007 07:00:56 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Mike Mason <mmlnx@us.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>
-Subject: Re: [PATCH] Linux Kernel Markers - Support Multiple Probes
-Message-ID: <20071122120056.GA6134@Krystal>
-References: <20071122034126.GA24898@Krystal> <20071122100658.GA2738@infradead.org>
-Mime-Version: 1.0
+	Thu, 22 Nov 2007 07:01:22 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51469 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752390AbXKVMBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 07:01:21 -0500
+From: "Arnaldo Carvalho de Melo" <acme@redhat.com>
+Date: Thu, 22 Nov 2007 10:01:10 -0200
+To: Andi Kleen <ak@suse.de>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071122120110.GA17441@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, sam@ravnborg.org,
+	rusty@rustcorp.com.au
+References: <20071122343.446909000@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071122100658.GA2738@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 06:57:19 up 18 days, 17:02,  3 users,  load average: 1.20, 0.81,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071122343.446909000@suse.de>
+X-Url: http://oops.ghostprotocols.net:81/blog
+Organization: OOPS Labs
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Wed, Nov 21, 2007 at 10:41:26PM -0500, Mathieu Desnoyers wrote:
-> > RCU style multiple probes support for the Linux Kernel Markers.
+Em Thu, Nov 22, 2007 at 03:43:06AM +0100, Andi Kleen escreveu:
 > 
-> Why would we want this?
-> 
+> There seems to be rough consensus that the kernel currently has too many 
+> exported symbols. A lot of these exports are generally usable utility 
+> functions or important driver interfaces; but another large part are functions
+> intended by only one or two very specific modules for a very specific purpose.
+> One example is the TCP code. It has most of its internals exported, but 
+> only for use by tcp_ipv6.c (and now a few more by the TCP/IP congestion modules) 
+> But it doesn't make sense to include these exported for a specific module
+> functions into a broader "kernel interface".   External modules assume
+> they can use these functions, but they were never intended for that.
 
-If we want to have more than one probe connected to a marker at a given
-time (LTTng, or blktrace, ssytemtap) then we need this patch. Without it,
-connecting a second probe handler to a marker will fail.
+Thank you for doing this.
 
-It allow us, for instance, to do interesting combinations :
+Creating the DCCP and its congestion control infrastructure (CCID)
+module namespaces is now on my TODO list. :-)
 
-Do standard tracing with LTTng and, eventually, to compute statistics
-with SystemTAP, or to have a special trigger on an event that would call
-a systemtap script which would stop flight recorder tracing.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+- Arnaldo
