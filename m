@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbXKVDDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbXKVDES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756049AbXKVDDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 22:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXKVDDO
+	id S1757242AbXKVDES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 22:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbXKVDEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 22:03:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59676 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbXKVDDM (ORCPT
+	Wed, 21 Nov 2007 22:04:04 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47583 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbXKVDEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 22:03:12 -0500
-Date: Wed, 21 Nov 2007 19:03:04 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071121190304.6bf682b5@laptopd505.fenrus.org>
-In-Reply-To: <20071122343.446909000@suse.de>
-References: <20071122343.446909000@suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Wed, 21 Nov 2007 22:04:01 -0500
+Date: Thu, 22 Nov 2007 12:06:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com
+Subject: Re: 2.6.24-rc3-mm1 (sync is slow ?)
+Message-Id: <20071122120643.c293c617.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071121004909.6157bb9a.akpm@linux-foundation.org>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	<20071121174215.caff4551.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071121004909.6157bb9a.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Nov 2007 03:43:06 +0100 (CET)
-Andi Kleen <ak@suse.de> wrote:
+On Wed, 21 Nov 2007 00:49:09 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Wed, 21 Nov 2007 17:42:15 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> There seems to be rough consensus that the kernel currently has too
-> many exported symbols. A lot of these exports are generally usable
-> utility functions or important driver interfaces; but another large
-> part are functions intended by only one or two very specific modules
-> for a very specific purpose. One example is the TCP code. It has most
-> of its internals exported, but only for use by tcp_ipv6.c (and now a
-> few more by the TCP/IP congestion modules) But it doesn't make sense
-> to include these exported for a specific module functions into a
-> broader "kernel interface".   External modules assume they can use
-> these functions, but they were never intended for that.
+> > Hi, Andrew
+> > 
+> > I got following result in 'sync' command.
+> > It was too slow. (memory controller config is off ;)
+> > I attaches my .config.
+> > ==
+> > [2.6.24-rc3-mm1]
+> > [kamezawa@dr-test2 ~]$ dd if=/dev/zero of=./tmpfile bs=4096 count=100000
+> > 100000+0 records in
+> > 100000+0 records out
+> > 409600000 bytes (410 MB) copied, 1.46706 seconds, 279 MB/s
+> > [kamezawa@dr-test2 ~]$ time sync
+> > 
+> > real    3m6.440s
+> > user    0m0.000s
+> > sys     0m0.133s
+
+> Well I wonder how we did that.
 > 
-> This patch allows to export symbols only for specific modules by 
-> introducing symbol name spaces. A module name space has a white
-> list of modules that are allowed to import symbols for it; all others
-> can't use the symbols.
+> It seems OK here from a quick test (i386, ext3-on-IDE).
 > 
-> It adds two new macros: 
-> 
-> MODULE_NAMESPACE_ALLOW(namespace, module);
-> 
-> Allow module to import symbols from namespace. module is the module
-> name without .ko as displayed by lsmod.  Must be in the same module
-> as the export (and be duplicated if there are multiple modules
-> exporting symbols to a namespace).  Multiple allows for the same name
-> space are allowed.
-> 
-> EXPORT_SYMBOL_NS(namespace, symbol);
+> Maybe device driver/block breakage?
 > 
 
-Hi,
+I confirmed This slowdown is caused by git-scsi-misc.patch.
+I'm sorry that I can't chase more and will be offline in this weekend.
 
-I like this concept in general; I have one minor comment; right now
-your namespace argument is like
+This is scsi_mod information in /proc/modules
+=
+scsi_mod 409416 8 mptctl,sg,lpfc,scsi_transport_fc,mptspi,mptscsih,scsi_transport_spi,sd_mod, Live 0xa000000202818000
+=
 
-EXPORT_SYMBOL_NS(foo, some_symbol);
+What information should I provide more ?
 
-from a language-like pov I kinda wonder if it's nicer to do
-
-EXPORT_SYMBOL_NS("foo", some_symbol);
-
-because foo isn't something in C scope, but more a string-like
-identifier...
-
+Thanks,
+-Kame
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
