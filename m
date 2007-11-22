@@ -1,34 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXKVM43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbXKVNMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbXKVM43 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 07:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbXKVM4V
+	id S1753644AbXKVNMS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 08:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXKVNMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 07:56:21 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:40722 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752308AbXKVM4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 07:56:21 -0500
-Date: Wed, 21 Nov 2007 22:34:16 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH 02/59] arch/mips: Add missing "space"
-Message-ID: <20071121223415.GA27623@linux-mips.org>
-References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <23f0badf8dab73294c2aa142fafb9301ca843e88.1195454434.git.joe@perches.com>
+	Thu, 22 Nov 2007 08:12:09 -0500
+Received: from beer.org.uk ([91.84.48.107]:41012 "EHLO hobgoblin.beer.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752308AbXKVNMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 08:12:08 -0500
+X-Greylist: delayed 2296 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Nov 2007 08:12:08 EST
+Message-ID: <40711.127.0.0.1.1195734828.squirrel@127.0.0.1>
+Date: Thu, 22 Nov 2007 12:33:48 -0000 (GMT)
+Subject: RTL2831U kernel driver
+From: "Vic" <kernel@beer.org.uk>
+To: linux-kernel@vger.kernel.org
+Reply-To: kernel@beer.org.uk
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <23f0badf8dab73294c2aa142fafb9301ca843e88.1195454434.git.joe@perches.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 19, 2007 at 05:47:54PM -0800, Joe Perches wrote:
+Hi All.
 
-Queued for 2.6.25.
+Sorry for the breach of netiquette - I'm not subscribed to the list
+(please CC: me on anything important!), but I'm not really up to much a s
+a kernel contributor...
 
-Thanks,
+Anyway - here's the reason for my posting. I've got a kernel driver for
+the RTL2831U device (a DVB-T device) from Realtek. Just this morning, I
+got an email from them agreeing to release it under GPL.
 
-   Ralf
+It currently has no copright notices at all - I think I should add Realtek
+attributions to it.
+
+Then what should I do?
+
+Vic.
+
