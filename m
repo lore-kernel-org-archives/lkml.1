@@ -1,132 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbXKVKcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbXKVKmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbXKVKcd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 05:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXKVKcZ
+	id S1752882AbXKVKmA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 05:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXKVKlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 05:32:25 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36055 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751506AbXKVKcY (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 05:32:24 -0500
-Date: Thu, 22 Nov 2007 21:31:59 +1100
-From: David Chinner <dgc@sgi.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: David Chinner <dgc@sgi.com>, Andi Kleen <andi@firstfloor.org>,
-       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071122103159.GW114266761@sgi.com>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <20071122025726.GG17536@waste.org> <20071122034106.GV114266761@sgi.com> <20071122072549.GQ19691@waste.org>
+	Thu, 22 Nov 2007 05:41:52 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:64621 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbXKVKlw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 05:41:52 -0500
+Subject: MMC/SDIO sub-system: block mode versus byte mode
+From: Dean Jenkins <djenkins@mvista.co.uk>
+Reply-To: djenkins@mvista.co.uk
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: MontaVista
+Date: Thu, 22 Nov 2007 10:41:43 +0000
+Message-Id: <1195728103.20691.125.camel@libdev3.libertesoft.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122072549.GQ19691@waste.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18kGn1rIEXwHeilrgym0bAAIW6d9vYwsUAZnYb
+ MY9KoyCToIT+697g31ZWkxWm4O35MzOgwsCMQeKNDG/9wZYgyS
+ w6wtwKbsu5EJd+Y3c0R3Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 01:25:49AM -0600, Matt Mackall wrote:
-> On Thu, Nov 22, 2007 at 02:41:06PM +1100, David Chinner wrote:
-> > On Wed, Nov 21, 2007 at 08:57:27PM -0600, Matt Mackall wrote:
-> > > On Thu, Nov 22, 2007 at 12:12:14PM +1100, David Chinner wrote:
-> > > > In all the cases that I know of where ppl are using what could
-> > > > be considered real-time I/O (e.g. media environments where they
-> > > > do real-time ingest and playout from the same filesystem) the
-> > > > real-time ingest processes create the files and do pre-allocation
-> > > > before doing their I/O. This I/O can get held up behind another
-> > > > process that is not real time that has issued log I/O. 
-> > > > 
-> > > > Given there is no I/O priority inheritence and having log I/O stall
-> > > > will stall the entire filesystem, we cannot allow log I/O to
-> > > > stall in real-time environments. Hence it must have the highest
-> > > > possible priority to prevent this.
-> > > 
-> > > I've seen PVRs that would be upset by this. They put media on one
-> > > filesystem and database/apps/swap/etc. on another, but have everything
-> > > on a single spindle. Stalling a media filesystem read for a write
-> > > anywhere else = fail.
-> > 
-> > Sounds like the PVR is badly designed to me. If a write can cause a
-> > read to miss a playback deadline, then you haven't built enough
-> > buffering into your playback application.
-> 
-> Normally it's not a problem. But your proposed change can push a
-> working system into a non-working system by making non-critical I/O on
-> an unrelated filesystem have higher priority than the thing that -actually
-> has real-time constraints-.
->
-> In other words, I/O priority is per-spindle and not per-filesystem and
-> thus this change has consequences that leak outside the filesystem in
-> question. That's bad.
+Hi Pierre,
 
-This has nothing to do with this patch - it's a problem with sharing
-a single resource in a RT system between two non-deterministic
-constructs. e.g. I can put two ext3 filesystems on the one spindle,
-run two completely independent RT workloads on the different
-filesystems and have one workload DOS the other due to differences
-in priority at the spindle.
+I've been checking my SDIO CMD53 data transfers and I notice the
+following:
 
-That's not a bug in ext3 or the I/O priority mechanism - that's bad
-system design. Put the filesystems on different spindles and the
-problem goes away.
+block size = 256 bytes for my SDIO card.
 
-> I'd further add that the kernel internals probably shouldn't wander
-> into RT priority levels unless it's actually doing priority
-> inheritance, otherwise it's quite likely to upset the careful
-> considerations of the RT system designer's priority schemes.
+transfers of 256 bytes uses byte mode ( I expected block mode )
+transfers of 512 bytes uses block mode ( because blocks = 2 )
 
-Even if issuing RT I/O will guarantee problems in a RT system?
-We've put this cool RT I/O prioritisation mechanism in the I/O layer
-without any consideration of what it means for the filesystems that
-the I/O must pass through first.  The design defines I/O
-prioritsation from a *process* POV and it ignores the fact that the
-filesystem might not work effectively under such prioritisation
-mechanism.
+>From the SD spec a single block transfer seems to be valid.
 
-An example, perhaps.
+I notice the function mmc_io_rw_extended() in sdio_ops.c seems to select
+byte mode when the transfer size is 512 or less when the blocks
+parameter variable is 1. In fact blocks is never 0.
 
-If you're smart about the way your application does its multi-stream
-RT write I/O you preallocate the space and use direct I/O.  But even
-though you've preallocated the space, in XFS you still need
-transactions to work because you have to mark the extent you just
-wrote to as written.
+Therefore is this a feature or a bug that prevents 256 bytes being sent
+in block mode when it is a single complete 1 block of data ?
 
-This conversion happens during I/O completion (i.e. in a workqueue)
-so it doesn't have the *process* priority to force out log I/O at the same
-priority as the RT thread. Hence once all the log buffers are queued
-for I/O, the transaction system blocks all the I/O completion workqueues
-and all the RT write I/O stops completing and your application, which
-is doing synchronous direct I/O into preallocated regions hangs.....
+If it is a bug then I suggest the sdio_io_rw_ext_helper() in sdio_io.c
+be able to select byte mode by setting blocks to 0 and then blocks can
+be set to 1 to select block mode for a single block.
 
-Hence the only way to give the log I/O enough priority to be issued
-is to give the I/O a higher priority than anything that is running
-at the time.
+Have I missed something ?
 
-This is not a problem the I/O scheduler can solve - it is a result
-of the mechanism used to transfer priority from process context to
-I/o context. The needs of the filesystem is the key thing that is
-missing here - you can't do RT I/O if the filesystem backs up....
+Technically, there is a bug in sdio_io_rw_ext_helper() in sdio_io.c
 
-> Now consider that you're
-> recording and playing back multiple HD streams on low-margin set-top
-> hardware and you'll see that making this work -at all- means lots of
-> I/O tuning.
+211		while (remainder > func->cur_blksize) {
 
-Yes, it does. But along the same lines, sustaining multiple
-uncompressed 2k and 4k streams (i.e. multiple GB/s of throughput)
-takes a lot of I/O tuning. We had to design a whole new allocator to
-tune the I/O patterns to make it work....
+should be, = missing
 
-Basically, we're not optimising XFS for small, embedded systems. We
-are at the other end of the scale - XFS is optimised for very large,
-very expensive storage subsystems and hence we often do things that
-don't make sense for embedded systems...
+211		while (remainder >= func->cur_blksize) {
 
-Cheers,
+however the resulting call to mmc_io_rw_extended() is the same as blocks
+= 1 for both the "block mode" while loop (with the "fix") and the "byte
+mode" while loop (without the "fix"). The "byte mode" while loop has a
+hard coded value of 1 for the blocks parameter. So the bug is masked. As
+I said above, I think the "byte mode" should use a value of 0 for the
+blocks parameter.
 
-Dave.
+What do you think ?
+
+Regards,
+Dean. 
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Dean Jenkins
+Embedded Software Engineer
+MontaVista Software (UK)
+Professional Services Division
+
