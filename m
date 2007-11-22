@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbXKVETT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbXKVGgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbXKVETT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 23:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXKVETJ
+	id S1752419AbXKVGgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 01:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXKVGgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 23:19:09 -0500
-Received: from mx2-2.mail.ru ([194.67.23.122]:34337 "EHLO mx2.mail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752885AbXKVETI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 23:19:08 -0500
-X-Greylist: delayed 1054 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 23:19:08 EST
-Date: Thu, 22 Nov 2007 07:19:52 +0300
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: Dave Bailey <dsbailey@pacbell.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with ufs nextstep in 2.6.18 (debian)
-Message-ID: <20071122041412.GB9896@rain>
-Mail-Followup-To: Dave Bailey <dsbailey@pacbell.net>,
-	linux-kernel@vger.kernel.org
-References: <4743438F.3000904@pacbell.net>
+	Thu, 22 Nov 2007 01:36:06 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:46874 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbXKVGgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 01:36:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=E/ASWggZzmmx5BXejy12lpSbmIqicP/MJzOGFVr4Dc5ImpSaHFpnatt2X2rXT78lVNSeKhxiriVXDsDx4awiOQRyQjM6M8wKb2ognLq6m4Y1RhOK8L2mm5LqCuLJnzILne7H4Ov+QCvEeOSIRyou5rYf2GAmsaDpV9H0iSfmi9s=
+Message-ID: <4745234E.9050409@gmail.com>
+Date: Thu, 22 Nov 2007 15:35:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4743438F.3000904@pacbell.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v2)
+References: <47438248.7030704@shaw.ca>
+In-Reply-To: <47438248.7030704@shaw.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 20, 2007 at 12:29:03PM -0800, Dave Bailey wrote:
-> This problem has been around since kernel 2.6.16, and I see it in
-> 2.6.23.1-10.fc7. It occurs in the ufs_check_page function of ufs/dir.c
-> at the Espan test, which seems unnecessary for NextStep/OpenStep
-> files systems. The following patch preserves the test for other file
-> systems and makes the mount useful for NextStep/OpenStep:
-> (against the 2.6.23.1-10.fc7 source tree)
->
-> dsb@Zeno-Dyn[1012]$ diff dir.c dir.c.orig
-> 108,110d107
-> <       unsigned mnext = UFS_SB(sb)->s_mount_opt &
-> <         (UFS_MOUNT_UFSTYPE_NEXTSTEP || UFS_MOUNT_UFSTYPE_NEXTSTEP_CD ||
-> <          UFS_MOUNT_UFSTYPE_OPENSTEP);
-> 131c128
-> <               if ((mnext == 0) & (((offs + rec_len - 1) ^ offs) & 
-> ~chunk_mask))
-> ---
-> >               if (((offs + rec_len - 1) ^ offs) & ~chunk_mask)
+Hello, Robert.
 
-This fixes only symptom, not illness.
-This check represent what code think about filesystem layout.
-On what actually kind of UFS system did you test this patch?
-When I sometime ago fixed similar issue for openstep ufs,
-actully this was darwin's ufs which has the same layout,
-I just set s_dirblksize to right value, may be for 
-UFS_MOUNT_UFSTYPE_NEXTSTEP, UFS_MOUNT_UFSTYPE_NEXTSTEP_CD you need
-do the same, see TODO items in fs/ufs/super.c.
+Robert Hancock wrote:
+> This fixes some problems with ATAPI devices on nForce4 controllers in ADMA
+> mode on systems with memory located above 4GB. We need to delay setting the
+> 64-bit DMA mask until the PRD table and padding buffer are allocated so that
+> they don't get allocated above 4GB and break legacy mode (which is needed for
+> ATAPI devices). Also, explicitly set a 32-bit DMA mask before allocating the
+> legacy buffers since setting the DMA mask affects both ports and we need to
+> ensure the second port's buffers are allocated properly (fixes a problem
+> with the previous version of this patch).
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> 
+> +	/* Ensure DMA mask is set to 32-bit before allocating legacy PRD and
+> +	   pad buffers */
+> +	pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+> +	pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
+[--snip--]
+> +	pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
+> +	pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64));
+
+I'm probably being paranoid here but please add error checks.  Just
+checking return value and returning error suffices.
+
+Thanks.
 
 -- 
-/Evgeniy
-
+tejun
