@@ -1,455 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbXKVIml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXKVIto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbXKVIml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 03:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbXKVImd
+	id S1752449AbXKVIto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 03:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXKVItg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 03:42:33 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:36247 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbXKVImc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 03:42:32 -0500
-Message-ID: <474540EC.9090209@linux.vnet.ibm.com>
-Date: Thu, 22 Nov 2007 14:12:20 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: youquan_song@linux.intel.com
-CC: linux-kernel@vger.kernel.org, youquan.song@intel.com
-Subject: Re: In /proc/cpuinfo, all processor items show "0"
-References: <3658.172.16.183.182.1195716874.squirrel@linux.intel.com>
-In-Reply-To: <3658.172.16.183.182.1195716874.squirrel@linux.intel.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Nov 2007 03:49:36 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:3461 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751304AbXKVItf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 03:49:35 -0500
+Date: Thu, 22 Nov 2007 11:49:23 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH] proc: use BUG_ON() in de_put()
+Message-ID: <20071122084923.GA6240@localhost.sw.ru>
+References: <20071115161249.GE6216@localhost.sw.ru> <20071116134642.2dda1600.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071116134642.2dda1600.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-youquan_song@linux.intel.com wrote:
-> Build kernel 2.6.24-rc3,   cat /proc/cpuinfo,  all processor items show "0":
+On Fri, Nov 16, 2007 at 01:46:42PM -0800, Andrew Morton wrote:
+> On Thu, 15 Nov 2007 19:12:49 +0300
+> Alexey Dobriyan <adobriyan@sw.ru> wrote:
 > 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 0
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 7465.18
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 2
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.81
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 3
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.80
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 1
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.79
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 2
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.80
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 3
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.80
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 0
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.74
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 1
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.81
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 2
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.81
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 3
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.81
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 0
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.96
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 1
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.82
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 2
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.81
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 3
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.81
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 0
-> siblings	: 4
-> core id		: 1
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.74
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 6
-> model name	:                    Genuine Intel(R) CPU 3.40GHz
-> stepping	: 8
-> cpu MHz		: 3391.555
-> cache size	: 16384 KB
-> physical id	: 1
-> siblings	: 4
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 6
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-> xtpr lahf_lm
-> bogomips	: 6782.79
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 40 bits physical, 48 bits virtual
-> power management:
+> > It's much more visible that some printk. I still has an unexplained oops
+> > in proc, so let's leave it for a while.
 
-Hi,
+> > --- a/fs/proc/inode.c
+> > +++ b/fs/proc/inode.c
+> > @@ -37,12 +37,7 @@ void de_put(struct proc_dir_entry *de)
+> >  {
+> >  	if (de) {	
+> >  		lock_kernel();		
+> > -		if (!atomic_read(&de->count)) {
+> > -			printk("de_put: entry %s already free!\n", de->name);
+> > -			unlock_kernel();
+> > -			return;
+> > -		}
+> > -
+> > +		BUG_ON(atomic_read(&de->count) == 0);
+> >  		if (atomic_dec_and_test(&de->count)) {
+> >  			if (de->deleted) {
+> >  				printk("de_put: deferred delete of %s\n",
+> 
+> I don't see that an error in here _requires_ that we nuke the machine. 
+> Surely we can emit a warning and then recover in some fashion?
 
-This patch should help you http://marc.info/?l=linux-kernel&m=119392088227245.
+Hmm... atomic_dec_and_test() in -mm already has diagnostics¹ when doing
+0 => -1 transition, google says this check triggered only once. I think
+we should just drop it.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+¹ i386 only :^)
+
