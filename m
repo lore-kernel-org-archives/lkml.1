@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXKVC5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbXKVC61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbXKVC5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 21:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXKVC5q
+	id S1754602AbXKVC61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 21:58:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXKVC6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 21:57:46 -0500
-Received: from waste.org ([66.93.16.53]:48929 "EHLO waste.org"
+	Wed, 21 Nov 2007 21:58:17 -0500
+Received: from ccs17.jlab.org ([129.57.35.82]:53086 "EHLO ccs17.jlab.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXKVC5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 21:57:45 -0500
-Date: Wed, 21 Nov 2007 20:57:27 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, xfs-oss <xfs@oss.sgi.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071122025726.GG17536@waste.org>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com>
+	id S1752207AbXKVC6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 21:58:16 -0500
+Message-ID: <4744F042.4070002@jlab.org>
+Date: Wed, 21 Nov 2007 21:58:10 -0500
+From: Jie Chen <chen@jlab.org>
+Organization: Jefferson Lab
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122011214.GR114266761@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: =?UTF-8?B?U2ltb24gSG9sbSBUaMO4Z2Vyc2Vu?= <odie@cs.aau.dk>
+CC: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Subject: Re: Possible bug from kernel 2.6.22 and above
+References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com>	 <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local>
+In-Reply-To: <1195698770.11808.4.camel@odie.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 12:12:14PM +1100, David Chinner wrote:
-> On Thu, Nov 22, 2007 at 01:49:25AM +0100, Andi Kleen wrote:
-> > David Chinner <dgc@sgi.com> writes:
-> > 
-> > > To ensure that log I/O is issued as the highest priority I/O, set
-> > > the I/O priority of the log I/O to the highest possible. This will
-> > > ensure that log I/O is not held up behind bulk data or other
-> > > metadata I/O as delaying log I/O can pause the entire transaction
-> > > subsystem. Introduce a new buffer flag to allow us to tag the log
-> > > buffers so we can discrimiate when issuing the I/O.
-> > 
-> > Won't that possible disturb other RT priority users that do not need 
-> > log IO (e.g. working on preallocated files)? Seems a little
-> > dangerous.
-> 
-> In all the cases that I know of where ppl are using what could
-> be considered real-time I/O (e.g. media environments where they
-> do real-time ingest and playout from the same filesystem) the
-> real-time ingest processes create the files and do pre-allocation
-> before doing their I/O. This I/O can get held up behind another
-> process that is not real time that has issued log I/O. 
-> 
-> Given there is no I/O priority inheritence and having log I/O stall
-> will stall the entire filesystem, we cannot allow log I/O to
-> stall in real-time environments. Hence it must have the highest
-> possible priority to prevent this.
+Simon Holm Thøgersen wrote:
+> ons, 21 11 2007 kl. 20:52 -0500, skrev Jie Chen:
 
-I've seen PVRs that would be upset by this. They put media on one
-filesystem and database/apps/swap/etc. on another, but have everything
-on a single spindle. Stalling a media filesystem read for a write
-anywhere else = fail.
+> There is a backport of the CFS scheduler to 2.6.21, see
+> http://lkml.org/lkml/2007/11/19/127
+> 
+Hi, Simon:
+
+I will try that after the thanksgiving holiday to find out whether the 
+odd behavior will show up using 2.6.21 with back ported CFS.
+
+>>>> Kernel 2.6.21
+>>>> Number of Threads              2          4           6         8
+>>>> SpinLock (Time micro second)   10.5618    10.58538    10.5915   10.643
+>>>>                   (Overhead)   0.073      0.05746     0.102805 0.154563
+>>>> Barrier (Time micro second)    11.020410  11.678125   11.9889   12.38002
+>>>>                  (Overhead)    0.531660   1.1502      1.500112 1.891617
+>>>>
+>>>> Each thread is bound to a particular core using pthread_setaffinity_np.
+>>>>
+>>>> Kernel 2.6.23.8
+>>>> Number of Threads              2          4           6         8
+>>>> SpinLock (Time micro second)   14.849915  17.117603   14.4496   10.5990
+>>>>                  (Overhead)    4.345417   6.617207    3.949435  0.110985
+>>>> Barrier (Time micro second)    19.462255  20.285117   16.19395  12.37662
+>>>>                  (Overhead)    8.957755   9.784722    5.699590  1.869518
+>>>>
+
+> 
+> 
+> Simon Holm Thøgersen
+> 
+> 
+I just ran a simple test to prove that the problem may be related to 
+load balance of the scheduler. I first started 6 processes using 
+"taskset -c 2 donothing&; taskset -c 3 donothing&; ..., taskset -c 7 
+donothing". These 6 processes will run on core 2 to 7. Then I started my 
+test program using two threads bound to core 0 and 1. Here is the result:
+
+Two threads on Kernel 2.6.23.8:
+SpinLock (Time micro second)             10.558255
+          (Overhead)                      0.068965
+Barrier  (Time micro second)             10.865520
+          (Overhead)                      0.376230
+
+Similarly, I started 4 donothing processes on core 4, 5, 6 and 7, and 
+ran the test program. I have the following result:
+
+Four threads on Kernel 2.6.23.8:
+SpinLock (Time micro second)             10.579413
+          (Overhead)                      0.090023
+Barrier  (Time micro second)             11.363193
+          (Overhead)                      0.873803
+
+Finally, here is the result for 6 threads with two donothing processes 
+running on core 6 and 7:
+
+Six threads on Kernel 2.6.23.8:
+SpinLock (Time micro second)             10.590030
+          (Overhead)                      0.100940
+Barrier  (Time micro second)             11.977548
+          (Overhead)                      1.488458
+
+Now the above results are very much similar to the results obtained for 
+the kernel 2.6.21. I hope this helps you guys in some ways. Thank you.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+#############################################################################
+# Jie Chen
+# Scientific Computing Group
+# Thomas Jefferson National Accelerator Facility
+# Newport News, VA 23606
+#
+# chen@jlab.org
+# (757)269-5046 (office)
+# (757)269-6248 (fax)
+#############################################################################
