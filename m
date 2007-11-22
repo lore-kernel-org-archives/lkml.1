@@ -1,100 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbXKVKJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbXKVKQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752916AbXKVKJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 05:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXKVKJG
+	id S1752680AbXKVKQv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 05:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXKVKQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 05:09:06 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54216 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbXKVKJE (ORCPT
+	Thu, 22 Nov 2007 05:16:42 -0500
+Received: from partizan.velesys.com ([213.184.230.195]:64437 "EHLO
+	partizan.velesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbXKVKQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 05:09:04 -0500
-Date: Thu, 22 Nov 2007 11:09:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: nohz and strange sleep latencies
-Message-ID: <20071122100941.GA1724@elf.ucw.cz>
-References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz> <20071120205454.GD10008@elte.hu> <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain> <20071120225246.GA24380@elte.hu>
+	Thu, 22 Nov 2007 05:16:41 -0500
+Date: Thu, 22 Nov 2007 12:17:50 +0200
+From: "Kirill A. Shutemov" <k.shutemov@velesys.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.24-rc3-mm1: usb mouse doesn't work
+Message-ID: <20071122101750.GC7085@localhost.localdomain>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <20071121182346.GA4280@localhost.localdomain> <20071121142239.bff7206b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Bu8it7iiRSEf40bY"
 Content-Disposition: inline
-In-Reply-To: <20071120225246.GA24380@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071121142239.bff7206b.akpm@linux-foundation.org>
+X-Operating-System: ALT Linux Sisyphus (20070101) (Kernel 2.6.24-kas-alt1)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > > > and send us the output? (Enabling CONFIG_TIMER_STATS, 
-> > > > > CONFIG_SCHED_DEBUG and CONFIG_SCHEDSTATS would maximize the amount 
-> > > > > of information.)
-> > > > 
-> > > > This was w/o hpet=disable . Do you want me to test with hpet=disable?
-> > > 
-> > > no, this is fine. You've got a hpet clockevents driver and two lapic 
-> > > drivers:
-> > > 
-> > > Clock Event Device: hpet
-> > >  set_next_event: hpet_legacy_next_event
-> > >  set_mode:       hpet_legacy_set_mode
-> > >  event_handler:  tick_handle_oneshot_broadcast
-> > > 
-> > > Clock Event Device: lapic
-> > >  set_next_event: lapic_next_event
-> > >  set_mode:       lapic_timer_setup
-> > >  event_handler:  hrtimer_interrupt
-> > > 
-> > > Clock Event Device: lapic
-> > >  set_next_event: lapic_next_event
-> > >  set_mode:       lapic_timer_setup
-> > >  event_handler:  hrtimer_interrupt
-> > > 
-> > > to me this has the feeling of lapic breakage in C2 mode. Does it get any 
-> > > better if you boot with 'nolapic'? (but that might in turn turn off 
-> > > high-res timers and nohz in essence) Thomas, any ideas?
-> > 
-> > Hmm, lapic is considered unstable in c2 by default. You have to tell 
-> > the kernel that you trust it in C2 on the command line.
-> 
-> yeah, i was wondering about that too. ACPI enumerated them properly at a 
-> certain stage:
-> 
->  ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
->  ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
-> 
-> but perhaps somehow we miss this fact and fail to turn off the lapic 
-> clockevents drivers?
+--Bu8it7iiRSEf40bY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I tried to add nolapic_timer manually, and that helped, but:
+On [Wed, 21.11.2007 14:22], Andrew Morton wrote:
+> On Wed, 21 Nov 2007 20:23:46 +0200
+> "Kirill A. Shutemov" <k.shutemov@velesys.com> wrote:
+>=20
+> > USB mouse(Logitech M-BT58) doesn't work. TouchPad works.
+> > dmesg after rmmod usbcore && modprobe uhci_hcd:
+> >=20
+> > usbcore: registered new interface driver usbfs
+> > usbcore: registered new interface driver hub
+> > usbcore: registered new device driver usb
+> > USB Universal Host Controller Interface driver v3.0
+> > ACPI: PCI Interrupt 0000:00:1d.0[A] -> Link [LNKE] -> GSI 10 (level, lo=
+w)
+> > -> IRQ 10
+> > PCI: Setting latency timer of device 0000:00:1d.0 to 64
+> > uhci_hcd 0000:00:1d.0: UHCI Host Controller
+> > uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+> > uhci_hcd 0000:00:1d.0: irq 10, io base 0x0000bf80
+> > usb usb1: configuration #1 chosen from 1 choice
+> > hub 1-0:1.0: USB hub found
+> > hub 1-0:1.0: 2 ports detected
+> > usb usb1: new device found, idVendor=3D0000, idProduct=3D0000
+> > usb usb1: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+> > usb usb1: Product: UHCI Host Controller
+> > usb usb1: Manufacturer: Linux 2.6.24-kas-alt1 uhci_hcd
+> > usb usb1: SerialNumber: 0000:00:1d.0
+> > ACPI: PCI Interrupt 0000:00:1d.1[B] -> Link [LNKF] -> GSI 11 (level, lo=
+w)
+> > -> IRQ 11
+> > PCI: Setting latency timer of device 0000:00:1d.1 to 64
+> > uhci_hcd 0000:00:1d.1: UHCI Host Controller
+> > uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
+> > uhci_hcd 0000:00:1d.1: irq 11, io base 0x0000bf60
+> > usb usb2: configuration #1 chosen from 1 choice
+> > hub 2-0:1.0: USB hub found
+> > hub 2-0:1.0: 2 ports detected
+> > usb usb2: new device found, idVendor=3D0000, idProduct=3D0000
+> > usb usb2: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+> > usb usb2: Product: UHCI Host Controller
+> > usb usb2: Manufacturer: Linux 2.6.24-kas-alt1 uhci_hcd
+> > usb usb2: SerialNumber: 0000:00:1d.1
+> > ACPI: PCI Interrupt 0000:00:1d.2[C] -> Link [LNKG] -> GSI 9 (level, low)
+> > -> IRQ 9
+> > PCI: Setting latency timer of device 0000:00:1d.2 to 64
+> > uhci_hcd 0000:00:1d.2: UHCI Host Controller
+> > uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
+> > uhci_hcd 0000:00:1d.2: irq 9, io base 0x0000bf40
+> > usb usb3: configuration #1 chosen from 1 choice
+> > hub 3-0:1.0: USB hub found
+> > hub 3-0:1.0: 2 ports detected
+> > usb usb3: new device found, idVendor=3D0000, idProduct=3D0000
+> > usb usb3: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+> > usb usb3: Product: UHCI Host Controller
+> > usb usb3: Manufacturer: Linux 2.6.24-kas-alt1 uhci_hcd
+> > usb usb3: SerialNumber: 0000:00:1d.2
+> > ACPI: PCI Interrupt 0000:00:1d.3[D] -> Link [LNKH] -> GSI 7 (level, low)
+> > -> IRQ 7
+> > PCI: Setting latency timer of device 0000:00:1d.3 to 64
+> > uhci_hcd 0000:00:1d.3: UHCI Host Controller
+> > uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
+> > uhci_hcd 0000:00:1d.3: irq 7, io base 0x0000bf20
+> > usb usb4: configuration #1 chosen from 1 choice
+> > hub 4-0:1.0: USB hub found
+> > hub 4-0:1.0: 2 ports detected
+> > usb usb4: new device found, idVendor=3D0000, idProduct=3D0000
+> > usb usb4: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
+> > usb usb4: Product: UHCI Host Controller
+> > usb usb4: Manufacturer: Linux 2.6.24-kas-alt1 uhci_hcd
+> > usb usb4: SerialNumber: 0000:00:1d.3
+> > uhci_hcd 0000:00:1d.3: FGR not stopped yet!
+> >=20
+>=20
+> I've had some strangenesses with USB lately.  Sometimes running `lsusb'
+> makes the USB system notice a newly attached device.
 
-checking TSC synchronization [CPU#0 -> CPU#1]:
-Measured 627605 cycles TSC warp between CPUs, turning off TSC clock.
-Marking TSC unstable due to: check_tsc_sync_source failed.
-Brought up 2 CPUs
-CPU0 attaching sched-domain:
- domain 0: span 3
-  groups: 1 2
-CPU1 attaching sched-domain:
- domain 0: span 3
-  groups: 2 1
-net_namespace: 64 bytes
-...
-Bluetooth: HCI socket layer initialized
-ACPI: RTC can wake from S4
-Time: hpet clocksource has been installed.
-Clockevents: could not switch to one-shot mode:<6>Clockevents: could
-not switch to one-shot mode: lapic is not functional.
-Could not switch to high resolution mode on CPU 1
- lapic is not functional.
-Could not switch to high resolution mode on CPU 0
-system 00:00: iomem range 0x0-0x9ffff could not be reserved
+No. But I have new messages in dmesg:
 
-...and result is nohz is not functional :-(.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+uhci_hcd 0000:00:1d.3: FGR not stopped yet!
+uhci_hcd 0000:00:1d.2: FGR not stopped yet!
+uhci_hcd 0000:00:1d.1: FGR not stopped yet!
+uhci_hcd 0000:00:1d.0: FGR not stopped yet!
+
+
+> Is that "FGR not stopped yet!" messgae new behaviour?
+
+It is a new message since 2.6.24-rc3. I have never try -mm tree before.
+
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + Velesys LLC, http://www.velesys.com/
+ + ALT Linux Team, http://www.altlinux.com/
+
+--Bu8it7iiRSEf40bY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHRVdObWYnhzC5v6oRAsrHAJ4z7KJu0aD14XrmjayHaxhtqBxj5gCeOwQx
+p4+EUtLK7rgLNJHwKPYLOks=
+=mi+k
+-----END PGP SIGNATURE-----
+
+--Bu8it7iiRSEf40bY--
