@@ -1,447 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbXKVHf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXKVHmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbXKVHf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 02:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXKVHfv
+	id S1752841AbXKVHmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 02:42:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXKVHme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 02:35:51 -0500
-Received: from mga06.intel.com ([134.134.136.21]:55501 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751353AbXKVHfu (ORCPT
+	Thu, 22 Nov 2007 02:42:34 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:35558 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXKVHmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 02:35:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,450,1188802800"; 
-   d="scan'208";a="235369014"
-Message-ID: <3658.172.16.183.182.1195716874.squirrel@linux.intel.com>
-Date: Wed, 21 Nov 2007 23:34:34 -0800 (PST)
-Subject: In /proc/cpuinfo, all processor items show "0"  
-From: youquan_song@linux.intel.com
-To: linux-kernel@vger.kernel.org
-Cc: youquan.song@intel.com
-User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
+	Thu, 22 Nov 2007 02:42:33 -0500
+Message-ID: <474532E7.6010406@kernel.org>
+Date: Wed, 21 Nov 2007 23:42:31 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Chris Friedhoff <chris@friedhoff.org>, Serge E Hallyn <sergeh@us.ibm.com>,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Wright <chrisw@sous-sol.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Posix file capabilities in 2.6.24rc2; now 2.6.24-rc3
+References: <20071113230720.22c6a036.chris@friedhoff.org> <20071113235318.GA6477@sergelap.austin.ibm.com> <20071114101251.a1f6214d.chris@friedhoff.org> <20071114180235.GA25344@sergelap.austin.ibm.com> <20071115230227.9dabbb5f.chris@friedhoff.org> <20071119143946.b0664b6c.chris@friedhoff.org> <20071119231644.GA26373@sergelap.austin.ibm.com> <20071120104609.d4f13fa0.chris@friedhoff.org> <20071120145106.GA6641@sergelap.austin.ibm.com>
+In-Reply-To: <20071120145106.GA6641@sergelap.austin.ibm.com>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Build kernel 2.6.24-rc3,   cat /proc/cpuinfo,  all processor items show "0":
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 0
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 7465.18
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+Serge E. Hallyn wrote:
+> The problem is that when you run a setuid binary, its pP and pE are
+> fully raised.  The following patch fixes it for me.  Chris, does it fix
+> your problem?  Andrew, am I again confusing myself and doing something
+> unsafe?
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 2
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.81
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+I think this is yet another example of the fragile mess that is UID
+emulation with capabilities. Your patch is an example of privilege
+escalation - luser can kill a more-capable process. In the kill CONT
+case we reached the opposite conclusion to this one. As was the case
+then, I didn't disagree then :*). If it meets folk's expectations, then
+this is probably a good patch...
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 3
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.80
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -543,6 +543,9 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
+>  	if (capable(CAP_KILL))
+>  		return 0;
+>  
+> +	if (p->euid==0 && p->uid==current->uid)
+> +		return 0;
+> +
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 1
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.79
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+Its late and I'm obviously tired, but is there any reason not to simply use:
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 2
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.80
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+ if (p->uid == current->uid)
+	 return 0;
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 3
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.80
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+Whatever the case, could you put the new code closer to the sig ==
+SIGCONT test? The capability tests are at the end of cap_task_kill() and
+this new check breaks that pattern.
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 0
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.74
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+Cheers
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 1
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.81
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+Andrew
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 2
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.81
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 3
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.81
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 0
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.96
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 1
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.82
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 2
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.81
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 3
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.81
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 0
-siblings	: 4
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.74
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 6
-model name	:                    Genuine Intel(R) CPU 3.40GHz
-stepping	: 8
-cpu MHz		: 3391.555
-cache size	: 16384 KB
-physical id	: 1
-siblings	: 4
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 6
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-constant_tsc pebs bts sync_rdtsc pni monitor ds_cpl vmx est tm2 cid cx16
-xtpr lahf_lm
-bogomips	: 6782.79
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 40 bits physical, 48 bits virtual
-power management:
+iD8DBQFHRTLlQheEq9QabfIRAt/hAKCJgj2kbuyAWI486LOwwDLdkbcpoQCfQdrQ
+J+bcvi+9pGTodFn42PsHJHA=
+=cXaG
+-----END PGP SIGNATURE-----
