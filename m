@@ -1,78 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXKVHmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbXKVHrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbXKVHmm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 02:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXKVHme
+	id S1753078AbXKVHrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 02:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXKVHqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 02:42:34 -0500
-Received: from twinlark.arctic.org ([207.29.250.54]:35558 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbXKVHmd (ORCPT
+	Thu, 22 Nov 2007 02:46:52 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37987 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751554AbXKVHqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 02:42:33 -0500
-Message-ID: <474532E7.6010406@kernel.org>
-Date: Wed, 21 Nov 2007 23:42:31 -0800
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
+	Thu, 22 Nov 2007 02:46:51 -0500
+Date: Wed, 21 Nov 2007 23:46:52 -0800
+From: Micah Dowty <micah@vmware.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>,
+       Peter Williams <pwil3058@bigpond.net.au>
+Subject: Re: High priority tasks break SMP balancer?
+Message-ID: <20071122074652.GA6502@vmware.com>
+References: <20071116221404.GC31527@vmware.com> <b647ffbd0711161526p2faf5abt2457084f1996c735@mail.gmail.com> <20071117010352.GA13666@vmware.com> <b647ffbd0711171110q9f695e1qb42ba73dc23b626d@mail.gmail.com> <20071119185116.GA28173@vmware.com> <b647ffbd0711191422q6be59c44gfbc72f0fc3167768@mail.gmail.com> <20071119230516.GC4736@vmware.com> <20071120055755.GE20436@elte.hu> <20071120180643.GD4736@vmware.com> <b647ffbd0711201347tedf7ac0sc6476118353feab3@mail.gmail.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Chris Friedhoff <chris@friedhoff.org>, Serge E Hallyn <sergeh@us.ibm.com>,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@epoch.ncsc.mil>,
-       Chris Wright <chrisw@sous-sol.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Posix file capabilities in 2.6.24rc2; now 2.6.24-rc3
-References: <20071113230720.22c6a036.chris@friedhoff.org> <20071113235318.GA6477@sergelap.austin.ibm.com> <20071114101251.a1f6214d.chris@friedhoff.org> <20071114180235.GA25344@sergelap.austin.ibm.com> <20071115230227.9dabbb5f.chris@friedhoff.org> <20071119143946.b0664b6c.chris@friedhoff.org> <20071119231644.GA26373@sergelap.austin.ibm.com> <20071120104609.d4f13fa0.chris@friedhoff.org> <20071120145106.GA6641@sergelap.austin.ibm.com>
-In-Reply-To: <20071120145106.GA6641@sergelap.austin.ibm.com>
-X-Enigmail-Version: 0.94.4.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0711201347tedf7ac0sc6476118353feab3@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, Nov 20, 2007 at 10:47:52PM +0100, Dmitry Adamushko wrote:
+> btw., what's your system? If I recall right, SD_BALANCE_NEWIDLE is on
+> by default for all configs, except for NUMA nodes.
 
-Serge E. Hallyn wrote:
-> The problem is that when you run a setuid binary, its pP and pE are
-> fully raised.  The following patch fixes it for me.  Chris, does it fix
-> your problem?  Andrew, am I again confusing myself and doing something
-> unsafe?
+It's a dual AMD64 Opteron.
 
-I think this is yet another example of the fragile mess that is UID
-emulation with capabilities. Your patch is an example of privilege
-escalation - luser can kill a more-capable process. In the kill CONT
-case we reached the opposite conclusion to this one. As was the case
-then, I didn't disagree then :*). If it meets folk's expectations, then
-this is probably a good patch...
+So, I recompiled my 2.6.23.1 kernel without NUMA support, and with
+your patch for scheduling domain flags in /proc. It looks like with
+NUMA disabled, my test case no longer shows the CPU imbalance
+problem. Cool.
 
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -543,6 +543,9 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
->  	if (capable(CAP_KILL))
->  		return 0;
->  
-> +	if (p->euid==0 && p->uid==current->uid)
-> +		return 0;
-> +
+With NUMA disabled (and my test running smoothly), the flags show that
+SD_BALANCE_NEWIDLE is set:
 
-Its late and I'm obviously tired, but is there any reason not to simply use:
+root@micah-64:~# cat /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+55
 
- if (p->uid == current->uid)
-	 return 0;
+Next I turned it off:
 
-Whatever the case, could you put the new code closer to the sig ==
-SIGCONT test? The capability tests are at the end of cap_task_kill() and
-this new check breaks that pattern.
+root@micah-64:~# echo 53 > /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+root@micah-64:~# echo 53 > /proc/sys/kernel/sched_domain/cpu1/domain0/flags
 
-Cheers
+Oddly enough, I still don't observe the CPU imbalance problem.
 
-Andrew
+Now I reboot into a kernel which has NUMA re-enabled but which is
+otherwise identical. I verify that now I can reproduce the CPU
+imbalance again.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+root@micah-64:~# cat /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+1101
 
-iD8DBQFHRTLlQheEq9QabfIRAt/hAKCJgj2kbuyAWI486LOwwDLdkbcpoQCfQdrQ
-J+bcvi+9pGTodFn42PsHJHA=
-=cXaG
------END PGP SIGNATURE-----
+Now I set cpu[10]/domain0/flags to 1099, and the imbalance immediately
+disappears. I can reliably cause the imbalance again by setting it
+back to 1101, and remove the imbalance by setting them to 1099.
+
+Do these results make sense? I'm not sure I understand how
+SD_BALANCE_NEWIDLE could be the whole story, since my /proc/schedstat
+graphs do show that we continuously try to balance on idle, but we
+can't successfully do so because the idle CPU has a much higher load
+than the non-idle CPU. I don't understand how the problem I'm seeing
+could be related to the time at which we run the balancer, rather than
+being related to the load average calculation.
+
+Assuming the CPU imbalance I'm seeing is actually related to
+SD_BALANCE_NEWIDLE being unset, I have a couple of questions:
+
+ - Is this intended/expected behaviour for a machine without
+   NEWIDLE set? I'm not familiar with the rationale for disabling
+   this flag on NUMA systems.
+
+ - Is there a good way to detect, without any kernel debug flags
+   set, whether the current machine has any scheduling domains
+   that are missing the SD_BALANCE_NEWIDLE bit? I'm looking for
+   a good way to work around the problem I'm seeing with VMware's
+   code. Right now the best I can do is disable all thread priority
+   elevation when running on an SMP machine with Linux 2.6.20 or
+   later.
+
+Thank you again for all your help.
+--Micah
