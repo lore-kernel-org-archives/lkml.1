@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbXKVQDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbXKVQLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbXKVQDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 11:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbXKVQD2
+	id S1752500AbXKVQLm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 11:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXKVQLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 11:03:28 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36910 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751597AbXKVQD1 (ORCPT
+	Thu, 22 Nov 2007 11:11:35 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:33906 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbXKVQLe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 11:03:27 -0500
-Date: Thu, 22 Nov 2007 16:01:04 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: kernel@beer.org.uk
+	Thu, 22 Nov 2007 11:11:34 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+Subject: Re: Use of mutex in interrupt context flawed/impossible, need advice.
+Date: Thu, 22 Nov 2007 17:11:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: RTL2831U kernel driver
-Message-ID: <20071122160104.3cb651ac@the-village.bc.nu>
-In-Reply-To: <41536.127.0.0.1.1195746294.squirrel@127.0.0.1>
-References: <40711.127.0.0.1.1195734828.squirrel@127.0.0.1>
-	<20071122141713.79f2562a@the-village.bc.nu>
-	<41536.127.0.0.1.1195746294.squirrel@127.0.0.1>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <c384c5ea0711220802i21e3df45q1d328aea63e7ebf4@mail.gmail.com>
+In-Reply-To: <c384c5ea0711220802i21e3df45q1d328aea63e7ebf4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711221711.39134.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So - how to I submit it?
+Am Donnerstag 22 November 2007 schrieb Leon Woestenberg:
+> I would like to know why this is not so, and if someone has a cleaner
+> proposal than the "try spinlock" approach?
 
-For the legal/email bits: Start at
-http://www.linux-foundation.org/en/Technical_Advisory_Board_(TAB)
+Keep the semaphore.
 
-For the code you might want start by talking to
+	Regards
+		Oliver
 
-Michael Wu <flamingice@sourmilk.net> and Andrea Merello
-<andreamrl@tiscali.it> who did the cleanup for the Realtek 8187 device
-from Realtek reference code.
-
-Also the wireless maintainer: John Linville (linville@tuxdriver.com)
-although I suspect he'll be busy eating turkey right now.
-
-Alan
