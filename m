@@ -1,173 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbXKVKqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbXKVKxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbXKVKqG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 05:46:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXKVKpz
+	id S1753177AbXKVKxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 05:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbXKVKxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 05:45:55 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:1459 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbXKVKpy (ORCPT
+	Thu, 22 Nov 2007 05:53:32 -0500
+Received: from cz-prg09a-av02.karneval.cz ([81.27.192.122]:20603 "EHLO
+	av2.karneval.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbXKVKxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 05:45:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BfTNBN7gI4gdsFZEz24ZJ7obDFYR7cHnGVkx03wNKCzq3et3U3MMO0aHIm72/iRRq+tEMYhcSd10xvdUMNsVv69hzizPpnumyWii1VLESuhAcytsNIdmVZ6/Bmwo/r4eEGOXBrwuVNQbTkm/JjAv5AdQ51g0iS++6LlI8H8vLjo=
-Message-ID: <47455DEE.4050107@gmail.com>
-Date: Thu, 22 Nov 2007 11:46:06 +0100
+	Thu, 22 Nov 2007 05:53:32 -0500
+Message-id: <40812684968632710.slaby@karneval.cz>
+Subject: [PATCH 1/1] MAINTAINERS, order AUERSWALD alphabetically
 From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: davej@codemonkey.org.uk
-CC: cpufreq@lists.linux.org.uk,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: cpufreq deadlock (?sysfs related?)
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: Wolfgang Muees <wolfgang@iksw-muees.de>
+Date: Thu, 22 Nov 2007 11:53:22 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+MAINTAINERS, order AUERSWALD alphabetically
 
-some people hit this bug, I'm able to reproduce it too, but I'm out of ideas
-what could have cause it. Here are some traces of D processes:
+Signed-off-by: Jiri Slaby <ku@anemoi.localdomain>
+Cc: Wolfgang Muees <wolfgang@iksw-muees.de>
 
-tee           D ffff8100041e3c28     0 15798  13503
- ffff8100041e3bc8 0000000000000086 0000000000000000 ffffffff804a007b
- ffff8100041e3be8 ffff8100029d8000 ffff810001fc9560 ffffffff8828e094
- ffff810008af1ba0 ffff8100029d8000 ffff810001fc9560 ffff81002ae74e40
-Call Trace:
- [<ffffffff804a007b>] thread_return+0x0/0x5a5
- [<ffffffff8828e094>] :cpufreq_stats:cpufreq_stats_update+0x54/0x70 /*
-_spin_unlock */
- [<ffffffff804a0731>] wait_for_completion+0xa1/0xf0
- [<ffffffff8022ee90>] default_wake_function+0x0/0x10
- [<ffffffff802d583f>] sysfs_addrm_finish+0x1ef/0x270 /* wait_for_completion */
- [<ffffffff802d3fb6>] sysfs_hash_and_remove+0xa6/0xc0
- [<ffffffff880120cc>] :cpufreq_userspace:cpufreq_governor_userspace+0xac/0x220
- [<ffffffff803c4cd2>] __cpufreq_governor+0x32/0x110
- [<ffffffff803c56f3>] __cpufreq_set_policy+0x113/0x180
- [<ffffffff803c5852>] store_scaling_governor+0xf2/0x200
- [<ffffffff803c5f50>] handle_update+0x0/0x10
+---
+commit 6e0fe7b0b453c684f98b317452cad789cb9af9a0
+tree 0019db84affde1f8ca97ff6eebc92f90c50c4ea7
+parent 1ddecd9303348de4eed07066c12031a8af46d6bb
+author Jiri Slaby <ku@anemoi.localdomain> Thu, 22 Nov 2007 10:08:29 +0100
+committer Jiri Slaby <ku@anemoi.localdomain> Thu, 22 Nov 2007 10:08:29 +0100
 
-here started the scheduled work ^^^
+ MAINTAINERS |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
- [<ffffffff8026a2c3>] __alloc_pages+0x73/0x320 /* get_page_from_freelist */
- [<ffffffff803c662b>] store+0x7b/0x90 /* fattr->store(), holding write sem */
- [<ffffffff802d46ef>] sysfs_write_file+0xcf/0x150
- [<ffffffff8028c778>] vfs_write+0xc8/0x170
- [<ffffffff8028ce53>] sys_write+0x53/0x90
- [<ffffffff8020bd6e>] system_call+0x7e/0x83
-
-tee           D 0000000000000000     0 15800  22179
- ffff8100058b7e28 0000000000000086 0000000000000000 001bdcd0000f32a0
- 0000000000000000 ffff810005f8ce40 ffff810001fd6e40 0000000000000001
- 0000000101281d48 000000008057bec0 0000000000000003 000280d000000000
-Call Trace:
- [<ffffffff804a1ed9>] __down_write_nested+0x79/0xc0
- [<ffffffff803c5e21>] lock_policy_rwsem_write+0x41/0x80
- [<ffffffff803c660c>] store+0x5c/0x90
- [<ffffffff802d46ef>] sysfs_write_file+0xcf/0x150
- [<ffffffff8028c778>] vfs_write+0xc8/0x170
- [<ffffffff8028ce53>] sys_write+0x53/0x90
- [<ffffffff8020bd6e>] system_call+0x7e/0x83
-
-cat           D 0000000000000000     0 15801  13587
- ffff810008f69e38 0000000000000082 0000000000000000 ffffffff8026a119
- ffffffff80624fa0 ffff810005f8d560 ffffffff805703a0 ffffffff8057bec0
- 0000000101282286 0000000000000000 0000000000000003 000000010697e4a0
-Call Trace:
- [<ffffffff8026a119>] get_page_from_freelist+0x339/0x470
- [<ffffffff804a1fa9>] __down_read+0x79/0xb2 /* schedule */
- [<ffffffff803c6681>] lock_policy_rwsem_read+0x41/0x80
- [<ffffffff803c67cd>] show+0x4d/0x80
- [<ffffffff802d4bed>] sysfs_read_file+0x9d/0x150
- [<ffffffff8028c8e5>] vfs_read+0xc5/0x160
- [<ffffffff8028cdc3>] sys_read+0x53/0x90
- [<ffffffff8020bd6e>] system_call+0x7e/0x83
-
-I reproduced it by executing these 3 scripts:
-#!/bin/bash
-
-while true
-do
-echo userspace | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
-cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
-sleep 2
-echo performance | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
-cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
-sleep 4
-echo ondemand | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
-cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
-sleep 10
-done
-
-#!/bin/bash
-
-while true
-do
-echo userspace | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
-cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
-for (( a = 0; a < 10000; a++ )); do echo aaa >/dev/null; done
-echo performance | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
-cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
-for (( a = 0; a < 11500; a++ )); do echo aaa >/dev/null; done
-echo ondemand | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
-cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
-sleep 1
-done
-
-#!/bin/bash
-
-while true
-do cat /sys/devices/system/cpu/*/cpufreq/*
-sleep 10
-done
-
-This was on 2.6.23, however it is known to be also in older kernels. I
-suspect same race between wait_for_completion and complete() -- it wakes
-only one process, but not the other in sysfs/dir.c (would complete_all
-help?)? Any ideas?
-
-Here are events workers (seems OK):
-events/1      S 0000000000000000     0 13126      2
- ffff81003fe71ec0 0000000000000046 0000000000000000 0000000000000202
- ffff810001e120c0 ffff81003d821560 ffff810001fd6e40 00000000ffffffff
- 00000001012df7e1 0000000080248f2a 0000000000000003 ffff810001e120c8
-Call Trace:
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff80249165>] worker_thread+0x105/0x130
- [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff8024c71b>] kthread+0x4b/0x80
- [<ffffffff8020cbb8>] child_rip+0xa/0x12
- [<ffffffff8024c6d0>] kthread+0x0/0x80
- [<ffffffff8020cbae>] child_rip+0x0/0x12
-
-events/0      S 0000000000000000     0     7      2
- ffff81003ff0bec0 0000000000000046 0000000000000000 0000000000000202
- ffff810001e0a0c0 ffff810001fd7560 ffffffff805703a0 00000000ffffffff
- 00000001012df7c6 0000000080248f2a 0000000000000003 ffff810001e0a0c8
-Call Trace:
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff80249165>] worker_thread+0x105/0x130
- [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff8024c71b>] kthread+0x4b/0x80
- [<ffffffff8020cbb8>] child_rip+0xa/0x12
- [<ffffffff8024c6d0>] kthread+0x0/0x80
- [<ffffffff8020cbae>] child_rip+0x0/0x12
-
-I'm now trying to reproduce this with LOCKDEP on, but it's not easy to get
-to that state.
-
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cd1df28..5602da6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3876,6 +3876,13 @@ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
+ 
++USB AUERSWALD DRIVER
++P:	Wolfgang Muees
++M:	wolfgang@iksw-muees.de
++L:	linux-usb-users@lists.sourceforge.net
++L:	linux-usb-devel@lists.sourceforge.net
++S:	Maintained
++
+ USB BLOCK DRIVER (UB ub)
+ P:	Pete Zaitcev
+ M:	zaitcev@redhat.com
+@@ -4048,13 +4055,6 @@ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+ S:	Maintained
+ 
+-USB AUERSWALD DRIVER
+-P:	Wolfgang Muees
+-M:	wolfgang@iksw-muees.de
+-L:	linux-usb-users@lists.sourceforge.net
+-L:	linux-usb-devel@lists.sourceforge.net
+-S:	Maintained
+-
+ USB SERIAL EMPEG EMPEG-CAR MARK I/II DRIVER
+ P:	Gary Brubaker
+ M:	xavyer@ix.netcom.com
