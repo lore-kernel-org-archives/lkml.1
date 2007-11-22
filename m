@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbXKVQCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbXKVQDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbXKVQCx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 11:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbXKVQCq
+	id S1752832AbXKVQDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 11:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbXKVQD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 11:02:46 -0500
-Received: from wx-out-0506.google.com ([66.249.82.235]:30566 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbXKVQCp (ORCPT
+	Thu, 22 Nov 2007 11:03:28 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36910 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751597AbXKVQD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 11:02:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=NoyepN8kVE5HRT4vhupjMsPU0ez5ONoh/m/66NXQyl7o9VQcJhsgOI2v0ufQpxjnFpx6VO/IPZqI0tUfIwyoRTpmtRzbuQzMwc1JMtgGSVtCxP8ot19N2ulOQZTxooJlGDXK3cSHqazoRiAvS8L7OTJQVbFoYF6brb34oeU9wAs=
-Message-ID: <c384c5ea0711220802i21e3df45q1d328aea63e7ebf4@mail.gmail.com>
-Date: Thu, 22 Nov 2007 17:02:44 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Use of mutex in interrupt context flawed/impossible, need advice.
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 22 Nov 2007 11:03:27 -0500
+Date: Thu, 22 Nov 2007 16:01:04 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: kernel@beer.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RTL2831U kernel driver
+Message-ID: <20071122160104.3cb651ac@the-village.bc.nu>
+In-Reply-To: <41536.127.0.0.1.1195746294.squirrel@127.0.0.1>
+References: <40711.127.0.0.1.1195734828.squirrel@127.0.0.1>
+	<20071122141713.79f2562a@the-village.bc.nu>
+	<41536.127.0.0.1.1195746294.squirrel@127.0.0.1>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> So - how to I submit it?
 
+For the legal/email bits: Start at
+http://www.linux-foundation.org/en/Technical_Advisory_Board_(TAB)
 
-I'm converting an out-of-tree (*1) driver from binary semaphore to mutex.
+For the code you might want start by talking to
 
-Userspace updates a look-up-table using write(). The driver tries to
-write this LUT to the FPGA in the (video frame) interrupt handler. It
-is important that the LUT is consistent and thus changed atomically.
-Note that it is not important that the LUT is updated each interrupt.
+Michael Wu <flamingice@sourmilk.net> and Andrea Merello
+<andreamrl@tiscali.it> who did the cleanup for the Realtek 8187 device
+from Realtek reference code.
 
-The current approach is to try-down()ing a binary semaphore in
-interrupt context, and write the LUT to the FPGA if the semaphore was
-down()ed, do nothing else.
-The write() down()s the semaphore as well before updating the
-in-driver-copy of the LUT, then up()s it again.
+Also the wireless maintainer: John Linville (linville@tuxdriver.com)
+although I suspect he'll be busy eating turkey right now.
 
-I understand this design is not clean (*2), and not even possible with
-mutexes, as mutex_trylock() is not interrupt safe.
-
-My current approach would be to have userspace write into a shadow
-copy, and use a spinlock to update the live copy. The interrupt then
-would try a spinlock.
-
-My feeling is that we have a  valid use of mutex_trylock() in
-interrupt context; "i.e. update LUT if we can do so consistently and
-in time, or not at all".
-
-I would like to know why this is not so, and if someone has a cleaner
-proposal than the "try spinlock" approach?
-
-Regards,
--- 
-Leon
-
-*1: specific to driving a certain FPGA with certain logic. I can post
-the source code on request.
-*2: http://lkml.org/lkml/2007/6/23/143
+Alan
