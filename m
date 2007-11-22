@@ -1,121 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbXKVSUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbXKVSWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbXKVSUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 13:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXKVSU1
+	id S1754188AbXKVSWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 13:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXKVSWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 13:20:27 -0500
-Received: from cfif3.ist.utl.pt ([193.136.161.44]:32933 "EHLO cfif3.ist.utl.pt"
+	Thu, 22 Nov 2007 13:22:00 -0500
+Received: from mail.suse.de ([195.135.220.2]:59270 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXKVSU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 13:20:26 -0500
-From: paulo@cfif3.ist.utl.pt
-Message-Id: <200711221820.lAMIKFkQ005124@cfif3.ist.utl.pt>
-Subject: Re: kernel BUG at fs/inode.c
-To: jack@suse.cz
-Date: Thu, 22 Nov 2007 18:20:15 +0000 (WET)
-Cc: linux-kernel@vger.kernel.org
-Reply-to: paulo.nogueira@ist.utl.pt
-X-Mailer: ELM [version 2.5 PL6]
+	id S1752255AbXKVSV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 13:21:59 -0500
+From: Andi Kleen <ak@suse.de>
+To: "Arnaldo Carvalho de Melo" <acme@redhat.com>
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Date: Thu, 22 Nov 2007 19:17:37 +0100
+User-Agent: KMail/1.9.1
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       rusty@rustcorp.com.au
+References: <20071122343.446909000@suse.de> <20071122120110.GA17441@ghostprotocols.net>
+In-Reply-To: <20071122120110.GA17441@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711221917.38334.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+> Creating the DCCP and its congestion control infrastructure (CCID)
+> module namespaces is now on my TODO list. :-)
 
-  Hi,
+My original patchkit had DCCP actually done, but I ran into some problem
+while forward porting and disabled it again. But should be reasonably
+easy to resurrect.
 
->  Thanks for report. It looks like a problem in UDF. Actually I think
-> I've already seen a similar report. Are there any IO errors in the logs
-> or anything else suspitious?
-
-
- At the risk of reporting further bugs :-) here it goes:
-
-=======================================================================
-
- 1)
-
- Something I've recently reported to the e-mail address listed
- on the mkudffs manpage:
-
- ...a small problem with mkudffs, as obtained from
- udftools-1.0.0b3-7.fc6.
-
- The problem is as follows: if I take a new DVD-RAM, create (say)
- an ext3 filesystem, and some time later I run mkudffs over it,
- then when I try to mount it the disk still seems to remember
- about having had a previous filesystem.
- What I mean is that mount may succeed if one specifies the newer
- filesystem, at least if no files have been copied yet, and also
- succeed with the older filesystem.
-
- Here is an example, for the same disk(!) without any formatting
- nor copying in between (note also the dates)
-
-# mount /dev/scd0 /mnt/dvd -t udf
-# ll /mnt/dvd/
-total 4
-drwxr-xr-x  3 root root   92 2007-11-21 18:34 ./
-drwxr-xr-x 13 root root 4096 2007-09-03 17:27 ../
-drwxr-xr-x  2 root root   40 2007-11-21 18:34 lost+found/
-
-# umount /mnt/dvd
-# mount /dev/scd0 /mnt/dvd -t ext3
-# ll /mnt/dvd/
-total 24
-drwxr-xr-x  3 root root  4096 2007-11-21 19:29 ./
-drwxr-xr-x 13 root root  4096 2007-09-03 17:27 ../
-drwx------  2 root root 16384 2007-11-21 19:29 lost+found/
-
-
- Eventually I found that I could erase the (or at least part of the)
- information that remained from ext3 by using fdisk to set a filesystem
- of type "0" ("empty") and then running mkudffs over.
-
- That is not very practical of course, and I am also not completely
- sure that no other outdated info remains on the disk.
-
-=======================================================================
-
- 2)
-
- With 2.6.24-rc1-git10 (did not see it with other kernels yet)
-
- # find /proc -name cdrom
- /proc/sys/dev/cdrom
- find: WARNING: Hard link count is wrong for /proc/net: this may be
- a bug in your filesystem driver.  Automatically turning on find's
- -noleaf option.  Earlier results may have failed to include
- directories that should have been searched.
-
-=======================================================================
-
- 3)
-
- While I am at it, here's a suggestion. One of my DVD-RAM disks
- had apparently some (likely minor) problems, because I've just
- found the following notice in /var/log/messages :
-
- ... kernel: EXT3-fs warning: mounting fs with errors, running
- e2fsck is recommended
-
- This message appears 11 times in that file. I've never seen it
- displayed on an xterm, although I always mount the disks "by hand",
- on the command line!
-
- The request/suggestion is (obviously) please send that message to
- syserror too!!
-
-
-=======================================================================
-
-
- Which other logs should I look at?
-
-  Best regards
-   Paulo
-
-
+-Andi
