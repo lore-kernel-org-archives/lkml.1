@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbXKVTXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbXKVTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbXKVTXf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 14:23:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXKVTX1
+	id S1754612AbXKVTYr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 14:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXKVTYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 14:23:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57804 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbXKVTX0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 14:23:26 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4745D71A.4080407@s5r6.in-berlin.de>
-Date: Thu, 22 Nov 2007 20:23:06 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.8) Gecko/20071102 SeaMonkey/1.1.5
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, Ben Collins <ben.collins@ubuntu.com>,
-       Dan Dennedy <dan@dennedy.org>, linux1394-devel@lists.sourceforge.net
-Subject: Re: [PATCH 18/59] drivers/ieee1394: Add missing "space"
-References: 1234567 <1195523331-15303-2-git-send-email-joe@perches.com> <1195523331-15303-3-git-send-email-joe@perches.com> <1195523331-15303-4-git-send-email-joe@perches.com> <1195523331-15303-5-git-send-email-joe@perches.com> <1195523331-15303-6-git-send-email-joe@perches.com> <1195523331-15303-7-git-send-email-joe@perches.com> <1195523331-15303-8-git-send-email-joe@perches.com> <1195523331-15303-9-git-send-email-joe@perches.com> <1195523331-15303-10-git-send-email-joe@perches.com> <1195523331-15303-11-git-send-email-joe@perches.com> <1195523331-15303-12-git-send-email-joe@perches.com> <1195523331-15303-13-git-send-email-joe@perches.com> <1195523331-15303-14-git-send-email-joe@perches.com> <1195523331-15303-15-git-send-email-joe@perches.com> <1195523331-15303-16-git-send-email-joe@perches.com> <1195523331-15303-17-git-send-email-joe@perches.com> <1195523331-15303-18-git-send-email-joe@perches.com> <1195523331-15303-19-git-send-email-joe@perches.com>
-In-Reply-To: <1195523331-15303-19-git-send-email-joe@perches.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 22 Nov 2007 14:24:40 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:35540 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752315AbXKVTYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 14:24:40 -0500
+Date: Thu, 22 Nov 2007 20:24:36 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: djenkins@mvista.co.uk
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: MMC/SDIO sub-system: block mode versus byte mode
+Message-ID: <20071122202436.4d414f3a@poseidon.drzeus.cx>
+In-Reply-To: <1195733711.29143.3.camel@libdev3.libertesoft.co.uk>
+References: <1195728103.20691.125.camel@libdev3.libertesoft.co.uk>
+	<20071122124244.4d3808be@poseidon.drzeus.cx>
+	<1195733711.29143.3.camel@libdev3.libertesoft.co.uk>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
->  drivers/ieee1394/raw1394.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-...
-> -	DBGMSG("arm_read  called by node: %X"
-> +	DBGMSG("arm_read  called by node: %X "
-...
+On Thu, 22 Nov 2007 12:15:11 +0000
+Dean Jenkins <djenkins@mvista.co.uk> wrote:
 
-Committed to linux1394-2.6.git.  Thanks,
+> Hi Pierre,
+> 
+> Thanks for information.
+> 
+> My card does support 256 byte transfers in byte mode but I was expecting
+> block mode to be used as block mode is supported by the card. Indeed,
+> sdio_io_rw_ext_helper() checks for support of block mode before using
+> byte mode. eg. block mode is preferred over byte mode in the design of
+> sdio_io_rw_ext_helper().
+
+Not really, no. What it preferred is a low number of transfers. Hence we try to shuffle as much data as possible using blocks first.
+
+> 
+> Yes, I do think single block transfers is broken :(
+> 
+> Both sdio_io_rw_ext_helper() and mmc_io_rw_extended() are broken for
+> single block transfers.
+> 
+> Will you be doing a fix or how does a fix get proposed ?
+> 
+
+I agree that mmc_io_rw_extended() is broken, but I do not think sdio_io_rw_ext_helper() is. I'll be doing a fix eventually, but it probably won't get that high on my todo list as it will only be useful together with some new API. Since your card was content with byte transfers, it shouldn't be that much need for a rush.
+
+Rgds
 -- 
-Stefan Richter
--=====-=-=== =-== =-==-
-http://arcgraph.de/sr/
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
