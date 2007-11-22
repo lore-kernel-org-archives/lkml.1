@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXKVH0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbXKVHbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbXKVH0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 02:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXKVH0K
+	id S1752732AbXKVHbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 02:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXKVHbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 02:26:10 -0500
-Received: from waste.org ([66.93.16.53]:45669 "EHLO waste.org"
+	Thu, 22 Nov 2007 02:31:38 -0500
+Received: from il.qumranet.com ([82.166.9.18]:40869 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbXKVH0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 02:26:09 -0500
-Date: Thu, 22 Nov 2007 01:25:49 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, xfs-oss <xfs@oss.sgi.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071122072549.GQ19691@waste.org>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <20071122025726.GG17536@waste.org> <20071122034106.GV114266761@sgi.com>
+	id S1751387AbXKVHbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 02:31:38 -0500
+Message-ID: <4745309B.8050404@qumranet.com>
+Date: Thu, 22 Nov 2007 09:32:43 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122034106.GV114266761@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Zachary Amsden <zach@vmware.com>
+CC: Anthony Liguori <aliguori@us.ibm.com>, kvm-devel@lists.sourceforge.net,
+       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       Eric Van Hensbergen <ericvanhensbergen@us.ibm.com>
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	 <11944900141678-git-send-email-aliguori@us.ibm.com>	 <11944900152750-git-send-email-aliguori@us.ibm.com>	 <11944900163817-git-send-email-aliguori@us.ibm.com>	 <4742F6B7.20503@qumranet.com>	<474300AD.4060509@us.ibm.com>	 <4743076F.8000105@qumranet.com> <47435CCB.1050506@us.ibm.com>	 <4743DAA4.70800@qumranet.com> <1195669377.6352.247.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1195669377.6352.247.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 02:41:06PM +1100, David Chinner wrote:
-> On Wed, Nov 21, 2007 at 08:57:27PM -0600, Matt Mackall wrote:
-> > On Thu, Nov 22, 2007 at 12:12:14PM +1100, David Chinner wrote:
-> > > In all the cases that I know of where ppl are using what could
-> > > be considered real-time I/O (e.g. media environments where they
-> > > do real-time ingest and playout from the same filesystem) the
-> > > real-time ingest processes create the files and do pre-allocation
-> > > before doing their I/O. This I/O can get held up behind another
-> > > process that is not real time that has issued log I/O. 
-> > > 
-> > > Given there is no I/O priority inheritence and having log I/O stall
-> > > will stall the entire filesystem, we cannot allow log I/O to
-> > > stall in real-time environments. Hence it must have the highest
-> > > possible priority to prevent this.
-> > 
-> > I've seen PVRs that would be upset by this. They put media on one
-> > filesystem and database/apps/swap/etc. on another, but have everything
-> > on a single spindle. Stalling a media filesystem read for a write
-> > anywhere else = fail.
-> 
-> Sounds like the PVR is badly designed to me. If a write can cause a
-> read to miss a playback deadline, then you haven't built enough
-> buffering into your playback application.
+Zachary Amsden wrote:
+> On Wed, 2007-11-21 at 09:13 +0200, Avi Kivity wrote:
+>
+>   
+>> Where the device is implemented is an implementation detail that should 
+>> be hidden from the guest, isn't that one of the strengths of 
+>> virtualization?  Two examples: a file-based block device implemented in 
+>> qemu gives you fancy file formats with encryption and compression, while 
+>> the same device implemented in the kernel gives you a low-overhead path 
+>> directly to a zillion-disk SAN volume.  Or a user-level network device 
+>> capable of running with the slirp stack and no permissions vs. the 
+>> kernel device running copyless most of the time and using a dma engine 
+>> for the rest but requiring you to be good friends with the admin.
+>>
+>> The user should expect zero reconfigurations moving a VM from one model 
+>> to the other.
+>>     
+>
+> I think that is pretty insightful, and indeed, is probably the only
+> reason we would ever consider using a virtio based driver.
+>
+> But is this really a virtualization problem, and is virtio the right
+> place to solve it?  Doesn't I/O hotplug with multipathing or NIC teaming
+> provide the same infrastructure in a way that is useful in more than
+> just a virtualization context?
+>   
 
-Normally it's not a problem. But your proposed change can push a
-working system into a non-working system by making non-critical I/O on
-an unrelated filesystem have higher priority than the thing that -actually
-has real-time constraints-.
-
-In other words, I/O priority is per-spindle and not per-filesystem and
-thus this change has consequences that leak outside the filesystem in
-question. That's bad.
-
-I'd further add that the kernel internals probably shouldn't wander
-into RT priority levels unless it's actually doing priority
-inheritance, otherwise it's quite likely to upset the careful
-considerations of the RT system designer's priority schemes. For
-instance, a log-heavy but otherwise non-RT load with this patch could
-possibly completely starve direct I/O to another partition even though
-it's marked RT, thus livelocking the system.
-
-To the general PVR problem: they typically want to work with a minimum
-of buffering to maximize responsiveness to user commands (fast
-forward, jump 30 seconds, play in reverse). Now consider that you're
-recording and playing back multiple HD streams on low-margin set-top
-hardware and you'll see that making this work -at all- means lots of
-I/O tuning.
+With the aid of a dictionary I was able to understand about half the 
+words in the last sentence.  Moving from device to device using 
+hotplug+multipath is complex to configure, available on only some 
+guests, uses rarely-exercised paths in the guest OS, and only works for 
+a few types of devices (network and block).  Having host independence in 
+the device means you can change the device implementation for, say, a 
+display driver (consider, for example, a vmgl+virtio driver, which can 
+be implemented in userspace or tunneled via virtio-over-tcp to some 
+remote display without going through userspace, without the guest 
+knowing about it).
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+error compiling committee.c: too many arguments to function
+
