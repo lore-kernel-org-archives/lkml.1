@@ -1,111 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbXKVNtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbXKVNyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbXKVNtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 08:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXKVNtH
+	id S1754279AbXKVNyX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 08:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbXKVNyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 08:49:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56404 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbXKVNtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 08:49:06 -0500
-Date: Thu, 22 Nov 2007 14:49:04 +0100
-From: Jan Kara <jack@suse.cz>
-To: paulo.nogueira@ist.utl.pt
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel BUG at fs/inode.c
-Message-ID: <20071122134904.GA4957@atrey.karlin.mff.cuni.cz>
-References: <200711211825.lALIPp5U002919@cfif3.ist.utl.pt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711211825.lALIPp5U002919@cfif3.ist.utl.pt>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 22 Nov 2007 08:54:15 -0500
+Received: from ns1.suse.de ([195.135.220.2]:48911 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752498AbXKVNyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 08:54:14 -0500
+Subject: Re: cpufreq deadlock (?sysfs related?)
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
+       Greg KH <gregkh@suse.de>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <47455DEE.4050107@gmail.com>
+References: <47455DEE.4050107@gmail.com>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Thu, 22 Nov 2007 14:54:13 +0100
+Message-Id: <1195739653.10587.89.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
-
->  This is to report a kernel bug that appeared while using the
->  non-standard kernel 2.6.24-rc1-git10, which I was using for
->  the purpose of helping to debug a different problem.
->  I am not sure if the problem is easily reproducible... if
->  needed I'll try with the latest fc7 kernel.
+On Thu, 2007-11-22 at 11:46 +0100, Jiri Slaby wrote:
+> Hi,
 > 
->  The dump listed below was extracted from /var/log/messages
->  and was generated after copying > 1GB of data to a DVD-RAM,
->  udf format. When it seemed to have stopped (after 2 hours!)
->  I issued the eject command. It then seemed to write more
->  data to the disk (possibly part of the data had not been
->  really copied, and it was syncing) and a few minutes after
->  this notice came up.
-  Thanks for report. It looks like a problem in UDF. Actually I think
-I've already seen a similar report. Are there any IO errors in the logs
-or anything else suspitious?
+> some people hit this bug, I'm able to reproduce it too, but I'm out of ideas
+> what could have cause it. Here are some traces of D processes:
+Could this have to do with the problem Venkatesh/Luming recently sent a
+patch for to the cpufreq list:
+Eliminate cpufreq_userspace scaling_setspeed deadlock
+http://article.gmane.org/gmane.linux.kernel.cpufreq/5629
 
-								Honza
+   Thomas
+> 
+> tee           D ffff8100041e3c28     0 15798  13503
+>  ffff8100041e3bc8 0000000000000086 0000000000000000 ffffffff804a007b
+>  ffff8100041e3be8 ffff8100029d8000 ffff810001fc9560 ffffffff8828e094
+>  ffff810008af1ba0 ffff8100029d8000 ffff810001fc9560 ffff81002ae74e40
+> Call Trace:
+>  [<ffffffff804a007b>] thread_return+0x0/0x5a5
+>  [<ffffffff8828e094>] :cpufreq_stats:cpufreq_stats_update+0x54/0x70 /*
+> _spin_unlock */
+>  [<ffffffff804a0731>] wait_for_completion+0xa1/0xf0
+>  [<ffffffff8022ee90>] default_wake_function+0x0/0x10
+>  [<ffffffff802d583f>] sysfs_addrm_finish+0x1ef/0x270 /* wait_for_completion */
+>  [<ffffffff802d3fb6>] sysfs_hash_and_remove+0xa6/0xc0
+>  [<ffffffff880120cc>] :cpufreq_userspace:cpufreq_governor_userspace+0xac/0x220
+>  [<ffffffff803c4cd2>] __cpufreq_governor+0x32/0x110
+>  [<ffffffff803c56f3>] __cpufreq_set_policy+0x113/0x180
+>  [<ffffffff803c5852>] store_scaling_governor+0xf2/0x200
+>  [<ffffffff803c5f50>] handle_update+0x0/0x10
+> 
+> here started the scheduled work ^^^
+> 
+>  [<ffffffff8026a2c3>] __alloc_pages+0x73/0x320 /* get_page_from_freelist */
+>  [<ffffffff803c662b>] store+0x7b/0x90 /* fattr->store(), holding write sem */
+>  [<ffffffff802d46ef>] sysfs_write_file+0xcf/0x150
+>  [<ffffffff8028c778>] vfs_write+0xc8/0x170
+>  [<ffffffff8028ce53>] sys_write+0x53/0x90
+>  [<ffffffff8020bd6e>] system_call+0x7e/0x83
+> 
+> tee           D 0000000000000000     0 15800  22179
+>  ffff8100058b7e28 0000000000000086 0000000000000000 001bdcd0000f32a0
+>  0000000000000000 ffff810005f8ce40 ffff810001fd6e40 0000000000000001
+>  0000000101281d48 000000008057bec0 0000000000000003 000280d000000000
+> Call Trace:
+>  [<ffffffff804a1ed9>] __down_write_nested+0x79/0xc0
+>  [<ffffffff803c5e21>] lock_policy_rwsem_write+0x41/0x80
+>  [<ffffffff803c660c>] store+0x5c/0x90
+>  [<ffffffff802d46ef>] sysfs_write_file+0xcf/0x150
+>  [<ffffffff8028c778>] vfs_write+0xc8/0x170
+>  [<ffffffff8028ce53>] sys_write+0x53/0x90
+>  [<ffffffff8020bd6e>] system_call+0x7e/0x83
+> 
+> cat           D 0000000000000000     0 15801  13587
+>  ffff810008f69e38 0000000000000082 0000000000000000 ffffffff8026a119
+>  ffffffff80624fa0 ffff810005f8d560 ffffffff805703a0 ffffffff8057bec0
+>  0000000101282286 0000000000000000 0000000000000003 000000010697e4a0
+> Call Trace:
+>  [<ffffffff8026a119>] get_page_from_freelist+0x339/0x470
+>  [<ffffffff804a1fa9>] __down_read+0x79/0xb2 /* schedule */
+>  [<ffffffff803c6681>] lock_policy_rwsem_read+0x41/0x80
+>  [<ffffffff803c67cd>] show+0x4d/0x80
+>  [<ffffffff802d4bed>] sysfs_read_file+0x9d/0x150
+>  [<ffffffff8028c8e5>] vfs_read+0xc5/0x160
+>  [<ffffffff8028cdc3>] sys_read+0x53/0x90
+>  [<ffffffff8020bd6e>] system_call+0x7e/0x83
+> 
+> I reproduced it by executing these 3 scripts:
+> #!/bin/bash
+> 
+> while true
+> do
+> echo userspace | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> sleep 2
+> echo performance | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> sleep 4
+> echo ondemand | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> sleep 10
+> done
+> 
+> #!/bin/bash
+> 
+> while true
+> do
+> echo userspace | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> for (( a = 0; a < 10000; a++ )); do echo aaa >/dev/null; done
+> echo performance | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> for (( a = 0; a < 11500; a++ )); do echo aaa >/dev/null; done
+> echo ondemand | tee /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> cat /sys/devices/system/cpu/*/cpufreq/scaling_governor
+> sleep 1
+> done
+> 
+> #!/bin/bash
+> 
+> while true
+> do cat /sys/devices/system/cpu/*/cpufreq/*
+> sleep 10
+> done
+> 
+> This was on 2.6.23, however it is known to be also in older kernels. I
+> suspect same race between wait_for_completion and complete() -- it wakes
+> only one process, but not the other in sysfs/dir.c (would complete_all
+> help?)? Any ideas?
+> 
+> Here are events workers (seems OK):
+> events/1      S 0000000000000000     0 13126      2
+>  ffff81003fe71ec0 0000000000000046 0000000000000000 0000000000000202
+>  ffff810001e120c0 ffff81003d821560 ffff810001fd6e40 00000000ffffffff
+>  00000001012df7e1 0000000080248f2a 0000000000000003 ffff810001e120c8
+> Call Trace:
+>  [<ffffffff80249060>] worker_thread+0x0/0x130
+>  [<ffffffff80249165>] worker_thread+0x105/0x130
+>  [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
+>  [<ffffffff80249060>] worker_thread+0x0/0x130
+>  [<ffffffff80249060>] worker_thread+0x0/0x130
+>  [<ffffffff8024c71b>] kthread+0x4b/0x80
+>  [<ffffffff8020cbb8>] child_rip+0xa/0x12
+>  [<ffffffff8024c6d0>] kthread+0x0/0x80
+>  [<ffffffff8020cbae>] child_rip+0x0/0x12
+> 
+> events/0      S 0000000000000000     0     7      2
+>  ffff81003ff0bec0 0000000000000046 0000000000000000 0000000000000202
+>  ffff810001e0a0c0 ffff810001fd7560 ffffffff805703a0 00000000ffffffff
+>  00000001012df7c6 0000000080248f2a 0000000000000003 ffff810001e0a0c8
+> Call Trace:
+>  [<ffffffff80249060>] worker_thread+0x0/0x130
+>  [<ffffffff80249165>] worker_thread+0x105/0x130
+>  [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
+>  [<ffffffff80249060>] worker_thread+0x0/0x130
+>  [<ffffffff80249060>] worker_thread+0x0/0x130
+>  [<ffffffff8024c71b>] kthread+0x4b/0x80
+>  [<ffffffff8020cbb8>] child_rip+0xa/0x12
+>  [<ffffffff8024c6d0>] kthread+0x0/0x80
+>  [<ffffffff8020cbae>] child_rip+0x0/0x12
+> 
+> I'm now trying to reproduce this with LOCKDEP on, but it's not easy to get
+> to that state.
 
-> Nov 20 23:30:23 *** kernel: kernel BUG at fs/inode.c:191!
-> Nov 20 23:30:23 *** kernel: invalid opcode: 0000 [1] SMP 
-> Nov 20 23:30:23 *** kernel: CPU 1 
-> Nov 20 23:30:23 *** kernel: Modules linked in: udf usb_storage autofs4 sunrpc cpufreq_ondemand reiserfs dm_mirror dm_mod video output sbs sbshc battery ac power_supply ipv6 snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd sr_mod button forcedeth soundcore cdrom k8temp pcspkr snd_page_alloc pata_amd hwmon i2c_nforce2 i2c_core sg sata_nv ata_generic libata sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd
-> Nov 20 23:30:23 *** kernel: Pid: 11762, comm: umount Not tainted 2.6.24-rc1-git10 #0
-> Nov 20 23:30:23 *** kernel: RIP: 0010:[<ffffffff810a9886>]  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-> Nov 20 23:30:23 *** kernel: RSP: 0018:ffff81001ac47dd8  EFLAGS: 00010202
-> Nov 20 23:30:23 *** kernel: RAX: 0000000000000001 RBX: ffff81010ac0b548 RCX: ffff81010ac0b548
-> Nov 20 23:30:23 *** kernel: RDX: 0000000000000007 RSI: ffff81010ac0b750 RDI: ffff81010ac0b548
-> Nov 20 23:30:23 *** kernel: RBP: ffff81010ac0b548 R08: 8000000000000000 R09: ffffffff81405a18
-> Nov 20 23:30:23 *** kernel: R10: 0000000000000000 R11: ffff81001ac47d58 R12: 00000000000001ba
-> Nov 20 23:30:23 *** kernel: R13: ffff81001ac47e18 R14: ffff81001aba6068 R15: 0000000000000000
-> Nov 20 23:30:23 *** kernel: FS:  00002b38ac69f6c0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
-> Nov 20 23:30:23 *** kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> Nov 20 23:30:23 *** kernel: CR2: 00000000008cb370 CR3: 000000001ac6a000 CR4: 00000000000006e0
-> Nov 20 23:30:23 *** kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> Nov 20 23:30:23 *** kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Nov 20 23:30:23 *** kernel: Process umount (pid: 11762, threadinfo ffff81001ac46000, task ffff81010492c000)
-> Nov 20 23:30:23 *** kernel: Stack:  ffff81010ac0b558 ffffffff810a9e84 0000000000000018 ffff8101059af048
-> Nov 20 23:30:23 *** kernel:  ffff81010610a8c0 0000000000004a57 ffff81010610a8c0 ffffffff810aa160
-> Nov 20 23:30:23 *** kernel:  ffff81010ac0b7d8 ffff81001aba6058 0000000000000000 ffff81010610a800
-> Nov 20 23:30:23 *** kernel: Call Trace:
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
-> Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
-> Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
-> Nov 20 23:30:23 *** kernel: 
-> Nov 20 23:30:23 *** kernel: 
-> Nov 20 23:30:23 *** kernel: Code: 0f 0b eb fe 48 89 df e8 e7 39 04 00 48 8b 83 f8 00 00 00 48 
-> Nov 20 23:30:23 *** kernel: RIP  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-> Nov 20 23:30:23 *** kernel:  RSP <ffff81001ac47dd8>
-> Nov 20 23:30:23 *** kernel: WARNING: at kernel/exit.c:917 do_exit()
-> Nov 20 23:30:23 *** kernel: 
-> Nov 20 23:30:23 *** kernel: Call Trace:
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8103c55a>] do_exit+0x4f/0x768
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8100d64d>] kernel_math_error+0x0/0x71
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8100da73>] do_invalid_op+0x85/0x8f
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8104bd77>] bit_waitqueue+0x10/0x9f
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8104be44>] wake_up_bit+0x11/0x22
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810b23cf>] __writeback_single_inode+0x2a5/0x2b7
-> Nov 20 23:30:23 *** kernel:  [<ffffffff882cb85c>] :udf:udf_current_aext+0xe8/0x143
-> Nov 20 23:30:23 *** kernel:  [<ffffffff81251039>] error_exit+0x0/0x51
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9882>] destroy_inode+0x9/0x47
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
-> Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
-> Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
-> Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
-> Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
-> Nov 20 23:30:23 *** kernel: 
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+
