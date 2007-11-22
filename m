@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbXKVPBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbXKVPS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbXKVPBE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 10:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbXKVPAy
+	id S1752967AbXKVPS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 10:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXKVPSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 10:00:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53661 "EHLO mx1.redhat.com"
+	Thu, 22 Nov 2007 10:18:18 -0500
+Received: from lixom.net ([66.141.50.11]:33436 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbXKVPAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 10:00:53 -0500
-Message-ID: <47459985.4080700@redhat.com>
-Date: Thu, 22 Nov 2007 16:00:21 +0100
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+	id S1751868AbXKVPSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 10:18:17 -0500
+Date: Thu, 22 Nov 2007 09:20:29 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] PPC: trivial fix of missed increment on counter
+Message-ID: <20071122152029.GA7678@lixom.net>
+References: <aa79d98a0711210056n6cc951atf4c6af5be26c1ed0@mail.gmail.com> <aa79d98a0711210258t3e6f5532oe710c04b93b06c8@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: axboe@kernel.dk
-Subject: [PATCH] block: Fix memory leak in alloc_disk_node()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aa79d98a0711210258t3e6f5532oe710c04b93b06c8@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a memory leak in alloc_disk_node(). Don't forget to free 'dkstats' when the allocation of 'part' failed.
+On Wed, Nov 21, 2007 at 01:58:06PM +0300, Cyrill Gorcunov wrote:
+> On 11/21/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> > This patch does fix missed increment on counter
+> >
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> > ---
+> > Sorry for that nonstandart patch submission - I've only access
+> > to gmail with Internet Explorer on my work. If that is not OK - will resend
+> > the patch today evening with mutt.
+> >
+> >
+> Oops - it seems the patch is corrupted a bit. Drop it please - will
+> resend today evening. Sorry.
 
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
----
- genhd.c |    1 +
- 1 file changed, 1 insertion(+)
+Thanks for the fix, but please cc the maintainer (me) next time, as well
+as the arch list (linuxppc-dev@ozlabs.org)?
 
-diff --git a/block/genhd.c b/block/genhd.c
-index e609996..f2ac914 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -715,6 +715,7 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
- 			disk->part = kmalloc_node(size,
- 				GFP_KERNEL | __GFP_ZERO, node_id);
- 			if (!disk->part) {
-+				free_disk_stats(disk);
- 				kfree(disk);
- 				return NULL;
- 			}
+That loop could actually even easier be converted to a
+for_each_compatible_node() iteration. There's never more than one
+interface on the current boards but it's still nicer coding.
+
+Thanks,
+
+-Olof
