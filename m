@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbXKVKVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbXKVK0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbXKVKVL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 05:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXKVKU6
+	id S1753167AbXKVK0j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 05:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXKVK0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 05:20:58 -0500
-Received: from partizan.velesys.com ([213.184.230.195]:55272 "EHLO
-	partizan.velesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbXKVKU5 (ORCPT
+	Thu, 22 Nov 2007 05:26:31 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:14486 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429AbXKVK0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 05:20:57 -0500
-Date: Thu, 22 Nov 2007 12:22:05 +0200
-From: "Kirill A. Shutemov" <k.shutemov@velesys.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1
-Message-ID: <20071122102205.GD7085@localhost.localdomain>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	Thu, 22 Nov 2007 05:26:30 -0500
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Fix static rate regression
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Marcus Eder <meder@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="hxkXGo8AKqTJ+9QI"
 Content-Disposition: inline
-In-Reply-To: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-X-Operating-System: ALT Linux Sisyphus (20070101) (Kernel 2.6.24-kas-alt1)
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Length: 2328
+Date: Thu, 22 Nov 2007 12:26:26 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711221126.27465.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Wrong choice of port number caused modify_qp() to fail -- fixed.
 
---hxkXGo8AKqTJ+9QI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+Please apply this for 2.6.24-rc4 as it fixes a regression introduced in rc3.
+Thanks!
 
-On x86_64 'uname -m' return 'x86'.  It break many userspace programs. apt
-and rpm for example.
+ drivers/infiniband/hw/ehca/ehca_qp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + Velesys LLC, http://www.velesys.com/
- + ALT Linux Team, http://www.altlinux.com/
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index 2e3e654..dd12668 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -1203,7 +1203,7 @@ static int internal_modify_qp(struct ib_qp *ibqp,
+ 		mqpcb->service_level = attr->ah_attr.sl;
+ 		update_mask |= EHCA_BMASK_SET(MQPCB_MASK_SERVICE_LEVEL, 1);
+ 
+-		if (ehca_calc_ipd(shca, my_qp->init_attr.port_num,
++		if (ehca_calc_ipd(shca, mqpcb->prim_phys_port,
+ 				  attr->ah_attr.static_rate,
+ 				  &mqpcb->max_static_rate)) {
+ 			ret = -EINVAL;
+@@ -1302,7 +1302,7 @@ static int internal_modify_qp(struct ib_qp *ibqp,
+ 		mqpcb->source_path_bits_al = attr->alt_ah_attr.src_path_bits;
+ 		mqpcb->service_level_al = attr->alt_ah_attr.sl;
+ 
+-		if (ehca_calc_ipd(shca, my_qp->init_attr.port_num,
++		if (ehca_calc_ipd(shca, mqpcb->alt_phys_port,
+ 				  attr->alt_ah_attr.static_rate,
+ 				  &mqpcb->max_static_rate_al)) {
+ 			ret = -EINVAL;
+-- 
+1.5.2
 
---hxkXGo8AKqTJ+9QI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
 
-iD8DBQFHRVhNbWYnhzC5v6oRArP9AJkB3j5jmVYTe2UHiiVdvdN9QbOe+wCeLpxP
-9QuJqmLDToZOAO3LGtOFAvw=
-=MI5t
------END PGP SIGNATURE-----
-
---hxkXGo8AKqTJ+9QI--
