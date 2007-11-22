@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXKVNQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbXKVNtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbXKVNQG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 08:16:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXKVNP4
+	id S1753728AbXKVNtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 08:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXKVNtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 08:15:56 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:41758 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751643AbXKVNPz (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 08:15:55 -0500
-Date: Fri, 23 Nov 2007 00:15:39 +1100
-From: David Chinner <dgc@sgi.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Stewart Smith <stewart@mysql.com>, David Chinner <dgc@sgi.com>,
-       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071122131539.GX114266761@sgi.com>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <1195702123.8369.78.camel@localhost.localdomain> <20071122120611.GA3573@one.firstfloor.org>
-Mime-Version: 1.0
+	Thu, 22 Nov 2007 08:49:07 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56404 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbXKVNtG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 08:49:06 -0500
+Date: Thu, 22 Nov 2007 14:49:04 +0100
+From: Jan Kara <jack@suse.cz>
+To: paulo.nogueira@ist.utl.pt
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel BUG at fs/inode.c
+Message-ID: <20071122134904.GA4957@atrey.karlin.mff.cuni.cz>
+References: <200711211825.lALIPp5U002919@cfif3.ist.utl.pt>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071122120611.GA3573@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200711211825.lALIPp5U002919@cfif3.ist.utl.pt>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 01:06:11PM +0100, Andi Kleen wrote:
-> > FWIW from a "real time" database POV this seems to make sense to me...
-> > in fact, we probably rely on filesystem metadata way too much
-> > (historically it's just "worked".... although we do seem to get issues
-> > on ext3).
+  Hi,
+
+>  This is to report a kernel bug that appeared while using the
+>  non-standard kernel 2.6.24-rc1-git10, which I was using for
+>  the purpose of helping to debug a different problem.
+>  I am not sure if the problem is easily reproducible... if
+>  needed I'll try with the latest fc7 kernel.
 > 
-> For that case you really would need priority inheritance: any metadata
-> IO on behalf or blocking a process needs to use the process' block IO 
-> priority.
+>  The dump listed below was extracted from /var/log/messages
+>  and was generated after copying > 1GB of data to a DVD-RAM,
+>  udf format. When it seemed to have stopped (after 2 hours!)
+>  I issued the eject command. It then seemed to write more
+>  data to the disk (possibly part of the data had not been
+>  really copied, and it was syncing) and a few minutes after
+>  this notice came up.
+  Thanks for report. It looks like a problem in UDF. Actually I think
+I've already seen a similar report. Are there any IO errors in the logs
+or anything else suspitious?
 
-How do you do that when the processes are blocking on semaphores,
-mutexes or rw-semaphores in the fileysystem three layers removed from
-the I/O in progress?
+								Honza
 
-e.g. a low priority process transaction is holding the AGF buffer
-locked but the transaction is blocked waiting for some other
-metadata I/O it has issued needed in the transaction.  That metadata
-I/O is being held out by a higher priority process doing lots of
-I/O.
-
-Another process at the same priority creates a file, requiring
-inodes to be allocated so it locks the directory into the
-transaction and later blocks on the AGF buffer semaphore trying to
-allocate space for the new inode.
-
-A very high priority process now comes along and tries to read the
-directory locked in the create transaction, and blocks on the
-directory inode ilock because it's already held in write mode.
-
-That's three processes all blocked on locks unrelated to the I/O
-that is being held out, and there is no direct connection that can
-be used to pass the priority down to the blocked I/O that is causing
-all the problems.....
-
-It's a Bad Idea.
-
-Cheers,
-
-Dave.
+> Nov 20 23:30:23 *** kernel: kernel BUG at fs/inode.c:191!
+> Nov 20 23:30:23 *** kernel: invalid opcode: 0000 [1] SMP 
+> Nov 20 23:30:23 *** kernel: CPU 1 
+> Nov 20 23:30:23 *** kernel: Modules linked in: udf usb_storage autofs4 sunrpc cpufreq_ondemand reiserfs dm_mirror dm_mod video output sbs sbshc battery ac power_supply ipv6 snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd sr_mod button forcedeth soundcore cdrom k8temp pcspkr snd_page_alloc pata_amd hwmon i2c_nforce2 i2c_core sg sata_nv ata_generic libata sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd
+> Nov 20 23:30:23 *** kernel: Pid: 11762, comm: umount Not tainted 2.6.24-rc1-git10 #0
+> Nov 20 23:30:23 *** kernel: RIP: 0010:[<ffffffff810a9886>]  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+> Nov 20 23:30:23 *** kernel: RSP: 0018:ffff81001ac47dd8  EFLAGS: 00010202
+> Nov 20 23:30:23 *** kernel: RAX: 0000000000000001 RBX: ffff81010ac0b548 RCX: ffff81010ac0b548
+> Nov 20 23:30:23 *** kernel: RDX: 0000000000000007 RSI: ffff81010ac0b750 RDI: ffff81010ac0b548
+> Nov 20 23:30:23 *** kernel: RBP: ffff81010ac0b548 R08: 8000000000000000 R09: ffffffff81405a18
+> Nov 20 23:30:23 *** kernel: R10: 0000000000000000 R11: ffff81001ac47d58 R12: 00000000000001ba
+> Nov 20 23:30:23 *** kernel: R13: ffff81001ac47e18 R14: ffff81001aba6068 R15: 0000000000000000
+> Nov 20 23:30:23 *** kernel: FS:  00002b38ac69f6c0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
+> Nov 20 23:30:23 *** kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> Nov 20 23:30:23 *** kernel: CR2: 00000000008cb370 CR3: 000000001ac6a000 CR4: 00000000000006e0
+> Nov 20 23:30:23 *** kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> Nov 20 23:30:23 *** kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Nov 20 23:30:23 *** kernel: Process umount (pid: 11762, threadinfo ffff81001ac46000, task ffff81010492c000)
+> Nov 20 23:30:23 *** kernel: Stack:  ffff81010ac0b558 ffffffff810a9e84 0000000000000018 ffff8101059af048
+> Nov 20 23:30:23 *** kernel:  ffff81010610a8c0 0000000000004a57 ffff81010610a8c0 ffffffff810aa160
+> Nov 20 23:30:23 *** kernel:  ffff81010ac0b7d8 ffff81001aba6058 0000000000000000 ffff81010610a800
+> Nov 20 23:30:23 *** kernel: Call Trace:
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
+> Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
+> Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
+> Nov 20 23:30:23 *** kernel: 
+> Nov 20 23:30:23 *** kernel: 
+> Nov 20 23:30:23 *** kernel: Code: 0f 0b eb fe 48 89 df e8 e7 39 04 00 48 8b 83 f8 00 00 00 48 
+> Nov 20 23:30:23 *** kernel: RIP  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+> Nov 20 23:30:23 *** kernel:  RSP <ffff81001ac47dd8>
+> Nov 20 23:30:23 *** kernel: WARNING: at kernel/exit.c:917 do_exit()
+> Nov 20 23:30:23 *** kernel: 
+> Nov 20 23:30:23 *** kernel: Call Trace:
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8103c55a>] do_exit+0x4f/0x768
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8100d64d>] kernel_math_error+0x0/0x71
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8100da73>] do_invalid_op+0x85/0x8f
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8104bd77>] bit_waitqueue+0x10/0x9f
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8104be44>] wake_up_bit+0x11/0x22
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810b23cf>] __writeback_single_inode+0x2a5/0x2b7
+> Nov 20 23:30:23 *** kernel:  [<ffffffff882cb85c>] :udf:udf_current_aext+0xe8/0x143
+> Nov 20 23:30:23 *** kernel:  [<ffffffff81251039>] error_exit+0x0/0x51
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9886>] destroy_inode+0xd/0x47
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9882>] destroy_inode+0x9/0x47
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810a9e84>] dispose_list+0xae/0xe0
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810aa160>] invalidate_inodes+0xc1/0xdf
+> Nov 20 23:30:23 *** kernel:  [<ffffffff81099445>] generic_shutdown_super+0x39/0xd2
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810994eb>] kill_block_super+0xd/0x1e
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810995b6>] deactivate_super+0x6a/0x83
+> Nov 20 23:30:23 *** kernel:  [<ffffffff810ac1cd>] sys_umount+0x23d/0x273
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8109abde>] sys_newstat+0x19/0x31
+> Nov 20 23:30:23 *** kernel:  [<ffffffff81116a90>] __up_write+0x27/0xf3
+> Nov 20 23:30:23 *** kernel:  [<ffffffff8100be8e>] system_call+0x7e/0x83
+> Nov 20 23:30:23 *** kernel: 
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
