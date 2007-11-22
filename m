@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbXKVD5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXKVEJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516AbXKVD5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Nov 2007 22:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbXKVD5Z
+	id S1756326AbXKVEJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Nov 2007 23:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbXKVEIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 22:57:25 -0500
-Received: from mailgate-out2.mysql.com ([213.136.52.68]:39778 "EHLO
-	mailgate.mysql.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752477AbXKVD5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 22:57:24 -0500
-X-Greylist: delayed 1753 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 22:57:24 EST
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-From: Stewart Smith <stewart@mysql.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, xfs-oss <xfs@oss.sgi.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071122011214.GR114266761@sgi.com>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com>
-	 <p73oddnhzoq.fsf@bingen.suse.de>  <20071122011214.GR114266761@sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WAjZXbGIUan1gQIlUjdm"
-Organization: MySQL AB
-Date: Thu, 22 Nov 2007 14:28:43 +1100
-Message-Id: <1195702123.8369.78.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 21 Nov 2007 23:08:55 -0500
+Received: from fallback.mail.ru ([194.67.57.14]:32337 "EHLO mx4.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752301AbXKVEIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Nov 2007 23:08:54 -0500
+Date: Thu, 22 Nov 2007 07:02:17 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 49/59] fs/ufs: Add missing "space"
+Message-ID: <20071122040213.GA9896@rain>
+Mail-Followup-To: Joe Perches <joe@perches.com>,
+	linux-kernel@vger.kernel.org
+References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com> <1195523627-15389-7-git-send-email-joe@perches.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1195523627-15389-7-git-send-email-joe@perches.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 19, 2007 at 05:53:36PM -0800, Joe Perches wrote:
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  fs/ufs/dir.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ufs/dir.c b/fs/ufs/dir.c
+> index 30f8c2b..d19dfe8 100644
+> --- a/fs/ufs/dir.c
+> +++ b/fs/ufs/dir.c
+> @@ -180,7 +180,7 @@ bad_entry:
+>  Eend:
+>  	p = (struct ufs_dir_entry *)(kaddr + offs);
+>  	ufs_error (sb, "ext2_check_page",
 
---=-WAjZXbGIUan1gQIlUjdm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+If you touch this code, it will be good,
+if you also replace "ext2_check_page" with something like __FUNCTION__.
 
-On Thu, 2007-11-22 at 12:12 +1100, David Chinner wrote:
-> In all the cases that I know of where ppl are using what could
-> be considered real-time I/O (e.g. media environments where they
-> do real-time ingest and playout from the same filesystem) the
-> real-time ingest processes create the files and do pre-allocation
-> before doing their I/O. This I/O can get held up behind another
-> process that is not real time that has issued log I/O.=20
->=20
-> Given there is no I/O priority inheritence and having log I/O stall
-> will stall the entire filesystem, we cannot allow log I/O to
-> stall in real-time environments. Hence it must have the highest
-> possible priority to prevent this.
+> -		   "entry in directory #%lu spans the page boundary"
+> +		   "entry in directory #%lu spans the page boundary "
+>  		   "offset=%lu",
+>  		   dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs);
+>  fail:
+> -- 
+> 1.5.3.5.652.gf192c
 
-FWIW from a "real time" database POV this seems to make sense to me...
-in fact, we probably rely on filesystem metadata way too much
-(historically it's just "worked".... although we do seem to get issues
-on ext3).
-
-I have a (casually stupid) simulation program... although I've observed
-little to no problems on all my XFS tests using it.
-
---=20
-Stewart Smith, Senior Software Engineer (MySQL Cluster)
-MySQL AB, www.mysql.com
-Office: +14082136540 Ext: 6616
-VoIP: 6616@sip.us.mysql.com
-Mobile: +61 4 3 8844 332
-
---=-WAjZXbGIUan1gQIlUjdm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iQIVAwUAR0T3a73yNwHyU3DLAQLp7Q/+PaPp6lTGjHwPBvP8RvoPzEvajjlj9JhM
-5jWPDFv8xJcK2zIMCSvzV7gV4FLVTLT6mX4ZOW3dQ7aItbGEM0KzT9P/T82pjDyf
-T9j2HRuN45bVEMGuqpkyuwCKuLK+XJv+nKio6+5pZgMpXulWM1xY1pPDaXW/OkP4
-ZwgU3CkYkBC0u7bTmCb7fndFmmOtXGXox/4GSTU+J1Ez6SPblcTt66EThCD1ad7d
-UfsF08LaEnUNoDfWDNSd2WxnD6A3p4EL3KoUla2lBk7a7FyOOV04zeK9LulinqpA
-KceXVgy2J8BUyFeZdlCI02J8QhMJXpG2qgCjpRlmbjZT+dLLCvES2O6I6NqqCNW+
-Z/H00c9TWAhpjuWqga5wz0F0xROGec/Nn5rs/3XKz13HmaKny32Dyv2xm9t/1qFr
-4GSkHWQtJrovJwA+A6pBIzIJJ4EUbnVanu4pHZ0gL925dqQRCl/49/GsiGuMBQme
-gk4Izdf+2sAdQF7lnPAquQXu5g9U19zhLog25jVLr5R4H8gY1hpqKWO3ftC4UOsW
-fFjV2aGI+CMb9Fg2lhkgeHyvJFy4Rx+5Luh4OkWDdz9aqknJgR+tthGN5LlWUCZJ
-V3HOOHNJrsKIG/0yZ6u/ek++3/+gIuNn1ZGTLQHgvqGGKmrt0GjR0nagNeB6JdtH
-uD3ce+3Rq7o=
-=KdGI
------END PGP SIGNATURE-----
-
---=-WAjZXbGIUan1gQIlUjdm--
+-- 
+/Evgeniy
 
