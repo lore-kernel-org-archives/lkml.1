@@ -1,139 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbXKVHWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXKVH0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbXKVHWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 02:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXKVHW3
+	id S1752664AbXKVH0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 02:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXKVH0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 02:22:29 -0500
-Received: from m-04.th.seeweb.it ([217.64.195.227]:59877 "EHLO
-	m-04.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbXKVHW2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 02:22:28 -0500
-Message-ID: <47452EAC.5060801@users.sourceforge.net>
-Date: Thu, 22 Nov 2007 08:24:28 +0100
-From: "legolas558@users.sourceforge.net" <legolas558@users.sourceforge.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071122)
+	Thu, 22 Nov 2007 02:26:10 -0500
+Received: from waste.org ([66.93.16.53]:45669 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750920AbXKVH0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 02:26:09 -0500
+Date: Thu, 22 Nov 2007 01:25:49 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: David Chinner <dgc@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, xfs-oss <xfs@oss.sgi.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
+Message-ID: <20071122072549.GQ19691@waste.org>
+References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <20071122025726.GG17536@waste.org> <20071122034106.GV114266761@sgi.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Pavel Machek <pavel@ucw.cz>, mnowak@redhat.com, shaohua.li@intel.com
-Subject: Re: Laptop keyboard unusable when ACPI is active
-References: <47001841.1000107@users.sourceforge.net> <470DD906.9090504@users.sourceforge.net> <470F600B.3030305@users.sourceforge.net>
-In-Reply-To: <470F600B.3030305@users.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071122034106.GV114266761@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, Nov 22, 2007 at 02:41:06PM +1100, David Chinner wrote:
+> On Wed, Nov 21, 2007 at 08:57:27PM -0600, Matt Mackall wrote:
+> > On Thu, Nov 22, 2007 at 12:12:14PM +1100, David Chinner wrote:
+> > > In all the cases that I know of where ppl are using what could
+> > > be considered real-time I/O (e.g. media environments where they
+> > > do real-time ingest and playout from the same filesystem) the
+> > > real-time ingest processes create the files and do pre-allocation
+> > > before doing their I/O. This I/O can get held up behind another
+> > > process that is not real time that has issued log I/O. 
+> > > 
+> > > Given there is no I/O priority inheritence and having log I/O stall
+> > > will stall the entire filesystem, we cannot allow log I/O to
+> > > stall in real-time environments. Hence it must have the highest
+> > > possible priority to prevent this.
+> > 
+> > I've seen PVRs that would be upset by this. They put media on one
+> > filesystem and database/apps/swap/etc. on another, but have everything
+> > on a single spindle. Stalling a media filesystem read for a write
+> > anywhere else = fail.
+> 
+> Sounds like the PVR is badly designed to me. If a write can cause a
+> read to miss a playback deadline, then you haven't built enough
+> buffering into your playback application.
 
-some upates about this issue (see also bug 9147 
-http://bugzilla.kernel.org/show_bug.cgi?id=9147 ).
+Normally it's not a problem. But your proposed change can push a
+working system into a non-working system by making non-critical I/O on
+an unrelated filesystem have higher priority than the thing that -actually
+has real-time constraints-.
 
-The 'ac', 'battery' and 'thermal' modules (compiled as stand-alone) do 
-cause the bug; it suffices that one of them (or any set of them) is 
-loaded to trigger the bug either immediately or after some time.
-If none of them is loaded into memory, the bug does not happen.
-Also, the 'battery' module does not generate system messages although 
-the problem is equally verified.
+In other words, I/O priority is per-spindle and not per-filesystem and
+thus this change has consequences that leak outside the filesystem in
+question. That's bad.
 
-The 'thermal' module instead, when loaded with 'modprobe thermal', 
-causes the enter key pressed to execute the command to be indefinitively 
-repeated into any terminal. This is currently a perfectly reproducible 
-testcase for bug 9147.
+I'd further add that the kernel internals probably shouldn't wander
+into RT priority levels unless it's actually doing priority
+inheritance, otherwise it's quite likely to upset the careful
+considerations of the RT system designer's priority schemes. For
+instance, a log-heavy but otherwise non-RT load with this patch could
+possibly completely starve direct I/O to another partition even though
+it's marked RT, thus livelocking the system.
 
-The bug has been confirmed by at least another user (with different 
-hardware configuration); please reply for either bug addressing or 
-confirmation.
+To the general PVR problem: they typically want to work with a minimum
+of buffering to maximize responsiveness to user commands (fast
+forward, jump 30 seconds, play in reverse). Now consider that you're
+recording and playing back multiple HD streams on low-margin set-top
+hardware and you'll see that making this work -at all- means lots of
+I/O tuning.
 
-The current known best workaround to this bug is to compile all the 
-above mentioned ACPI modules as stand-alone and to not (auto)load them 
-(loosing their vital functionalities, since we are talking about laptops 
-here, see http://gentoo-wiki.com/HARDWARE_Maxdata_Pro_7000_DX for an 
-example of affected hardware).
-
-It is also important to note that this bug always comes with bug 8740 
-http://bugzilla.kernel.org/show_bug.cgi?id=8740 (also confirmed and also 
-an ACPI issue).
-
-Best regards,
---
-  Daniele C.
-
-
-legolas558@users.sourceforge.net ha scritto:
-> I am posting this message just to say that this bug is being addressed
-> on the bug tracker:
-> http://bugzilla.kernel.org/show_bug.cgi?id=9147
->
-> Regards,
-> --
->   Daniele C.
->
->
-> legolas558@users.sourceforge.net ha scritto:
->   
->> legolas558@users.sourceforge.net ha scritto:
->>   
->>     
->>> Kernel: 2.6.22-r5
->>> Kernel option: i8042.nomux=1
->>>     
->>>       
->> I am now using kernel 2.6.22-r8 (Gentoo) and the following kernel options:
->>
->> i8042.nomux=1 acpi=off
->>
->> I have tried kernel 2.6.23-rc9 but the problem is still there.
->>
->>   
->>     
->>> The problem which still remains, and I can't fix or work it around, is
->>> witnessed by the below dmesg lines:
->>> -----
->>> atkbd.c: Unknown key released (translated set 2, code 0xe0 on
->>> isa0060/serio0).
->>> atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
->>> atkbd.c: Unknown key released (translated set 2, code 0xe0 on
->>> isa0060/serio0).
->>> atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
->>> atkbd.c: Unknown key released (translated set 2, code 0xe0 on
->>> isa0060/serio0).
->>> atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
->>> -----
->>> The release event for some keys is never caught, so all sorts of
->>> troubles happen if for example I use the Del key and it stucks, or if
->>> I use the Ctrl key and it never gets released...pushing again the
->>> stuck key brings back the key in the proper status.
->>>     
->>>       
->> With acpi=off the problem is totally worked around.
->>
->>   
->>     
->>> Can somebody please give me some clues about this issue, and possible
->>> solutions? I have been searching the web for a couple of weeks and
->>> seems like it is a common trouble of notebook users, but nobody has
->>> yet published a solution.
->>>     
->>>       
->> I am trying to find a path myself in this issue - which dates back to at
->> least 2005 and has never been resolved.
->>
->> I would now try some other kernel parameter in order to preserve ACPI
->> functionality and possibly prevent ACPI from messing up the keyboard IRQs.
->> Can somebody please give me istructions regarding the correct tests
->> (regarding kernel parameters and/or anything else) to perform in order
->> to better isolate the issue?
->>
->> Related Gentoo bug tracker item:
->> http://bugs.gentoo.org/show_bug.cgi?id=194781
->>
->> Other messages about the same kernel bug (many more can be found
->> googling around, and no solution yet):
->> https://lists.linux-foundation.org/pipermail/bugme-new/2005-January/011736.html
->> http://dev.laptop.org/ticket/2401
->>
->> Regards,
->> --
->>   Daniele C.
+-- 
+Mathematics is the supreme nostalgia of our time.
