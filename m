@@ -1,152 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbXKVMr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbXKVMxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbXKVMr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 07:47:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXKVMrs
+	id S1753535AbXKVMxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 07:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXKVMxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 07:47:48 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55546 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751780AbXKVMrr (ORCPT
+	Thu, 22 Nov 2007 07:53:08 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:43157 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752126AbXKVMxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 07:47:47 -0500
-Message-ID: <47457A68.7090901@bull.net>
-Date: Thu, 22 Nov 2007 13:47:36 +0100
-From: Gilles Carry <Gilles.Carry@bull.net>
-User-Agent: Mozilla Thunderbird 1.0 (X11/20041206)
-X-Accept-Language: en-us, en
+	Thu, 22 Nov 2007 07:53:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LdANEUv7TnpwFiwoOLdMZ2FbceqbDzlfC5u32Ps4nAFJgkgDs0T7SVurUMAmQqykDZxmPlmddIpnvOp/p/MPri5sbbwM5R8/Xf5wAa/0etSodFTdAruvQcJJWWDfh4rn42dRqpHp8bNJom2w/bpU4h7q+6CR91wxCtOIqNPizCU=
+Message-ID: <b647ffbd0711220453i15e786ubbb02c3431869048@mail.gmail.com>
+Date: Thu, 22 Nov 2007 13:53:02 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Micah Dowty" <micah@vmware.com>
+Subject: Re: High priority tasks break SMP balancer?
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
+       "Kyle Moffett" <mrmacman_g4@mac.com>, "Cyrus Massoumi" <cyrusm@gmx.net>,
+       "LKML Kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Mike Galbraith" <efault@gmx.de>,
+       "Paul Menage" <menage@google.com>,
+       "Peter Williams" <pwil3058@bigpond.net.au>
+In-Reply-To: <20071122074652.GA6502@vmware.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, libc-alpha@sources.redhat.com
-Cc: Tim Chavez <tinytim@us.ibm.com>, Darren Hart <dvhltc@us.ibm.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       Venkata Jagana <jagana@us.ibm.com>,
-       =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       Jean-Pierre Dion <jean-pierre.dion@bull.net>,
-       Gilles Carry <Gilles.Carry@bull.net>
-Subject: RFC for PI condvars (requeue PI is back!)
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 22/11/2007 13:54:57,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 22/11/2007 13:54:59,
-	Serialize complete at 22/11/2007 13:54:59
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+References: <20071116221404.GC31527@vmware.com>
+	 <20071117010352.GA13666@vmware.com>
+	 <b647ffbd0711171110q9f695e1qb42ba73dc23b626d@mail.gmail.com>
+	 <20071119185116.GA28173@vmware.com>
+	 <b647ffbd0711191422q6be59c44gfbc72f0fc3167768@mail.gmail.com>
+	 <20071119230516.GC4736@vmware.com> <20071120055755.GE20436@elte.hu>
+	 <20071120180643.GD4736@vmware.com>
+	 <b647ffbd0711201347tedf7ac0sc6476118353feab3@mail.gmail.com>
+	 <20071122074652.GA6502@vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 22/11/2007, Micah Dowty <micah@vmware.com> wrote:
+> On Tue, Nov 20, 2007 at 10:47:52PM +0100, Dmitry Adamushko wrote:
+> > btw., what's your system? If I recall right, SD_BALANCE_NEWIDLE is on
+> > by default for all configs, except for NUMA nodes.
+>
+> It's a dual AMD64 Opteron.
+>
+> So, I recompiled my 2.6.23.1 kernel without NUMA support, and with
+> your patch for scheduling domain flags in /proc. It looks like with
+> NUMA disabled, my test case no longer shows the CPU imbalance
+> problem. Cool.
+>
+> With NUMA disabled (and my test running smoothly), the flags show that
+> SD_BALANCE_NEWIDLE is set:
+>
+> root@micah-64:~# cat /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+> 55
+>
+> Next I turned it off:
+>
+> root@micah-64:~# echo 53 > /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+> root@micah-64:~# echo 53 > /proc/sys/kernel/sched_domain/cpu1/domain0/flags
+>
+> Oddly enough, I still don't observe the CPU imbalance problem.
 
-A few months ago, the futex requeue pi patch was rejected because of some flaws.
+Look for the 'load_idx' variable in find_busiest_group() and how it's used.
 
-I am now working on a PI-only implementation of condvars.
-After some preliminary investigations, I would like to read your comments and
-thoughts before I get too deeply into this. Please correct me if I am wrong
-somewhere.
+include/linux/topology.h (+ some architectures defines additional
+node-definition-structures, but that's primarily for NUMA)
 
-Source code: kernel/futex.c
+There you can find : 'busy_idx', 'idle_idx' and 'newidle_idx' (amongst
+others that affect load-balancing).
 
-Cond wait/signal/broadcast rely on a double futex system.
-- The first (internal: cond->__data.__futex) where the waiters are pushed into
- (cond_wait) and popped out one by one (cond_signal). Let's call it Ftx_int.
-- And the second (cond->__data.__mutex from the external mutex) where the
- broadcasted waiters are requeued to and then all popped out from,
- sequentially. Let's call it Ftx_ext.
+Those parameters specify the _source_ of load for determining the
+busiest group for !CPU_IDLE, CPU_IDLE and CPU_NEWLY_IDLE cases
+respectively.
 
-Currently, condition variables only use non-pi futexes which causes a fifo
-thread-wakening order.
-To have priority-ordered thread wakening when broadcasting, we still need the
-"requeue to PI" functionality. So Ftx_ext must be PI.
-Also, pthread_cond_signal has yet no PI implementation. Users may expect a
-consistent behaviour when using a unique PI condvars for signals and
-broadcasts: priority order. This is why Ftx_int must also be PI.
+when 'load_idx == 0' (say, when CPU_NEWLY_IDLE and 'newidle_idx == 0'
+or when CPU_IDLE and 'idle_idx == 0') the cpu_load[] table is _not_
+taken into account by {source,target}_load(), and the raw load on the
+rq is considered instead. In case of CPU_NEWLY_IDLE the raw load is
+always 0 (no tasks on the queue).
 
-Ftx_int:
-- is only used as a stack and never needs to be owned in any way.
- pthread_cond_wait uses it to push in waiters (futex_wait).
-- pthread_cond_signal uses it to pop out waiters (futex_wake) and wakening
- must be prio-ordered; this is why we need a PI-futex.
+so for NUMA, newidle_idx = 0 and it also seems to be a generic option
+for other variants on 2.6.23.1. Hence, it doesn't matter how big are
+cpu_load[], they are just not taken into account.
 
-Ftx_ext:
-- is used both by user to protect pthread_cond_* calls and by broadcast which
- requeues waiters to it.
-- pthread_cond_broadcast uses it to requeue waiters from Ftx_int and
- eventually wake first waiter depending on Ftx_ext ownership:
-       - not owned: make first waiter owner of Ftx_ext and wake it
-       - externally owned: do nothing. The mutex unlocking (Ftx_ext) mechanism
-	will wake the next waiter according to priority order.
+>
+> Now I reboot into a kernel which has NUMA re-enabled but which is
+> otherwise identical. I verify that now I can reproduce the CPU
+> imbalance again.
 
->From all this, we can deduce the required new futex features to implement
-wait/signal/broadcast PI conditions are: wait, wake and requeue.
+for NUMA, 'idle_idx != 0' (i.e. cpu_load[] is taken into account) for
+the CPU_IDLE case
+and
+'newidle_idx == 0' (just because, SD_BALANCE_NEWIDLE is normally not
+used on NUMA) for CPU_NEWLY_IDLE.
 
+>
+> root@micah-64:~# cat /proc/sys/kernel/sched_domain/cpu0/domain0/flags
+> 1101
+>
+> Now I set cpu[10]/domain0/flags to 1099, and the imbalance immediately
+> disappears. I can reliably cause the imbalance again by setting it
+> back to 1101, and remove the imbalance by setting them to 1099.
 
-Existing and wanted pi-futex features
--------------------------------------
-FUTEX_LOCK_PI (existing)
-	Try to get ownership of a futex.
-	Queue as a waiter if fail to get ownership.
-	Try to get ownership again when awakened.
-FUTEX_WAIT_PI (wanted)
-	Push self onto a futex and sleep but does not try to get ownership
-	of the futex.
-FUTEX_UNLOCK_PI (existing)
-	Must be owner of futex. Release ownership and wake first waiter.
-FUTEX_WAKE_PI (wanted)
-	No need to be owner of futex. Wake first waiter.
-FUTEX_REQUEUE_CMP_PI (wanted)
-	Move waiters from a futex to another (f1->f2), wake and give
-	onwership to first waiter if f2 not already owned.
+I guess, you meant it to be the other way aroumd -- 1101 when it's switched on.
 
-Implementation
---------------
-To make the code more maintainable and avoid redundancies, I'm thinking of
-modifying the existing functions in order to match the new requirements:
-- FUTEX_WAIT_PI calls futex_lock_pi in which the locking is disabled by a new
- argument in the function prototype,
-- FUTEX_WAKE_PI calls futex_unlock_pi in which the unlocking of futex is
- disabled by a new argument in the function prototype.
-Of course, the modifications of futex_lock_pi and futex_unlock_pi do not break
-the behaviour when used in the original way.
-- FUTEX_REQUEUE_CMP_PI uses a new function futex_requeue_cmp_pi which uses parts
-of the above mentionned functions.
+>
+> Do these results make sense? I'm not sure I understand how
+> SD_BALANCE_NEWIDLE could be the whole story, since my /proc/schedstat
+> graphs do show that we continuously try to balance on idle, but we
+> can't successfully do so because the idle CPU has a much higher load
+> than the non-idle CPU.
 
+(1) CPU_IDLE and idle_idx != 0 --> cpu_load[] is considered
 
-Rt_mutex needed new features
-----------------------------
-Source code: kernel/rtmutex.c
-futex_*_pi functions map on rt_mutex calls which had to be modified in a
-similar manneer:
-- futex_lock_pi (wait) uses rt_mutex_enqueue, based on the modifed
- rt_mutex_slowlock.
-- futex_unlock_pi (wake) uses rt_mutex_wake, based on the modifed
- rt_mutex_slowunlock.
-- futex_cmp_requeue_pi uses rt_mutex_requeue (not impelmented yet) and
- rt_mutex_try2give_lock, based on the modified try_to_take_rt_mutex.
+(2) CPU_NEWIDLE and newidle_idx == 0 --> raw load is considered (which
+is 0 in this case).
 
 
-Libc modifications
-------------------
-Source code: glibc's nptl/pthread_cond_*
-All functions pthread_cond* should be modified to handle these new features.
+>  - Is this intended/expected behaviour for a machine without
+>    NEWIDLE set? I'm not familiar with the rationale for disabling
+>    this flag on NUMA systems.
+
+As you may see, there are varios node's configs in
+include/linux/topology.h that affects load-balancing. Migrations
+between NUMA nodes can be more expensive than e.g. between cpus on
+'normal' SMP, multi-core, etc. So it should be about being more
+conservative when doing load-balancing on some setups.
+
+e.g. in your particular case, what happens is smth like this:
+
+SD_BALANCE_NEWIDLE + newidle_idx == 0
+
+cpu #0: 2 nice(0) cpu-hogs
+cpu #1: nice(-15) blocks...
+cpu #1: load_balance_newidle() is triggered  (*)
+cpu #1: newidle_idx == 0 so the busiest group is on cpu #0
+cpu #1: nice(0) (which is != current) is pulled over to cpu #1
+cpu #1: nice(0) is running untill it's preempted by nice(-15)
+cpu #1: nice(-15) is running
+...
+in the mean time, rebalance_domain event can be triggered on
+cpu #0: and due to the huge load on cpu #1, nice (0) is pulled over
+(back) to the cpu #0
+...
+this situation may repeat again and again --> nice(0) tasks are being
+pulled back and forth.
+
+Other variants:
+
+- the normal rebalance_domain event can be triggered at (*) and,
+provided idle_idx == 0, cpu_load[] is not considered again and one of
+the nice(0) can be migrated (a CPU_IDLE case).
+
+the difference is that CPU_NEWLY_IDLE is triggered immediately after a
+CPU becomes idle, while it may take some time for a normal rebalance
+event (with CPU_IDLE in this case) to be triggered.
+
+- moreover, I observed cpu_load[] from /proc/sched_debug while running
+your test application and I did see from time to time cases when
+cpu_load[] is low (both cpus are comparable, load-wise) on the cpu
+where nice(-15) is normally running (I even used cpu_affinity to get
+it bound to it)... the time for which nice(-15) is _not_ running can
+be enough to degrade some of the slots of cpu_load[] back to 0...
+should the rebalance_domain be triggered at this particular moment and
+depending on sd->busy_idx, one of the nice(0) tasks can be migrated.
+
+Note, different versions of kernels may have (and have) different
+variants of tunings for domains, plus there can be some differences in
+generic behavior of the load balancer.
+
+>  - Is there a good way to detect, without any kernel debug flags
+>    set, whether the current machine has any scheduling domains
+>    that are missing the SD_BALANCE_NEWIDLE bit?
+
+e.g. by reading its config and kernel version. But as a generic way
+(sort of API for user-space), I guess, no.
+
+> I'm looking for
+>    a good way to work around the problem I'm seeing with VMware's
+>    code. Right now the best I can do is disable all thread priority
+>    elevation when running on an SMP machine with Linux 2.6.20 or
+>    later.
+
+why are your application depends on the load-balancer's decisions?
+Maybe it's just smth wrong with its logic instead? :-/
 
 
-Libc interface modification
----------------------------
-Condition's internal futex is currently non-pi. If we want priority order
-wakeup, we must use a pi-futex. This could be guessed automatically when
-calling pthread_cond_wait for the first time since second argument of the
-function is the external mutex. We could then, at first call, choose an
-internal futex of the same type as the external. Unfortunately,
-pthread_cond_broadcast and pthread_cond_signal can be called before the very
-first pthread_cond_wait and don't have the external mutex as argument. The
-result would be a mess. The only solution is to have the user choose the type
-of futex at pthread_cond_init. This must be the subject of an RFC because the
-interface needs to be changed. (cond_attr stuff)
-
-
-
-Thank-you for reading and commenting.
-
-Gilles.
+>
+> Thank you again for all your help.
+> --Micah
+>
 
 -- 
-
+Best regards,
+Dmitry Adamushko
