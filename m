@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbXKWI74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbXKWJBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbXKWI74 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 03:59:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXKWI7r
+	id S1755823AbXKWJBc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 04:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbXKWJBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 03:59:47 -0500
-Received: from mail-in-16.arcor-online.net ([151.189.21.56]:40125 "EHLO
-	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753284AbXKWI7q (ORCPT
+	Fri, 23 Nov 2007 04:01:23 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:51915 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753264AbXKWJBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 03:59:46 -0500
-Date: Fri, 23 Nov 2007 09:59:43 +0100
-From: Andreas Herrmann <aherrman@arcor.de>
-To: "Kirill A. Shutemov" <k.shutemov@velesys.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc3-mm1
-Message-ID: <20071123085943.GA5306@devil>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <20071122102205.GD7085@localhost.localdomain> <20071122161826.61515a6d.akpm@linux-foundation.org> <alpine.LFD.0.9999.0711230146190.25057@localhost.localdomain> <20071123060544.GB28946@localhost.localdomain>
+	Fri, 23 Nov 2007 04:01:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bUeIF6jkkU2PgkBAhUulhwAc+d/tVrzjljBDjxpd5D4m+nwWzepAOZBSyD9+up24CqQKhyGJE9Efvz7/b+TRZUh1i2M1D+hGNXfUQnVuDCO74OPSY+f1RIW2m+VVj3pWRTDWmCaOkAgDosw8+B+JHGjUjENyN0TQu7lVYiu73RQ=
+Message-ID: <ea9232d10711230101j24e4bd4btce65e62b9fcc8f8b@mail.gmail.com>
+Date: Fri, 23 Nov 2007 10:01:21 +0100
+From: "Karol Swietlicki" <magotari@gmail.com>
+To: "Jeff Dike" <jdike@addtoit.com>
+Subject: Re: [uml-devel] uml doesn't work on 2.6.24-rc2
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+In-Reply-To: <20071122235141.GA7876@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071123060544.GB28946@localhost.localdomain>
-User-Agent: mutt-ng/devel-r804 (Linux)
+References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu>
+	 <20071114011002.GA11477@c2.user-mode-linux.org>
+	 <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu>
+	 <20071114142247.GA5848@c2.user-mode-linux.org>
+	 <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu>
+	 <20071114173639.GA7899@c2.user-mode-linux.org>
+	 <E1IsPo5-0008RU-00@dorka.pomaz.szeredi.hu>
+	 <20071116170630.GA9299@c2.user-mode-linux.org>
+	 <E1IvGTn-0007cC-7q@dorka.pomaz.szeredi.hu>
+	 <20071122235141.GA7876@c2.user-mode-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 08:05:44AM +0200, Kirill A. Shutemov wrote:
-> On [Fri, 23.11.2007 01:48], Thomas Gleixner wrote:
-> > On Thu, 22 Nov 2007, Andrew Morton wrote:
-> > 
-> > > On Thu, 22 Nov 2007 12:22:05 +0200 "Kirill A. Shutemov" <k.shutemov@velesys.com> wrote:
-> > > 
-> > > > On x86_64 'uname -m' return 'x86'.  It break many userspace programs. apt
-> > > > and rpm for example.
-> > > > 
-> > > 
-> > > Yes, there have been various discussions about this.  I think Sam is cooking up
-> > > a fix?
-> > 
-> > http://lkml.org/lkml/2007/11/19/323
-> > 
-> > I push it Linus wards ASAP.
-> diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-> index 116b03a..7aa1dc6 100644
-> --- a/arch/x86/Makefile
-> +++ b/arch/x86/Makefile
-> @@ -11,10 +11,9 @@ endif
->  $(srctree)/arch/x86/Makefile%: ;
->  
->  ifeq ($(CONFIG_X86_32),y)
-> +        UTS_MACHINE := i386
->          include $(srctree)/arch/x86/Makefile_32
->  else
-> +        UTS_MACHINE := x86_64
->          include $(srctree)/arch/x86/Makefile_64
->  endif
-> 
-> Many programs expect i686 on Pentium II.
+On 23/11/2007, Jeff Dike <jdike@addtoit.com> wrote:
+> On Thu, Nov 22, 2007 at 07:08:47PM +0100, Miklos Szeredi wrote:
+> > Thanks.  My other problem is (probably you are aware) that recent -mm
+> > kernels don't compile for UML.
+>
+> The patch below fixes the build for rc3-mm1 for me.
+>
+>                                 Jeff
 
+There must be something more to it. I got a clean -mm and it still
+does not build after applying the patch. It does have less problems,
+but it still won't build. I tried to get it to compile for half an
+hour, but considering the amount of sleep I got (and my experience),
+there is no surprise that I failed miserably. After fixing the
+complaint about a structure not having a 'x86' member, it died in the
+linker complaining about stuff relating to rwsem.h.
 
-Yes, but this is done during boot.
-Then the kernel overwrites "i386" to become "i686" for such CPUs.
-That is why I've seen "x66" after boot when UTS_MACHINE at build-time
-was "x86" with 'make ARCH=x86'.
-For more details see:
-
-http://marc.info/?l=linux-kernel&m=119521309415545&w=2
-
-
-Regards,
-
-Andreas
-
+Karol Swietlicki
