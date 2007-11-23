@@ -1,154 +1,422 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbXKWHVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbXKWH07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbXKWHVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 02:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXKWHVe
+	id S1754938AbXKWH07 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 02:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXKWH0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 02:21:34 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48752 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752422AbXKWHVd (ORCPT
+	Fri, 23 Nov 2007 02:26:50 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:47896 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752582AbXKWH0t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 02:21:33 -0500
-Date: Thu, 22 Nov 2007 23:21:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan-Simon =?ISO-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: sata NCQ blacklist entry
-Message-Id: <20071122232109.efdbf1b4.akpm@linux-foundation.org>
-In-Reply-To: <200711132155.15506.dl9pf@gmx.de>
-References: <20071107111813.GA9064@dudweiler.stuttgart.redhat.com>
-	<200711132155.15506.dl9pf@gmx.de>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Nov 2007 02:26:49 -0500
+Message-ID: <474680B5.7020104@fr.ibm.com>
+Date: Fri, 23 Nov 2007 08:26:45 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: make struct ipc_ids static in ipc_namespace
+References: <20071122155448.3193c856.pierre.peiffer@bull.net>
+In-Reply-To: <20071122155448.3193c856.pierre.peiffer@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Nov 2007 21:55:15 +0100 Jan-Simon M__ller <dl9pf@gmx.de> wrote:
+Pierre Peiffer wrote:
+> 
+> Each ipc_namespace contains a table of 3 pointers to struct ipc_ids (3 for
+> msg, sem and shm, structure used to store all ipcs)
+> These 'struct ipc_ids' are dynamically allocated for each icp_namespace as
+> the ipc_namespace itself (for the init namespace, they are initialized with
+> pointers to static variables instead)
+> 
+> It is so for historical reason: in fact, before the use of idr to store the
+> ipcs, the ipcs were stored in tables of variable length, depending of the
+> maximum number of ipc allowed.
+> Now, these 'struct ipc_ids' have a fixed size. As they are allocated in any
+> cases for each new ipc_namespace, there is no gain of memory in having them
+> allocated separately of the struct ipc_namespace.
+> 
+> This patch proposes to make this table static in the struct ipc_namespace.
+> Thus, we can allocate all in once and get rid of all the code needed to
+> allocate and free these ipc_ids separately.
 
-> Hi!
+It looks safe and saves quite a lot of line.
 
-You removed from cc the guys who are most likely to fix this.  Please always
-do reply-to-all.
+Pavel, what do you think of it ? 
 
-> Just using kernel 2.6.24-rc2 (325d22df7b19e0116aff3391d3a03f73d0634ded).
+Acked-by: Cedric Le Goater <clg@fr.ibm.com>
+
+Thanks,
+
+C.
+
+
+> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+> ---
+>  include/linux/ipc_namespace.h |   13 +++++++++++--
+>  ipc/msg.c                     |   26 ++++----------------------
+>  ipc/namespace.c               |   25 ++++---------------------
+>  ipc/sem.c                     |   26 ++++----------------------
+>  ipc/shm.c                     |   26 ++++----------------------
+>  ipc/util.c                    |    6 +++---
+>  ipc/util.h                    |   16 ++++------------
+>  7 files changed, 34 insertions(+), 104 deletions(-)
 > 
-> When booting the system hangs, using the emergency-sync a couple of times gets 
-> the system to go on at some point. 
-> Its always around starting X/Firewall (can't actually say whats done in this 
-> moment).
-> 
-> Looking at dmesg i found this (NCQ disabled ...)
-> 
-> dmesg output
-> 
-> ata1.00: exception Emask 0x2 SAct 0x4 SErr 0x0 action 0x2 frozen
-> ata1.00: spurious completions during NCQ issue=0x0 SAct=0x4 
-> FIS=004040a1:00000002
-> ata1.00: cmd 61/08:10:bc:b2:5d/00:00:08:00:00/40 tag 2 cdb 0x0 data 4096 out
->          res 40/00:14:bc:b2:5d/00:00:08:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1: soft resetting link
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: configured for UDMA/133
-> ata1: EH complete
-> sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-> DPO or FUA
-> ata1.00: NCQ disabled due to excessive errors
-> ata1.00: exception Emask 0x2 SAct 0xfffd3 SErr 0x0 action 0x2 frozen
-> ata1.00: spurious completions during NCQ issue=0x0 SAct=0xfffd3 
-> FIS=004040a1:00000020
-> ata1.00: cmd 60/10:00:14:05:69/00:00:06:00:00/40 tag 0 cdb 0x0 data 8192 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:08:cc:dd:12/00:00:04:00:00/40 tag 1 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/18:20:84:54:a3/00:00:05:00:00/40 tag 4 cdb 0x0 data 12288 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:30:bc:b1:07/00:00:06:00:00/40 tag 6 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:38:dc:b1:07/00:00:06:00:00/40 tag 7 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/10:40:3c:b2:07/00:00:06:00:00/40 tag 8 cdb 0x0 data 8192 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:48:2c:cf:07/00:00:06:00:00/40 tag 9 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:50:3c:cf:07/00:00:06:00:00/40 tag 10 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:58:64:b4:12/00:00:04:00:00/40 tag 11 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/28:60:6c:b4:12/00:00:04:00:00/40 tag 12 cdb 0x0 data 20480 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/f8:68:7c:e1:07/00:00:06:00:00/40 tag 13 cdb 0x0 data 126976 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:70:a4:04:69/00:00:06:00:00/40 tag 14 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/18:78:b4:04:69/00:00:06:00:00/40 tag 15 cdb 0x0 data 12288 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:80:a4:5c:6a/00:00:06:00:00/40 tag 16 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/20:88:2c:05:69/00:00:06:00:00/40 tag 17 cdb 0x0 data 16384 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/30:90:54:05:69/00:00:06:00:00/40 tag 18 cdb 0x0 data 24576 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1.00: cmd 60/08:98:94:05:69/00:00:06:00:00/40 tag 19 cdb 0x0 data 4096 in
->          res 40/00:04:14:05:69/00:00:06:00:00/40 Emask 0x2 (HSM violation)
-> ata1.00: status: { DRDY }
-> ata1: soft resetting link
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: configured for UDMA/133
-> ata1: EH complete
-> sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-> DPO or FUA
-> 
-> 
-> 
-> hdparm -i /dev/sda
-> 
-> /dev/sda:
-> 
->  Model=WDC WD2500BEVS-22UST0                   , FwRev=01.01A01, SerialNo=     
-> WD-WXE807E07297
->  Config={ HardSect NotMFM HdSw>15uSec SpinMotCtl Fixed DTR>5Mbs FmtGapReq }
->  RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=50
->  BuffType=unknown, BuffSize=8192kB, MaxMultSect=16, MultSect=?16?
->  CurCHS=16383/16/63, CurSects=16514064, LBA=yes, LBAsects=268435455
->  IORDY=on/off, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
->  PIO modes:  pio0 pio3 pio4
->  DMA modes:  mdma0 mdma1 mdma2
->  UDMA modes: udma0 udma1 udma2 udma3 udma4 udma5
->  AdvancedPM=yes: disabled (255) WriteCache=enabled
->  Drive conforms to: Unspecified:  ATA/ATAPI-1,2,3,4,5,6,7
-> 
->  * signifies the current active mode
+> Index: b/include/linux/ipc_namespace.h
+> ===================================================================
+> --- a/include/linux/ipc_namespace.h
+> +++ b/include/linux/ipc_namespace.h
+> @@ -2,11 +2,20 @@
+>  #define __IPC_NAMESPACE_H__
+>  
+>  #include <linux/err.h>
+> +#include <linux/idr.h>
+> +#include <linux/rwsem.h>
+> +
+> +struct ipc_ids {
+> +	int in_use;
+> +	unsigned short seq;
+> +	unsigned short seq_max;
+> +	struct rw_semaphore rw_mutex;
+> +	struct idr ipcs_idr;
+> +};
+>  
+> -struct ipc_ids;
+>  struct ipc_namespace {
+>  	struct kref	kref;
+> -	struct ipc_ids	*ids[3];
+> +	struct ipc_ids	ids[3];
+>  
+>  	int		sem_ctls[4];
+>  	int		used_sems;
+> Index: b/ipc/msg.c
+> ===================================================================
+> --- a/ipc/msg.c
+> +++ b/ipc/msg.c
+> @@ -67,9 +67,7 @@ struct msg_sender {
+>  #define SEARCH_NOTEQUAL		3
+>  #define SEARCH_LESSEQUAL	4
+>  
+> -static struct ipc_ids init_msg_ids;
+> -
+> -#define msg_ids(ns)	(*((ns)->ids[IPC_MSG_IDS]))
+> +#define msg_ids(ns)	((ns)->ids[IPC_MSG_IDS])
+>  
+>  #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
+>  #define msg_buildid(id, seq)	ipc_buildid(id, seq)
+> @@ -80,30 +78,17 @@ static int newque(struct ipc_namespace *
+>  static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
+>  #endif
+>  
+> -static void __msg_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+> +void msg_init_ns(struct ipc_namespace *ns)
+>  {
+> -	ns->ids[IPC_MSG_IDS] = ids;
+>  	ns->msg_ctlmax = MSGMAX;
+>  	ns->msg_ctlmnb = MSGMNB;
+>  	ns->msg_ctlmni = MSGMNI;
+>  	atomic_set(&ns->msg_bytes, 0);
+>  	atomic_set(&ns->msg_hdrs, 0);
+> -	ipc_init_ids(ids);
+> +	ipc_init_ids(&ns->ids[IPC_MSG_IDS]);
+>  }
+>  
+>  #ifdef CONFIG_IPC_NS
+> -int msg_init_ns(struct ipc_namespace *ns)
+> -{
+> -	struct ipc_ids *ids;
+> -
+> -	ids = kmalloc(sizeof(struct ipc_ids), GFP_KERNEL);
+> -	if (ids == NULL)
+> -		return -ENOMEM;
+> -
+> -	__msg_init_ns(ns, ids);
+> -	return 0;
+> -}
+> -
+>  void msg_exit_ns(struct ipc_namespace *ns)
+>  {
+>  	struct msg_queue *msq;
+> @@ -126,15 +111,12 @@ void msg_exit_ns(struct ipc_namespace *n
+>  	}
+>  
+>  	up_write(&msg_ids(ns).rw_mutex);
+> -
+> -	kfree(ns->ids[IPC_MSG_IDS]);
+> -	ns->ids[IPC_MSG_IDS] = NULL;
+>  }
+>  #endif
+>  
+>  void __init msg_init(void)
+>  {
+> -	__msg_init_ns(&init_ipc_ns, &init_msg_ids);
+> +	msg_init_ns(&init_ipc_ns);
+>  	ipc_init_proc_interface("sysvipc/msg",
+>  				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
+>  				IPC_MSG_IDS, sysvipc_msg_proc_show);
+> Index: b/ipc/namespace.c
+> ===================================================================
+> --- a/ipc/namespace.c
+> +++ b/ipc/namespace.c
+> @@ -14,35 +14,18 @@
+>  
+>  static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
+>  {
+> -	int err;
+>  	struct ipc_namespace *ns;
+>  
+> -	err = -ENOMEM;
+>  	ns = kmalloc(sizeof(struct ipc_namespace), GFP_KERNEL);
+>  	if (ns == NULL)
+> -		goto err_mem;
+> +		return ERR_PTR(-ENOMEM);
+>  
+> -	err = sem_init_ns(ns);
+> -	if (err)
+> -		goto err_sem;
+> -	err = msg_init_ns(ns);
+> -	if (err)
+> -		goto err_msg;
+> -	err = shm_init_ns(ns);
+> -	if (err)
+> -		goto err_shm;
+> +	sem_init_ns(ns);
+> +	msg_init_ns(ns);
+> +	shm_init_ns(ns);
+>  
+>  	kref_init(&ns->kref);
+>  	return ns;
+> -
+> -err_shm:
+> -	msg_exit_ns(ns);
+> -err_msg:
+> -	sem_exit_ns(ns);
+> -err_sem:
+> -	kfree(ns);
+> -err_mem:
+> -	return ERR_PTR(err);
+>  }
+>  
+>  struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
+> Index: b/ipc/sem.c
+> ===================================================================
+> --- a/ipc/sem.c
+> +++ b/ipc/sem.c
+> @@ -87,14 +87,12 @@
+>  #include <asm/uaccess.h>
+>  #include "util.h"
+>  
+> -#define sem_ids(ns)	(*((ns)->ids[IPC_SEM_IDS]))
+> +#define sem_ids(ns)	((ns)->ids[IPC_SEM_IDS])
+>  
+>  #define sem_unlock(sma)		ipc_unlock(&(sma)->sem_perm)
+>  #define sem_checkid(sma, semid)	ipc_checkid(&sma->sem_perm, semid)
+>  #define sem_buildid(id, seq)	ipc_buildid(id, seq)
+>  
+> -static struct ipc_ids init_sem_ids;
+> -
+>  static int newary(struct ipc_namespace *, struct ipc_params *);
+>  static void freeary(struct ipc_namespace *, struct sem_array *);
+>  #ifdef CONFIG_PROC_FS
+> @@ -118,30 +116,17 @@ static int sysvipc_sem_proc_show(struct 
+>  #define sc_semopm	sem_ctls[2]
+>  #define sc_semmni	sem_ctls[3]
+>  
+> -static void __sem_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+> +void sem_init_ns(struct ipc_namespace *ns)
+>  {
+> -	ns->ids[IPC_SEM_IDS] = ids;
+>  	ns->sc_semmsl = SEMMSL;
+>  	ns->sc_semmns = SEMMNS;
+>  	ns->sc_semopm = SEMOPM;
+>  	ns->sc_semmni = SEMMNI;
+>  	ns->used_sems = 0;
+> -	ipc_init_ids(ids);
+> +	ipc_init_ids(&ns->ids[IPC_SEM_IDS]);
+>  }
+>  
+>  #ifdef CONFIG_IPC_NS
+> -int sem_init_ns(struct ipc_namespace *ns)
+> -{
+> -	struct ipc_ids *ids;
+> -
+> -	ids = kmalloc(sizeof(struct ipc_ids), GFP_KERNEL);
+> -	if (ids == NULL)
+> -		return -ENOMEM;
+> -
+> -	__sem_init_ns(ns, ids);
+> -	return 0;
+> -}
+> -
+>  void sem_exit_ns(struct ipc_namespace *ns)
+>  {
+>  	struct sem_array *sma;
+> @@ -163,15 +148,12 @@ void sem_exit_ns(struct ipc_namespace *n
+>  		total++;
+>  	}
+>  	up_write(&sem_ids(ns).rw_mutex);
+> -
+> -	kfree(ns->ids[IPC_SEM_IDS]);
+> -	ns->ids[IPC_SEM_IDS] = NULL;
+>  }
+>  #endif
+>  
+>  void __init sem_init (void)
+>  {
+> -	__sem_init_ns(&init_ipc_ns, &init_sem_ids);
+> +	sem_init_ns(&init_ipc_ns);
+>  	ipc_init_proc_interface("sysvipc/sem",
+>  				"       key      semid perms      nsems   uid   gid  cuid  cgid      otime      ctime\n",
+>  				IPC_SEM_IDS, sysvipc_sem_proc_show);
+> Index: b/ipc/util.c
+> ===================================================================
+> --- a/ipc/util.c
+> +++ b/ipc/util.c
+> @@ -782,7 +782,7 @@ static void *sysvipc_proc_next(struct se
+>  	if (ipc && ipc != SEQ_START_TOKEN)
+>  		ipc_unlock(ipc);
+>  
+> -	return sysvipc_find_ipc(iter->ns->ids[iface->ids], *pos, pos);
+> +	return sysvipc_find_ipc(&iter->ns->ids[iface->ids], *pos, pos);
+>  }
+>  
+>  /*
+> @@ -795,7 +795,7 @@ static void *sysvipc_proc_start(struct s
+>  	struct ipc_proc_iface *iface = iter->iface;
+>  	struct ipc_ids *ids;
+>  
+> -	ids = iter->ns->ids[iface->ids];
+> +	ids = &iter->ns->ids[iface->ids];
+>  
+>  	/*
+>  	 * Take the lock - this will be released by the corresponding
+> @@ -826,7 +826,7 @@ static void sysvipc_proc_stop(struct seq
+>  	if (ipc && ipc != SEQ_START_TOKEN)
+>  		ipc_unlock(ipc);
+>  
+> -	ids = iter->ns->ids[iface->ids];
+> +	ids = &iter->ns->ids[iface->ids];
+>  	/* Release the lock we took in start() */
+>  	up_read(&ids->rw_mutex);
+>  }
+> Index: b/ipc/util.h
+> ===================================================================
+> --- a/ipc/util.h
+> +++ b/ipc/util.h
+> @@ -10,7 +10,6 @@
+>  #ifndef _IPC_UTIL_H
+>  #define _IPC_UTIL_H
+>  
+> -#include <linux/idr.h>
+>  #include <linux/err.h>
+>  
+>  #define USHRT_MAX 0xffff
+> @@ -22,22 +21,14 @@ void shm_init (void);
+>  
+>  struct ipc_namespace;
+>  
+> -int sem_init_ns(struct ipc_namespace *ns);
+> -int msg_init_ns(struct ipc_namespace *ns);
+> -int shm_init_ns(struct ipc_namespace *ns);
+> +void sem_init_ns(struct ipc_namespace *ns);
+> +void msg_init_ns(struct ipc_namespace *ns);
+> +void shm_init_ns(struct ipc_namespace *ns);
+>  
+>  void sem_exit_ns(struct ipc_namespace *ns);
+>  void msg_exit_ns(struct ipc_namespace *ns);
+>  void shm_exit_ns(struct ipc_namespace *ns);
+>  
+> -struct ipc_ids {
+> -	int in_use;
+> -	unsigned short seq;
+> -	unsigned short seq_max;
+> -	struct rw_semaphore rw_mutex;
+> -	struct idr ipcs_idr;
+> -};
+> -
+>  /*
+>   * Structure that holds the parameters needed by the ipc operations
+>   * (see after)
+> @@ -68,6 +59,7 @@ struct ipc_ops {
+>  };
+>  
+>  struct seq_file;
+> +struct ipc_ids;
+>  
+>  void ipc_init_ids(struct ipc_ids *);
+>  #ifdef CONFIG_PROC_FS
+> Index: b/ipc/shm.c
+> ===================================================================
+> --- a/ipc/shm.c
+> +++ b/ipc/shm.c
+> @@ -56,9 +56,7 @@ struct shm_file_data {
+>  static const struct file_operations shm_file_operations;
+>  static struct vm_operations_struct shm_vm_ops;
+>  
+> -static struct ipc_ids init_shm_ids;
+> -
+> -#define shm_ids(ns)	(*((ns)->ids[IPC_SHM_IDS]))
+> +#define shm_ids(ns)	((ns)->ids[IPC_SHM_IDS])
+>  
+>  #define shm_unlock(shp)			\
+>  	ipc_unlock(&(shp)->shm_perm)
+> @@ -72,14 +70,13 @@ static void shm_destroy (struct ipc_name
+>  static int sysvipc_shm_proc_show(struct seq_file *s, void *it);
+>  #endif
+>  
+> -static void __shm_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+> +void shm_init_ns(struct ipc_namespace *ns)
+>  {
+> -	ns->ids[IPC_SHM_IDS] = ids;
+>  	ns->shm_ctlmax = SHMMAX;
+>  	ns->shm_ctlall = SHMALL;
+>  	ns->shm_ctlmni = SHMMNI;
+>  	ns->shm_tot = 0;
+> -	ipc_init_ids(ids);
+> +	ipc_init_ids(&ns->ids[IPC_SHM_IDS]);
+>  }
+>  
+>  /*
+> @@ -98,18 +95,6 @@ static void do_shm_rmid(struct ipc_names
+>  }
+>  
+>  #ifdef CONFIG_IPC_NS
+> -int shm_init_ns(struct ipc_namespace *ns)
+> -{
+> -	struct ipc_ids *ids;
+> -
+> -	ids = kmalloc(sizeof(struct ipc_ids), GFP_KERNEL);
+> -	if (ids == NULL)
+> -		return -ENOMEM;
+> -
+> -	__shm_init_ns(ns, ids);
+> -	return 0;
+> -}
+> -
+>  void shm_exit_ns(struct ipc_namespace *ns)
+>  {
+>  	struct shmid_kernel *shp;
+> @@ -131,15 +116,12 @@ void shm_exit_ns(struct ipc_namespace *n
+>  		total++;
+>  	}
+>  	up_write(&shm_ids(ns).rw_mutex);
+> -
+> -	kfree(ns->ids[IPC_SHM_IDS]);
+> -	ns->ids[IPC_SHM_IDS] = NULL;
+>  }
+>  #endif
+>  
+>  void __init shm_init (void)
+>  {
+> -	__shm_init_ns(&init_ipc_ns, &init_shm_ids);
+> +	shm_init_ns(&init_ipc_ns);
+>  	ipc_init_proc_interface("sysvipc/shm",
+>  				"       key      shmid perms       size  cpid  lpid nattch   uid   gid  cuid  cgid      atime      dtime      ctime\n",
+>  				IPC_SHM_IDS, sysvipc_shm_proc_show);
 > 
 
-So is this problem (which in another email you attributed to smartd) also
-present in 2.6.23?
-
-And is is still present in 2.6.24-rc3?
-
-Thanks.
