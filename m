@@ -1,95 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXKWRwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbXKWR7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbXKWRwn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 12:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXKWRwd
+	id S1757211AbXKWR7U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 12:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXKWR7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 12:52:33 -0500
-Received: from smtp8-g19.free.fr ([212.27.42.65]:41981 "EHLO smtp8-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752890AbXKWRwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 12:52:31 -0500
-X-Greylist: delayed 37317 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Nov 2007 12:52:31 EST
-Message-ID: <4747135C.60205@free.fr>
-Date: Fri, 23 Nov 2007 18:52:28 +0100
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
-MIME-Version: 1.0
-To: Hannes Reinecke <hare@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<4744A6F2.4030302@free.fr> <20071121144116.c932727b.akpm@linux-foundation.org> <4746814F.80502@free.fr> <4746866B.5070207@suse.de> <4746BB9D.2030508@suse.de>
-In-Reply-To: <4746BB9D.2030508@suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 23 Nov 2007 12:59:08 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59503 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752520AbXKWR7F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 12:59:05 -0500
+Date: Fri, 23 Nov 2007 17:59:01 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/9] Remove xfs_icluster
+Message-ID: <20071123175901.GA12866@infradead.org>
+References: <20071122003952.GL114266761@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071122003952.GL114266761@sgi.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 23.11.2007 12:38, Hannes Reinecke a écrit :
-> Hannes Reinecke wrote:
->> Laurent Riffard wrote:
->>> Le 21.11.2007 23:41, Andrew Morton a écrit :
->>>> On Wed, 21 Nov 2007 22:45:22 +0100
->>>> Laurent Riffard <laurent.riffard@free.fr> wrote:
->>>>
->>>>> Le 21.11.2007 05:45, Andrew Morton a écrit :
->>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/
->>>>> Hello, 
->>>>>
->>>>> My system hangs shortly after I logged in Gnome desktop. SysRq-W shows
->>>>> that a bunch of task are blocked in "D" state, they seem to wait for
->>>>> some I/O completion. I can try to hand-copy some data if requested.
->>>>>
->>>>> I found these messages in dmesg:
->>>>>
->>>>> ~$ grep -C2 end_request dmesg-2.6.24-rc3-mm1 
->>>>> EXT3-fs: mounted filesystem with ordered data mode.
->>>>> sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>>>> end_request: I/O error, dev sda, sector 16460
->>>>> ReiserFS: sda7: found reiserfs format "3.6" with standard journal
->>>>> ReiserFS: sda7: using ordered data mode
->>>>> --
->>>>> ReiserFS: sda7: Using r5 hash to sort names
->>>>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>>>> end_request: I/O error, dev sdb, sector 19632
->>>>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>>>> end_request: I/O error, dev sdb, sector 40037363
->>>>> Adding 1048568k swap on /dev/mapper/vglinux1-lvswap.  Priority:-1 extents:1 across:1048568k
->>>>> lp0: using parport0 (interrupt-driven).
->>>>>
->>>>> These errors occur *only* with 2.6.24-rc3-mm1, they are 100% reproducible.
->>>>> 2.6.24-rc3 and 2.6.24-rc2-mm1 are fine.
->>>>>
->>>>> Maybe something is broken in pata_via driver ?
->>>>>
->>>> Could be - libata-reimplement-ata_acpi_cbl_80wire-using-ata_acpi_gtm_xfermask.patch
->>>> and pata_amd-pata_via-de-couple-programming-of-pio-mwdma-and-udma-timings.patch
->>>> touch pata_via.c.
->>> None of the above...
->>>
->>> I did a bisection, it spotted git-scsi-misc.patch. 
->>> I just run 2.6.24-rc3-mm1 + revert-git-scsi-misc.patch, and it works fine.
->>>
->>> I guess commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0 "[SCSI] Do not 
->>> requeue requests if REQ_FAILFAST is set" is the real culprit. The other 
->>> commits are touching documentation or drivers I don't use. I'll try 
->>> to revert only this one this evening.
+On Thu, Nov 22, 2007 at 11:39:52AM +1100, David Chinner wrote:
+> Remove the xfs_icluster structure and replace with a radix tree lookup.
+> 
+> We don't need to keep a list of inodes in each cluster around anymore
+> as we can look them up quickly when we need to. The only time we need
+> to do this now is during inode writeback.
+> 
+> Factor the inode cluster writeback code out of xfs_iflush and convert
+> it to use radix_tree_gang_lookup() instead of walking a list of
+> inodes built when we first read in the inodes.
+> 
+> This remove 3 pointers from each xfs_inode structure and the xfs_icluster
+> structure per inode cluster. Hence we reduce the cache footprint of the
+> xfs_inodes by between 5-10% depending on cluster sparseness.
+> 
+> To be truly efficient we need a radix_tree_gang_lookup_range() call
+> to stop searching once we are past the end of the cluster instead
+> of trying to find a full cluster's worth of inodes.
 
-I can confirm : reverting commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0 
-does fix the problem.
+Nice, I like this a lot.  I was wondering about something like this
+already when you put in the radix-tree based inode cache.
 
->> Hmm. Weird. I'll have a look into it. Apparently I'll be returning an error where
->> I shouldn't. Checking ...
->>
-> Ok, found it. We are blocking even special commands (ie requests with PREEMPT not set)
-> when FAILFAST is set. Which is clearly wrong. The attached patch fixes this.
+> +STATIC int
+> +xfs_iflush_cluster(
+> +	xfs_inode_t	*ip,
+> +	xfs_buf_t	*bp)
+> +{
+> +	xfs_mount_t		*mp = ip->i_mount;
+> +	xfs_perag_t		*pag = xfs_get_perag(mp, ip->i_ino);
+> +	unsigned long		first_index, mask;
+> +	int			ilist_size;
+> +	xfs_inode_t		*ilist;
+> +	xfs_inode_t		*iq;
+> +	xfs_inode_log_item_t	*iip;
+> +	int			nr_found;
+> +	int			clcount = 0;
+> +	int			bufwasdelwri;
+> +
+> +	ASSERT(pag->pagi_inodeok);
+> +	ASSERT(pag->pag_ici_init);
+> +
+> +	ilist_size = XFS_INODE_CLUSTER_SIZE(mp) * sizeof(xfs_inode_t *);
+> +	ilist = kmem_alloc(ilist_size, KM_MAYFAIL);
+> +	if (!ilist)
+> +		return 0;
 
-Sorry, it's not enough. 2.6.24-rc3-mm1 + your patch still hangs with I/O errors.
+Now if you just used the linux native allocator this could be a kcalloc :)
 
--- 
-laurent
+> +		if ((iq->i_update_core == 0) &&
+> +		    ((iip == NULL) ||
+> +		     !(iip->ili_format.ilf_fields & XFS_ILOG_ALL)) &&
+> +		      xfs_ipincount(iq) == 0) {
+> +			continue;
+> +		}
+
+		if (!iq->i_update_core &&
+		    (!iip || !(iip->ili_format.ilf_fields & XFS_ILOG_ALL)) &&
+		    !xfs_ipincount(iq))
+		    	continue;
+
+> +		/*
+> +		 * arriving here means that this inode can be flushed.  First
+> +		 * re-check that it's dirty before flushing.
+> +		 */
+> +		iip = iq->i_itemp;
+> +		if ((iq->i_update_core != 0) || ((iip != NULL) &&
+> +		     (iip->ili_format.ilf_fields & XFS_ILOG_ALL))) {
+
+		if (!iq->i_update_core ||
+		    (!iip && (iip->ili_format.ilf_fields & XFS_ILOG_ALL)) {
+
+> +	/*
+> +	 * Clean up the buffer.  If it was B_DELWRI, just release it --
+> +	 * brelse can handle it with no problems.  If not, shut down the
+> +	 * filesystem before releasing the buffer.
+> +	 */
+> +	bufwasdelwri = XFS_BUF_ISDELAYWRITE(bp);
+> +	if (bufwasdelwri)
+> +		xfs_buf_relse(bp);
+> +
+> +	xfs_force_shutdown(mp, SHUTDOWN_CORRUPT_INCORE);
+> +
+> +	if (!bufwasdelwri) {
+> +		/*
+> +		 * Just like incore_relse: if we have b_iodone functions,
+> +		 * mark the buffer as an error and call them.  Otherwise
+> +		 * mark it as stale and brelse.
+> +		 */
+> +		if (XFS_BUF_IODONE_FUNC(bp)) {
+> +			XFS_BUF_CLR_BDSTRAT_FUNC(bp);
+> +			XFS_BUF_UNDONE(bp);
+> +			XFS_BUF_STALE(bp);
+> +			XFS_BUF_SHUT(bp);
+> +			XFS_BUF_ERROR(bp,EIO);
+> +			xfs_biodone(bp);
+> +		} else {
+> +			XFS_BUF_STALE(bp);
+> +			xfs_buf_relse(bp);
+> +		}
+> +	}
+
+What's the point of all this if the filesystem is shut down anyway?
 
