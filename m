@@ -1,53 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbXKWMak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXKWMh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbXKWMak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 07:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXKWMac
+	id S1756801AbXKWMh6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 07:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXKWMht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 07:30:32 -0500
-Received: from www.tglx.de ([62.245.132.106]:59489 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752209AbXKWMab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 07:30:31 -0500
-Date: Fri, 23 Nov 2007 13:30:15 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: NOHZ: local_softirq_pending 20
-In-Reply-To: <20071123112442.GA12047@bre-cln-ukleine.digi.com>
-Message-ID: <alpine.LFD.0.9999.0711231323490.26417@localhost.localdomain>
-References: <20071123112442.GA12047@bre-cln-ukleine.digi.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-690791884-1195821016=:26417"
+	Fri, 23 Nov 2007 07:37:49 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:52408 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbXKWMhs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 07:37:48 -0500
+Date: Fri, 23 Nov 2007 13:37:39 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.24-rc3-mm1] IPC/semaphores: consolidate SEM_STAT and
+ IPC_STAT commands
+Message-Id: <20071123133739.330189e4.pierre.peiffer@bull.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 13:45:01,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 13:45:03,
+	Serialize complete at 23/11/2007 13:45:03
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-690791884-1195821016=:26417
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+These both commands (SEM_STAT and IPC_STAT) are rather doing the same things
+(only the meaning of the id given as input and the return value differ).
+However, for the semaphores, they are handled in two different places
+(two different functions).
 
-On Fri, 23 Nov 2007, Uwe Kleine-König wrote:
-> my kernel reported:
-> 
-> 	NOHZ: local_softirq_pending 20
+This patch consolidates this for clarification by handling these both
+commands in the same place in semctl_nolock(). It also removes one
+unused parameter for this function.
 
-Thats TASKLET_SOFTIRQ
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+---
+
+ ipc/sem.c |   38 ++++++++++++++++----------------------
+ 1 file changed, 16 insertions(+), 22 deletions(-)
+
+Index: b/ipc/sem.c
+===================================================================
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -599,8 +599,8 @@ static unsigned long copy_semid_to_user(
+ 	}
+ }
  
-> I cannot interpret it, but probably this is bad, because before
-> bc5393a6c9c0e70b4b43fb2fb63e3315e9a15c8f this used to BUG().
+-static int semctl_nolock(struct ipc_namespace *ns, int semid, int semnum,
+-		int cmd, int version, union semun arg)
++static int semctl_nolock(struct ipc_namespace *ns, int semid,
++			 int cmd, int version, union semun arg)
+ {
+ 	int err = -EINVAL;
+ 	struct sem_array *sma;
+@@ -639,14 +639,23 @@ static int semctl_nolock(struct ipc_name
+ 			return -EFAULT;
+ 		return (max_id < 0) ? 0: max_id;
+ 	}
++	case IPC_STAT:
+ 	case SEM_STAT:
+ 	{
+ 		struct semid64_ds tbuf;
+ 		int id;
+ 
+-		sma = sem_lock(ns, semid);
+-		if (IS_ERR(sma))
+-			return PTR_ERR(sma);
++		if (cmd == SEM_STAT) {
++			sma = sem_lock(ns, semid);
++			if (IS_ERR(sma))
++				return PTR_ERR(sma);
++			id = sma->sem_perm.id;
++		} else {
++			sma = sem_lock_check(ns, semid);
++			if (IS_ERR(sma))
++				return PTR_ERR(sma);
++			id = 0;
++		}
+ 
+ 		err = -EACCES;
+ 		if (ipcperms (&sma->sem_perm, S_IRUGO))
+@@ -656,8 +665,6 @@ static int semctl_nolock(struct ipc_name
+ 		if (err)
+ 			goto out_unlock;
+ 
+-		id = sma->sem_perm.id;
+-
+ 		memset(&tbuf, 0, sizeof(tbuf));
+ 
+ 		kernel_to_ipc64_perm(&sma->sem_perm, &tbuf.sem_perm);
+@@ -792,19 +799,6 @@ static int semctl_main(struct ipc_namesp
+ 		err = 0;
+ 		goto out_unlock;
+ 	}
+-	case IPC_STAT:
+-	{
+-		struct semid64_ds tbuf;
+-		memset(&tbuf,0,sizeof(tbuf));
+-		kernel_to_ipc64_perm(&sma->sem_perm, &tbuf.sem_perm);
+-		tbuf.sem_otime  = sma->sem_otime;
+-		tbuf.sem_ctime  = sma->sem_ctime;
+-		tbuf.sem_nsems  = sma->sem_nsems;
+-		sem_unlock(sma);
+-		if (copy_semid_to_user (arg.buf, &tbuf, version))
+-			return -EFAULT;
+-		return 0;
+-	}
+ 	/* GETVAL, GETPID, GETNCTN, GETZCNT, SETVAL: fall-through */
+ 	}
+ 	err = -EINVAL;
+@@ -971,15 +965,15 @@ asmlinkage long sys_semctl (int semid, i
+ 	switch(cmd) {
+ 	case IPC_INFO:
+ 	case SEM_INFO:
++	case IPC_STAT:
+ 	case SEM_STAT:
+-		err = semctl_nolock(ns,semid,semnum,cmd,version,arg);
++		err = semctl_nolock(ns, semid, cmd, version, arg);
+ 		return err;
+ 	case GETALL:
+ 	case GETVAL:
+ 	case GETPID:
+ 	case GETNCNT:
+ 	case GETZCNT:
+-	case IPC_STAT:
+ 	case SETVAL:
+ 	case SETALL:
+ 		err = semctl_main(ns,semid,semnum,cmd,version,arg);
 
-We removed the BUG, because it's a situation where the kernel can
-easily recover. It should never happen that the kernel goes to sleep
-with a pending softirq, but it's not a fatal error.
-
-> This happend while having a high load.  Up to now it only happend once
-> and I cannot reproduce it.
-
-That's hard to tell then. Without a reproducible test case I can not
-do much to help debugging this.
-
-   tglx
---8323328-690791884-1195821016=:26417--
+-- 
+Pierre Peiffer
