@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbXKWRvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXKWRwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479AbXKWRvJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 12:51:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbXKWRu5
+	id S1757538AbXKWRwn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 12:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXKWRwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 12:50:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33899 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbXKWRu5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 12:50:57 -0500
-Date: Fri, 23 Nov 2007 17:50:53 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: David Chinner <dgc@sgi.com>
-Cc: xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/9] Don't block pdflush when flushing inodes
-Message-ID: <20071123175053.GA12649@infradead.org>
-References: <20071122003817.GK114266761@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122003817.GK114266761@sgi.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 23 Nov 2007 12:52:33 -0500
+Received: from smtp8-g19.free.fr ([212.27.42.65]:41981 "EHLO smtp8-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752890AbXKWRwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 12:52:31 -0500
+X-Greylist: delayed 37317 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Nov 2007 12:52:31 EST
+Message-ID: <4747135C.60205@free.fr>
+Date: Fri, 23 Nov 2007 18:52:28 +0100
+From: Laurent Riffard <laurent.riffard@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
+MIME-Version: 1.0
+To: Hannes Reinecke <hare@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<4744A6F2.4030302@free.fr> <20071121144116.c932727b.akpm@linux-foundation.org> <4746814F.80502@free.fr> <4746866B.5070207@suse.de> <4746BB9D.2030508@suse.de>
+In-Reply-To: <4746BB9D.2030508@suse.de>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +++ 2.6.x-xfs-new/fs/xfs/xfs_inode.c	2007-11-22 10:33:51.037704348 +1100
-> @@ -183,12 +183,20 @@ xfs_imap_to_bp(
->  	int		ni;
->  	xfs_buf_t	*bp;
->  
-> +	if (buf_flags == 0)
-> +		buf_flags = XFS_BUF_LOCK;
+Le 23.11.2007 12:38, Hannes Reinecke a écrit :
+> Hannes Reinecke wrote:
+>> Laurent Riffard wrote:
+>>> Le 21.11.2007 23:41, Andrew Morton a écrit :
+>>>> On Wed, 21 Nov 2007 22:45:22 +0100
+>>>> Laurent Riffard <laurent.riffard@free.fr> wrote:
+>>>>
+>>>>> Le 21.11.2007 05:45, Andrew Morton a écrit :
+>>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/
+>>>>> Hello, 
+>>>>>
+>>>>> My system hangs shortly after I logged in Gnome desktop. SysRq-W shows
+>>>>> that a bunch of task are blocked in "D" state, they seem to wait for
+>>>>> some I/O completion. I can try to hand-copy some data if requested.
+>>>>>
+>>>>> I found these messages in dmesg:
+>>>>>
+>>>>> ~$ grep -C2 end_request dmesg-2.6.24-rc3-mm1 
+>>>>> EXT3-fs: mounted filesystem with ordered data mode.
+>>>>> sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+>>>>> end_request: I/O error, dev sda, sector 16460
+>>>>> ReiserFS: sda7: found reiserfs format "3.6" with standard journal
+>>>>> ReiserFS: sda7: using ordered data mode
+>>>>> --
+>>>>> ReiserFS: sda7: Using r5 hash to sort names
+>>>>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+>>>>> end_request: I/O error, dev sdb, sector 19632
+>>>>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+>>>>> end_request: I/O error, dev sdb, sector 40037363
+>>>>> Adding 1048568k swap on /dev/mapper/vglinux1-lvswap.  Priority:-1 extents:1 across:1048568k
+>>>>> lp0: using parport0 (interrupt-driven).
+>>>>>
+>>>>> These errors occur *only* with 2.6.24-rc3-mm1, they are 100% reproducible.
+>>>>> 2.6.24-rc3 and 2.6.24-rc2-mm1 are fine.
+>>>>>
+>>>>> Maybe something is broken in pata_via driver ?
+>>>>>
+>>>> Could be - libata-reimplement-ata_acpi_cbl_80wire-using-ata_acpi_gtm_xfermask.patch
+>>>> and pata_amd-pata_via-de-couple-programming-of-pio-mwdma-and-udma-timings.patch
+>>>> touch pata_via.c.
+>>> None of the above...
+>>>
+>>> I did a bisection, it spotted git-scsi-misc.patch. 
+>>> I just run 2.6.24-rc3-mm1 + revert-git-scsi-misc.patch, and it works fine.
+>>>
+>>> I guess commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0 "[SCSI] Do not 
+>>> requeue requests if REQ_FAILFAST is set" is the real culprit. The other 
+>>> commits are touching documentation or drivers I don't use. I'll try 
+>>> to revert only this one this evening.
 
-There's just two caller and they never pass 0, so this is not needed.
+I can confirm : reverting commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0 
+does fix the problem.
 
-> +	error = xfs_itobp_flags(mp, NULL, ip, &dip, &bp, 0, 0,
-> +				(noblock) ? XFS_BUF_TRYLOCK : XFS_BUF_LOCK);
+>> Hmm. Weird. I'll have a look into it. Apparently I'll be returning an error where
+>> I shouldn't. Checking ...
+>>
+> Ok, found it. We are blocking even special commands (ie requests with PREEMPT not set)
+> when FAILFAST is set. Which is clearly wrong. The attached patch fixes this.
 
-no need for the braces around noblock.
+Sorry, it's not enough. 2.6.24-rc3-mm1 + your patch still hangs with I/O errors.
 
-> +int		xfs_itobp_flags(struct xfs_mount *, struct xfs_trans *,
->  			  xfs_inode_t *, struct xfs_dinode **, struct xfs_buf **,
-> -			  xfs_daddr_t, uint);
-> +			  xfs_daddr_t, uint, uint);
-> +#define xfs_itobp(mp, tp, ip, dipp, bpp, bno, iflags)	\
-> +	xfs_itobp_flags(mp, tp, ip, dipp, bpp, bno, iflags, XFS_BUF_LOCK)
-
-I'd say just convert xfs_itobp and all it's user to take the additional
-argument.
+-- 
+laurent
 
