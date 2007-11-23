@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbXKWE6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbXKWFTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbXKWE6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 23:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXKWE6I
+	id S1754012AbXKWFTX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 00:19:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbXKWFTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 23:58:08 -0500
-Received: from thunk.org ([69.25.196.29]:45957 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbXKWE6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 23:58:06 -0500
-Date: Thu, 22 Nov 2007 23:57:27 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Arjan van de Ven <arjan@infradead.org>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Why is FIBMAP ioctl root only?
-Message-ID: <20071123045727.GB21854@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>, Jan Kara <jack@suse.cz>,
-	linux-kernel@vger.kernel.org
-References: <20071122181714.GB6299@atrey.karlin.mff.cuni.cz> <20071122102951.24e4e781@laptopd505.fenrus.org> <20071122195620.79c6ecf1@the-village.bc.nu>
+	Fri, 23 Nov 2007 00:19:14 -0500
+Received: from partizan.velesys.com ([213.184.230.195]:57284 "EHLO
+	partizan.velesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbXKWFTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 00:19:13 -0500
+Date: Fri, 23 Nov 2007 07:19:55 +0200
+From: "Kirill A. Shutemov" <k.shutemov@velesys.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Marin Mitov <mitov@issp.bas.bg>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] 2.6.24-rc3-mm1: usb mouse doesn't work
+Message-ID: <20071123051955.GA28946@localhost.localdomain>
+References: <200711221941.44646.mitov@issp.bas.bg> <Pine.LNX.4.44L0.0711222148590.5327-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BXVAT5kNtrzKuDFl"
 Content-Disposition: inline
-In-Reply-To: <20071122195620.79c6ecf1@the-village.bc.nu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <Pine.LNX.4.44L0.0711222148590.5327-100000@netrider.rowland.org>
+X-Operating-System: ALT Linux Sisyphus (20070101) (Kernel
+	2.6.18-std-smp-alt8)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 22, 2007 at 07:56:20PM +0000, Alan Cox wrote:
-> > probably principle of least privilege; the location on physical media
-> > for a file is clearly something internal to the OS, and non-trusted
-> > users normally don't have any business knowing that. 
-> 
-> FIBMAP isn't correctly locked against misuse, and that requires FIBMAP is
-> safe against truncate and relocation. There was thread on l/k about this
-> a month ago or so.
-> 
-> Its also the wrong API (32bit, no notion of extents, compression etc)
 
-The right approach would be to create a new syscall, and a new entry
-point in the inode operations table, and filesystems could provide
-support for the new system call as their bmap code was audited for
-correctness.  
+--BXVAT5kNtrzKuDFl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-For bonus points the new interface would also provide make it more
-efficient for filesystems to return information about extents.  (i.e.,
-Not only is logical block 150 mapped to physical block 5550, it is
-part of an 200 block extent starting at logical block 0 to physical
-block 5400.)
+On [Thu, 22.11.2007 21:51], Alan Stern wrote:
+> On Thu, 22 Nov 2007, Marin Mitov wrote:
+>=20
+> > > > > I've had some strangenesses with USB lately.  Sometimes running `=
+lsusb'
+> > > > > makes the USB system notice a newly attached device.
+> > > >
+> > > > No. But I have new messages in dmesg:
+> > > >
+> > > > uhci_hcd 0000:00:1d.3: FGR not stopped yet!
+> > > > uhci_hcd 0000:00:1d.2: FGR not stopped yet!
+> > > > uhci_hcd 0000:00:1d.1: FGR not stopped yet!
+> > > > uhci_hcd 0000:00:1d.0: FGR not stopped yet!
+> > > >
+> > > > > Is that "FGR not stopped yet!" messgae new behaviour?
+> > > >
+> > > > It is a new message since 2.6.24-rc3. I have never try -mm tree bef=
+ore.
+> > >
+> > > These messages could indicate a timing problem.  You can see the code
+> > > that writes the messages near the end of wakeup_rh() in
+> > > drivers/usb/host/uhci-hcd.c.
+> > >
+> > > The message gets written if the controller hardware hasn't turned off=
+ a
+> > > particular bit after a 4-us delay.  If the udelay() function wasn't
+> > > working right, it could cause this problem.
+> >=20
+> > udelay() _is_ OK for 2.6.24-rc3, so it is not the cause of the problem
+>=20
+> But is it OK for 2.6.24-rc3-mm1?  Kirill said specifically that=20
+> 2.6.24-rc3 does not display the message but 2.6.24-rc3-mm1 does.
 
-						- Ted
+How can I test it?
+
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + Velesys LLC, http://www.velesys.com/
+ + ALT Linux Team, http://www.altlinux.com/
+
+--BXVAT5kNtrzKuDFl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHRmL6bWYnhzC5v6oRAo56AJ9VaETfNesvewi6kfvm9vCRejfyPwCfVXIj
+jHwrzSKl0iTG63JUH8d0nUg=
+=OZnh
+-----END PGP SIGNATURE-----
+
+--BXVAT5kNtrzKuDFl--
