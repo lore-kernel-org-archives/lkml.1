@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbXKWMkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbXKWNKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757089AbXKWMkI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 07:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbXKWMj5
+	id S1756599AbXKWNKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 08:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXKWNKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 07:39:57 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:9157 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755578AbXKWMj4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 07:39:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LqE7G6S5PuLo6wxhVXO6H74z7fjLFvF06vw2EgXOzIu1HccSrajmswzxfHQkwOC+oEg/P+jzvJfDGzvhkighaSSpc8+amsKa2EOuqeQnxRZijij5783Iy5HkIlbEaw4WqdVgMXuoNzIUODMEYRX0xVBjaQOJX82cyYPNVShMQ2g=
-Message-ID: <cfd18e0f0711230439m1d72abdle4d5050b0bd935a1@mail.gmail.com>
-Date: Fri, 23 Nov 2007 13:39:55 +0100
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Where is the new timerfd?
-Cc: "Davide Libenzi" <davidel@xmailserver.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071122173437.e74890a8.akpm@linux-foundation.org>
+	Fri, 23 Nov 2007 08:10:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36455 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752285AbXKWNKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 08:10:19 -0500
+Date: Fri, 23 Nov 2007 14:09:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Arjan van de Ven <arjan@infradead.org>, Mark Lord <lkml@rtr.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_IRQBALANCE for 64-bit x86 ?
+Message-ID: <20071123130952.GA6320@elte.hu>
+References: <47425EA5.7000607@rtr.ca> <200711210243.46944.nickpiggin@yahoo.com.au> <20071120110726.4cc2995e@laptopd505.fenrus.org> <200711221854.15516.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
-	 <Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
-	 <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
-	 <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
-	 <20071122162430.48f55995.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
-	 <20071122173437.e74890a8.akpm@linux-foundation.org>
+In-Reply-To: <200711221854.15516.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 22 Nov 2007 16:35:38 -0800 (PST) Davide Libenzi
-> <davidel@xmailserver.org> wrote:
->
-> > On Thu, 22 Nov 2007, Andrew Morton wrote:
-[...]
-> > > Last I recall, we removed the API for 2.6.23 because we intended to do a
-> > > different interface for 2.6.24.
-> > >
-> > > But I don't recall seeing any timerfd patches in maybe a month.
-> >
-> > Was sent on Sep 23, Subject: new timerfd API
->
-> Half of us weren't born then ;)
->
-> > Do you want me to repost?
->
-> yes please.
 
-I suppose this means that timerfd will only go in for 2.6.25.  I don't
-have a problem with that, but we better make sure that the existing
-timerfd in 2.6.24 is still disabled.  (Andrew had a one liner for
-that, but I haven't checked if it's in place.)
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Cheers,
+> Ahh, hate to get off topic, but let's not perpetuate this myth. It 
+> wasn't Con, or CFS, or anything that showed fairness is some great new 
+> idea. Actually I was arguing for fairness first, against both Con and 
+> Ingo, way back when the old scheduler was having so much problems.
+> 
+> Not that I am trying to claim the idea for myself. Fairness is like 
+> the most fundamental and obvious behaviour for any sort of resource 
+> scheduler that I have to laugh when people get "credited" with this 
+> idea.
 
-Michael
+just out of curiosity (and to get my own sense of history corrected), do 
+you remember in which thread you said that? (and even better, could you 
+dig out any URLs for that thread?)
+
+btw., the question was never really whether fairness was a good idea for 
+a resource scheduler - the question was whether _strict fairness_ was a 
+good idea for a general purpose OS (and the desktop in particular). My 
+point back then was that strict fairness is not good enough and that we 
+thus need the interactivity estimator - and i still maintain the first 
+half of that position while conceding that i was wrong about the second 
+part :-)
+
+I dont think anyone was arguing for a scheduler with no fairness at all 
+- but "fairness" indeed was more of an after-thought, not the driving 
+principle.
+
+Current CFS uses a modified "sleeper fairness" model (not a strict 
+fairness model) via which we in essence replace the effect of the 
+interactivity estimator with "sleeper fairness". So in essence we've 
+replaced the O(1) scheduler's sleep average code with a deterministic 
+sleep average code. This in turn also made the allocation of CPU time 
+deterministic throughout. (which in other words can also be called "fair 
+allocation of CPU time")
+
+_That_ scheme seems to behave rather well in practice and i think i can 
+take credit for _that_ bit ;-) [many people have hacked upon that 
+concept and code since then so it's nowhere near "my code" anymore, of 
+course.]
+
+	Ingo
