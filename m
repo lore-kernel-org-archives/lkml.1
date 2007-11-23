@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXKWEEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbXKWENV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbXKWEEA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 23:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXKWEDw
+	id S1755490AbXKWENV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 23:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXKWENJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 23:03:52 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:51786 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752255AbXKWEDv (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 23:03:51 -0500
-Date: Fri, 23 Nov 2007 15:03:29 +1100
-From: David Chinner <dgc@sgi.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Chinner <dgc@sgi.com>, Stewart Smith <stewart@mysql.com>,
-       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071123040329.GB114266761@sgi.com>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <1195702123.8369.78.camel@localhost.localdomain> <20071122120611.GA3573@one.firstfloor.org> <20071122131539.GX114266761@sgi.com> <20071123025317.GA12257@one.firstfloor.org>
+	Thu, 22 Nov 2007 23:13:09 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39785 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753032AbXKWENH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 23:13:07 -0500
+Date: Thu, 22 Nov 2007 20:12:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1
+Message-Id: <20071122201250.f957e280.akpm@linux-foundation.org>
+In-Reply-To: <47462F3C.3040700@googlemail.com>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	<47462F3C.3040700@googlemail.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071123025317.GA12257@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 03:53:17AM +0100, Andi Kleen wrote:
-> On Fri, Nov 23, 2007 at 12:15:39AM +1100, David Chinner wrote:
-> > On Thu, Nov 22, 2007 at 01:06:11PM +0100, Andi Kleen wrote:
-> > > > FWIW from a "real time" database POV this seems to make sense to me...
-> > > > in fact, we probably rely on filesystem metadata way too much
-> > > > (historically it's just "worked".... although we do seem to get issues
-> > > > on ext3).
-> > > 
-> > > For that case you really would need priority inheritance: any metadata
-> > > IO on behalf or blocking a process needs to use the process' block IO 
-> > > priority.
-> > 
-> > How do you do that when the processes are blocking on semaphores,
-> > mutexes or rw-semaphores in the fileysystem three layers removed from
-> > the I/O in progress?
+On Fri, 23 Nov 2007 02:39:08 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
+
+> I have some warnings on each SCSI disc:
 > 
-> [...] I didn't say it was easy (or rather explicitely said it would be tricky).
-> Probably it would be possible to fold it somehow into rt mutexes PI,
-> but it's not easy and semaphores would need to be handled too.
 > 
-> Just my point was to solve the metadata RT problem unconditionally increasing
-> the priority is a bad idea and not really a replacement to a "full"
-> solution. Short term a user can just increase the priority of all the XFS 
-> threads anyways.
+> ...
+> 
+> [   30.724410] scsi 0:0:0:0: Direct-Access     SEAGATE  ST318406LW       0109 PQ: 0 ANSI: 3
+> [   30.724419] scsi0:A:0:0: Tagged Queuing enabled.  Depth 32
+> [   30.724435]  target0:0:0: Beginning Domain Validation
+> [   30.724446]  target0:0:0: Domain Validation Initial Inquiry Failed <--
+> [   30.724572]  target0:0:0: Ending Domain Validation
+> [   30.729747] scsi 0:0:1:0: Direct-Access     FUJITSU  MAH3182MP        0114 PQ: 0 ANSI: 4
+> [   30.729754] scsi0:A:1:0: Tagged Queuing enabled.  Depth 32
+> [   30.729771]  target0:0:1: Beginning Domain Validation
+> [   30.729780]  target0:0:1: Domain Validation Initial Inquiry Failed <--
+> [   30.729908]  target0:0:1: Ending Domain Validation
+> 
 
-The point is that it's not actually a thread-based problem - the priority
-can't be inherited via the traditional mutex-like manner. There is no
-connection between a thread and an I/o it has already issued and so you
-can't transfer a priority from a blocked thread to an issued-but-blocked
-i/o....
+Don't know what would have caused that.  But yes, something is wrong in
+scsi land.
 
-Cheers,
+> 
+> no idea whatever this is related but buffered disk reads are 2.XX MB/sec and the box is somewhat laggy.
+> 
+> hdparm -t on sda and sdb reports :
+> 
+> /dev/sda:
+>  Timing buffered disk reads:    8 MB in  3.26 seconds =   2.46 MB/sec
+> 
+> /dev/sdb:
+>  Timing buffered disk reads:    8 MB in  3.56 seconds =   2.25 MB/sec
+> 
+> My IDE discs are fine.
+> 
+> Please let me know if you need my config or any other informations.
+> 
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+And you're the second to report very slow scsi throughput in 2.6.24-rc3-mm1.
