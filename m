@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbXKWI7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbXKWI74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbXKWI7d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 03:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXKWI7Z
+	id S1756071AbXKWI74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 03:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXKWI7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 03:59:25 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43349 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753135AbXKWI7Z (ORCPT
+	Fri, 23 Nov 2007 03:59:47 -0500
+Received: from mail-in-16.arcor-online.net ([151.189.21.56]:40125 "EHLO
+	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753284AbXKWI7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 03:59:25 -0500
-To: jdike@addtoit.com
-CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-reply-to: <20071122235141.GA7876@c2.user-mode-linux.org> (message from Jeff
-	Dike on Thu, 22 Nov 2007 18:51:41 -0500)
-Subject: Re: uml doesn't work on 2.6.24-rc2
-References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu> <20071114011002.GA11477@c2.user-mode-linux.org> <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu> <20071114142247.GA5848@c2.user-mode-linux.org> <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu> <20071114173639.GA7899@c2.user-mode-linux.org> <E1IsPo5-0008RU-00@dorka.pomaz.szeredi.hu> <20071116170630.GA9299@c2.user-mode-linux.org> <E1IvGTn-0007cC-7q@dorka.pomaz.szeredi.hu> <20071122235141.GA7876@c2.user-mode-linux.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1IvUNW-0000a5-Vg@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 23 Nov 2007 09:59:14 +0100
+	Fri, 23 Nov 2007 03:59:46 -0500
+Date: Fri, 23 Nov 2007 09:59:43 +0100
+From: Andreas Herrmann <aherrman@arcor.de>
+To: "Kirill A. Shutemov" <k.shutemov@velesys.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc3-mm1
+Message-ID: <20071123085943.GA5306@devil>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <20071122102205.GD7085@localhost.localdomain> <20071122161826.61515a6d.akpm@linux-foundation.org> <alpine.LFD.0.9999.0711230146190.25057@localhost.localdomain> <20071123060544.GB28946@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071123060544.GB28946@localhost.localdomain>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Nov 22, 2007 at 07:08:47PM +0100, Miklos Szeredi wrote:
-> > Thanks.  My other problem is (probably you are aware) that recent -mm
-> > kernels don't compile for UML.
+On Fri, Nov 23, 2007 at 08:05:44AM +0200, Kirill A. Shutemov wrote:
+> On [Fri, 23.11.2007 01:48], Thomas Gleixner wrote:
+> > On Thu, 22 Nov 2007, Andrew Morton wrote:
+> > 
+> > > On Thu, 22 Nov 2007 12:22:05 +0200 "Kirill A. Shutemov" <k.shutemov@velesys.com> wrote:
+> > > 
+> > > > On x86_64 'uname -m' return 'x86'.  It break many userspace programs. apt
+> > > > and rpm for example.
+> > > > 
+> > > 
+> > > Yes, there have been various discussions about this.  I think Sam is cooking up
+> > > a fix?
+> > 
+> > http://lkml.org/lkml/2007/11/19/323
+> > 
+> > I push it Linus wards ASAP.
+> diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+> index 116b03a..7aa1dc6 100644
+> --- a/arch/x86/Makefile
+> +++ b/arch/x86/Makefile
+> @@ -11,10 +11,9 @@ endif
+>  $(srctree)/arch/x86/Makefile%: ;
+>  
+>  ifeq ($(CONFIG_X86_32),y)
+> +        UTS_MACHINE := i386
+>          include $(srctree)/arch/x86/Makefile_32
+>  else
+> +        UTS_MACHINE := x86_64
+>          include $(srctree)/arch/x86/Makefile_64
+>  endif
 > 
-> The patch below fixes the build for rc3-mm1 for me.
+> Many programs expect i686 on Pentium II.
 
-Yeah, I got as far as that (sorry about the incomplete report), but
-then I got stuck on this:
 
-  CC      arch/um/kernel/asm-offsets.s
-In file included from include/asm/arch/atomic.h:2,
-                 from include/asm/atomic.h:9,
-                 from include/linux/spinlock.h:333,
-                 from include/linux/seqlock.h:29,
-                 from include/linux/time.h:8,
-                 from include/linux/timex.h:57,
-                 from include/linux/sched.h:53,
-                 from arch/um/include/sysdep/kernel-offsets.h:2,
-                 from arch/um/kernel/asm-offsets.c:1:
-include/asm/arch/atomic_32.h: In function ‘atomic_add_unless’:
-include/asm/arch/atomic_32.h:241: error: ‘struct cpuinfo_um’ has no member named ‘x86’
-In file included from include/asm/rwsem.h:4,
-                 from include/linux/rwsem.h:24,
-                 from include/linux/mm_types.h:11,
-                 from include/linux/sched.h:60,
-                 from arch/um/include/sysdep/kernel-offsets.h:2,
-                 from arch/um/kernel/asm-offsets.c:1:
-include/asm/arch/rwsem.h: In function ‘__down_write_trylock’:
-include/asm/arch/rwsem.h:165: error: ‘struct cpuinfo_um’ has no member named ‘x86’
+Yes, but this is done during boot.
+Then the kernel overwrites "i386" to become "i686" for such CPUs.
+That is why I've seen "x66" after boot when UTS_MACHINE at build-time
+was "x86" with 'make ARCH=x86'.
+For more details see:
 
-Same config I sent previously.
+http://marc.info/?l=linux-kernel&m=119521309415545&w=2
 
-Miklos
+
+Regards,
+
+Andreas
+
