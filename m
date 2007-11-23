@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbXKWKcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbXKWKjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbXKWKcQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 05:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXKWKcE
+	id S1756247AbXKWKjf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 05:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbXKWKj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 05:32:04 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:44778 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbXKWKcB (ORCPT
+	Fri, 23 Nov 2007 05:39:27 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52450 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753559AbXKWKj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 05:32:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=IBj0XqDUDZT6RwWnDi3csxZg8H+NxOctEdEpYlBPSGW3BHrxp0Rter86XpERxm1snuZqu+PiqEDJO5NdMX30D4b/Jd1xpDOgYRJh1OVKLG3SuxDn5By3t0C1J/s8oq2PPzzzc65FW8pYbxvf61mThzyg25pWRZ3B/IpEdJ3yf9g=
-Message-ID: <84144f020711230232s5adf92c8if2b05d18a8585945@mail.gmail.com>
-Date: Fri, 23 Nov 2007 12:32:01 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "WANG Cong" <xiyou.wangcong@gmail.com>
-Subject: Re: [PROBLEM] uml doesn't compile on i386
-Cc: "Jeff Dike" <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071123101348.GC2488@hacking>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Nov 2007 05:39:26 -0500
+Date: Fri, 23 Nov 2007 10:36:55 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: niessner@jpl.nasa.gov, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Where is the interrupt going?
+Message-ID: <20071123103655.1ee713f1@the-village.bc.nu>
+In-Reply-To: <200711230258.56066.bzolnier@gmail.com>
+References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
+	<20071122164853.cfdplzj5o744sw40@webmail.jpl.nasa.gov>
+	<20071123012525.126010d5@the-village.bc.nu>
+	<200711230258.56066.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <84144f020711230052h2d0b8af8radbdf1d7b08a57e3@mail.gmail.com>
-	 <20071123101348.GC2488@hacking>
-X-Google-Sender-Auth: 18b8b429fc44ec7a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 23 Nov 2007 02:58:55 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-On Fri, Nov 23, 2007 at 10:52:06AM +0200, Pekka Enberg wrote:
-> > Current git head doesn't compile. Looks like fall-out from the x86 merge?
+> On Friday 23 November 2007, Alan Cox wrote:
+> > On Thu, 22 Nov 2007 16:48:53 -0800
+> > niessner@jpl.nasa.gov wrote:
+> > 
+> > > 
+> > > I tried the hammer and the problem persists.
+> > 
+> > See my earlier email - your driver registers the irq with IRQF_DISABLED
+> > then never enables it.
+> 
+> As already explained by Kyle IRQF_DISABLED shouldn't matter here.
+> 
+> [ Nowadays IRQF_DISABLED only tells kernel/irq/handle.c::handle_IRQ_event()
+>   to not enable local interrupts before calling your IRQ handler.
+> 
+>   I've recently removed IRQF_DISABLED from IDE after noticing this. ]
 
-On Nov 23, 2007 12:13 PM, WANG Cong <xiyou.wangcong@gmail.com> wrote:
-> Hmm, I believe this patch[1] from Jeff can solve the problem. ;-)
->
-> [1] http://lkml.org/lkml/2007/11/19/220
+Bartlomiej is of course correct. Thats what you get for replying late at
+night in a hurry.
 
-Thanks! Jeff, can we get this into mainline, please?
+I'm not sure IDE can work without it because you need to lock out the
+timer events (old IDE doesn't handle this at all on SMP though so it
+wants fixing properly anyway).
+
+Alan
