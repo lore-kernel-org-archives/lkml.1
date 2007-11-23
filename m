@@ -1,288 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbXKWQxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbXKWRJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbXKWQxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 11:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXKWQxA
+	id S1756428AbXKWRJX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 12:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbXKWRJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 11:53:00 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55345 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752408AbXKWQw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 11:52:59 -0500
-Date: Fri, 23 Nov 2007 17:52:50 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: [PATCH 2.6.24-rc3-mm1] IPC: consolidate sem_exit_ns(), msg_exit_ns
- and shm_exit_ns()
-Message-Id: <20071123175250.0f584913.pierre.peiffer@bull.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 23/11/2007 18:00:13,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 23/11/2007 18:00:14,
-	Serialize complete at 23/11/2007 18:00:14
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Nov 2007 12:09:09 -0500
+Received: from waste.org ([66.93.16.53]:39581 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752597AbXKWRJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 12:09:08 -0500
+Date: Fri, 23 Nov 2007 11:07:56 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
+Message-ID: <20071123170756.GV19691@waste.org>
+References: <4745DCD7.8070805@simon.arlott.org.uk> <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071123105518.GA22062@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Nov 23, 2007 at 01:55:19PM +0300, Evgeniy Polyakov wrote:
+> On Fri, Nov 23, 2007 at 12:21:57AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > > [2059664.615816] __iptables__: init4 IN=ppp0 OUT=ppp0 WARNING: at kernel/softirq.c:139 local_bh_enable()
+> > > [2059664.620535]  [<80120364>] local_bh_enable+0x3c/0x97
+> 
+> > > [2059664.620657]  [<8011c205>] __call_console_drivers+0x61/0x6d
+> > > [2059664.620669]  [<8011c3fc>] release_console_sem+0x164/0x1bf
+> > > [2059664.620679]  [<8011c81f>] vprintk+0x27a/0x2ff
+>  
+> > If that trace is to be beieved we're doing nefilter stuff on packets which
+> > were sent across netconsole.
+> > 
+> > This probably isn't anything the netfilter guys have thought about.  And
+> > probably we don't want them to.  Is there some simple way in which we can
+> > exempt netconsole from netfilter processing?
+> 
+> This is not about netfilter, but about freeing skb in interrupt context, 
+> which is not allowed, and in interrupt skbs are queued to be freed in softirq,
+> but netcnsole wants to flush softirq freeing queue. That is a question: why?
 
-sem_exit_ns(), msg_exit_ns() and shm_exit_ns() are all called when an ipc_namespace is
-released to free all ipcs of each type.
-But in fact, they do the same thing: they loop around all ipcs to free them
-individually by calling a specific routine.
+My memory here is hazy, but I think this exists to rescue netconsole
+in low-memory situations. This bit originated with Ingo, so maybe he
+can recall.
 
-This patch proposes to consolidate this by introducing a common function, free_ipcs(),
-that do the job. The specific routine to call on each individual ipcs is passed as
-parameter. For this, these ipc-specific 'free' routines are reworked to take a
-generic 'struct ipc_perm' as parameter.
+Netpoll can process an arbitrary number of skbs inside a single
+interrupt. Think sysrq-t at one packet per line or kgdboe where the
+entire trace session can happen inside one very long interrupt.
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
----
- include/linux/ipc_namespace.h |    5 ++++-
- ipc/msg.c                     |   28 +++++-----------------------
- ipc/namespace.c               |   30 ++++++++++++++++++++++++++++++
- ipc/sem.c                     |   27 +++++----------------------
- ipc/shm.c                     |   27 ++++++---------------------
- 5 files changed, 50 insertions(+), 67 deletions(-)
+Perhaps we can refine this to mark netpoll's skbs (perhaps with
+->destructor?) and delete only skbs we own. As these are never passed
+through any of the other route/xfrm/filter code, they should be safe
+to delete even in irq context, yes?
 
-Index: b/ipc/msg.c
-===================================================================
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -72,7 +72,7 @@ struct msg_sender {
- #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
- #define msg_buildid(id, seq)	ipc_buildid(id, seq)
- 
--static void freeque(struct ipc_namespace *, struct msg_queue *);
-+static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
- static int newque(struct ipc_namespace *, struct ipc_params *);
- #ifdef CONFIG_PROC_FS
- static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
-@@ -91,26 +91,7 @@ void msg_init_ns(struct ipc_namespace *n
- #ifdef CONFIG_IPC_NS
- void msg_exit_ns(struct ipc_namespace *ns)
- {
--	struct msg_queue *msq;
--	struct kern_ipc_perm *perm;
--	int next_id;
--	int total, in_use;
--
--	down_write(&msg_ids(ns).rw_mutex);
--
--	in_use = msg_ids(ns).in_use;
--
--	for (total = 0, next_id = 0; total < in_use; next_id++) {
--		perm = idr_find(&msg_ids(ns).ipcs_idr, next_id);
--		if (perm == NULL)
--			continue;
--		ipc_lock_by_ptr(perm);
--		msq = container_of(perm, struct msg_queue, q_perm);
--		freeque(ns, msq);
--		total++;
--	}
--
--	up_write(&msg_ids(ns).rw_mutex);
-+	free_ipcs(ns, &msg_ids(ns), freeque);
- }
- #endif
- 
-@@ -274,9 +255,10 @@ static void expunge_all(struct msg_queue
-  * msg_ids.rw_mutex (writer) and the spinlock for this message queue are held
-  * before freeque() is called. msg_ids.rw_mutex remains locked on exit.
-  */
--static void freeque(struct ipc_namespace *ns, struct msg_queue *msq)
-+static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- {
- 	struct list_head *tmp;
-+	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
- 
- 	expunge_all(msq, -EIDRM);
- 	ss_wakeup(&msq->q_senders, 1);
-@@ -582,7 +564,7 @@ asmlinkage long sys_msgctl(int msqid, in
- 		break;
- 	}
- 	case IPC_RMID:
--		freeque(ns, msq);
-+		freeque(ns, &msq->q_perm);
- 		break;
- 	}
- 	err = 0;
-Index: b/ipc/namespace.c
-===================================================================
---- a/ipc/namespace.c
-+++ b/ipc/namespace.c
-@@ -44,6 +44,36 @@ struct ipc_namespace *copy_ipcs(unsigned
- 	return new_ns;
- }
- 
-+/*
-+ * free_ipcs - free all ipcs of one type
-+ * @ns:   the namespace to remove the ipcs from
-+ * @ids:  the table of ipcs to free
-+ * @free: the function called to free each individual ipc
-+ *
-+ * Called for each kind of ipc when an ipc_namespace exits.
-+ */
-+void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
-+	       void (*free)(struct ipc_namespace *, struct kern_ipc_perm *))
-+{
-+	struct kern_ipc_perm *perm;
-+	int next_id;
-+	int total, in_use;
-+
-+	down_write(&ids->rw_mutex);
-+
-+	in_use = ids->in_use;
-+
-+	for (total = 0, next_id = 0; total < in_use; next_id++) {
-+		perm = idr_find(&ids->ipcs_idr, next_id);
-+		if (perm == NULL)
-+			continue;
-+		ipc_lock_by_ptr(perm);
-+		free(ns, perm);
-+		total++;
-+	}
-+	up_write(&ids->rw_mutex);
-+}
-+
- void free_ipc_ns(struct kref *kref)
- {
- 	struct ipc_namespace *ns;
-Index: b/ipc/sem.c
-===================================================================
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -94,7 +94,7 @@
- #define sem_buildid(id, seq)	ipc_buildid(id, seq)
- 
- static int newary(struct ipc_namespace *, struct ipc_params *);
--static void freeary(struct ipc_namespace *, struct sem_array *);
-+static void freeary(struct ipc_namespace *, struct kern_ipc_perm *);
- #ifdef CONFIG_PROC_FS
- static int sysvipc_sem_proc_show(struct seq_file *s, void *it);
- #endif
-@@ -129,25 +129,7 @@ void sem_init_ns(struct ipc_namespace *n
- #ifdef CONFIG_IPC_NS
- void sem_exit_ns(struct ipc_namespace *ns)
- {
--	struct sem_array *sma;
--	struct kern_ipc_perm *perm;
--	int next_id;
--	int total, in_use;
--
--	down_write(&sem_ids(ns).rw_mutex);
--
--	in_use = sem_ids(ns).in_use;
--
--	for (total = 0, next_id = 0; total < in_use; next_id++) {
--		perm = idr_find(&sem_ids(ns).ipcs_idr, next_id);
--		if (perm == NULL)
--			continue;
--		ipc_lock_by_ptr(perm);
--		sma = container_of(perm, struct sem_array, sem_perm);
--		freeary(ns, sma);
--		total++;
--	}
--	up_write(&sem_ids(ns).rw_mutex);
-+	free_ipcs(ns, &sem_ids(ns), freeary);
- }
- #endif
- 
-@@ -542,10 +524,11 @@ static int count_semzcnt (struct sem_arr
-  * as a writer and the spinlock for this semaphore set hold. sem_ids.rw_mutex
-  * remains locked on exit.
-  */
--static void freeary(struct ipc_namespace *ns, struct sem_array *sma)
-+static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- {
- 	struct sem_undo *un;
- 	struct sem_queue *q;
-+	struct sem_array *sma = container_of(ipcp, struct sem_array, sem_perm);
- 
- 	/* Invalidate the existing undo structures for this semaphore set.
- 	 * (They will be freed without any further action in exit_sem()
-@@ -926,7 +909,7 @@ static int semctl_down(struct ipc_namesp
- 
- 	switch(cmd){
- 	case IPC_RMID:
--		freeary(ns, sma);
-+		freeary(ns, ipcp);
- 		err = 0;
- 		break;
- 	case IPC_SET:
-Index: b/ipc/shm.c
-===================================================================
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -83,8 +83,11 @@ void shm_init_ns(struct ipc_namespace *n
-  * Called with shm_ids.rw_mutex (writer) and the shp structure locked.
-  * Only shm_ids.rw_mutex remains locked on exit.
-  */
--static void do_shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *shp)
-+static void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- {
-+	struct shmid_kernel *shp;
-+	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
-+
- 	if (shp->shm_nattch){
- 		shp->shm_perm.mode |= SHM_DEST;
- 		/* Do not find it any more */
-@@ -97,25 +100,7 @@ static void do_shm_rmid(struct ipc_names
- #ifdef CONFIG_IPC_NS
- void shm_exit_ns(struct ipc_namespace *ns)
- {
--	struct shmid_kernel *shp;
--	struct kern_ipc_perm *perm;
--	int next_id;
--	int total, in_use;
--
--	down_write(&shm_ids(ns).rw_mutex);
--
--	in_use = shm_ids(ns).in_use;
--
--	for (total = 0, next_id = 0; total < in_use; next_id++) {
--		perm = idr_find(&shm_ids(ns).ipcs_idr, next_id);
--		if (perm == NULL)
--			continue;
--		ipc_lock_by_ptr(perm);
--		shp = container_of(perm, struct shmid_kernel, shm_perm);
--		do_shm_rmid(ns, shp);
--		total++;
--	}
--	up_write(&shm_ids(ns).rw_mutex);
-+	free_ipcs(ns, &shm_ids(ns), do_shm_rmid);
- }
- #endif
- 
-@@ -832,7 +817,7 @@ asmlinkage long sys_shmctl (int shmid, i
- 		if (err)
- 			goto out_unlock_up;
- 
--		do_shm_rmid(ns, shp);
-+		do_shm_rmid(ns, &shp->shm_perm);
- 		up_write(&shm_ids(ns).rw_mutex);
- 		goto out;
- 	}
-Index: b/include/linux/ipc_namespace.h
-===================================================================
---- a/include/linux/ipc_namespace.h
-+++ b/include/linux/ipc_namespace.h
-@@ -43,7 +43,10 @@ extern struct ipc_namespace init_ipc_ns;
- #if defined(CONFIG_SYSVIPC) && defined(CONFIG_IPC_NS)
- extern void free_ipc_ns(struct kref *kref);
- extern struct ipc_namespace *copy_ipcs(unsigned long flags,
--						struct ipc_namespace *ns);
-+				       struct ipc_namespace *ns);
-+extern void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
-+		      void (*free)(struct ipc_namespace *,
-+				   struct kern_ipc_perm *));
- 
- static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
- {
+> Removing zap_completion_queue() from find_skb() will fix the warning,
+> but I'm not sure this is a correct fix. I've added Matt to the Cc list.
+
+Care to try the sysrq-t or OOM message tests?
 
 -- 
-Pierre Peiffer
+Mathematics is the supreme nostalgia of our time.
