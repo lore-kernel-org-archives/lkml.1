@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbXKWENV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbXKWEYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490AbXKWENV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 23:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXKWENJ
+	id S1755652AbXKWEYH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 23:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbXKWEXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 23:13:09 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39785 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753032AbXKWENH (ORCPT
+	Thu, 22 Nov 2007 23:23:55 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:46342 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753538AbXKWEXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 23:13:07 -0500
-Date: Thu, 22 Nov 2007 20:12:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1
-Message-Id: <20071122201250.f957e280.akpm@linux-foundation.org>
-In-Reply-To: <47462F3C.3040700@googlemail.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<47462F3C.3040700@googlemail.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 Nov 2007 23:23:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N9QVCVq199Isy5ytma8Avp6Y17ZTDtsJ7oq4d5y3HrbMamFCVc5et02+CL1d9bSdZsR7ptKZrI+aEvk4xvWbsf21gW5bETAhQz6sUMHwVcTQF3oLXvhqva/lYlTP4by/BU3W7cprgvVuZhxjdtADfVlLMHUjBikFeEBAwbxk74I=
+Message-ID: <aa79d98a0711222023l31cdec98o47f56e3c87886a02@mail.gmail.com>
+Date: Fri, 23 Nov 2007 07:23:54 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] PPC: CHRP - fix possible NULL pointer dereference
+Cc: PPCML <linuxppc-dev@ozlabs.org>, "Olof Johansson" <olof@lixom.net>,
+       "Paul Mackerras" <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071123101646.63550945.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071122195423.GA9877@cvg>
+	 <20071123101646.63550945.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Nov 2007 02:39:08 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
-
-> I have some warnings on each SCSI disc:
-> 
-> 
-> ...
-> 
-> [   30.724410] scsi 0:0:0:0: Direct-Access     SEAGATE  ST318406LW       0109 PQ: 0 ANSI: 3
-> [   30.724419] scsi0:A:0:0: Tagged Queuing enabled.  Depth 32
-> [   30.724435]  target0:0:0: Beginning Domain Validation
-> [   30.724446]  target0:0:0: Domain Validation Initial Inquiry Failed <--
-> [   30.724572]  target0:0:0: Ending Domain Validation
-> [   30.729747] scsi 0:0:1:0: Direct-Access     FUJITSU  MAH3182MP        0114 PQ: 0 ANSI: 4
-> [   30.729754] scsi0:A:1:0: Tagged Queuing enabled.  Depth 32
-> [   30.729771]  target0:0:1: Beginning Domain Validation
-> [   30.729780]  target0:0:1: Domain Validation Initial Inquiry Failed <--
-> [   30.729908]  target0:0:1: Ending Domain Validation
-> 
-
-Don't know what would have caused that.  But yes, something is wrong in
-scsi land.
-
-> 
-> no idea whatever this is related but buffered disk reads are 2.XX MB/sec and the box is somewhat laggy.
-> 
-> hdparm -t on sda and sdb reports :
-> 
-> /dev/sda:
->  Timing buffered disk reads:    8 MB in  3.26 seconds =   2.46 MB/sec
-> 
-> /dev/sdb:
->  Timing buffered disk reads:    8 MB in  3.56 seconds =   2.25 MB/sec
-> 
-> My IDE discs are fine.
-> 
-> Please let me know if you need my config or any other informations.
-> 
-
-And you're the second to report very slow scsi throughput in 2.6.24-rc3-mm1.
+On 11/23/07, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> On Thu, 22 Nov 2007 22:54:23 +0300 Cyrill Gorcunov <gorcunov@gmail.com>
+> wrote:
+> >
+> > This patch does fix possible NULL pointer dereference
+> > inside of strncmp() if of_get_property() failed.
+>
+> Thanks for this.
+>
+> >  static void __init sio_init(void)
+> >  {
+> >   struct device_node *root;
+> > + const char *model = NULL;
+>
+> You don't need this initialization as you always assign the variable
+> before you use it.
+>
+> > + root = of_find_node_by_path("/");
+> > + if (root) {
+>
+>  if (!root)
+>   return;
+>
+> would save a level of indentation. Not important.
+>
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+>
+Oh my :) Thanks. I'll fix it and resend.
