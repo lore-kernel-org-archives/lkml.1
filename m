@@ -1,126 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbXKWQwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbXKWQxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbXKWQwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 11:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXKWQwM
+	id S1757249AbXKWQxP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 11:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXKWQxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 11:52:12 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35413 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbXKWQwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 11:52:11 -0500
-Message-ID: <4747051C.3090903@us.ibm.com>
-Date: Fri, 23 Nov 2007 10:51:40 -0600
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: kvm-devel@lists.sourceforge.net, virtualization@lists.osdl.org,
-       linux-kernel@vger.kernel.org,
-       Eric Van Hensbergen <ericvanhensbergen@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>
-Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
-References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com>	<11944900163817-git-send-email-aliguori@us.ibm.com>	<4742F6B7.20503@qumranet.com>	<474300AD.4060509@us.ibm.com> <4743076F.8000105@qumranet.com> <47435CCB.1050506@us.ibm.com> <4743DAA4.70800@qumranet.com>
-In-Reply-To: <4743DAA4.70800@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 23 Nov 2007 11:53:00 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55345 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbXKWQw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 11:52:59 -0500
+Date: Fri, 23 Nov 2007 17:52:50 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: [PATCH 2.6.24-rc3-mm1] IPC: consolidate sem_exit_ns(), msg_exit_ns
+ and shm_exit_ns()
+Message-Id: <20071123175250.0f584913.pierre.peiffer@bull.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 18:00:13,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 18:00:14,
+	Serialize complete at 23/11/2007 18:00:14
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Anthony Liguori wrote:
->> Well please propose the virtio API first and then I'll adjust the PCI 
->> ABI.  I don't want to build things into the ABI that we never 
->> actually end up using in virtio :-)
->>
->>   
->
-> Move ->kick() to virtio_driver.
 
-Then on each kick, all queues have to be checked for processing?  What 
-devices do you expect this would help?
+sem_exit_ns(), msg_exit_ns() and shm_exit_ns() are all called when an ipc_namespace is
+released to free all ipcs of each type.
+But in fact, they do the same thing: they loop around all ipcs to free them
+individually by calling a specific routine.
 
-> I believe Xen networking uses the same event channel for both rx and 
-> tx, so in effect they're using this model.  Long time since I looked 
-> though,
+This patch proposes to consolidate this by introducing a common function, free_ipcs(),
+that do the job. The specific routine to call on each individual ipcs is passed as
+parameter. For this, these ipc-specific 'free' routines are reworked to take a
+generic 'struct ipc_perm' as parameter.
 
-I would have to look, but since rx/tx are rather independent actions, 
-I'm not sure that you would really save that much.  You still end up 
-doing the same number of kicks unless I'm missing something.
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+---
+ include/linux/ipc_namespace.h |    5 ++++-
+ ipc/msg.c                     |   28 +++++-----------------------
+ ipc/namespace.c               |   30 ++++++++++++++++++++++++++++++
+ ipc/sem.c                     |   27 +++++----------------------
+ ipc/shm.c                     |   27 ++++++---------------------
+ 5 files changed, 50 insertions(+), 67 deletions(-)
 
->> I was thinking more along the lines that a hypercall-based device 
->> would certainly be implemented in-kernel whereas the current device 
->> is naturally implemented in userspace.  We can simply use a different 
->> device for in-kernel drivers than for userspace drivers.  
->
-> Where the device is implemented is an implementation detail that 
-> should be hidden from the guest, isn't that one of the strengths of 
-> virtualization?  Two examples: a file-based block device implemented 
-> in qemu gives you fancy file formats with encryption and compression, 
-> while the same device implemented in the kernel gives you a 
-> low-overhead path directly to a zillion-disk SAN volume.  Or a 
-> user-level network device capable of running with the slirp stack and 
-> no permissions vs. the kernel device running copyless most of the time 
-> and using a dma engine for the rest but requiring you to be good 
-> friends with the admin.
->
-> The user should expect zero reconfigurations moving a VM from one 
-> model to the other.
+Index: b/ipc/msg.c
+===================================================================
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -72,7 +72,7 @@ struct msg_sender {
+ #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
+ #define msg_buildid(id, seq)	ipc_buildid(id, seq)
+ 
+-static void freeque(struct ipc_namespace *, struct msg_queue *);
++static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
+ static int newque(struct ipc_namespace *, struct ipc_params *);
+ #ifdef CONFIG_PROC_FS
+ static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
+@@ -91,26 +91,7 @@ void msg_init_ns(struct ipc_namespace *n
+ #ifdef CONFIG_IPC_NS
+ void msg_exit_ns(struct ipc_namespace *ns)
+ {
+-	struct msg_queue *msq;
+-	struct kern_ipc_perm *perm;
+-	int next_id;
+-	int total, in_use;
+-
+-	down_write(&msg_ids(ns).rw_mutex);
+-
+-	in_use = msg_ids(ns).in_use;
+-
+-	for (total = 0, next_id = 0; total < in_use; next_id++) {
+-		perm = idr_find(&msg_ids(ns).ipcs_idr, next_id);
+-		if (perm == NULL)
+-			continue;
+-		ipc_lock_by_ptr(perm);
+-		msq = container_of(perm, struct msg_queue, q_perm);
+-		freeque(ns, msq);
+-		total++;
+-	}
+-
+-	up_write(&msg_ids(ns).rw_mutex);
++	free_ipcs(ns, &msg_ids(ns), freeque);
+ }
+ #endif
+ 
+@@ -274,9 +255,10 @@ static void expunge_all(struct msg_queue
+  * msg_ids.rw_mutex (writer) and the spinlock for this message queue are held
+  * before freeque() is called. msg_ids.rw_mutex remains locked on exit.
+  */
+-static void freeque(struct ipc_namespace *ns, struct msg_queue *msq)
++static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+ {
+ 	struct list_head *tmp;
++	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
+ 
+ 	expunge_all(msq, -EIDRM);
+ 	ss_wakeup(&msq->q_senders, 1);
+@@ -582,7 +564,7 @@ asmlinkage long sys_msgctl(int msqid, in
+ 		break;
+ 	}
+ 	case IPC_RMID:
+-		freeque(ns, msq);
++		freeque(ns, &msq->q_perm);
+ 		break;
+ 	}
+ 	err = 0;
+Index: b/ipc/namespace.c
+===================================================================
+--- a/ipc/namespace.c
++++ b/ipc/namespace.c
+@@ -44,6 +44,36 @@ struct ipc_namespace *copy_ipcs(unsigned
+ 	return new_ns;
+ }
+ 
++/*
++ * free_ipcs - free all ipcs of one type
++ * @ns:   the namespace to remove the ipcs from
++ * @ids:  the table of ipcs to free
++ * @free: the function called to free each individual ipc
++ *
++ * Called for each kind of ipc when an ipc_namespace exits.
++ */
++void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
++	       void (*free)(struct ipc_namespace *, struct kern_ipc_perm *))
++{
++	struct kern_ipc_perm *perm;
++	int next_id;
++	int total, in_use;
++
++	down_write(&ids->rw_mutex);
++
++	in_use = ids->in_use;
++
++	for (total = 0, next_id = 0; total < in_use; next_id++) {
++		perm = idr_find(&ids->ipcs_idr, next_id);
++		if (perm == NULL)
++			continue;
++		ipc_lock_by_ptr(perm);
++		free(ns, perm);
++		total++;
++	}
++	up_write(&ids->rw_mutex);
++}
++
+ void free_ipc_ns(struct kref *kref)
+ {
+ 	struct ipc_namespace *ns;
+Index: b/ipc/sem.c
+===================================================================
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -94,7 +94,7 @@
+ #define sem_buildid(id, seq)	ipc_buildid(id, seq)
+ 
+ static int newary(struct ipc_namespace *, struct ipc_params *);
+-static void freeary(struct ipc_namespace *, struct sem_array *);
++static void freeary(struct ipc_namespace *, struct kern_ipc_perm *);
+ #ifdef CONFIG_PROC_FS
+ static int sysvipc_sem_proc_show(struct seq_file *s, void *it);
+ #endif
+@@ -129,25 +129,7 @@ void sem_init_ns(struct ipc_namespace *n
+ #ifdef CONFIG_IPC_NS
+ void sem_exit_ns(struct ipc_namespace *ns)
+ {
+-	struct sem_array *sma;
+-	struct kern_ipc_perm *perm;
+-	int next_id;
+-	int total, in_use;
+-
+-	down_write(&sem_ids(ns).rw_mutex);
+-
+-	in_use = sem_ids(ns).in_use;
+-
+-	for (total = 0, next_id = 0; total < in_use; next_id++) {
+-		perm = idr_find(&sem_ids(ns).ipcs_idr, next_id);
+-		if (perm == NULL)
+-			continue;
+-		ipc_lock_by_ptr(perm);
+-		sma = container_of(perm, struct sem_array, sem_perm);
+-		freeary(ns, sma);
+-		total++;
+-	}
+-	up_write(&sem_ids(ns).rw_mutex);
++	free_ipcs(ns, &sem_ids(ns), freeary);
+ }
+ #endif
+ 
+@@ -542,10 +524,11 @@ static int count_semzcnt (struct sem_arr
+  * as a writer and the spinlock for this semaphore set hold. sem_ids.rw_mutex
+  * remains locked on exit.
+  */
+-static void freeary(struct ipc_namespace *ns, struct sem_array *sma)
++static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+ {
+ 	struct sem_undo *un;
+ 	struct sem_queue *q;
++	struct sem_array *sma = container_of(ipcp, struct sem_array, sem_perm);
+ 
+ 	/* Invalidate the existing undo structures for this semaphore set.
+ 	 * (They will be freed without any further action in exit_sem()
+@@ -926,7 +909,7 @@ static int semctl_down(struct ipc_namesp
+ 
+ 	switch(cmd){
+ 	case IPC_RMID:
+-		freeary(ns, sma);
++		freeary(ns, ipcp);
+ 		err = 0;
+ 		break;
+ 	case IPC_SET:
+Index: b/ipc/shm.c
+===================================================================
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -83,8 +83,11 @@ void shm_init_ns(struct ipc_namespace *n
+  * Called with shm_ids.rw_mutex (writer) and the shp structure locked.
+  * Only shm_ids.rw_mutex remains locked on exit.
+  */
+-static void do_shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *shp)
++static void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+ {
++	struct shmid_kernel *shp;
++	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
++
+ 	if (shp->shm_nattch){
+ 		shp->shm_perm.mode |= SHM_DEST;
+ 		/* Do not find it any more */
+@@ -97,25 +100,7 @@ static void do_shm_rmid(struct ipc_names
+ #ifdef CONFIG_IPC_NS
+ void shm_exit_ns(struct ipc_namespace *ns)
+ {
+-	struct shmid_kernel *shp;
+-	struct kern_ipc_perm *perm;
+-	int next_id;
+-	int total, in_use;
+-
+-	down_write(&shm_ids(ns).rw_mutex);
+-
+-	in_use = shm_ids(ns).in_use;
+-
+-	for (total = 0, next_id = 0; total < in_use; next_id++) {
+-		perm = idr_find(&shm_ids(ns).ipcs_idr, next_id);
+-		if (perm == NULL)
+-			continue;
+-		ipc_lock_by_ptr(perm);
+-		shp = container_of(perm, struct shmid_kernel, shm_perm);
+-		do_shm_rmid(ns, shp);
+-		total++;
+-	}
+-	up_write(&shm_ids(ns).rw_mutex);
++	free_ipcs(ns, &shm_ids(ns), do_shm_rmid);
+ }
+ #endif
+ 
+@@ -832,7 +817,7 @@ asmlinkage long sys_shmctl (int shmid, i
+ 		if (err)
+ 			goto out_unlock_up;
+ 
+-		do_shm_rmid(ns, shp);
++		do_shm_rmid(ns, &shp->shm_perm);
+ 		up_write(&shm_ids(ns).rw_mutex);
+ 		goto out;
+ 	}
+Index: b/include/linux/ipc_namespace.h
+===================================================================
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -43,7 +43,10 @@ extern struct ipc_namespace init_ipc_ns;
+ #if defined(CONFIG_SYSVIPC) && defined(CONFIG_IPC_NS)
+ extern void free_ipc_ns(struct kref *kref);
+ extern struct ipc_namespace *copy_ipcs(unsigned long flags,
+-						struct ipc_namespace *ns);
++				       struct ipc_namespace *ns);
++extern void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
++		      void (*free)(struct ipc_namespace *,
++				   struct kern_ipc_perm *));
+ 
+ static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
+ {
 
-I'm wary of introducing the notion of hypercalls to this device because 
-it makes the device VMM specific.  Maybe we could have the device 
-provide an option ROM that was treated as the device "BIOS" that we 
-could use for kicking and interrupt acking?  Any idea of how that would 
-map to Windows?  Are there real PCI devices that use the option ROM 
-space to provide what's essentially firmware?  Unfortunately, I don't 
-think an option ROM BIOS would map well to other architectures.
-
->> None of the PCI devices currently work like that in QEMU.  It would 
->> be very hard to make a device that worked this way because since the 
->> order in which values are written matter a whole lot.  For instance, 
->> if you wrote the status register before the queue information, the 
->> driver could get into a funky state.
->>   
->
-> I assume you're talking about restore?  Isn't that atomic?
-
-If you're doing restore by passing the PCI config blob to a registered 
-routine, then sure, but that doesn't seem much better to me than just 
-having the device generate that blob in the first place (which is what 
-we have today).  I was assuming that you would want to use the existing 
-PIO/MMIO handlers to do restore by rewriting the config as if the guest was.
-
->>> Not much of an argument, I know.
->>>
->>>
->>> wrt. number of queues, 8 queues will consume 32 bytes of pci space 
->>> if all you store is the ring pfn.
->>>     
->>
->> You also at least need a num argument which takes you to 48 or 64 
->> depending on whether you care about strange formatting.  8 queues may 
->> not be enough either.  Eric and I have discussed whether the 9p 
->> virtio device should support multiple mounts per-virtio device and if 
->> so, whether each one should have it's own queue.  Any devices that 
->> supports this sort of multiplexing will very quickly start using a 
->> lot of queues.
->>   
->
-> Make it appear as a pci function?  (though my feeling is that multiple 
-> mounts should be different devices; we can then hotplug mountpoints).
-
-We may run out of PCI slots though :-/
-
->> I think most types of hardware have some notion of a selector or 
->> mode.  Take a look at the LSI adapter or even VGA.
->>
->>   
->
-> True.  They aren't fun to use, though.
-
-I don't think they're really any worse :-)
-
-Regards,
-
-Anthony Liguori
-
+-- 
+Pierre Peiffer
