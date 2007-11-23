@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbXKWSrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbXKWStx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbXKWSrU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 13:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbXKWSrK
+	id S1757371AbXKWStx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 13:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXKWStn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 13:47:10 -0500
-Received: from empbedex1.empirix.com ([12.38.203.54]:17752 "EHLO
-	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205AbXKWSrI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 13:47:08 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
-Date: Fri, 23 Nov 2007 13:47:01 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901053E8543@EMPBEDEX.empirix.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
-Thread-Index: Acgt+NRBtbYeIxTqSmCCZDGz+pTzNAABoEGp
-References: <47463534.9010100@shaw.ca> <4746F02D.2060204@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D901053E8542@EMPBEDEX.empirix.com> <474711FE.8040805@rtr.ca>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Mark Lord" <liml@rtr.ca>
-Cc: "Robert Hancock" <hancockr@shaw.ca>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "ide" <linux-ide@vger.kernel.org>, "Jeff Garzik" <jeff@garzik.org>,
-       "Tejun Heo" <htejun@gmail.com>
-X-OriginalArrivalTime: 23 Nov 2007 18:47:06.0319 (UTC) FILETIME=[3EC7DDF0:01C82E01]
+	Fri, 23 Nov 2007 13:49:43 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:60648 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752429AbXKWStl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 13:49:41 -0500
+Date: Fri, 23 Nov 2007 21:48:51 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
+Message-ID: <20071123184851.GA14415@2ka.mipt.ru>
+References: <4745DCD7.8070805@simon.arlott.org.uk> <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071123175757.GA23991@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, I believe that - otherwise, this problem would have
-been a crisis a LONG time ago...:-)
- 
-But I do have some more questions in relationship to how 
-things are mapped in your environment. I have a flat memory 
-map (i.e.: the full 0x0 -- 0x1_0000_0000 is passed to the 32bit 
-Linux kernel without any 'holes' and/or reserved areas).
- 
-Does your Intel memory map have this same type of flat memory 
-model (and thus allow use of the FULL lower 4Gig) - or does it 
-reserve areas of lower 4Gig for devices and such - if not - where 
-are these reserved areas - and how do the relate to the I/O memory
-map for the device?
- 
-In other words, I would be very interested in seeing the memory 
-map & the PCI memory mapping to see if any overlap/correspond 
-to reserve areas of lower 4 Gig (in a linux 32bit mode)...
- 
-Tom
-
-________________________________
-
-From: Mark Lord [mailto:liml@rtr.ca]
-Sent: Fri 11/23/2007 12:46 PM
-To: Morrison, Tom
-Cc: Robert Hancock; linux-kernel; ide; Jeff Garzik; Tejun Heo
-Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
-
-
-
-Morrison, Tom wrote:
-> I am hopeful that the sata_mv has this bug (I proved that the
-> problem I was experiencing was due to the sata_mv driver
-> with 3.75Gig or more of memory)...
+On Fri, Nov 23, 2007 at 08:57:57PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> > My memory here is hazy, but I think this exists to rescue netconsole
+> > in low-memory situations. This bit originated with Ingo, so maybe he
+> > can recall.
+> > 
+> > Netpoll can process an arbitrary number of skbs inside a single
+> > interrupt. Think sysrq-t at one packet per line or kgdboe where the
+> > entire trace session can happen inside one very long interrupt.
+> > 
+> > Perhaps we can refine this to mark netpoll's skbs (perhaps with
+> > ->destructor?) and delete only skbs we own. As these are never passed
+> > through any of the other route/xfrm/filter code, they should be safe
+> > to delete even in irq context, yes?
+> > 
+> > > Removing zap_completion_queue() from find_skb() will fix the warning,
+> > > but I'm not sure this is a correct fix. I've added Matt to the Cc list.
+> > 
+> > Care to try the sysrq-t or OOM message tests?
 > 
-> I am on vacation for a week or more ...or I'd tell you today
-> if it did have this bug!
-..
+> We basically can not free skbs there - if it is interrupt context and
+> we are freeing some skb with destructor we will catch the warning anyway.
+> 
+> No matter if we are under memory pressure or whatever - it is not
+> allowed - a lot of skbs are supposed to be freed in softirq context,
+> that is why dev_kfree_skb_any() exists.
+> 
+> I think we can drop skbs _without_ destructor from the queue though in
+> that conditions given that we actually need only one.
 
-Yeah, I kind of had your reports in mind when I asked that.  :)
+Stop, we are trying to free skb without destructor and catch connection
+tracking, so it is not a solution. To fix the problem we need to check
+if it is not netfilter related, kind of this (not tested), Simon please
+give it a try:
 
-On a related note, I now have lots of Marvell (sata_mv) hardware here,
-and an Intel CPU/chipset box with physical RAM above the 4GB boundary.
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 758dafe..855bb3f 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -196,7 +196,7 @@ static void zap_completion_queue(void)
+ 		while (clist != NULL) {
+ 			struct sk_buff *skb = clist;
+ 			clist = clist->next;
+-			if (skb->destructor)
++			if (skb->destructor || skb->nfct || skb->nfct_reasm)
+ 				dev_kfree_skb_any(skb); /* put this one back */
+ 			else
+ 				__kfree_skb(skb);
 
-Cheers
 
-
+-- 
+	Evgeniy Polyakov
