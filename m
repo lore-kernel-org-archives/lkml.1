@@ -1,146 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbXKWLiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbXKWLjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbXKWLiW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 06:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbXKWLiK
+	id S1756706AbXKWLjf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 06:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXKWLj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 06:38:10 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40749 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753872AbXKWLiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 06:38:08 -0500
-Message-ID: <4746BB9D.2030508@suse.de>
-Date: Fri, 23 Nov 2007 12:38:05 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Fri, 23 Nov 2007 06:39:27 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:57845 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbXKWLj0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 06:39:26 -0500
+Message-ID: <4746BBC5.4000008@anagramm.de>
+Date: Fri, 23 Nov 2007 12:38:45 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Hannes Reinecke <hare@suse.de>
-Cc: Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<4744A6F2.4030302@free.fr> <20071121144116.c932727b.akpm@linux-foundation.org> <4746814F.80502@free.fr> <4746866B.5070207@suse.de>
-In-Reply-To: <4746866B.5070207@suse.de>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------090908090105070907070609"
+To: devzero@web.de
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       Simon Arlott <simon@fire.lp0.eu>
+Subject: OT: Re: System reboot triggered by just reading a device file....!?
+References: <1761125@web.de>
+In-Reply-To: <1761125@web.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18jPIJ3LcP3Z07rUJeg8Koe3uQP33s2wgKll8d
+ 3+C7ARoNg/4YOd0mas0XQiJ2sM1qmbh9an2OTXsDxNlqTbLXnI
+ sZWi5cxgaKe0OYdlxReBA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090908090105070907070609
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Hi, Roland!
 
-Hannes Reinecke wrote:
-> Laurent Riffard wrote:
->> Le 21.11.2007 23:41, Andrew Morton a écrit :
->>> On Wed, 21 Nov 2007 22:45:22 +0100
->>> Laurent Riffard <laurent.riffard@free.fr> wrote:
->>>
->>>> Le 21.11.2007 05:45, Andrew Morton a écrit :
->>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/
->>>> Hello, 
->>>>
->>>> My system hangs shortly after I logged in Gnome desktop. SysRq-W shows
->>>> that a bunch of task are blocked in "D" state, they seem to wait for
->>>> some I/O completion. I can try to hand-copy some data if requested.
->>>>
->>>> I found these messages in dmesg:
->>>>
->>>> ~$ grep -C2 end_request dmesg-2.6.24-rc3-mm1 
->>>> EXT3-fs: mounted filesystem with ordered data mode.
->>>> sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>>> end_request: I/O error, dev sda, sector 16460
->>>> ReiserFS: sda7: found reiserfs format "3.6" with standard journal
->>>> ReiserFS: sda7: using ordered data mode
->>>> --
->>>> ReiserFS: sda7: Using r5 hash to sort names
->>>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>>> end_request: I/O error, dev sdb, sector 19632
->>>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>>> end_request: I/O error, dev sdb, sector 40037363
->>>> Adding 1048568k swap on /dev/mapper/vglinux1-lvswap.  Priority:-1 extents:1 across:1048568k
->>>> lp0: using parport0 (interrupt-driven).
->>>>
->>>> These errors occur *only* with 2.6.24-rc3-mm1, they are 100% reproducible.
->>>> 2.6.24-rc3 and 2.6.24-rc2-mm1 are fine.
->>>>
->>>> Maybe something is broken in pata_via driver ?
->>>>
->>> Could be - libata-reimplement-ata_acpi_cbl_80wire-using-ata_acpi_gtm_xfermask.patch
->>> and pata_amd-pata_via-de-couple-programming-of-pio-mwdma-and-udma-timings.patch
->>> touch pata_via.c.
->> None of the above...
->>
->> I did a bisection, it spotted git-scsi-misc.patch. 
->> I just run 2.6.24-rc3-mm1 + revert-git-scsi-misc.patch, and it works fine.
->>
->> I guess commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0 "[SCSI] Do not 
->> requeue requests if REQ_FAILFAST is set" is the real culprit. The other 
->> commits are touching documentation or drivers I don't use. I'll try 
->> to revert only this one this evening.
->>
-> Hmm. Weird. I'll have a look into it. Apparently I'll be returning an error where
-> I shouldn't. Checking ...
-> 
-Ok, found it. We are blocking even special commands (ie requests with PREEMPT not set)
-when FAILFAST is set. Which is clearly wrong. The attached patch fixes this.
+Please don't top-post.
 
-James, please apply.
+devzero@web.de schrieb:
+ > > [was: it would be easy to disable the kernel watchdog]
+ > thanks, but i know i could do this.
 
-Cheers,
+Good. I was also curious and just checked again. The watchdog subsystem
+is by default _disabled_ in the kernel configuration. If you use some
+distro's kernel, where they turned it on, complain to them!
+If you turned it on yourself, you are really on your own...
+the Kconfig help there is IMO sufficient and very clear and,
+"If unsure, say N". Hmm... sorry?!
 
-Hannes
+ > this thread is not meant to protect myself from this curiousity but it is meant
+ > to protect others. it`s a trap.
+
+I guess I understand your position. But I don't see no way to improve
+the kernel in that point.
+Complain to the guys who enabled the watchdog / setup this trap for
+any reason.
+
+ > i stepped into that.
+ > now i know that trap, so i can easily sidestep.
+ > it maybe very seldom that someone steps into this.
+ > but it may happen and then someone will have trouble and spend time on this.
+ > i think every admin can tell you about weird random reboots of his systems
+ > which he cannot explain what was the reason for it.
+
+That's one possible way of "learning by doing suicide (tm);"
+
+ > this maybe some of those reasons and this one could be avoided.
+ > i`m thinking of something simple like echo "now you`re armed" > /dev/watchdog
+
+Read some details about watchdogs to get more background and why the
+watchdog is triggered so easily and why it's good this way.
+i.e: http://www.ganssle.com/watchdogs.pdf
+
+Regards,
 -- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
 
---------------090908090105070907070609
-Content-Type: text/plain;
- name="scsi-misc-fix-spi-validation"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="scsi-misc-fix-spi-validation"
 
-Fix SPI Domain validation
-
-This fixes a thinko of the FAILFAST handling: when we get
-a request with FAILFAST set, we still have to evaluate the
-PREEMPT flag to decide if this request should be passed through.
-
-Signed-off-by: Hannes Reinecke <hare@suse.de>
-
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 13e7e09..9ec1566 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1284,13 +1284,15 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
- 			/*
- 			 * If the devices is blocked we defer normal commands.
- 			 */
--			if (!(req->cmd_flags & REQ_PREEMPT))
--				ret = BLKPREP_DEFER;
--			/*
--			 * Return failfast requests immediately
--			 */
--			if (req->cmd_flags & REQ_FAILFAST)
--				ret = BLKPREP_KILL;
-+			if (!(req->cmd_flags & REQ_PREEMPT)) {
-+				/*
-+				 * Return failfast requests immediately
-+				 */
-+				if (req->cmd_flags & REQ_FAILFAST)
-+					ret = BLKPREP_KILL;
-+				else
-+					ret = BLKPREP_DEFER;
-+			}
- 			break;
- 		default:
- 			/*
-
---------------090908090105070907070609--
