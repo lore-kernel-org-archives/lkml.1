@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbXKWDfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbXKWDuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbXKWDfW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 22:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXKWDfJ
+	id S1755391AbXKWDuR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 22:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXKWDuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 22:35:09 -0500
-Received: from ozlabs.org ([203.10.76.45]:41122 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752351AbXKWDfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 22:35:08 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Fri, 23 Nov 2007 14:35:05 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Christoph Hellwig <hch@infradead.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711231125.12832.rusty@rustcorp.com.au> <200711230236.22759.ak@suse.de>
-In-Reply-To: <200711230236.22759.ak@suse.de>
+	Thu, 22 Nov 2007 22:50:04 -0500
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:25196 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752305AbXKWDuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 22:50:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=H1L1REb2kdKEqlBzLdnnHY4y2AmAAsWeSunu1RbCx4Sx6PLbMQVQA4AQJXq9bCy3WVhdYP7GDNZ45Nbi4S+gmcOoPgrCLkEF/Di7bZ8t0HMK2b9dLChYAnyvy0QpRMwtnCjDv4k6YE1Zu7LC8U5QoWqqRB/Eh/loPB8/GukVuEs=  ;
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Shannon Nelson <shannon.nelson@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH] dmaengine: Driver for the AVR32 DMACA controller
+Date: Thu, 22 Nov 2007 19:20:51 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1195558597-23187-1-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <1195558597-23187-1-git-send-email-hskinnemoen@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711231435.05788.rusty@rustcorp.com.au>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711221920.52137.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 November 2007 12:36:22 Andi Kleen wrote:
-> On Friday 23 November 2007 01:25, Rusty Russell wrote:
-> > That's my point.  If there's a whole class of modules which can use a
-> > symbol, why are we ruling out external modules?
->
-> The point is to get cleaner interfaces.
+On Tuesday 20 November 2007, Haavard Skinnemoen wrote:
+> This patch depends on "DMA: Correct invalid assumptions in the Kconfig
+> text" (without the part that adds AVR32 to the dependency list) and
+> "DMAENGINE: Convert from class_device to device".
 
-But this doesn't change interfaces at all.  It makes modules fail to load 
-unless they're on a permitted list, which now requires maintenance.
+That regression fix still doesn't seem to be merged, or
+even in the MM tree.
 
-> Anything which is kind of internal 
-> should only be used by closely related in tree modules which can be
-> updated.
+Here's a tweaked version of what Haavard sent.
 
-Is there evidence that this is a problem for us?  Are there any interfaces 
-you've restricted so far which are causing problems?
+- Dave
 
-> Point of is not to be some kind of license enforcer or similar, 
-> there are already other mechanisms for that. Just to get the set of really
-> public kernel interfaces down to a manageable level.
+========	CUT HERE
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Why do we care what a "really public"?  We treat them all the same, as 
-changeable interfaces.  ie.  None of them are "really public".
+This patch corrects recently changed (and now invalid) Kconfig
+descriptions for the DMA engine framework:
 
-For example, you put all the udp functions in the "udp" namespace.  But what 
-have we gained?  What has become easier to maintain?  All those function 
-start with "udp_": are people having trouble telling what they're for?
+ - Non-Intel(R) hardware also has DMA engines;
+ - DMA is used for more than memcpy and RAID offloading.
+ 
+In fact, on most platforms memcpy and RAID aren't factors, and DMA
+exists so that peripherals can transfer data to/from memory while
+the CPU does other work.
 
-If you really want to reduce "public interfaces" then it's much simpler to 
-mark explicitly what out-of-tree modules can use.  We can have a list of 
-symbol names in include/linux/public-exports.h.
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/dma/Kconfig |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-I just don't see what problems this separation solves.
-Rusty.
+--- g26.orig/drivers/dma/Kconfig	2007-10-30 23:58:27.000000000 -0700
++++ g26/drivers/dma/Kconfig	2007-11-22 17:43:33.000000000 -0800
+@@ -3,11 +3,13 @@
+ #
+ 
+ menuconfig DMADEVICES
+-	bool "DMA Offload Engine support"
++	bool "DMA Engine support"
+ 	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
+ 	help
+-	  Intel(R) offload engines enable offloading memory copies in the
+-	  network stack and RAID operations in the MD driver.
++	  DMA engines can do asynchronous data transfers without
++	  involving the host CPU.  Currently, this framework can be
++	  used to offload memory copies in the network stack and
++	  RAID operations in the MD driver.
+ 
+ if DMADEVICES
+ 
+
