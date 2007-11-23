@@ -1,62 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbXKWKjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbXKWKta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbXKWKjf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 05:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbXKWKj1
+	id S1756111AbXKWKta (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 05:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXKWKtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 05:39:27 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52450 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753559AbXKWKj0 (ORCPT
+	Fri, 23 Nov 2007 05:49:22 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42584 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753452AbXKWKtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 05:39:26 -0500
-Date: Fri, 23 Nov 2007 10:36:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: niessner@jpl.nasa.gov, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Where is the interrupt going?
-Message-ID: <20071123103655.1ee713f1@the-village.bc.nu>
-In-Reply-To: <200711230258.56066.bzolnier@gmail.com>
-References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
-	<20071122164853.cfdplzj5o744sw40@webmail.jpl.nasa.gov>
-	<20071123012525.126010d5@the-village.bc.nu>
-	<200711230258.56066.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Nov 2007 05:49:21 -0500
+Message-ID: <4746B027.4020506@bull.net>
+Date: Fri, 23 Nov 2007 11:49:11 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: make struct ipc_ids static in ipc_namespace
+References: <20071122155448.3193c856.pierre.peiffer@bull.net> <474680B5.7020104@fr.ibm.com> <47468347.5090303@openvz.org> <47468927.3040304@openvz.org> <47469630.3060807@bull.net> <47469CF3.1030200@openvz.org>
+In-Reply-To: <47469CF3.1030200@openvz.org>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 11:56:33,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 11:56:35,
+	Serialize complete at 23/11/2007 11:56:35
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Nov 2007 02:58:55 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+Ok, I have the patch ready, but before sending it, I worry about the size of
+struct ipc_namespace if we mark struct ipc_ids as ___cacheline_aligned....
 
-> On Friday 23 November 2007, Alan Cox wrote:
-> > On Thu, 22 Nov 2007 16:48:53 -0800
-> > niessner@jpl.nasa.gov wrote:
-> > 
-> > > 
-> > > I tried the hammer and the problem persists.
-> > 
-> > See my earlier email - your driver registers the irq with IRQF_DISABLED
-> > then never enables it.
+Of course, you we fall into a classical match: performance vs memory size.
+
+As I don't think that I have the knowledge to decide what we must focus on, here
+after is, for info, the size reported by pahole (on x86, Intel Xeon)
+
+With the patch sent at the beginning of this thread we have:
+
+struct ipc_namespace {
+        struct kref                kref;                 /*     0     4 */
+        struct ipc_ids             ids[3];               /*     4   156 */
+        /* --- cacheline 2 boundary (128 bytes) was 32 bytes ago --- */
+        int                        sem_ctls[4];          /*   160    16 */
+        int                        used_sems;            /*   176     4 */
+        int                        msg_ctlmax;           /*   180     4 */
+        int                        msg_ctlmnb;           /*   184     4 */
+        int                        msg_ctlmni;           /*   188     4 */
+        /* --- cacheline 3 boundary (192 bytes) --- */
+        atomic_t                   msg_bytes;            /*   192     4 */
+        atomic_t                   msg_hdrs;             /*   196     4 */
+        size_t                     shm_ctlmax;           /*   200     4 */
+        size_t                     shm_ctlall;           /*   204     4 */
+        int                        shm_ctlmni;           /*   208     4 */
+        int                        shm_tot;              /*   212     4 */
+
+        /* size: 216, cachelines: 4 */
+        /* last cacheline: 24 bytes */
+};      /* definitions: 1 */
+
+With the new patch, if we mark the struct ipc_ids as ____cacheline_aligned, we
+have (I put kref at the end, to save one more cacheline):
+
+struct ipc_namespace {
+        struct ipc_ids             sem_ids;              /*     0    64 */
+
+        /* XXX last struct has 12 bytes of padding */
+
+        /* --- cacheline 1 boundary (64 bytes) --- */
+        int                        sem_ctls[4];          /*    64    16 */
+        int                        used_sems;            /*    80     4 */
+
+        /* XXX 44 bytes hole, try to pack */
+
+        /* --- cacheline 2 boundary (128 bytes) --- */
+        struct ipc_ids             msg_ids;              /*   128    64 */
+
+        /* XXX last struct has 12 bytes of padding */
+
+        /* --- cacheline 3 boundary (192 bytes) --- */
+        int                        msg_ctlmax;           /*   192     4 */
+        int                        msg_ctlmnb;           /*   196     4 */
+        int                        msg_ctlmni;           /*   200     4 */
+        atomic_t                   msg_bytes;            /*   204     4 */
+        atomic_t                   msg_hdrs;             /*   208     4 */
+
+        /* XXX 44 bytes hole, try to pack */
+
+        /* --- cacheline 4 boundary (256 bytes) --- */
+        struct ipc_ids             shm_ids;              /*   256    64 */
+
+        /* XXX last struct has 12 bytes of padding */
+
+        /* --- cacheline 5 boundary (320 bytes) --- */
+        size_t                     shm_ctlmax;           /*   320     4 */
+        size_t                     shm_ctlall;           /*   324     4 */
+        int                        shm_ctlmni;           /*   328     4 */
+        int                        shm_tot;              /*   332     4 */
+        struct kref                kref;                 /*   336     4 */
+
+        /* size: 384, cachelines: 6 */
+        /* sum members: 252, holes: 2, sum holes: 88 */
+        /* padding: 44 */
+        /* paddings: 3, sum paddings: 36 */
+};      /* definitions: 1 */
+
+We can put all sysctl related values together, in one cacheline and keep ipc_ids
+cacheline aligned ? But I really wonder about the performance gain here...
+
+Humm humm, comment ?
+
+P.
+
+Pavel Emelyanov wrote:
+> Pierre Peiffer wrote:
+>> Hi,
+>>
+>> 	Thanks for reviewing this !
+>>
+>> Pavel Emelyanov wrote:
+>>> Pavel Emelyanov wrote:
+>>>> Cedric Le Goater wrote:
+>>>>> Pierre Peiffer wrote:
+>>> [snip]
+>>>
+>>>>> Pavel, what do you think of it ? 
+>>>> Looks sane, good catch, Pierre.
+>>>>
+>>>> But I'd find out whether these three ipc_ids intersect any 
+>>>> cache-line. In other words I'd mark the struct ipc_ids as
+>>>> ____cacheline_aligned and checked for any differences.
+>>> BTW! It might be also useful to keep ipc_ids closer to their
+>>> sysctl parameters.
+>>>
+>> It makes sense indeed.
+>>
+>> That would mean to have something like this, right ?
 > 
-> As already explained by Kyle IRQF_DISABLED shouldn't matter here.
+> Yup :)
 > 
-> [ Nowadays IRQF_DISABLED only tells kernel/irq/handle.c::handle_IRQ_event()
->   to not enable local interrupts before calling your IRQ handler.
+>> struct ipc_namespace {
+>> 	struct kref	kref;
+>>
+>> 	struct ipc_ids	sem_ids;
+>> 	int		sem_ctls[4];
+>> 	int		used_sems;
+>>
+>> 	struct ipc_ids	msg_ids;
+>> 	int		msg_ctlmax;
+>> 	int		msg_ctlmnb;
+>> 	int		msg_ctlmni;
+>> 	atomic_t	msg_bytes;
+>> 	atomic_t	msg_hdrs;
+>>
+>> 	struct ipc_ids	shm_ids;
+>> 	size_t		shm_ctlmax;
+>> 	size_t		shm_ctlall;
+>> 	int		shm_ctlmni;
+>> 	int		shm_tot;
+>> };
+>>
+>> After a quick look, that implies to rework a little bit procfs... othwise, it's
+>> not a big deal as I can see.
 > 
->   I've recently removed IRQF_DISABLED from IDE after noticing this. ]
+> Thanks!
+> 
+>> P.
+>>
+>>>>> Acked-by: Cedric Le Goater <clg@fr.ibm.com>
+>>>>>
+>>>>> Thanks,
+>>>> Thanks,
+>>>> Pavel
+>>>>
+>>>>> C.
+>>> [snip]
+>>> -
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>
+> 
+> 
 
-Bartlomiej is of course correct. Thats what you get for replying late at
-night in a hurry.
-
-I'm not sure IDE can work without it because you need to lock out the
-timer events (old IDE doesn't handle this at all on SMP though so it
-wants fixing properly anyway).
-
-Alan
+-- 
+Pierre Peiffer
