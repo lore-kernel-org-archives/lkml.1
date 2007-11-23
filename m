@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbXKWJ4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXKWKD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbXKWJ4t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 04:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbXKWJ4D
+	id S1755933AbXKWKD2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 05:03:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbXKWKDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 04:56:03 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:48341 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753660AbXKWJz7 (ORCPT
+	Fri, 23 Nov 2007 05:03:20 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:9354 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752359AbXKWKDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 04:55:59 -0500
+	Fri, 23 Nov 2007 05:03:19 -0500
 X-IronPort-AV: i="4.21,455,1188792000"; 
-   d="scan'208"; a="56897905:sNHT25724699"
+   d="scan'208"; a="44106781:sNHT281693139"
 From: Bryan Wu <bryan.wu@analog.com>
-To: jeff@garzik.org, netdev@vger.kernel.org
+To: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
 Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Vitja Makarov <vitja.makarov@gmail.com>,
-       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 2/2] Blackfin EMAC driver: fix bug - NAT doesn't work with bfin_mac driver
-Date: Fri, 23 Nov 2007 17:55:51 +0800
-Message-Id: <1195811751-25319-3-git-send-email-bryan.wu@analog.com>
+       Mike Frysinger <michael.frysinger@analog.com>,
+       Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 1/1] [INPUT/KEYPAD] Blackfin BF54x keypad driver: keypad does not exist on BF544 parts
+Date: Fri, 23 Nov 2007 18:03:13 +0800
+Message-Id: <1195812193-25553-1-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1195811751-25319-1-git-send-email-bryan.wu@analog.com>
-References: <1195811751-25319-1-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vitja Makarov <vitja.makarov@gmail.com>
+From: Mike Frysinger <michael.frysinger@analog.com>
 
-https://blackfin.uclinux.org/gf/project/uclinux-dist/forum/?action=ForumBrowse&forum_id=39&thread_id=23114&_forum_action=ForumMessageBrowse
-Today I was dealing with the same problem, on my custom bf537 board, and bfin_mac driver.
-I found that the problem is in setting ip_summed flag of skbuff structure,
-
-Signed-off-by: Vitja Makarov <vitja.makarov@gmail.com>
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/net/bfin_mac.c |    2 +-
+ drivers/input/keyboard/Kconfig |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-index 0b99b55..eb97175 100644
---- a/drivers/net/bfin_mac.c
-+++ b/drivers/net/bfin_mac.c
-@@ -676,7 +676,7 @@ static void bf537mac_rx(struct net_device *dev)
- 	skb->protocol = eth_type_trans(skb, dev);
- #if defined(BFIN_MAC_CSUM_OFFLOAD)
- 	skb->csum = current_rx_ptr->status.ip_payload_csum;
--	skb->ip_summed = CHECKSUM_PARTIAL;
-+	skb->ip_summed = CHECKSUM_COMPLETE;
- #endif
+diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
+index 2316a01..dfa6592 100644
+--- a/drivers/input/keyboard/Kconfig
++++ b/drivers/input/keyboard/Kconfig
+@@ -286,7 +286,7 @@ config KEYBOARD_MAPLE
  
- 	netif_rx(skb);
+ config KEYBOARD_BFIN
+ 	tristate "Blackfin BF54x keypad support"
+-	depends on BF54x
++	depends on (BF54x && !BF544)
+ 	help
+ 	  Say Y here if you want to use the BF54x keypad.
+ 
 -- 
 1.5.3.4
