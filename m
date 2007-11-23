@@ -1,90 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbXKWHvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbXKWHvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754963AbXKWHvV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 02:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXKWHvL
+	id S1755878AbXKWHvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 02:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXKWHv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 02:51:11 -0500
-Received: from ns1.suse.de ([195.135.220.2]:42387 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752102AbXKWHvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 02:51:09 -0500
-Message-ID: <4746866B.5070207@suse.de>
-Date: Fri, 23 Nov 2007 08:51:07 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<4744A6F2.4030302@free.fr> <20071121144116.c932727b.akpm@linux-foundation.org> <4746814F.80502@free.fr>
-In-Reply-To: <4746814F.80502@free.fr>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 23 Nov 2007 02:51:28 -0500
+Received: from smtp.bredband2.net ([82.209.166.4]:16926 "EHLO
+	smtp.bredband2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755556AbXKWHv0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 02:51:26 -0500
+Date: Fri, 23 Nov 2007 08:44:43 +0100
+From: Mats Johannesson <spamcan@abcbredband.net>
+To: pavel@suse.cz, legolas558@users.sourceforge.net, dmitry.torokhov@gmail.com,
+       astarikovskiy@suse.de, len.brown@intel.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: Laptop keyboard unusable when ACPI is active
+Message-ID: <20071123084443.2cf6b61e@loke.fish.not>
+X-Mailer: Sylpheed-Claws 2.4.0 (GTK+ 2.4.13; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Riffard wrote:
-> Le 21.11.2007 23:41, Andrew Morton a écrit :
->> On Wed, 21 Nov 2007 22:45:22 +0100
->> Laurent Riffard <laurent.riffard@free.fr> wrote:
->>
->>> Le 21.11.2007 05:45, Andrew Morton a écrit :
->>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/
->>> Hello, 
->>>
->>> My system hangs shortly after I logged in Gnome desktop. SysRq-W shows
->>> that a bunch of task are blocked in "D" state, they seem to wait for
->>> some I/O completion. I can try to hand-copy some data if requested.
->>>
->>> I found these messages in dmesg:
->>>
->>> ~$ grep -C2 end_request dmesg-2.6.24-rc3-mm1 
->>> EXT3-fs: mounted filesystem with ordered data mode.
->>> sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>> end_request: I/O error, dev sda, sector 16460
->>> ReiserFS: sda7: found reiserfs format "3.6" with standard journal
->>> ReiserFS: sda7: using ordered data mode
->>> --
->>> ReiserFS: sda7: Using r5 hash to sort names
->>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>> end_request: I/O error, dev sdb, sector 19632
->>> sd 0:0:1:0: [sdb] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->>> end_request: I/O error, dev sdb, sector 40037363
->>> Adding 1048568k swap on /dev/mapper/vglinux1-lvswap.  Priority:-1 extents:1 across:1048568k
->>> lp0: using parport0 (interrupt-driven).
->>>
->>> These errors occur *only* with 2.6.24-rc3-mm1, they are 100% reproducible.
->>> 2.6.24-rc3 and 2.6.24-rc2-mm1 are fine.
->>>
->>> Maybe something is broken in pata_via driver ?
->>>
->> Could be - libata-reimplement-ata_acpi_cbl_80wire-using-ata_acpi_gtm_xfermask.patch
->> and pata_amd-pata_via-de-couple-programming-of-pio-mwdma-and-udma-timings.patch
->> touch pata_via.c.
-> 
-> None of the above...
-> 
-> I did a bisection, it spotted git-scsi-misc.patch. 
-> I just run 2.6.24-rc3-mm1 + revert-git-scsi-misc.patch, and it works fine.
-> 
-> I guess commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0 "[SCSI] Do not 
-> requeue requests if REQ_FAILFAST is set" is the real culprit. The other 
-> commits are touching documentation or drivers I don't use. I'll try 
-> to revert only this one this evening.
-> 
-Hmm. Weird. I'll have a look into it. Apparently I'll be returning an error where
-I shouldn't. Checking ...
+Many responsible CCs added.
 
-Cheers,
+On 2007-10-20 18:33:09 Pavel Machek responded to Daniele C.:
+> > > Try disabling acpi embedded controller.
+> > >
+> > How can I accomplish this? Are you referring to the i8042?
+>
+> rmmod acpi_ec or how is it called. But I'm not sure how easy this is.
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Designed to be 'hard' because it in effect breaks several functions.
+See "config ACPI_EC" in drivers/acpi/Kconfig which one must edit
+manually, as well as arch/*/configs/*_defconfig
+
+Either way, the result is exactly as not loading modularized battery
+and ac (thermal module still worked on my system).
+
+But this whole issue is getting ridiculous. INPUT subsystem is addled
+more and more by ACPI (in real laptop life) while the maintainers,
+from a user view, seem stumped.
+
+The bad interaction between ACPI controlled EC (embedded controller)
+and the i8042 interrupt handler is theorized about in detail at OLPCs
+http://dev.laptop.org/ticket/2401 - almost at the end of that page.
+Thanks to Daniele C for the link.
+
+And the bug scenario has been present for many _years_ now. From my own
+experience it is only getting worse. Here's the current relations in
+2.6.24-rc3-git1
+
+_EC-reading ACPI modules unloaded_
+
+Notebook keyboard and Synaptics touchpad operations all perfectly OK.
+Nothing related show up in the logs.
+
+
+_EC-reading ACPI modules loaded_
+
+Keyboard keys get stuck when EC is accessed for battery, temperature
+etc.
+
+Touchpad (mouse pointer) gets stuck for up to ca 5 seconds if I eg move
+a window while EC data is read.
+
+The logs are spammed when EC screws over i8042:
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 4
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 1
+psmouse.c: TouchPad at isa0060/serio4/input0 - driver resynched.
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 1
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 1
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 1
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 1
+psmouse.c: TouchPad at isa0060/serio4/input0 lost sync at byte 1
+psmouse.c: issuing reconnect request
+[etc]
+
+Messages about an unknown key show up (possibly in relation to a stuck
+key). I don't have this on disk, so I'll copy the message from the bug
+http://bugzilla.kernel.org/show_bug.cgi?id=9147
+atkbd.c: Unknown key released (translated set 2, code 0xe0 on
+isa0060/serio0).
+atkbd.c: Use 'setkeycodes e060 <keycode>' to make it known.
+
+
+_EC-reading ACPI modules loaded. Command line option i8042.nomux used_
+
+Keyboard keys _can_ get stuck when EC is accessed for battery,
+temperature etc. Much less frequent than without i8042.nomux though.
+
+Synaptics touchpad operations OK. Nothing related show up in the logs.
+
+
+I know that some kind of US holiday is in effect presently, but please
+make an effort to take a coordinated look at this afterwards. The
+issues are so old and widespread that even the angels cry (I'm told).
+
+PS. No, Dmitry. Lowering the report rate, eg psmouse.rate=40 does not
+fix anything, as I tried on your suggestion already in August 2006.
