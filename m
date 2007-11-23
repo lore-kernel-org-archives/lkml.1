@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXKWAfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbXKWAft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbXKWAfO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 19:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXKWAe7
+	id S1755524AbXKWAft (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 19:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbXKWAfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 19:34:59 -0500
-Received: from ozlabs.org ([203.10.76.45]:53852 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbXKWAe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 19:34:58 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Fri, 23 Nov 2007 11:25:11 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711221456.22297.rusty@rustcorp.com.au> <20071122110545.GA4552@infradead.org>
-In-Reply-To: <20071122110545.GA4552@infradead.org>
+	Thu, 22 Nov 2007 19:35:41 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:53127 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752081AbXKWAfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 19:35:40 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 22 Nov 2007 16:35:38 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Where is the new timerfd?
+In-Reply-To: <20071122162430.48f55995.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
+References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
+ <Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
+ <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
+ <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
+ <20071122162430.48f55995.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711231125.12832.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 November 2007 22:05:45 Christoph Hellwig wrote:
-> On Thu, Nov 22, 2007 at 02:56:22PM +1100, Rusty Russell wrote:
-> >     This is an interesting idea, thanks for the code!  My only question
-> > is whether we can get most of this benefit by dropping the indirection of
-> > namespaces and have something like "EXPORT_SYMBOL_TO(sym, modname)"?  It
-> > doesn't work so well for exporting to a group of modules, but that seems
-> > a reasonable line to draw anyway.
->
-> I'd say exporting to a group of modules is the main use case.  E.g. in
-> scsi there would be symbols exported to transport class modules only
-> or lots of the vfs_ symbols would be exported only to stackable filesystems
-> or nfsd.
+On Thu, 22 Nov 2007, Andrew Morton wrote:
 
-That's my point.  If there's a whole class of modules which can use a symbol, 
-why are we ruling out external modules?  If that's what you want, why not 
-have a list of permitted modules compiled into the kernel and allow no 
-others?
+> On Thu, 22 Nov 2007 11:46:13 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
+> > 
+> > > On Nov 22, 2007 6:34 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
+> > > >
+> > > > > Hey Davide,
+> > > > >
+> > > > > Where is the new timerfd API.  In 2.6.24-rc3, I see the *old* API...
+> > > >
+> > > > Maybe Andrew stuffed the turkey with it? :) It was there. I remeber it was
+> > > > merged. Some screw up reverted it?
+> > > 
+> > > t looks that way.
+> > 
+> > I'm looking at the log now. It never went in actually. Andrew-san, what 
+> > happened?
+> > 
+> 
+> Last I recall, we removed the API for 2.6.23 because we intended to do a
+> different interface for 2.6.24.
+> 
+> But I don't recall seeing any timerfd patches in maybe a month.
 
-Cheers,
-Rusty.
+Was sent on Sep 23, Subject: new timerfd API
+Do you want me to repost?
+
+
+
+- Davide
+
+
