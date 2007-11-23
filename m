@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbXKWTqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbXKWTr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757580AbXKWTqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 14:46:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbXKWTqX
+	id S1757841AbXKWTr6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 14:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbXKWTru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 14:46:23 -0500
-Received: from waste.org ([66.93.16.53]:39287 "EHLO waste.org"
+	Fri, 23 Nov 2007 14:47:50 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:1314 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755040AbXKWTqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 14:46:22 -0500
-Date: Fri, 23 Nov 2007 13:41:39 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
-Message-ID: <20071123194139.GC19691@waste.org>
-References: <4745DCD7.8070805@simon.arlott.org.uk> <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru> <20071123184851.GA14415@2ka.mipt.ru> <20071123185101.GA17582@2ka.mipt.ru> <20071123185906.GA23710@2ka.mipt.ru> <20071123191120.GA19691@waste.org> <20071123193222.GA22168@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071123193222.GA22168@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1757184AbXKWTru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 14:47:50 -0500
+Subject: Re: [PATCH 9/9] Clean up open coded inode dirty checks
+From: Joe Perches <joe@perches.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
+       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0711231914300.12552@fbirervta.pbzchgretzou.qr>
+References: <20071122004422.GO114266761@sgi.com>
+	 <20071123180239.GA13229@infradead.org>
+	 <Pine.LNX.4.64.0711231914300.12552@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Fri, 23 Nov 2007 11:47:31 -0800
+Message-Id: <1195847251.4930.21.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 10:32:22PM +0300, Evgeniy Polyakov wrote:
-> On Fri, Nov 23, 2007 at 01:11:20PM -0600, Matt Mackall (mpm@selenic.com) wrote:
-> > On Fri, Nov 23, 2007 at 09:59:06PM +0300, Evgeniy Polyakov wrote:
-> > > On Fri, Nov 23, 2007 at 09:51:01PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > > > On Fri, Nov 23, 2007 at 09:48:51PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > > > > Stop, we are trying to free skb without destructor and catch connection
-> > > > > tracking, so it is not a solution. To fix the problem we need to check
-> > > > > if it is not netfilter related, kind of this (not tested), Simon please
-> > > > > give it a try:
-> > > > 
-> > > > And to be really cool we need to bypass skbs with xfrm attached, since
-> > > > its freeing also assumes BH context.
-> > > 
-> > > What about compile options?
-> > 
-> > What about my original suggestion that we mark skbs owned by netpoll
-> > and free only those. Much safer, no? Untested:
-> 
-> This should work if there are netpoll's skbs, but if we are under memory
-> pressure we want to free not only netpoll skbs, but at least one, and 
-> what if there are no netpoll skbs in the queue?
+On Fri, 2007-11-23 at 19:16 +0100, Jan Engelhardt wrote:
+> static inline bool xfs_inode_clean(const struct xfs_inode *ip)
+> {
+> 	if (ip->i_itemp == NULL)
+> 		return true;
+> 	if (!(ip->i_itemp->ili_format.ilf_fields & XFS_ILOG_ALL) &&
+> 	    ip->i_update_core == NULL)
+> 		return true;
+> 	return false;
+> }
 
-Yeah, that's a concern (but note that we do have a private reserve and
-we only really need the zap when our reserve is depleted). But I worry
-that it's too fragile and if we add a new unsafe case, it won't be
-noticed for a long time. This is the first report I've seen of this
-particular problem, so this has been a latent bug for three or four
-years now.
+Your code changed the test.
+xfs_inode.i_update_core is an unsigned char.
 
-Here's another thought: move all this logic into the networking core,
-unify it with current softirq zapper, then allow it to be called from
-various other places (like atomic allocators). Then it'll all be in
-central maintained place with more users.
+I believe reordering the tests to avoid a possibly
+unnecessary dereference is better.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+	if (ip->i_update_core)
+		return false;
+	if (!ip->i_itemp)
+		return true;
+	return ip->i_itemp->ili_format.ilf_fields & XFS_ILOG_ALL;
+
+
