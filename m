@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbXKWTJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbXKWTPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbXKWTJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 14:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbXKWTJZ
+	id S1757490AbXKWTPG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 14:15:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbXKWTO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 14:09:25 -0500
-Received: from waste.org ([66.93.16.53]:46385 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbXKWTJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 14:09:24 -0500
-Date: Fri, 23 Nov 2007 12:59:43 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
-Message-ID: <20071123185943.GZ19691@waste.org>
-References: <4745DCD7.8070805@simon.arlott.org.uk> <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru>
+	Fri, 23 Nov 2007 14:14:56 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:15274 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbXKWTOz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 14:14:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VPEO8TIDCpPO6mNsqLoCKqNyAsfqj5wT+7iwmccRkcqHAv1CAoBEz6rpaLnUd73U9QsecrQouRLtcWzu5dyp7e7lo3G1EZRvP2xoyDaCnRN190crlwjUbY0cLLItwswU47fpGEbRusbuNq3qT1BS8q1xCqQnrS9w70mDIvFBkIs=
+Message-ID: <cfd18e0f0711231114l33f3c4b8t9a6dbadaf0e9b0a3@mail.gmail.com>
+Date: Fri, 23 Nov 2007 20:14:54 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Ulrich Drepper" <drepper@gmail.com>
+Subject: Re: Where is the new timerfd?
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <a36005b50711231038j48325a41o26d1749ee89ab64d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071123175757.GA23991@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
+	 <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
+	 <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
+	 <20071122162430.48f55995.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
+	 <20071122173437.e74890a8.akpm@linux-foundation.org>
+	 <cfd18e0f0711230439m1d72abdle4d5050b0bd935a1@mail.gmail.com>
+	 <20071123091254.45f4193d.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0711230928590.15603@alien.or.mcafeemobile.com>
+	 <a36005b50711231038j48325a41o26d1749ee89ab64d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 08:57:57PM +0300, Evgeniy Polyakov wrote:
-> On Fri, Nov 23, 2007 at 11:07:56AM -0600, Matt Mackall (mpm@selenic.com) wrote:
-> > On Fri, Nov 23, 2007 at 01:55:19PM +0300, Evgeniy Polyakov wrote:
-> > > On Fri, Nov 23, 2007 at 12:21:57AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > > > > [2059664.615816] __iptables__: init4 IN=ppp0 OUT=ppp0 WARNING: at kernel/softirq.c:139 local_bh_enable()
-> > > > > [2059664.620535]  [<80120364>] local_bh_enable+0x3c/0x97
-> > > 
-> > > > > [2059664.620657]  [<8011c205>] __call_console_drivers+0x61/0x6d
-> > > > > [2059664.620669]  [<8011c3fc>] release_console_sem+0x164/0x1bf
-> > > > > [2059664.620679]  [<8011c81f>] vprintk+0x27a/0x2ff
-> > >  
-> > > > If that trace is to be beieved we're doing nefilter stuff on packets which
-> > > > were sent across netconsole.
-> > > > 
-> > > > This probably isn't anything the netfilter guys have thought about.  And
-> > > > probably we don't want them to.  Is there some simple way in which we can
-> > > > exempt netconsole from netfilter processing?
-> > > 
-> > > This is not about netfilter, but about freeing skb in interrupt context, 
-> > > which is not allowed, and in interrupt skbs are queued to be freed in softirq,
-> > > but netcnsole wants to flush softirq freeing queue. That is a question: why?
-> > 
-> > My memory here is hazy, but I think this exists to rescue netconsole
-> > in low-memory situations. This bit originated with Ingo, so maybe he
-> > can recall.
-> > 
-> > Netpoll can process an arbitrary number of skbs inside a single
-> > interrupt. Think sysrq-t at one packet per line or kgdboe where the
-> > entire trace session can happen inside one very long interrupt.
-> > 
-> > Perhaps we can refine this to mark netpoll's skbs (perhaps with
-> > ->destructor?) and delete only skbs we own. As these are never passed
-> > through any of the other route/xfrm/filter code, they should be safe
-> > to delete even in irq context, yes?
-> > 
-> > > Removing zap_completion_queue() from find_skb() will fix the warning,
-> > > but I'm not sure this is a correct fix. I've added Matt to the Cc list.
-> > 
-> > Care to try the sysrq-t or OOM message tests?
-> 
-> We basically can not free skbs there - if it is interrupt context and
-> we are freeing some skb with destructor we will catch the warning anyway.
+On Nov 23, 2007 7:38 PM, Ulrich Drepper <drepper@gmail.com> wrote:
+> On Nov 23, 2007 9:29 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > Yes, it's disabled, and yes, I'll repost today ...
+>
+> I haven't seen the patch and don't feel like searching.  So I say it
+> here: please mak sure you add a flags parameter to the system call
+> itself (instead of adding it on as for eventfd and signalfd).  We need
+> to be able to use O_CLOEXEC some way or another.
 
-Perhaps I'm missing some context here. We don't free skbs with
-destructors in irq context in zap_completion_queue. We reinsert them on the
-completion list. We do this by calling dev_kfree_skb_any.
+Seems reasonable to add this for timer_create() (though unfortunate
+that it is now too late to do the same for eventfd() and signalfd()).
+Davide, what do you think?
 
-So I'd be surprised if that was a problem. But I can imagine having
-problems for skbs without destructors which run into one of these in
-__kfree_skb:
+Cheers,
 
-dst_release
-secpath_put
-nf_conntrack_put
-nf_conntrack_put_reasm
-nf_bridge_put
-
-..some or all of which assume a softirq context.
-
-> No matter if we are under memory pressure or whatever - it is not
-> allowed - a lot of skbs are supposed to be freed in softirq context,
-> that is why dev_kfree_skb_any() exists.
-
-Some skbs we definitely -can- free in irq context. The only ones we
-care about are the ones generated by netpoll. If there's a reason you
-think netpoll's own skbs can't be freed, please describe it.
-
-> I think we can drop skbs _without_ destructor from the queue though in
-> that conditions given that we actually need only one.
-
-Huh?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+Michael
