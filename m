@@ -1,139 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXKWMh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbXKWMkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbXKWMh6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 07:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXKWMht
+	id S1757089AbXKWMkI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 07:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbXKWMj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 07:37:49 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:52408 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbXKWMhs (ORCPT
+	Fri, 23 Nov 2007 07:39:57 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:9157 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755578AbXKWMj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 07:37:48 -0500
-Date: Fri, 23 Nov 2007 13:37:39 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.24-rc3-mm1] IPC/semaphores: consolidate SEM_STAT and
- IPC_STAT commands
-Message-Id: <20071123133739.330189e4.pierre.peiffer@bull.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 23/11/2007 13:45:01,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 23/11/2007 13:45:03,
-	Serialize complete at 23/11/2007 13:45:03
+	Fri, 23 Nov 2007 07:39:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LqE7G6S5PuLo6wxhVXO6H74z7fjLFvF06vw2EgXOzIu1HccSrajmswzxfHQkwOC+oEg/P+jzvJfDGzvhkighaSSpc8+amsKa2EOuqeQnxRZijij5783Iy5HkIlbEaw4WqdVgMXuoNzIUODMEYRX0xVBjaQOJX82cyYPNVShMQ2g=
+Message-ID: <cfd18e0f0711230439m1d72abdle4d5050b0bd935a1@mail.gmail.com>
+Date: Fri, 23 Nov 2007 13:39:55 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Where is the new timerfd?
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071122173437.e74890a8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
+	 <Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
+	 <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
+	 <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
+	 <20071122162430.48f55995.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
+	 <20071122173437.e74890a8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/23/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 22 Nov 2007 16:35:38 -0800 (PST) Davide Libenzi
+> <davidel@xmailserver.org> wrote:
+>
+> > On Thu, 22 Nov 2007, Andrew Morton wrote:
+[...]
+> > > Last I recall, we removed the API for 2.6.23 because we intended to do a
+> > > different interface for 2.6.24.
+> > >
+> > > But I don't recall seeing any timerfd patches in maybe a month.
+> >
+> > Was sent on Sep 23, Subject: new timerfd API
+>
+> Half of us weren't born then ;)
+>
+> > Do you want me to repost?
+>
+> yes please.
 
-These both commands (SEM_STAT and IPC_STAT) are rather doing the same things
-(only the meaning of the id given as input and the return value differ).
-However, for the semaphores, they are handled in two different places
-(two different functions).
+I suppose this means that timerfd will only go in for 2.6.25.  I don't
+have a problem with that, but we better make sure that the existing
+timerfd in 2.6.24 is still disabled.  (Andrew had a one liner for
+that, but I haven't checked if it's in place.)
 
-This patch consolidates this for clarification by handling these both
-commands in the same place in semctl_nolock(). It also removes one
-unused parameter for this function.
+Cheers,
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
----
-
- ipc/sem.c |   38 ++++++++++++++++----------------------
- 1 file changed, 16 insertions(+), 22 deletions(-)
-
-Index: b/ipc/sem.c
-===================================================================
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -599,8 +599,8 @@ static unsigned long copy_semid_to_user(
- 	}
- }
- 
--static int semctl_nolock(struct ipc_namespace *ns, int semid, int semnum,
--		int cmd, int version, union semun arg)
-+static int semctl_nolock(struct ipc_namespace *ns, int semid,
-+			 int cmd, int version, union semun arg)
- {
- 	int err = -EINVAL;
- 	struct sem_array *sma;
-@@ -639,14 +639,23 @@ static int semctl_nolock(struct ipc_name
- 			return -EFAULT;
- 		return (max_id < 0) ? 0: max_id;
- 	}
-+	case IPC_STAT:
- 	case SEM_STAT:
- 	{
- 		struct semid64_ds tbuf;
- 		int id;
- 
--		sma = sem_lock(ns, semid);
--		if (IS_ERR(sma))
--			return PTR_ERR(sma);
-+		if (cmd == SEM_STAT) {
-+			sma = sem_lock(ns, semid);
-+			if (IS_ERR(sma))
-+				return PTR_ERR(sma);
-+			id = sma->sem_perm.id;
-+		} else {
-+			sma = sem_lock_check(ns, semid);
-+			if (IS_ERR(sma))
-+				return PTR_ERR(sma);
-+			id = 0;
-+		}
- 
- 		err = -EACCES;
- 		if (ipcperms (&sma->sem_perm, S_IRUGO))
-@@ -656,8 +665,6 @@ static int semctl_nolock(struct ipc_name
- 		if (err)
- 			goto out_unlock;
- 
--		id = sma->sem_perm.id;
--
- 		memset(&tbuf, 0, sizeof(tbuf));
- 
- 		kernel_to_ipc64_perm(&sma->sem_perm, &tbuf.sem_perm);
-@@ -792,19 +799,6 @@ static int semctl_main(struct ipc_namesp
- 		err = 0;
- 		goto out_unlock;
- 	}
--	case IPC_STAT:
--	{
--		struct semid64_ds tbuf;
--		memset(&tbuf,0,sizeof(tbuf));
--		kernel_to_ipc64_perm(&sma->sem_perm, &tbuf.sem_perm);
--		tbuf.sem_otime  = sma->sem_otime;
--		tbuf.sem_ctime  = sma->sem_ctime;
--		tbuf.sem_nsems  = sma->sem_nsems;
--		sem_unlock(sma);
--		if (copy_semid_to_user (arg.buf, &tbuf, version))
--			return -EFAULT;
--		return 0;
--	}
- 	/* GETVAL, GETPID, GETNCTN, GETZCNT, SETVAL: fall-through */
- 	}
- 	err = -EINVAL;
-@@ -971,15 +965,15 @@ asmlinkage long sys_semctl (int semid, i
- 	switch(cmd) {
- 	case IPC_INFO:
- 	case SEM_INFO:
-+	case IPC_STAT:
- 	case SEM_STAT:
--		err = semctl_nolock(ns,semid,semnum,cmd,version,arg);
-+		err = semctl_nolock(ns, semid, cmd, version, arg);
- 		return err;
- 	case GETALL:
- 	case GETVAL:
- 	case GETPID:
- 	case GETNCNT:
- 	case GETZCNT:
--	case IPC_STAT:
- 	case SETVAL:
- 	case SETALL:
- 		err = semctl_main(ns,semid,semnum,cmd,version,arg);
-
--- 
-Pierre Peiffer
+Michael
