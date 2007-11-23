@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXKWBNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbXKWBRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbXKWBNU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 20:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXKWBNI
+	id S1755493AbXKWBRm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 20:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXKWBRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 20:13:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46647
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751654AbXKWBNH (ORCPT
+	Thu, 22 Nov 2007 20:17:33 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:62593 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbXKWBRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 20:13:07 -0500
-Date: Thu, 22 Nov 2007 17:13:06 -0800 (PST)
-Message-Id: <20071122.171306.166854987.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: yoshfuji@linux-ipv6.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au
-Subject: Re: [RFC/PATCH] SO_NO_CHECK for IPv6
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4744CAA4.50102@garzik.org>
-References: <20071121124532.GA17263@havoc.gtf.org>
-	<20071121.222051.94402865.yoshfuji@linux-ipv6.org>
-	<4744CAA4.50102@garzik.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp
+	Thu, 22 Nov 2007 20:17:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=LIcyNRWH9bjBfiZAHDWJ97rAtyL2N8s/aEQL5ukJ1frPAsaDz8mVmU5JXCx2vsyZrJOugw/8UGpL8Um9AzoaMzIksoXjaezoe8siZgq6Mtgi8DhAI2c5/piUGIrGqlak6+6MjX1DH/Czh1cts6khOvsK12kK1dQvCH7A33nGgyc=
+Message-ID: <47462A25.1060207@gmail.com>
+Date: Fri, 23 Nov 2007 10:17:25 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v2)
+References: <47438248.7030704@shaw.ca> <4745234E.9050409@gmail.com> <47462673.3080701@shaw.ca>
+In-Reply-To: <47462673.3080701@shaw.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Wed, 21 Nov 2007 19:17:40 -0500
-
-> YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> > In article <20071121124532.GA17263@havoc.gtf.org> (at Wed, 21 Nov 2007 07:45:32 -0500), Jeff Garzik <jeff@garzik.org> says:
-> > 
-> >> SO_NO_CHECK support for IPv6 appeared to be missing. This is presented,
-> >> based on a reading of net/ipv4/udp.c.
-> > 
-> > Disagree. UDP checksum is mandatory in IPv6.
+Robert Hancock wrote:
+>>> +    /* Ensure DMA mask is set to 32-bit before allocating legacy PRD
+>>> and
+>>> +       pad buffers */
+>>> +    pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+>>> +    pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
+>> [--snip--]
+>>> +    pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
+>>> +    pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64));
+>>
+>> I'm probably being paranoid here but please add error checks.  Just
+>> checking return value and returning error suffices.
 > 
-> Ah, you mean that I need to turn off UDP checksum on receive end as well 
-> in IPv6...  true.
-> 
-> For those interested, I am dealing with a UDP app that already does very 
-> strong checksumming and encryption, so additional software checksumming 
-> at the lower layers is quite simply a waste of CPU cycles.  Hardware 
-> checksumming is fine, as long as its "free."
+> In the 32-bit case, I'm pretty sure those are guaranteed not to fail
+> because 32-bit is the default. For the 64-bit ones, we don't care if
+> they fail, because then we'll just use whatever mask ends up being set
+> (we store the actual set DMA mask in adma_dma_mask for use when we need
+> to reconfigure the bounce limit). We definitely don't want to fail
+> initialization if the 64-bit set doesn't succeed..
 
-Regardless of whatever verifications your application is doing
-on the data, it is not checksumming the ports and that's what
-the pseudo-header is helping with.
+Then please add BUG or WARN_ON after 32bit switching (but then again if
+you're gonna do that why not just add if (rc) return rc?) and add
+comment stating setting 64 bit dma masks is allowed to fail.
 
-You cannot disable checksums in ipv6/UDP, they are not optional and
-with %99.9999999 of cards doing the checksum in hardware, and even if
-we do have to compute it it's free during the copy during recvmsg().
+Thanks.
+
+-- 
+tejun
