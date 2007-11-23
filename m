@@ -1,50 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXKWNZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXKWNmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757113AbXKWNZP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 08:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXKWNZD
+	id S1756840AbXKWNmp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 08:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbXKWNmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 08:25:03 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55964 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753559AbXKWNZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 08:25:00 -0500
-Message-ID: <47482675.80602@suse.de>
-Date: Sat, 24 Nov 2007 18:56:13 +0530
-From: Nikanth Karthikesan <knikanth@suse.de>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Fri, 23 Nov 2007 08:42:37 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54923 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752353AbXKWNmg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 08:42:36 -0500
+Date: Fri, 23 Nov 2007 13:41:55 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Pavel Emelyanov <xemul@openvz.org>
+cc: Andrew Morton <akpm@osdl.org>, Linux MM <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH][SHMEM] Factor out sbi->free_inodes manipulations
+In-Reply-To: <4745B4F2.3060308@openvz.org>
+Message-ID: <Pine.LNX.4.64.0711231325510.18348@blonde.wat.veritas.com>
+References: <4745B4F2.3060308@openvz.org>
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       vatsa@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: [PATCH] sched: minor optimization
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Nov 23, 2007 at  5:48 PM, "Dmitry Adamushko"
-<dmitry.adamushko@gmail.com> wrote:
-> The only legitimate possibility of having the fair_sched_class
-> returning no task in this case is when 'rq->nr_running ==
-> rq->cfs.nr_running == 0'.
+Looks good, but we can save slightly more there (depending on config),
+and I found your inc/dec names a little confusing, since the count is
+going the other way: how do you feel about this version?  (I'd like it
+better if those helpers could take a struct inode *, but they cannot.)
+Hugh
 
-Yes, I think so.
 
-> iow, a possible optimization would be just the following check :
->
-> if (rq->nr_running == 0)
->         return idle_sched_class.pick_next_task(rq);
-> at the beginning of pick_next_task().
->
-> (or maybe put it at the beginning of the
-> if (likely(rq->nr_running == rq->cfs.nr_running)) {} block as we
-> already have 'likely()' there).
->
+From: Pavel Emelyanov <xemul@openvz.org>
 
-But that might add a test before the case we want to optimize the most.
-I just thought of taking advantage of a case where we know
-rq->nr_running==0, instead of throwing away that information.
+The shmem_sb_info structure has a number of free_inodes. This
+value is altered in appropriate places under spinlock and with
+the sbi->max_inodes != 0 check.
 
-Thanks
-Nikanth
+Consolidate these manipulations into two helpers.
+
+This is minus 42 bytes of shmem.o and minus 4 :) lines of code.
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+
+ mm/shmem.c |   72 ++++++++++++++++++++++++---------------------------
+ 1 file changed, 34 insertions(+), 38 deletions(-)
+
+--- 2.6.24-rc3/mm/shmem.c	2007-11-07 04:21:45.000000000 +0000
++++ linux/mm/shmem.c	2007-11-23 12:43:28.000000000 +0000
+@@ -207,6 +207,31 @@ static void shmem_free_blocks(struct ino
+ 	}
+ }
+ 
++static int shmem_reserve_inode(struct super_block *sb)
++{
++	struct shmem_sb_info *sbinfo = SHMEM_SB(sb);
++	if (sbinfo->max_inodes) {
++		spin_lock(&sbinfo->stat_lock);
++		if (!sbinfo->free_inodes) {
++			spin_unlock(&sbinfo->stat_lock);
++			return -ENOMEM;
++		}
++		sbinfo->free_inodes--;
++		spin_unlock(&sbinfo->stat_lock);
++	}
++	return 0;
++}
++
++static void shmem_free_inode(struct super_block *sb)
++{
++	struct shmem_sb_info *sbinfo = SHMEM_SB(sb);
++	if (sbinfo->max_inodes) {
++		spin_lock(&sbinfo->stat_lock);
++		sbinfo->free_inodes++;
++		spin_unlock(&sbinfo->stat_lock);
++	}
++}
++
+ /*
+  * shmem_recalc_inode - recalculate the size of an inode
+  *
+@@ -762,7 +787,6 @@ static int shmem_notify_change(struct de
+ 
+ static void shmem_delete_inode(struct inode *inode)
+ {
+-	struct shmem_sb_info *sbinfo = SHMEM_SB(inode->i_sb);
+ 	struct shmem_inode_info *info = SHMEM_I(inode);
+ 
+ 	if (inode->i_op->truncate == shmem_truncate) {
+@@ -777,11 +801,7 @@ static void shmem_delete_inode(struct in
+ 		}
+ 	}
+ 	BUG_ON(inode->i_blocks);
+-	if (sbinfo->max_inodes) {
+-		spin_lock(&sbinfo->stat_lock);
+-		sbinfo->free_inodes++;
+-		spin_unlock(&sbinfo->stat_lock);
+-	}
++	shmem_free_inode(inode->i_sb);
+ 	clear_inode(inode);
+ }
+ 
+@@ -1398,15 +1418,8 @@ shmem_get_inode(struct super_block *sb, 
+ 	struct shmem_inode_info *info;
+ 	struct shmem_sb_info *sbinfo = SHMEM_SB(sb);
+ 
+-	if (sbinfo->max_inodes) {
+-		spin_lock(&sbinfo->stat_lock);
+-		if (!sbinfo->free_inodes) {
+-			spin_unlock(&sbinfo->stat_lock);
+-			return NULL;
+-		}
+-		sbinfo->free_inodes--;
+-		spin_unlock(&sbinfo->stat_lock);
+-	}
++	if (shmem_reserve_inode(sb))
++		return NULL;
+ 
+ 	inode = new_inode(sb);
+ 	if (inode) {
+@@ -1450,11 +1463,8 @@ shmem_get_inode(struct super_block *sb, 
+ 						NULL);
+ 			break;
+ 		}
+-	} else if (sbinfo->max_inodes) {
+-		spin_lock(&sbinfo->stat_lock);
+-		sbinfo->free_inodes++;
+-		spin_unlock(&sbinfo->stat_lock);
+-	}
++	} else
++		shmem_free_inode(sb);
+ 	return inode;
+ }
+ 
+@@ -1797,22 +1807,14 @@ static int shmem_create(struct inode *di
+ static int shmem_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
+ {
+ 	struct inode *inode = old_dentry->d_inode;
+-	struct shmem_sb_info *sbinfo = SHMEM_SB(inode->i_sb);
+ 
+ 	/*
+ 	 * No ordinary (disk based) filesystem counts links as inodes;
+ 	 * but each new link needs a new dentry, pinning lowmem, and
+ 	 * tmpfs dentries cannot be pruned until they are unlinked.
+ 	 */
+-	if (sbinfo->max_inodes) {
+-		spin_lock(&sbinfo->stat_lock);
+-		if (!sbinfo->free_inodes) {
+-			spin_unlock(&sbinfo->stat_lock);
+-			return -ENOSPC;
+-		}
+-		sbinfo->free_inodes--;
+-		spin_unlock(&sbinfo->stat_lock);
+-	}
++	if (shmem_reserve_inode(inode->i_sb))
++		return -ENOSPC;
+ 
+ 	dir->i_size += BOGO_DIRENT_SIZE;
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+@@ -1827,14 +1829,8 @@ static int shmem_unlink(struct inode *di
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 
+-	if (inode->i_nlink > 1 && !S_ISDIR(inode->i_mode)) {
+-		struct shmem_sb_info *sbinfo = SHMEM_SB(inode->i_sb);
+-		if (sbinfo->max_inodes) {
+-			spin_lock(&sbinfo->stat_lock);
+-			sbinfo->free_inodes++;
+-			spin_unlock(&sbinfo->stat_lock);
+-		}
+-	}
++	if (inode->i_nlink > 1 && !S_ISDIR(inode->i_mode))
++		shmem_free_inode(inode->i_sb);
+ 
+ 	dir->i_size -= BOGO_DIRENT_SIZE;
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
