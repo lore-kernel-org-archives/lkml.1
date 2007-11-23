@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbXKWTzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbXKWUAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758007AbXKWTzT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 14:55:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbXKWTzB
+	id S1757928AbXKWUAw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 15:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbXKWUAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 14:55:01 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36854 "EHLO 2ka.mipt.ru"
+	Fri, 23 Nov 2007 15:00:45 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:56093 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756912AbXKWTzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 14:55:00 -0500
-Date: Fri, 23 Nov 2007 22:54:11 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
-Message-ID: <20071123195410.GA11401@2ka.mipt.ru>
-References: <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru> <20071123184851.GA14415@2ka.mipt.ru> <20071123185101.GA17582@2ka.mipt.ru> <20071123185906.GA23710@2ka.mipt.ru> <20071123191120.GA19691@waste.org> <20071123193222.GA22168@2ka.mipt.ru> <20071123194139.GC19691@waste.org>
+	id S1757360AbXKWUAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 15:00:44 -0500
+Date: Fri, 23 Nov 2007 22:59:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 1/2] wait_task_stopped: remove unneeded delay_group_leader check
+Message-ID: <20071123195941.GA163@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071123194139.GC19691@waste.org>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 01:41:39PM -0600, Matt Mackall (mpm@selenic.com) wrote:
-> Here's another thought: move all this logic into the networking core,
-> unify it with current softirq zapper, then allow it to be called from
-> various other places (like atomic allocators). Then it'll all be in
-> central maintained place with more users.
+wait_task_stopped() doesn't need the "delay_group_leader" parameter. If the
+child is not traced it must be a group leader. With or without subthreads
+->group_stop_count == 0 when the whole task is stopped.
 
-This can be done quite easily - put a check into __kfree_skb() if
-netpoll is compiled-in and we are in hardirq context, then put skb
-into softirq freeing queue. Then zap_completion_queue() can free
-anything without ever knowing about nature of the packet, since this
-will be checked in __kfree_skb() anyway.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Kind of this:
-
-diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-index 758dafe..88f8ea9 100644
---- a/net/core/netpoll.c
-+++ b/net/core/netpoll.c
-@@ -196,10 +196,7 @@ static void zap_completion_queue(void)
- 		while (clist != NULL) {
- 			struct sk_buff *skb = clist;
- 			clist = clist->next;
--			if (skb->destructor)
--				dev_kfree_skb_any(skb); /* put this one back */
--			else
--				__kfree_skb(skb);
-+			__kfree_skb(skb);
- 		}
- 	}
- 
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 27cfe5f..f720685 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -318,6 +318,12 @@ void kfree_skbmem(struct sk_buff *skb)
- 
- void __kfree_skb(struct sk_buff *skb)
+--- PT/kernel/exit.c~5_ck_group_stop	2007-11-22 19:08:43.000000000 +0300
++++ PT/kernel/exit.c	2007-11-23 20:31:21.000000000 +0300
+@@ -1348,7 +1348,7 @@ static int wait_task_zombie(struct task_
+  * the lock and this task is uninteresting.  If we return nonzero, we have
+  * released the lock and the system call should return.
+  */
+-static int wait_task_stopped(struct task_struct *p, int delayed_group_leader,
++static int wait_task_stopped(struct task_struct *p,
+ 			     int noreap, struct siginfo __user *infop,
+ 			     int __user *stat_addr, struct rusage __user *ru)
  {
-+#if defined(CONFIG_NETPOLL) || defined(CONFIG_NETPOLL_TRAP)
-+	if (in_irq() || irqs_disabled()) {
-+		dev_kfree_skb_irq(skb);
-+		return;
-+	}
-+#endif
- 	dst_release(skb->dst);
- #ifdef CONFIG_XFRM
- 	secpath_put(skb->sp);
+@@ -1362,8 +1362,7 @@ static int wait_task_stopped(struct task
+ 	if (unlikely(!is_task_stopped_or_traced(p)))
+ 		goto unlock_sig;
+ 
+-	if (delayed_group_leader && !(p->ptrace & PT_PTRACED) &&
+-	    p->signal->group_stop_count > 0)
++	if (!(p->ptrace & PT_PTRACED) && p->signal->group_stop_count > 0)
+ 		/*
+ 		 * A group stop is in progress and this is the group leader.
+ 		 * We won't report until all threads have stopped.
+@@ -1519,7 +1518,7 @@ repeat:
+ 				    !(options & WUNTRACED))
+ 					continue;
+ 
+-				retval = wait_task_stopped(p, ret == 2,
++				retval = wait_task_stopped(p,
+ 						(options & WNOWAIT), infop,
+ 						stat_addr, ru);
+ 			} else if (p->exit_state == EXIT_ZOMBIE) {
 
--- 
-	Evgeniy Polyakov
