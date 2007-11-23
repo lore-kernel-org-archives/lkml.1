@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbXKWTr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbXKWTxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbXKWTr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 14:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbXKWTru
+	id S1757710AbXKWTxp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 14:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756998AbXKWTxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 14:47:50 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:1314 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757184AbXKWTru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 14:47:50 -0500
-Subject: Re: [PATCH 9/9] Clean up open coded inode dirty checks
-From: Joe Perches <joe@perches.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
-       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0711231914300.12552@fbirervta.pbzchgretzou.qr>
-References: <20071122004422.GO114266761@sgi.com>
-	 <20071123180239.GA13229@infradead.org>
-	 <Pine.LNX.4.64.0711231914300.12552@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Fri, 23 Nov 2007 11:47:31 -0800
-Message-Id: <1195847251.4930.21.camel@localhost>
+	Fri, 23 Nov 2007 14:53:34 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44363 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756912AbXKWTxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 14:53:34 -0500
+Date: Fri, 23 Nov 2007 20:53:30 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071123195330.GA24223@one.firstfloor.org>
+References: <20071122343.446909000@suse.de> <200711231125.12832.rusty@rustcorp.com.au> <200711230236.22759.ak@suse.de> <200711231435.05788.rusty@rustcorp.com.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711231435.05788.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-23 at 19:16 +0100, Jan Engelhardt wrote:
-> static inline bool xfs_inode_clean(const struct xfs_inode *ip)
-> {
-> 	if (ip->i_itemp == NULL)
-> 		return true;
-> 	if (!(ip->i_itemp->ili_format.ilf_fields & XFS_ILOG_ALL) &&
-> 	    ip->i_update_core == NULL)
-> 		return true;
-> 	return false;
-> }
+On Fri, Nov 23, 2007 at 02:35:05PM +1100, Rusty Russell wrote:
+> On Friday 23 November 2007 12:36:22 Andi Kleen wrote:
+> > On Friday 23 November 2007 01:25, Rusty Russell wrote:
+> > > That's my point.  If there's a whole class of modules which can use a
+> > > symbol, why are we ruling out external modules?
+> >
+> > The point is to get cleaner interfaces.
+> 
+> But this doesn't change interfaces at all.  It makes modules fail to load 
+> unless they're on a permitted list, which now requires maintenance.
 
-Your code changed the test.
-xfs_inode.i_update_core is an unsigned char.
+The modules wouldn't be using the internal interfaces in the first
+place with name spaces in place. This serves as a documentation
+on what is considered internal. And if some obscure module (in or
+out of tree) wants to use an internal interface they first have
+to send the module maintainer a patch and get some review this way.
 
-I believe reordering the tests to avoid a possibly
-unnecessary dereference is better.
+I believe that is fairly important in tree too because the 
+kernel has become so big now that review cannot be the only
+enforcement mechanism for this anymore.
 
-	if (ip->i_update_core)
-		return false;
-	if (!ip->i_itemp)
-		return true;
-	return ip->i_itemp->ili_format.ilf_fields & XFS_ILOG_ALL;
+Another secondary reason is that there are too many exported interfaces
+in general. Several distributions have policies that require to 
+keep the changes to these exported interfaces minimal and that
+is very hard with thousands of exported symbol.  With name spaces
+the number of truly publicly exported symbols will hopefully
+shrink to a much smaller, more manageable set.
 
-
+-Andi
