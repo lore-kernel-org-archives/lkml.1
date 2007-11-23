@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbXKWVxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbXKWVyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbXKWVxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 16:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbXKWVxJ
+	id S1757996AbXKWVyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 16:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbXKWVyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 16:53:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41084 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbXKWVxI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 16:53:08 -0500
-Date: Fri, 23 Nov 2007 13:52:12 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Bryan Wu" <cooloney.lkml@gmail.com>
-Cc: "David Woodhouse" <dwmw2@infradead.org>, "Bryan Wu" <bryan.wu@analog.com>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       "Michael Hennerich" <michael.hennerich@analog.com>
-Subject: Re: [PATCH 1/1] [MTD/NAND]: Add Blackfin BF52x on-chip NAND Flash
- controller driver support in bf5xx_nand driver
-Message-ID: <20071123135212.7c483aae@laptopd505.fenrus.org>
-In-Reply-To: <386072610711230625k23b68e49q6090b7eb27c2c039@mail.gmail.com>
-References: <1195812893-26312-1-git-send-email-bryan.wu@analog.com>
-	<1195813178.25590.35.camel@pmac.infradead.org>
-	<386072610711230625k23b68e49q6090b7eb27c2c039@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Fri, 23 Nov 2007 16:54:07 -0500
+Received: from gate.crashing.org ([63.228.1.57]:58442 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754835AbXKWVyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 16:54:06 -0500
+Subject: Re: Where is the interrupt going?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Al Niessner <Al.Niessner@jpl.nasa.gov>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
+References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
+Content-Type: text/plain
+Date: Sat, 24 Nov 2007 08:53:53 +1100
+Message-Id: <1195854833.7195.24.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Nov 2007 22:25:29 +0800
-"Bryan Wu" <cooloney.lkml@gmail.com> wrote:
 
-> On Nov 23, 2007 6:19 PM, David Woodhouse <dwmw2@infradead.org> wrote:
-> >
-> > On Fri, 2007-11-23 at 18:14 +0800, Bryan Wu wrote:
-> > >
-> > > +#ifdef CONFIG_BF54x
-> > >         /* Setup DMAC1 channel mux for NFC which shared with SDH
-> > > */ val = bfin_read_DMAC1_PERIMUX();
-> > >         val &= 0xFFFE;
-> > >         bfin_write_DMAC1_PERIMUX(val);
-> > >         SSYNC();
-> > > -
-> > > +#endif
-> >
-> > You can't build a multiplatform kernel which runs on BF52x and
-> > BF54x?
+On Wed, 2007-11-21 at 17:08 -0800, Al Niessner wrote:
 > 
-> There are some hardware difference between BF52x and BF54x. We have
-> to do this.
+> p8620 = pci_get_device (APC8620_VENDOR_ID, APC8620_DEVICE_ID, p8620);
+> <... fail if p8620 is 0 ...>
+> apcsi[i].ret_val = register_chrdev (MAJOR_NUM,
 > 
+> DEVICE_NAME,
+> 
+> &apc8620_ops);
+> <... fail if ret_val < 0 ...>
+> apcsi[i].board_irq = p8620->irq;
+> status = request_irq (apcsi[i].board_irq,
+>                                       apc8620_handler,
+>                                       IRQF_DISABLED,
+>                                       DEVICE_NAME,
+>                                       (void*)&apcsi[i]);
 
-well does it need to be an #ifdef, or can it be a runtime if() ?
+First, that's obviously not the proper way to do a PCI driver but I
+suppose you know that :-)
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Then, make sure you call pci_enable_device() at one point, don't some
+platforms perform the actual IRQ routing that late ? (And don't sample
+pdev->irq before the pci_enable_device(), sample it afterward).
+
+Cheers,
+Ben.
+
+
