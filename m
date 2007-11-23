@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXKWGHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbXKWGSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbXKWGHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 01:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbXKWGHo
+	id S1754810AbXKWGSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 01:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXKWGSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 01:07:44 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1379 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbXKWGHn (ORCPT
+	Fri, 23 Nov 2007 01:18:30 -0500
+Received: from twinlark.arctic.org ([207.29.250.54]:43519 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbXKWGS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 01:07:43 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Cc: <netdev@vger.kernel.org>
-Subject: RE: [RFC/PATCH] SO_NO_CHECK for IPv6
-Date: Thu, 22 Nov 2007 22:06:35 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKIEFLIGAC.davids@webmaster.com>
+	Fri, 23 Nov 2007 01:18:29 -0500
+Date: Thu, 22 Nov 2007 22:18:28 -0800 (PST)
+From: dean gaudet <dean@arctic.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, kune@deine-taler.de, johannes@sipsolutions.net
+Subject: Re: [RFC] Documentation about unaligned memory access
+In-Reply-To: <20071123012911.3266dba6@the-village.bc.nu>
+Message-ID: <alpine.DEB.0.99999.0711222206000.32648@twinlark.arctic.org>
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net> <20071123012911.3266dba6@the-village.bc.nu>
+User-Agent: Alpine 0.99999 (DEB 796 2007-11-08)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20071122.171306.166854987.davem@davemloft.net>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 22 Nov 2007 22:07:40 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 22 Nov 2007 22:07:41 -0800
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 23 Nov 2007, Alan Cox wrote:
 
-> Regardless of whatever verifications your application is doing
-> on the data, it is not checksumming the ports and that's what
-> the pseudo-header is helping with.
+> Its usually faster if you don't misalign on x86 as well.
 
-So what? We are in the case where the data has already gotten to him. If it
-got to him in error, he'll reject it anyway. The receive checksum check will
-only reject packets that he would reject anyway. That makes it needless.
+i'm not sure if i agree with "usually"... but i know you (alan) are 
+probably aware of the exact requirements of the hw.
 
-Of course, if the check is nearly free, there's no potential win, so no
-point in bothering.
+for everyone else:
 
-DS
+on intel x86 processors an access is unaligned only if it crosses a 
+cacheline boundary (64 bytes).  otherwise it's aligned.  the penalty for 
+crossing a cacheline boundary varies from ~12 cycles (core2) to many 
+dozens of cycles (p4).
 
+on AMD x86 pre-family 10h the boundary is 8 bytes, and on fam 10h it's 16 
+bytes.  the penalty is a mere 3 cycles if an access crosses the specified 
+boundary.
 
+if you're making <= 4 byte accesses i recommend not worrying about 
+alignment on x86.  it's pretty hard to beat the hardware support.
+
+i curse all the RISC and embedded processor designers who pretend 
+unaligned accesses are something evil and to be avoided.  in case you're 
+worried, MIPS patent 4,814,976 expired in december 2006 :)
+
+-dean
