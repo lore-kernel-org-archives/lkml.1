@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbXKWBd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbXKWBfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbXKWBd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 20:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXKWBdt
+	id S1755915AbXKWBfE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 20:35:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbXKWBez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 20:33:49 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41838 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751388AbXKWBds (ORCPT
+	Thu, 22 Nov 2007 20:34:55 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53126 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751563AbXKWBey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 20:33:48 -0500
-Date: Fri, 23 Nov 2007 01:29:11 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, kune@deine-taler.de,
-       johannes@sipsolutions.net
-Subject: Re: [RFC] Documentation about unaligned memory access
-Message-ID: <20071123012911.3266dba6@the-village.bc.nu>
-In-Reply-To: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
-References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 22 Nov 2007 20:34:54 -0500
+Date: Thu, 22 Nov 2007 17:34:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Where is the new timerfd?
+Message-Id: <20071122173437.e74890a8.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
+References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
+	<Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
+	<cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
+	<Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
+	<20071122162430.48f55995.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Most architectures are unable to perform unaligned memory accesses. Any
-> unaligned access causes a processor exception.
+On Thu, 22 Nov 2007 16:35:38 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Not all. Some simply produce the wrong answer - thats oh so much more
-exciting.
+> On Thu, 22 Nov 2007, Andrew Morton wrote:
+> 
+> > On Thu, 22 Nov 2007 11:46:13 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
+> > 
+> > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
+> > > 
+> > > > On Nov 22, 2007 6:34 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > > > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
+> > > > >
+> > > > > > Hey Davide,
+> > > > > >
+> > > > > > Where is the new timerfd API.  In 2.6.24-rc3, I see the *old* API...
+> > > > >
+> > > > > Maybe Andrew stuffed the turkey with it? :) It was there. I remeber it was
+> > > > > merged. Some screw up reverted it?
+> > > > 
+> > > > t looks that way.
+> > > 
+> > > I'm looking at the log now. It never went in actually. Andrew-san, what 
+> > > happened?
+> > > 
+> > 
+> > Last I recall, we removed the API for 2.6.23 because we intended to do a
+> > different interface for 2.6.24.
+> > 
+> > But I don't recall seeing any timerfd patches in maybe a month.
+> 
+> Was sent on Sep 23, Subject: new timerfd API
 
-> You may be wondering why you have never seen these problems on your own
-> architecture. Some architectures (such as i386 and x86_64) do not have this
-> limitation, but nevertheless it is important for you to write portable code
-> that works everywhere.
+Half of us weren't born then ;)
 
-Its usually faster if you don't misalign on x86 as well.
+> Do you want me to repost?
 
-Alan
+yes please.
