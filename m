@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbXKWUQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbXKWUk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbXKWUQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 15:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbXKWUQj
+	id S1756841AbXKWUk0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 15:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXKWUkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 15:16:39 -0500
-Received: from waste.org ([66.93.16.53]:34945 "EHLO waste.org"
+	Fri, 23 Nov 2007 15:40:12 -0500
+Received: from rtr.ca ([76.10.145.34]:4988 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757086AbXKWUQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 15:16:38 -0500
-Date: Fri, 23 Nov 2007 14:09:13 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
-Message-ID: <20071123200913.GE19691@waste.org>
-References: <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru> <20071123184851.GA14415@2ka.mipt.ru> <20071123185101.GA17582@2ka.mipt.ru> <20071123185906.GA23710@2ka.mipt.ru> <20071123191120.GA19691@waste.org> <20071123193222.GA22168@2ka.mipt.ru> <20071123194139.GC19691@waste.org> <20071123195410.GA11401@2ka.mipt.ru>
+	id S1752525AbXKWUkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 15:40:10 -0500
+Message-ID: <47473AA8.2050908@rtr.ca>
+Date: Fri, 23 Nov 2007 15:40:08 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071123195410.GA11401@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: Mark Lord <liml@rtr.ca>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
+References: <47463534.9010100@shaw.ca> <4746F02D.2060204@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D901053E8542@EMPBEDEX.empirix.com> <474711FE.8040805@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D901053E8543@EMPBEDEX.empirix.com>
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901053E8543@EMPBEDEX.empirix.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 10:54:11PM +0300, Evgeniy Polyakov wrote:
-> On Fri, Nov 23, 2007 at 01:41:39PM -0600, Matt Mackall (mpm@selenic.com) wrote:
-> > Here's another thought: move all this logic into the networking core,
-> > unify it with current softirq zapper, then allow it to be called from
-> > various other places (like atomic allocators). Then it'll all be in
-> > central maintained place with more users.
+Mark wrote:
+> Yeah, I kind of had your reports in mind when I asked that.  :)
 > 
-> This can be done quite easily - put a check into __kfree_skb() if
-> netpoll is compiled-in and we are in hardirq context, then put skb
-> into softirq freeing queue. Then zap_completion_queue() can free
-> anything without ever knowing about nature of the packet, since this
-> will be checked in __kfree_skb() anyway.
+> On a related note, I now have lots of Marvell (sata_mv) hardware here,
+> and an Intel CPU/chipset box with physical RAM above the 4GB boundary.
 
-What I had in mind was moving the whole zap_completion_queue concept
-into net/core/skbuff. So that netpoll (and, say, atomic kmalloc) can
-simply call something like "clean_completion_queue".
+Morrison, Tom wrote:
+> Yes, I believe that - otherwise, this problem would have
+> been a crisis a LONG time ago...:-)
+>  
+> But I do have some more questions in relationship to how 
+> things are mapped in your environment. I have a flat memory 
+> map (i.e.: the full 0x0 -- 0x1_0000_0000 is passed to the 32bit 
+> Linux kernel without any 'holes' and/or reserved areas).
+>  
+> Does your Intel memory map have this same type of flat memory 
+> model (and thus allow use of the FULL lower 4Gig) - or does it 
+> reserve areas of lower 4Gig for devices and such - if not - where 
+> are these reserved areas - and how do the relate to the I/O memory
+> map for the device?
+>  
+> In other words, I would be very interested in seeing the memory 
+> map & the PCI memory mapping to see if any overlap/correspond 
+> to reserve areas of lower 4 Gig (in a linux 32bit mode)...
+...
 
--- 
-Mathematics is the supreme nostalgia of our time.
+I believe that only 2GB or so of the 4GB RAM appears below the 4GB boundary.
+The rest is accessed above 4GB, using Intel's 36-bit PAE functionality.
+
+I think what you want to see is /proc/mtrr, annotated below by me:
+
+reg00: base=0x080000000 (2048MB), size=2048MB: uncachable, count=1  I/O space
+reg01: base=0x000000000 (   0MB), size=4096MB: write-back, count=1  first 2GB of RAM + I/O space
+reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1  third GB of RAM
+reg03: base=0x140000000 (5120MB), size= 512MB: write-back, count=1  portion of 4th GB of RAM
+reg04: base=0x160000000 (5632MB), size= 256MB: write-back, count=1  portion of 4th GB of RAM
+reg05: base=0x170000000 (5888MB), size= 128MB: write-back, count=1  portion of 4th GB of RAM
+reg06: base=0x178000000 (6016MB), size=  64MB: write-back, count=1  portion of 4th GB of RAM
+reg07: base=0x0af800000 (2808MB), size=   8MB: uncachable, count=1  (?) dunno
+
+>From that, the visible RAM should be 2048 + 1024 + 512 + 256 + 128 + 64 = 3968MB.
+In /proc/meminfo, it reports MemTotal of 4067260kB, which divided by 1024 gives 3971MB.
+
+The BIOS reports 4024MB.
+
+But the MTRR values above do make it rather clear that nearly half the RAM
+requires 33-bit physical addressing for access.
+
+Cheers
