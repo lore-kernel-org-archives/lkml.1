@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbXKWA13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbXKWAeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbXKWA13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 19:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbXKWA1V
+	id S1755095AbXKWAeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 19:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXKWAeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 19:27:21 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:40562 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbXKWA1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 19:27:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UH3V5POitVpZF45IfOPYDUH67O5RG9Dkel2o3IWO0z/oaJ7/bx4LIi3KLOOWjPGTNILQXXO9C5881RUOqyOymoQg/nZlWF0L6kq2RjvSoZEv+M5hUJDi+IH4MQh0dF9x8O61VErOWguoIiflqPEjC/Cj0el+IJrxdXGrKtbyxVE=
-Message-ID: <3aa654a40711221627w4ddf36eel54fdac66f81cac4e@mail.gmail.com>
-Date: Thu, 22 Nov 2007 16:27:19 -0800
-From: "Avuton Olrich" <avuton@gmail.com>
-To: "Daniel Drake" <dsd@gentoo.org>
-Subject: Re: [RFC] Documentation about unaligned memory access
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, kune@deine-taler.de,
-       johannes@sipsolutions.net
-In-Reply-To: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
+	Thu, 22 Nov 2007 19:34:13 -0500
+Received: from ozlabs.org ([203.10.76.45]:48487 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751376AbXKWAeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 19:34:12 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Date: Fri, 23 Nov 2007 11:29:25 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <20071122343.446909000@suse.de> <200711221456.22297.rusty@rustcorp.com.au> <200711221246.23994.ak@suse.de>
+In-Reply-To: <200711221246.23994.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
+Message-Id: <200711231129.25982.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 22, 2007 4:15 PM, Daniel Drake <dsd@gentoo.org> wrote:
-> Before I do so, any comments on the following?
+On Thursday 22 November 2007 22:46:23 Andi Kleen wrote:
+> On Thursday 22 November 2007 04:56, Rusty Russell wrote:
+> >     This is an interesting idea, thanks for the code!  My only question
+> > is whether we can get most of this benefit by dropping the indirection of
+> > namespaces and have something like "EXPORT_SYMBOL_TO(sym, modname)"?  It
+> > doesn't work so well for exporting to a group of modules, but that seems
+> > a reasonable line to draw anyway.
 >
+> That would explode quickly already even for my example "inet" namespace.
+> It already has several modules.  I don't think so much duplication would be
+> a good idea.
 
-< above case it would insert 2 bytes of padding inbetween field1 and field2.
-> above case it would insert 2 bytes of padding in between field1 and field2.
+Yes, and if a symbol is already used by multiple modules, it's generically 
+useful.  And if so, why restrict it to in-tree modules?
 
+If your real intent is to bias against out-of-tree modules, let's just 
+generate a list of in-tree module names, and restrict some or all exports to 
+that set.
 
-< moving field3 to sit inbetween field1 and field2 (where the padding is
-> moving field3 to sit in between field1 and field2 (where the padding is
--- 
-avuton
---
- Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
+Rusty.
