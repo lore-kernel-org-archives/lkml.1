@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbXKWK43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbXKWLCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbXKWK43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 05:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXKWK4V
+	id S1756286AbXKWLCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 06:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXKWLB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 05:56:21 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:35590 "EHLO mail.screens.ru"
+	Fri, 23 Nov 2007 06:01:57 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:33574 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754966AbXKWK4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 05:56:21 -0500
-Date: Fri, 23 Nov 2007 13:54:57 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/2] ptrace_stop: fix the race with ptrace detach+attach
-Message-ID: <20071123105457.GA93@tv-sign.ru>
-References: <20071122161459.GA5973@tv-sign.ru> <20071123102351.GD6240@localhost.sw.ru>
+	id S1753770AbXKWLB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 06:01:56 -0500
+Date: Fri, 23 Nov 2007 13:55:19 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
+Message-ID: <20071123105518.GA22062@2ka.mipt.ru>
+References: <4745DCD7.8070805@simon.arlott.org.uk> <20071123002157.cb27f4a1.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071123102351.GD6240@localhost.sw.ru>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071123002157.cb27f4a1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23, Alexey Dobriyan wrote:
->
-> On Thu, Nov 22, 2007 at 07:14:59PM +0300, Oleg Nesterov wrote:
-> > If the tracer went away (may_ptrace_stop() failed), ptrace_stop() drops tasklist
-> > and then changes the ->state from TASK_TRACED to TASK_RUNNING.
-> > 
-> > This can fool another tracer which attaches to us in between. Change the ->state
-> > under tasklist_lock to ensure that ptrace_check_attach() can't wrongly succeed.
+On Fri, Nov 23, 2007 at 12:21:57AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > [2059664.615816] __iptables__: init4 IN=ppp0 OUT=ppp0 WARNING: at kernel/softirq.c:139 local_bh_enable()
+> > [2059664.620535]  [<80120364>] local_bh_enable+0x3c/0x97
+
+> > [2059664.620657]  [<8011c205>] __call_console_drivers+0x61/0x6d
+> > [2059664.620669]  [<8011c3fc>] release_console_sem+0x164/0x1bf
+> > [2059664.620679]  [<8011c81f>] vprintk+0x27a/0x2ff
+ 
+> If that trace is to be beieved we're doing nefilter stuff on packets which
+> were sent across netconsole.
 > 
-> ptrace_check_attach? Both do read_lock -- can run in parallel,
+> This probably isn't anything the netfilter guys have thought about.  And
+> probably we don't want them to.  Is there some simple way in which we can
+> exempt netconsole from netfilter processing?
 
-Yep.
+This is not about netfilter, but about freeing skb in interrupt context, 
+which is not allowed, and in interrupt skbs are queued to be freed in softirq,
+but netcnsole wants to flush softirq freeing queue. That is a question: why?
 
-> so how can it help?
+Removing zap_completion_queue() from find_skb() will fix the warning,
+but I'm not sure this is a correct fix. I've added Matt to the Cc list.
 
-read_lock prevents ptrace_attach(), so the new tracer can't attach
-and then do ptrace_check_attach().
-
-Oleg.
-
+-- 
+	Evgeniy Polyakov
