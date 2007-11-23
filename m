@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbXKWIaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXKWIgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbXKWIaS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 03:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXKWIaG
+	id S1755431AbXKWIgp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 03:36:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXKWIgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 03:30:06 -0500
-Received: from web51602.mail.re2.yahoo.com ([206.190.38.207]:36256 "HELO
-	web51602.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752107AbXKWIaF (ORCPT
+	Fri, 23 Nov 2007 03:36:36 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41349 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751719AbXKWIgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 03:30:05 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Nov 2007 03:30:05 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Gm5/Bh5dD6IzMJOmIJuTdjaVde0kH12q/md5TGTcBoCIjs7zgZQbg88o4FZ7Zb9gFZ/7G+KKF+geWCpqev+O5poTO4VfcqCXO1uYJHKk0qlRSHbYO67W597tU1WFoEShei8Zr+GSLNDfNwxqTyDPWnpSwXnk59MgsyE9Yu1j8bI=;
-X-YMail-OSG: 9eAJzZ8VM1kbJhOf88JcNmykmedKio4Au_ScVyCelxhS8Hhwo8e82BctivQCHJC1XbANDIJ1FIxHgOc5y82ozLB7tgKhSOGVXrCZ0KCDI9kYg.90xZ6X8Uyz81eaT5kvy3kHnq8cl5l38q8-
-Date: Fri, 23 Nov 2007 00:23:23 -0800 (PST)
-From: Durand <titetan@yahoo.com>
-Subject: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3, v2.6.23.8, v2.6.22.13, v2.6.21.7
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Fri, 23 Nov 2007 03:36:35 -0500
+Date: Fri, 23 Nov 2007 00:35:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: steve@tuxsoft.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc2 displays incorrect DVD description
+Message-Id: <20071123003557.36a126bd.akpm@linux-foundation.org>
+In-Reply-To: <1354.72.205.227.110.1194986901.squirrel@www.tuxsoft.com>
+References: <1354.72.205.227.110.1194986901.squirrel@www.tuxsoft.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <248019.51681.qm@web51602.mail.re2.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
 
-Just applied this patch to 2.6.22.13 and 2.6.22.14. Compiles and runs fine but
-on my laptop, it prevents suspending and hibernating with "one tasks refuses to
-freeze" load_balance_mo.
+(cc linux-ide)
 
-Reverting back to sched-cfs-2.6.22.9-v22 solves this problem. If you need more
-details, CC me with a reply as I lurk on the mailing list every 2 days or so.
+On Tue, 13 Nov 2007 15:48:21 -0500 (EST) steve@tuxsoft.com wrote:
 
+> For example, 2.6.23.1:
+> 
+> Linux version 2.6.23.1 (root@jupiter) (gcc version 4.2.2) #1 SMP PREEMPT
+> Fri Oct 26 13:09:09 CDT 2007
+> kernel: hdd: HP DVD Writer 1040d, ATAPI CD/DVD-ROM drive
+> kernel: hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache,
+> UDMA(66)
+> 
+> and
+> 
+> 2.6.24-rc2:
+> 
+> Linux version 2.6.24-rc2 (ironman@jupiter) (gcc version 4.2.2) #1 SMP
+> PREEMPT Fri Nov 9 20:41:37 CST 2007
+> kernel: hdd: HP DVD Writer 1040d, ATAPI CD/DVD-ROM drive
+> kernel: hdd: ATAPI 126X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache,
+> UDMA(66)
+> 
+> The drive seems to work correctly, reading and writing just fine.  I just
+> happened to notice this and thought I'd pass it along.
+> 
+> One other odd thing while looking through the logs, 2.6.23.1 has also
+> reported the drive as follows:
+> 
+> Linux version 2.6.23.1 (root@jupiter) (gcc version 4.2.2) #1 SMP PREEMPT
+> Fri Oct 26 13:09:09 CDT 2007
+> kernel: hdd: HP DVD Writer 1040d, ATAPI CD/DVD-ROM drive
+> kernel: hdd: ATAPI 32X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache,
+> UDMA(66)
+> 
+> Any idea what is going on here?  It's being reported as 48X, 126X, and 32X.
+> 
 
--- 
-Thanks,
-
-Durand
-
-
-
-      ____________________________________________________________________________________
-Get easy, one-click access to your favorites. 
-Make Yahoo! your homepage.
-http://www.yahoo.com/r/hs 
