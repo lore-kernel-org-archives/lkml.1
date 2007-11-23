@@ -1,88 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbXKWUBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbXKWUJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758119AbXKWUBL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 15:01:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXKWUAp
+	id S1757914AbXKWUJW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 15:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbXKWUJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 15:00:45 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:56097 "EHLO mail.screens.ru"
+	Fri, 23 Nov 2007 15:09:07 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:33500 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757318AbXKWUAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 15:00:44 -0500
-Date: Fri, 23 Nov 2007 22:59:42 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Paris <eparis@redhat.com>, James Morris <jmorris@namei.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 2/2] do_wait: cleanup delay_group_leader() usage
-Message-ID: <20071123195942.GA166@tv-sign.ru>
+	id S1752627AbXKWUJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 15:09:05 -0500
+Date: Fri, 23 Nov 2007 23:07:47 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
+Message-ID: <20071123200747.GA18433@2ka.mipt.ru>
+References: <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru> <20071123184851.GA14415@2ka.mipt.ru> <20071123185101.GA17582@2ka.mipt.ru> <20071123185906.GA23710@2ka.mipt.ru> <20071123191120.GA19691@waste.org> <20071123193222.GA22168@2ka.mipt.ru> <20071123194139.GC19691@waste.org> <20071123195410.GA11401@2ka.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071123195410.GA11401@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eligible_child() == 2 means delay_group_leader(). With the previous patch this
-only matters for EXIT_ZOMBIE task, we can move that special check to the only
-place it is really needed.
+On Fri, Nov 23, 2007 at 10:54:10PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> On Fri, Nov 23, 2007 at 01:41:39PM -0600, Matt Mackall (mpm@selenic.com) wrote:
+> > Here's another thought: move all this logic into the networking core,
+> > unify it with current softirq zapper, then allow it to be called from
+> > various other places (like atomic allocators). Then it'll all be in
+> > central maintained place with more users.
+> 
+> This can be done quite easily - put a check into __kfree_skb() if
+> netpoll is compiled-in and we are in hardirq context, then put skb
+> into softirq freeing queue. Then zap_completion_queue() can free
+> anything without ever knowing about nature of the packet, since this
+> will be checked in __kfree_skb() anyway.
 
-Also, with this patch we don't skip security_task_wait() for the group leaders
-in a non-empty thread group. I don't really understand the exact semantics of
-security_task_wait(), but imho this change is a bugfix.
+And let's add some mess...
+But should fix the case when netpoll code is being executed in interrupt
+context and is about to free skb, which should not be freed.
 
-Also rearrange the code a bit to kill an ugly "check_continued" backdoor.
+Frankly saying this looks like crap.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Crap-added-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
---- PT/kernel/exit.c~6_delay_leader	2007-11-23 20:31:21.000000000 +0300
-+++ PT/kernel/exit.c	2007-11-23 21:29:44.000000000 +0300
-@@ -1137,12 +1137,6 @@ static int eligible_child(pid_t pid, int
- 	if (((p->exit_signal != SIGCHLD) ^ ((options & __WCLONE) != 0))
- 	    && !(options & __WALL))
- 		return 0;
--	/*
--	 * Do not consider thread group leaders that are
--	 * in a non-empty thread group:
--	 */
--	if (delay_group_leader(p))
--		return 2;
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 758dafe..88f8ea9 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -196,10 +196,7 @@ static void zap_completion_queue(void)
+ 		while (clist != NULL) {
+ 			struct sk_buff *skb = clist;
+ 			clist = clist->next;
+-			if (skb->destructor)
+-				dev_kfree_skb_any(skb); /* put this one back */
+-			else
+-				__kfree_skb(skb);
++			__kfree_skb(skb);
+ 		}
+ 	}
  
- 	err = security_task_wait(p);
- 	if (err)
-@@ -1494,10 +1488,9 @@ repeat:
- 	tsk = current;
- 	do {
- 		struct task_struct *p;
--		int ret;
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 27cfe5f..8642097 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -318,6 +318,26 @@ void kfree_skbmem(struct sk_buff *skb)
  
- 		list_for_each_entry(p, &tsk->children, sibling) {
--			ret = eligible_child(pid, options, p);
-+			int ret = eligible_child(pid, options, p);
- 			if (!ret)
- 				continue;
- 
-@@ -1521,19 +1514,17 @@ repeat:
- 				retval = wait_task_stopped(p,
- 						(options & WNOWAIT), infop,
- 						stat_addr, ru);
--			} else if (p->exit_state == EXIT_ZOMBIE) {
-+			} else if (p->exit_state == EXIT_ZOMBIE &&
-+					!delay_group_leader(p)) {
- 				/*
--				 * Eligible but we cannot release it yet:
-+				 * We don't reap group leaders with subthreads.
- 				 */
--				if (ret == 2)
--					goto check_continued;
- 				if (!likely(options & WEXITED))
- 					continue;
- 				retval = wait_task_zombie(p,
- 						(options & WNOWAIT), infop,
- 						stat_addr, ru);
- 			} else if (p->exit_state != EXIT_DEAD) {
--check_continued:
- 				/*
- 				 * It's running now, so it might later
- 				 * exit, stop, or stop and then continue.
+ void __kfree_skb(struct sk_buff *skb)
+ {
++#if defined(CONFIG_NETPOLL) || defined(CONFIG_NETPOLL_TRAP)
++	if (in_irq() || irqs_disabled()) {
++		if (skb->destructor) {
++			dev_kfree_skb_irq(skb);
++			return;
++		}
++#if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
++		if (skb->nfct || skb->nfct_reasm) {
++			dev_kfree_skb_irq(skb);
++			return;
++		}
++#endif
++#ifdef CONFIG_XFRM
++		if (skb->sp) {
++			dev_kfree_skb_irq(skb);
++			return;
++		}
++#endif
++	}
++#endif
+ 	dst_release(skb->dst);
+ #ifdef CONFIG_XFRM
+ 	secpath_put(skb->sp);
 
+-- 
+	Evgeniy Polyakov
