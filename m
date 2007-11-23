@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbXKWMXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbXKWMak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbXKWMXi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 07:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbXKWMX2
+	id S1756958AbXKWMak (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 07:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXKWMac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 07:23:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60999 "EHLO mx2.mail.elte.hu"
+	Fri, 23 Nov 2007 07:30:32 -0500
+Received: from www.tglx.de ([62.245.132.106]:59489 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756583AbXKWMX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 07:23:26 -0500
-Date: Fri, 23 Nov 2007 13:23:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Durand <titetan@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch/backport] CFS scheduler, -v24, for v2.6.24-rc3,
-	v2.6.23.8, v2.6.22.13, v2.6.21.7
-Message-ID: <20071123122311.GA6685@elte.hu>
-References: <248019.51681.qm@web51602.mail.re2.yahoo.com>
+	id S1752209AbXKWMab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 07:30:31 -0500
+Date: Fri, 23 Nov 2007 13:30:15 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: NOHZ: local_softirq_pending 20
+In-Reply-To: <20071123112442.GA12047@bre-cln-ukleine.digi.com>
+Message-ID: <alpine.LFD.0.9999.0711231323490.26417@localhost.localdomain>
+References: <20071123112442.GA12047@bre-cln-ukleine.digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <248019.51681.qm@web51602.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-690791884-1195821016=:26417"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Durand <titetan@yahoo.com> wrote:
+--8323328-690791884-1195821016=:26417
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-> Ingo,
+On Fri, 23 Nov 2007, Uwe Kleine-König wrote:
+> my kernel reported:
 > 
-> Just applied this patch to 2.6.22.13 and 2.6.22.14. Compiles and runs 
-> fine but on my laptop, it prevents suspending and hibernating with 
-> "one tasks refuses to freeze" load_balance_mo.
+> 	NOHZ: local_softirq_pending 20
 
-please re-download the v24 patch, it should have this bug fixed.
+Thats TASKLET_SOFTIRQ
+ 
+> I cannot interpret it, but probably this is bad, because before
+> bc5393a6c9c0e70b4b43fb2fb63e3315e9a15c8f this used to BUG().
 
-	Ingo
+We removed the BUG, because it's a situation where the kernel can
+easily recover. It should never happen that the kernel goes to sleep
+with a pending softirq, but it's not a fatal error.
+
+> This happend while having a high load.  Up to now it only happend once
+> and I cannot reproduce it.
+
+That's hard to tell then. Without a reproducible test case I can not
+do much to help debugging this.
+
+   tglx
+--8323328-690791884-1195821016=:26417--
