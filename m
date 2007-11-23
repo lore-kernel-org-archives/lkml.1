@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbXKWKQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbXKWKRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbXKWKQy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 05:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbXKWKQp
+	id S1756993AbXKWKRv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 05:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbXKWKRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 05:16:45 -0500
-Received: from ro-out-1112.google.com ([72.14.202.178]:60496 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755562AbXKWKQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 05:16:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=gygE1KUkwB+vMKFaqBCTOVjPBR1RJnYTBC8rAySuXtl1nDKpC3Flxgf7l7juF2pXN+UxooPef6blFpuWDfVU+GDUeiiHPp3kH1cKEDupy3n9NUIwNYskamxNKpovHH7aXgTKgeKG4kUKLj/GLZ87Icu2yGVuJKyC5hR7q3F5SNo=
-Date: Fri, 23 Nov 2007 18:13:48 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Jeff Dike <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PROBLEM] uml doesn't compile on i386
-Message-ID: <20071123101348.GC2488@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <84144f020711230052h2d0b8af8radbdf1d7b08a57e3@mail.gmail.com>
+	Fri, 23 Nov 2007 05:17:42 -0500
+Received: from mail.gmx.net ([213.165.64.20]:52210 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754492AbXKWKRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 05:17:41 -0500
+X-Authenticated: #18865375
+X-Provags-ID: V01U2FsdGVkX18fCzslvq0f18+JobIXyTJ4EzOkZwfJF9B428qHbi
+	7n/Qt6lc9KjLbu
+Message-ID: <4746A8BE.8030703@gmx.de>
+Date: Fri, 23 Nov 2007 11:17:34 +0100
+From: Ansgar Knappheide <ansgar.knappheide@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.5) Gecko/20070716 Thunderbird/2.0.0.5 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020711230052h2d0b8af8radbdf1d7b08a57e3@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: steve@tuxsoft.com, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc2 displays incorrect DVD description
+References: <1354.72.205.227.110.1194986901.squirrel@www.tuxsoft.com> <20071123003557.36a126bd.akpm@linux-foundation.org>
+In-Reply-To: <20071123003557.36a126bd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 10:52:06AM +0200, Pekka Enberg wrote:
->Hi,
+Andrew Morton schrieb:
+> (cc linux-ide)
 >
->Current git head doesn't compile. Looks like fall-out from the x86 merge?
+> On Tue, 13 Nov 2007 15:48:21 -0500 (EST) steve@tuxsoft.com wrote:
 >
->penberg@haji:~/src/linux/uml-2.6$ make ARCH=um
->  SYMLINK arch/um/include/kern_constants.h
->  SYMLINK arch/um/include/sysdep
->make[1]: `arch/um/sys-i386/user-offsets.s' is up to date.
->  CHK     arch/um/include/user_constants.h
->  CHK     include/linux/version.h
->  CHK     include/linux/utsrelease.h
->  CC      arch/um/kernel/asm-offsets.s
->In file included from include/asm/arch/atomic.h:2,
->                 from include/asm/atomic.h:9,
->                 from include/linux/spinlock.h:333,
->                 from include/linux/seqlock.h:29,
->                 from include/linux/time.h:8,
->                 from include/linux/timex.h:57,
->                 from include/linux/sched.h:53,
->                 from arch/um/include/sysdep/kernel-offsets.h:2,
->                 from arch/um/kernel/asm-offsets.c:1:
->include/asm/arch/atomic_32.h: In function 'atomic_add_unless':
->include/asm/arch/atomic_32.h:237: error: 'struct cpuinfo_um' has no
->member named 'x86'
->In file included from include/asm/rwsem.h:4,
->                 from include/linux/rwsem.h:24,
->                 from include/linux/mm_types.h:11,
->                 from include/linux/sched.h:60,
->                 from arch/um/include/sysdep/kernel-offsets.h:2,
->                 from arch/um/kernel/asm-offsets.c:1:
->include/asm/arch/rwsem.h: In function '__down_write_trylock':
->include/asm/arch/rwsem.h:165: error: 'struct cpuinfo_um' has no member
->named 'x86'
->make[1]: *** [arch/um/kernel/asm-offsets.s] Error 1
->make: *** [prepare0] Error 2
+>   
+>> For example, 2.6.23.1:
+>>
+>> Linux version 2.6.23.1 (root@jupiter) (gcc version 4.2.2) #1 SMP PREEMPT
+>> Fri Oct 26 13:09:09 CDT 2007
+>> kernel: hdd: HP DVD Writer 1040d, ATAPI CD/DVD-ROM drive
+>> kernel: hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache,
+>> UDMA(66)
+>>
+>> and
+>>
+>> 2.6.24-rc2:
+>>
+>> Linux version 2.6.24-rc2 (ironman@jupiter) (gcc version 4.2.2) #1 SMP
+>> PREEMPT Fri Nov 9 20:41:37 CST 2007
+>> kernel: hdd: HP DVD Writer 1040d, ATAPI CD/DVD-ROM drive
+>> kernel: hdd: ATAPI 126X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache,
+>> UDMA(66)
+>>
+>> The drive seems to work correctly, reading and writing just fine.  I just
+>> happened to notice this and thought I'd pass it along.
+>>
+>> One other odd thing while looking through the logs, 2.6.23.1 has also
+>> reported the drive as follows:
+>>
+>> Linux version 2.6.23.1 (root@jupiter) (gcc version 4.2.2) #1 SMP PREEMPT
+>> Fri Oct 26 13:09:09 CDT 2007
+>> kernel: hdd: HP DVD Writer 1040d, ATAPI CD/DVD-ROM drive
+>> kernel: hdd: ATAPI 32X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache,
+>> UDMA(66)
+>>
+>> Any idea what is going on here?  It's being reported as 48X, 126X, and 32X.
+>>
+>>     
+>
+>   
+If it's only the speed value in the description, perhaps you had 
+different medias (no medium, CD-ROM, DVD-VIDEO, CD-R, CD-RW, ...) on 
+this bootups in your drive, I have seen this changed speed value 
+depending on insert medium in the past on some Liteon or Samsung drive.
 
-Hmm, I believe this patch[1] from Jeff can solve the problem. ;-)
-
-[1] http://lkml.org/lkml/2007/11/19/220
-
-
+MBR
+Ansgar Knappheide
