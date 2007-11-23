@@ -1,52 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbXKWBvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbXKWCGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752435AbXKWBvv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 20:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXKWBvn
+	id S1754977AbXKWCGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 21:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXKWCGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 20:51:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:5981 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751563AbXKWBvn (ORCPT
+	Thu, 22 Nov 2007 21:06:37 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:41226 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXKWCGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 20:51:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=WT8tpu7VaMe1Sruek7SMYAlQ1FNWx4G6zL5goBgv+FrzYkAglHbK3y6Ur3UwrPMAMvOiHCqL7ozfr7P7xVzuGah2P3r0QGFvNMRkz0CxjTlZar6mvRLubW8bq8vPXISRaRu/saiO+qEnDnx+5aiuQkkppamMcPo6R19CrwFSjwI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Where is the interrupt going?
-Date: Fri, 23 Nov 2007 02:58:55 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: niessner@jpl.nasa.gov, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-kernel@vger.kernel.org
-References: <1195693710.5544.240.camel@morte.jpl.nasa.gov> <20071122164853.cfdplzj5o744sw40@webmail.jpl.nasa.gov> <20071123012525.126010d5@the-village.bc.nu>
-In-Reply-To: <20071123012525.126010d5@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200711230258.56066.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Nov 2007 21:06:36 -0500
+Date: Thu, 22 Nov 2007 20:05:52 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: [PATCH] sata_nv: don't use legacy DMA in ADMA mode (v2)
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+Message-id: <47463580.8080909@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 November 2007, Alan Cox wrote:
-> On Thu, 22 Nov 2007 16:48:53 -0800
-> niessner@jpl.nasa.gov wrote:
-> 
-> > 
-> > I tried the hammer and the problem persists.
-> 
-> See my earlier email - your driver registers the irq with IRQF_DISABLED
-> then never enables it.
+We need to run any DMA command with result taskfile requested in ADMA mode
+when the port is in ADMA mode, otherwise it may try to use the legacy DMA engine
+in ADMA mode which is not allowed. Enforce this with BUG_ON() since data
+corruption could potentially result if this happened. Also WARN_ON() if we try
+and send result taskfile commands while NCQ commands are still active, since the
+hardware doesn't allow this.
 
-As already explained by Kyle IRQF_DISABLED shouldn't matter here.
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-[ Nowadays IRQF_DISABLED only tells kernel/irq/handle.c::handle_IRQ_event()
-  to not enable local interrupts before calling your IRQ handler.
+--- linux-2.6.24-rc3-git1/drivers/ata/sata_nv.c	2007-11-20 17:40:09.000000000 -0600
++++ linux-2.6.24-rc3-git1edit/drivers/ata/sata_nv.c	2007-11-22 19:40:58.000000000 -0600
+@@ -791,11 +791,13 @@
+ 
+ static void nv_adma_tf_read(struct ata_port *ap, struct ata_taskfile *tf)
+ {
+-	/* Since commands where a result TF is requested are not
+-	   executed in ADMA mode, the only time this function will be called
+-	   in ADMA mode will be if a command fails. In this case we
+-	   don't care about going into register mode with ADMA commands
+-	   pending, as the commands will all shortly be aborted anyway. */
++	/* Other than when internal or pass-through commands are executed,
++	   the only time this function will be called in ADMA mode will be
++	   if a command fails. In the failure case we don't care about going
++	   into register mode with ADMA commands pending, as the commands will
++	   all shortly be aborted anyway. We assume that NCQ commands are not
++	   issued via passthrough, which is the only way that switching into
++	   ADMA mode could abort outstanding commands. */
+ 	nv_adma_register_mode(ap);
+ 
+ 	ata_tf_read(ap, tf);
+@@ -1359,11 +1361,9 @@
+ 	struct nv_adma_port_priv *pp = qc->ap->private_data;
+ 
+ 	/* ADMA engine can only be used for non-ATAPI DMA commands,
+-	   or interrupt-driven no-data commands, where a result taskfile
+-	   is not required. */
++	   or interrupt-driven no-data commands. */
+ 	if ((pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) ||
+-	   (qc->tf.flags & ATA_TFLAG_POLLING) ||
+-	   (qc->flags & ATA_QCFLAG_RESULT_TF))
++	   (qc->tf.flags & ATA_TFLAG_POLLING))
+ 		return 1;
+ 
+ 	if ((qc->flags & ATA_QCFLAG_DMAMAP) ||
+@@ -1381,6 +1381,8 @@
+ 		       NV_CPB_CTL_IEN;
+ 
+ 	if (nv_adma_use_reg_mode(qc)) {
++		BUG_ON(!(pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) &&
++			(qc->flags & ATA_QCFLAG_DMAMAP));
+ 		nv_adma_register_mode(qc->ap);
+ 		ata_qc_prep(qc);
+ 		return;
+@@ -1425,9 +1427,17 @@
+ 
+ 	VPRINTK("ENTER\n");
+ 
++	/* We can't handle result taskfile with NCQ commands active, since
++	   retrieving the taskfile switches us out of ADMA mode and would abort
++	   existing commands. */
++	WARN_ON((qc->flags & ATA_QCFLAG_RESULT_TF) &&
++		(qc->ap->qc_allocated & ~(1 << qc->tag)));
++
+ 	if (nv_adma_use_reg_mode(qc)) {
+ 		/* use ATA register mode */
+ 		VPRINTK("using ATA register mode: 0x%lx\n", qc->flags);
++		BUG_ON(!(pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) &&
++			(qc->flags & ATA_QCFLAG_DMAMAP));
+ 		nv_adma_register_mode(qc->ap);
+ 		return ata_qc_issue_prot(qc);
+ 	} else
 
-  I've recently removed IRQF_DISABLED from IDE after noticing this. ]
-
-Bart
