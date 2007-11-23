@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbXKWAWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXKWAY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbXKWAWV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 19:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbXKWAWN
+	id S1754980AbXKWAY5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 19:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbXKWAYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 19:22:13 -0500
-Received: from waste.org ([66.93.16.53]:44508 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbXKWAWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 19:22:12 -0500
-Date: Thu, 22 Nov 2007 18:21:41 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, xfs-oss <xfs@oss.sgi.com>,
+	Thu, 22 Nov 2007 19:24:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42862 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751639AbXKWAYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 19:24:49 -0500
+Date: Thu, 22 Nov 2007 16:24:30 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
        lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-Message-ID: <20071123002141.GU19691@waste.org>
-References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <20071122025726.GG17536@waste.org> <20071122034106.GV114266761@sgi.com> <20071122072549.GQ19691@waste.org> <20071122103159.GW114266761@sgi.com> <20071122181029.GR19691@waste.org> <20071122222909.GY114266761@sgi.com> <20071122230922.GZ114266761@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071122230922.GZ114266761@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Subject: Re: Where is the new timerfd?
+Message-Id: <20071122162430.48f55995.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
+References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
+	<Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
+	<cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
+	<Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 10:09:22AM +1100, David Chinner wrote:
-> On Fri, Nov 23, 2007 at 09:29:09AM +1100, David Chinner wrote:
-> > On Thu, Nov 22, 2007 at 12:10:29PM -0600, Matt Mackall wrote:
-> > > If I've got XFS on filesystems A and B on the same spindle (or volume
-> > > group?) and my real RT I/O takes place only on B, then I want log
-> > > flushing to happen in RT on B. But -never on A-. If I can do this with
-> > > a tunable, I'm perfectly happy.
+On Thu, 22 Nov 2007 11:46:13 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
+
+> On Thu, 22 Nov 2007, Michael Kerrisk wrote:
+> 
+> > On Nov 22, 2007 6:34 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
+> > >
+> > > > Hey Davide,
+> > > >
+> > > > Where is the new timerfd API.  In 2.6.24-rc3, I see the *old* API...
+> > >
+> > > Maybe Andrew stuffed the turkey with it? :) It was there. I remeber it was
+> > > merged. Some screw up reverted it?
 > > 
-> > No, not another mount option. I'm just going to drop this one for
-> > now...
+> > t looks that way.
 > 
-> Actually, I might change it to use the highest non-rt priority, which
-> would solve the latency issues in the normal cases and still leave
-> the RT rope dangling for those that want to use it.
+> I'm looking at the log now. It never went in actually. Andrew-san, what 
+> happened?
 > 
-> Is that an acceptible compromise, Matt?
 
-Yes, that's perfectly fine.
+Last I recall, we removed the API for 2.6.23 because we intended to do a
+different interface for 2.6.24.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+But I don't recall seeing any timerfd patches in maybe a month.
