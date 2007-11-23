@@ -1,122 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbXKWLIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbXKWLXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756450AbXKWLIX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 06:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbXKWLIP
+	id S1756249AbXKWLXR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 06:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbXKWLXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 06:08:15 -0500
-Received: from sacred.ru ([62.205.161.221]:54496 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753452AbXKWLIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 06:08:14 -0500
-Message-ID: <4746B449.5010204@openvz.org>
-Date: Fri, 23 Nov 2007 14:06:49 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 23 Nov 2007 06:23:01 -0500
+Received: from mail164.messagelabs.com ([216.82.253.131]:52212 "HELO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755040AbXKWLXA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 06:23:00 -0500
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-9.tower-164.messagelabs.com!1195816978!16412156!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Fri, 23 Nov 2007 12:24:42 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: NOHZ: local_softirq_pending 20
+Message-ID: <20071123112442.GA12047@bre-cln-ukleine.digi.com>
 MIME-Version: 1.0
-To: Pierre Peiffer <pierre.peiffer@bull.net>
-CC: Cedric Le Goater <clg@fr.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: make struct ipc_ids static in ipc_namespace
-References: <20071122155448.3193c856.pierre.peiffer@bull.net> <474680B5.7020104@fr.ibm.com> <47468347.5090303@openvz.org> <47468927.3040304@openvz.org> <47469630.3060807@bull.net> <47469CF3.1030200@openvz.org> <4746B027.4020506@bull.net>
-In-Reply-To: <4746B027.4020506@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 23 Nov 2007 14:06:54 +0300 (MSK)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 23 Nov 2007 11:22:57.0827 (UTC) FILETIME=[330AAF30:01C82DC3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Peiffer wrote:
-> Ok, I have the patch ready, but before sending it, I worry about the size of
-> struct ipc_namespace if we mark struct ipc_ids as ___cacheline_aligned....
-> 
-> Of course, you we fall into a classical match: performance vs memory size.
-> 
-> As I don't think that I have the knowledge to decide what we must focus on, here
-> after is, for info, the size reported by pahole (on x86, Intel Xeon)
-> 
-> With the patch sent at the beginning of this thread we have:
-> 
-> struct ipc_namespace {
->         struct kref                kref;                 /*     0     4 */
->         struct ipc_ids             ids[3];               /*     4   156 */
->         /* --- cacheline 2 boundary (128 bytes) was 32 bytes ago --- */
->         int                        sem_ctls[4];          /*   160    16 */
->         int                        used_sems;            /*   176     4 */
->         int                        msg_ctlmax;           /*   180     4 */
->         int                        msg_ctlmnb;           /*   184     4 */
->         int                        msg_ctlmni;           /*   188     4 */
->         /* --- cacheline 3 boundary (192 bytes) --- */
->         atomic_t                   msg_bytes;            /*   192     4 */
->         atomic_t                   msg_hdrs;             /*   196     4 */
+Hello,
 
-cacheline boundary is to be here as well... But anyway, please, see my
-last comment :)
+my kernel reported:
 
->         size_t                     shm_ctlmax;           /*   200     4 */
->         size_t                     shm_ctlall;           /*   204     4 */
->         int                        shm_ctlmni;           /*   208     4 */
->         int                        shm_tot;              /*   212     4 */
-> 
->         /* size: 216, cachelines: 4 */
->         /* last cacheline: 24 bytes */
-> };      /* definitions: 1 */
-> 
-> With the new patch, if we mark the struct ipc_ids as ____cacheline_aligned, we
-> have (I put kref at the end, to save one more cacheline):
-> 
-> struct ipc_namespace {
->         struct ipc_ids             sem_ids;              /*     0    64 */
-> 
->         /* XXX last struct has 12 bytes of padding */
-> 
->         /* --- cacheline 1 boundary (64 bytes) --- */
->         int                        sem_ctls[4];          /*    64    16 */
->         int                        used_sems;            /*    80     4 */
-> 
->         /* XXX 44 bytes hole, try to pack */
-> 
->         /* --- cacheline 2 boundary (128 bytes) --- */
->         struct ipc_ids             msg_ids;              /*   128    64 */
-> 
->         /* XXX last struct has 12 bytes of padding */
-> 
->         /* --- cacheline 3 boundary (192 bytes) --- */
->         int                        msg_ctlmax;           /*   192     4 */
->         int                        msg_ctlmnb;           /*   196     4 */
->         int                        msg_ctlmni;           /*   200     4 */
->         atomic_t                   msg_bytes;            /*   204     4 */
->         atomic_t                   msg_hdrs;             /*   208     4 */
-> 
->         /* XXX 44 bytes hole, try to pack */
-> 
->         /* --- cacheline 4 boundary (256 bytes) --- */
->         struct ipc_ids             shm_ids;              /*   256    64 */
-> 
->         /* XXX last struct has 12 bytes of padding */
-> 
->         /* --- cacheline 5 boundary (320 bytes) --- */
->         size_t                     shm_ctlmax;           /*   320     4 */
->         size_t                     shm_ctlall;           /*   324     4 */
->         int                        shm_ctlmni;           /*   328     4 */
->         int                        shm_tot;              /*   332     4 */
->         struct kref                kref;                 /*   336     4 */
-> 
->         /* size: 384, cachelines: 6 */
->         /* sum members: 252, holes: 2, sum holes: 88 */
->         /* padding: 44 */
->         /* paddings: 3, sum paddings: 36 */
-> };      /* definitions: 1 */
-> 
-> We can put all sysctl related values together, in one cacheline and keep ipc_ids
-> cacheline aligned ? But I really wonder about the performance gain here...
+	NOHZ: local_softirq_pending 20
 
-Well I think you're right. The structure gains 50% in size... Really too
-much to fight for performance in IPC :)
+I cannot interpret it, but probably this is bad, because before
+bc5393a6c9c0e70b4b43fb2fb63e3315e9a15c8f this used to BUG().
 
-Thanks for checking this thing.
+This happend while having a high load.  Up to now it only happend once
+and I cannot reproduce it.
 
-You may put my Acked-by in the original patch.
+The machine is a cc7ucamry running v2.6.24-rc3-36-g4dd2d66[1].
+Config and dmesg is available at
 
-Thanks,
-Pavel
+	http://www.modarm9.com/~ukleinek/20071123-local_softirq_pending/
+
+Maybe the relevant source file is arch/arm/mach-ns9xxx/time-ns921x.c?
+
+
+[1] available at
+git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git
+	
+
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
