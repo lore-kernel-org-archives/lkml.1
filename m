@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbXKWBln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbXKWBtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbXKWBln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 20:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXKWBld
+	id S1755599AbXKWBtx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 20:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXKWBtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 20:41:33 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37879 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbXKWBlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 20:41:32 -0500
-From: Andi Kleen <ak@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Fri, 23 Nov 2007 02:36:22 +0100
-User-Agent: KMail/1.9.1
-Cc: Christoph Hellwig <hch@infradead.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <20071122110545.GA4552@infradead.org> <200711231125.12832.rusty@rustcorp.com.au>
-In-Reply-To: <200711231125.12832.rusty@rustcorp.com.au>
+	Thu, 22 Nov 2007 20:49:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:56192 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbXKWBtp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Nov 2007 20:49:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gLmosx44jpX5EAEjkyiQdk/YyzrGL9ZIU7VVo1t6wpvjViVNwcVbcj9R838RlPCmcdc3yNxpPXO02Q9tlvIuK2QAxyzWfG2/uihCMXGIJ5yuHicuuvbJ0nI0FvsHHjqRHJyIBkX4t/kI9rB6lb3+0n+srf6DGg/HimEjQ9uporI=
+Message-ID: <118833cc0711221749h2da36d7ek856ee91cdeda955@mail.gmail.com>
+Date: Thu, 22 Nov 2007 20:49:43 -0500
+From: "Morten Welinder" <mwelinder@gmail.com>
+To: "Jan Kara" <jack@suse.cz>
+Subject: Re: Inotify fails to send IN_ATTRIB events
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, rlove@rlove.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20071122153446.GA6299@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711230236.22759.ak@suse.de>
+References: <118833cc0711201911r3684937p38823649639e0a57@mail.gmail.com>
+	 <20071122153446.GA6299@atrey.karlin.mff.cuni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 November 2007 01:25, Rusty Russell wrote:
-> On Thursday 22 November 2007 22:05:45 Christoph Hellwig wrote:
-> > On Thu, Nov 22, 2007 at 02:56:22PM +1100, Rusty Russell wrote:
-> > >     This is an interesting idea, thanks for the code!  My only question
-> > > is whether we can get most of this benefit by dropping the indirection
-> > > of namespaces and have something like "EXPORT_SYMBOL_TO(sym, modname)"?
-> > >  It doesn't work so well for exporting to a group of modules, but that
-> > > seems a reasonable line to draw anyway.
-> >
-> > I'd say exporting to a group of modules is the main use case.  E.g. in
-> > scsi there would be symbols exported to transport class modules only
-> > or lots of the vfs_ symbols would be exported only to stackable
-> > filesystems or nfsd.
->
-> That's my point.  If there's a whole class of modules which can use a
-> symbol, why are we ruling out external modules? 
+> Wanna try the patch below?
 
-The point is to get cleaner interfaces. Anything which is kind of internal
-should only be used by closely related in tree modules which can be updated. 
-Point of is not to be some kind of license enforcer or similar, there 
-are already other mechanisms for that. Just to get the set of really
-public kernel interfaces down to a manageable level.
+With this patch I am seeing a endless stream of  IN_IGNORED events
+for a removed watch.  I don't see a reason that user space should
+ever see any IN_IGNORED, but an endless steam is not good.
 
-But I still think exporting only to a single module would be to limiting 
-for this case even. It would work for the TCP<->ipv6.ko post child,
-but not for some of the other networking cases where it makes sense.
+Utterly unrelated, inotify does not work in /proc/.  The list archives
+suggest that it isn't likely to start working anytime soon, but shouldn't
+inotify_add_watch when fail with ENOSYS instead of pretending
+it worked?
 
-> If that's what you want, 
-> why not have a list of permitted modules compiled into the kernel and allow
-> no others?
+Morten
 
-That would not make the relationship explicit, which would not further
-the goal.
 
--Andi
+
+
+Failed to create inotify watch for /home/welinder/hi: No such file or directory
+Created inotify watch 1 with mask 0x000007c0 for /home/welinder
+# "touch hi" here
+Got event 00000100 for 1
+Created inotify watch 2 with mask 0x00000fc6 for /home/welinder/hi
+Removing notify watch 1
+Got event 00008000 for 1
+Got event 00000004 for 2
+# "rm hi" here
+Got event 00000400 for 2
+Removing notify watch 2
+Got event 00008000 for 2
+Failed to create inotify watch for /home/welinder/hi: No such file or directory
+Created inotify watch 3 with mask 0x000007c0 for /home/welinder
+Got event 00000200 for 3
+Failed to create inotify watch for /home/welinder/hi: No such file or directory
+Created inotify watch 3 with mask 0x000007c0 for /home/welinder
+# "touch hi" here
+Got event 00000100 for 3
+Created inotify watch 4 with mask 0x00000fc6 for /home/welinder/hi
+Removing notify watch 3
+Got event 00008000 for 3
+Got event 00000004 for 4
+Got event 00000004 for 4
+# "rm hi" here
+Got event 00000400 for 4
+Removing notify watch 4
+Failed to create inotify watch for /home/welinder/hi: No such file or directory
+Created inotify watch 5 with mask 0x000007c0 for /home/welinder
+Got event 00008000 for 4
+Got event 00008000 for 4
+Got event 00008000 for 4
+Got event 00008000 for 4
+...
