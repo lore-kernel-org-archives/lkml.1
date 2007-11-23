@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbXKWMWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbXKWMXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbXKWMWa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 07:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbXKWMWW
+	id S1757474AbXKWMXV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 07:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXKWMXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 07:22:22 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58298 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbXKWMWV (ORCPT
+	Fri, 23 Nov 2007 07:23:10 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3134 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756209AbXKWMXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 07:22:21 -0500
-Date: Fri, 23 Nov 2007 13:22:54 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: nohz and strange sleep latencies
-Message-ID: <20071123122254.GC2055@elf.ucw.cz>
-References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz> <20071120205454.GD10008@elte.hu> <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain> <20071120225246.GA24380@elte.hu> <20071122185238.GA1821@elf.ucw.cz> <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
-MIME-Version: 1.0
+	Fri, 23 Nov 2007 07:23:08 -0500
+Date: Fri, 23 Nov 2007 20:22:59 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Tan Swee Heng <thesweeheng@gmail.com>
+Cc: Linux Crypto <linux-crypto@vger.kernel.org>, dm-devel@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] dm-crypt: Add support for stream ciphers using blkcipher interface
+Message-ID: <20071123122259.GC18862@gondor.apana.org.au>
+References: <fd3e431c0711211338r5b7f04e5s4466e193b3f3743f@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <fd3e431c0711211338r5b7f04e5s4466e193b3f3743f@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > but perhaps somehow we miss this fact and fail to turn off the lapic 
-> > > clockevents drivers?
-> > 
-> > Ok, I guess I'm lost. If I offline second CPU, I immediately get
-> > 1000Hz timer tick... is that expected?
+On Thu, Nov 22, 2007 at 05:38:12AM +0800, Tan Swee Heng wrote:
+> Current implementation of dm-crypt supports block ciphers of the form
+> "template(cipher)", e.g. "cbc(aes)". It does not support stream
+> ciphers of the form "cipher", e.g. "salsa20", that uses the blkcipher
+> interface directly.
 > 
-> Hmm. No. I have no idea why this is happening.
-> 
-> 34196 total events, 55.083 events/sec
-> echo 0 >/sys/devices/system/cpu/cpu1/online
-> 36073 total events, 54.679 events/sec
+> This patch adds support for stream ciphers using the blkcipher
+> interface directly. It uses a special chainmode called "stream".
+> Example of usage:
+>     cryptsetup luksFormat -c salsa20-stream-plain /dev/loop0
 
-Strange.
+I'd really like to have a new format altogether that does not
+involve dashes as a separator.  The reason is that dash is used
+as a part of the name of certain algorithms.
 
-> > I'm trying to decide when system is idle (lets say that means "no user
-> > task is scheduled to wakeup within 10 seconds)... I added some
-> > instrumentation to nohz subsystem, but it does not behave like I'd
-> > expect: even if I run "while true; do sleep .01; done" loop, I see
-> > nohz preparing for 5 seconds sleep... while it seems obvious that it
-> > can only be 10msec sleep, and with max_cstate=1, it works that
-> > way... Plus, nte->start_pid seems to contain some random numbers :-(.
-> > 
-> > What am I doing wrong?
-> > 
-> > (Patch for illustration, I can generate full diff against vanilla,
-> > but...)
-> 
-> Just to make sure what we are hunting: Do you have the same problem
-> with an non-pavel-tainted 2.6.24-rc3 ?
+Once dm-crypt starts using the givcrypt interface instead of its
+own IV generators, we can get away with just a single algorithm
+string, of the form
 
-The strange sleep latencies were definitely there, I'll check for
-"offline cpu and get 1000 interrupts", too.
-								Pavel
+	geniv(mode(block-cipher))
+
+Obviously stream ciphers would just be
+
+	geniv(stream-cipher)
+
+So when that happens we can just use the format "-string" as
+that's an invalid specification in the current format.
+
+Of course we'd continue to support the current format as well
+which can coexist with the new format forever.
+
+Cheers,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
