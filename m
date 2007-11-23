@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbXKWCvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXKWCx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbXKWCvk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 21:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXKWCvc
+	id S1755378AbXKWCx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 21:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXKWCxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 21:51:32 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:4574 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752158AbXKWCvb (ORCPT
+	Thu, 22 Nov 2007 21:53:19 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52795 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbXKWCxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 21:51:31 -0500
-Date: Thu, 22 Nov 2007 21:51:30 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Marin Mitov <mitov@issp.bas.bg>
-cc: "Kirill A. Shutemov" <k.shutemov@velesys.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] 2.6.24-rc3-mm1: usb mouse doesn't work
-In-Reply-To: <200711221941.44646.mitov@issp.bas.bg>
-Message-ID: <Pine.LNX.4.44L0.0711222148590.5327-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 22 Nov 2007 21:53:19 -0500
+Date: Fri, 23 Nov 2007 03:53:17 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Stewart Smith <stewart@mysql.com>,
+       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
+Message-ID: <20071123025317.GA12257@one.firstfloor.org>
+References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <1195702123.8369.78.camel@localhost.localdomain> <20071122120611.GA3573@one.firstfloor.org> <20071122131539.GX114266761@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071122131539.GX114266761@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Nov 2007, Marin Mitov wrote:
-
-> > > > I've had some strangenesses with USB lately.  Sometimes running `lsusb'
-> > > > makes the USB system notice a newly attached device.
-> > >
-> > > No. But I have new messages in dmesg:
-> > >
-> > > uhci_hcd 0000:00:1d.3: FGR not stopped yet!
-> > > uhci_hcd 0000:00:1d.2: FGR not stopped yet!
-> > > uhci_hcd 0000:00:1d.1: FGR not stopped yet!
-> > > uhci_hcd 0000:00:1d.0: FGR not stopped yet!
-> > >
-> > > > Is that "FGR not stopped yet!" messgae new behaviour?
-> > >
-> > > It is a new message since 2.6.24-rc3. I have never try -mm tree before.
-> >
-> > These messages could indicate a timing problem.  You can see the code
-> > that writes the messages near the end of wakeup_rh() in
-> > drivers/usb/host/uhci-hcd.c.
-> >
-> > The message gets written if the controller hardware hasn't turned off a
-> > particular bit after a 4-us delay.  If the udelay() function wasn't
-> > working right, it could cause this problem.
+On Fri, Nov 23, 2007 at 12:15:39AM +1100, David Chinner wrote:
+> On Thu, Nov 22, 2007 at 01:06:11PM +0100, Andi Kleen wrote:
+> > > FWIW from a "real time" database POV this seems to make sense to me...
+> > > in fact, we probably rely on filesystem metadata way too much
+> > > (historically it's just "worked".... although we do seem to get issues
+> > > on ext3).
+> > 
+> > For that case you really would need priority inheritance: any metadata
+> > IO on behalf or blocking a process needs to use the process' block IO 
+> > priority.
 > 
-> udelay() _is_ OK for 2.6.24-rc3, so it is not the cause of the problem
+> How do you do that when the processes are blocking on semaphores,
+> mutexes or rw-semaphores in the fileysystem three layers removed from
+> the I/O in progress?
 
-But is it OK for 2.6.24-rc3-mm1?  Kirill said specifically that 
-2.6.24-rc3 does not display the message but 2.6.24-rc3-mm1 does.
+[...] I didn't say it was easy (or rather explicitely said it would be tricky).
+Probably it would be possible to fold it somehow into rt mutexes PI,
+but it's not easy and semaphores would need to be handled too.
 
-Alan Stern
+Just my point was to solve the metadata RT problem unconditionally increasing
+the priority is a bad idea and not really a replacement to a "full"
+solution. Short term a user can just increase the priority of all the XFS 
+threads anyways.
 
+-Andi
