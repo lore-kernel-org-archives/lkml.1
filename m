@@ -1,201 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbXKWX31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbXKWX3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbXKWX31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 18:29:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbXKWX3T
+	id S1753382AbXKWX3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 18:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXKWX3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 18:29:19 -0500
-Received: from pat.uio.no ([129.240.10.15]:41237 "EHLO pat.uio.no"
+	Fri, 23 Nov 2007 18:29:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58715 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750860AbXKWX3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 18:29:18 -0500
-Subject: Re: nfs failure causes bad page state
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071116221324.GA30209@flint.arm.linux.org.uk>
-References: <20071116221324.GA30209@flint.arm.linux.org.uk>
-Content-Type: multipart/mixed; boundary="=-o8AS0oKz8Ydb6TbR9fXs"
-Date: Fri, 23 Nov 2007 18:29:14 -0500
-Message-Id: <1195860554.7671.38.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.169)
-X-UiO-Scanned: CBFB930889525EC164CF9B9024D9E4D085E3FD19
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 236 total 5339622 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1752048AbXKWX3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 18:29:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: freeze vs freezer
+Date: Sat, 24 Nov 2007 00:47:21 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4744FD87.7010301@goop.org>
+In-Reply-To: <4744FD87.7010301@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711240047.21624.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 22 of November 2007, Jeremy Fitzhardinge wrote:
+> It seems that a process blocked in a write to an xfs filesystem due to
+> xfs_freeze cannot be frozen by the freezer.
 
---=-o8AS0oKz8Ydb6TbR9fXs
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+The freezer doesn't handle tasks in TASK_UNINTERRUPTIBLE and I don't know how
+to make it handle them without at least partially defeating its purpose.
 
-
-On Fri, 2007-11-16 at 22:13 +0000, Russell King wrote:
-> While testing a kernel based upon
-> ecd744eec3aa8bbc949ec04ed3fbf7ecb2958a0e
-> (with wrong boot arguments), I got the following bad page state entry
-> while
-> NFS was trying to mount it's rootfs:
+> I see this if I suspend my laptop while doing something xfs-filesystem
+> intensive, like a kernel build.  My suspend scripts freeze the XFS
+> filesystem (as Dave said I should), which presumably blocks some writer,
+> and then the freezer times out and fails to complete.
 > 
-> IP-Config: Complete:
->       device=eth0, addr=192.168.1.101, mask=255.255.255.0,
-> gw=255.255.255.255,
->      host=192.168.1.101, domain=, nis-domain=(none),
->      bootserver=192.168.1.100, rootserver=192.168.1.100, rootpath=
-> Looking up port of RPC 100003/2 on 192.168.1.100
-> rpcbind: server 192.168.1.100 not responding, timed out
-> Root-NFS: Unable to get nfsd port number from server, using default
-> Looking up port of RPC 100005/1 on 192.168.1.100
-> rpcbind: server 192.168.1.100 not responding, timed out
-> Root-NFS: Unable to get mountd port number from server, using default
-> mount: server 192.168.1.100 not responding, timed out
-> Root-NFS: Server returned error -5 while mounting /nfs/rootfs/
-> VFS: Unable to mount root fs via NFS, trying floppy.
-> Bad page state in process 'swapper'
-> page:c02b1260 flags:0x00000400 mapping:00000000 mapcount:0 count:0
-> Trying to fix it up, but a reboot is needed
-> Backtrace:
-> [<c0023e34>] (dump_stack+0x0/0x14) from [<c0062570>] (bad_page
-> +0x70/0xac)
-> [<c0062500>] (bad_page+0x0/0xac) from [<c0064914>] (free_hot_cold_page
-> +0x80/0x178)
-> [<c0064894>] (free_hot_cold_page+0x0/0x178) from [<c0064a74>]
-> (free_hot_page+0x14/0x18)
-> [<c0064a60>] (free_hot_page+0x0/0x18) from [<c0067078>] (put_page
-> +0xf8/0x154)
-> [<c0066f80>] (put_page+0x0/0x154) from [<c007dbc8>] (kfree+0xc8/0xd0)
-> [<c007db00>] (kfree+0x0/0xd0) from [<c00cbb54>] (nfs_get_sb
-> +0x230/0x710)
-> [<c00cb924>] (nfs_get_sb+0x0/0x710) from [<c0084334>] (vfs_kern_mount
-> +0x58/0xac)[<c00842dc>] (vfs_kern_mount+0x0/0xac) from [<c00843c0>]
-> (do_kern_mount+0x38/0xf4)
-> [<c0084388>] (do_kern_mount+0x0/0xf4) from [<c0099c7c>] (do_mount
-> +0x1e8/0x614)
-> ...
+> Here's part of the process dump the freezer does when it times out:
 > 
-> This seems to be caused by use of an uninitialised structure due to
-> NULL
-> options being passed to nfs_validate_mount_data().  Ensure that the
-> parsed mount data is always initialised.
+> cc1           D 00000000     0 18138  18137
+>        dd5f1e24 00200082 00000002 00000000 ecdeeb00 ecdeec64 c200f280 00000001 
+>        009c09a0 dd5f1e0c dd5f1e0c 0000000f 00000000 00000000 00000000 dd5f1e74 
+>        c7beb480 dd5f1e88 dd5f1ea8 c0228d97 e8889540 dd5f1e38 c015b75d dd5f1e44 
+> Call Trace:
+>  [<c0228d97>] xfs_write+0xf4/0x6d9
+>  [<c0226038>] xfs_file_aio_write+0x53/0x5b
+>  [<c0171c15>] do_sync_write+0xae/0xec
+>  [<c0172343>] vfs_write+0xa4/0x120
+>  [<c01728d7>] sys_write+0x3b/0x60
+>  [<c0106fae>] sysenter_past_esp+0x6b/0xa1
+>  =======================
 > 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 > 
-> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-> index fa517ae..0b1080c 100644
-> --- a/fs/nfs/super.c
-> +++ b/fs/nfs/super.c
-> @@ -1054,10 +1054,11 @@ static int nfs_validate_mount_data(void
-> *options,
->  {
->  	struct nfs_mount_data *data = (struct nfs_mount_data *)options;
->  
-> +	memset(args, 0, sizeof(*args));
-> +
->  	if (data == NULL)
->  		goto out_no_data;
->  
-> -	memset(args, 0, sizeof(*args));
->  	args->flags		= (NFS_MOUNT_VER3 | NFS_MOUNT_TCP);
->  	args->rsize		= NFS_MAX_FILE_IO_SIZE;
->  	args->wsize		= NFS_MAX_FILE_IO_SIZE;
+> I haven't looked at how to fix this yet.  I only just worked out why I
+> was getting suspend failures.
 
-Thanks Russell,
+Well, you can add freezer_do_not_count()/freezer_count() annotations to
+xfs_write() (and whatever else is blocked as a result of the XFS being frozen).
 
-It looks as if the same bug exists in nfs4_validate_mount_data(), so I
-added the same fix.
+Generally, that would be risky without the freezing of XFS, however, because it
+might leak us filesystem data to a storage device after creating a hibernation
+image which would result in the filesystem corruption after the resume.
 
-Cheers
-  Trond
+Still, if you only suspend to RAM, that should be safe.
 
-
---=-o8AS0oKz8Ydb6TbR9fXs
-Content-Disposition: inline; filename=linux-2.6.24-010-nfs_mount_failure_causes_bad_page_state.dif
-Content-Type: message/rfc822; name=linux-2.6.24-010-nfs_mount_failure_causes_bad_page_state.dif
-
-From: Russell King <rmk@arm.linux.org.uk>
-Date: Fri, 16 Nov 2007 22:13:24 +0000
-Subject: NFS: mount failure causes bad page state
-Message-Id: <1195860554.7671.39.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-While testing a kernel based upon ecd744eec3aa8bbc949ec04ed3fbf7ecb2958a0e
-(with wrong boot arguments), I got the following bad page state entry while
-NFS was trying to mount it's rootfs:
-
-IP-Config: Complete:
-      device=eth0, addr=192.168.1.101, mask=255.255.255.0, gw=255.255.255.255,
-     host=192.168.1.101, domain=, nis-domain=(none),
-     bootserver=192.168.1.100, rootserver=192.168.1.100, rootpath=
-Looking up port of RPC 100003/2 on 192.168.1.100
-rpcbind: server 192.168.1.100 not responding, timed out
-Root-NFS: Unable to get nfsd port number from server, using default
-Looking up port of RPC 100005/1 on 192.168.1.100
-rpcbind: server 192.168.1.100 not responding, timed out
-Root-NFS: Unable to get mountd port number from server, using default
-mount: server 192.168.1.100 not responding, timed out
-Root-NFS: Server returned error -5 while mounting /nfs/rootfs/
-VFS: Unable to mount root fs via NFS, trying floppy.
-Bad page state in process 'swapper'
-page:c02b1260 flags:0x00000400 mapping:00000000 mapcount:0 count:0
-Trying to fix it up, but a reboot is needed
-Backtrace:
-[<c0023e34>] (dump_stack+0x0/0x14) from [<c0062570>] (bad_page+0x70/0xac)
-[<c0062500>] (bad_page+0x0/0xac) from [<c0064914>] (free_hot_cold_page+0x80/0x178)
-[<c0064894>] (free_hot_cold_page+0x0/0x178) from [<c0064a74>] (free_hot_page+0x14/0x18)
-[<c0064a60>] (free_hot_page+0x0/0x18) from [<c0067078>] (put_page+0xf8/0x154)
-[<c0066f80>] (put_page+0x0/0x154) from [<c007dbc8>] (kfree+0xc8/0xd0)
-[<c007db00>] (kfree+0x0/0xd0) from [<c00cbb54>] (nfs_get_sb+0x230/0x710)
-[<c00cb924>] (nfs_get_sb+0x0/0x710) from [<c0084334>] (vfs_kern_mount+0x58/0xac)[<c00842dc>] (vfs_kern_mount+0x0/0xac) from [<c00843c0>] (do_kern_mount+0x38/0xf4)
-[<c0084388>] (do_kern_mount+0x0/0xf4) from [<c0099c7c>] (do_mount+0x1e8/0x614)
-...
-
-This seems to be caused by use of an uninitialised structure due to NULL
-options being passed to nfs_validate_mount_data().  Ensure that the
-parsed mount data is always initialised.
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-     (Trond: added fix for the same bug in nfs4_validate_mount_data()).
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/super.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 046d1ac..8d95d7d 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -1078,10 +1078,11 @@ static int nfs_validate_mount_data(void *options,
- {
- 	struct nfs_mount_data *data = (struct nfs_mount_data *)options;
- 
-+	memset(args, 0, sizeof(*args));
-+
- 	if (data == NULL)
- 		goto out_no_data;
- 
--	memset(args, 0, sizeof(*args));
- 	args->flags		= (NFS_MOUNT_VER3 | NFS_MOUNT_TCP);
- 	args->rsize		= NFS_MAX_FILE_IO_SIZE;
- 	args->wsize		= NFS_MAX_FILE_IO_SIZE;
-@@ -1560,10 +1561,11 @@ static int nfs4_validate_mount_data(void *options,
- 	struct nfs4_mount_data *data = (struct nfs4_mount_data *)options;
- 	char *c;
- 
-+	memset(args, 0, sizeof(*args));
-+
- 	if (data == NULL)
- 		goto out_no_data;
- 
--	memset(args, 0, sizeof(*args));
- 	args->rsize		= NFS_MAX_FILE_IO_SIZE;
- 	args->wsize		= NFS_MAX_FILE_IO_SIZE;
- 	args->timeo		= 600;
-
---=-o8AS0oKz8Ydb6TbR9fXs--
-
+Greetings,
+Rafael
