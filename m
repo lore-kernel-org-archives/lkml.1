@@ -1,73 +1,434 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbXKWHfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbXKWHjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbXKWHfK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 02:35:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXKWHe6
+	id S1755195AbXKWHjB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 02:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXKWHiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 02:34:58 -0500
-Received: from chello089077114002.chello.pl ([89.77.114.2]:49112 "EHLO
-	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbXKWHe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 02:34:58 -0500
-Date: Fri, 23 Nov 2007 08:34:47 +0100
-From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
-To: Dane Mutters <dmutters@gmail.com>
-Cc: Diego Calleja <diegocg@gmail.com>, Martin Olsson <mnemo@minimum.se>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Is it possible to give the user the option to cancel forkbombs?
-Message-ID: <20071123083447.3a3e4d23@astralstorm.puszkin.org>
-In-Reply-To: <1195322101.15120.3.camel@Orchestrator>
-References: <473E815F.30900@minimum.se>
-	<20071116213137.6efe3f9e@the-village.bc.nu>
-	<473E9290.3040006@minimum.se>
-	<1195281942.15929.5.camel@Orchestrator>
-	<1195285481.3059.12.camel@twins>
-	<473F281B.60408@minimum.se>
-	<20071117165325.3e5f571a.diegocg@gmail.com>
-	<1195322101.15120.3.camel@Orchestrator>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Je=JBTx6W3g3LWAf/XTiKk6";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Fri, 23 Nov 2007 02:38:54 -0500
+Received: from sacred.ru ([62.205.161.221]:54992 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751506AbXKWHix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 02:38:53 -0500
+Message-ID: <47468347.5090303@openvz.org>
+Date: Fri, 23 Nov 2007 10:37:43 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Cedric Le Goater <clg@fr.ibm.com>,
+       Pierre Peiffer <pierre.peiffer@bull.net>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: make struct ipc_ids static in ipc_namespace
+References: <20071122155448.3193c856.pierre.peiffer@bull.net> <474680B5.7020104@fr.ibm.com>
+In-Reply-To: <474680B5.7020104@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 23 Nov 2007 10:37:50 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Je=JBTx6W3g3LWAf/XTiKk6
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Cedric Le Goater wrote:
+> Pierre Peiffer wrote:
+>> Each ipc_namespace contains a table of 3 pointers to struct ipc_ids (3 for
+>> msg, sem and shm, structure used to store all ipcs)
+>> These 'struct ipc_ids' are dynamically allocated for each icp_namespace as
+>> the ipc_namespace itself (for the init namespace, they are initialized with
+>> pointers to static variables instead)
+>>
+>> It is so for historical reason: in fact, before the use of idr to store the
+>> ipcs, the ipcs were stored in tables of variable length, depending of the
+>> maximum number of ipc allowed.
+>> Now, these 'struct ipc_ids' have a fixed size. As they are allocated in any
+>> cases for each new ipc_namespace, there is no gain of memory in having them
+>> allocated separately of the struct ipc_namespace.
+>>
+>> This patch proposes to make this table static in the struct ipc_namespace.
+>> Thus, we can allocate all in once and get rid of all the code needed to
+>> allocate and free these ipc_ids separately.
+> 
+> It looks safe and saves quite a lot of line.
+> 
+> Pavel, what do you think of it ? 
 
-On Sat, 17 Nov 2007 09:55:01 -0800
-Dane Mutters <dmutters@gmail.com> wrote:
+Looks sane, good catch, Pierre.
 
-> I don't know if this is at all feasible, but is it possible to have a
-> mechanism that would detect a fork bomb in progress and either stop the
-> fork, or allow the user to cancel the operation?  For example, are there
-> any legitimate processes (i.e. ones that really need to fork like crazy)
-> that would need to generate 200+ processes in less than 1 second?
->=20
-> (Note: I'm not a programmer; I'm just throwing out the idea.)
->=20
+But I'd find out whether these three ipc_ids intersect any 
+cache-line. In other words I'd mark the struct ipc_ids as
+____cacheline_aligned and checked for any differences.
 
-If the parent PID of the new task is exported through TASKSTATS, you can
-do it already in userspace. If not, that data should be exported.
+> Acked-by: Cedric Le Goater <clg@fr.ibm.com>
+> 
+> Thanks,
 
-Then you could write a root daemon using netlink, set it to RT priority
-and create an inheritable counter in it to thwart binary forking.
-The counter would be cleared every x seconds.
-No need to do it in the kernel.
+Thanks,
+Pavel
 
---Sig_/Je=JBTx6W3g3LWAf/XTiKk6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+> C.
+> 
+> 
+>> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+>> ---
+>>  include/linux/ipc_namespace.h |   13 +++++++++++--
+>>  ipc/msg.c                     |   26 ++++----------------------
+>>  ipc/namespace.c               |   25 ++++---------------------
+>>  ipc/sem.c                     |   26 ++++----------------------
+>>  ipc/shm.c                     |   26 ++++----------------------
+>>  ipc/util.c                    |    6 +++---
+>>  ipc/util.h                    |   16 ++++------------
+>>  7 files changed, 34 insertions(+), 104 deletions(-)
+>>
+>> Index: b/include/linux/ipc_namespace.h
+>> ===================================================================
+>> --- a/include/linux/ipc_namespace.h
+>> +++ b/include/linux/ipc_namespace.h
+>> @@ -2,11 +2,20 @@
+>>  #define __IPC_NAMESPACE_H__
+>>  
+>>  #include <linux/err.h>
+>> +#include <linux/idr.h>
+>> +#include <linux/rwsem.h>
+>> +
+>> +struct ipc_ids {
+>> +	int in_use;
+>> +	unsigned short seq;
+>> +	unsigned short seq_max;
+>> +	struct rw_semaphore rw_mutex;
+>> +	struct idr ipcs_idr;
+>> +};
+>>  
+>> -struct ipc_ids;
+>>  struct ipc_namespace {
+>>  	struct kref	kref;
+>> -	struct ipc_ids	*ids[3];
+>> +	struct ipc_ids	ids[3];
+>>  
+>>  	int		sem_ctls[4];
+>>  	int		used_sems;
+>> Index: b/ipc/msg.c
+>> ===================================================================
+>> --- a/ipc/msg.c
+>> +++ b/ipc/msg.c
+>> @@ -67,9 +67,7 @@ struct msg_sender {
+>>  #define SEARCH_NOTEQUAL		3
+>>  #define SEARCH_LESSEQUAL	4
+>>  
+>> -static struct ipc_ids init_msg_ids;
+>> -
+>> -#define msg_ids(ns)	(*((ns)->ids[IPC_MSG_IDS]))
+>> +#define msg_ids(ns)	((ns)->ids[IPC_MSG_IDS])
+>>  
+>>  #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
+>>  #define msg_buildid(id, seq)	ipc_buildid(id, seq)
+>> @@ -80,30 +78,17 @@ static int newque(struct ipc_namespace *
+>>  static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
+>>  #endif
+>>  
+>> -static void __msg_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+>> +void msg_init_ns(struct ipc_namespace *ns)
+>>  {
+>> -	ns->ids[IPC_MSG_IDS] = ids;
+>>  	ns->msg_ctlmax = MSGMAX;
+>>  	ns->msg_ctlmnb = MSGMNB;
+>>  	ns->msg_ctlmni = MSGMNI;
+>>  	atomic_set(&ns->msg_bytes, 0);
+>>  	atomic_set(&ns->msg_hdrs, 0);
+>> -	ipc_init_ids(ids);
+>> +	ipc_init_ids(&ns->ids[IPC_MSG_IDS]);
+>>  }
+>>  
+>>  #ifdef CONFIG_IPC_NS
+>> -int msg_init_ns(struct ipc_namespace *ns)
+>> -{
+>> -	struct ipc_ids *ids;
+>> -
+>> -	ids = kmalloc(sizeof(struct ipc_ids), GFP_KERNEL);
+>> -	if (ids == NULL)
+>> -		return -ENOMEM;
+>> -
+>> -	__msg_init_ns(ns, ids);
+>> -	return 0;
+>> -}
+>> -
+>>  void msg_exit_ns(struct ipc_namespace *ns)
+>>  {
+>>  	struct msg_queue *msq;
+>> @@ -126,15 +111,12 @@ void msg_exit_ns(struct ipc_namespace *n
+>>  	}
+>>  
+>>  	up_write(&msg_ids(ns).rw_mutex);
+>> -
+>> -	kfree(ns->ids[IPC_MSG_IDS]);
+>> -	ns->ids[IPC_MSG_IDS] = NULL;
+>>  }
+>>  #endif
+>>  
+>>  void __init msg_init(void)
+>>  {
+>> -	__msg_init_ns(&init_ipc_ns, &init_msg_ids);
+>> +	msg_init_ns(&init_ipc_ns);
+>>  	ipc_init_proc_interface("sysvipc/msg",
+>>  				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
+>>  				IPC_MSG_IDS, sysvipc_msg_proc_show);
+>> Index: b/ipc/namespace.c
+>> ===================================================================
+>> --- a/ipc/namespace.c
+>> +++ b/ipc/namespace.c
+>> @@ -14,35 +14,18 @@
+>>  
+>>  static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
+>>  {
+>> -	int err;
+>>  	struct ipc_namespace *ns;
+>>  
+>> -	err = -ENOMEM;
+>>  	ns = kmalloc(sizeof(struct ipc_namespace), GFP_KERNEL);
+>>  	if (ns == NULL)
+>> -		goto err_mem;
+>> +		return ERR_PTR(-ENOMEM);
+>>  
+>> -	err = sem_init_ns(ns);
+>> -	if (err)
+>> -		goto err_sem;
+>> -	err = msg_init_ns(ns);
+>> -	if (err)
+>> -		goto err_msg;
+>> -	err = shm_init_ns(ns);
+>> -	if (err)
+>> -		goto err_shm;
+>> +	sem_init_ns(ns);
+>> +	msg_init_ns(ns);
+>> +	shm_init_ns(ns);
+>>  
+>>  	kref_init(&ns->kref);
+>>  	return ns;
+>> -
+>> -err_shm:
+>> -	msg_exit_ns(ns);
+>> -err_msg:
+>> -	sem_exit_ns(ns);
+>> -err_sem:
+>> -	kfree(ns);
+>> -err_mem:
+>> -	return ERR_PTR(err);
+>>  }
+>>  
+>>  struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
+>> Index: b/ipc/sem.c
+>> ===================================================================
+>> --- a/ipc/sem.c
+>> +++ b/ipc/sem.c
+>> @@ -87,14 +87,12 @@
+>>  #include <asm/uaccess.h>
+>>  #include "util.h"
+>>  
+>> -#define sem_ids(ns)	(*((ns)->ids[IPC_SEM_IDS]))
+>> +#define sem_ids(ns)	((ns)->ids[IPC_SEM_IDS])
+>>  
+>>  #define sem_unlock(sma)		ipc_unlock(&(sma)->sem_perm)
+>>  #define sem_checkid(sma, semid)	ipc_checkid(&sma->sem_perm, semid)
+>>  #define sem_buildid(id, seq)	ipc_buildid(id, seq)
+>>  
+>> -static struct ipc_ids init_sem_ids;
+>> -
+>>  static int newary(struct ipc_namespace *, struct ipc_params *);
+>>  static void freeary(struct ipc_namespace *, struct sem_array *);
+>>  #ifdef CONFIG_PROC_FS
+>> @@ -118,30 +116,17 @@ static int sysvipc_sem_proc_show(struct 
+>>  #define sc_semopm	sem_ctls[2]
+>>  #define sc_semmni	sem_ctls[3]
+>>  
+>> -static void __sem_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+>> +void sem_init_ns(struct ipc_namespace *ns)
+>>  {
+>> -	ns->ids[IPC_SEM_IDS] = ids;
+>>  	ns->sc_semmsl = SEMMSL;
+>>  	ns->sc_semmns = SEMMNS;
+>>  	ns->sc_semopm = SEMOPM;
+>>  	ns->sc_semmni = SEMMNI;
+>>  	ns->used_sems = 0;
+>> -	ipc_init_ids(ids);
+>> +	ipc_init_ids(&ns->ids[IPC_SEM_IDS]);
+>>  }
+>>  
+>>  #ifdef CONFIG_IPC_NS
+>> -int sem_init_ns(struct ipc_namespace *ns)
+>> -{
+>> -	struct ipc_ids *ids;
+>> -
+>> -	ids = kmalloc(sizeof(struct ipc_ids), GFP_KERNEL);
+>> -	if (ids == NULL)
+>> -		return -ENOMEM;
+>> -
+>> -	__sem_init_ns(ns, ids);
+>> -	return 0;
+>> -}
+>> -
+>>  void sem_exit_ns(struct ipc_namespace *ns)
+>>  {
+>>  	struct sem_array *sma;
+>> @@ -163,15 +148,12 @@ void sem_exit_ns(struct ipc_namespace *n
+>>  		total++;
+>>  	}
+>>  	up_write(&sem_ids(ns).rw_mutex);
+>> -
+>> -	kfree(ns->ids[IPC_SEM_IDS]);
+>> -	ns->ids[IPC_SEM_IDS] = NULL;
+>>  }
+>>  #endif
+>>  
+>>  void __init sem_init (void)
+>>  {
+>> -	__sem_init_ns(&init_ipc_ns, &init_sem_ids);
+>> +	sem_init_ns(&init_ipc_ns);
+>>  	ipc_init_proc_interface("sysvipc/sem",
+>>  				"       key      semid perms      nsems   uid   gid  cuid  cgid      otime      ctime\n",
+>>  				IPC_SEM_IDS, sysvipc_sem_proc_show);
+>> Index: b/ipc/util.c
+>> ===================================================================
+>> --- a/ipc/util.c
+>> +++ b/ipc/util.c
+>> @@ -782,7 +782,7 @@ static void *sysvipc_proc_next(struct se
+>>  	if (ipc && ipc != SEQ_START_TOKEN)
+>>  		ipc_unlock(ipc);
+>>  
+>> -	return sysvipc_find_ipc(iter->ns->ids[iface->ids], *pos, pos);
+>> +	return sysvipc_find_ipc(&iter->ns->ids[iface->ids], *pos, pos);
+>>  }
+>>  
+>>  /*
+>> @@ -795,7 +795,7 @@ static void *sysvipc_proc_start(struct s
+>>  	struct ipc_proc_iface *iface = iter->iface;
+>>  	struct ipc_ids *ids;
+>>  
+>> -	ids = iter->ns->ids[iface->ids];
+>> +	ids = &iter->ns->ids[iface->ids];
+>>  
+>>  	/*
+>>  	 * Take the lock - this will be released by the corresponding
+>> @@ -826,7 +826,7 @@ static void sysvipc_proc_stop(struct seq
+>>  	if (ipc && ipc != SEQ_START_TOKEN)
+>>  		ipc_unlock(ipc);
+>>  
+>> -	ids = iter->ns->ids[iface->ids];
+>> +	ids = &iter->ns->ids[iface->ids];
+>>  	/* Release the lock we took in start() */
+>>  	up_read(&ids->rw_mutex);
+>>  }
+>> Index: b/ipc/util.h
+>> ===================================================================
+>> --- a/ipc/util.h
+>> +++ b/ipc/util.h
+>> @@ -10,7 +10,6 @@
+>>  #ifndef _IPC_UTIL_H
+>>  #define _IPC_UTIL_H
+>>  
+>> -#include <linux/idr.h>
+>>  #include <linux/err.h>
+>>  
+>>  #define USHRT_MAX 0xffff
+>> @@ -22,22 +21,14 @@ void shm_init (void);
+>>  
+>>  struct ipc_namespace;
+>>  
+>> -int sem_init_ns(struct ipc_namespace *ns);
+>> -int msg_init_ns(struct ipc_namespace *ns);
+>> -int shm_init_ns(struct ipc_namespace *ns);
+>> +void sem_init_ns(struct ipc_namespace *ns);
+>> +void msg_init_ns(struct ipc_namespace *ns);
+>> +void shm_init_ns(struct ipc_namespace *ns);
+>>  
+>>  void sem_exit_ns(struct ipc_namespace *ns);
+>>  void msg_exit_ns(struct ipc_namespace *ns);
+>>  void shm_exit_ns(struct ipc_namespace *ns);
+>>  
+>> -struct ipc_ids {
+>> -	int in_use;
+>> -	unsigned short seq;
+>> -	unsigned short seq_max;
+>> -	struct rw_semaphore rw_mutex;
+>> -	struct idr ipcs_idr;
+>> -};
+>> -
+>>  /*
+>>   * Structure that holds the parameters needed by the ipc operations
+>>   * (see after)
+>> @@ -68,6 +59,7 @@ struct ipc_ops {
+>>  };
+>>  
+>>  struct seq_file;
+>> +struct ipc_ids;
+>>  
+>>  void ipc_init_ids(struct ipc_ids *);
+>>  #ifdef CONFIG_PROC_FS
+>> Index: b/ipc/shm.c
+>> ===================================================================
+>> --- a/ipc/shm.c
+>> +++ b/ipc/shm.c
+>> @@ -56,9 +56,7 @@ struct shm_file_data {
+>>  static const struct file_operations shm_file_operations;
+>>  static struct vm_operations_struct shm_vm_ops;
+>>  
+>> -static struct ipc_ids init_shm_ids;
+>> -
+>> -#define shm_ids(ns)	(*((ns)->ids[IPC_SHM_IDS]))
+>> +#define shm_ids(ns)	((ns)->ids[IPC_SHM_IDS])
+>>  
+>>  #define shm_unlock(shp)			\
+>>  	ipc_unlock(&(shp)->shm_perm)
+>> @@ -72,14 +70,13 @@ static void shm_destroy (struct ipc_name
+>>  static int sysvipc_shm_proc_show(struct seq_file *s, void *it);
+>>  #endif
+>>  
+>> -static void __shm_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+>> +void shm_init_ns(struct ipc_namespace *ns)
+>>  {
+>> -	ns->ids[IPC_SHM_IDS] = ids;
+>>  	ns->shm_ctlmax = SHMMAX;
+>>  	ns->shm_ctlall = SHMALL;
+>>  	ns->shm_ctlmni = SHMMNI;
+>>  	ns->shm_tot = 0;
+>> -	ipc_init_ids(ids);
+>> +	ipc_init_ids(&ns->ids[IPC_SHM_IDS]);
+>>  }
+>>  
+>>  /*
+>> @@ -98,18 +95,6 @@ static void do_shm_rmid(struct ipc_names
+>>  }
+>>  
+>>  #ifdef CONFIG_IPC_NS
+>> -int shm_init_ns(struct ipc_namespace *ns)
+>> -{
+>> -	struct ipc_ids *ids;
+>> -
+>> -	ids = kmalloc(sizeof(struct ipc_ids), GFP_KERNEL);
+>> -	if (ids == NULL)
+>> -		return -ENOMEM;
+>> -
+>> -	__shm_init_ns(ns, ids);
+>> -	return 0;
+>> -}
+>> -
+>>  void shm_exit_ns(struct ipc_namespace *ns)
+>>  {
+>>  	struct shmid_kernel *shp;
+>> @@ -131,15 +116,12 @@ void shm_exit_ns(struct ipc_namespace *n
+>>  		total++;
+>>  	}
+>>  	up_write(&shm_ids(ns).rw_mutex);
+>> -
+>> -	kfree(ns->ids[IPC_SHM_IDS]);
+>> -	ns->ids[IPC_SHM_IDS] = NULL;
+>>  }
+>>  #endif
+>>  
+>>  void __init shm_init (void)
+>>  {
+>> -	__shm_init_ns(&init_ipc_ns, &init_shm_ids);
+>> +	shm_init_ns(&init_ipc_ns);
+>>  	ipc_init_proc_interface("sysvipc/shm",
+>>  				"       key      shmid perms       size  cpid  lpid nattch   uid   gid  cuid  cgid      atime      dtime      ctime\n",
+>>  				IPC_SHM_IDS, sysvipc_shm_proc_show);
+>>
+> 
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQFHRoKcBlhXA0ALOYMRAnvlAJ9S6WOwO9ODKcursdo8l1RaNTmeTQCfV1IW
-RmNYz6MKqhTnT2r3BdUnlMU=
-=gfV/
------END PGP SIGNATURE-----
-
---Sig_/Je=JBTx6W3g3LWAf/XTiKk6--
