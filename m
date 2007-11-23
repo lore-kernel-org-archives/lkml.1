@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbXKWBfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbXKWBjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbXKWBfE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Nov 2007 20:35:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbXKWBez
+	id S1755772AbXKWBjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Nov 2007 20:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbXKWBjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Nov 2007 20:34:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53126 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751563AbXKWBey (ORCPT
+	Thu, 22 Nov 2007 20:39:15 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:42191 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbXKWBjO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Nov 2007 20:34:54 -0500
-Date: Thu, 22 Nov 2007 17:34:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Where is the new timerfd?
-Message-Id: <20071122173437.e74890a8.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
-References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
-	<Pine.LNX.4.64.0711220933330.7256@alien.or.mcafeemobile.com>
-	<cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
-	<Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
-	<20071122162430.48f55995.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Thu, 22 Nov 2007 20:39:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Xd8qmF/jf1iIX83sqMGzUAW/F9pfPxoA6YrsuSrRlqzytUUPqWqSMpecYk0rgg/EOicnILiOTqDIUalLiQn9zGNQyTBLx4druWhp9gRZstdZAFv8kjeKk7ZEE7/JuF8ZZM1qlhOHWcbo5Okg48KgffPwavIozSO9YUeF0iLrYuE=
+Message-ID: <47462F3C.3040700@googlemail.com>
+Date: Fri, 23 Nov 2007 02:39:08 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+In-Reply-To: <20071120204525.ff27ac98.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Nov 2007 16:35:38 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
+I have some warnings on each SCSI disc:
 
-> On Thu, 22 Nov 2007, Andrew Morton wrote:
-> 
-> > On Thu, 22 Nov 2007 11:46:13 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
-> > 
-> > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
-> > > 
-> > > > On Nov 22, 2007 6:34 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > > > > On Thu, 22 Nov 2007, Michael Kerrisk wrote:
-> > > > >
-> > > > > > Hey Davide,
-> > > > > >
-> > > > > > Where is the new timerfd API.  In 2.6.24-rc3, I see the *old* API...
-> > > > >
-> > > > > Maybe Andrew stuffed the turkey with it? :) It was there. I remeber it was
-> > > > > merged. Some screw up reverted it?
-> > > > 
-> > > > t looks that way.
-> > > 
-> > > I'm looking at the log now. It never went in actually. Andrew-san, what 
-> > > happened?
-> > > 
-> > 
-> > Last I recall, we removed the API for 2.6.23 because we intended to do a
-> > different interface for 2.6.24.
-> > 
-> > But I don't recall seeing any timerfd patches in maybe a month.
-> 
-> Was sent on Sep 23, Subject: new timerfd API
 
-Half of us weren't born then ;)
+...
 
-> Do you want me to repost?
+[   30.724410] scsi 0:0:0:0: Direct-Access     SEAGATE  ST318406LW       0109 PQ: 0 ANSI: 3
+[   30.724419] scsi0:A:0:0: Tagged Queuing enabled.  Depth 32
+[   30.724435]  target0:0:0: Beginning Domain Validation
+[   30.724446]  target0:0:0: Domain Validation Initial Inquiry Failed <--
+[   30.724572]  target0:0:0: Ending Domain Validation
+[   30.729747] scsi 0:0:1:0: Direct-Access     FUJITSU  MAH3182MP        0114 PQ: 0 ANSI: 4
+[   30.729754] scsi0:A:1:0: Tagged Queuing enabled.  Depth 32
+[   30.729771]  target0:0:1: Beginning Domain Validation
+[   30.729780]  target0:0:1: Domain Validation Initial Inquiry Failed <--
+[   30.729908]  target0:0:1: Ending Domain Validation
 
-yes please.
+...
+
+no idea whatever this is related but buffered disk reads are 2.XX MB/sec and the box is somewhat laggy.
+
+hdparm -t on sda and sdb reports :
+
+/dev/sda:
+ Timing buffered disk reads:    8 MB in  3.26 seconds =   2.46 MB/sec
+
+/dev/sdb:
+ Timing buffered disk reads:    8 MB in  3.56 seconds =   2.25 MB/sec
+
+My IDE discs are fine.
+
+Please let me know if you need my config or any other informations.
+
+
+Gabriel
