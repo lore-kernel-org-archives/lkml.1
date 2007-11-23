@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbXKWLjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbXKWLkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbXKWLjf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 06:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXKWLj1
+	id S1756729AbXKWLkz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 06:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXKWLkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 06:39:27 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:57845 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754816AbXKWLj0 (ORCPT
+	Fri, 23 Nov 2007 06:40:47 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59833 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbXKWLkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 06:39:26 -0500
-Message-ID: <4746BBC5.4000008@anagramm.de>
-Date: Fri, 23 Nov 2007 12:38:45 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 23 Nov 2007 06:40:46 -0500
+Message-ID: <4746BC2B.6060002@bull.net>
+Date: Fri, 23 Nov 2007 12:40:27 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: devzero@web.de
-CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       Simon Arlott <simon@fire.lp0.eu>
-Subject: OT: Re: System reboot triggered by just reading a device file....!?
-References: <1761125@web.de>
-In-Reply-To: <1761125@web.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX18jPIJ3LcP3Z07rUJeg8Koe3uQP33s2wgKll8d
- 3+C7ARoNg/4YOd0mas0XQiJ2sM1qmbh9an2OTXsDxNlqTbLXnI
- sZWi5cxgaKe0OYdlxReBA==
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: make struct ipc_ids static in ipc_namespace
+References: <20071122155448.3193c856.pierre.peiffer@bull.net> <474680B5.7020104@fr.ibm.com> <47468347.5090303@openvz.org> <47468927.3040304@openvz.org> <47469630.3060807@bull.net> <47469CF3.1030200@openvz.org> <4746B027.4020506@bull.net> <4746B449.5010204@openvz.org>
+In-Reply-To: <4746B449.5010204@openvz.org>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 12:47:49,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/11/2007 12:47:51,
+	Serialize complete at 23/11/2007 12:47:51
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Roland!
+Pavel Emelyanov wrote:
+> Well I think you're right. The structure gains 50% in size... Really too
+> much to fight for performance in IPC :)
+> 
+> Thanks for checking this thing.
+> 
+> You may put my Acked-by in the original patch.
+> 
 
-Please don't top-post.
+Cool. Thanks !
 
-devzero@web.de schrieb:
- > > [was: it would be easy to disable the kernel watchdog]
- > thanks, but i know i could do this.
+P.
 
-Good. I was also curious and just checked again. The watchdog subsystem
-is by default _disabled_ in the kernel configuration. If you use some
-distro's kernel, where they turned it on, complain to them!
-If you turned it on yourself, you are really on your own...
-the Kconfig help there is IMO sufficient and very clear and,
-"If unsure, say N". Hmm... sorry?!
+> Thanks,
+> Pavel
+> 
 
- > this thread is not meant to protect myself from this curiousity but it is meant
- > to protect others. it`s a trap.
-
-I guess I understand your position. But I don't see no way to improve
-the kernel in that point.
-Complain to the guys who enabled the watchdog / setup this trap for
-any reason.
-
- > i stepped into that.
- > now i know that trap, so i can easily sidestep.
- > it maybe very seldom that someone steps into this.
- > but it may happen and then someone will have trouble and spend time on this.
- > i think every admin can tell you about weird random reboots of his systems
- > which he cannot explain what was the reason for it.
-
-That's one possible way of "learning by doing suicide (tm);"
-
- > this maybe some of those reasons and this one could be avoided.
- > i`m thinking of something simple like echo "now you`re armed" > /dev/watchdog
-
-Read some details about watchdogs to get more background and why the
-watchdog is triggered so easily and why it's good this way.
-i.e: http://www.ganssle.com/watchdogs.pdf
-
-Regards,
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
-
-
+Pierre Peiffer
