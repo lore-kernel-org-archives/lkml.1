@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbXKWOZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbXKWOdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbXKWOZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 09:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXKWOZb
+	id S1756868AbXKWOdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 09:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbXKWOdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 09:25:31 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:50023 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753179AbXKWOZa (ORCPT
+	Fri, 23 Nov 2007 09:33:42 -0500
+Received: from mail164.messagelabs.com ([216.82.253.131]:16794 "HELO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755125AbXKWOdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 09:25:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=U1IxrmDlnMmyvFYUxvWtz+90L9K4v1YTEB10cihKM40GzHIP9J2lln0ipHUZxvMK/emfO+QF9XZIOK8OZysOVzBN8sRgdmI1SiQ0Tiulmouzls4JPhqGXj6AjcrViYf0NNmU8gyPRxkwaIIIPcY95D4BuzxL3an2dj4LhZCOzHw=
-Message-ID: <386072610711230625k23b68e49q6090b7eb27c2c039@mail.gmail.com>
-Date: Fri, 23 Nov 2007 22:25:29 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: [PATCH 1/1] [MTD/NAND]: Add Blackfin BF52x on-chip NAND Flash controller driver support in bf5xx_nand driver
-Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       "Michael Hennerich" <michael.hennerich@analog.com>
-In-Reply-To: <1195813178.25590.35.camel@pmac.infradead.org>
+	Fri, 23 Nov 2007 09:33:41 -0500
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-14.tower-164.messagelabs.com!1195828419!12033675!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Fri, 23 Nov 2007 15:33:38 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: NOHZ: local_softirq_pending 20
+Message-ID: <20071123143338.GA13071@digi.com>
+References: <20071123112442.GA12047@bre-cln-ukleine.digi.com> <alpine.LFD.0.9999.0711231323490.26417@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <1195812893-26312-1-git-send-email-bryan.wu@analog.com>
-	 <1195813178.25590.35.camel@pmac.infradead.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.0.9999.0711231323490.26417@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 23 Nov 2007 14:33:39.0113 (UTC) FILETIME=[D6946190:01C82DDD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 23, 2007 6:19 PM, David Woodhouse <dwmw2@infradead.org> wrote:
->
-> On Fri, 2007-11-23 at 18:14 +0800, Bryan Wu wrote:
-> >
-> > +#ifdef CONFIG_BF54x
-> >         /* Setup DMAC1 channel mux for NFC which shared with SDH */
-> >         val = bfin_read_DMAC1_PERIMUX();
-> >         val &= 0xFFFE;
-> >         bfin_write_DMAC1_PERIMUX(val);
-> >         SSYNC();
-> > -
-> > +#endif
->
-> You can't build a multiplatform kernel which runs on BF52x and BF54x?
+Hello,
 
-There are some hardware difference between BF52x and BF54x. We have to do this.
+Thomas Gleixner wrote:
+> On Fri, 23 Nov 2007, Uwe Kleine-König wrote:
+> > my kernel reported:
+> > 
+> > 	NOHZ: local_softirq_pending 20
+> 
+> Thats TASKLET_SOFTIRQ
+I suppose you're right, and it's only me that fails to see that.  Just
+from looking on the code, I'd say TASKLET_SOFTIRQ is 5.  Ah, OK, I see,
+0x20 == 1 << TASKLET_SOFTIRQ.
 
-> And want to make it harder to do so in future?
->
-Any idea to make it easier? providing a specific hardware init hook
-function from each platform board files?
+> > I cannot interpret it, but probably this is bad, because before
+> > bc5393a6c9c0e70b4b43fb2fb63e3315e9a15c8f this used to BUG().
+> 
+> We removed the BUG, because it's a situation where the kernel can
+> easily recover. It should never happen that the kernel goes to sleep
+> with a pending softirq, but it's not a fatal error.
+> 
+> > This happend while having a high load.  Up to now it only happend once
+> > and I cannot reproduce it.
+> 
+> That's hard to tell then. Without a reproducible test case I can not
+> do much to help debugging this.
+Is there something I can do to be able to report more if it reoccurs?
 
-Regards,
--Bryan
+Can you isolate the problem?  Has it to do with the arch-specific timing
+code?  With the hardware?
 
-> --
-> dwmw2
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Best regards and thanks
+Uwe
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
