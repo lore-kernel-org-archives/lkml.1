@@ -1,38 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbXKWTyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbXKWTzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbXKWTyt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 14:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbXKWTyl
+	id S1758007AbXKWTzT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 14:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbXKWTzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 14:54:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:13012 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757181AbXKWTyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 14:54:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aNYAvD1oiBobzZgd9vgzFG3JeZYI+OUPb8SaqCE+WEnNyFtQXGGhj5N2GJ9hGItl7DCppL3epTJcGoxYwhshI24UZFPmhDsXyeRO/F8YOcYTA97tSeUG7B+LMP6HILK6/2vpUuWaDU44/uNjH/IlNTkP67ww15v5t78pmRJyMXo=
-Message-ID: <118833cc0711231154i588cf7c1gb99e050999af8632@mail.gmail.com>
-Date: Fri, 23 Nov 2007 14:54:39 -0500
-From: "Morten Welinder" <mwelinder@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Inotify fails to send IN_ATTRIB events
-In-Reply-To: <118833cc0711201911r3684937p38823649639e0a57@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Nov 2007 14:55:01 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36854 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756912AbXKWTzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 14:55:00 -0500
+Date: Fri, 23 Nov 2007 22:54:11 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
+Message-ID: <20071123195410.GA11401@2ka.mipt.ru>
+References: <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru> <20071123184851.GA14415@2ka.mipt.ru> <20071123185101.GA17582@2ka.mipt.ru> <20071123185906.GA23710@2ka.mipt.ru> <20071123191120.GA19691@waste.org> <20071123193222.GA22168@2ka.mipt.ru> <20071123194139.GC19691@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <118833cc0711201911r3684937p38823649639e0a57@mail.gmail.com>
+In-Reply-To: <20071123194139.GC19691@waste.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This looks bad, though:
+On Fri, Nov 23, 2007 at 01:41:39PM -0600, Matt Mackall (mpm@selenic.com) wrote:
+> Here's another thought: move all this logic into the networking core,
+> unify it with current softirq zapper, then allow it to be called from
+> various other places (like atomic allocators). Then it'll all be in
+> central maintained place with more users.
 
-include/linux/fsnotify.h:121: warning: passing argument 2 of
-'audit_inode_child' from incompatible pointer type
+This can be done quite easily - put a check into __kfree_skb() if
+netpoll is compiled-in and we are in hardirq context, then put skb
+into softirq freeing queue. Then zap_completion_queue() can free
+anything without ever knowing about nature of the packet, since this
+will be checked in __kfree_skb() anyway.
 
-Missing "->d_inode"?
+Kind of this:
 
-M.
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 758dafe..88f8ea9 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -196,10 +196,7 @@ static void zap_completion_queue(void)
+ 		while (clist != NULL) {
+ 			struct sk_buff *skb = clist;
+ 			clist = clist->next;
+-			if (skb->destructor)
+-				dev_kfree_skb_any(skb); /* put this one back */
+-			else
+-				__kfree_skb(skb);
++			__kfree_skb(skb);
+ 		}
+ 	}
+ 
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 27cfe5f..f720685 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -318,6 +318,12 @@ void kfree_skbmem(struct sk_buff *skb)
+ 
+ void __kfree_skb(struct sk_buff *skb)
+ {
++#if defined(CONFIG_NETPOLL) || defined(CONFIG_NETPOLL_TRAP)
++	if (in_irq() || irqs_disabled()) {
++		dev_kfree_skb_irq(skb);
++		return;
++	}
++#endif
+ 	dst_release(skb->dst);
+ #ifdef CONFIG_XFRM
+ 	secpath_put(skb->sp);
+
+-- 
+	Evgeniy Polyakov
