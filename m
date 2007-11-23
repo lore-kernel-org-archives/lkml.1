@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbXKWTPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbXKWTQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbXKWTPG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 14:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbXKWTO4
+	id S1757584AbXKWTQW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 14:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbXKWTQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 14:14:56 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:15274 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbXKWTOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 14:14:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VPEO8TIDCpPO6mNsqLoCKqNyAsfqj5wT+7iwmccRkcqHAv1CAoBEz6rpaLnUd73U9QsecrQouRLtcWzu5dyp7e7lo3G1EZRvP2xoyDaCnRN190crlwjUbY0cLLItwswU47fpGEbRusbuNq3qT1BS8q1xCqQnrS9w70mDIvFBkIs=
-Message-ID: <cfd18e0f0711231114l33f3c4b8t9a6dbadaf0e9b0a3@mail.gmail.com>
-Date: Fri, 23 Nov 2007 20:14:54 +0100
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Ulrich Drepper" <drepper@gmail.com>
-Subject: Re: Where is the new timerfd?
-Cc: "Davide Libenzi" <davidel@xmailserver.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <a36005b50711231038j48325a41o26d1749ee89ab64d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Nov 2007 14:16:12 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:34460 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754595AbXKWTQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 14:16:10 -0500
+Date: Fri, 23 Nov 2007 22:15:24 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.23 WARNING: at kernel/softirq.c:139 local_bh_enable()
+Message-ID: <20071123191524.GA6273@2ka.mipt.ru>
+References: <4745DCD7.8070805@simon.arlott.org.uk> <20071123002157.cb27f4a1.akpm@linux-foundation.org> <20071123105518.GA22062@2ka.mipt.ru> <20071123170756.GV19691@waste.org> <20071123175757.GA23991@2ka.mipt.ru> <20071123185943.GZ19691@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <cfd18e0f0711220324l533d9048yf05c399019764b62@mail.gmail.com>
-	 <cfd18e0f0711221048k538d05abk8e4303d5f90a6e1b@mail.gmail.com>
-	 <Pine.LNX.4.64.0711221145410.7431@alien.or.mcafeemobile.com>
-	 <20071122162430.48f55995.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0711221634510.7431@alien.or.mcafeemobile.com>
-	 <20071122173437.e74890a8.akpm@linux-foundation.org>
-	 <cfd18e0f0711230439m1d72abdle4d5050b0bd935a1@mail.gmail.com>
-	 <20071123091254.45f4193d.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0711230928590.15603@alien.or.mcafeemobile.com>
-	 <a36005b50711231038j48325a41o26d1749ee89ab64d@mail.gmail.com>
+In-Reply-To: <20071123185943.GZ19691@waste.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 23, 2007 7:38 PM, Ulrich Drepper <drepper@gmail.com> wrote:
-> On Nov 23, 2007 9:29 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > Yes, it's disabled, and yes, I'll repost today ...
->
-> I haven't seen the patch and don't feel like searching.  So I say it
-> here: please mak sure you add a flags parameter to the system call
-> itself (instead of adding it on as for eventfd and signalfd).  We need
-> to be able to use O_CLOEXEC some way or another.
+On Fri, Nov 23, 2007 at 12:59:43PM -0600, Matt Mackall (mpm@selenic.com) wrote:
+> So I'd be surprised if that was a problem. But I can imagine having
+> problems for skbs without destructors which run into one of these in
+> __kfree_skb:
+> 
+> dst_release
+> secpath_put
+> nf_conntrack_put
+> nf_conntrack_put_reasm
+> nf_bridge_put
+> 
+> ..some or all of which assume a softirq context.
 
-Seems reasonable to add this for timer_create() (though unfortunate
-that it is now too late to do the same for eventfd() and signalfd()).
-Davide, what do you think?
+bridging is ok, others require softirq context.
+I've sent a patch (the last one should be ok) to guard against xfrm and
+connection tracking.
 
-Cheers,
+> > No matter if we are under memory pressure or whatever - it is not
+> > allowed - a lot of skbs are supposed to be freed in softirq context,
+> > that is why dev_kfree_skb_any() exists.
+> 
+> Some skbs we definitely -can- free in irq context. The only ones we
+> care about are the ones generated by netpoll. If there's a reason you
+> think netpoll's own skbs can't be freed, please describe it.
 
-Michael
+Only some and to distinguish them we can not use destructor - if it is
+set (even empty function) it will fire an alarm.
+
+> > I think we can drop skbs _without_ destructor from the queue though in
+> > that conditions given that we actually need only one.
+> 
+> Huh?
+
+Don't mind - friday...
+I posted a patch (third one should be ok) to fix this issue.
+
+-- 
+	Evgeniy Polyakov
