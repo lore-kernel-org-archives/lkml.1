@@ -1,55 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbXKXMEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbXKXMOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbXKXMEY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 07:04:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbXKXMEQ
+	id S1754235AbXKXMOU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 07:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXKXMON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 07:04:16 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36706 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752378AbXKXMEQ (ORCPT
+	Sat, 24 Nov 2007 07:14:13 -0500
+Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:2380 "EHLO
+	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbXKXMOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 07:04:16 -0500
-Date: Sat, 24 Nov 2007 21:04:37 +0900
-From: kosaki <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc3-mm1 (sync is slow ?)
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071121004909.6157bb9a.akpm@linux-foundation.org>
-References: <20071121174215.caff4551.kamezawa.hiroyu@jp.fujitsu.com> <20071121004909.6157bb9a.akpm@linux-foundation.org>
-Message-Id: <20071124190604.276B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 24 Nov 2007 07:14:12 -0500
+Message-ID: <47481590.8090009@xs4all.nl>
+Date: Sat, 24 Nov 2007 13:14:08 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+To: linux-kernel@vger.kernel.org
+Subject: possible  BUG: unable to handle kernel NULL pointer dereference at
+ virtual address 00000000
+X-Enigmail-Version: 0.95.5
+OpenPGP: id=8300CC02
+Content-Type: multipart/mixed;
+ boundary="------------030500080009060107000803"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andrew 
+This is a multi-part message in MIME format.
+--------------030500080009060107000803
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> > Hi, Andrew
-> > 
-> > I got following result in 'sync' command.
-> > It was too slow. (memory controller config is off ;)
-> > I attaches my .config.
-> > ==
- (snip)
-> 
-> Well I wonder how we did that.
-> 
-> It seems OK here from a quick test (i386, ext3-on-IDE).
-> 
-> Maybe device driver/block breakage?
+Hello,
 
-I tested x86, ext3-on-SATA(/dev/sda).
-It seems works well.
+What happened in the attached messages?
+It was on a VIA Epia EN12000, while compiling.
+Yes, the machine has been stable before and after that issue.
+So I suspect no hardware issues.
 
-Hmm...
+Kind regards,
+Udo
 
+--------------030500080009060107000803
+Content-Type: application/gzip;
+ name="messages.recorder.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="messages.recorder.gz"
 
--- 
-kosaki
-
-
+H4sICGsUSEcCA21lc3NhZ2VzLnJlY29yZGVyAO3aW4/bxhXA8fd+iinykrapzftFiAO0qR0E
+cFyjm+TFCAhehhaxkqiQ1O762/fMUFfH8VJZbRGn/8Um4fVwNJqZ3znLvGpvlJsoN5iFwcwP
+VafLtqt0pzbroVnqaqaW7U2zeiv7amjVuu2boWlXyvNmylFV/q7/QjnuzAlmQfynV4dg8VnB
+3NNg8XGwcOaFs+Ao2LXuVnoxU//84ZuZ2qzyYqFNtHm+qmRrPKte/fDypTygWQ1yh9yla/ln
+VWqVD+qm6YZNvlB5VXW675Wz/bn/kWrdSUTzCXSznt1/fem4oXa1e/+Vf11XWj07oyn/btf9
+zFzvqTefuT/df8Pr/zx//t3r79X9V37XVpuF7tWiWV3rSjWrmco3Q1v3gbpN/MiL57Wa3y7b
+VXbTVErrddcuVb9ZdetSDVXuOk5wp/pVJafzxLsbt/MyjbOyrXSp7Gax6e3xXv+cVZvl8t1+
+r+0PZ5ZN1WT6Rq+G3SH733W53F+2bO50t9+TM6rYVG/1kOU39ogZeZ3q8zx2gyi7GQ+u87c6
+yxeLthxjrDeB42abvDOjo9KtNK+2Z7r81rRhF1N6Sh+arW8aGVHb0Kqdl43rp4EahnUprd72
+y0p6UGttzzReaTpFTqg6X0nQYZDhP8x1t5TxKIdLGY+ttPatjNM8e6tXumtKpSVyNi8rtdlu
+3P8dfv36BxmuSk0YSc+/fT1e6kTO7M2XuzH71U/m4Kt2UENuplGlfnz57YRoL17+45srOzJd
+x3M9ifG59yR64vlPXPVZ8JdJ7VFNbybqutusdFaVeTnXf3PuIuepc+cmyf0hdH43288laYEu
+ZL/ShVfFaWn2S9kv3cQrwtKer8y+46eVjsoJ4ftmd3mY2Nub9x633u2Hsdnv1/ZxZaHrCeEr
+O7Hjwt6536zH6S7x3+63ersVTeiR1+PYUtf9bb6uHPX5upHl2E3CL9TQPDNty03EIe+vzV4c
+htG49+To9IQv72rIy+t9Z7jbjcQ5dNf+yLhROeMq6XuhPRLXco0c8Ss/9iYsVtsfGz4IxvCh
+tw3mpTIApRl1FTnO4Rs6PiLrWeQdGjX5gUfBTje8sS1huv3MvuOMnyfSR9fs75owlWWdUt93
+eakniKO2E1i6UyZwPxevrrczKFvqZdu9k4nkljKR/GBqNPtVHKL1i7yQIFVqZuMUqHdRpAMk
+yjgCJYCX+qYZsZ4awQt9HUsEg1Enn+VGZ7f5tc7qzao0eYTENCuEH05vUhBUx01yzm6Qp839
+w7zTuQngRxIhLKcH8OrkJIBz1v2OfDGmR8aj2Rglm+vFWncSLDbf0JS05tmHfyaMTQFdZnug
+ZObFgXJ9lbiqTlVUynKr/FRGvnJqlQSSMCq7HJhfOR6nypNbQqVTWS6VU/7qjfLv/Y1JoQLX
+PE42XFclqQo8s/tlkn6lXMceSM2B3FWxc4gkx53URHLNAqFSe0SmYy2xKxUEaqKSJzr+ik7q
+6mr2/Oq1XZdn0xf9VTtIT26X5zeyMP+k9F1j2L1thrk8TOvl2iQgG8mF3D9Oduzn1WNnxx7Z
+MdnxJbNjGbNjdvz9mBnP1DdjUvCv35IjS+c8IEc+JX6dyzwezNJvVqPK/42pch1XblJ7zi5V
+HvdlndymynY/TIOJqfL28nKXKtdxnYR+sk+Vj/f3qXKV/1+lys6hF/ZBTzci6X8ZfnLVeES6
+qIp3t1dnpcqRzkt/e2uRKt9101pqIXvElzaYbyx0PNso2fCFdhmqbpkG4e6B/hkP3LX1lx9s
+/+GPP6Eb5zKbRzolSdhf/Cipsu1Oq3lbZvVi088z813KFApN+uQ5/tRIttkSqdMLnfd6F8aL
+PRMnnZwoy+cOC4lTtZnJAExqYUNEVTg9L6zzyIRotE33tUlNqmjy7XXqJmMLLAV1vlmYdgSF
+KRzCZHJ+6pe+X0ugpm8X+aCzRbexEXsTLDCNiuvpjQrC8gONcs5qklfn8iNhdNe1nSXXdHD+
+1CyZ08urj2aAVGlUab/DKu1QDRUq9JUXHJVTu0JKNo7LKLNR2Ct95RemdJKKTdKC98qrMlaB
+DXhcvZmaqzq5zFZpTmKj2sea8is05df+EnMk2D2wNBvmmfJvbe46r0obs7SP50e/LNYmpR0v
+mjtT5sjxTdc3N1rZxchkrHKsaNvBJGcrrStd/fl/X6oFj1OqVXXgP3ap5lOqUapdsFQzY/ZC
+pZonpZrzoNcZVXbdLBYGZVl7gmhibWY/RlGn99Rm5a42mz7zbG22/0v9R19jxPW+NtORm0pa
+fqnazPd/S21Wlu5acvVtbRaHiTMWZ9K45FCc+dqNHf+oONuenl6c7Tt7302WFqdyD6dMiZRq
+0cqe8tLkA28/znuPcfSaJDcbeeJU3sdek+xfNOzffpz1HmP7miTw8sQ9eaFxOOJHgbHZfiyn
+PKrbzJOTOHms9xjS0/tEuzXJtqygNjv2DeD6jJRdvphfpuxStP0RcvYiMvmldEw2tFndab2v
+suSkCVZPrv38tHBNk7JRlUOgxCTNXuJNDRQ4dWTqtTGdyZbLfcXmRtrmz+n00i+K9AdKP8/1
+zqtHXSdNjQebdWXK0X7Ih16qk2bI9Mrk9Wkh8Qo9uZZMvTgwX5+MAZNpmCZ5tpvK5NMqax9Y
+WmhH2XVp+05l/A3M/wlkawzHZP15YlJ7k8unKpTfwv5q8wJIcv8iUG5qIsiyFubbU6Wvwkgl
+lQnllaZokSJADpoCxjFH9gWMLS3eK2GqZFeYlPb1kavsUmYP2pvMQU/Zxf280mKbVbzn+Wkt
+MZnJ8cXPFrQ3hrKPvfnxJpYT2yFpMvzbebMw5UK7bMr9g2zNOf4h76l55vQh7+Tx6ZAP0/NG
+vOuGRWFXmLI1iam2sey6cM7iKU0JcrNSvRfFTkDfnb5MObY436yW+Tq7WeZmsfPD0Hyl05fg
+wBD61fjFyVKXr83sM/2ip3dL4NuGLCWHt6tkbSbv9KUtiQv35K+Gbpl8mn81/D39pc9k3naq
+l8JhITnhrh3TI3xwsSADIgMiA/ojZEBwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dw
+C7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dnchs9DrfRw7mNLsRtdBFuo4tw
+Gz2c2+hh3EYP5zZ6GLfRpbiNLjP/ogvMv+jB3EYP4za6GLfRhbiNLsptdBFuo0tyG12K2+hy
+3EaX4ja6LLfRBbj9nU93uIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVb
+uIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVb
+uIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIXbT5nb
+oCp9070/b5ryetH0QzZ0zVICFWbolBFswzZswzZswzZsUyXDLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
+LdzCLdzCLdw+GrdVIW0ww3lskqwfZSYDMpOhbRYz3zXz9RPF242j2jFr2mbIaun2XgZ0tynN
+6Il8iZRHZ/BZhyd8ek4Jn/AJn/AJnxfgM/Rmfni4c7MemqWuZmrZ3hg2N2s1tGrd9s3QtCvl
+OTPlqCp/13+hHG8mv0fDOZo50TnB3PQkmNx/Giye+d4HPtPX3764Uj++uJqpK/l2x55RzUr2
++v5KD/KQZ+rvrn9WpLKp+2zZblaDqnMRq1K3TzuJ1a2U6fNtxP8CUDGhW5e8AgA=
+--------------030500080009060107000803--
