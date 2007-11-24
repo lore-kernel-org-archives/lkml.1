@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbXKXWj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXKXW4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbXKXWj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 17:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXKXWjs
+	id S1756085AbXKXW4J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 17:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXKXWz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 17:39:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53083 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbXKXWjs (ORCPT
+	Sat, 24 Nov 2007 17:55:56 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58746 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752693AbXKXWzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 17:39:48 -0500
-Date: Sat, 24 Nov 2007 23:40:13 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: nohz and strange sleep latencies
-Message-ID: <20071124224013.GB1544@elf.ucw.cz>
-References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz> <20071120205454.GD10008@elte.hu> <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain> <20071120225246.GA24380@elte.hu> <20071122185238.GA1821@elf.ucw.cz> <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 24 Nov 2007 17:55:55 -0500
+Date: Sat, 24 Nov 2007 14:58:09 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: not set boot cpu in cpu_online_map at
+ x86_64_start_kernel
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200711241458.09399.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+[PATCH] x86_64: not set boot cpu in cpu_online_map at x86_64_start_kernel
 
-> > > but perhaps somehow we miss this fact and fail to turn off the lapic 
-> > > clockevents drivers?
-> > 
-> > Ok, I guess I'm lost. If I offline second CPU, I immediately get
-> > 1000Hz timer tick... is that expected?
-> 
-> Hmm. No. I have no idea why this is happening.
-> 
-> 34196 total events, 55.083 events/sec
-> echo 0 >/sys/devices/system/cpu/cpu1/online
-> 36073 total events, 54.679 events/sec
+in init/main.c boot_cpu_init() does that later
 
-Digging into process_32|64.c...
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-64:
-        while (1) {
-                while (!need_resched()) {
-                        void (*idle)(void);
-
-                        if (__get_cpu_var(cpu_idle_state))
-                                __get_cpu_var(cpu_idle_state) = 0;
-
-                        tick_nohz_stop_sched_tick();
-
-32:
-        while (1) {
-                tick_nohz_stop_sched_tick();
-                while (!need_resched()) {
-                        void (*idle)(void);
-
-                        if (__get_cpu_var(cpu_idle_state))
-                                __get_cpu_var(cpu_idle_state) = 0;
-
-...eek? Which one is wrong?
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 6b34693..82b9f03 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -67,8 +67,6 @@ void __init x86_64_start_kernel(char * real_mode_data)
+ 
+ 	pda_init(0);
+ 	copy_bootdata(__va(real_mode_data));
+-#ifdef CONFIG_SMP
+-	cpu_set(0, cpu_online_map);
+-#endif
++
+ 	start_kernel();
+ }
