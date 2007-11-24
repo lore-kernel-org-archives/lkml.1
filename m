@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbXKXOTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbXKXOZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbXKXOTq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 09:19:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXKXOTi
+	id S1754088AbXKXOZF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 09:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXKXOY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 09:19:38 -0500
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:49372
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbXKXOTh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 09:19:37 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: radeonfb i2c regression post-2.6.18.
-Date: Sat, 24 Nov 2007 15:18:26 +0100
-User-Agent: KMail/1.9.6
-Cc: benh@kernel.crashing.org, Roger Leigh <rleigh@whinlatter.ukfsn.org>,
-       linux-kernel@vger.kernel.org, Dennis Munsie <dmunsie@cecropia.com>
-References: <1195427766.7022.18.camel@pasglop> <200711231700.53103.mb@bu3sch.de> <20071123232928.467378a7@hyperion.delvare>
-In-Reply-To: <20071123232928.467378a7@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 24 Nov 2007 09:24:56 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:47523 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752820AbXKXOYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 09:24:55 -0500
+Date: Sat, 24 Nov 2007 14:34:41 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, kune@deine-taler.de,
+       johannes@sipsolutions.net
+Subject: Re: [RFC] Documentation about unaligned memory access
+Message-ID: <20071124143441.41657307@poseidon.drzeus.cx>
+In-Reply-To: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711241518.26755.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 November 2007 23:29:28 Jean Delvare wrote:
-> On Fri, 23 Nov 2007 17:00:52 +0100, Michael Buesch wrote:
-> > This patch fixes my crash problem.
+On Fri, 23 Nov 2007 00:15:53 +0000 (GMT)
+Daniel Drake <dsd@gentoo.org> wrote:
+
+> Being spoilt by the luxuries of i386/x86_64 I've never really had a good
+> grasp on unaligned memory access problems on other architectures and decided
+> it was time to figure it out. As a result I've written this documentation
+> which I plan to submit for inclusion as
+> Documentation/unaligned_memory_access.txt
 > 
-> Out of curiosity, what kind of crash was it? I admit that I can't see
-> how the code could crash.
+> Before I do so, any comments on the following?
 > 
 
-It's not the code that crashes. It's the hardware that turns off the machine.
-It only happens if I boot the machine and only if it's hot at this
-time. Some hardware will turn off the hardware two or three seconds
-after the radeon driver was loaded.
-It seems to be some overheating protection that's going crazy.
+A very nice, and much needed document. I think you should include one thing though:
 
+memcpy() is _only_ safe when one of the pointers is char* or void*. If it is anything more complex than that, gcc will assume alignment and optimise based on that. E.g. memcpy() of two long:s generates the same assembly as doing an assignment.
+
+(Technically it is no different for char* and void*, but since they have byte alignment, gcc can't really do anything creative.)
+
+Rgds
 -- 
-Greetings Michael.
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
