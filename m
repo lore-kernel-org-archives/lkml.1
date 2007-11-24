@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbXKXB54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbXKXCSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbXKXB54 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 20:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXKXB5r
+	id S1754364AbXKXCSu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 21:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXKXCSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 20:57:47 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:52762 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753250AbXKXB5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 20:57:46 -0500
-Message-ID: <47478518.7030006@pobox.com>
-Date: Fri, 23 Nov 2007 20:57:44 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 29/59] drivers/net/chelsio: Add missing "space"
-References: 1234567 <1195523331-15303-13-git-send-email-joe@perches.com> <1195523331-15303-14-git-send-email-joe@perches.com> <1195523331-15303-15-git-send-email-joe@perches.com> <1195523331-15303-16-git-send-email-joe@perches.com> <1195523331-15303-17-git-send-email-joe@perches.com> <1195523331-15303-18-git-send-email-joe@perches.com> <1195523331-15303-19-git-send-email-joe@perches.com> <1195523331-15303-20-git-send-email-joe@perches.com> <1195523331-15303-21-git-send-email-joe@perches.com> <1195523331-15303-22-git-send-email-joe@perches.com> <1195523331-15303-23-git-send-email-joe@perches.com> <1195523331-15303-24-git-send-email-joe@perches.com> <1195523331-15303-25-git-send-email-joe@perches.com> <1195523331-15303-26-git-send-email-joe@perches.com> <1195523331-15303-27-git-send-email-joe@perches.com> <1195523331-15303-28-git-send-email-joe@perches.com> <1195523331-15303-29-git-send-email-joe@perches.com> <1195523331-15303-30-git-send-email-joe@perches.com>
-In-Reply-To: <1195523331-15303-30-git-send-email-joe@perches.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Fri, 23 Nov 2007 21:18:42 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1029 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753296AbXKXCSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 21:18:41 -0500
+Date: Sat, 24 Nov 2007 10:18:14 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>
+Subject: Re: [bug] xfrm_state_lock: possible circular locking dependency detected
+Message-ID: <20071124021814.GA24056@gondor.apana.org.au>
+References: <20071123153851.GA26308@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071123153851.GA26308@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/net/chelsio/cxgb2.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Fri, Nov 23, 2007 at 04:38:51PM +0100, Ingo Molnar wrote:
+> 
+> DaveJ's Fedora 8 rpm for 2.6.24 works petty well, except for the 
+> neworking related lockdep assert attached below, which happened while 
+> starting up ipsec. Let me know if you need any more info - it's a pretty 
+> stock setup.
 
-appied 29-36 to netdev#upstream
+Thanks for the report Ingo!
 
+This is indeed a regression caused by:
 
+commit 050f009e16f908932070313c1745d09dc69fd62b
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Tue Oct 9 13:31:47 2007 -0700
+
+    [IPSEC]: Lock state when copying non-atomic fields to user-space
+
+For 2.6.24 I'm simply going to revert this change since that
+just puts us back to the same state we've been for the last
+few years.
+
+For 2.6.25 I'll do a proper fix by making sure that every xfrm
+state user obeys the rule that if x->lock is to be taken with
+xfrm_state_lock then it must be done from within.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
