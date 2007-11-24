@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbXKXEyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbXKXE5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbXKXEyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 23:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbXKXEyB
+	id S1754832AbXKXE5a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 23:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXKXE5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 23:54:01 -0500
-Received: from ozlabs.org ([203.10.76.45]:37400 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbXKXEyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 23:54:00 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Sat, 24 Nov 2007 15:53:34 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711231435.05788.rusty@rustcorp.com.au> <20071123195330.GA24223@one.firstfloor.org>
-In-Reply-To: <20071123195330.GA24223@one.firstfloor.org>
+	Fri, 23 Nov 2007 23:57:23 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:13072 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbXKXE5W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 23:57:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K0D1uOmLnmfFMXY6B0s4Ae7gk8paihiGRef2CYKX1JQffQ78ClMSnFTyb8kGMP8IP5f2eXz5cecADYOSQbx6fHUX06Tmb4YR+NJks++bxbEcHChiTTgfw/+qlRabp8ajdfWgs5f94AjQEZQZbWUBnQoCEAy1m4vo091J6cxVTAI=
+Message-ID: <64bb37e0711232057v611a7114i9d8ba3ef6a0d6fc2@mail.gmail.com>
+Date: Sat, 24 Nov 2007 05:57:21 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Alasdair G Kergon" <agk@redhat.com>,
+       "Torsten Kaiser" <just.for.lkml@googlemail.com>,
+       "Milan Broz" <mbroz@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
+In-Reply-To: <20071124034907.GD22843@agk.fab.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711241553.34744.rusty@rustcorp.com.au>
+References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com>
+	 <20071119075627.GB28432@elte.hu>
+	 <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com>
+	 <4741F97D.6090808@redhat.com>
+	 <64bb37e0711231442y7603366aib9642eab97e5be6b@mail.gmail.com>
+	 <20071124034907.GD22843@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 24 November 2007 06:53:30 Andi Kleen wrote:
-> This serves as a documentation 
-> on what is considered internal. And if some obscure module (in or
-> out of tree) wants to use an internal interface they first have
-> to send the module maintainer a patch and get some review this way.
+On Nov 24, 2007 4:49 AM, Alasdair G Kergon <agk@redhat.com> wrote:
+> On Fri, Nov 23, 2007 at 11:42:36PM +0100, Torsten Kaiser wrote:
+> > ... or I just don't see the bug.
+>
+> See my earlier post in this thread: there's a race in the write loop
+> where a work struct could be used twice on the same queue.
+> (Needs data structure change to fix that, which nobody has attempted
+> to do yet.)
 
-So, you're saying that there's a problem with in-tree modules using symbols 
-they shouldn't?  Can you give an example?
+As I wrote in an earlier post:
+I did see this lockdep message even with
+agk-dm-dm-crypt-move-bio-submission-to-thread.patch reverted, so the
+work struct is not used in the write loop.
 
-> I believe that is fairly important in tree too because the
-> kernel has become so big now that review cannot be the only
-> enforcement mechanism for this anymore.
+> BTW To eliminate any internal lockdep concerns (and people say there
+> should be no problem) temporarily add a second struct instead of reusing
+> one on two queues.
 
-If people aren't reviewing, this won't make them review.  I don't think the 
-problem is that people are conniving to avoid review.
+I think, this might really be a lockdep bug, but as I'm not fluent
+enough with C, please check, if my logik is correct:
 
-> Another secondary reason is that there are too many exported interfaces
-> in general.
+The freed-locked-lock-test is the only function that uses this in lockdep.c:
+static inline int in_range(const void *start, const void *addr, const void *end)
+{
+        return addr >= start && addr <= end;
+}
+This  will return true, if addr is in the range of start (including)
+to end (including).
 
-Probably, but this doesn't reduce it.  
+But debug_check_no_locks_freed() seems does:
+const void *mem_to = mem_from + mem_len
+-> mem_to is the last byte of the freed range, that fits in_range
+lock_from = (void *)hlock->instance;
+-> first byte of the lock
+lock_to = (void *)(hlock->instance + 1);
+-> first byte of the next lock, not last byte of the lock that is being checked!
+(Or am I reading this wrong?)
 
-> Several distributions have policies that require to 
-> keep the changes to these exported interfaces minimal and that
-> is very hard with thousands of exported symbol.  With name spaces
-> the number of truly publicly exported symbols will hopefully
-> shrink to a much smaller, more manageable set.
+The test is:
+if (!in_range(mem_from, lock_from, mem_to) &&
+                                        !in_range(mem_from, lock_to, mem_to))
+                        continue;
+So it tests, if the first byte of the lock is in the range that is freed ->OK
+And if the first byte of the *next* lock is in the range that is freed
+-> Not OK.
 
-*This* makes sense.  But it's not clear that the burden should be placed on 
-kernel coders.  You can create a list yourself.  How do I tell the difference 
-between "truly publicly exported" symbols and others?
+That would also explain the rather strange output:
+=========================
+[ BUG: held lock freed! ]
+-------------------------
+kcryptd/1022 is freeing memory
+FFFF81011EBEFB00-FFFF81011EBEFB3F, with a lock still held there!
+  (kcryptd){--..}, at: [<ffffffff80247dd9>] run_workqueue+0x129/0x210
+2 locks held by kcryptd/1022:
+ #0:  (kcryptd){--..}, at: [<ffffffff80247dd9>] run_workqueue+0x129/0x210
+ #1:  (&io->work#2){--..}, at: [<ffffffff80247dd9>] run_workqueue+0x129/0x210
 
-If a symbol has more than one in-tree user, it's hard to argue against an 
-out-of-tree module using the symbol, unless you're arguing against *all* 
-out-of-tree modules.
+That claims that the lock of the *workqueue* struct, not the work
+struct is getting freed!
+But I'm still happily using the dm-crypt device, even 19 hours after
+that message.
 
-Sorry,
-Rusty.
+So my current best guess to the source of this message is, that with
+the change in the ref counting it is now possible that the work struct
+is really getting freed before the workqueue function returns. But as
+the comment in run_workqueue() says, that is still legal.
+But now the first byte of the next lock is part of the freed memory
+and so the wrong "held lock freed" is triggered.
+
+Torsten
