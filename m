@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbXKXEDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbXKXEFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbXKXEDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 23:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbXKXEDe
+	id S1753135AbXKXEFf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 23:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbXKXEF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 23:03:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58885 "EHLO mx1.redhat.com"
+	Fri, 23 Nov 2007 23:05:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54825 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbXKXEDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 23:03:33 -0500
-Date: Sat, 24 Nov 2007 04:03:24 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Milan Broz <mbroz@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc2-mm1: kcryptd vs lockdep
-Message-ID: <20071124040324.GM24157@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	Torsten Kaiser <just.for.lkml@googlemail.com>,
-	Milan Broz <mbroz@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <64bb37e0711182323v1e2a1341tfc7f20df771b988@mail.gmail.com> <20071119075627.GB28432@elte.hu> <64bb37e0711191134l6dac07a2ie3b4258c43e1f1f0@mail.gmail.com> <4741F97D.6090808@redhat.com> <64bb37e0711231442y7603366aib9642eab97e5be6b@mail.gmail.com> <20071124034907.GD22843@agk.fab.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751002AbXKXEF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 23:05:26 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Mats Johannesson <spamcan@abcbredband.net>
+Subject: Re: Laptop keyboard unusable when ACPI is active
+Date: Fri, 23 Nov 2007 23:04:56 -0500
+User-Agent: KMail/1.9.5
+Cc: pavel@suse.cz, legolas558@users.sourceforge.net, dmitry.torokhov@gmail.com,
+       astarikovskiy@suse.de, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20071123084443.2cf6b61e@loke.fish.not>
+In-Reply-To: <20071123084443.2cf6b61e@loke.fish.not>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071124034907.GD22843@agk.fab.redhat.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Message-Id: <200711232304.57652.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also io->pending may need better protection - atomic, but missing memory
-barriers?  (May be getting away without sometimes due to side-effects of
-other function calls, but needs doing properly.)
+On Friday 23 November 2007 02:44, Mats Johannesson wrote:
 
-[BTW Other device-mapper atomic_t usage also needs reviewing.]
+> The bad interaction between ACPI controlled EC (embedded controller)
+> and the i8042 interrupt handler is theorized about in detail at OLPCs
+> http://dev.laptop.org/ticket/2401 - almost at the end of that page.
+> Thanks to Daniele C for the link.
 
-Alasdair
--- 
-agk@redhat.com
+huh?
+
+I believe that the OLPC XO1 does not run in ACPI mode
+and thus does not use the ACPI EC driver to talk to
+the EC on their board.
+
+Presumably they use some native embedded controller driver to
+talk to their platform specific embedded controller.
+
+I don't know why they call their interrupt an SCI.
+Per above, it can't be an ACPI SCI.  Presumably they
+call it that b/c their chipset documentation calls it
+that too, on the (invalid) assumption that an ACPI-enabled
+OS and firmware would be running on the hardware.
+
+Please let me know if I'm wrong.
+
+-Len
