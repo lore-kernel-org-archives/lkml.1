@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbXKXSoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbXKXSr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbXKXSoe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 13:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXKXSoZ
+	id S1755827AbXKXSr0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 13:47:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXKXSrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 13:44:25 -0500
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1505 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753038AbXKXSoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 13:44:24 -0500
-Message-ID: <474870F5.4050504@xs4all.nl>
-Date: Sat, 24 Nov 2007 19:44:05 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
+	Sat, 24 Nov 2007 13:47:18 -0500
+Received: from mfe1.polimi.it ([131.175.12.23]:34230 "EHLO polimi.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752893AbXKXSrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 13:47:18 -0500
+Date: Sat, 24 Nov 2007 19:46:35 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: possible  BUG: unable to handle kernel NULL pointer dereference
- at virtual address 00000000
-References: <47481590.8090009@xs4all.nl> <200711241951.37817.rjw@sisk.pl>
-In-Reply-To: <200711241951.37817.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.5
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-15
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
+Message-ID: <20071124194635.58f5a44b@morte>
+In-Reply-To: <200711241948.58881.rjw@sisk.pl>
+References: <20071124175112.58193424@morte>
+	<200711241948.58881.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.11.6.30824
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='BODY_SIZE_400_499 0, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday, 24 of November 2007, Udo van den Heuvel wrote:
->> Hello,
->>
->> What happened in the attached messages?
->> It was on a VIA Epia EN12000, while compiling.
->> Yes, the machine has been stable before and after that issue.
->> So I suspect no hardware issues.
-> 
-> Which kernel is this?
+On Sat, 24 Nov 2007 19:48:58 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Sorry for not mentioning:
-2.6.23.1
+> NO_HZ?  Highres timers?
+
+CONFIG_HZ_1000=y
+# CONFIG_HIGH_RES_TIMERS is not set
+ 
+> I understand that the previous kernels behave correctly.  All of them?
+
+2.6.21 behaved correctly. Sorry but git-bisect would take a lot of time (I
+can't reliably reproduce the jiffies jump), so I would avoid that if not
+strictly needed.
+
+
+-- 
+Ciao
+Stefano
