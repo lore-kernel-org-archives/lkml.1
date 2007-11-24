@@ -1,39 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbXKXSdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbXKXSoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbXKXSdc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 13:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXKXSdZ
+	id S1755425AbXKXSoS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 13:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXKXSoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 13:33:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:32963 "EHLO ogre.sisk.pl"
+	Sat, 24 Nov 2007 13:44:09 -0500
+Received: from waste.org ([66.93.16.53]:51666 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753038AbXKXSdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 13:33:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Subject: Re: possible  BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
-Date: Sat, 24 Nov 2007 19:51:37 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <47481590.8090009@xs4all.nl>
-In-Reply-To: <47481590.8090009@xs4all.nl>
+	id S1752841AbXKXSoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 13:44:05 -0500
+Date: Sat, 24 Nov 2007 12:43:33 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Chinner <dgc@sgi.com>, Stewart Smith <stewart@mysql.com>,
+       xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
+Message-ID: <20071124184333.GK17536@waste.org>
+References: <20071122003339.GH114266761__34694.2978365861$1195691722$gmane$org@sgi.com> <p73oddnhzoq.fsf@bingen.suse.de> <20071122011214.GR114266761@sgi.com> <1195702123.8369.78.camel@localhost.localdomain> <20071122120611.GA3573@one.firstfloor.org> <20071122131539.GX114266761@sgi.com> <20071123025317.GA12257@one.firstfloor.org> <20071123040329.GB114266761@sgi.com> <20071123120115.GA18532@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711241951.37817.rjw@sisk.pl>
+In-Reply-To: <20071123120115.GA18532@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 24 of November 2007, Udo van den Heuvel wrote:
-> Hello,
+On Fri, Nov 23, 2007 at 01:01:15PM +0100, Andi Kleen wrote:
+> On Fri, Nov 23, 2007 at 03:03:29PM +1100, David Chinner wrote:
+> > On Fri, Nov 23, 2007 at 03:53:17AM +0100, Andi Kleen wrote:
+> > > On Fri, Nov 23, 2007 at 12:15:39AM +1100, David Chinner wrote:
+> > > > On Thu, Nov 22, 2007 at 01:06:11PM +0100, Andi Kleen wrote:
+> > > > > > FWIW from a "real time" database POV this seems to make sense to me...
+> > > > > > in fact, we probably rely on filesystem metadata way too much
+> > > > > > (historically it's just "worked".... although we do seem to get issues
+> > > > > > on ext3).
+> > > > > 
+> > > > > For that case you really would need priority inheritance: any metadata
+> > > > > IO on behalf or blocking a process needs to use the process' block IO 
+> > > > > priority.
+> > > > 
+> > > > How do you do that when the processes are blocking on semaphores,
+> > > > mutexes or rw-semaphores in the fileysystem three layers removed from
+> > > > the I/O in progress?
+> > > 
+> > > [...] I didn't say it was easy (or rather explicitely said it would be tricky).
+> > > Probably it would be possible to fold it somehow into rt mutexes PI,
+> > > but it's not easy and semaphores would need to be handled too.
+> > > 
+> > > Just my point was to solve the metadata RT problem unconditionally increasing
+> > > the priority is a bad idea and not really a replacement to a "full"
+> > > solution. Short term a user can just increase the priority of all the XFS 
+> > > threads anyways.
+> > 
+> > The point is that it's not actually a thread-based problem - the priority
+> > can't be inherited via the traditional mutex-like manner. There is no
+> > connection between a thread and an I/o it has already issued and so you
+> > can't transfer a priority from a blocked thread to an issued-but-blocked
+> > i/o....
 > 
-> What happened in the attached messages?
-> It was on a VIA Epia EN12000, while compiling.
-> Yes, the machine has been stable before and after that issue.
-> So I suspect no hardware issues.
+> It could be handled in theory similar to standard CPU priority inheritance -- \
+> keep track of IO priority of all threads you block and boost your IO priority
+> always to that level. But it would be probably not very easy to do.
 
-Which kernel is this?
+Well I think what Dave is saying is that we can't find the related
+process. The submitter process may have even exited before the flush
+happens.. You'd instead have to keep track of (the max of) all the
+submitted I/O segment priorities related to the transaction instead.
+But I'm sure there are complications.
 
-Rafael
+-- 
+Mathematics is the supreme nostalgia of our time.
