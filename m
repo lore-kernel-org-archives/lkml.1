@@ -1,121 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbXKXTQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbXKXTU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755680AbXKXTQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 14:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbXKXTQt
+	id S1755956AbXKXTU3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 14:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXKXTUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 14:16:49 -0500
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:41820 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753731AbXKXTQs (ORCPT
+	Sat, 24 Nov 2007 14:20:22 -0500
+Received: from fmailhost01.isp.att.net ([204.127.217.101]:45791 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753196AbXKXTUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 14:16:48 -0500
-X-YMail-OSG: UnoM7EIVM1m3Uetiq5t3zxNJ9EZg6h_069PRpJz8
-X-RocketYMMF: rancidfat
-Date: Sat, 24 Nov 2007 11:16:46 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: + smack-version-11c-simplified-mandatory-access-control-kernel.patch added to -mm tree
-To: Crispin Cowan <crispin@crispincowan.com>,
-       Andrew Morgan <morgan@kernel.org>
-Cc: casey@schaufler-ca.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, darwish.07@gmail.com, jmorris@namei.org,
-       method@manicmethod.com, paul.moore@hp.com,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <47480D76.8030701@crispincowan.com>
+	Sat, 24 Nov 2007 14:20:21 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Nov 2007 14:20:21 EST
+X-Originating-IP: [70.152.123.66]
+Date: Sat, 24 Nov 2007 13:15:18 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: greg@kroah.com, chrisw@sous-sol.org
+Cc: csnook@redhat.com, kronos.it@gmail.com, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: [2.6.22.y][PATCH] atl1: disable broken 64-bit DMA
+Message-ID: <20071124191518.GA3672@osprey.hogchain.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <388264.27091.qm@web36601.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+atl1: disable broken 64-bit DMA
 
---- Crispin Cowan <crispin@crispincowan.com> wrote:
+[ Upstream commit: 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 ]
 
-> Andrew Morgan wrote:
-> > Its not so much why you are wrong, as being clear that we're not using a
-> > generic name and inadvertently limiting ourselves to a SMACK-like model...
-> >   
-> It seems we all agree that it is a bad idea to tie a POSIX Capability to
-> one specific LSM model.
+The L1 network chip can DMA to 64-bit addresses, but multiple descriptor
+rings share a single register for the high 32 bits of their address, so
+only a single, aligned, 4 GB physical address range can be used at a time.
+As a result, we need to confine the driver to a 32-bit DMA mask, otherwise
+we see occasional data corruption errors in systems containing 4 or more
+gigabytes of RAM.
 
-I think that's fair.
+Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Luca Tettamanti <kronos.it@gmail.com>
+Cc: Chris Snook <csnook@redhat.com>
+---
+ drivers/net/atl1/atl1_main.c |   25 +++++++++++++------------
+ 1 files changed, 13 insertions(+), 12 deletions(-)
 
-> > It feels to me as if a MAC "override capability" is, if true to its
-> > name, extra to the MAC model; any MAC model that needs an 'override' to
-> > function seems under-specified...
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index 6862c11..1b7a5a8 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -2097,21 +2097,26 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 	struct net_device *netdev;
+ 	struct atl1_adapter *adapter;
+ 	static int cards_found = 0;
+-	bool pci_using_64 = true;
+ 	int err;
+ 
+ 	err = pci_enable_device(pdev);
+ 	if (err)
+ 		return err;
+ 
+-	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
++	/*
++	 * The atl1 chip can DMA to 64-bit addresses, but it uses a single
++	 * shared register for the high 32 bits, so only a single, aligned,
++	 * 4 GB physical address range can be used at a time.
++	 *
++	 * Supporting 64-bit DMA on this hardware is more trouble than it's
++	 * worth.  It is far easier to limit to 32-bit DMA than update
++	 * various kernel subsystems to support the mechanics required by a
++	 * fixed-high-32-bit system.
++	 */
++	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+ 	if (err) {
+-		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+-		if (err) {
+-			dev_err(&pdev->dev, "no usable DMA configuration\n");
+-			goto err_dma;
+-		}
+-		pci_using_64 = false;
++		dev_err(&pdev->dev, "no usable DMA configuration\n");
++		goto err_dma;
+ 	}
+ 	/* Mark all PCI regions associated with PCI device
+ 	 * pdev as being reserved by owner atl1_driver_name
+@@ -2176,7 +2181,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 
+ 	netdev->ethtool_ops = &atl1_ethtool_ops;
+ 	adapter->bd_number = cards_found;
+-	adapter->pci_using_64 = pci_using_64;
+ 
+ 	/* setup the private structure */
+ 	err = atl1_sw_init(adapter);
+@@ -2193,9 +2197,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 	 */
+ 	/* netdev->features |= NETIF_F_TSO; */
+ 
+-	if (pci_using_64)
+-		netdev->features |= NETIF_F_HIGHDMA;
+-
+ 	netdev->features |= NETIF_F_LLTX;
+ 
+ 	/*
+-- 
+1.5.3.3
 
-That's the reason we have a privilege model, not just for
-MAC, but DAC as well. The Unix/Linux model where administration
-and system tasks are performed by normal processes that are
-just a little bit special, as opposed to a completely separate
-set of interfaces, often makes things look a little contrived.
-This is one of the advantages of SELinux, with it's model of
-complete specification.
-
-> An interesting observation. This is a core part of why I have always
-> found the hierarchical models BLP and Biba to be unsatisfying. These
-> systems essentially have one simple fixed policy "process label must
-> dominate object label to get access", and then you express all the rest
-> of your "policy" by labeling your stuff. It is impossible to manage such
-> systems without a MAC_OVERRIDE escape hatch of some kind, because the
-> "policy" is too simple and inflexible, e.g. it does not allow you to
-> reclassify anything.
-
-Weeeellllll... That's sort of what the "mandatory" is all about.
-
-> >  SELinux clearly feels no need for one,
-> >   
-> That's not quite right. More specifically, it already has one in the
-> form of unconfined_t. AppArmor has a similar escape hatch in the "Ux"
-> permission. Its not that they don't need one, it is that they already
-> have one. They get to have one because they allow you to actually write
-> a policy that is more nuanced than "process label must dominate object
-> label".
-
-That SELinux doesn't require any capabilities is an artifact of
-design on that LSM. The whole notion of privilege is somewhat out
-of context when your model is to explicitly state how every possible
-decision ought to go. That is one important philosophical difference
-between SELinux and Smack, with Smack taking a higher level view
-on policy and hence privilege.
-
-> > and browsing through your SMACK patch, there are many instances where
-> > this capability is used as an convenience privileged override. However,
-> > in other situations, it appears as if the capability is required for
-> > basic SMACK operations to succeed.
-> >
-> > My sense is that there is a case to be made for: CAP_MAC_ADMIN and
-> > CAP_MAC_OVERRIDE here. The former being for cases where SMACK (or
-> > whatever MAC supports it) requires privilege to perform a privileged MAC
-> > operation, and the latter for saying "OK, I'm without a paddle but need
-> > one" (or words to that effect).
-> >   
-> I don't get the difference. Both seem to permit the process to violate
-> the MAC policy. I could make up a meaning for MAC_ADMIN that is
-> different from MAC_OVERRIDE in the AppArmor sense, but I don't want to
-> :-) and worse, I suspect the distinction would be different for each
-> LSM. So let not, and just have one MAC_OVERRIDE capability.
-
-I am pretty close to agreeing with Andrew that a distinction
-between allowing a process to change the state of the MAC
-configuration (e.g. set file or process MAC labels, add rules)
-and violating the rules is in order. SELinux can ignore both,
-AppArmor can ignore one, and the upcoming DG/UX port* can ask for
-further granularity when they show up.
-
-I will look in this direction and see if I can patches proposed
-before the virus in my sinuses knocks me out completely.
-
-Thank you.
-
-----
-*  DG/UX supported over 330 capabilities and is my personal
-   poster child for excesses of granularity with regard to
-   capabilities. I don't really expect to see a Linux port.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
