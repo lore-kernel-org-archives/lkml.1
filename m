@@ -1,116 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbXKXMOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbXKXMSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbXKXMOU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 07:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXKXMON
+	id S1754484AbXKXMSq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 07:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXKXMSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 07:14:13 -0500
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:2380 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbXKXMOM (ORCPT
+	Sat, 24 Nov 2007 07:18:39 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:55590 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752630AbXKXMSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 07:14:12 -0500
-Message-ID: <47481590.8090009@xs4all.nl>
-Date: Sat, 24 Nov 2007 13:14:08 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sat, 24 Nov 2007 07:18:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YDEadzPcg62mbJlYHEjFdxSKvrmBvCm9G48rX0+gF8iFoYsr6xHBVeSYqxjI54Gf5FpA+pJUXoOgFQkGErIo2kbOXGPSViIIF9JnRE3b63XYeqCJvLqGgGxUPeumFveX4zxu28ExoAov7aLFNDw0wONSZKdZEKBARvEpQSGseFI=
+Message-ID: <64bb37e0711240418i2e90916dx3f1b622df0e2f8b3@mail.gmail.com>
+Date: Sat, 24 Nov 2007 13:18:35 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: Re: [PATCH] debug_check_no_locks_freed: fix in_range() checks
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Alasdair G Kergon" <agk@redhat.com>,
+       "Milan Broz" <mbroz@redhat.com>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071124105343.GA2044@tv-sign.ru>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: possible  BUG: unable to handle kernel NULL pointer dereference at
- virtual address 00000000
-X-Enigmail-Version: 0.95.5
-OpenPGP: id=8300CC02
-Content-Type: multipart/mixed;
- boundary="------------030500080009060107000803"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071120234605.GG23667@elte.hu> <20071121155842.GA864@tv-sign.ru>
+	 <20071124105343.GA2044@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030500080009060107000803
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Nov 24, 2007 11:53 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> Torsten, could you ack/nack this patch?
 
-Hello,
+>From looking at the code I would ack it.
+I will reapply agk-dm-dm-crypt-move-bio-submission-to-thread.patch and
+this patch and boot several times, but as the message was not
+triggered on every boot, this can't prove anything.
 
-What happened in the attached messages?
-It was on a VIA Epia EN12000, while compiling.
-Yes, the machine has been stable before and after that issue.
-So I suspect no hardware issues.
+But if it happens again, I will notify you.
 
-Kind regards,
-Udo
+Torsten
 
---------------030500080009060107000803
-Content-Type: application/gzip;
- name="messages.recorder.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="messages.recorder.gz"
-
-H4sICGsUSEcCA21lc3NhZ2VzLnJlY29yZGVyAO3aW4/bxhXA8fd+iinykrapzftFiAO0qR0E
-cFyjm+TFCAhehhaxkqiQ1O762/fMUFfH8VJZbRGn/8Um4fVwNJqZ3znLvGpvlJsoN5iFwcwP
-VafLtqt0pzbroVnqaqaW7U2zeiv7amjVuu2boWlXyvNmylFV/q7/QjnuzAlmQfynV4dg8VnB
-3NNg8XGwcOaFs+Ao2LXuVnoxU//84ZuZ2qzyYqFNtHm+qmRrPKte/fDypTygWQ1yh9yla/ln
-VWqVD+qm6YZNvlB5VXW675Wz/bn/kWrdSUTzCXSznt1/fem4oXa1e/+Vf11XWj07oyn/btf9
-zFzvqTefuT/df8Pr/zx//t3r79X9V37XVpuF7tWiWV3rSjWrmco3Q1v3gbpN/MiL57Wa3y7b
-VXbTVErrddcuVb9ZdetSDVXuOk5wp/pVJafzxLsbt/MyjbOyrXSp7Gax6e3xXv+cVZvl8t1+
-r+0PZ5ZN1WT6Rq+G3SH733W53F+2bO50t9+TM6rYVG/1kOU39ogZeZ3q8zx2gyi7GQ+u87c6
-yxeLthxjrDeB42abvDOjo9KtNK+2Z7r81rRhF1N6Sh+arW8aGVHb0Kqdl43rp4EahnUprd72
-y0p6UGttzzReaTpFTqg6X0nQYZDhP8x1t5TxKIdLGY+ttPatjNM8e6tXumtKpSVyNi8rtdlu
-3P8dfv36BxmuSk0YSc+/fT1e6kTO7M2XuzH71U/m4Kt2UENuplGlfnz57YRoL17+45srOzJd
-x3M9ifG59yR64vlPXPVZ8JdJ7VFNbybqutusdFaVeTnXf3PuIuepc+cmyf0hdH43288laYEu
-ZL/ShVfFaWn2S9kv3cQrwtKer8y+46eVjsoJ4ftmd3mY2Nub9x633u2Hsdnv1/ZxZaHrCeEr
-O7Hjwt6536zH6S7x3+63ersVTeiR1+PYUtf9bb6uHPX5upHl2E3CL9TQPDNty03EIe+vzV4c
-htG49+To9IQv72rIy+t9Z7jbjcQ5dNf+yLhROeMq6XuhPRLXco0c8Ss/9iYsVtsfGz4IxvCh
-tw3mpTIApRl1FTnO4Rs6PiLrWeQdGjX5gUfBTje8sS1huv3MvuOMnyfSR9fs75owlWWdUt93
-eakniKO2E1i6UyZwPxevrrczKFvqZdu9k4nkljKR/GBqNPtVHKL1i7yQIFVqZuMUqHdRpAMk
-yjgCJYCX+qYZsZ4awQt9HUsEg1Enn+VGZ7f5tc7qzao0eYTENCuEH05vUhBUx01yzm6Qp839
-w7zTuQngRxIhLKcH8OrkJIBz1v2OfDGmR8aj2Rglm+vFWncSLDbf0JS05tmHfyaMTQFdZnug
-ZObFgXJ9lbiqTlVUynKr/FRGvnJqlQSSMCq7HJhfOR6nypNbQqVTWS6VU/7qjfLv/Y1JoQLX
-PE42XFclqQo8s/tlkn6lXMceSM2B3FWxc4gkx53URHLNAqFSe0SmYy2xKxUEaqKSJzr+ik7q
-6mr2/Oq1XZdn0xf9VTtIT26X5zeyMP+k9F1j2L1thrk8TOvl2iQgG8mF3D9Oduzn1WNnxx7Z
-MdnxJbNjGbNjdvz9mBnP1DdjUvCv35IjS+c8IEc+JX6dyzwezNJvVqPK/42pch1XblJ7zi5V
-HvdlndymynY/TIOJqfL28nKXKtdxnYR+sk+Vj/f3qXKV/1+lys6hF/ZBTzci6X8ZfnLVeES6
-qIp3t1dnpcqRzkt/e2uRKt9101pqIXvElzaYbyx0PNso2fCFdhmqbpkG4e6B/hkP3LX1lx9s
-/+GPP6Eb5zKbRzolSdhf/Cipsu1Oq3lbZvVi088z813KFApN+uQ5/tRIttkSqdMLnfd6F8aL
-PRMnnZwoy+cOC4lTtZnJAExqYUNEVTg9L6zzyIRotE33tUlNqmjy7XXqJmMLLAV1vlmYdgSF
-KRzCZHJ+6pe+X0ugpm8X+aCzRbexEXsTLDCNiuvpjQrC8gONcs5qklfn8iNhdNe1nSXXdHD+
-1CyZ08urj2aAVGlUab/DKu1QDRUq9JUXHJVTu0JKNo7LKLNR2Ct95RemdJKKTdKC98qrMlaB
-DXhcvZmaqzq5zFZpTmKj2sea8is05df+EnMk2D2wNBvmmfJvbe46r0obs7SP50e/LNYmpR0v
-mjtT5sjxTdc3N1rZxchkrHKsaNvBJGcrrStd/fl/X6oFj1OqVXXgP3ap5lOqUapdsFQzY/ZC
-pZonpZrzoNcZVXbdLBYGZVl7gmhibWY/RlGn99Rm5a42mz7zbG22/0v9R19jxPW+NtORm0pa
-fqnazPd/S21Wlu5acvVtbRaHiTMWZ9K45FCc+dqNHf+oONuenl6c7Tt7302WFqdyD6dMiZRq
-0cqe8tLkA28/znuPcfSaJDcbeeJU3sdek+xfNOzffpz1HmP7miTw8sQ9eaFxOOJHgbHZfiyn
-PKrbzJOTOHms9xjS0/tEuzXJtqygNjv2DeD6jJRdvphfpuxStP0RcvYiMvmldEw2tFndab2v
-suSkCVZPrv38tHBNk7JRlUOgxCTNXuJNDRQ4dWTqtTGdyZbLfcXmRtrmz+n00i+K9AdKP8/1
-zqtHXSdNjQebdWXK0X7Ih16qk2bI9Mrk9Wkh8Qo9uZZMvTgwX5+MAZNpmCZ5tpvK5NMqax9Y
-WmhH2XVp+05l/A3M/wlkawzHZP15YlJ7k8unKpTfwv5q8wJIcv8iUG5qIsiyFubbU6Wvwkgl
-lQnllaZokSJADpoCxjFH9gWMLS3eK2GqZFeYlPb1kavsUmYP2pvMQU/Zxf280mKbVbzn+Wkt
-MZnJ8cXPFrQ3hrKPvfnxJpYT2yFpMvzbebMw5UK7bMr9g2zNOf4h76l55vQh7+Tx6ZAP0/NG
-vOuGRWFXmLI1iam2sey6cM7iKU0JcrNSvRfFTkDfnb5MObY436yW+Tq7WeZmsfPD0Hyl05fg
-wBD61fjFyVKXr83sM/2ip3dL4NuGLCWHt6tkbSbv9KUtiQv35K+Gbpl8mn81/D39pc9k3naq
-l8JhITnhrh3TI3xwsSADIgMiA/ojZEBwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dw
-C7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dwC7dnchs9DrfRw7mNLsRtdBFuo4tw
-Gz2c2+hh3EYP5zZ6GLfRpbiNLjP/ogvMv+jB3EYP4za6GLfRhbiNLsptdBFuo0tyG12K2+hy
-3EaX4ja6LLfRBbj9nU93uIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVb
-uIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVb
-uIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIVbuIXbT5nb
-oCp9070/b5ryetH0QzZ0zVICFWbolBFswzZswzZswzZsUyXDLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzCLdzC
-LdzCLdzCLdw+GrdVIW0ww3lskqwfZSYDMpOhbRYz3zXz9RPF242j2jFr2mbIaun2XgZ0tynN
-6Il8iZRHZ/BZhyd8ek4Jn/AJn/AJnxfgM/Rmfni4c7MemqWuZmrZ3hg2N2s1tGrd9s3QtCvl
-OTPlqCp/13+hHG8mv0fDOZo50TnB3PQkmNx/Giye+d4HPtPX3764Uj++uJqpK/l2x55RzUr2
-+v5KD/KQZ+rvrn9WpLKp+2zZblaDqnMRq1K3TzuJ1a2U6fNtxP8CUDGhW5e8AgA=
---------------030500080009060107000803--
+> Torsten Kaiser wrote:
+> >
+> > static inline int in_range(const void *start, const void *addr, const void *end)
+> > {
+> >         return addr >= start && addr <= end;
+> > }
+> > This  will return true, if addr is in the range of start (including)
+> > to end (including).
+> >
+> > But debug_check_no_locks_freed() seems does:
+> > const void *mem_to = mem_from + mem_len
+> > -> mem_to is the last byte of the freed range, that fits in_range
+> > lock_from = (void *)hlock->instance;
+> > -> first byte of the lock
+> > lock_to = (void *)(hlock->instance + 1);
+> > -> first byte of the next lock, not last byte of the lock that is being checked!
+> >
+> > The test is:
+> > if (!in_range(mem_from, lock_from, mem_to) &&
+> >                                         !in_range(mem_from, lock_to, mem_to))
+> >                         continue;
+> > So it tests, if the first byte of the lock is in the range that is freed ->OK
+> > And if the first byte of the *next* lock is in the range that is freed
+> > -> Not OK.
+>
+> We can also simplify in_range checks, we need only 2 comparisons, not 4.
+> If the lock is not in memory range, it should be either at the left of range
+> or at the right.
+>
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>
+> --- 24/kernel/lockdep.c~        2007-11-09 12:57:31.000000000 +0300
+> +++ 24/kernel/lockdep.c 2007-11-24 13:32:52.000000000 +0300
+> @@ -3054,11 +3054,6 @@ void __init lockdep_info(void)
+>  #endif
+>  }
+>
+> -static inline int in_range(const void *start, const void *addr, const void *end)
+> -{
+> -       return addr >= start && addr <= end;
+> -}
+> -
+>  static void
+>  print_freed_lock_bug(struct task_struct *curr, const void *mem_from,
+>                      const void *mem_to, struct held_lock *hlock)
+> @@ -3080,6 +3075,13 @@ print_freed_lock_bug(struct task_struct
+>         dump_stack();
+>  }
+>
+> +static inline int not_in_range(const void* mem_from, unsigned long mem_len,
+> +                               const void* lock_from, unsigned long lock_len)
+> +{
+> +       return lock_from + lock_len <= mem_from ||
+> +               mem_from + mem_len <= lock_from;
+> +}
+> +
+>  /*
+>   * Called when kernel memory is freed (or unmapped), or if a lock
+>   * is destroyed or reinitialized - this code checks whether there is
+> @@ -3087,7 +3089,6 @@ print_freed_lock_bug(struct task_struct
+>   */
+>  void debug_check_no_locks_freed(const void *mem_from, unsigned long mem_len)
+>  {
+> -       const void *mem_to = mem_from + mem_len, *lock_from, *lock_to;
+>         struct task_struct *curr = current;
+>         struct held_lock *hlock;
+>         unsigned long flags;
+> @@ -3100,14 +3101,11 @@ void debug_check_no_locks_freed(const vo
+>         for (i = 0; i < curr->lockdep_depth; i++) {
+>                 hlock = curr->held_locks + i;
+>
+> -               lock_from = (void *)hlock->instance;
+> -               lock_to = (void *)(hlock->instance + 1);
+> -
+> -               if (!in_range(mem_from, lock_from, mem_to) &&
+> -                                       !in_range(mem_from, lock_to, mem_to))
+> +               if (not_in_range(mem_from, mem_len, hlock->instance,
+> +                                       sizeof(*hlock->instance)))
+>                         continue;
+>
+> -               print_freed_lock_bug(curr, mem_from, mem_to, hlock);
+> +               print_freed_lock_bug(curr, mem_from, mem_from + mem_len, hlock);
+>                 break;
+>         }
+>         local_irq_restore(flags);
+>
+>
