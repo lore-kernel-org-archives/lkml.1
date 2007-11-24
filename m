@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbXKXTz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbXKXUAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbXKXTz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 14:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXKXTzO
+	id S1754374AbXKXUAN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 15:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXKXUAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 14:55:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33163 "EHLO ogre.sisk.pl"
+	Sat, 24 Nov 2007 15:00:00 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:42525 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbXKXTzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 14:55:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: "buggy cmd640" message followed by soft lockup
-Date: Sat, 24 Nov 2007 21:12:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200711222007.12497.elendil@planet.nl> <200711241904.13132.bzolnier@gmail.com> <200711242038.06677.elendil@planet.nl>
-In-Reply-To: <200711242038.06677.elendil@planet.nl>
+	id S1752029AbXKXT77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 14:59:59 -0500
+Date: Sat, 24 Nov 2007 14:59:58 -0500
+To: Phil Endecott <phil_wueww_endecott@chezphil.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: No error when inotify_add_watch(/an/NFS/file)
+Message-ID: <20071124195958.GB12864@fieldses.org>
+References: <1195860055386@dmwebmail.japan.chezphil.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711242112.57072.rjw@sisk.pl>
+In-Reply-To: <1195860055386@dmwebmail.japan.chezphil.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 24 of November 2007, Frans Pop wrote:
-> On Saturday 24 November 2007, Bartlomiej Zolnierkiewicz wrote:
-> > Unfortunately I'm unable to reproduce this with:
-> >
-> > * VirtualBox 1.5.2 from http://www.virtualbox.org
-> >   (VirtualBox-1.5.2_25433_fedora7-1.i586.rpm)
-> >
-> > * Fedora 7 with kernel-2.6.22.9-91.fc7 as a host OS
-> >
-> > * Fedora 8 with vanilla 2.6.24-rc2 as a guest OS
-> >   (using the kernel config posted by you)
-> >
-> > so right now I suspect either a problem somehow specific to your system
-> > (narrowing it down using git-bisect to a specific kernel commit would
-> > greatly help) or a weird gcc bug (please make sure that you are using
-> > non-buggy/up-to-date gcc version).
-> 
-> Thanks for looking at the issue Bartlomiej.
-> 
-> I started a bisect yesterday and suddenly found I could not reproduce the 
-> issue anymore. Today I tried again and _did_ manage to reproduce the issue 
-> again, but only with a 24-rc3 kernel, not with 24-rc1 or 24-rc2 kernels.
-> And also only in combination with ata_piix and not with piix (one or the 
-> other blacklisted). Also, after I changed the setup of the VM (changed 
-> default boot medium from CD-ROM to hard disk), the kernel that failed 
-> suddenly booted correctly.
-> Both of these (module used and boot order) could explain why I could not 
-> reproduce the issue yesterday.
-> 
-> After I changed the boot order back I could reproduce the BUG again, but 
-> seemingly completely random for 24-rc1, 24-rc2 and 24-rc3: sometimes a 
-> kernel boots fine, other times it fails. It may be related to way the 
-> system is shut down, but I'm not sure of that.
-> 
-> My conclusion is that the base cause is probably an issue somewhere in 
-> VirtualBox, but I suspect there is also something not 100% clean in the 
-> kernel code (if only a missing sanity check). Especially since I've never 
-> yet been able to reproduce it with a kernel before 2.6.24-rcX.
-> 
-> However, as it seems there are various variables involved and I cannot be 
-> confident that I can reliably reproduce the issue with different kernels, I 
-> do not really see any point in trying to bisect this.
-> 
-> I suggest closing #9442 in bugzilla as it does not seem worth tracking this 
-> as a regression.
+On Fri, Nov 23, 2007 at 11:20:55PM +0000, Phil Endecott wrote:
+> Dear Experts,
+>
+> NFS doesn't work with inotify (and it looks like it can't, certainly not 
+> before NFS v4.1).  However, if I give an NFS filename to 
+> inotify_add_watch(), I don't get an error.
+>
+> If it indicated an error in this case then I could easily fall back to some 
+> sort of polling.  Without an error, I need some other way to detect NFS 
+> (and any other non-inotify-compatible filesystems).
+>
+> Any thoughts?
 
-Closed.
+The one reason I can think of that you might want that behavior is if
+you know you only access a given piece of the filesystem from one client
+at a time, and you still want inotify to work in that situation.  (I'm
+assuming inotify still notifies you of changes that are made on the same
+client.)
 
-Thanks,
-Rafael
+But maybe you could handle that case by allowing inotify_add_watch() in
+the case where the nfs filesystem was mounted with the "nolock" option,
+and failing it otherwise, and telling people to turn on nolock if
+they're sure they know what they're doing.
+
+--b.
