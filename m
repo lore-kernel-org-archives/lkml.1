@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbXKXS43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbXKXTFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbXKXS43 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 13:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXKXS4W
+	id S1755476AbXKXTFz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 14:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbXKXTFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 13:56:22 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:46025 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752024AbXKXS4V (ORCPT
+	Sat, 24 Nov 2007 14:05:46 -0500
+Received: from m-04.th.seeweb.it ([217.64.195.227]:42283 "EHLO
+	m-04.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbXKXTFq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 13:56:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=U2xo6eStDSblBN439v449FmidjcRBGs8K2Ltgz9zOlrs5ZLcyiAkf2cIucV9mL7m1YFxwFtnBDNpX+BiAUfW+g1Wr3DD7oBgXN2w9AlrULHelp7GqVmrbKi5ZjWZ9o+mt5S8DSud8Krht+2vFk3Y9KXd5WkFBCPzp2WPr/iZf0I=  ;
-X-YMail-OSG: epgVOE0VM1lbQm.WSo9i8Otsh1ZHQqadKLWH1fCD2qS9Xpkl
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [RFC 4/4] Atmel MCI: Driver for Atmel on-chip MMC controllers
-Date: Sat, 24 Nov 2007 10:48:39 -0800
-User-Agent: KMail/1.9.6
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       Shannon Nelson <shannon.nelson@intel.com>,
-       Dan Williams <dan.j.williams@intel.com>, kernel@avr32linux.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-References: <1195820413-2179-1-git-send-email-hskinnemoen@atmel.com> <20071124180023.20c831b8@poseidon.drzeus.cx> <20071124191648.2c2d56c7@siona>
-In-Reply-To: <20071124191648.2c2d56c7@siona>
+	Sat, 24 Nov 2007 14:05:46 -0500
+Message-ID: <474876BE.90201@users.sourceforge.net>
+Date: Sat, 24 Nov 2007 20:08:46 +0100
+From: "legolas558@users.sourceforge.net" <legolas558@users.sourceforge.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071122)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+CC: Len Brown <lenb@kernel.org>
+Subject: Re: Laptop keyboard unusable when ACPI is active
+References: <47001841.1000107@users.sourceforge.net> <470F600B.3030305@users.sourceforge.net> <47452EAC.5060801@users.sourceforge.net> <200711232321.44048.lenb@kernel.org>
+In-Reply-To: <200711232321.44048.lenb@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711241048.39990.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 24 November 2007, Haavard Skinnemoen wrote:
-> > 
-> > Why is this needed and is it perhaps something that can be moved to
-> > the MMC core?
-> 
-> We used to have lots of problems with overruns and underruns and those
-> parameters were useful to limit the transfer rate. Now that the RDPROOF
-> and WRPROOF bits seem to have taken care of these problems for good, I
-> guess we can remove this parameter.
+Len Brown ha scritto:
+> On Thursday 22 November 2007 02:24, legolas558@users.sourceforge.net wrote:
+>> It is also important to note that this bug always comes with bug 8740 
+>> http://bugzilla.kernel.org/show_bug.cgi?id=8740 (also confirmed and also 
+>> an ACPI issue).
+>>     
+> No, 8740 is not an ACPI issue.
+> http://bugzilla.kernel.org/show_bug.cgi?id=8740#c2
+>   
+Sorry for the misleading statement; I no more think that it is an ACPI 
+issue.
+Although I am still curious about the reason of these bugs happening 
+together even on different hardware configurations; maybe a side effect 
+of the same kernel bug? No idea.
 
-Not all silicon *has* those bits though, right?  Like at91rm9200.
+Best regards,
+--
+  Daniele C.
+
+> -Len
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>   
 
