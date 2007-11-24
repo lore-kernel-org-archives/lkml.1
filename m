@@ -1,24 +1,24 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbXKXOzQ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 24 Nov 2007 09:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXKXOy7
+	id S1754971AbXKXOzg (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 24 Nov 2007 09:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbXKXOzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 09:54:59 -0500
-Received: from sccmmhc91.asp.att.net ([204.127.203.211]:57036 "EHLO
-	sccmmhc91.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbXKXOy6 (ORCPT
+	Sat, 24 Nov 2007 09:55:10 -0500
+Received: from sccmmhc92.asp.att.net ([204.127.203.212]:54345 "EHLO
+	sccmmhc92.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753257AbXKXOzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 09:54:58 -0500
+	Sat, 24 Nov 2007 09:55:09 -0500
 From: samjames1@mchsi.com (Walter Jones)
 Subject: Xmas Draws...........Your Email Won
-Date: Sat, 24 Nov 2007 14:54:56 +0000
-Message-Id: <112420071454.20909.47483B3F00093C85000051AD219791299503010CD2079C080C03BFCE9C0A030E06030E9C@mchsi.com>
+Date: Sat, 24 Nov 2007 14:54:37 +0000
+Message-Id: <112420071454.20723.47483B2C0004DE91000050F3219791299503010CD2079C080C03BFCE9C0A030E06030E9C@mchsi.com>
 X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
 X-Authenticated-Sender: c2FtamFtZXMxQG1jaHNpLmNvbQ==
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754608AbXKXOzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754971AbXKXOzg@vger.kernel.org>
 
 After this automated computer ballot, your e-mail address emerged as a
  winner in the category "A" with the following numbers attached Ref:
