@@ -1,44 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbXKXOzg (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 24 Nov 2007 09:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbXKXOzK
+	id S1754492AbXKXQAe (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 24 Nov 2007 11:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXKXQAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 09:55:10 -0500
-Received: from sccmmhc92.asp.att.net ([204.127.203.212]:54345 "EHLO
-	sccmmhc92.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753257AbXKXOzJ (ORCPT
+	Sat, 24 Nov 2007 11:00:24 -0500
+Received: from smtp-out3.libero.it ([212.52.84.43]:53787 "EHLO
+	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbXKXQAX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 09:55:09 -0500
-From: samjames1@mchsi.com (Walter Jones)
-Subject: Xmas Draws...........Your Email Won
-Date: Sat, 24 Nov 2007 14:54:37 +0000
-Message-Id: <112420071454.20723.47483B2C0004DE91000050F3219791299503010CD2079C080C03BFCE9C0A030E06030E9C@mchsi.com>
-X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
-X-Authenticated-Sender: c2FtamFtZXMxQG1jaHNpLmNvbQ==
+	Sat, 24 Nov 2007 11:00:23 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAABLZR0dYGQsB/2dsb2JhbAAIkEY
+Date: Sat, 24 Nov 2007 17:00:15 +0100
+Message-Id: <JS0PSF$829A549523B60817525503870E38544B@libero.it>
+Subject: BTNr:2GH267XZZ1-5-42
+MIME-Version: 1.0
+X-Sensitivity: 3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+From: "info_waaaadd" <info_waaaadd@libero.it>
+X-XaM3-API-Version: 4.3 (R1) (B3pl19)
+X-SenderIP: 88.25.11.1
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754971AbXKXOzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754492AbXKXQAe@vger.kernel.org>
 
-After this automated computer ballot, your e-mail address emerged as a
- winner in the category "A" with the following numbers attached Ref:
- Number:GP 14-M-246-04,Batch Number:573881545-NL/2007 and Ticket
- Number: PP
- 3502 /8707-01.
+YOU 'VE WON.
 
-Mr. Gordon Blackwell.
-Tel: +31-61-929-1754
-Fax:      +31 84 739 0336
-Email: surf_gordwell04@yahoo.de
-        
-You are advice to provide him with the following information:
-Names:.....................
-Telephone/Fax number...........
-Nationality:...................
-Occupation:.......................
-Age:..................................
+You have won$950,000.00Dollars in DE EURO MILLIONES ONLINE INT.LOTTERYSPAIN.Forfurther development for Clarification and   procedure please Contact ,
+Dr.Pauly Anderson.
+E-mail: finanseguros1@aim.com
+OR finansseguroshq@yahoo.it
+TEL: +34  652-063-073 .
+(1) TicNr:6460DGH
+(2) Sr Nr: 0909AOB09
+(3) LU Nr: 726726XZJHN
+(4) BTNr:2GH267XZZ1-5-42
+(5) RF Nr 9527BCV-33-7-7-7
 
-Regards,
-Walter Jones
-Lottery Coordinator.
-SINCERELY,
+Regards.
+Mrs. Anna Jones
+
+
