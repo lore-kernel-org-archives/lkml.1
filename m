@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbXKXQLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbXKXQTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbXKXQLt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 11:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXKXQLl
+	id S1754630AbXKXQTm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 11:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXKXQTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 11:11:41 -0500
-Received: from nz-out-0506.google.com ([64.233.162.230]:8395 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbXKXQLk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 11:11:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZUf9UfZNKx/UF04JyxE5e+qy6mR+4jArJE/DZdyMySzx9peldh2j/5Aph79/fxZr3GcP6qzqBCOrpU3dtBprJQDxocNxMOIyf9IYRnjlo4SoTiihAG4IjKpcB4cgxDMvHUhoS5WkMnC/7521WLeWyoH9cOBNXltisu8D/AaPkgo=
-Message-ID: <a36005b50711240811g1fdca17fwe8534ebe8ece6432@mail.gmail.com>
-Date: Sat, 24 Nov 2007 08:11:38 -0800
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [PATCHv5 4/5] Allow setting O_NONBLOCK flag for new sockets
-Cc: "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org
-In-Reply-To: <4747E0C6.5010900@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 24 Nov 2007 11:19:35 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:59916 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751312AbXKXQTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 11:19:34 -0500
+Date: Sat, 24 Nov 2007 17:19:31 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Luciano Rocha <strange@nsk.no-ip.org>
+Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, kune@deine-taler.de, johannes@sipsolutions.net
+Subject: Re: [RFC] Documentation about unaligned memory access
+Message-ID: <20071124171931.699aa1ff@poseidon.drzeus.cx>
+In-Reply-To: <20071124155052.GA15440@bit.office.eurotux.com>
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
+	<20071124143441.41657307@poseidon.drzeus.cx>
+	<20071124155052.GA15440@bit.office.eurotux.com>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200711210728.lAL7SoJO015052@devserv.devel.redhat.com>
-	 <4747D00D.1090603@cosmosbay.com> <4747D610.6040108@redhat.com>
-	 <4747E0C6.5010900@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 24, 2007 12:28 AM, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> OK, but maybe for consistency, we might accept the two mechanisms.
+On Sat, 24 Nov 2007 15:50:52 +0000
+Luciano Rocha <strange@nsk.no-ip.org> wrote:
 
-It's not a question of the kernel interface.  The issue with all these
-extensions is the userlevel interface.  Ideally no new userlevel
-interface is needed.  This is the case for open() and incidentally
-also for this case (through the flags parameter for recvmsg).  For
-socket(), accept(), the situation is unfortunately different and we
-need a new interface.
+> 
+> Dumb memcpy (while (len--) { *d++ = *s++ }) will have alignment problems
+> in any case. Intelligent ones, like the one provided in glibc, first copy
+> bytes till output is aligned (C file) *or* size is a multiple (i686 asm file)
+> of word size, and then it copies word-by-word.
+> 
+> Linux's x86_64 memcpy does the opposite, copies 64bit words, and then
+> copies the last bytes.
+> 
+> So, in effect, as long as no packed structures are used, memcpy should
+> be safer on *int, etc., than *char, as the compiler ensures
+> word-alignment.
+> 
 
-With your proposed patch, we would have to introduce another recvmsg()
-interface to take advantage of the additional functionality.  This
-just doesn't make any sense.  This is no contest in aesthetics.  You
-first have to think about the interface presented to the programmer at
-userlevel and then design the syscall interface.  This is how
-MSG_CMSG_CLOEXEC came about.
+It most certainly does not. gcc will assume that an int* has int alignment. memcpy() is a builtin, which gcc can translate to pretty much anything. And C specifies that a pointer to foo, will point to a real object of type foo, so gcc can't be blamed for the unsafe typecasts. I have tested this the hard way, so this is not just speculation.
+
+E.g., we have the following struct:
+
+struct foo
+{
+	u8 a[4];
+	u32 b;
+};
+
+This struct will have a size of 8 bytes and an alignment of 4 bytes (caused by the member b). Now take the following code:
+
+void copy_foo(struct foo *dst, struct foo *src)
+{
+	*dst = *src;
+}
+
+On a platform that supports 64-bit loads and stores (e.g. AVR32, where I got hit by this), this will generate:
+
+	LD r1, (src)
+	ST r1, (dst)
+
+Now if I replace that with:
+
+void copy_foo(struct foo *dst, struct foo *src)
+{
+	memcpy(dst, src, sizeof(struct foo));
+}
+
+then it will generate the same code. So I cannot use copy_foo() to transfer a struct foo either out of, or into a packet buffer.
+
+In other words, memcpy() does _not_ save you from alignment issues. If you cast from char* or void* to something else, you better be damn sure the alignment is correct because gcc will assume it is.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
