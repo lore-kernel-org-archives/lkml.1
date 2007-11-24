@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbXKXCSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbXKXCsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbXKXCSu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Nov 2007 21:18:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXKXCSm
+	id S1754361AbXKXCsX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Nov 2007 21:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbXKXCsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Nov 2007 21:18:42 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:1029 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753296AbXKXCSl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Nov 2007 21:18:41 -0500
-Date: Sat, 24 Nov 2007 10:18:14 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>
-Subject: Re: [bug] xfrm_state_lock: possible circular locking dependency detected
-Message-ID: <20071124021814.GA24056@gondor.apana.org.au>
-References: <20071123153851.GA26308@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071123153851.GA26308@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Fri, 23 Nov 2007 21:48:15 -0500
+Received: from rtr.ca ([76.10.145.34]:1240 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753629AbXKXCsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Nov 2007 21:48:14 -0500
+Message-ID: <474790EB.90201@rtr.ca>
+Date: Fri, 23 Nov 2007 21:48:11 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Robert Hancock <hancockr@shaw.ca>, "Morrison, Tom" <tmorrison@empirix.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
+References: <47463534.9010100@shaw.ca> <4746F02D.2060204@rtr.ca> <BD261180E6D35F4D9D32F3E44FD3D901053E8542@EMPBEDEX.empirix.com> <474711FE.8040805@rtr.ca> <47476CB9.2040409@shaw.ca> <47476E31.2070801@garzik.org>
+In-Reply-To: <47476E31.2070801@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 23, 2007 at 04:38:51PM +0100, Ingo Molnar wrote:
+Jeff Garzik wrote:
+> Robert Hancock wrote:
+>> Based on a quick look at sata_mv it appears it sets a 64-bit DMA mask 
+>> unconditionally, but for non-ATA_PROT_DMA commands (which includes all 
+>> ATAPI), it just falls back to ata_qc_issue_prot which issues via the 
+>> legacy SFF interface and can only handle 32-bit addressing. So yes, it 
+>> appears to have a similar bug as sata_nv had.
 > 
-> DaveJ's Fedora 8 rpm for 2.6.24 works petty well, except for the 
-> neworking related lockdep assert attached below, which happened while 
-> starting up ipsec. Let me know if you need any more info - it's a pretty 
-> stock setup.
+> 
+> sata_mv doesn't do ATAPI at all...
+..
 
-Thanks for the report Ingo!
-
-This is indeed a regression caused by:
-
-commit 050f009e16f908932070313c1745d09dc69fd62b
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Tue Oct 9 13:31:47 2007 -0700
-
-    [IPSEC]: Lock state when copying non-atomic fields to user-space
-
-For 2.6.24 I'm simply going to revert this change since that
-just puts us back to the same state we've been for the last
-few years.
-
-For 2.6.25 I'll do a proper fix by making sure that every xfrm
-state user obeys the rule that if x->lock is to be taken with
-xfrm_state_lock then it must be done from within.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Not yet, anyway.  Stay tuned..
