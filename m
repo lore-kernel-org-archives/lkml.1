@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbXKXXMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbXKXXP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756372AbXKXXMT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 18:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXKXXMH
+	id S1756270AbXKXXP4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 18:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXKXXPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 18:12:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33639 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752818AbXKXXMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 18:12:06 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: nohz and strange sleep latencies
-Date: Sun, 25 Nov 2007 00:29:54 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20071119203152.GA1772@elf.ucw.cz> <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain> <20071124224013.GB1544@elf.ucw.cz>
-In-Reply-To: <20071124224013.GB1544@elf.ucw.cz>
+	Sat, 24 Nov 2007 18:15:49 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:58514 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752738AbXKXXPs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 18:15:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=i9m8w7WykZcy2lTkLqgQd4RccKS38Mf73e5RbbcHYsTMnEJfcUyblw6zRDMb3w95NjNZwJJBvCIGYW/tliMsPwN5J6qwLWcM0ENVOZyF9z8ppbXPIePSYmHSR9VKmHNVLNdoiX+THZc5M05dD8oVqfQB1ep5iZOrn50I2M55eq4=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 0/3] build system: section garbage collection
+Date: Sat, 24 Nov 2007 15:14:26 -0800
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org
+References: <200709112105.34301.vda.linux@googlemail.com> <20071118230057.GA6303@uranus.ravnborg.org>
+In-Reply-To: <20071118230057.GA6303@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711250029.55461.rjw@sisk.pl>
+Message-Id: <200711241514.26451.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 24 of November 2007, Pavel Machek wrote:
-> Hi!
-> 
-> > > > but perhaps somehow we miss this fact and fail to turn off the lapic 
-> > > > clockevents drivers?
-> > > 
-> > > Ok, I guess I'm lost. If I offline second CPU, I immediately get
-> > > 1000Hz timer tick... is that expected?
-> > 
-> > Hmm. No. I have no idea why this is happening.
-> > 
-> > 34196 total events, 55.083 events/sec
-> > echo 0 >/sys/devices/system/cpu/cpu1/online
-> > 36073 total events, 54.679 events/sec
-> 
-> Digging into process_32|64.c...
-> 
-> 64:
->         while (1) {
->                 while (!need_resched()) {
->                         void (*idle)(void);
-> 
->                         if (__get_cpu_var(cpu_idle_state))
->                                 __get_cpu_var(cpu_idle_state) = 0;
-> 
->                         tick_nohz_stop_sched_tick();
-> 
-> 32:
->         while (1) {
->                 tick_nohz_stop_sched_tick();
->                 while (!need_resched()) {
->                         void (*idle)(void);
-> 
->                         if (__get_cpu_var(cpu_idle_state))
->                                 __get_cpu_var(cpu_idle_state) = 0;
-> 
-> ...eek? Which one is wrong?
+Hi Sam,
 
-Hm, it looks like you should have quoted more lines ...
+On Sunday 18 November 2007 15:00, Sam Ravnborg wrote:
+> On Tue, Sep 11, 2007 at 09:05:33PM +0100, Denys Vlasenko wrote:
+> > Build system: section garbage collection for vmlinux
+> >
+> > Newer gcc and binutils can do dead code and data removal
+> > at link time. It is achieved using combination of
+> > -ffunction-sections -fdata-sections options for gcc and
+> > --gc-sections for ld.
+>
+> ...
+> Hi Denys.
+>
+> We are now well pass the merge window and I like this patchset to show up
+> in -mm. But I'm lacking time myself and wondered if you can send an updated
+> version based on the latest -git tree from Linus?
 
-In the second case (32), the tick_nohz_stop_sched_tick() seems to be
-redundant, so I bet it's this one.
+Got around to do this.
 
-Greetings,
-Rafael
+1.fixname:
+    Rename all special sections with names like .text.xxxx, .data.xxxx and
+    .rodata.xxxx to .xxxx.text/data/rodata. This makes it possible to
+    not mix up these sections with gcc-generated ones
+    when gcc -ffunction-sections -fdata-sections is used.
+    .bss.xxxx cannot be treated this way, because for section names
+    linke .xxxx.bss gcc won't create section with correct attribute.
+    Thus .bss.xxxxx sections are renamed .bss.k.xxxxx.
+
+2.modpost
+    Update scripts/mod/* machinery to correctly handle the case
+    when we have more than 64k sections.
+
+3.gc
+    The meat of the patchset is here.
+    Introduce config option DISCARD_UNUSED_SECTIONS.
+    If it is selected:
+    Pass -ffunction-sections -fdata-sections to gcc and 
+    --gc-sections --print-gc-sections to ld.
+    Use arch/$(SRCARCH)/kernel/modules.lds.S linker script for linking *.ko
+    files.
+    Generate linker map files for vmlinux and modules.
+    Add *(.text.*), *(.data.*) wildcards to linker scripts to accomodate
+    new kinds of sections generated by gcc.
+    Add KEEP(<sections>) directives to sections which must not be discarded.
+    Fix arch/frv/Makefile to use DISCARD_UNUSED_SECTIONS instead
+    of what seems to be a vestigial custom solution.
+
+Patches are against yesterday's Linus git tree and should be applied in order.
+They should not have any effect at all if DISCARD_UNUSED_SECTIONS is off.
+DISCARD_UNUSED_SECTIONS is marked DANGEROUS for now.
+It is likely to not work on arches other than x86 (modules.lds needs to be 
+added for each arch).
+
+Compile and run tested on 32-bit x86 (running this kernel now).
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
