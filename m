@@ -1,29 +1,44 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755587AbXKUXgZ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 21 Nov 2007 18:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbXKUXgO
+	id S1754661AbXKXOil (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 24 Nov 2007 09:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXKXOid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Nov 2007 18:36:14 -0500
-Received: from fallbackmx07.syd.optusnet.com.au ([211.29.132.9]:48851 "EHLO
-	fallbackmx07.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752135AbXKUXgN (ORCPT
+	Sat, 24 Nov 2007 09:38:33 -0500
+Received: from sccmmhc92.asp.att.net ([204.127.203.212]:47775 "EHLO
+	sccmmhc92.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbXKXOic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Nov 2007 18:36:13 -0500
-X-Greylist: delayed 11617 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Nov 2007 18:36:13 EST
-Message-Id: <200711212011.lALKBrLA032329@mail35.syd.optusnet.com.au>
-Content-Type: text/plain
-Content-Disposition: inline
-Content-Transfer-Encoding: binary
-Mime-Version: 1.0
-X-Mailer: MIME-tools 5.420 (Entity 5.420)
-From: COCA COLA PROMO AWARD <cocacola@yahoo.com>
-Date: Thu, 22 Nov 2007 07:11:53 +1100
-Subject: CONGRATULATION YOU ARE A CERTIFIED WINNER WITH OF OUR END OF YEAR
-    PROGRAMME!!!
-Reply-To: services@scarletdelivery-uk.net
+	Sat, 24 Nov 2007 09:38:32 -0500
+From: samjames1@mchsi.com (Walter Jones)
+Subject: Xmas Draws...........Your Email Won
+Date: Sat, 24 Nov 2007 14:38:10 +0000
+Message-Id: <112420071438.9768.47483751000A4B8500002628219791299503010CD2079C080C03BFCE9C0A030E06030E9C@mchsi.com>
+X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
+X-Authenticated-Sender: c2FtamFtZXMxQG1jaHNpLmNvbQ==
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755587AbXKUXgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754661AbXKXOil@vger.kernel.org>
 
-<<< No Message Collected >>>
+After this automated computer ballot, your e-mail address emerged as a
+ winner in the category "A" with the following numbers attached Ref:
+ Number:GP 14-M-246-04,Batch Number:573881545-NL/2007 and Ticket
+ Number: PP
+ 3502 /8707-01.
+
+Mr. Gordon Blackwell.
+Tel: +31-61-929-1754
+Fax:      +31 84 739 0336
+Email: surf_gordwell04@yahoo.de
+        
+You are advice to provide him with the following information:
+Names:.....................
+Telephone/Fax number...........
+Nationality:...................
+Occupation:.......................
+Age:..................................
+
+Regards,
+Walter Jones
+Lottery Coordinator.
+SINCERELY,
