@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbXKXSr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbXKXSuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbXKXSr0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 13:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXKXSrS
+	id S1755769AbXKXSuH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 13:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXKXSty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 13:47:18 -0500
-Received: from mfe1.polimi.it ([131.175.12.23]:34230 "EHLO polimi.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752893AbXKXSrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 13:47:18 -0500
-Date: Sat, 24 Nov 2007 19:46:35 +0100
-From: Stefano Brivio <stefano.brivio@polimi.it>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Michael Buesch <mb@bu3sch.de>
-Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
-Message-ID: <20071124194635.58f5a44b@morte>
-In-Reply-To: <200711241948.58881.rjw@sisk.pl>
-References: <20071124175112.58193424@morte>
-	<200711241948.58881.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 24 Nov 2007 13:49:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33004 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752841AbXKXStx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 13:49:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: "buggy cmd640" message followed by soft lockup
+Date: Sat, 24 Nov 2007 20:07:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Frans Pop <elendil@planet.nl>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <200711222007.12497.elendil@planet.nl> <200711241904.13132.bzolnier@gmail.com>
+In-Reply-To: <200711241904.13132.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.11.6.30824
-X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='BODY_SIZE_400_499 0, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Content-Disposition: inline
+Message-Id: <200711242007.52430.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Nov 2007 19:48:58 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Saturday, 24 of November 2007, Bartlomiej Zolnierkiewicz wrote:
+[--snip--]
+> Rafael, I see that you've filled a bug for this bugreport into kernel
+> bugzilla tracker (one day after the bugreport):
+> 
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=9442
+> 
+> Since we try to address regressions with the highest priority in the
+> IDE-land (and usually they get fixed quickly) I would strongly prefer to
+> use bugzilla only for long-term bugs and avoid the needless bureaucracy.
 
-> NO_HZ?  Highres timers?
+As a rule, I put all of the reported regressions into the Bugzilla early.  You
+are not required to use these entries for tracking the bugs, though.  If you
+don't want to, just leave the entry as is and I'll close it when the fix is in
+the Linus' tree.
 
-CONFIG_HZ_1000=y
-# CONFIG_HIGH_RES_TIMERS is not set
- 
-> I understand that the previous kernels behave correctly.  All of them?
+> Therefore I kindly ask you to defer filling bugs for new bugreports for
+> a week or two, and give us some time to react (and always ping me about
+> the bugreport status before filling bugzilla entry).
 
-2.6.21 behaved correctly. Sorry but git-bisect would take a lot of time (I
-can't reliably reproduce the jiffies jump), so I would avoid that if not
-strictly needed.
+Well, I thought you'd get an email from the Bugzilla, but of course I can notify
+you directly about reported regressions related to IDE.
 
+> The alternative solution would be that you fill all new bugreports but
+> then please assign them to yourself and track their status (if after two
+> weeks the problem is not fixed feel free to reassign bug to me).
 
--- 
-Ciao
-Stefano
+I can do that, but please note that the bugs filed against IDE are assigned to
+you automatically, so I'll have to reassign them to me (as I've just done with
+this particular entry).  If you don't want them to be assigned to you at all,
+please contact the Bugzilla administrators and ask them to change that.
+
+Thanks,
+Rafael
