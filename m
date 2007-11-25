@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbXKYLQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbXKYLRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbXKYLQW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 06:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXKYLQO
+	id S1755318AbXKYLRS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 06:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbXKYLRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 06:16:14 -0500
-Received: from adicia.telenet-ops.be ([195.130.132.56]:42578 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbXKYLQN (ORCPT
+	Sun, 25 Nov 2007 06:17:05 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:38661 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752237AbXKYLRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 06:16:13 -0500
-Date: Sun, 25 Nov 2007 12:16:08 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Heikki Orsila <shdl@zakalwe.fi>
-Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, kune@deine-taler.de, johannes@sipsolutions.net
-Subject: Re: [RFC] Documentation about unaligned memory access
-In-Reply-To: <20071123114329.GG7681@zakalwe.fi>
-Message-ID: <Pine.LNX.4.64.0711251215380.5532@anakin>
-References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
- <20071123114329.GG7681@zakalwe.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 Nov 2007 06:17:04 -0500
+Subject: Re: [PATCH] zfcp: add some internal zfcp adapter statistics
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Swen Schillig <swen@vnet.ibm.com>
+Cc: Christof Schmitt <christof.schmitt@de.ibm.com>, linux-scsi@vger.kernel.org,
+       Linux on 390 Port <LINUX-390@vm.marist.edu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200710311133.52090.swen@vnet.ibm.com>
+References: <200710311133.52090.swen@vnet.ibm.com>
+Content-Type: text/plain
+Date: Sun, 25 Nov 2007 13:16:59 +0200
+Message-Id: <1195989419.3427.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Nov 2007, Heikki Orsila wrote:
-> On Fri, Nov 23, 2007 at 12:15:53AM +0000, Daniel Drake wrote:
-> > Why unaligned access is bad
-> > ===========================
-> > 
-> > Most architectures are unable to perform unaligned memory accesses. Any
-> > unaligned access causes a processor exception.
-> 
-> "Some architectures are unable to perform unaligned memory accesses, 
-> either an exception is generated, or the data 
-> access is silently invalid. In architectures that allow unaligned 
-> access, natural aligned accesses are usually faster than non-aligned."
-> 
-> > In summary: if your code causes unaligned memory accesses to happen, your code
-> > will not work on some platforms, and will perform *very* badly on others.
-> 
-> *very* -> *slower*
-> 
-> > Natural alignment
-> > =================
-> 
-> Please move this definition before "Why unaligned access is bad".
-> 
-> Also, it would be nice to have a table of ISAs:
-> 
-> ISA		Need		Need
-> 		natural		alignment
-> 		alignment	by x
-> --------------------------------------------
-> m68k		No		2
 
-`No' for >= 68020.
-`Yes' for < 68020.
+On Wed, 2007-10-31 at 11:33 +0100, Swen Schillig wrote:
+> From: Swen Schillig <swen@vnet.ibm.com>
+> 
+> add some statistics provided by the zFCP adapter to the sysfs
+> 
+> The new zFCP adapter statistics provide a variety of information
+> about the virtual adapter (subchannel). In order to collect this information
+> the zFCP driver is extended on one side to query the adapter and
+> on the other side summarize certain values which can then be fetched on demand.
+> This information is made available via files(attributes) in the sysfs filesystem.
+> 
+> The information provided by the new zFCP adapter statistics can be fetched
+> by reading from the following files in the sysfs filesystem
+> 
+>  /sys/class/scsi_host/host<n>/seconds_active
+>  /sys/class/scsi_host/host<n>/requests
+>  /sys/class/scsi_host/host<n>/megabytes
+>  /sys/class/scsi_host/host<n>/utilization
 
-> powerpc/ppc	Yes		Word size
-> x86		No		No
-> x86_64		No		No
+This lot all look like they belong in the FC transport class statistics
+(some even already exist there).
 
-Gr{oetje,eeting}s,
+> These are the statistics on a virtual adapter (subchannel) level.
+> In addition latency information is provided on a SCSI device level (LUN) which
+> can be found at the following location
+> 
+>  /sys/class/scsi_device/<H:C:T:L>/device/cmd_latency
+>  /sys/class/scsi_device/<H:C:T:L>/device/read_latency
+>  /sys/class/scsi_device/<H:C:T:L>/device/write_latency
 
-						Geert
+These look to duplicate to some degree the figures
+in /sys/block/<dev>/stat.  Isn't the block device the best place to
+gather these, if they're useful?  Since user latencies should probably
+include elevator times.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+James
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
