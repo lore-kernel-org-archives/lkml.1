@@ -1,253 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXKYQ3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbXKYQa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbXKYQ3o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 11:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbXKYQ3g
+	id S1756531AbXKYQa3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 11:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbXKYQaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 11:29:36 -0500
-Received: from el-out-1112.google.com ([209.85.162.183]:48337 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbXKYQ3f (ORCPT
+	Sun, 25 Nov 2007 11:30:18 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39313 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752857AbXKYQaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 11:29:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=BVdcEFD0r2pBHqBo8/uITjITheTELHQQNi16hOutNAXx1iu4eR2sCqkEVbYMAoHEI5jJNdnQPhVaorTNRvYzBIl5fX6GHZLIzRUW0yD2E5u9TZRiPRSxcCDNkAtRNjrWvXKAaLH7DKSMhrZKR/zG8IXI0DcJ56eQ7KZtkk8S7O8=
-Message-ID: <1ba5638c0711250829o416e3ccasba572d3c205ea7f4@mail.gmail.com>
-Date: Sun, 25 Nov 2007 17:29:34 +0100
-From: Luca <luca.b633@gmail.com>
-To: gcc@gcc.gnu.org, binutils@sourceware.org, libc-alpha@sourceware.org,
-       ubuntu-devel@lists.ubuntu.com, debian-devel@lists.debian.org,
-       linux-kernel@vger.kernel.org
-Subject: [RFC] [PATCH] 32-bit pointers in x86-64
+	Sun, 25 Nov 2007 11:30:16 -0500
+Date: Sun, 25 Nov 2007 17:30:03 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: David Miller <davem@davemloft.net>
+Cc: david-b@pacbell.net, randy.dunlap@oracle.com, toralf.foerster@gmx.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [2.6 patch] ipv4/arp.c:arp_process(): remove bogus #ifdef mess
+Message-ID: <20071125163003.GC21947@stusta.de>
+References: <200711071434.52607.david-b@pacbell.net> <20071107225232.GB26163@stusta.de> <20071108033010.GF26163@stusta.de> <20071119.212639.217993660.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_4519_31985678.1196008174308"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071119.212639.217993660.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_4519_31985678.1196008174308
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Nov 19, 2007 at 09:26:39PM -0800, David Miller wrote:
+> From: Adrian Bunk <bunk@kernel.org>
+> Date: Thu, 8 Nov 2007 04:30:10 +0100
+> 
+> > @davem:
+> > 
+> > Please look at net/ipv4/arp.c:arp_process()
+> > 
+> > Am I right that CONFIG_NET_ETHERNET=n and CONFIG_NETDEV_1000=y or 
+> > CONFIG_NETDEV_10000=y will not be handled correctly there?
+> > 
+> > And the best solution is to nuke all #ifdef's in this function and make 
+> > the code unconditionally available?
+> 
+> I think removing those specific ifdefs in arp_process()
+> is the best option, yes.
 
-This proof of concept patch modifies GCC to have 32-bit pointers and
-longs on x86-64.
+Patch below.
 
-This allows to create an "x86-32" architecture that takes advantage of
-the higher number of registers and support for 64-bit computation in
-x86-64 long mode while avoiding the disadvantage of increased memory
-usage due to 64-bit pointers and longs in structures.
-Thus, such a GCC version could be used to produce a GNU/Linux
-distribution with the performance of x86-64 and the reduced memory
-usage of i386. Furthermore, programs requiring "large data" could use
-special "64-bit pointer" attributes to only use 64-bit pointers to
-reference the relevant large arrays/structures, using 32-bit pointers
-for everything else.
+cu
+Adrian
 
-The current patch is just an hack and should obviously be made
-configurable and reimplemented properly.
-Just setting POINTER_SIZE to 32 mostly works but more hacks are
-necessary to get PIC compilation working (note that the hacks are
-probably at least partially wrong, since I'm not an experienced GCC
-hacker).
-A patch to binutils is also required to stop it from complaining about
-32-bit relocations in shared objects.
 
-Currently a simple "Hello world!" program will work using a standard
-x86-64 dynamic loader and libc.
-This is because the function call ABI is unchanged and thus anything
-that doesn't use structures containing pointers or longs should be
-binary compatible.
+<--  snip  -->
 
-I do not really intend to work on this personally: I did this initial
-work for fun and I'm posting these patches to possibly stimulate
-broader interest on this concept.
 
-A possible roadmap for this would be:
-1. Make it configurable
-2. Fix the LEA hacks and allow proper PIC compilation
-3. Fix everything else that may not work properly (e.g. PIC,
-relocations, exception handling, TLS, debug info)
-4. Add a "32-bit object" flag to x86-64 objects
-5. Modify libc so that allocations are made in the lower 4GB space for
-x86-32 shared objects and modify x86-64 assembly code to work with
-32-bit pointers
-6. Compile a native x86-32 libc and compile and test a full Debian or
-Ubuntu distribution
-7. Add support for loading x86-32 and x86-64 objects in the same
-address space, using a single modified 64-bit libc (that for
-compatibility actually generate pointers in the low 4GB)
-7.1. Add __attribute__((pointer_size(XXX))) and #pragma pointer_size
-to allow 64-bit pointers in 32-bit mode and viceversa
-7.2. Surround glibc headers with #pragma pointer_size 64
-7.3. Modify the dynamic loader to support different namespaces and
-directories for x86-32 and x86-64. Symbols starting with "__64_" or
-"__32_" or similar could be mapped to the other namespace. Also
-support "multiarchitecture" objects that would be added to both.
-7.4. Split malloc/mmap in __32_malloc, __32_mmap and similar in glibc.
-glibc itself would use 32-bit allocations and be loaded in the low
-4GB.
-7.5. Compile the result and use a modified libc/dynamic loader
-compiled in x86-64 mode flagged as multiarchitecture to load both
-x86-32 and x86-64 objects
-8. Modify popular programs to explicitly use 64-bit allocations and
-pointers for potentially huge allocations (e.g. database caches,
-compression program data structures, P2P software file mappings)
+The #ifdef's in arp_process() were not only a mess, they were also wrong 
+in the CONFIG_NET_ETHERNET=n and (CONFIG_NETDEV_1000=y or 
+CONFIG_NETDEV_10000=y) cases.
 
-Patches are against GCC 4.2.2 and Binutils HEAD.
+Since they are not required this patch removes them.
 
-------=_Part_4519_31985678.1196008174308
-Content-Type: text/x-patch; name=x86-32-binutils.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f9fpmvd30
-Content-Disposition: attachment; filename=x86-32-binutils.patch
+Also removed are some #ifdef's around #include's that caused compile 
+errors after this change.
 
-SW5kZXg6IGJmZC9lbGY2NC14ODYtNjQuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ClJDUyBmaWxlOiAvY3ZzL3NyYy9z
-cmMvYmZkL2VsZjY0LXg4Ni02NC5jLHYKcmV0cmlldmluZyByZXZpc2lvbiAxLjE0NApkaWZmIC11
-IC1yMS4xNDQgZWxmNjQteDg2LTY0LmMKLS0tIGJmZC9lbGY2NC14ODYtNjQuYwkxOCBPY3QgMjAw
-NyAwOToxMzo1MSAtMDAwMAkxLjE0NAorKysgYmZkL2VsZjY0LXg4Ni02NC5jCTI1IE5vdiAyMDA3
-IDE0OjE5OjE3IC0wMDAwCkBAIC0xMDM4LDYgKzEwMzgsOCBAQAogCWNhc2UgUl9YODZfNjRfVFBP
-RkYzMjoKIAkgIGlmIChpbmZvLT5zaGFyZWQpCiAJICAgIHsKKwkgICAgaWYoMCkKKwkgICAgewog
-CSAgICAgICgqX2JmZF9lcnJvcl9oYW5kbGVyKQogCQkoXygiJUI6IHJlbG9jYXRpb24gJXMgYWdh
-aW5zdCBgJXMnIGNhbiBub3QgYmUgdXNlZCB3aGVuIG1ha2luZyBhIHNoYXJlZCBvYmplY3Q7IHJl
-Y29tcGlsZSB3aXRoIC1mUElDIiksCiAJCSBhYmZkLApAQCAtMTA0NSw2ICsxMDQ3LDcgQEAKIAkJ
-IChoKSA/IGgtPnJvb3Qucm9vdC5zdHJpbmcgOiAiYSBsb2NhbCBzeW1ib2wiKTsKIAkgICAgICBi
-ZmRfc2V0X2Vycm9yIChiZmRfZXJyb3JfYmFkX3ZhbHVlKTsKIAkgICAgICByZXR1cm4gRkFMU0U7
-CisJICAgICAgfQogCSAgICB9CiAJICBicmVhazsKIApAQCAtMTE5OCw2ICsxMjAxLDggQEAKIAkg
-ICAgICAmJiAoc2VjLT5mbGFncyAmIFNFQ19BTExPQykgIT0gMAogCSAgICAgICYmIChzZWMtPmZs
-YWdzICYgU0VDX1JFQURPTkxZKSAhPSAwKQogCSAgICB7CisJICAgIGlmKDApCisJICAgIHsKIAkg
-ICAgICAoKl9iZmRfZXJyb3JfaGFuZGxlcikKIAkJKF8oIiVCOiByZWxvY2F0aW9uICVzIGFnYWlu
-c3QgYCVzJyBjYW4gbm90IGJlIHVzZWQgd2hlbiBtYWtpbmcgYSBzaGFyZWQgb2JqZWN0OyByZWNv
-bXBpbGUgd2l0aCAtZlBJQyIpLAogCQkgYWJmZCwKQEAgLTEyMDUsNiArMTIxMCw3IEBACiAJCSAo
-aCkgPyBoLT5yb290LnJvb3Quc3RyaW5nIDogImEgbG9jYWwgc3ltYm9sIik7CiAJICAgICAgYmZk
-X3NldF9lcnJvciAoYmZkX2Vycm9yX2JhZF92YWx1ZSk7CiAJICAgICAgcmV0dXJuIEZBTFNFOwor
-CSAgICAgIH0KIAkgICAgfQogCSAgLyogRmFsbCB0aHJvdWdoLiAgKi8KIApAQCAtMjU5OSw2ICsy
-NjA1LDggQEAKIAkJICB8fCAhaXNfMzJiaXRfcmVsYXRpdmVfYnJhbmNoIChjb250ZW50cywKIAkJ
-CQkJCXJlbC0+cl9vZmZzZXQpKSkKIAkgICAgeworCSAgICBpZigwKQorCSAgICB7CiAJICAgICAg
-aWYgKGgtPmRlZl9yZWd1bGFyCiAJCSAgJiYgcl90eXBlID09IFJfWDg2XzY0X1BDMzIKIAkJICAm
-JiBoLT50eXBlID09IFNUVF9GVU5DCkBAIC0yNjEzLDYgKzI2MjEsNyBAQAogCQkgICBoLT5yb290
-LnJvb3Quc3RyaW5nKTsKIAkgICAgICBiZmRfc2V0X2Vycm9yIChiZmRfZXJyb3JfYmFkX3ZhbHVl
-KTsKIAkgICAgICByZXR1cm4gRkFMU0U7CisJICAgICAgfQogCSAgICB9CiAJICAvKiBGYWxsIHRo
-cm91Z2guICAqLwogCg==
-------=_Part_4519_31985678.1196008174308
-Content-Type: text/x-patch; name=x86-32-gcc.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f9fpngyg1
-Content-Disposition: attachment; filename=x86-32-gcc.patch
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-ZGlmZiAtdXIgZ19vcmlnL2djYy00LjIuMi9nY2MvY29uZmlnL2kzODYvaTM4Ni5jIGdjYy00LjIu
-Mi9nY2MvY29uZmlnL2kzODYvaTM4Ni5jCi0tLSBnX29yaWcvZ2NjLTQuMi4yL2djYy9jb25maWcv
-aTM4Ni9pMzg2LmMJMjAwNy0wOS0wMSAxNzoyODozMC4wMDAwMDAwMDAgKzAyMDAKKysrIGdjYy00
-LjIuMi9nY2MvY29uZmlnL2kzODYvaTM4Ni5jCTIwMDctMTEtMjUgMDM6NDM6MzUuMDAwMDAwMDAw
-ICswMTAwCkBAIC03MTI2LDcgKzcxMjgsMTEgQEAKIAkgIHJ0eCB0ZW1wID0gZ2VuX3JlZ19ydHgg
-KFBtb2RlKTsKIAkgIHJ0eCB2YWwgID0gZm9yY2Vfb3BlcmFuZCAoWEVYUCAoeCwgMSksIHRlbXAp
-OwogCSAgaWYgKHZhbCAhPSB0ZW1wKQorCSAgeworCSAgICBpZihHRVRfTU9ERSh2YWwpICE9IFBt
-b2RlKQorCSAgICAgIHZhbCA9IGNvbnZlcnRfdG9fbW9kZSAoUG1vZGUsIHZhbCwgMCk7CiAJICAg
-IGVtaXRfbW92ZV9pbnNuICh0ZW1wLCB2YWwpOworCSAgfQogCiAJICBYRVhQICh4LCAxKSA9IHRl
-bXA7CiAJICByZXR1cm4geDsKQEAgLTcxMzcsNyArNzE0MywxMSBAQAogCSAgcnR4IHRlbXAgPSBn
-ZW5fcmVnX3J0eCAoUG1vZGUpOwogCSAgcnR4IHZhbCAgPSBmb3JjZV9vcGVyYW5kIChYRVhQICh4
-LCAwKSwgdGVtcCk7CiAJICBpZiAodmFsICE9IHRlbXApCisJICB7CisJICAgICBpZihHRVRfTU9E
-RSh2YWwpICE9IFBtb2RlKQorCSAgICAgIHZhbCA9IGNvbnZlcnRfdG9fbW9kZSAoUG1vZGUsIHZh
-bCwgMCk7CiAJICAgIGVtaXRfbW92ZV9pbnNuICh0ZW1wLCB2YWwpOworCSAgfQogCiAJICBYRVhQ
-ICh4LCAwKSA9IHRlbXA7CiAJICByZXR1cm4geDsKQEAgLTg5NjcsNyArODk3OCw3IEBACiAJfQog
-ICAgIH0KIAotICBpZiAoZmxhZ19waWMgJiYgbW9kZSA9PSBQbW9kZSAmJiBzeW1ib2xpY19vcGVy
-YW5kIChvcDEsIFBtb2RlKSkKKyAgaWYgKGZsYWdfcGljICYmIHN5bWJvbGljX29wZXJhbmQgKG9w
-MSwgbW9kZSkpIC8vICYmIG1vZGUgPT0gUG1vZGUgJiYgc3ltYm9saWNfb3BlcmFuZCAob3AxLCBQ
-bW9kZSkpCiAgICAgewogICAgICAgaWYgKFRBUkdFVF9NQUNITyAmJiAhVEFSR0VUXzY0QklUKQog
-CXsKQEAgLTg5OTEsOSArOTAwMiwxMyBAQAogICAgICAgZWxzZQogCXsKIAkgIGlmIChHRVRfQ09E
-RSAob3AwKSA9PSBNRU0pCi0JICAgIG9wMSA9IGZvcmNlX3JlZyAoUG1vZGUsIG9wMSk7CisJICAg
-IG9wMSA9IGZvcmNlX3JlZyAobW9kZSwgb3AxKTsKIAkgIGVsc2UKIAkgICAgb3AxID0gbGVnaXRp
-bWl6ZV9hZGRyZXNzIChvcDEsIG9wMSwgUG1vZGUpOworCSAgaWYobW9kZSAhPSBQbW9kZSkKKwkg
-IHsKKwkgICAgb3AxID0gY29udmVydF90b19tb2RlIChtb2RlLCBvcDEsIDApOworCSAgfQogCX0K
-ICAgICB9CiAgIGVsc2UKT25seSBpbiBnY2MtNC4yLjIvZ2NjL2NvbmZpZy9pMzg2OiBpMzg2LmN+
-CmRpZmYgLXVyIGdfb3JpZy9nY2MtNC4yLjIvZ2NjL2NvbmZpZy9pMzg2L2kzODYuaCBnY2MtNC4y
-LjIvZ2NjL2NvbmZpZy9pMzg2L2kzODYuaAotLS0gZ19vcmlnL2djYy00LjIuMi9nY2MvY29uZmln
-L2kzODYvaTM4Ni5oCTIwMDctMDktMDEgMTc6Mjg6MzAuMDAwMDAwMDAwICswMjAwCisrKyBnY2Mt
-NC4yLjIvZ2NjL2NvbmZpZy9pMzg2L2kzODYuaAkyMDA3LTExLTI1IDA0OjMzOjMxLjAwMDAwMDAw
-MCArMDEwMApAQCAtNTM1LDcgKzUzNSw3IEBACiAjZGVmaW5lIFNIT1JUX1RZUEVfU0laRSAxNgog
-I2RlZmluZSBJTlRfVFlQRV9TSVpFIDMyCiAjZGVmaW5lIEZMT0FUX1RZUEVfU0laRSAzMgotI2Rl
-ZmluZSBMT05HX1RZUEVfU0laRSBCSVRTX1BFUl9XT1JECisjZGVmaW5lIExPTkdfVFlQRV9TSVpF
-IDMyCiAjZGVmaW5lIERPVUJMRV9UWVBFX1NJWkUgNjQKICNkZWZpbmUgTE9OR19MT05HX1RZUEVf
-U0laRSA2NAogCkBAIC0xODA0LDYgKzE4MDQsOCBAQAogICAgQWZ0ZXIgZ2VuZXJhdGlvbiBvZiBy
-dGwsIHRoZSBjb21waWxlciBtYWtlcyBubyBmdXJ0aGVyIGRpc3RpbmN0aW9uCiAgICBiZXR3ZWVu
-IHBvaW50ZXJzIGFuZCBhbnkgb3RoZXIgb2JqZWN0cyBvZiB0aGlzIG1hY2hpbmUgbW9kZS4gICov
-CiAjZGVmaW5lIFBtb2RlIChUQVJHRVRfNjRCSVQgPyBESW1vZGUgOiBTSW1vZGUpCisjZGVmaW5l
-IFBPSU5URVJfU0laRSAzMgorI2RlZmluZSBQT0lOVEVSU19FWFRFTkRfVU5TSUdORUQgMQogCiAv
-KiBBIGZ1bmN0aW9uIGFkZHJlc3MgaW4gYSBjYWxsIGluc3RydWN0aW9uCiAgICBpcyBhIGJ5dGUg
-YWRkcmVzcyAoZm9yIGluZGV4aW5nIHB1cnBvc2VzKQpPbmx5IGluIGdjYy00LjIuMi9nY2MvY29u
-ZmlnL2kzODY6IGkzODYuaH4KZGlmZiAtdXIgZ19vcmlnL2djYy00LjIuMi9nY2MvY29uZmlnL2kz
-ODYvaTM4Ni5tZCBnY2MtNC4yLjIvZ2NjL2NvbmZpZy9pMzg2L2kzODYubWQKLS0tIGdfb3JpZy9n
-Y2MtNC4yLjIvZ2NjL2NvbmZpZy9pMzg2L2kzODYubWQJMjAwNy0wOS0wMSAxNzoyODozMC4wMDAw
-MDAwMDAgKzAyMDAKKysrIGdjYy00LjIuMi9nY2MvY29uZmlnL2kzODYvaTM4Ni5tZAkyMDA3LTEx
-LTI1IDAzOjM0OjU1LjAwMDAwMDAwMCArMDEwMApAQCAtNDk2Miw3ICs0OTYyLDcgQEAKICAgICYm
-IEdFVF9NT0RFIChvcGVyYW5kc1swXSkgPT0gR0VUX01PREUgKG9wZXJhbmRzWzFdKQogICAgJiYg
-R0VUX01PREUgKG9wZXJhbmRzWzBdKSA9PSBHRVRfTU9ERSAob3BlcmFuZHNbMl0pCiAgICAmJiAo
-R0VUX01PREUgKG9wZXJhbmRzWzBdKSA9PSBHRVRfTU9ERSAob3BlcmFuZHNbM10pCi0gICAgICAg
-fHwgR0VUX01PREUgKG9wZXJhbmRzWzNdKSA9PSBWT0lEbW9kZSkiCisgICAgICAgfHwgR0VUX01P
-REUgKG9wZXJhbmRzWzNdKSA9PSBWT0lEbW9kZSkgJiYgIVNZTUJPTElDX0NPTlNUKG9wZXJhbmRz
-WzNdKSIKICAgIiMiCiAgICImJiByZWxvYWRfY29tcGxldGVkIgogICBbKGNvbnN0X2ludCAwKV0K
-QEAgLTQ5ODgsNyArNDk4OCw3IEBACiAJICAocGx1czpTSSAocGx1czpTSSAobWF0Y2hfb3BlcmFu
-ZDpTSSAxICJpbmRleF9yZWdpc3Rlcl9vcGVyYW5kIiAibCIpCiAJCQkgICAgKG1hdGNoX29wZXJh
-bmQ6U0kgMiAicmVnaXN0ZXJfb3BlcmFuZCIgInIiKSkKIAkJICAgKG1hdGNoX29wZXJhbmQ6U0kg
-MyAiaW1tZWRpYXRlX29wZXJhbmQiICJpIikpKSldCi0gICJUQVJHRVRfNjRCSVQiCisgICJUQVJH
-RVRfNjRCSVQgJiYgIVNZTUJPTElDX0NPTlNUKG9wZXJhbmRzWzNdKSIKICAgIiMiCiAgICImJiBy
-ZWxvYWRfY29tcGxldGVkIgogICBbKHNldCAobWF0Y2hfZHVwIDApCkBAIC01MDEzLDcgKzUwMTMs
-NyBAQAogICAgJiYgKCFUQVJHRVRfUEFSVElBTF9SRUdfU1RBTEwgfHwgb3B0aW1pemVfc2l6ZSkK
-ICAgICYmIEdFVF9NT0RFIChvcGVyYW5kc1swXSkgPT0gR0VUX01PREUgKG9wZXJhbmRzWzFdKQog
-ICAgJiYgKEdFVF9NT0RFIChvcGVyYW5kc1swXSkgPT0gR0VUX01PREUgKG9wZXJhbmRzWzNdKQot
-ICAgICAgIHx8IEdFVF9NT0RFIChvcGVyYW5kc1szXSkgPT0gVk9JRG1vZGUpIgorICAgICAgIHx8
-IEdFVF9NT0RFIChvcGVyYW5kc1szXSkgPT0gVk9JRG1vZGUpICYmICFTWU1CT0xJQ19DT05TVChv
-cGVyYW5kc1szXSkiCiAgICIjIgogICAiJiYgcmVsb2FkX2NvbXBsZXRlZCIKICAgWyhjb25zdF9p
-bnQgMCldCkBAIC01MDM4LDcgKzUwMzgsNyBAQAogCSAgKHBsdXM6U0kgKG11bHQ6U0kgKG1hdGNo
-X29wZXJhbmQ6U0kgMSAiaW5kZXhfcmVnaXN0ZXJfb3BlcmFuZCIgImwiKQogCQkJICAgIChtYXRj
-aF9vcGVyYW5kOlNJIDIgImNvbnN0MjQ4X29wZXJhbmQiICJuIikpCiAJCSAgIChtYXRjaF9vcGVy
-YW5kOlNJIDMgIm5vbm1lbW9yeV9vcGVyYW5kIiAicmkiKSkpKV0KLSAgIlRBUkdFVF82NEJJVCIK
-KyAgIlRBUkdFVF82NEJJVCAmJiAhU1lNQk9MSUNfQ09OU1Qob3BlcmFuZHNbM10pIgogICAiIyIK
-ICAgIiYmIHJlbG9hZF9jb21wbGV0ZWQiCiAgIFsoc2V0IChtYXRjaF9kdXAgMCkKQEAgLTUwNjIs
-NyArNTA2Miw3IEBACiAgICAgfHwgKFRBUkdFVF82NEJJVCAmJiBHRVRfTU9ERSAob3BlcmFuZHNb
-MF0pID09IFNJbW9kZSkpCiAgICAmJiAoIVRBUkdFVF9QQVJUSUFMX1JFR19TVEFMTCB8fCBvcHRp
-bWl6ZV9zaXplKQogICAgJiYgR0VUX01PREUgKG9wZXJhbmRzWzBdKSA9PSBHRVRfTU9ERSAob3Bl
-cmFuZHNbMV0pCi0gICAmJiBHRVRfTU9ERSAob3BlcmFuZHNbMF0pID09IEdFVF9NT0RFIChvcGVy
-YW5kc1szXSkiCisgICAmJiBHRVRfTU9ERSAob3BlcmFuZHNbMF0pID09IEdFVF9NT0RFIChvcGVy
-YW5kc1szXSkgJiYgIVNZTUJPTElDX0NPTlNUKG9wZXJhbmRzWzNdKSAmJiAhU1lNQk9MSUNfQ09O
-U1Qob3BlcmFuZHNbNF0pIgogICAiIyIKICAgIiYmIHJlbG9hZF9jb21wbGV0ZWQiCiAgIFsoY29u
-c3RfaW50IDApXQpAQCAtNTA5Myw3ICs1MDkzLDcgQEAKIAkJCSAgICAgIChtYXRjaF9vcGVyYW5k
-OlNJIDIgImNvbnN0MjQ4X29wZXJhbmQiICJuIikpCiAJCQkgICAgKG1hdGNoX29wZXJhbmQ6U0kg
-MyAicmVnaXN0ZXJfb3BlcmFuZCIgInIiKSkKIAkJICAgKG1hdGNoX29wZXJhbmQ6U0kgNCAiaW1t
-ZWRpYXRlX29wZXJhbmQiICJpIikpKSldCi0gICJUQVJHRVRfNjRCSVQiCisgICJUQVJHRVRfNjRC
-SVQgJiYgIVNZTUJPTElDX0NPTlNUKG9wZXJhbmRzWzNdKSIKICAgIiMiCiAgICImJiByZWxvYWRf
-Y29tcGxldGVkIgogICBbKHNldCAobWF0Y2hfZHVwIDApCkBAIC01NDMxLDcgKzU0MzEsNyBAQAog
-CShwbHVzIChtYXRjaF9vcGVyYW5kIDEgInJlZ2lzdGVyX29wZXJhbmQiICIiKQogICAgICAgICAg
-ICAgICAobWF0Y2hfb3BlcmFuZCAyICJub25tZW1vcnlfb3BlcmFuZCIgIiIpKSkKICAgIChjbG9i
-YmVyIChyZWc6Q0MgRkxBR1NfUkVHKSldCi0gICJyZWxvYWRfY29tcGxldGVkCisgICIwICYmIHJl
-bG9hZF9jb21wbGV0ZWQKICAgICYmIHRydWVfcmVnbnVtIChvcGVyYW5kc1swXSkgIT0gdHJ1ZV9y
-ZWdudW0gKG9wZXJhbmRzWzFdKSIKICAgWyhjb25zdF9pbnQgMCldCiB7CkBAIC01NDY3LDcgKzU0
-NjcsNyBAQAogICBzd2l0Y2ggKGdldF9hdHRyX3R5cGUgKGluc24pKQogICAgIHsKICAgICBjYXNl
-IFRZUEVfTEVBOgotICAgICAgb3BlcmFuZHNbMl0gPSBTRVRfU1JDIChYVkVDRVhQIChQQVRURVJO
-IChpbnNuKSwgMCwgMCkpOworICAgICAgb3BlcmFuZHNbMl0gPSBYRVhQKFNFVF9TUkMgKFhWRUNF
-WFAgKFBBVFRFUk4gKGluc24pLCAwLCAwKSksIDApOwogICAgICAgcmV0dXJuICJsZWF7bH1cdHsl
-YTIsICVrMHwlazAsICVhMn0iOwogCiAgICAgY2FzZSBUWVBFX0lOQ0RFQzoKQEAgLTU1MTMsNyAr
-NTUxMyw3IEBACiAJICAocGx1czpTSSAobWF0Y2hfb3BlcmFuZDpTSSAxICJyZWdpc3Rlcl9vcGVy
-YW5kIiAiIikKIAkJICAgKG1hdGNoX29wZXJhbmQ6U0kgMiAibm9ubWVtb3J5X29wZXJhbmQiICIi
-KSkpKQogICAgKGNsb2JiZXIgKHJlZzpDQyBGTEFHU19SRUcpKV0KLSAgIlRBUkdFVF82NEJJVCAm
-JiByZWxvYWRfY29tcGxldGVkCisgICIwICYmIFRBUkdFVF82NEJJVCAmJiByZWxvYWRfY29tcGxl
-dGVkCiAgICAmJiB0cnVlX3JlZ251bSAob3BlcmFuZHNbMF0pICE9IHRydWVfcmVnbnVtIChvcGVy
-YW5kc1sxXSkiCiAgIFsoc2V0IChtYXRjaF9kdXAgMCkKIAkoemVyb19leHRlbmQ6REkgKHN1YnJl
-ZzpTSSAocGx1czpESSAobWF0Y2hfZHVwIDEpIChtYXRjaF9kdXAgMikpIDApKSldCmRpZmYgLXVy
-IGdfb3JpZy9nY2MtNC4yLjIvZ2NjL2V4cHIuYyBnY2MtNC4yLjIvZ2NjL2V4cHIuYwotLS0gZ19v
-cmlnL2djYy00LjIuMi9nY2MvZXhwci5jCTIwMDctMDktMDEgMTc6Mjg6MzAuMDAwMDAwMDAwICsw
-MjAwCisrKyBnY2MtNC4yLjIvZ2NjL2V4cHIuYwkyMDA3LTExLTI1IDAzOjUyOjMzLjAwMDAwMDAw
-MCArMDEwMApAQCAtODEzOCw2ICs4MTM4LDggQEAKICAgICAgIC8qIENoZWNrIGZvciBhIG11bHRp
-cGxpY2F0aW9uIHdpdGggbWF0Y2hpbmcgc2lnbmVkbmVzcy4gICovCiAgICAgICBlbHNlIGlmIChU
-UkVFX0NPREUgKFRSRUVfT1BFUkFORCAoZXhwLCAwKSkgPT0gTk9QX0VYUFIKIAkgICYmIFRSRUVf
-Q09ERSAodHlwZSkgPT0gSU5URUdFUl9UWVBFCisJICAmJiBUUkVFX0NPREUgKFRSRUVfVFlQRSAo
-VFJFRV9PUEVSQU5EIChleHAsIDApKSkgPT0gSU5URUdFUl9UWVBFCisJICAmJiBUUkVFX0NPREUg
-KFRSRUVfVFlQRSAoVFJFRV9PUEVSQU5EIChUUkVFX09QRVJBTkQgKGV4cCwgMCksIDApKSkgPT0g
-SU5URUdFUl9UWVBFCiAJICAmJiAoVFlQRV9QUkVDSVNJT04gKFRSRUVfVFlQRSAoVFJFRV9PUEVS
-QU5EIChUUkVFX09QRVJBTkQgKGV4cCwgMCksIDApKSkKIAkgICAgICA8IFRZUEVfUFJFQ0lTSU9O
-IChUUkVFX1RZUEUgKFRSRUVfT1BFUkFORCAoZXhwLCAwKSkpKQogCSAgJiYgKChUUkVFX0NPREUg
-KFRSRUVfT1BFUkFORCAoZXhwLCAxKSkgPT0gSU5URUdFUl9DU1QKCg==
-------=_Part_4519_31985678.1196008174308--
+---
+
+ net/ipv4/arp.c |   19 -------------------
+ 1 file changed, 19 deletions(-)
+
+759b820456b1400b2a6b061eca9667bf7a6f053d 
+diff --git a/net/ipv4/arp.c b/net/ipv4/arp.c
+index 36d6798..0c5d549 100644
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -111,12 +111,8 @@
+ #include <net/tcp.h>
+ #include <net/sock.h>
+ #include <net/arp.h>
+-#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ #include <net/ax25.h>
+-#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
+ #include <net/netrom.h>
+-#endif
+-#endif
+ #if defined(CONFIG_ATM_CLIP) || defined(CONFIG_ATM_CLIP_MODULE)
+ #include <net/atmclip.h>
+ struct neigh_table *clip_tbl_hook;
+@@ -731,20 +727,10 @@ static int arp_process(struct sk_buff *skb)
+ 		    htons(dev_type) != arp->ar_hrd)
+ 			goto out;
+ 		break;
+-#ifdef CONFIG_NET_ETHERNET
+ 	case ARPHRD_ETHER:
+-#endif
+-#ifdef CONFIG_TR
+ 	case ARPHRD_IEEE802_TR:
+-#endif
+-#ifdef CONFIG_FDDI
+ 	case ARPHRD_FDDI:
+-#endif
+-#ifdef CONFIG_NET_FC
+ 	case ARPHRD_IEEE802:
+-#endif
+-#if defined(CONFIG_NET_ETHERNET) || defined(CONFIG_TR) || \
+-    defined(CONFIG_FDDI)	 || defined(CONFIG_NET_FC)
+ 		/*
+ 		 * ETHERNET, Token Ring and Fibre Channel (which are IEEE 802
+ 		 * devices, according to RFC 2625) devices will accept ARP
+@@ -759,21 +745,16 @@ static int arp_process(struct sk_buff *skb)
+ 		    arp->ar_pro != htons(ETH_P_IP))
+ 			goto out;
+ 		break;
+-#endif
+-#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ 	case ARPHRD_AX25:
+ 		if (arp->ar_pro != htons(AX25_P_IP) ||
+ 		    arp->ar_hrd != htons(ARPHRD_AX25))
+ 			goto out;
+ 		break;
+-#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
+ 	case ARPHRD_NETROM:
+ 		if (arp->ar_pro != htons(AX25_P_IP) ||
+ 		    arp->ar_hrd != htons(ARPHRD_NETROM))
+ 			goto out;
+ 		break;
+-#endif
+-#endif
+ 	}
+ 
+ 	/* Understand only these message types */
+
