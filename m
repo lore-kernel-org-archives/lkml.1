@@ -1,134 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbXKYWmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbXKYW4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbXKYWmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXKYWmM
+	id S1757342AbXKYW4F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbXKYWzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:42:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36180 "EHLO ogre.sisk.pl"
+	Sun, 25 Nov 2007 17:55:55 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:37350 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752796AbXKYWmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:42:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [RFC][PATCH] Update REPORTING-BUGS
-Date: Mon, 26 Nov 2007 00:00:28 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <200711252157.10212.rjw@sisk.pl> <200711252251.15623.rjw@sisk.pl> <20071125215158.GD18284@stusta.de>
-In-Reply-To: <20071125215158.GD18284@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711260000.28972.rjw@sisk.pl>
+	id S1754549AbXKYWzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:55:54 -0500
+Date: Sun, 25 Nov 2007 23:55:48 +0100 (MET)
+Message-Id: <200711252255.lAPMtms7024172@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: joshin@hotmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Small System Paging Problem - OOM-killer goes nuts
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> On Sun, Nov 25, 2007 at 10:51:14PM +0100, Rafael J. Wysocki wrote:
-> > On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> > > On Sun, Nov 25, 2007 at 09:57:09PM +0100, Rafael J. Wysocki wrote:
-[--snip--]
-> > > 
-> > > How should a newbie find the correct mailing list?
-> > 
-> > Read MAINTAINERS?  Ok, I should have said about that.
-> > 
-> > > Benchmark:
-> > > Easier than the "some more work" when using Bugzilla.
-> > 
-> > Nope.  Please try to file a report against libata/PATA using the Bugzilla.
-> > Good luck. ;-)
+On Sun, 25 Nov 2007 15:02:15 -0700, Josh Goldsmith wrote:
+>   I have a Linksys NSLU2 running 2.6.21 (I can replicate the problem on 
+> 2.6.23 but it isn't fully supported on SlugOS).  It is a armv5teb device 
+> with 32MB of RAM, 400+ MB swap on its 160GB USB2 root disk.  The machine is 
+> used as a fileserver and to build packages for other ARM devices.  It may be 
+> underpowered by today's standard but is a whole lot faster than my first 
+> Linux system (386sx20 with 4MB RAM) but the whole system with disk uses <8 
+> watts and is silent.
 > 
-> $ grep PATA MAINTAINERS
-> $ 
-
-Too bad (and this is a bug BTW).
-
-> > > >...
-> > > > +It also is a good idea to notify the maintainer of the affected subsystem and
-> > > > +the maintainer of the tree in which the bug is present by adding their email
-> > > > +addresses to the Cc list of the bug report message.  The email addresses of
-> > > > +maintainers of the majority of kernel subsystems can be found in the MAINTAINERS
-> > > > +file, but you should not worry too much about getting a wrong person.
-> > > 
-> > > If you don't already know MAINTAINERS well then finding the right 
-> > > component in Bugzilla is much easier.
-> > 
-> > I disagree.  How a newbie is supposed to know what AIO and DIO mean and WTH is
-> > the difference between LVM2/DM and MD? 
-> > 
-> > I took only the IO/Storage submenu as an example, but there are other things
-> > like that.  For instance, what is the difference between "Flash/Memory
-> > Technology Devices" and MMC/SD?  Why "Hotplug" is under "Drivers" and WTH
-> > does it *mean*?  What "W1" means for that matter??  Etc.
+>   The problem comes when I try to untar a large file (in this case 
+> linux-2.6.23.tar.bz2).  Regardless if I kill off every other process, 
+> eventually the oom-killer will appear and kill either the tar or the shell. 
+> I've tried every tuning option I and my buddy Google could find including 
+> (/proc/sys/vm/overcommit*) with no success.  I'm not worried about paging 
+> impacting performance.
 > 
-> Then let's get that improved.
+>   I'd appreciate any help, pointers, or gentle taps with the cluebat.
 
-OK
+I'm no VM tuning expert, but I have and still do heavy compile
+jobs on similarly configured machines, with no OOM problems:
 
-Who's supposed to be responsible for that?
+I regularly build 2.6 kernels and occasionally also gcc on a
+100MHz 486 with 28MB of RAM and perhaps 500MB of swap. It runs
+a standard but stripped down Fedora Core 4 user-space, with ext3
+file systems and a kernel that doesn't include anything non-essential. 
+The machine will swap madly, but the OOM killer never triggers.
+(All system settings are FC4 defaults. I haven't touched them.)
 
-[--snip--]
-> > > 
-> > > Really, we must define _one_ way for people to report a bug, and how 
-> > > developers are reminded is _our_ job.
-> > 
-> > Well, who's "we" in that context?  IOW, who's job exactly it's supposed to be?
-> 
-> "we" = "we kernel developers"
-> 
-> And Natalie seems to be the person being paid for doing such stuff...
-> 
-> > > >...
-> > > > +Generally, the following things are appreciated in a bug report:
-> > > >...
-> > > 
-> > > If you expect people to read and follow this, wouldn't it be easier to
-> > > simply point them to open the bug in Bugzilla where we already have a
-> > > template asking these questions?
-> > 
-> > I don't think so and please refer to the examples above.
-> > 
-> > > You could replace the whole contents of this file with:
-> > > Go to http://bugzilla.kernel.org/ and click on "Enter a new bug report".
-> > > 
-> > > It's a pity that we manage to add/change an average of 100.000 bugs^Wlines
-> > > of code each month, but do not have one generally accepted and working 
-> > > process for bug reports.
-> > 
-> > It's a pity that we do not have one, indeed, and so perhaps it's a good idea
-> > to try to create one?  Not necessarily focusing on the Bugzilla for a little
-> > while. ;-)
-> 
-> I'm not focussed on Bugzilla.
-> 
-> But a submitter should send a bug report _once_ through one well-defined 
-> medium, this should result in the bug report not being lost, and every 
-> other communication of the submitter should be triggered by developers 
-> requesting additional information.
-
-I don't think that have to be only *one* medium as long as we're able to track
-the bugs (see my last reply in the other thread).
-
-> I don't care whether that's done with Bugzilla, some email based bug 
-> tracker like the Debian bug tracker, someone putting emails manually 
-> into some bug tracker like you are doing, or whatever else.
-
-That last solution doesn't scale very well ...
-
-How about using the system in which it's possible to report bugs using both
-email and a web interface?
-
-We can request that the address of the bug tracker be added to the Cc lists of
-bug reports sent by email and we can make it resend reports filed with it to
-the appropriate mailing lists and with the appropriate email headers.  This is
-technically doable.
-
-Greetings,
-Rafael
+In the past I did a fair amount of package rebuilds and test suite
+runs on an NSLU2 myself, with a 2.4 Linksys/Openslug kernel, ext3,
+and a 1GB or perhaps 2GB swap partition on a disk attached via a
+USB2-to-PATA enclosure. Even when swapping heavily the OOM killer
+wouldn't trigger.
