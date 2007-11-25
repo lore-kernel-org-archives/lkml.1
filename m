@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXKYKlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbXKYLQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbXKYKlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 05:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXKYKlL
+	id S1754127AbXKYLQW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 06:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXKYLQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 05:41:11 -0500
-Received: from smtp105.plus.mail.re1.yahoo.com ([69.147.102.68]:36038 "HELO
-	smtp105.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750918AbXKYKlK (ORCPT
+	Sun, 25 Nov 2007 06:16:14 -0500
+Received: from adicia.telenet-ops.be ([195.130.132.56]:42578 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751694AbXKYLQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 05:41:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-  b=estYWtTyazZmcCmMUdHw6bdgwOtiiy6+pb68yiT7U9x4hYBR8ZZpkWxGZp+bymbejcHOOK5NJ0KypLycf+A3xOqFgEbzgyRSKzymVA8ZRMWC5Ej35nQy0hQcKH7+febA4igHPnMsGiJZ/3I1zbiPp+a6ffwls1OJ1p6QizWI7l4=  ;
-X-YMail-OSG: ejoK.asVM1lL2sM.6Ok6ugDdjxmqM056Ry1JmifQIBzQTz_3dbO98GwGeW69aJeNcjk44KKnsQ--
-Date: Sun, 25 Nov 2007 11:27:11 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] vmlinux_32.lds.S: remove repeated comment from the x86-32
-	linker script
-Message-ID: <20071125102711.GA16310@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
+	Sun, 25 Nov 2007 06:16:13 -0500
+Date: Sun, 25 Nov 2007 12:16:08 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, kune@deine-taler.de, johannes@sipsolutions.net
+Subject: Re: [RFC] Documentation about unaligned memory access
+In-Reply-To: <20071123114329.GG7681@zakalwe.fi>
+Message-ID: <Pine.LNX.4.64.0711251215380.5532@anakin>
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
+ <20071123114329.GG7681@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <bbpetkov@yahoo.de>
+On Fri, 23 Nov 2007, Heikki Orsila wrote:
+> On Fri, Nov 23, 2007 at 12:15:53AM +0000, Daniel Drake wrote:
+> > Why unaligned access is bad
+> > ===========================
+> > 
+> > Most architectures are unable to perform unaligned memory accesses. Any
+> > unaligned access causes a processor exception.
+> 
+> "Some architectures are unable to perform unaligned memory accesses, 
+> either an exception is generated, or the data 
+> access is silently invalid. In architectures that allow unaligned 
+> access, natural aligned accesses are usually faster than non-aligned."
+> 
+> > In summary: if your code causes unaligned memory accesses to happen, your code
+> > will not work on some platforms, and will perform *very* badly on others.
+> 
+> *very* -> *slower*
+> 
+> > Natural alignment
+> > =================
+> 
+> Please move this definition before "Why unaligned access is bad".
+> 
+> Also, it would be nice to have a table of ISAs:
+> 
+> ISA		Need		Need
+> 		natural		alignment
+> 		alignment	by x
+> --------------------------------------------
+> m68k		No		2
 
-Remove repeated comment from the linker script for the x86-32 target.
+`No' for >= 68020.
+`Yes' for < 68020.
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> powerpc/ppc	Yes		Word size
+> x86		No		No
+> x86_64		No		No
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
- arch/x86/kernel/vmlinux_32.lds.S |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 7d72cce..39252d4 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -3,22 +3,16 @@
-  *
-  * Don't define absolute symbols until and unless you know that symbol
-  * value is should remain constant even if kernel image is relocated
-  * at run time. Absolute symbols are not relocated. If symbol value should
-  * change if kernel is relocated, make the symbol section relative and
-  * put it inside the section definition.
-  */
- 
--/* Don't define absolute symbols until and unless you know that symbol
-- * value is should remain constant even if kernel image is relocated
-- * at run time. Absolute symbols are not relocated. If symbol value should
-- * change if kernel is relocated, make the symbol section relative and
-- * put it inside the section definition.
-- */
- #define LOAD_OFFSET __PAGE_OFFSET
- 
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/thread_info.h>
- #include <asm/page.h>
- #include <asm/cache.h>
- #include <asm/boot.h>
- 
--- 
-Regards/Gruﬂ,
-    Boris.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
