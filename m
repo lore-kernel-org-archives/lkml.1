@@ -1,222 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbXKYUHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXKYUI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbXKYUHv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 15:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbXKYUHl
+	id S1756690AbXKYUI0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 15:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXKYUIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 15:07:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35750 "EHLO ogre.sisk.pl"
+	Sun, 25 Nov 2007 15:08:18 -0500
+Received: from mx.treblig.org ([80.68.94.177]:2812 "EHLO mx.treblig.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755793AbXKYUHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 15:07:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
-Date: Sun, 25 Nov 2007 21:25:34 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	id S1756012AbXKYUIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 15:08:17 -0500
+Date: Sun, 25 Nov 2007 20:08:00 +0000
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Adrian Bunk <bunk@kernel.org>
-References: <200711222007.12497.elendil@planet.nl> <200711251411.16034.rjw@sisk.pl> <200711251508.11434.bzolnier@gmail.com>
-In-Reply-To: <200711251508.11434.bzolnier@gmail.com>
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
+Message-ID: <20071125200800.GA9808@gallifrey>
+References: <200711222007.12497.elendil@planet.nl> <200711251411.16034.rjw@sisk.pl> <20071125134945.GB14171@stusta.de> <200711252107.23926.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711252125.35761.rjw@sisk.pl>
+In-Reply-To: <200711252107.23926.rjw@sisk.pl>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 20:04:29 up 5 days, 19:17,  2 users,  load average: 0.49, 0.36, 0.29
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 25 of November 2007, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Sunday 25 November 2007, Rafael J. Wysocki wrote:
-> > On Sunday, 25 of November 2007, Bartlomiej Zolnierkiewicz wrote:
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+
+<snip>
+ (many levels of quote)
+
+> > > > * Bugs that sit in NEEDINFO state for more than i.e. one month should be
+> > > >   automatically closed.
 > > > 
-> > > [ I removed Frans from cc: since it is off-topic to the original bugreport ]
-> > > 
-> > > On Saturday 24 November 2007, Rafael J. Wysocki wrote:
-> > > > On Saturday, 24 of November 2007, Bartlomiej Zolnierkiewicz wrote:
-> > > > [--snip--]
-> > > > > Rafael, I see that you've filled a bug for this bugreport into kernel
-> > > > > bugzilla tracker (one day after the bugreport):
-> > > > > 
-> > > > > 	http://bugzilla.kernel.org/show_bug.cgi?id=9442
-> > > > > 
-> > > > > Since we try to address regressions with the highest priority in the
-> > > > > IDE-land (and usually they get fixed quickly) I would strongly prefer to
-> > > > > use bugzilla only for long-term bugs and avoid the needless bureaucracy.
-> > > > 
-> > > > As a rule, I put all of the reported regressions into the Bugzilla early.  You
-> > > > are not required to use these entries for tracking the bugs, though.  If you
-> > > 
-> > > [ I really don't think that the recent push from both Andrew and you in
-> > >   bugzilla direction is a good thing... ]
-> > 
-> > Well, I use the Bugzilla as a tool for tracking regressions.
-> > 
-> > You don't need to use or even follow the entries created by me, but some
-> > people do with good results.
-> > 
-> > > There is a mix of technical and psychological issues with using bugzilla:
-> > > 
-> > > * Interface for filling bugs is a joke:
-> > >   - help for "Product" selection is mediocre
-> > >     ("IO/Storage:" -> "Bugs related to IO")
-> > 
-> > Here, I agree, but IMO that's an organizational issue.  We first should assign
-> > people to handling bugs related to various subsystems and based on that create
-> > the menu so that the right people are notified of the reports.
-> > 
-> > >   - there is no help for "Componenet" selection
-> > >   - "Some basic debugging hints" are not there
-> > 
-> > It looks like you'd like the reporter to initially debug the issue for you
-> > before actually reporting it.  I don't think it's realistic. ;-)
-> 
-> Give people right hints and tools and they will work miracles. ;-)
-> 
-> If user reports hard lockup propably the first thing to ask will be
-> to try NMI watchdog etc.  We have this kind of information spreaded
-> through various files in Documentation/ (and also other sources).
-
-That's correct, and we generally need to gather it in one place.  Still, I'm
-not sure if that should be the Bugzilla.
-
-> What we right now we have in bugzilla is:
-> 
-> "
-> Some basic debugging hints
-> 
->     * Diagnosing OOM conditions
->     * Debugging kernel hangs
->     * Setting up a serial console
-> "
-> 
-> [ at http://test.kernel.org/bugzilla/faq.html ]
-> 
-> and all entries end up with "This page does not exist yet. You can create
-> a new empty page, or use one of the page templates. Before creating the
-> page, please check if a similar page already exists."
-> 
-> > >   - "Kernel version" given by reporter should be checked against the latest
-> > >     kernel version and if not matching there should be a kind request to
-> > >     retest with the latest kernel
-> > 
-> > Why?
-> 
-> To speedup a process.
-
-This way we can overlook some bugs unreproducible with the latest-greatest for
-whatever the reason, but still present and waiting to bite us when we unhide
-them.
-
-> > If someone has a problem with 2.6.23.x which has already been fixed in the
-> > mainline, we should be able to point him to the fix.  If we aren't, then
-> > something is wrong on our side.
-> 
-> Sure there is something wrong on our side as we don't store this kind of
-> information in organized way currently.
-
-Yes, that's one of the things we should fix, IMO.
-
-> > >   - it should be strongly suggested to attach dmesg output and kernel config
-> > 
-> > I, personally, don't like reports with dmesgs and .configs attached from the
-> > start, especially if they are cut'n'pasted into the message window, because
-> 
-> I do.
-> 
-> > they often don't contain the relevant information.
-> 
-> If you are lucky the right information will be there and it will save both
-> reporter and the developer one "communication cycle".
-
-It usually doesn't.  Anyway, you need to acknowledge the report and asking the
-submitter to provide you with additional information doesn't cost that much.
-
-OTOH, if the bug report is not directed at the right person from the start,
-it gets redirected and then the reporter is often asked for the information
-he's already provided and that's annoying.
-
-> > >   - zillion other little improvements...
-> > 
-> > Sure, improvements are always possible. :-)
-> > 
-> > >   [ The average bug quality is not very high (bugs often lack critical
-> > >     information) and this is really not reporters' fault!  The interface
-> > >     should be kept as simple as possible but if the reporter wants to
-> > >     find some help and hints they should be there. ]
-> > 
-> > IMO, if there's a user who has a problem with _our_ code, we should do our best
-> > to help him even if he doesn't report the bug very well.  Also, if the problem
-> > is not with the most recent kernel, we should at least ask the reporter to try
-> > a newer version.
-> 
-> Fully agreed.
-> 
-> I rather meant that the we can make the process work better for both sides.
-
-I'm sure we can.
-
-In the meantime, there are bug reports coming and they need to be handled
-somehow until we finally agree to do that in this or another way. ;-)
-
-> > > * Bugs that sit in NEEDINFO state for more than i.e. one month should be
-> > >   automatically closed.
-> > 
-> > I agree that we probably should do something like this.
+> > > I agree that we probably should do something like this.
 > >  
-> > > * After each major kernel release bugzilla should send a kind request for
-> > >   retesting to all open bugs.
-> > 
-> > Good idea, IMO.
-> > 
-> > > * You can't close/reject bugs by email.
-> > 
-> > Well, how would you authenticate?
+> > Not automatically.
 > 
-> Technically it is not a problem at all, i.e. you can sign mail with GPG etc.
+> OK, say "as a rule".
 
-Every such method will require additional infrastructure needing to be taken
-care of by someone.
+The only thing I would say is that a reporter can be in a situation
+after a while where they no longer have access to the original
+machine; if the bug was originally believed to be real and triaged
+then it seems to make sense to differentiate that from a bug that is
+just closed, just so people can know there is an issue with
+a configuration.
 
-> > > * There is "Assigned-to:" field which is described as "This is the person in
-> > >   charge of resolving the bug." in bugzilla's help so people get assumptions
-> > >   that there is somebody who is supposed to handle the bug and that this
-> > >   person should be actively working on it.  Both assumptions may be invalid
-> > >   (orhpaned drivers, there are more high priority bugs etc.).
-> > 
-> > True and that's why I think there should be some poeple officially resposnible
-> > for handling bugs (which involves talking with the reporter and forwarding the
-> > bug to an appropriate developer if necessary etc.).
-> > 
-> > >   OTOH mailing list doesn't give such assumptions and encourages more active
-> > >   attitudes of bugreporters.
-> > 
-> > Nothing prevents bugreporters from sending emails along with filing Bugzilla
-> > reports.
-> 
-> Duplicating efforts is not good thing (wasted time).
+Dave
 
-Arguably, the time need not be wasted if it results in the bug being taken care
-of sooner.
-
-> [...]
-> 
-> > > * Last but not least our bugzilla just looks ugly (it is _very_ important,
-> > >   I feel disgusted each time I have to work with it, OTOH I love using
-> > >   gitweb - you get the idea).
-> > 
-> > Well, that doesn't matter to me as long as it's useful.  Any ideas how to
-> > improve that? ;-)
-> 
-> Well, I hope that we can use some help from distro people here
-> (many distros have bugzillas superior to our).
-
-Yes, we probably can.
-
-Greetings,
-Rafael
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
