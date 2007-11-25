@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXKYUZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbXKYU1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbXKYUZc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 15:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbXKYUZY
+	id S1756997AbXKYU1U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 15:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbXKYU1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 15:25:24 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:33551 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754236AbXKYUZY (ORCPT
+	Sun, 25 Nov 2007 15:27:09 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:46885 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbXKYU1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 15:25:24 -0500
-Date: Sun, 25 Nov 2007 21:25:57 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch] Re: nohz and strange sleep latencies
-Message-ID: <20071125202557.GB7739@elf.ucw.cz>
-References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz> <20071120205454.GD10008@elte.hu> <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain> <20071120225246.GA24380@elte.hu> <20071122185238.GA1821@elf.ucw.cz> <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
+	Sun, 25 Nov 2007 15:27:06 -0500
+To: Andi Kleen <ak@suse.de>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+X-Message-Flag: Warning: May contain useful information
+References: <20071122343.446909000@suse.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 25 Nov 2007 12:27:03 -0800
+In-Reply-To: <20071122343.446909000@suse.de> (Andi Kleen's message of "Thu, 22 Nov 2007 03:43:06 +0100 (CET)")
+Message-ID: <adatznarrzc.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-OriginalArrivalTime: 25 Nov 2007 20:27:04.0089 (UTC) FILETIME=[8A8E7090:01C82FA1]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+ > This patch allows to export symbols only for specific modules by 
+ > introducing symbol name spaces. A module name space has a white
+ > list of modules that are allowed to import symbols for it; all others
+ > can't use the symbols.
+ > 
+ > It adds two new macros: 
+ > 
+ > MODULE_NAMESPACE_ALLOW(namespace, module);
 
-Okay, so the problem seems to be we are using unreliable lapic
-timer... which is stopped in C3 (and in C2 on broken machines).
+I definitely like the idea of organizing exported symbols into
+namespaces.  However, I feel like it would make more sense to have
+something like
 
-I do not see any mechanism to disable lapic; there seems to be some
-mechanism to work around stopped lapic timer is used (in
-acpi/processor_idle.c) but it does not seem to work. So what about
-this?
+MODULE_NAMESPACE_IMPORT(namespace);
 
-							Pavel
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+inside the modules that use a namespace.  This matches the way C
+preprocessor #includes, C++ namespaces, perl "use", etc. works and so
+it is probably closer to how programmers think.  It does weaken the
+enforcement of review a little bit, since there are no changes to the
+site where things are exported to catch, but git makes it easy to
+sneak that kind of change in anyway.
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 08b07c1..b9bf79c 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -63,8 +63,8 @@ static int enable_local_apic __initdata 
- static int local_apic_timer_verify_ok;
- /* Disable local APIC timer from the kernel commandline or via dmi quirk
-    or using CPU MSR check */
--int local_apic_timer_disabled;
--/* Local APIC timer works in C2 */
-+int local_apic_timer_disabled = 1;
-+/* Local APIC timer works in C2: used in processor_idle.c  */
- int local_apic_timer_c2_ok;
- EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
- 
+The practical benefits are that you don't end up with stupid patch
+conflicts caused by one patch adding MODULE_NAMESPACE_ALLOW() for
+module "foo" and another patch adding it for module "bar" at the same
+place, and that it becomes simpler for people to test or deliver, say,
+a new TCP congestion module without having to rebuild the whole kernel
+(which is an especially huge pain for distro kernels).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+In any case I would make use of this in whatever form it gets merged
+in -- Mellanox ConnectX hardware can operate simultaneously as an
+InfiniBand adapter and a 10Gb ethernet NIC, and so my driver is split
+up into a low-level mlx4_core driver that exports symbols for other
+mlx4 drivers to use; clearly it only makes sense to export them to
+other parts of the driver, and in this case the difference between
+"ALLOW" and "IMPORT" semantics is not a big deal.
+
+ - R.
