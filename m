@@ -1,113 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbXKYHiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbXKYHy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbXKYHiK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 02:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXKYHiB
+	id S1754427AbXKYHy2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 02:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbXKYHyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 02:38:01 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:48784 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751061AbXKYHh7 (ORCPT
+	Sun, 25 Nov 2007 02:54:19 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35135 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbXKYHyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 02:37:59 -0500
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <4748ACC7.4010509@free.fr>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	 <4744A6F2.4030302@free.fr>
-	 <20071121144116.c932727b.akpm@linux-foundation.org>
-	 <4746814F.80502@free.fr> <4746866B.5070207@suse.de>
-	 <4746BB9D.2030508@suse.de>  <4747135C.60205@free.fr>
-	 <1195886569.3195.2.camel@localhost.localdomain> <47481FA6.9050506@free.fr>
-	 <1195910809.3195.5.camel@localhost.localdomain> <4748ACC7.4010509@free.fr>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 25 Nov 2007 09:37:55 +0200
-Message-Id: <1195976275.3427.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 8bit
+	Sun, 25 Nov 2007 02:54:18 -0500
+Message-ID: <47492A1F.4030106@davidnewall.com>
+Date: Sun, 25 Nov 2007 18:24:07 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: mhw@WittsEnd.com
+CC: Andrey Borzenkov <arvidjaar@mail.ru>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: 2.6.24: Serial disabled in BIOS but serial modules still	loaded
+ (probably PnP related)
+References: <200711242336.43712.arvidjaar@mail.ru> <1195962922.5044.8.camel@canyon.wittsend.com>
+In-Reply-To: <1195962922.5044.8.camel@canyon.wittsend.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-11-24 at 23:59 +0100, Laurent Riffard wrote:
-> Le 24.11.2007 14:26, James Bottomley a écrit :
-> > OK, could you post dmesgs again, please.  I actually tested this
-> with an
-> > aic79xx card, and for me it does cause Domain Validation to succeed
-> > again.
-> 
-> James, 
-> 
-> Here is a dmesg produced by 2.6.24-rc3-mm1 + your patch "separates
-> the 
-> BLOCK and QUIESCE states
-> correctly" (http://lkml.org/lkml/2007/11/24/8).
-> 
-> How to reproduce :
-> - boot
-> - switch to a text console
-> - capture dmesg in a file, sync, etc. There are 3 I/O errors, but the 
->   system does work.
-> - switch to X console, log in the Gnome Desktop, the system partially 
->   hangs.
-> - switch back to a text console: dmesg(1) still works, it shows some 
->   additonal I/O errors. At this point, any disk access makes the
-> system 
->   completely hung.
-> 
-> Additionnal data:
-> - the I/O errors always happen on the same blocks.
-> 
-> plain text document attachment (dmesg-2.6.24-rc3-mm1-patched)
-[...]
-> [   25.521256] scsi0 : pata_via
-> [   25.521711] scsi1 : pata_via
-> [   25.524089] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma
-> 0xb800 irq 14
-> [   25.524176] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma
-> 0xb808 irq 15
-> [   25.683141] ata1.00: ATA-5: ST340016A, 3.75, max UDMA/100
-> [   25.683208] ata1.00: 78165360 sectors, multi 16: LBA 
-> [   25.683475] ata1.01: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
-> [   25.684116] ata1.01: 160086528 sectors, multi 16: LBA 
-> [   25.691127] ata1.00: configured for UDMA/100
-> [   25.699142] ata1.01: configured for UDMA/100
-> [   26.170860] ata2.00: ATAPI: HL-DT-ST DVDRAM GSA-4165B, DL05, max
-> UDMA/33
-> [   26.171562] ata2.01: ATAPI: CD-950E/AKU, A4Q, max MWDMA2, CDB intr
-> [   26.330839] ata2.00: configured for UDMA/33
-> [   26.490828] ata2.01: configured for MWDMA2
-> [   26.503014] scsi 0:0:0:0: Direct-Access     ATA      ST340016A
-> 3.75 PQ: 0 ANSI: 5
-> [   26.504670] scsi 0:0:1:0: Direct-Access     ATA      Maxtor 6Y080L0
-> YAR4 PQ: 0 ANSI: 5
-> [   26.509842] scsi 1:0:0:0: CD-ROM            HL-DT-ST DVDRAM
-> GSA-4165B DL05 PQ: 0 ANSI: 5
-> [   26.511673] scsi 1:0:1:0: CD-ROM            E-IDE    CD-950E/AKU
-> A4Q  PQ: 0 ANSI: 5
-[...]
-> [   60.216113] sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT
-> driverbyte=DRIVER_OK,SUGGEST_OK
-> [   60.216124] end_request: I/O error, dev sda, sector 16460
+Michael H. Warfield wrote:
+> On Sat, 2007-11-24 at 23:36 +0300, Andrey Borzenkov wrote:
+>   
+>> I have no COM port on notebook (without port replicator which I do not have)
+>> so COM is disabled in BIOS. No ttyS* is detected during boot (and no device
+>> created) but I just noticed that serial modules are still loaded. Well, this
+>> partially defeats the purpose of disabling COM port - the intention was to
+>> free resources by *not* loading unneeded modules ...
+>>     
+>
+>   
+>> This may have something to do with (ACPI) PnP which apparently believes COM is alive.
+>> Notebook is Toshiba Portege 4000.
+>>     
+>
+> 	Nice...  What's this then?
+>
+>   
+>> 00:09 PNP0501 16550A-compatible serial port
+>>     state = active
+>>         io 0x3f8-0x3ff
+>>         irq 5
+>>     
 
-I think this one's quite easy:  PATA devices in libata are queue depth 1
-(since they don't do NCQ).  Thus, they're peculiarly sensitive to the
-bug where we fail over queue depth requests.
-
-On the other hand, I don't see how a filesystem request is getting
-REQ_FAILFAST ... unless there's a bio or readahead issue involved.
-Anyway, could you try this patch:
-
-http://marc.info/?l=linux-scsi&m=119592627425498
-
-Which should fix the queue depth issue, and see if the errors go away?
-
-Thanks,
-
-James
-
-
+This doesn't mean that a port (ie connector) is present.  My notebook 
+also has the electronics without the physical connector.
