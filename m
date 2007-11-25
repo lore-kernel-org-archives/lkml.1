@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbXKYWGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbXKYWG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbXKYWGm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758515AbXKYWF0
+	id S1758682AbXKYWG7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbXKYWFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:05:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46756 "EHLO mx1.redhat.com"
+	Sun, 25 Nov 2007 17:05:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56959 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758502AbXKYWFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:05:24 -0500
+	id S1758580AbXKYWFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:05:54 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,215 +19,176 @@ Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 17/27] x86-64 ptrace debugreg cleanup
+Subject: [PATCH 19/27] x86-32 ptrace debugreg cleanup
 In-Reply-To: Roland McGrath's message of  Sunday, 25 November 2007 13:55:07 -0800 <20071125215507.4B89226F8C5@magilla.localdomain>
 References: <20071125215507.4B89226F8C5@magilla.localdomain>
 X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20071125220449.D288126F8DE@magilla.localdomain>
-Date: Sun, 25 Nov 2007 14:04:49 -0800 (PST)
+Message-Id: <20071125220519.092D126F8C5@magilla.localdomain>
+Date: Sun, 25 Nov 2007 14:05:19 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This cleans up the 64-bit ptrace code to separate the guts of the
+This cleans up the 32-bit ptrace code to separate the guts of the
 debug register access from the implementation of PTRACE_PEEKUSR and
-PTRACE_POKEUSR.  The new functions ptrace_[gs]et_debugreg are made
-global so that the ia32 code can later be changed to call them too.
+PTRACE_POKEUSR.  The new functions ptrace_[gs]et_debugreg match the
+new 64-bit entry points for parity, but they don't need to be global.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/ptrace_64.c |  140 ++++++++++++++++++++-----------------------
- include/asm-x86/ptrace.h    |    3 +
- 2 files changed, 69 insertions(+), 74 deletions(-)
+ arch/x86/kernel/ptrace_32.c |  119 +++++++++++++++++++++++++------------------
+ 1 files changed, 69 insertions(+), 50 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
-index 8123ecb..bad8b3c 100644
---- a/arch/x86/kernel/ptrace_64.c
-+++ b/arch/x86/kernel/ptrace_64.c
-@@ -183,9 +183,63 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
- 
+diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
+index 7c33244..0aa3756 100644
+--- a/arch/x86/kernel/ptrace_32.c
++++ b/arch/x86/kernel/ptrace_32.c
+@@ -119,6 +119,72 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
  }
  
-+unsigned long ptrace_get_debugreg(struct task_struct *child, int n)
+ /*
++ * This function is trivial and will be inlined by the compiler.
++ * Having it separates the implementation details of debug
++ * registers from the interface details of ptrace.
++ */
++static unsigned long ptrace_get_debugreg(struct task_struct *child, int n)
 +{
-+	switch (n) {
-+	case 0:		return child->thread.debugreg0;
-+	case 1:		return child->thread.debugreg1;
-+	case 2:		return child->thread.debugreg2;
-+	case 3:		return child->thread.debugreg3;
-+	case 6:		return child->thread.debugreg6;
-+	case 7:		return child->thread.debugreg7;
-+	}
-+	return 0;
++	return child->thread.debugreg[n];
 +}
 +
-+int ptrace_set_debugreg(struct task_struct *child, int n, unsigned long data)
++static int ptrace_set_debugreg(struct task_struct *child,
++			       int n, unsigned long data)
 +{
-+	int i;
++	if (unlikely(n == 4 || n == 5))
++		return -EIO;
 +
-+	if (n < 4) {
-+		int dsize = test_tsk_thread_flag(child, TIF_IA32) ? 3 : 7;
-+		if (unlikely(data >= TASK_SIZE_OF(child) - dsize))
-+			return -EIO;
-+	}
++	if (n < 4 && unlikely(data >= TASK_SIZE - 3))
++		return -EIO;
 +
-+	switch (n) {
-+	case 0:		child->thread.debugreg0 = data; break;
-+	case 1:		child->thread.debugreg1 = data; break;
-+	case 2:		child->thread.debugreg2 = data; break;
-+	case 3:		child->thread.debugreg3 = data; break;
-+
-+	case 6:
-+		if (data >> 32)
-+			return -EIO;
-+		child->thread.debugreg6 = data;
-+		break;
-+
-+	case 7:
++	if (n == 7) {
 +		/*
-+		 * See ptrace_32.c for an explanation of this awkward check.
++		 * Sanity-check data. Take one half-byte at once with
++		 * check = (val >> (16 + 4*i)) & 0xf. It contains the
++		 * R/Wi and LENi bits; bits 0 and 1 are R/Wi, and bits
++		 * 2 and 3 are LENi. Given a list of invalid values,
++		 * we do mask |= 1 << invalid_value, so that
++		 * (mask >> check) & 1 is a correct test for invalid
++		 * values.
++		 *
++		 * R/Wi contains the type of the breakpoint /
++		 * watchpoint, LENi contains the length of the watched
++		 * data in the watchpoint case.
++		 *
++		 * The invalid values are:
++		 * - LENi == 0x10 (undefined), so mask |= 0x0f00.
++		 * - R/Wi == 0x10 (break on I/O reads or writes), so
++		 *   mask |= 0x4444.
++		 * - R/Wi == 0x00 && LENi != 0x00, so we have mask |=
++		 *   0x1110.
++		 *
++		 * Finally, mask = 0x0f00 | 0x4444 | 0x1110 == 0x5f54.
++		 *
++		 * See the Intel Manual "System Programming Guide",
++		 * 15.2.4
++		 *
++		 * Note that LENi == 0x10 is defined on x86_64 in long
++		 * mode (i.e. even for 32-bit userspace software, but
++		 * 64-bit kernel), so the x86_64 mask value is 0x5454.
++		 * See the AMD manual no. 24593 (AMD64 System Programming)
 +		 */
++		int i;
 +		data &= ~DR_CONTROL_RESERVED;
 +		for (i = 0; i < 4; i++)
-+			if ((0x5554 >> ((data >> (16 + 4*i)) & 0xf)) & 1)
++			if ((0x5f54 >> ((data >> (16 + 4*i)) & 0xf)) & 1)
 +				return -EIO;
-+		child->thread.debugreg7 = data;
 +		if (data)
 +			set_tsk_thread_flag(child, TIF_DEBUG);
 +		else
 +			clear_tsk_thread_flag(child, TIF_DEBUG);
-+		break;
 +	}
++
++	child->thread.debugreg[n] = data;
 +
 +	return 0;
 +}
 +
- long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- {
--	long i, ret;
-+	long ret;
- 	unsigned ui;
- 
- 	switch (request) {
-@@ -204,32 +258,14 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		    addr > sizeof(struct user) - 7)
- 			break;
- 
--		switch (addr) {
--		case 0 ... sizeof(struct user_regs_struct) - sizeof(long):
-+		tmp = 0;
-+		if (addr < sizeof(struct user_regs_struct))
- 			tmp = getreg(child, addr);
--			break;
--		case offsetof(struct user, u_debugreg[0]):
--			tmp = child->thread.debugreg0;
--			break;
--		case offsetof(struct user, u_debugreg[1]):
--			tmp = child->thread.debugreg1;
--			break;
--		case offsetof(struct user, u_debugreg[2]):
--			tmp = child->thread.debugreg2;
--			break;
--		case offsetof(struct user, u_debugreg[3]):
--			tmp = child->thread.debugreg3;
--			break;
--		case offsetof(struct user, u_debugreg[6]):
--			tmp = child->thread.debugreg6;
--			break;
--		case offsetof(struct user, u_debugreg[7]):
--			tmp = child->thread.debugreg7;
--			break;
--		default:
--			tmp = 0;
--			break;
-+		else if (addr >= offsetof(struct user, u_debugreg[0])) {
-+			addr -= offsetof(struct user, u_debugreg[0]);
-+			tmp = ptrace_get_debugreg(child, addr / sizeof(long));
++/*
+  * Called by kernel/ptrace.c when detaching..
+  *
+  * Make sure the single step bit is not set.
+@@ -158,7 +224,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		   addr <= (long) &dummy->u_debugreg[7]){
+ 			addr -= (long) &dummy->u_debugreg[0];
+ 			addr = addr >> 2;
+-			tmp = child->thread.debugreg[addr];
++			tmp = ptrace_get_debugreg(child, addr);
  		}
-+
- 		ret = put_user(tmp,(unsigned long __user *) data);
+ 		ret = put_user(tmp, datap);
+ 		break;
+@@ -188,56 +254,9 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		  ret = -EIO;
+ 		  if(addr >= (long) &dummy->u_debugreg[0] &&
+ 		     addr <= (long) &dummy->u_debugreg[7]){
+-
+-			  if(addr == (long) &dummy->u_debugreg[4]) break;
+-			  if(addr == (long) &dummy->u_debugreg[5]) break;
+-			  if(addr < (long) &dummy->u_debugreg[4] &&
+-			     ((unsigned long) data) >= TASK_SIZE-3) break;
+-
+-			  /* Sanity-check data. Take one half-byte at once with
+-			   * check = (val >> (16 + 4*i)) & 0xf. It contains the
+-			   * R/Wi and LENi bits; bits 0 and 1 are R/Wi, and bits
+-			   * 2 and 3 are LENi. Given a list of invalid values,
+-			   * we do mask |= 1 << invalid_value, so that
+-			   * (mask >> check) & 1 is a correct test for invalid
+-			   * values.
+-			   *
+-			   * R/Wi contains the type of the breakpoint /
+-			   * watchpoint, LENi contains the length of the watched
+-			   * data in the watchpoint case.
+-			   *
+-			   * The invalid values are:
+-			   * - LENi == 0x10 (undefined), so mask |= 0x0f00.
+-			   * - R/Wi == 0x10 (break on I/O reads or writes), so
+-			   *   mask |= 0x4444.
+-			   * - R/Wi == 0x00 && LENi != 0x00, so we have mask |=
+-			   *   0x1110.
+-			   *
+-			   * Finally, mask = 0x0f00 | 0x4444 | 0x1110 == 0x5f54.
+-			   *
+-			   * See the Intel Manual "System Programming Guide",
+-			   * 15.2.4
+-			   *
+-			   * Note that LENi == 0x10 is defined on x86_64 in long
+-			   * mode (i.e. even for 32-bit userspace software, but
+-			   * 64-bit kernel), so the x86_64 mask value is 0x5454.
+-			   * See the AMD manual no. 24593 (AMD64 System
+-			   * Programming)*/
+-
+-			  if(addr == (long) &dummy->u_debugreg[7]) {
+-				  data &= ~DR_CONTROL_RESERVED;
+-				  for(i=0; i<4; i++)
+-					  if ((0x5f54 >> ((data >> (16 + 4*i)) & 0xf)) & 1)
+-						  goto out_tsk;
+-				  if (data)
+-					  set_tsk_thread_flag(child, TIF_DEBUG);
+-				  else
+-					  clear_tsk_thread_flag(child, TIF_DEBUG);
+-			  }
+ 			  addr -= (long) &dummy->u_debugreg;
+ 			  addr = addr >> 2;
+-			  child->thread.debugreg[addr] = data;
+-			  ret = 0;
++			  ret = ptrace_set_debugreg(child, addr, data);
+ 		  }
+ 		  break;
+ 
+@@ -335,7 +354,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		ret = ptrace_request(child, request, addr, data);
  		break;
  	}
-@@ -241,63 +277,19 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		break;
- 
- 	case PTRACE_POKEUSR: /* write the word at location addr in the USER area */
--	{
--		int dsize = test_tsk_thread_flag(child, TIF_IA32) ? 3 : 7;
- 		ret = -EIO;
- 		if ((addr & 7) ||
- 		    addr > sizeof(struct user) - 7)
- 			break;
- 
--		switch (addr) {
--		case 0 ... sizeof(struct user_regs_struct) - sizeof(long):
-+		if (addr < sizeof(struct user_regs_struct))
- 			ret = putreg(child, addr, data);
--			break;
--		/* Disallows to set a breakpoint into the vsyscall */
--		case offsetof(struct user, u_debugreg[0]):
--			if (data >= TASK_SIZE_OF(child) - dsize) break;
--			child->thread.debugreg0 = data;
--			ret = 0;
--			break;
--		case offsetof(struct user, u_debugreg[1]):
--			if (data >= TASK_SIZE_OF(child) - dsize) break;
--			child->thread.debugreg1 = data;
--			ret = 0;
--			break;
--		case offsetof(struct user, u_debugreg[2]):
--			if (data >= TASK_SIZE_OF(child) - dsize) break;
--			child->thread.debugreg2 = data;
--			ret = 0;
--			break;
--		case offsetof(struct user, u_debugreg[3]):
--			if (data >= TASK_SIZE_OF(child) - dsize) break;
--			child->thread.debugreg3 = data;
--			ret = 0;
--			break;
--		case offsetof(struct user, u_debugreg[6]):
--				  if (data >> 32)
--				break;
--			child->thread.debugreg6 = data;
--			ret = 0;
--			break;
--		case offsetof(struct user, u_debugreg[7]):
--			/* See arch/i386/kernel/ptrace.c for an explanation of
--			 * this awkward check.*/
--			data &= ~DR_CONTROL_RESERVED;
--			for(i=0; i<4; i++)
--				if ((0x5554 >> ((data >> (16 + 4*i)) & 0xf)) & 1)
--					break;
--			if (i == 4) {
--			  child->thread.debugreg7 = data;
--			  if (data)
--			  	set_tsk_thread_flag(child, TIF_DEBUG);
--			  else
--			  	clear_tsk_thread_flag(child, TIF_DEBUG);
--			  ret = 0;
--		  	}
--		  break;
-+		else if (addr >= offsetof(struct user, u_debugreg[0])) {
-+			addr -= offsetof(struct user, u_debugreg[0]);
-+			ret = ptrace_set_debugreg(child,
-+						  addr / sizeof(long), data);
- 		}
- 		break;
--	}
- 
- #ifdef CONFIG_IA32_EMULATION
- 		/* This makes only sense with 32bit programs. Allow a
-diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
-index fe75422..d223dec 100644
---- a/include/asm-x86/ptrace.h
-+++ b/include/asm-x86/ptrace.h
-@@ -110,6 +110,9 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
- 
- struct task_struct;
- 
-+extern unsigned long ptrace_get_debugreg(struct task_struct *child, int n);
-+extern int ptrace_set_debugreg(struct task_struct *child, int n, unsigned long);
+- out_tsk:
 +
- extern unsigned long
- convert_rip_to_linear(struct task_struct *child, struct pt_regs *regs);
+ 	return ret;
+ }
  
