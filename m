@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbXKYPls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbXKYQGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbXKYPls (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 10:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXKYPll
+	id S1754816AbXKYQGu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 11:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXKYQGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 10:41:41 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1145 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753178AbXKYPlk (ORCPT
+	Sun, 25 Nov 2007 11:06:42 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:4755 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752273AbXKYQGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 10:41:40 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Cc: <netdev@vger.kernel.org>
-Subject: RE: [RFC/PATCH] SO_NO_CHECK for IPv6
-Date: Sun, 25 Nov 2007 07:41:52 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCENAIGAC.davids@webmaster.com>
+	Sun, 25 Nov 2007 11:06:41 -0500
+Date: Sun, 25 Nov 2007 11:06:40 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Raymano Garibaldi <raymano@faunos.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+In-Reply-To: <20071124223903.6c72f527.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0711251052430.22777-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-In-Reply-To: <E1Ivo4H-0006Z2-00@gondolin.me.apana.org.au>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 25 Nov 2007 07:42:41 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 25 Nov 2007 07:42:42 -0800
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 24 Nov 2007, Andrew Morton wrote:
 
-> David Schwartz <davids@webmaster.com> wrote:
+> On Tue, 20 Nov 2007 17:04:32 -0700 "Raymano Garibaldi" <raymano@faunos.com> wrote:
+> 
+> > Is there any other information that I can provide which might help in
+> > resolving this bug?
+> 
+> Let's cc the USB developers.
+> 
+> > On 11/18/07, Raymano Garibaldi <raymano@faunos.com> wrote:
+> > > The last time I tried this and it worked was 2.6.21. Below is a
 
-> >> Regardless of whatever verifications your application is doing
-> >> on the data, it is not checksumming the ports and that's what
-> >> the pseudo-header is helping with.
+Sorry, that's not possible.  2.6.21 doesn't include USB Persist 
+support.  Nor does 2.6.22.
 
-> > So what? We are in the case where the data has already gotten
-> > to him. If it
-> > got to him in error, he'll reject it anyway. The receive
-> > checksum check will
-> > only reject packets that he would reject anyway. That makes it needless.
+There were some experimental patches with early versions of USB Persist 
+for those kernels.  They are different from what eventually went into 
+2.6.23.
 
-> What if it goes to the wrong recipient who doesn't have the upper-
-> level checksums?
+> > > On 11/18/07, Denys Vlasenko <vda.linux@googlemail.com> wrote:
+> > > > On Sunday 18 November 2007 20:14, Raymano Garibaldi wrote:
+> > > > > In kernel 2.6.23.8 USB_PERSIST feature does not work if the same USB
+> > > > > device is detached and reattached while computer is suspended. The
+> > > > > mount points for the USB storage device mounted before suspend are
+> > > > > lost and the device has to be remounted after resume.
 
-Since that's not him, he has no control over its policy and thus no ability
-to harm it or help it.
+USB Persist was never meant to allow you to detach and reattach a 
+device while the computer is suspended; it was meant to deal with 
+hibernation.  So what you observed is the correct behavior, not a bug.
+Detaching and reattaching a device while the computer is suspended 
+should result in exactly the same behavior as detaching and reattaching 
+the device while the computer is awake.
 
-> This is the whole point, IPv6 unlike IPv4 does not have IP header
-> checksums so the high-level needs to protect it by checksumming
-> the pseudo-header.
+If you try doing the same thing but with the computer in hibernation 
+instead of suspended, you may find it more in line with what you 
+expect.
 
-Exactly. But *he* doesn't need to check that checksum, given that he already
-got the packet, since he has an upper-level checksum. He is not saying that
-his reasoning applies to everyone, just that it applies to him. He is not
-talking about disabling the send checksum, but the receive checksum. He
-knows that he does not need it.
-
-DS
-
+Alan Stern
 
