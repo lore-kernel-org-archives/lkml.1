@@ -1,59 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbXKYVwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbXKYVwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756906AbXKYVwR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 16:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXKYVwH
+	id S1757348AbXKYVwb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 16:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbXKYVwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 16:52:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:52589 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755037AbXKYVwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 16:52:04 -0500
-Date: Sun, 25 Nov 2007 22:51:36 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
+	Sun, 25 Nov 2007 16:52:13 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51701 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756121AbXKYVwL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 16:52:11 -0500
+Date: Sun, 25 Nov 2007 22:51:58 +0100
+From: Adrian Bunk <bunk@kernel.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: nohz and strange sleep latencies
-In-Reply-To: <200711250029.55461.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.9999.0711252243410.26417@localhost.localdomain>
-References: <20071119203152.GA1772@elf.ucw.cz> <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain> <20071124224013.GB1544@elf.ucw.cz> <200711250029.55461.rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [RFC][PATCH] Update REPORTING-BUGS
+Message-ID: <20071125215158.GD18284@stusta.de>
+References: <200711252157.10212.rjw@sisk.pl> <20071125211203.GB18284@stusta.de> <200711252251.15623.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200711252251.15623.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Nov 2007, Rafael J. Wysocki wrote:
-> > Digging into process_32|64.c...
+On Sun, Nov 25, 2007 at 10:51:14PM +0100, Rafael J. Wysocki wrote:
+> On Sunday, 25 of November 2007, Adrian Bunk wrote:
+> > On Sun, Nov 25, 2007 at 09:57:09PM +0100, Rafael J. Wysocki wrote:
+> > >...
+> > > +Reporting Linux kernel bugs
+> > >...
+> > > +Usually, this requires you to do some more work than just sending an email
+> > > +message with a bug report, but it often is necessary to collect all information
+> > > +related to the reported bug in one place, so that it is easily accessible at
+> > > +any time later.
 > > 
-> > 64:
-> >         while (1) {
-> >                 while (!need_resched()) {
-> >                         void (*idle)(void);
-> > 
-> >                         if (__get_cpu_var(cpu_idle_state))
-> >                                 __get_cpu_var(cpu_idle_state) = 0;
-> > 
-> >                         tick_nohz_stop_sched_tick();
-> > 
-> > 32:
-> >         while (1) {
-> >                 tick_nohz_stop_sched_tick();
-> >                 while (!need_resched()) {
-> >                         void (*idle)(void);
-> > 
-> >                         if (__get_cpu_var(cpu_idle_state))
-> >                                 __get_cpu_var(cpu_idle_state) = 0;
-> > 
-> > ...eek? Which one is wrong?
+> > I wouldn't say creating an account (if you don't already have one)
+> > plus 5 additional mouse clicks per bug report are substancially more 
+> > work.
 > 
-> Hm, it looks like you should have quoted more lines ...
+> Plus generating some information that it asks you for and that may or may not
+> be relevant to your report.
+
+What are you talking about?
+The default text in the "Description:" field?
+
+> > > +Email messages containing bug reports should generally be sent to the
+> > > +Linux Kernel Mailing List (LKML) <linux-kernel@vger.kernel.org> and to the
+> > > +mailing list dedicated to the affected subsystem.
+> > 
+> > How should a newbie find the correct mailing list?
 > 
-> In the second case (32), the tick_nohz_stop_sched_tick() seems to be
-> redundant, so I bet it's this one.
+> Read MAINTAINERS?  Ok, I should have said about that.
+> 
+> > Benchmark:
+> > Easier than the "some more work" when using Bugzilla.
+> 
+> Nope.  Please try to file a report against libata/PATA using the Bugzilla.
+> Good luck. ;-)
 
-No. Both are fine. the 64bit version calls into
-tick_nohz_stop_sched_tick() way to often. This is a leftover from the
-old theory that we can have non-irq caused wakeups. Will fix it.
+$ grep PATA MAINTAINERS
+$ 
 
-    tglx
+> > >...
+> > > +It also is a good idea to notify the maintainer of the affected subsystem and
+> > > +the maintainer of the tree in which the bug is present by adding their email
+> > > +addresses to the Cc list of the bug report message.  The email addresses of
+> > > +maintainers of the majority of kernel subsystems can be found in the MAINTAINERS
+> > > +file, but you should not worry too much about getting a wrong person.
+> > 
+> > If you don't already know MAINTAINERS well then finding the right 
+> > component in Bugzilla is much easier.
+> 
+> I disagree.  How a newbie is supposed to know what AIO and DIO mean and WTH is
+> the difference between LVM2/DM and MD? 
+> 
+> I took only the IO/Storage submenu as an example, but there are other things
+> like that.  For instance, what is the difference between "Flash/Memory
+> Technology Devices" and MMC/SD?  Why "Hotplug" is under "Drivers" and WTH
+> does it *mean*?  What "W1" means for that matter??  Etc.
+
+Then let's get that improved.
+
+> > > +If you know which patch has caused the problem to appear, you should also add
+> > > +the email address of its author to the Cc list of your bug report (this address
+> > > +is usually present in the 'From:' field of the patch header).  Additionally,
+> > > +it is recommended to notify all of the people involved in the process of
+> > > +merging the patch (you can find their addresses in the 'Signed-off-by:' and
+> > > +'Acked-by:' or 'Reviewed-by:' fields of the patch header).  This way you can
+> > > +increase the probability that someone "in the know" will notice the report and
+> > > +respond to it quickly.  Apart from this, you should make it clear that your
+> > > +message contains a bug report, for example by adding the word "BUG" in front
+> > > +of the message's subject line.  If the bug is a regression (ie. one of the
+> > > +previous kernel versions worked correctly), please put the word "REGRESSION" in
+> > > +there instead.
+> > > +
+> > > +Unfortunately, sometimes bug reports are not responded to even if they contain
+> > > +all of the right email addresses etc.  If that happens to your bug report, you
+> > > +should first check if it has not been intercepted by a spam filter.  This is
+> > > +easy if you have sent the report to a mailing list, since in that case it only
+> > > +is necessary to look into the list's archives to see if the message is there.
+> > > +If it turns out that the report has reached the list and no one is responding to
+> > > +it, the developers might have overlooked it or they may be too busy to take care
+> > > +of it right now.  In that case you should wait for some time (usually, a couple
+> > > +of days) and send it once again (if you resend the report, you may add the word
+> > > +"resend" to the message's subject to indicate that this is not the first time).
+> > > +If that does not help and there still is no response, it is best to open a new
+> > > +entry in the Bugzilla at http://bugzilla.kernel.org .  If you have already done
+> > > +that, send messages to the appropriate lists and people periodically to remind
+> > > +of the issue.
+> > 
+> > What about recommending a cronjob that resends the bug report every 
+> > three days?   ;-)
+> > 
+> > Really, we must define _one_ way for people to report a bug, and how 
+> > developers are reminded is _our_ job.
+> 
+> Well, who's "we" in that context?  IOW, who's job exactly it's supposed to be?
+
+"we" = "we kernel developers"
+
+And Natalie seems to be the person being paid for doing such stuff...
+
+> > >...
+> > > +Generally, the following things are appreciated in a bug report:
+> > >...
+> > 
+> > If you expect people to read and follow this, wouldn't it be easier to
+> > simply point them to open the bug in Bugzilla where we already have a
+> > template asking these questions?
+> 
+> I don't think so and please refer to the examples above.
+> 
+> > You could replace the whole contents of this file with:
+> > Go to http://bugzilla.kernel.org/ and click on "Enter a new bug report".
+> > 
+> > It's a pity that we manage to add/change an average of 100.000 bugs^Wlines
+> > of code each month, but do not have one generally accepted and working 
+> > process for bug reports.
+> 
+> It's a pity that we do not have one, indeed, and so perhaps it's a good idea
+> to try to create one?  Not necessarily focusing on the Bugzilla for a little
+> while. ;-)
+
+I'm not focussed on Bugzilla.
+
+But a submitter should send a bug report _once_ through one well-defined 
+medium, this should result in the bug report not being lost, and every 
+other communication of the submitter should be triggered by developers 
+requesting additional information.
+
+I don't care whether that's done with Bugzilla, some email based bug 
+tracker like the Debian bug tracker, someone putting emails manually 
+into some bug tracker like you are doing, or whatever else.
+
+> Greetings,
+> Rafael
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
