@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXKYWhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbXKYWh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbXKYWhn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbXKYWhe
+	id S1757845AbXKYWh6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbXKYWhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:37:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36158 "EHLO ogre.sisk.pl"
+	Sun, 25 Nov 2007 17:37:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60907 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752796AbXKYWhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:37:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
-Date: Sun, 25 Nov 2007 23:55:23 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200711222007.12497.elendil@planet.nl> <20071125213640.GC18284@stusta.de> <200711252339.00557.rjw@sisk.pl>
-In-Reply-To: <200711252339.00557.rjw@sisk.pl>
+	id S1752796AbXKYWhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:37:47 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711252355.23822.rjw@sisk.pl>
+From: Roland McGrath <roland@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 10/27] ptrace: generic resume
+In-Reply-To: Christoph Hellwig's message of  Sunday, 25 November 2007 22:23:52 +0000 <20071125222352.GB1597@infradead.org>
+References: <20071125215507.4B89226F8C5@magilla.localdomain>
+	<20071125220109.10BC726F8C5@magilla.localdomain>
+	<20071125222352.GB1597@infradead.org>
+X-Shopping-List: (1) Lascivious squirrels
+   (2) Proficient warriors
+   (3) Nostalgic perplexers
+   (4) Injured floats
+Message-Id: <20071125223741.7236526F8C5@magilla.localdomain>
+Date: Sun, 25 Nov 2007 14:37:41 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 25 of November 2007, Rafael J. Wysocki wrote:
-> On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> > On Sun, Nov 25, 2007 at 10:28:06PM +0100, Rafael J. Wysocki wrote:
-> > > On Sunday, 25 of November 2007, Adrian Bunk wrote:
-[--snip--] 
-> > Even worse:
-> > Different people have different opinions what they need and what they 
-> > don't want...
-> 
-> Let's collect these opitions, then, and try to find a solution that would
-> satisfy all of them or at least the majority of them.
+> Could we by any chance just force every architecture using generic code
+> to implement PTRACE_SINGLESTEP and PTRACE_SYSEMU?  This will lead to
+> both far less messy code and a more consistant user interface.
 
-s/opitions/opinions/
+I'd like to look into that later after most arch's have moved to using the
+generic code for their existing support.  I am thoroughly in favor, but it
+requires some more groundwork that can come after this initial stage.
 
-Sorry.
+
+Thanks,
+Roland
