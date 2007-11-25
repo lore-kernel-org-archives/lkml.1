@@ -1,114 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXKYX07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbXKYX3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbXKYX07 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 18:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbXKYX0w
+	id S1757957AbXKYX3X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 18:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXKYX3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 18:26:52 -0500
-Received: from mx38.mail.ru ([194.67.23.16]:64216 "EHLO mx38.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755037AbXKYX0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 18:26:52 -0500
-Date: Mon, 26 Nov 2007 02:20:17 +0300
-From: Anton Vorontsov <cbou@mail.ru>
-To: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] power: use kasprintf
-Message-ID: <20071125232017.GB19266@zarina>
-Reply-To: cbou@mail.ru
-References: <20071117105558.GA4861@APFDCB5C>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20071117105558.GA4861@APFDCB5C>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 25 Nov 2007 18:29:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33365 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753218AbXKYX3P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 18:29:15 -0500
+Date: Sun, 25 Nov 2007 15:17:31 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mathias Kretschmer <posting@blx4.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22 (gentoo + grsec) kernel BUG at mm/mlock.c:205!
+Message-ID: <20071125151731.0060872d@laptopd505.fenrus.org>
+In-Reply-To: <4749CEA4.9070406@blx4.net>
+References: <4749CEA4.9070406@blx4.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 17, 2007 at 07:55:58PM +0900, Akinobu Mita wrote:
-> Use kasprintf instead of kmalloc()-strcpy()-strcat().
+On Sun, 25 Nov 2007 20:36:04 +0100
+Mathias Kretschmer <posting@blx4.net> wrote:
 
-Applied to battery-2.6.git, thanks.
+> Hi,
+> 
+> this is a x86_64 kernel with 4GB of RAM. incident happened when
+> compiling cdrecord (or some variant of it :) in a 32-bit chroot jail
+> during the 'configure' process.
+> 
+> alpha / # uname -a
+> Linux alpha 2.6.22-hardened-r8 #10 SMP Sun Nov 25 12:52:39 CET 2007
+> x86_64 AMD Processor model unknown AuthenticAMD GNU/Linux
+> 
+> Let me know, if you need for info.
+> 
 
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> 
-> ---
->  drivers/power/power_supply_leds.c |   25 +++++++------------------
->  1 file changed, 7 insertions(+), 18 deletions(-)
-> 
-> Index: 2.6-mm/drivers/power/power_supply_leds.c
-> ===================================================================
-> --- 2.6-mm.orig/drivers/power/power_supply_leds.c
-> +++ 2.6-mm/drivers/power/power_supply_leds.c
-> @@ -10,6 +10,7 @@
->   *  You may use this code as per GPL version 2
->   */
->  
-> +#include <linux/kernel.h>
->  #include <linux/power_supply.h>
->  
->  #include "power_supply.h"
-> @@ -48,28 +49,20 @@ static int power_supply_create_bat_trigg
->  {
->  	int rc = 0;
->  
-> -	psy->charging_full_trig_name = kmalloc(strlen(psy->name) +
-> -				  sizeof("-charging-or-full"), GFP_KERNEL);
-> +	psy->charging_full_trig_name = kasprintf(GFP_KERNEL,
-> +					"%s-charging-or-full", psy->name);
->  	if (!psy->charging_full_trig_name)
->  		goto charging_full_failed;
->  
-> -	psy->charging_trig_name = kmalloc(strlen(psy->name) +
-> -					  sizeof("-charging"), GFP_KERNEL);
-> +	psy->charging_trig_name = kasprintf(GFP_KERNEL,
-> +					"%s-charging", psy->name);
->  	if (!psy->charging_trig_name)
->  		goto charging_failed;
->  
-> -	psy->full_trig_name = kmalloc(strlen(psy->name) +
-> -				      sizeof("-full"), GFP_KERNEL);
-> +	psy->full_trig_name = kasprintf(GFP_KERNEL, "%s-full", psy->name);
->  	if (!psy->full_trig_name)
->  		goto full_failed;
->  
-> -	strcpy(psy->charging_full_trig_name, psy->name);
-> -	strcat(psy->charging_full_trig_name, "-charging-or-full");
-> -	strcpy(psy->charging_trig_name, psy->name);
-> -	strcat(psy->charging_trig_name, "-charging");
-> -	strcpy(psy->full_trig_name, psy->name);
-> -	strcat(psy->full_trig_name, "-full");
-> -
->  	led_trigger_register_simple(psy->charging_full_trig_name,
->  				    &psy->charging_full_trig);
->  	led_trigger_register_simple(psy->charging_trig_name,
-> @@ -120,14 +113,10 @@ static int power_supply_create_gen_trigg
->  {
->  	int rc = 0;
->  
-> -	psy->online_trig_name = kmalloc(strlen(psy->name) + sizeof("-online"),
-> -					GFP_KERNEL);
-> +	psy->online_trig_name = kasprintf(GFP_KERNEL, "%s-online", psy->name);
->  	if (!psy->online_trig_name)
->  		goto online_failed;
->  
-> -	strcpy(psy->online_trig_name, psy->name);
-> -	strcat(psy->online_trig_name, "-online");
-> -
->  	led_trigger_register_simple(psy->online_trig_name, &psy->online_trig);
->  
->  	goto success;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+you have both a heavily patched kernel and a tainted kernel due to
+binary kernel modules.... sounds like you're best of contacting the
+support side of whoever gave you the patches and/or the binary module;
+I don't think there's much lkml can do for you.
+
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
