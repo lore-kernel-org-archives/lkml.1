@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXKYDYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXKYDgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbXKYDYe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 22:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXKYDY1
+	id S1754799AbXKYDgG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 22:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbXKYDfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 22:24:27 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:35931 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528AbXKYDY0 (ORCPT
+	Sat, 24 Nov 2007 22:35:55 -0500
+Received: from mail8.dotsterhost.com ([66.11.233.1]:44603 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752741AbXKYDfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 22:24:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=e0Gl0lck3Q1SRjR7pqWconSs6qscaJHuH/ly+FAgSANGWtAxfFfHmsyCyaN8yOVxsyZ71fhddQYB36XBerdxqc1J1zhV50RG3ghiM7JEcK/VSiXNWKY5O4Vn53J503sRqoSF01IC+jaFo3/5dKRc2KttZajPaPlxd3fQtJ6VszY=
-Date: Sun, 25 Nov 2007 11:24:22 +0800
-From: "peerchen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Cc: "akpm" <akpm@linux-foundation.org>, "pchen" <pchen@nvidia.com>,
-       "acurrid" <acurrid@nvidia.com>
-Subject: [PATCH 2/2] msi: set 'En' bit of MSI Mapping Capability on HT platform
-Message-ID: <200711251124187655098@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+	Sat, 24 Nov 2007 22:35:54 -0500
+Message-ID: <4748EDCB.90403@crispincowan.com>
+Date: Sat, 24 Nov 2007 19:36:43 -0800
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Andrew Morgan <morgan@kernel.org>, casey@schaufler-ca.com,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, darwish.07@gmail.com, jmorris@namei.org,
+       method@manicmethod.com, paul.moore@hp.com,
+       LSM List <linux-security-module@vger.kernel.org>
+Subject: Re: + smack-version-11c-simplified-mandatory-access-control-kernel.patch
+ added to -mm tree
+References: <335711.34116.qm@web36610.mail.mud.yahoo.com> <4747C003.3070709@kernel.org> <47480D76.8030701@crispincowan.com> <823A64A2-C962-403C-A0EB-95EA79B2DB91@mac.com>
+In-Reply-To: <823A64A2-C962-403C-A0EB-95EA79B2DB91@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to the HyperTransport spec, 'En' indicate if the MSI Mapping is active. So it should be set when enable the MSI.
+Kyle Moffett wrote:
+> On Nov 24, 2007, at 06:39:34, Crispin Cowan wrote:
+>> Andrew Morgan wrote:
+>>> It feels to me as if a MAC "override capability" is, if true to its
+>>> name, extra to the MAC model; any MAC model that needs an 'override'
+>>> to function seems under-specified... SELinux clearly feels no need
+>>> for one,
+>> That's not quite right. More specifically, it already has one in the
+>> form of unconfined_t. AppArmor has a similar escape hatch in the "Ux"
+>> permission. Its not that they don't need one, it is that they already
+>> have one. They get to have one because they allow you to actually
+>> write a policy that is more nuanced than "process label must dominate
+>> object label".
+> Actually, a fully-secured strict-mode SELinux system will have no
+> unconfined_t processes; none of my test systems have any.  Generally
+> "unconfined_t" is used for situations similar to what AppArmor was
+> designed for, where the only "interesting" security is that of the
+> daemon (which is properly labelled) and one or more of the users are
+> unconfined.
+Interesting. In a Targeted Policy, you do your policy administration
+from unconfined_t. But how do you administer a Strict Policy machine? I
+can think of 2 ways:
 
-The patch base on kernel 2.6.24-rc3
+    * reboot to single user and hack away
+          o hurts usability because you need physical presence to change
+            policy, but is highly secure
+    * there is some type that is tighter than unconfined_t but none the
+      less has sufficient privilege to change policy
+          o to me, this would be semantically equivalent to
+            unconfined_t, because any rogue code or user with this type
+            could then fabricate unconfined_t and do what they want
 
-Signed-off-by: Andy Currid <acurrid@nvidia.com>
-Signed-off-by: Peer Chen <pchen@nvidia.com>
 
----
---- linux-2.6.24-rc3/include/linux/pci_ids.h.orig	2007-11-23 17:50:30.000000000 -0500
-+++ linux-2.6.24-rc3/include/linux/pci_ids.h	2007-11-23 17:50:42.000000000 -0500
-@@ -1153,7 +1153,16 @@
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_IDE	0x0265
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA	0x0266
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA2	0x0267
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC0   0x02F0
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC1   0x02F1
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC2   0x02F2
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC3   0x02F3
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC4   0x02F4
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC5   0x02F5
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC6   0x02F6
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC7   0x02F7
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SMBUS	0x0368
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_MEMC	0x0369
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_IDE	0x036E
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA	0x037E
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA2	0x037F
--
+> Even then "unconfined_t" is not an implicit part of the policy, it is
+> explicitly given the ability to take any action on any object by rules
+> in the policy, and it typically still falls under a few MLS labeling
+> restrictions even in the targeted policy.
+Which is more or less the distinction I was trying to draw between
+hierarchical systems (MLS) and policy systems (SELinux TE, AppArmor,
+etc.) that policy systems let you write yourself an escape hatch in
+policy, and MLS systems don't. Or at least they need to kludge something :)
+
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
 
