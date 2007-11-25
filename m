@@ -1,122 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXKYWkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbXKYWmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbXKYWkc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXKYWkY
+	id S1757885AbXKYWmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXKYWmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:40:24 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38066 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756040AbXKYWkX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:40:23 -0500
-Date: Sun, 25 Nov 2007 23:40:10 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message
-	followed by soft lockup)
-Message-ID: <20071125224010.GA5006@stusta.de>
-References: <200711222007.12497.elendil@planet.nl> <200711252228.07312.rjw@sisk.pl> <20071125213640.GC18284@stusta.de> <200711252339.00557.rjw@sisk.pl>
+	Sun, 25 Nov 2007 17:42:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36180 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752796AbXKYWmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:42:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [RFC][PATCH] Update REPORTING-BUGS
+Date: Mon, 26 Nov 2007 00:00:28 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+References: <200711252157.10212.rjw@sisk.pl> <200711252251.15623.rjw@sisk.pl> <20071125215158.GD18284@stusta.de>
+In-Reply-To: <20071125215158.GD18284@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200711252339.00557.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200711260000.28972.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 25, 2007 at 11:38:59PM +0100, Rafael J. Wysocki wrote:
-> On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> > On Sun, Nov 25, 2007 at 10:28:06PM +0100, Rafael J. Wysocki wrote:
-> > > On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> > >..
-> > > > First of all, Bugzilla is a quite often used bug tracker in the open 
-> > > > source world [1], so many users already know it.
-> > > > 
-> > > > But more important, "it pretends to require them to spend" isn't true 
-> > > > because there's no pretending - we actually often require bug reporters 
-> > > > to spend a lot of time on the bug report (e.g. when asking for 
-> > > > bisecting).
+On Sunday, 25 of November 2007, Adrian Bunk wrote:
+> On Sun, Nov 25, 2007 at 10:51:14PM +0100, Rafael J. Wysocki wrote:
+> > On Sunday, 25 of November 2007, Adrian Bunk wrote:
+> > > On Sun, Nov 25, 2007 at 09:57:09PM +0100, Rafael J. Wysocki wrote:
+[--snip--]
 > > > 
-> > > But not *initially*.
+> > > How should a newbie find the correct mailing list?
+> > 
+> > Read MAINTAINERS?  Ok, I should have said about that.
+> > 
+> > > Benchmark:
+> > > Easier than the "some more work" when using Bugzilla.
+> > 
+> > Nope.  Please try to file a report against libata/PATA using the Bugzilla.
+> > Good luck. ;-)
+> 
+> $ grep PATA MAINTAINERS
+> $ 
+
+Too bad (and this is a bug BTW).
+
+> > > >...
+> > > > +It also is a good idea to notify the maintainer of the affected subsystem and
+> > > > +the maintainer of the tree in which the bug is present by adding their email
+> > > > +addresses to the Cc list of the bug report message.  The email addresses of
+> > > > +maintainers of the majority of kernel subsystems can be found in the MAINTAINERS
+> > > > +file, but you should not worry too much about getting a wrong person.
 > > > 
-> > > We should not confuse *debugging* with *reporting bugs*.  While the former is
-> > > actually more difficult and more time consuming than writing the code in which
-> > > the bug is present, the latter should be as simple as sending an email.
+> > > If you don't already know MAINTAINERS well then finding the right 
+> > > component in Bugzilla is much easier.
 > > 
-> > For hardcore geeks like you and me sending an email might be easier than 
-> > using some web interface.
+> > I disagree.  How a newbie is supposed to know what AIO and DIO mean and WTH is
+> > the difference between LVM2/DM and MD? 
 > > 
-> > Normal humans tend to be more accustomed to web interfaces, and 
-> > following the instructions on some web page is _much_ easier than 
-> > reading three text files for knowing what to write in an email.
+> > I took only the IO/Storage submenu as an example, but there are other things
+> > like that.  For instance, what is the difference between "Flash/Memory
+> > Technology Devices" and MMC/SD?  Why "Hotplug" is under "Drivers" and WTH
+> > does it *mean*?  What "W1" means for that matter??  Etc.
 > 
-> Hm, this is a good argument for having such a web interface, but IMO it
-> shouldn't be mandatory.  IOW, there should be a way to report a bug using plain
-> email, if the reporter prefers that.  We can, however, request that the address
-> of our bug tracking system be added to the report's Cc list.
+> Then let's get that improved.
 
-Looking at both other open source projects and the support of commercial 
-software a web interface should be enough.
+OK
 
-But this is not the problem - the problem is what happens after the 
-initial report with the bug report.
+Who's supposed to be responsible for that?
 
-> Now, the question is what information this web interface should ask for.
+[--snip--]
+> > > 
+> > > Really, we must define _one_ way for people to report a bug, and how 
+> > > developers are reminded is _our_ job.
+> > 
+> > Well, who's "we" in that context?  IOW, who's job exactly it's supposed to be?
 > 
-> IMO, first, it should ask for what the bug is against, ie.:
-> - kernel version (to be obtained from 'git describe' or from /proc/version or
->   from .config, if the kernel doesn't boot)
-> - architecture (x86, ARM, MIPS etc.)
-> - subsystem and subsubsystem (that could be selectable from a menu and might
->   depend on the architecture)
+> "we" = "we kernel developers"
 > 
-> It also should ask if the problem is a regression and what was the last known
-> good kernel (I'd prefer that to be the last known major release selectable from
-> a list).
+> And Natalie seems to be the person being paid for doing such stuff...
 > 
-> Also, the reporter should be required to provide a summary (subject) and
-> a (concise) description of the problem and a list of email addresses to
-> send the report to in addition to the regular handling (there should be a way
-> to verify which addresses are acceptable).
+> > > >...
+> > > > +Generally, the following things are appreciated in a bug report:
+> > > >...
+> > > 
+> > > If you expect people to read and follow this, wouldn't it be easier to
+> > > simply point them to open the bug in Bugzilla where we already have a
+> > > template asking these questions?
+> > 
+> > I don't think so and please refer to the examples above.
+> > 
+> > > You could replace the whole contents of this file with:
+> > > Go to http://bugzilla.kernel.org/ and click on "Enter a new bug report".
+> > > 
+> > > It's a pity that we manage to add/change an average of 100.000 bugs^Wlines
+> > > of code each month, but do not have one generally accepted and working 
+> > > process for bug reports.
+> > 
+> > It's a pity that we do not have one, indeed, and so perhaps it's a good idea
+> > to try to create one?  Not necessarily focusing on the Bugzilla for a little
+> > while. ;-)
 > 
-> Anything else?
+> I'm not focussed on Bugzilla.
 > 
-> Next, the report should be sent to a mailing list selected on the basis of the
-> information provided (not necessarily to individual developers, unless there
-> are some addresses provided explicitly by the reporter).
+> But a submitter should send a bug report _once_ through one well-defined 
+> medium, this should result in the bug report not being lost, and every 
+> other communication of the submitter should be triggered by developers 
+> requesting additional information.
 
-The architecture choice seems to be the only thing from your list that
-isn't already available in the "Enter a new bug report" dialog of the
-kernel Bugzilla.
+I don't think that have to be only *one* medium as long as we're able to track
+the bugs (see my last reply in the other thread).
 
-> IMO, it should be possible to work on the bug using both email and the web
-> interface, whichever is preferred by the participant in question, without the
-> need to stick to any of them (ie. email messages sent in the corresponding
-> email thread should be registered by the bug tracking system and comments
-> entered into it should appear as messages in the email thread with the
-> appropriate To:, From: and Cc: information).
-> 
-> There surely are more things that we'd like it to do, but the above seem to be
-> a reasonable minimum.
+> I don't care whether that's done with Bugzilla, some email based bug 
+> tracker like the Debian bug tracker, someone putting emails manually 
+> into some bug tracker like you are doing, or whatever else.
 
-Except from the From: header in outgoing emails the kernel Bugzilla 
-already offers this for years.
+That last solution doesn't scale very well ...
 
->...
-> Greetings,
-> Rafael
+How about using the system in which it's possible to report bugs using both
+email and a web interface?
 
-cu
-Adrian
+We can request that the address of the bug tracker be added to the Cc lists of
+bug reports sent by email and we can make it resend reports filed with it to
+the appropriate mailing lists and with the appropriate email headers.  This is
+technically doable.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Greetings,
+Rafael
