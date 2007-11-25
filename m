@@ -1,222 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbXKYUjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbXKYUjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbXKYUjh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 15:39:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbXKYUj3
+	id S1757371AbXKYUjy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 15:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbXKYUjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 15:39:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35849 "EHLO ogre.sisk.pl"
+	Sun, 25 Nov 2007 15:39:41 -0500
+Received: from smtp5-g19.free.fr ([212.27.42.35]:41681 "EHLO smtp5-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756370AbXKYUj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 15:39:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Update REPORTING-BUGS
-Date: Sun, 25 Nov 2007 21:57:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+	id S1757109AbXKYUji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 15:39:38 -0500
+Message-ID: <4749DD87.5020206@free.fr>
+Date: Sun, 25 Nov 2007 21:39:35 +0100
+From: Laurent Riffard <laurent.riffard@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711252157.10212.rjw@sisk.pl>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <4744A6F2.4030302@free.fr>	 <20071121144116.c932727b.akpm@linux-foundation.org>	 <4746814F.80502@free.fr> <4746866B.5070207@suse.de>	 <4746BB9D.2030508@suse.de>  <4747135C.60205@free.fr>	 <1195886569.3195.2.camel@localhost.localdomain> <47481FA6.9050506@free.fr>	 <1195910809.3195.5.camel@localhost.localdomain> <4748ACC7.4010509@free.fr> <1195976275.3427.6.camel@localhost.localdomain>
+In-Reply-To: <1195976275.3427.6.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Le 25.11.2007 08:37, James Bottomley a écrit :
+> On Sat, 2007-11-24 at 23:59 +0100, Laurent Riffard wrote:
+>> Le 24.11.2007 14:26, James Bottomley a écrit :
+>>> OK, could you post dmesgs again, please.  I actually tested this
+>> with an
+>>> aic79xx card, and for me it does cause Domain Validation to succeed
+>>> again.
+>> James, 
+>>
+>> Here is a dmesg produced by 2.6.24-rc3-mm1 + your patch "separates
+>> the 
+>> BLOCK and QUIESCE states
+>> correctly" (http://lkml.org/lkml/2007/11/24/8).
+>>
+>> How to reproduce :
+>> - boot
+>> - switch to a text console
+>> - capture dmesg in a file, sync, etc. There are 3 I/O errors, but the 
+>>   system does work.
+>> - switch to X console, log in the Gnome Desktop, the system partially 
+>>   hangs.
+>> - switch back to a text console: dmesg(1) still works, it shows some 
+>>   additonal I/O errors. At this point, any disk access makes the system 
+>>   completely hung.
+>>
+>> Additionnal data:
+>> - the I/O errors always happen on the same blocks.
+>>
+>> plain text document attachment (dmesg-2.6.24-rc3-mm1-patched)
+> [...]
+>> [   25.521256] scsi0 : pata_via
+>> [   25.521711] scsi1 : pata_via
+>> [   25.524089] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xb800 irq 14
+>> [   25.524176] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xb808 irq 15
+>> [   25.683141] ata1.00: ATA-5: ST340016A, 3.75, max UDMA/100
+>> [   25.683208] ata1.00: 78165360 sectors, multi 16: LBA 
+>> [   25.683475] ata1.01: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
+>> [   25.684116] ata1.01: 160086528 sectors, multi 16: LBA 
+>> [   25.691127] ata1.00: configured for UDMA/100
+>> [   25.699142] ata1.01: configured for UDMA/100
+>> [   26.170860] ata2.00: ATAPI: HL-DT-ST DVDRAM GSA-4165B, DL05, max UDMA/33
+>> [   26.171562] ata2.01: ATAPI: CD-950E/AKU, A4Q, max MWDMA2, CDB intr
+>> [   26.330839] ata2.00: configured for UDMA/33
+>> [   26.490828] ata2.01: configured for MWDMA2
+>> [   26.503014] scsi 0:0:0:0: Direct-Access     ATA      ST340016A 3.75 PQ: 0 ANSI: 5
+>> [   26.504670] scsi 0:0:1:0: Direct-Access     ATA      Maxtor 6Y080L0 YAR4 PQ: 0 ANSI: 5
+>> [   26.509842] scsi 1:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4165B DL05 PQ: 0 ANSI: 5
+>> [   26.511673] scsi 1:0:1:0: CD-ROM            E-IDE    CD-950E/AKU A4Q  PQ: 0 ANSI: 5
+> [...]
+>> [   60.216113] sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+>> [   60.216124] end_request: I/O error, dev sda, sector 16460
+> 
+> I think this one's quite easy:  PATA devices in libata are queue depth 1
+> (since they don't do NCQ).  Thus, they're peculiarly sensitive to the
+> bug where we fail over queue depth requests.
+> 
+> On the other hand, I don't see how a filesystem request is getting
+> REQ_FAILFAST ... unless there's a bio or readahead issue involved.
+> Anyway, could you try this patch:
+> 
+> http://marc.info/?l=linux-scsi&m=119592627425498
+> 
+> Which should fix the queue depth issue, and see if the errors go away?
 
-The recent "kernel bugzilla is FPOS" thread made me think that it might be a
-good idea to update REPORTING-BUGS, so that it's more "friendly" to people who
-want to report a kernel bug for the first time.
+No, this one doesn't help...
 
-The patch below does that, but it's more a means to spark a discussion than
-anything else.
-
-Comments are obviously welcome. :-)
-
-Greetings,
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Update REPORTING-BUGS to reflect the current common practice and to provide
-inexperienced bug reporters with some more information.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- REPORTING-BUGS |  160 +++++++++++++++++++++++++++++++++++----------------------
- 1 file changed, 99 insertions(+), 61 deletions(-)
-
-Index: linux-2.6/REPORTING-BUGS
-===================================================================
---- linux-2.6.orig/REPORTING-BUGS
-+++ linux-2.6/REPORTING-BUGS
-@@ -1,64 +1,102 @@
--[Some of this is taken from Frohwalt Egerer's original linux-kernel FAQ]
--
--     What follows is a suggested procedure for reporting Linux bugs. You
--aren't obliged to use the bug reporting format, it is provided as a guide
--to the kind of information that can be useful to developers - no more.
--
--     If the failure includes an "OOPS:" type message in your log or on
--screen please read "Documentation/oops-tracing.txt" before posting your
--bug report. This explains what you should do with the "Oops" information
--to make it useful to the recipient.
--
--      Send the output to the maintainer of the kernel area that seems to
--be involved with the problem. Don't worry too much about getting the
--wrong person. If you are unsure send it to the person responsible for the
--code relevant to what you were doing. If it occurs repeatably try and
--describe how to recreate it. That is worth even more than the oops itself.
--The list of maintainers is in the MAINTAINERS file in this directory.
--
--      If it is a security bug, please copy the Security Contact listed
--in the MAINTAINERS file.  They can help coordinate bugfix and disclosure.
--See Documentation/SecurityBugs for more information.
--
--      If you are totally stumped as to whom to send the report, send it to
--linux-kernel@vger.kernel.org. (For more information on the linux-kernel
--mailing list see http://www.tux.org/lkml/).
--
--This is a suggested format for a bug report sent to the Linux kernel mailing
--list. Having a standardized bug report form makes it easier for you not to
--overlook things, and easier for the developers to find the pieces of
--information they're really interested in. Don't feel you have to follow it.
--
--      First run the ver_linux script included as scripts/ver_linux, which
--reports the version of some important subsystems.  Run this script with
--the command "sh scripts/ver_linux".
--
--Use that information to fill in all fields of the bug report form, and
--post it to the mailing list with a subject of "PROBLEM: <one line
--summary from [1.]>" for easy identification by the developers.
--
--[1.] One line summary of the problem:
--[2.] Full description of the problem/report:
--[3.] Keywords (i.e., modules, networking, kernel):
--[4.] Kernel information
--[4.1.] Kernel version (from /proc/version):
--[4.2.] Kernel .config file:
--[5.] Most recent kernel version which did not have the bug:
--[6.] Output of Oops.. message (if applicable) with symbolic information
--     resolved (see Documentation/oops-tracing.txt)
--[7.] A small shell script or example program which triggers the
--     problem (if possible)
--[8.] Environment
--[8.1.] Software (add the output of the ver_linux script here)
--[8.2.] Processor information (from /proc/cpuinfo):
--[8.3.] Module information (from /proc/modules):
--[8.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem)
--[8.5.] PCI information ('lspci -vvv' as root)
--[8.6.] SCSI information (from /proc/scsi/scsi)
--[8.7.] Other information that might be relevant to the problem
--       (please look in /proc and include all information that you
--       think to be relevant):
--[X.] Other notes, patches, fixes, workarounds:
-+Reporting Linux kernel bugs
- 
-+What follows is a recommended procedure for reporting bug in the Linux kernel.
-+Still, you are not obliged to use the suggested bug reporting format, it is
-+provided as a guide to the kind of information that can be useful to developers.
-+
-+In general, the kernel developers' preferred way of reporting bugs is email,
-+because it allows them to react quickly to the problems that are easy to fix.
-+Still, later on, if the reported problem turns out to be difficult, you may be
-+asked to open an entry in the kernel Bugzilla at http://bugzilla.kernel.org .
-+Usually, this requires you to do some more work than just sending an email
-+message with a bug report, but it often is necessary to collect all information
-+related to the reported bug in one place, so that it is easily accessible at
-+any time later.
-+
-+Email messages containing bug reports should generally be sent to the
-+Linux Kernel Mailing List (LKML) <linux-kernel@vger.kernel.org> and to the
-+mailing list dedicated to the affected subsystem.  You may send a bug report to
-+three mailing lists simultaneously, if you think that it is necessry.
-+[However, if you send them to more than three lists at a time, people will
-+likely get angry with you.]
-+
-+It also is a good idea to notify the maintainer of the affected subsystem and
-+the maintainer of the tree in which the bug is present by adding their email
-+addresses to the Cc list of the bug report message.  The email addresses of
-+maintainers of the majority of kernel subsystems can be found in the MAINTAINERS
-+file, but you should not worry too much about getting a wrong person.
-+
-+If you know which patch has caused the problem to appear, you should also add
-+the email address of its author to the Cc list of your bug report (this address
-+is usually present in the 'From:' field of the patch header).  Additionally,
-+it is recommended to notify all of the people involved in the process of
-+merging the patch (you can find their addresses in the 'Signed-off-by:' and
-+'Acked-by:' or 'Reviewed-by:' fields of the patch header).  This way you can
-+increase the probability that someone "in the know" will notice the report and
-+respond to it quickly.  Apart from this, you should make it clear that your
-+message contains a bug report, for example by adding the word "BUG" in front
-+of the message's subject line.  If the bug is a regression (ie. one of the
-+previous kernel versions worked correctly), please put the word "REGRESSION" in
-+there instead.
-+
-+Unfortunately, sometimes bug reports are not responded to even if they contain
-+all of the right email addresses etc.  If that happens to your bug report, you
-+should first check if it has not been intercepted by a spam filter.  This is
-+easy if you have sent the report to a mailing list, since in that case it only
-+is necessary to look into the list's archives to see if the message is there.
-+If it turns out that the report has reached the list and no one is responding to
-+it, the developers might have overlooked it or they may be too busy to take care
-+of it right now.  In that case you should wait for some time (usually, a couple
-+of days) and send it once again (if you resend the report, you may add the word
-+"resend" to the message's subject to indicate that this is not the first time).
-+If that does not help and there still is no response, it is best to open a new
-+entry in the Bugzilla at http://bugzilla.kernel.org .  If you have already done
-+that, send messages to the appropriate lists and people periodically to remind
-+of the issue.
-+
-+As far as the contents of bug reports are concerned, you should generally avoid
-+putting irrelevant information into them.  Of course, that may be difficult,
-+because you may not know which information is relevant in given particular case.
-+Still, you can always safely assume that if more information is needed, you will
-+be asked to provide it.
-+
-+First of all, you need to say what the bug is, which kernel version it is
-+present in and how to reproduce it.  You also need to describe the symptoms and
-+include all of the corresponding kernel messages, if you can collect them.  In
-+particular, if the failure includes an "Oops:" type message in your log or on
-+screen please read "Documentation/oops-tracing.txt" before posting your bug
-+report. This explains what you should do with the "Oops" information to make it
-+useful to the recipient.
-+
-+Generally, the following things are appreciated in a bug report:
-+
-+* One line summary of the reported problem
-+* Description of the problem
-+* Version of the kernel in which the problem appears
-+* The last known version of the kernel in which the problem does not appear (if
-+  applicable)
-+* Architecture of the system on which the problem is observed (that may
-+  include some more detailed hardware information if the problem seems to be
-+  hardware-related)
-+* Steps to reproduce the problem
-+* Kernel messages related to the problem (if available)
-+* Concise description of software environment in which the problem appears (as
-+  per the output of scripts/ver_linux)
-+
-+Additionally, if you know which patch has introduced the problem, the name of it
-+or the corresponding git commit name should be included in the report.  [Please
-+read Documentation/BUG-HUNTING to learn how you can find the "guilty" patch.]
-+
-+The version of the kernel can be read from the output of scripts/ver_linux or
-+directly from /proc/version .  Still, if you use git to download the kernel
-+sources, you can obtain more precise version information by running
-+'git describe' from within the root of the kernel source directory.
-+
-+After reporting a bug you may be provided with a patch to test.  In that case
-+you ought to test it and report back to the developer who have sent it to you
-+whether or not it fixes the bug.  If it does not fix the bug, you will likely
-+receive more patches to test.  In any case, please be patient and work with the
-+developers until the issue is resolved.
- 
- Thank you
-+
+-- 
+laurent
