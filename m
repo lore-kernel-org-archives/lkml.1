@@ -1,158 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbXKYVKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbXKYVMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbXKYVKj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 16:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXKYVKa
+	id S1757030AbXKYVMY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 16:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbXKYVMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 16:10:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35885 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918AbXKYVK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 16:10:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
-Date: Sun, 25 Nov 2007 22:28:06 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200711222007.12497.elendil@planet.nl> <200711252107.23926.rjw@sisk.pl> <20071125203236.GA18284@stusta.de>
-In-Reply-To: <20071125203236.GA18284@stusta.de>
+	Sun, 25 Nov 2007 16:12:16 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37205 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752905AbXKYVMQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 16:12:16 -0500
+Date: Sun, 25 Nov 2007 22:12:03 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [RFC][PATCH] Update REPORTING-BUGS
+Message-ID: <20071125211203.GB18284@stusta.de>
+References: <200711252157.10212.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200711252228.07312.rjw@sisk.pl>
+In-Reply-To: <200711252157.10212.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> On Sun, Nov 25, 2007 at 09:07:23PM +0100, Rafael J. Wysocki wrote:
-> > On Sunday, 25 of November 2007, Adrian Bunk wrote:
-> > > On Sun, Nov 25, 2007 at 02:11:15PM +0100, Rafael J. Wysocki wrote:
-> > > > On Sunday, 25 of November 2007, Bartlomiej Zolnierkiewicz wrote:
-> > > >...
-> > > > > On Saturday 24 November 2007, Rafael J. Wysocki wrote:
-> > > > > > On Saturday, 24 of November 2007, Bartlomiej Zolnierkiewicz wrote:
-> > > >...
-> >...
-> > > > > * After each major kernel release bugzilla should send a kind request for
-> > > > >   retesting to all open bugs.
-> > > > 
-> > > > Good idea, IMO.
-> > > 
-> > > Good idea ... for pissing off bug submitters.
-> > > 
-> > > We have many bug reports in the Bugzilla with very responsive submitters 
-> > > who wrote very good bug reports but have the bad luck that it's in an 
-> > > area without a maintainer looking after the bug.
-> > 
-> > These are two different issues.
-> > 
-> > On the one hand, I don't see anything wrong with encouraging bug reporters to
-> > test new kernels, especially if the reported problems depend on hardware, as it
-> > is possible that the bug will get fixed as a result of a loosely related change
-> > (like a fix for another bug etc.).  [Still, in such cases it would be good to
-> > identify the change that fixes the problem anyway.]
-> 
-> It's not that much a different issue:
-> 
-> If there was for each bug a maintainer looking soon after it, we should 
-> not have many bugs open for a longer time.
+On Sun, Nov 25, 2007 at 09:57:09PM +0100, Rafael J. Wysocki wrote:
+>...
+> +Reporting Linux kernel bugs
+>...
+> +Usually, this requires you to do some more work than just sending an email
+> +message with a bug report, but it often is necessary to collect all information
+> +related to the reported bug in one place, so that it is easily accessible at
+> +any time later.
 
-Apart from the bugs that no one has any idea how to fix. :-)
+I wouldn't say creating an account (if you don't already have one)
+plus 5 additional mouse clicks per bug report are substancially more 
+work.
 
-> > OTOH, the situations in which good bug reports are not responded to are not
-> > acceptable.  There should be a way to make developers take care of _their_
-> > code, because by not doing so they hurt us all, big time.
-> 
-> There are two different cases:
-> - no maintainer at all
-> - maintainer is too busy with other stuff for looking at bug reports
-> 
-> But both cases boil down to the point of how to find maintainers...
+> +Email messages containing bug reports should generally be sent to the
+> +Linux Kernel Mailing List (LKML) <linux-kernel@vger.kernel.org> and to the
+> +mailing list dedicated to the affected subsystem.
 
-Agreed.
+How should a newbie find the correct mailing list?
 
-> > > > > * We want bug tracking the other way around: everything goes through mailing
-> > > > >   list first (including bugs filled to the bug tracker) and if not fixed
-> > > > >   quickly, somebody (maintainer of the given part of code or a higher level
-> > > > >   maintainer) replies cc:ing bugzilla so the new bug entry is added.
-> > > > > 
-> > > > >   Also this way we fix trivial/easy/medium bugs ASAP or reject invalid ones
-> > > > >   without any bugzilla overhead.  We also add a new patch description tags:
-> > > > >   - "Fixes-bug:" tag with reference to the original discussion
-> > > > 
-> > > > Alternatively, we can give a Bugzilla link here pointing to the entry which
-> > > > contains a pointer to the original discussion.  [This may be more convenient,
-> > > > since some bugs are reported multiple times and tracked separately to the point
-> > > > in which it turns out that they really are the same.]
-> > > 
-> > > 
-> > > It would be best if bugs would initially be entered in Bugzilla.
-> > 
-> > The Bugzilla has a considerable "barrier to entry" for new bug reporters, as
-> > it pretends to require them to spend quite a lot of time on the bug report.
-> 
-> First of all, Bugzilla is a quite often used bug tracker in the open 
-> source world [1], so many users already know it.
-> 
-> But more important, "it pretends to require them to spend" isn't true 
-> because there's no pretending - we actually often require bug reporters 
-> to spend a lot of time on the bug report (e.g. when asking for 
-> bisecting).
+Benchmark:
+Easier than the "some more work" when using Bugzilla.
 
-But not *initially*.
+>...
+> +It also is a good idea to notify the maintainer of the affected subsystem and
+> +the maintainer of the tree in which the bug is present by adding their email
+> +addresses to the Cc list of the bug report message.  The email addresses of
+> +maintainers of the majority of kernel subsystems can be found in the MAINTAINERS
+> +file, but you should not worry too much about getting a wrong person.
 
-We should not confuse *debugging* with *reporting bugs*.  While the former is
-actually more difficult and more time consuming than writing the code in which
-the bug is present, the latter should be as simple as sending an email.
+If you don't already know MAINTAINERS well then finding the right 
+component in Bugzilla is much easier.
 
-> I'm also sometimes writing bug reports in different areas, and in my 
-> experience it doesn't matter whether it's web-based Bugzilla, the 
-> email-based Debian bug tracker or whatever else system - the time spent 
-> on a good bug report is not spend on pasting the text whereever or on 
-> clicking on a few boxes, the time is spent on tracking the issue down 
-> and writing a good bug report.
+> +If you know which patch has caused the problem to appear, you should also add
+> +the email address of its author to the Cc list of your bug report (this address
+> +is usually present in the 'From:' field of the patch header).  Additionally,
+> +it is recommended to notify all of the people involved in the process of
+> +merging the patch (you can find their addresses in the 'Signed-off-by:' and
+> +'Acked-by:' or 'Reviewed-by:' fields of the patch header).  This way you can
+> +increase the probability that someone "in the know" will notice the report and
+> +respond to it quickly.  Apart from this, you should make it clear that your
+> +message contains a bug report, for example by adding the word "BUG" in front
+> +of the message's subject line.  If the bug is a regression (ie. one of the
+> +previous kernel versions worked correctly), please put the word "REGRESSION" in
+> +there instead.
+> +
+> +Unfortunately, sometimes bug reports are not responded to even if they contain
+> +all of the right email addresses etc.  If that happens to your bug report, you
+> +should first check if it has not been intercepted by a spam filter.  This is
+> +easy if you have sent the report to a mailing list, since in that case it only
+> +is necessary to look into the list's archives to see if the message is there.
+> +If it turns out that the report has reached the list and no one is responding to
+> +it, the developers might have overlooked it or they may be too busy to take care
+> +of it right now.  In that case you should wait for some time (usually, a couple
+> +of days) and send it once again (if you resend the report, you may add the word
+> +"resend" to the message's subject to indicate that this is not the first time).
+> +If that does not help and there still is no response, it is best to open a new
+> +entry in the Bugzilla at http://bugzilla.kernel.org .  If you have already done
+> +that, send messages to the appropriate lists and people periodically to remind
+> +of the issue.
 
-Apparently, you are expecting the reporters do *debug* problems, while they need
-not be aware of how to do that.
+What about recommending a cronjob that resends the bug report every 
+three days?   ;-)
 
-IMHO, we should make reporting problems as simple as reasonably possible and
-once we've learnt that a bug is present (call it a "bug notification" or
-whatever if you think that "bug report" is not the right name), we can instruct
-the reporter to provide us with more information, as needed.
+Really, we must define _one_ way for people to report a bug, and how 
+developers are reminded is _our_ job.
 
-For example, "my box doesn't boot with 2.6.24-rc3" is the kind of information
-which should be sufficient for everyone on this list to come to the conclusion
-that there _is_ a problem without any additional information. ;-)  [Of course,
-the additional information will be needed to debug the problem.]
+>...
+> +Generally, the following things are appreciated in a bug report:
+>...
 
-> What matters for a bug reporter is to get a solution for his problem 
-> within a reasonable amount of time.
+If you expect people to read and follow this, wouldn't it be easier to
+simply point them to open the bug in Bugzilla where we already have a
+template asking these questions?
 
-Still, it's annoying if you attach tons of information to the report and that
-information does not turn out to be useful.
 
-> > Also, some developers do not consider the Bugzilla as a useful thing and
-> > wouldn't like to use it (which is why this thread has appeared, among other
-> > things ;-)).
-> >...
-> 
-> And that's part of the problem.
-> 
-> Bugzilla is a usable tool, but it isn't the only tool available.
-> 
-> If there was one tool all developers would be willing to use that would 
-> be a reason why we should switch to whatever tool this is.
+You could replace the whole contents of this file with:
+Go to http://bugzilla.kernel.org/ and click on "Enter a new bug report".
 
-The choice of the tool should be a result of the choice of a *method*.  IOW,
-we have to know our needs and choose the tool that satisfies them or write one
-if it doesn't exist.
+It's a pity that we manage to add/change an average of 100.000 bugs^Wlines
+of code each month, but do not have one generally accepted and working 
+process for bug reports.
 
-For now, IMHO, we don't really know what we need.
+>  Thank you
+> +
 
-Greetings,
-Rafael
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
