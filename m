@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXKYV7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbXKYWAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbXKYV7s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 16:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbXKYV7Y
+	id S1757547AbXKYWAa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXKYWAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 16:59:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59972 "EHLO mx1.redhat.com"
+	Sun, 25 Nov 2007 17:00:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59991 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757265AbXKYV7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 16:59:23 -0500
+	id S1756275AbXKYWAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:00:10 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,96 +19,36 @@ Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 03/27] x86: remove TRAP_FLAG
+Subject: [PATCH 07/27] x86: single_step 0xf0
 In-Reply-To: Roland McGrath's message of  Sunday, 25 November 2007 13:55:07 -0800 <20071125215507.4B89226F8C5@magilla.localdomain>
 References: <20071125215507.4B89226F8C5@magilla.localdomain>
-Emacs: no job too big... no job.
-Message-Id: <20071125215848.EBAB126F8DE@magilla.localdomain>
-Date: Sun, 25 Nov 2007 13:58:48 -0800 (PST)
+X-Zippy-Says: How many retired bricklayers from FLORIDA are out purchasing PENCIL
+    SHARPENERS right NOW??
+Message-Id: <20071125220006.74EAB26F8E1@magilla.localdomain>
+Date: Sun, 25 Nov 2007 14:00:06 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This gets rid of the local constant macro TRAP_FLAG.
-It's redundant with the public constant macro X86_EFLAGS_TF.
+This fixes the 64-bit single-step handling code's instruction
+decoder to grok the 0xf0 (lock) prefix, which the 32-bit code
+already does correctly.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/ptrace_32.c |    9 +++------
- arch/x86/kernel/ptrace_64.c |    9 +++------
- 2 files changed, 6 insertions(+), 12 deletions(-)
+ arch/x86/kernel/step.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
-index 39a94a0..2b4fcb5 100644
---- a/arch/x86/kernel/ptrace_32.c
-+++ b/arch/x86/kernel/ptrace_32.c
-@@ -37,9 +37,6 @@
-  */
- #define FLAG_MASK 0x00050dd5
+diff --git a/arch/x86/kernel/step.c b/arch/x86/kernel/step.c
+index 3b70f20..6a93b93 100644
+--- a/arch/x86/kernel/step.c
++++ b/arch/x86/kernel/step.c
+@@ -66,7 +66,7 @@ static int is_setting_trap_flag(struct task_struct *child, struct pt_regs *regs)
+ 		case 0x26: case 0x2e:
+ 		case 0x36: case 0x3e:
+ 		case 0x64: case 0x65:
+-		case 0xf2: case 0xf3:
++		case 0xf0: case 0xf2: case 0xf3:
+ 			continue;
  
--/* set's the trap flag. */
--#define TRAP_FLAG 0x100
--
- /*
-  * Offset of eflags on child stack..
-  */
-@@ -235,11 +232,11 @@ static void set_singlestep(struct task_struct *child)
- 	/*
- 	 * If TF was already set, don't do anything else
- 	 */
--	if (regs->eflags & TRAP_FLAG)
-+	if (regs->eflags & X86_EFLAGS_TF)
- 		return;
- 
- 	/* Set TF on the kernel stack.. */
--	regs->eflags |= TRAP_FLAG;
-+	regs->eflags |= X86_EFLAGS_TF;
- 
- 	/*
- 	 * ..but if TF is changed by the instruction we will trace,
-@@ -260,7 +257,7 @@ static void clear_singlestep(struct task_struct *child)
- 	/* But touch TF only if it was set by us.. */
- 	if (child->ptrace & PT_DTRACE) {
- 		struct pt_regs *regs = get_child_regs(child);
--		regs->eflags &= ~TRAP_FLAG;
-+		regs->eflags &= ~X86_EFLAGS_TF;
- 		child->ptrace &= ~PT_DTRACE;
- 	}
- }
-diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
-index 07de75d..e907e2e 100644
---- a/arch/x86/kernel/ptrace_64.c
-+++ b/arch/x86/kernel/ptrace_64.c
-@@ -42,9 +42,6 @@
-  */
- #define FLAG_MASK 0x54dd5UL
- 
--/* set's the trap flag. */
--#define TRAP_FLAG 0x100UL
--
- /*
-  * eflags and offset of eflags on child stack..
-  */
-@@ -187,11 +184,11 @@ static void set_singlestep(struct task_struct *child)
- 	/*
- 	 * If TF was already set, don't do anything else
- 	 */
--	if (regs->eflags & TRAP_FLAG)
-+	if (regs->eflags & X86_EFLAGS_TF)
- 		return;
- 
- 	/* Set TF on the kernel stack.. */
--	regs->eflags |= TRAP_FLAG;
-+	regs->eflags |= X86_EFLAGS_TF;
- 
- 	/*
- 	 * ..but if TF is changed by the instruction we will trace,
-@@ -212,7 +209,7 @@ static void clear_singlestep(struct task_struct *child)
- 	/* But touch TF only if it was set by us.. */
- 	if (child->ptrace & PT_DTRACE) {
- 		struct pt_regs *regs = task_pt_regs(child);
--		regs->eflags &= ~TRAP_FLAG;
-+		regs->eflags &= ~X86_EFLAGS_TF;
- 		child->ptrace &= ~PT_DTRACE;
- 	}
- }
+ 		case 0x40 ... 0x4f:
