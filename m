@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbXKYWIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbXKYWJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758960AbXKYWIt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbXKYWI0
+	id S1758915AbXKYWJZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbXKYWJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:08:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57019 "EHLO mx1.redhat.com"
+	Sun, 25 Nov 2007 17:09:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57045 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758790AbXKYWIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:08:24 -0500
+	id S1757457AbXKYWI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:08:59 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,146 +19,95 @@ Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 24/27] x86: debugctlmsr context switch
+Subject: [PATCH 26/27] x86: debugctlmsr kprobes
 In-Reply-To: Roland McGrath's message of  Sunday, 25 November 2007 13:55:07 -0800 <20071125215507.4B89226F8C5@magilla.localdomain>
 References: <20071125215507.4B89226F8C5@magilla.localdomain>
 X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20071125220819.B7D4726F8C5@magilla.localdomain>
-Date: Sun, 25 Nov 2007 14:08:19 -0800 (PST)
+Message-Id: <20071125220854.CA77726F8DE@magilla.localdomain>
+Date: Sun, 25 Nov 2007 14:08:54 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This adds low-level support for a per-thread value of MSR_IA32_DEBUGCTLMSR.
-The per-thread value is switched in when TIF_DEBUGCTLMSR is set.
+This adjusts the x86 kprobes implementation to cope with per-thread
+MSR_IA32_DEBUGCTLMSR being set for user mode.  I haven't delved deep
+enough into the kprobes code to be really sure this covers all the
+cases where the user-mode BTF setting needs to be cleared or restored.
+It looks about right to me.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/process_32.c     |    6 +++++-
- arch/x86/kernel/process_64.c     |    3 +++
- include/asm-x86/processor_32.h   |    2 ++
- include/asm-x86/processor_64.h   |    2 ++
- include/asm-x86/thread_info_32.h |    6 ++++--
- include/asm-x86/thread_info_64.h |    4 +++-
- 6 files changed, 19 insertions(+), 4 deletions(-)
+ arch/x86/kernel/kprobes_32.c |   15 +++++++++++++++
+ arch/x86/kernel/kprobes_64.c |   15 +++++++++++++++
+ 2 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index f59544e..3a822e3 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -581,10 +581,14 @@ static noinline void
- __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 		 struct tss_struct *tss)
+diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
+index d87a523..f151f06 100644
+--- a/arch/x86/kernel/kprobes_32.c
++++ b/arch/x86/kernel/kprobes_32.c
+@@ -217,8 +217,21 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
+ 		kcb->kprobe_saved_eflags &= ~IF_MASK;
+ }
+ 
++static __always_inline void clear_btf(void)
++{
++	if (test_thread_flag(TIF_DEBUGCTLMSR))
++		wrmsr(MSR_IA32_DEBUGCTLMSR, 0, 0);
++}
++
++static __always_inline void restore_btf(void)
++{
++	if (test_thread_flag(TIF_DEBUGCTLMSR))
++		wrmsr(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr, 0);
++}
++
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
  {
--	struct thread_struct *next;
-+	struct thread_struct *prev, *next;
++	clear_btf();
+ 	regs->eflags |= TF_MASK;
+ 	regs->eflags &= ~IF_MASK;
+ 	/*single step inline if the instruction is an int3*/
+@@ -542,6 +555,8 @@ static void __kprobes resume_execution(struct kprobe *p,
+ 	regs->eip = orig_eip + (regs->eip - copy_eip);
  
-+	prev = &prev_p->thread;
- 	next = &next_p->thread;
- 
-+	if (next->debugctlmsr != prev->debugctlmsr)
-+		wrmsr(MSR_IA32_DEBUGCTLMSR, next->debugctlmsr, 0);
+ no_change:
++	restore_btf();
 +
- 	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
- 		set_debugreg(next->debugreg[0], 0);
- 		set_debugreg(next->debugreg[1], 1);
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 586f88e..c1e2e9a 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -544,6 +544,9 @@ static inline void __switch_to_xtra(struct task_struct *prev_p,
- 	prev = &prev_p->thread,
- 	next = &next_p->thread;
+ 	return;
+ }
  
-+	if (next->debugctlmsr != prev->debugctlmsr)
-+		wrmsrl(MSR_IA32_DEBUGCTLMSR, next->debugctlmsr);
+diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
+index 3db3611..d3be418 100644
+--- a/arch/x86/kernel/kprobes_64.c
++++ b/arch/x86/kernel/kprobes_64.c
+@@ -256,8 +256,21 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
+ 		kcb->kprobe_saved_rflags &= ~IF_MASK;
+ }
+ 
++static __always_inline void clear_btf(void)
++{
++	if (test_thread_flag(TIF_DEBUGCTLMSR))
++		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0);
++}
 +
- 	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
- 		loaddebug(next, 0);
- 		loaddebug(next, 1);
-diff --git a/include/asm-x86/processor_32.h b/include/asm-x86/processor_32.h
-index 34e8063..660d9b0 100644
---- a/include/asm-x86/processor_32.h
-+++ b/include/asm-x86/processor_32.h
-@@ -370,6 +370,8 @@ struct thread_struct {
-  	unsigned long	iopl;
- /* max allowed port in the bitmap, in bytes: */
- 	unsigned long	io_bitmap_max;
-+/* MSR_IA32_DEBUGCTLMSR value to switch in if TIF_DEBUGCTLMSR is set.  */
-+	unsigned long	debugctlmsr;
- };
++static __always_inline void restore_btf(void)
++{
++	if (test_thread_flag(TIF_DEBUGCTLMSR))
++		wrmsrl(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr);
++}
++
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+ {
++	clear_btf();
+ 	regs->eflags |= TF_MASK;
+ 	regs->eflags &= ~IF_MASK;
+ 	/*single step inline if the instruction is an int3*/
+@@ -534,6 +547,8 @@ static void __kprobes resume_execution(struct kprobe *p,
+ 	} else {
+ 		regs->rip = orig_rip + (regs->rip - copy_rip);
+ 	}
++
++	restore_btf();
+ }
  
- #define INIT_THREAD  {							\
-diff --git a/include/asm-x86/processor_64.h b/include/asm-x86/processor_64.h
-index 2dd739a..1d6daa0 100644
---- a/include/asm-x86/processor_64.h
-+++ b/include/asm-x86/processor_64.h
-@@ -239,6 +239,8 @@ struct thread_struct {
- 	int		ioperm;
- 	unsigned long	*io_bitmap_ptr;
- 	unsigned io_bitmap_max;
-+/* MSR_IA32_DEBUGCTLMSR value to switch in if TIF_DEBUGCTLMSR is set.  */
-+	unsigned long	debugctlmsr;
- /* cached TLS descriptors. */
- 	u64 tls_array[GDT_ENTRY_TLS_ENTRIES];
- } __attribute__((aligned(16)));
-diff --git a/include/asm-x86/thread_info_32.h b/include/asm-x86/thread_info_32.h
-index 8a6483f..d5ae1e9 100644
---- a/include/asm-x86/thread_info_32.h
-+++ b/include/asm-x86/thread_info_32.h
-@@ -138,6 +138,7 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_FREEZE		19	/* is freezing for suspend */
- #define TIF_NOTSC		20	/* TSC is not accessible in userland */
- #define TIF_FORCED_TF		21	/* true if TF in eflags artificially */
-+#define TIF_DEBUGCTLMSR		22	/* uses thread_struct.debugctlmsr */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
-@@ -153,6 +154,7 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_NOTSC		(1<<TIF_NOTSC)
- #define _TIF_FORCED_TF		(1<<TIF_FORCED_TF)
-+#define _TIF_DEBUGCTLMSR	(1<<TIF_DEBUGCTLMSR)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK \
-@@ -162,8 +164,8 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_ALLWORK_MASK	(0x0000FFFF & ~_TIF_SECCOMP)
- 
- /* flags to check in __switch_to() */
--#define _TIF_WORK_CTXSW_NEXT (_TIF_IO_BITMAP | _TIF_NOTSC | _TIF_DEBUG)
--#define _TIF_WORK_CTXSW_PREV (_TIF_IO_BITMAP | _TIF_NOTSC)
-+#define _TIF_WORK_CTXSW_NEXT (_TIF_IO_BITMAP | _TIF_NOTSC | _TIF_DEBUG | _TIF_DEBUGCTLMSR)
-+#define _TIF_WORK_CTXSW_PREV (_TIF_IO_BITMAP | _TIF_NOTSC | _TIF_DEBUGCTLMSR)
- 
- /*
-  * Thread-synchronous status.
-diff --git a/include/asm-x86/thread_info_64.h b/include/asm-x86/thread_info_64.h
-index 0ebcac4..8f36bbc 100644
---- a/include/asm-x86/thread_info_64.h
-+++ b/include/asm-x86/thread_info_64.h
-@@ -123,6 +123,7 @@ static inline struct thread_info *stack_thread_info(void)
- #define TIF_DEBUG		21	/* uses debug registers */
- #define TIF_IO_BITMAP		22	/* uses I/O bitmap */
- #define TIF_FREEZE		23	/* is freezing for suspend */
-+#define TIF_DEBUGCTLMSR		24	/* uses thread_struct.debugctlmsr */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
-@@ -140,6 +141,7 @@ static inline struct thread_info *stack_thread_info(void)
- #define _TIF_DEBUG		(1<<TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_DEBUGCTLMSR	(1<<TIF_DEBUGCTLMSR)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK \
-@@ -148,7 +150,7 @@ static inline struct thread_info *stack_thread_info(void)
- #define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
- 
- /* flags to check in __switch_to() */
--#define _TIF_WORK_CTXSW (_TIF_DEBUG|_TIF_IO_BITMAP)
-+#define _TIF_WORK_CTXSW (_TIF_DEBUG|_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR)
- 
- #define PREEMPT_ACTIVE     0x10000000
- 
+ int __kprobes post_kprobe_handler(struct pt_regs *regs)
