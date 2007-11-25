@@ -1,97 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbXKYUjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbXKYVKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbXKYUjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 15:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbXKYUjl
+	id S1756790AbXKYVKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 16:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXKYVKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 15:39:41 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:41681 "EHLO smtp5-g19.free.fr"
+	Sun, 25 Nov 2007 16:10:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35885 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757109AbXKYUji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 15:39:38 -0500
-Message-ID: <4749DD87.5020206@free.fr>
-Date: Sun, 25 Nov 2007 21:39:35 +0100
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
+	id S1750918AbXKYVK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 16:10:29 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
+Date: Sun, 25 Nov 2007 22:28:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+References: <200711222007.12497.elendil@planet.nl> <200711252107.23926.rjw@sisk.pl> <20071125203236.GA18284@stusta.de>
+In-Reply-To: <20071125203236.GA18284@stusta.de>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <4744A6F2.4030302@free.fr>	 <20071121144116.c932727b.akpm@linux-foundation.org>	 <4746814F.80502@free.fr> <4746866B.5070207@suse.de>	 <4746BB9D.2030508@suse.de>  <4747135C.60205@free.fr>	 <1195886569.3195.2.camel@localhost.localdomain> <47481FA6.9050506@free.fr>	 <1195910809.3195.5.camel@localhost.localdomain> <4748ACC7.4010509@free.fr> <1195976275.3427.6.camel@localhost.localdomain>
-In-Reply-To: <1195976275.3427.6.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711252228.07312.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 25.11.2007 08:37, James Bottomley a écrit :
-> On Sat, 2007-11-24 at 23:59 +0100, Laurent Riffard wrote:
->> Le 24.11.2007 14:26, James Bottomley a écrit :
->>> OK, could you post dmesgs again, please.  I actually tested this
->> with an
->>> aic79xx card, and for me it does cause Domain Validation to succeed
->>> again.
->> James, 
->>
->> Here is a dmesg produced by 2.6.24-rc3-mm1 + your patch "separates
->> the 
->> BLOCK and QUIESCE states
->> correctly" (http://lkml.org/lkml/2007/11/24/8).
->>
->> How to reproduce :
->> - boot
->> - switch to a text console
->> - capture dmesg in a file, sync, etc. There are 3 I/O errors, but the 
->>   system does work.
->> - switch to X console, log in the Gnome Desktop, the system partially 
->>   hangs.
->> - switch back to a text console: dmesg(1) still works, it shows some 
->>   additonal I/O errors. At this point, any disk access makes the system 
->>   completely hung.
->>
->> Additionnal data:
->> - the I/O errors always happen on the same blocks.
->>
->> plain text document attachment (dmesg-2.6.24-rc3-mm1-patched)
-> [...]
->> [   25.521256] scsi0 : pata_via
->> [   25.521711] scsi1 : pata_via
->> [   25.524089] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xb800 irq 14
->> [   25.524176] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xb808 irq 15
->> [   25.683141] ata1.00: ATA-5: ST340016A, 3.75, max UDMA/100
->> [   25.683208] ata1.00: 78165360 sectors, multi 16: LBA 
->> [   25.683475] ata1.01: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
->> [   25.684116] ata1.01: 160086528 sectors, multi 16: LBA 
->> [   25.691127] ata1.00: configured for UDMA/100
->> [   25.699142] ata1.01: configured for UDMA/100
->> [   26.170860] ata2.00: ATAPI: HL-DT-ST DVDRAM GSA-4165B, DL05, max UDMA/33
->> [   26.171562] ata2.01: ATAPI: CD-950E/AKU, A4Q, max MWDMA2, CDB intr
->> [   26.330839] ata2.00: configured for UDMA/33
->> [   26.490828] ata2.01: configured for MWDMA2
->> [   26.503014] scsi 0:0:0:0: Direct-Access     ATA      ST340016A 3.75 PQ: 0 ANSI: 5
->> [   26.504670] scsi 0:0:1:0: Direct-Access     ATA      Maxtor 6Y080L0 YAR4 PQ: 0 ANSI: 5
->> [   26.509842] scsi 1:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4165B DL05 PQ: 0 ANSI: 5
->> [   26.511673] scsi 1:0:1:0: CD-ROM            E-IDE    CD-950E/AKU A4Q  PQ: 0 ANSI: 5
-> [...]
->> [   60.216113] sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
->> [   60.216124] end_request: I/O error, dev sda, sector 16460
+On Sunday, 25 of November 2007, Adrian Bunk wrote:
+> On Sun, Nov 25, 2007 at 09:07:23PM +0100, Rafael J. Wysocki wrote:
+> > On Sunday, 25 of November 2007, Adrian Bunk wrote:
+> > > On Sun, Nov 25, 2007 at 02:11:15PM +0100, Rafael J. Wysocki wrote:
+> > > > On Sunday, 25 of November 2007, Bartlomiej Zolnierkiewicz wrote:
+> > > >...
+> > > > > On Saturday 24 November 2007, Rafael J. Wysocki wrote:
+> > > > > > On Saturday, 24 of November 2007, Bartlomiej Zolnierkiewicz wrote:
+> > > >...
+> >...
+> > > > > * After each major kernel release bugzilla should send a kind request for
+> > > > >   retesting to all open bugs.
+> > > > 
+> > > > Good idea, IMO.
+> > > 
+> > > Good idea ... for pissing off bug submitters.
+> > > 
+> > > We have many bug reports in the Bugzilla with very responsive submitters 
+> > > who wrote very good bug reports but have the bad luck that it's in an 
+> > > area without a maintainer looking after the bug.
+> > 
+> > These are two different issues.
+> > 
+> > On the one hand, I don't see anything wrong with encouraging bug reporters to
+> > test new kernels, especially if the reported problems depend on hardware, as it
+> > is possible that the bug will get fixed as a result of a loosely related change
+> > (like a fix for another bug etc.).  [Still, in such cases it would be good to
+> > identify the change that fixes the problem anyway.]
 > 
-> I think this one's quite easy:  PATA devices in libata are queue depth 1
-> (since they don't do NCQ).  Thus, they're peculiarly sensitive to the
-> bug where we fail over queue depth requests.
+> It's not that much a different issue:
 > 
-> On the other hand, I don't see how a filesystem request is getting
-> REQ_FAILFAST ... unless there's a bio or readahead issue involved.
-> Anyway, could you try this patch:
-> 
-> http://marc.info/?l=linux-scsi&m=119592627425498
-> 
-> Which should fix the queue depth issue, and see if the errors go away?
+> If there was for each bug a maintainer looking soon after it, we should 
+> not have many bugs open for a longer time.
 
-No, this one doesn't help...
+Apart from the bugs that no one has any idea how to fix. :-)
 
--- 
-laurent
+> > OTOH, the situations in which good bug reports are not responded to are not
+> > acceptable.  There should be a way to make developers take care of _their_
+> > code, because by not doing so they hurt us all, big time.
+> 
+> There are two different cases:
+> - no maintainer at all
+> - maintainer is too busy with other stuff for looking at bug reports
+> 
+> But both cases boil down to the point of how to find maintainers...
+
+Agreed.
+
+> > > > > * We want bug tracking the other way around: everything goes through mailing
+> > > > >   list first (including bugs filled to the bug tracker) and if not fixed
+> > > > >   quickly, somebody (maintainer of the given part of code or a higher level
+> > > > >   maintainer) replies cc:ing bugzilla so the new bug entry is added.
+> > > > > 
+> > > > >   Also this way we fix trivial/easy/medium bugs ASAP or reject invalid ones
+> > > > >   without any bugzilla overhead.  We also add a new patch description tags:
+> > > > >   - "Fixes-bug:" tag with reference to the original discussion
+> > > > 
+> > > > Alternatively, we can give a Bugzilla link here pointing to the entry which
+> > > > contains a pointer to the original discussion.  [This may be more convenient,
+> > > > since some bugs are reported multiple times and tracked separately to the point
+> > > > in which it turns out that they really are the same.]
+> > > 
+> > > 
+> > > It would be best if bugs would initially be entered in Bugzilla.
+> > 
+> > The Bugzilla has a considerable "barrier to entry" for new bug reporters, as
+> > it pretends to require them to spend quite a lot of time on the bug report.
+> 
+> First of all, Bugzilla is a quite often used bug tracker in the open 
+> source world [1], so many users already know it.
+> 
+> But more important, "it pretends to require them to spend" isn't true 
+> because there's no pretending - we actually often require bug reporters 
+> to spend a lot of time on the bug report (e.g. when asking for 
+> bisecting).
+
+But not *initially*.
+
+We should not confuse *debugging* with *reporting bugs*.  While the former is
+actually more difficult and more time consuming than writing the code in which
+the bug is present, the latter should be as simple as sending an email.
+
+> I'm also sometimes writing bug reports in different areas, and in my 
+> experience it doesn't matter whether it's web-based Bugzilla, the 
+> email-based Debian bug tracker or whatever else system - the time spent 
+> on a good bug report is not spend on pasting the text whereever or on 
+> clicking on a few boxes, the time is spent on tracking the issue down 
+> and writing a good bug report.
+
+Apparently, you are expecting the reporters do *debug* problems, while they need
+not be aware of how to do that.
+
+IMHO, we should make reporting problems as simple as reasonably possible and
+once we've learnt that a bug is present (call it a "bug notification" or
+whatever if you think that "bug report" is not the right name), we can instruct
+the reporter to provide us with more information, as needed.
+
+For example, "my box doesn't boot with 2.6.24-rc3" is the kind of information
+which should be sufficient for everyone on this list to come to the conclusion
+that there _is_ a problem without any additional information. ;-)  [Of course,
+the additional information will be needed to debug the problem.]
+
+> What matters for a bug reporter is to get a solution for his problem 
+> within a reasonable amount of time.
+
+Still, it's annoying if you attach tons of information to the report and that
+information does not turn out to be useful.
+
+> > Also, some developers do not consider the Bugzilla as a useful thing and
+> > wouldn't like to use it (which is why this thread has appeared, among other
+> > things ;-)).
+> >...
+> 
+> And that's part of the problem.
+> 
+> Bugzilla is a usable tool, but it isn't the only tool available.
+> 
+> If there was one tool all developers would be willing to use that would 
+> be a reason why we should switch to whatever tool this is.
+
+The choice of the tool should be a result of the choice of a *method*.  IOW,
+we have to know our needs and choose the tool that satisfies them or write one
+if it doesn't exist.
+
+For now, IMHO, we don't really know what we need.
+
+Greetings,
+Rafael
