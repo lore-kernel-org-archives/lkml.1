@@ -1,146 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbXKYCCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbXKYCH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbXKYCCk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Nov 2007 21:02:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXKYCCa
+	id S1756307AbXKYCH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Nov 2007 21:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXKYCHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Nov 2007 21:02:30 -0500
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:35109 "EHLO
-	smtp1.bethere.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753120AbXKYCC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Nov 2007 21:02:29 -0500
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.24-rc3, 4GB RAM, swiotlb, r8169, out of space
-Date: Sun, 25 Nov 2007 02:02:27 +0000
-User-Agent: KMail/1.9.7
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200711242344.49958.alistair@devzero.co.uk> <20071125002510.GA30759@electric-eye.fr.zoreil.com> <20071125012754.GC30759@electric-eye.fr.zoreil.com>
-In-Reply-To: <20071125012754.GC30759@electric-eye.fr.zoreil.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 24 Nov 2007 21:07:19 -0500
+Received: from smtpoutm.mac.com ([17.148.16.79]:58239 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753120AbXKYCHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Nov 2007 21:07:18 -0500
+In-Reply-To: <47480D76.8030701@crispincowan.com>
+References: <335711.34116.qm@web36610.mail.mud.yahoo.com> <4747C003.3070709@kernel.org> <47480D76.8030701@crispincowan.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <823A64A2-C962-403C-A0EB-95EA79B2DB91@mac.com>
+Cc: Andrew Morgan <morgan@kernel.org>, casey@schaufler-ca.com,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, darwish.07@gmail.com, jmorris@namei.org,
+       method@manicmethod.com, paul.moore@hp.com,
+       LSM List <linux-security-module@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711250202.27660.alistair@devzero.co.uk>
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: + smack-version-11c-simplified-mandatory-access-control-kernel.patch added to -mm tree
+Date: Sat, 24 Nov 2007 21:07:09 -0500
+To: Crispin Cowan <crispin@crispincowan.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 November 2007 01:27:54 Francois Romieu wrote:
-> Francois Romieu <romieu@fr.zoreil.com> :
-> > Alistair John Strachan <alistair@devzero.co.uk> :
-> > [...]
-> >
-> > > The "choke" affects other devices on the system too, notably libata,
-> > > which does not recover gracefully. In my logs, I see a stream of:
-> > >
-> > > DMA: Out of SW-IOMMU space for 7222 bytes at device 0000:04:00.0
-> > > DMA: Out of SW-IOMMU space for 7222 bytes at device 0000:04:00.0
-> >
-> > You are using jumbo frames, aren't you ?
+On Nov 24, 2007, at 06:39:34, Crispin Cowan wrote:
+> Andrew Morgan wrote:
+>> It feels to me as if a MAC "override capability" is, if true to  
+>> its name, extra to the MAC model; any MAC model that needs an  
+>> 'override' to function seems under-specified... SELinux clearly  
+>> feels no need for one,
 >
-> See below for my late night crap. At least it should avoid the driver
-> issuing Rx/Tx DMA with the single static buffer of lib/swiotlb.c
-> (io_tlb_overflow_buffer). Ghee.
+> That's not quite right. More specifically, it already has one in  
+> the form of unconfined_t. AppArmor has a similar escape hatch in  
+> the "Ux" permission. Its not that they don't need one, it is that  
+> they already have one. They get to have one because they allow you  
+> to actually write a policy that is more nuanced than "process label  
+> must dominate object label".
 
-No improvement. It might be possible to reproduce the problem on your end if 
-you add iommu support and force enable the swiotlb (which should be possible 
-even with <4GB RAM).
+Actually, a fully-secured strict-mode SELinux system will have no  
+unconfined_t processes; none of my test systems have any.  Generally  
+"unconfined_t" is used for situations similar to what AppArmor was  
+designed for, where the only "interesting" security is that of the  
+daemon (which is properly labelled) and one or more of the users are  
+unconfined.
 
-> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-> index 1f647b9..72a7370 100644
-> --- a/drivers/net/r8169.c
-> +++ b/drivers/net/r8169.c
-> @@ -2262,10 +2262,16 @@ static struct sk_buff *rtl8169_alloc_rx_skb(struct
-> pci_dev *pdev, mapping = pci_map_single(pdev, skb->data, rx_buf_sz,
->  				 PCI_DMA_FROMDEVICE);
->
-> +	if (pci_dma_mapping_error(mapping))
-> +		goto err_kfree_skb;
-> +
->  	rtl8169_map_to_asic(desc, mapping, rx_buf_sz);
->  out:
->  	return skb;
->
-> +err_kfree_skb:
-> +	dev_kfree_skb(skb);
-> +	skb = NULL;
->  err_out:
->  	rtl8169_make_unusable_by_asic(desc);
->  	goto out;
-> @@ -2486,6 +2492,7 @@ static int rtl8169_xmit_frags(struct rtl8169_private
-> *tp, struct sk_buff *skb, dma_addr_t mapping;
->  		u32 status, len;
->  		void *addr;
-> +		int rc;
->
->  		entry = (entry + 1) % NUM_TX_DESC;
->
-> @@ -2493,6 +2500,22 @@ static int rtl8169_xmit_frags(struct rtl8169_private
-> *tp, struct sk_buff *skb, len = frag->size;
->  		addr = ((void *) page_address(frag->page)) + frag->page_offset;
->  		mapping = pci_map_single(tp->pci_dev, addr, len, PCI_DMA_TODEVICE);
-> +		rc = pci_dma_mapping_error(mapping);
-> +		if (unlikely(rc < 0)) {
-> +			while (cur_frag-- > 0) {
-> +				frag = info->frags + cur_frag;
-> +				entry = (entry - 1) % NUM_TX_DESC;
-> +				txd = tp->TxDescArray + entry;
-> +				len = frag->size;
-> +				mapping = le64_to_cpu(txd->addr);
-> +				pci_unmap_single(tp->pci_dev, mapping, len,
-> +						 PCI_DMA_TODEVICE);
-> +				txd->opts1 = 0x00;
-> +				txd->opts2 = 0x00;
-> +				txd->addr = 0x00;
-> +			}
-> +			return rc;
-> +		}
->
->  		/* anti gcc 2.95.3 bugware (sic) */
->  		status = opts1 | len | (RingEnd * !((entry + 1) % NUM_TX_DESC));
-> @@ -2534,13 +2557,13 @@ static inline u32 rtl8169_tso_csum(struct sk_buff
-> *skb, struct net_device *dev) static int rtl8169_start_xmit(struct sk_buff
-> *skb, struct net_device *dev) {
->  	struct rtl8169_private *tp = netdev_priv(dev);
-> -	unsigned int frags, entry = tp->cur_tx % NUM_TX_DESC;
-> +	unsigned int entry = tp->cur_tx % NUM_TX_DESC;
->  	struct TxDesc *txd = tp->TxDescArray + entry;
->  	void __iomem *ioaddr = tp->mmio_addr;
->  	dma_addr_t mapping;
->  	u32 status, len;
->  	u32 opts1;
-> -	int ret = NETDEV_TX_OK;
-> +	int frags, ret = NETDEV_TX_OK;
->
->  	if (unlikely(TX_BUFFS_AVAIL(tp) < skb_shinfo(skb)->nr_frags)) {
->  		if (netif_msg_drv(tp)) {
-> @@ -2557,7 +2580,11 @@ static int rtl8169_start_xmit(struct sk_buff *skb,
-> struct net_device *dev) opts1 = DescOwn | rtl8169_tso_csum(skb, dev);
->
->  	frags = rtl8169_xmit_frags(tp, skb, opts1);
-> -	if (frags) {
-> +	if (frags < 0) {
-> +		printk(KERN_ERR "%s: PCI mapping failure (%d).\n", dev->name,
-> +		       frags);
-> +		goto err_busy;
-> +	} else if (frags > 0) {
->  		len = skb_headlen(skb);
->  		opts1 |= FirstFrag;
->  	} else {
-> @@ -2605,6 +2632,7 @@ out:
->
->  err_stop:
->  	netif_stop_queue(dev);
-> +err_busy:
->  	ret = NETDEV_TX_BUSY;
->  err_update_stats:
->  	dev->stats.tx_dropped++;
+Even then "unconfined_t" is not an implicit part of the policy, it is  
+explicitly given the ability to take any action on any object by  
+rules in the policy, and it typically still falls under a few MLS  
+labeling restrictions even in the targeted policy.
 
--- 
 Cheers,
-Alistair.
+Kyle Moffett
 
-137/1 Warrender Park Road, Edinburgh, UK.
