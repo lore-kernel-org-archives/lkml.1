@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXKYUI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXKYUZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbXKYUI0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 15:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXKYUIS
+	id S1756851AbXKYUZc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 15:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbXKYUZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 15:08:18 -0500
-Received: from mx.treblig.org ([80.68.94.177]:2812 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756012AbXKYUIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 15:08:17 -0500
-Date: Sun, 25 Nov 2007 20:08:00 +0000
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
-Message-ID: <20071125200800.GA9808@gallifrey>
-References: <200711222007.12497.elendil@planet.nl> <200711251411.16034.rjw@sisk.pl> <20071125134945.GB14171@stusta.de> <200711252107.23926.rjw@sisk.pl>
+	Sun, 25 Nov 2007 15:25:24 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:33551 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754236AbXKYUZY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 15:25:24 -0500
+Date: Sun, 25 Nov 2007 21:25:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch] Re: nohz and strange sleep latencies
+Message-ID: <20071125202557.GB7739@elf.ucw.cz>
+References: <20071119203152.GA1772@elf.ucw.cz> <20071119205555.GA28696@elte.hu> <20071119211142.GA1857@elf.ucw.cz> <20071120085704.GA19950@elte.hu> <20071120105458.GA1597@elf.ucw.cz> <20071120205454.GD10008@elte.hu> <alpine.LFD.0.9999.0711202345520.25057@localhost.localdomain> <20071120225246.GA24380@elte.hu> <20071122185238.GA1821@elf.ucw.cz> <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711252107.23926.rjw@sisk.pl>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
-X-Uptime: 20:04:29 up 5 days, 19:17,  2 users,  load average: 0.49, 0.36, 0.29
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.0.9999.0711222121500.25057@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+Hi!
 
-<snip>
- (many levels of quote)
+Okay, so the problem seems to be we are using unreliable lapic
+timer... which is stopped in C3 (and in C2 on broken machines).
 
-> > > > * Bugs that sit in NEEDINFO state for more than i.e. one month should be
-> > > >   automatically closed.
-> > > 
-> > > I agree that we probably should do something like this.
-> >  
-> > Not automatically.
-> 
-> OK, say "as a rule".
+I do not see any mechanism to disable lapic; there seems to be some
+mechanism to work around stopped lapic timer is used (in
+acpi/processor_idle.c) but it does not seem to work. So what about
+this?
 
-The only thing I would say is that a reporter can be in a situation
-after a while where they no longer have access to the original
-machine; if the bug was originally believed to be real and triaged
-then it seems to make sense to differentiate that from a bug that is
-just closed, just so people can know there is an issue with
-a configuration.
+							Pavel
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Dave
+diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
+index 08b07c1..b9bf79c 100644
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -63,8 +63,8 @@ static int enable_local_apic __initdata 
+ static int local_apic_timer_verify_ok;
+ /* Disable local APIC timer from the kernel commandline or via dmi quirk
+    or using CPU MSR check */
+-int local_apic_timer_disabled;
+-/* Local APIC timer works in C2 */
++int local_apic_timer_disabled = 1;
++/* Local APIC timer works in C2: used in processor_idle.c  */
+ int local_apic_timer_c2_ok;
+ EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
+ 
 
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
