@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbXKYXN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbXKYXRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757886AbXKYXN7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 18:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbXKYXNv
+	id S1757914AbXKYXRt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 18:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbXKYXRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 18:13:51 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60837 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755730AbXKYXNu (ORCPT
+	Sun, 25 Nov 2007 18:17:42 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:48651 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755741AbXKYXRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 18:13:50 -0500
-Date: Mon, 26 Nov 2007 00:13:37 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [RFC][PATCH] Update REPORTING-BUGS
-Message-ID: <20071125231337.GB5006@stusta.de>
-References: <200711252157.10212.rjw@sisk.pl> <200711252251.15623.rjw@sisk.pl> <20071125215158.GD18284@stusta.de> <200711260000.28972.rjw@sisk.pl>
+	Sun, 25 Nov 2007 18:17:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=FH/gUxhg7hKkXZ7TBjWjHnVJ2M482+c4guAadN5ae4YZx06VSq/QILRpNqEOc8FHWWRhl0Nsfq6LsQB2VBT0cdSzLFqC+OKtMjkZgQYVHg2zHwOwBJf4iXxF4Fu+CKjHZy52vWlrMOofKezViQIpdCkUrwCSlbD/2ZlYY4TcHoY=  ;
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH 1/9]: introduce radix_tree_gang_lookup_range
+Date: Mon, 26 Nov 2007 10:17:24 +1100
+User-Agent: KMail/1.9.5
+Cc: xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
+References: <20071122003211.GG114266761@sgi.com>
+In-Reply-To: <20071122003211.GG114266761@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200711260000.28972.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200711261017.24694.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 12:00:28AM +0100, Rafael J. Wysocki wrote:
-> On Sunday, 25 of November 2007, Adrian Bunk wrote:
->...
-> > I don't care whether that's done with Bugzilla, some email based bug 
-> > tracker like the Debian bug tracker, someone putting emails manually 
-> > into some bug tracker like you are doing, or whatever else.
-> 
-> That last solution doesn't scale very well ...
-> 
-> How about using the system in which it's possible to report bugs using both
-> email and a web interface?
-> 
-> We can request that the address of the bug tracker be added to the Cc lists of
-> bug reports sent by email and we can make it resend reports filed with it to
-> the appropriate mailing lists and with the appropriate email headers.  This is
-> technically doable.
+On Thursday 22 November 2007 11:32, David Chinner wrote:
+> Introduce radix_tree_gang_lookup_range()
+>
+> The inode clustering in XFS requires a gang lookup on the radix tree to
+> find all the inodes in the cluster.  The gang lookup has to set the
+> maximum items to that of a fully populated cluster so we get all the
+> inodes in the cluster, but we only populate the radix tree sparsely (on
+> demand).
+>
+> As a result, the gang lookup can search way, way past the index of end
+> of the cluster because it is looking for a fixed number of entries to
+> return.
+>
+> We know we want to terminate the search at either a specific index or a
+> maximum number of items, so we need to add a "last_index" parameter to
+> the lookup.
 
-You are trying to solve something that is not a problem.
+Yeah, this fixes one downside of the gang lookup API. For consistency
+it would be nice to do this for the tag lookup API as well...
 
-It does not matter which medium we choose for getting bug reports.
 
-The only thing that matters is that we get bug reports resolved within a 
-reasonable amount of time.
+> Furthermore, the existing radix_tree_gang_lookup() can use this same
+> function if we define a RADIX_TREE_MAX_INDEX value so the search is not
+> limited by the last_index.
 
-> Greetings,
-> Rafael
+Nit: should just define it to be ULONG_MAX.
 
-cu
-Adrian
+>
+> Signed-off-by: Dave Chinner <dgc@sgi.com>
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Otherwise, Acked-by: Nick Piggin <npiggin@suse.de>
