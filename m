@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbXKYX3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbXKYX3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbXKYX3X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 18:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXKYX3Q
+	id S1758231AbXKYX3f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 18:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbXKYX3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 18:29:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33365 "EHLO
+	Sun, 25 Nov 2007 18:29:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33367 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbXKYX3P (ORCPT
+	with ESMTP id S1757094AbXKYX3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 18:29:15 -0500
-Date: Sun, 25 Nov 2007 15:17:31 -0800
+	Sun, 25 Nov 2007 18:29:17 -0500
+Date: Sun, 25 Nov 2007 15:27:45 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Mathias Kretschmer <posting@blx4.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22 (gentoo + grsec) kernel BUG at mm/mlock.c:205!
-Message-ID: <20071125151731.0060872d@laptopd505.fenrus.org>
-In-Reply-To: <4749CEA4.9070406@blx4.net>
-References: <4749CEA4.9070406@blx4.net>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make I/O schedulers non-modular
+Message-ID: <20071125152745.6d23f435@laptopd505.fenrus.org>
+In-Reply-To: <20071125165654.GE21947@stusta.de>
+References: <20071125161801.GB21947@stusta.de>
+	<20071125162105.GA6658@kernel.dk>
+	<20071125163153.GD21947@stusta.de>
+	<20071125164532.GB6658@kernel.dk>
+	<20071125165654.GE21947@stusta.de>
 Organization: Intel
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,29 +32,15 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Nov 2007 20:36:04 +0100
-Mathias Kretschmer <posting@blx4.net> wrote:
+On Sun, 25 Nov 2007 17:56:54 +0100
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> Hi,
-> 
-> this is a x86_64 kernel with 4GB of RAM. incident happened when
-> compiling cdrecord (or some variant of it :) in a 32-bit chroot jail
-> during the 'configure' process.
-> 
-> alpha / # uname -a
-> Linux alpha 2.6.22-hardened-r8 #10 SMP Sun Nov 25 12:52:39 CET 2007
-> x86_64 AMD Processor model unknown AuthenticAMD GNU/Linux
-> 
-> Let me know, if you need for info.
+> Is there any technical reason why we need 4 different schedulers at
+> all?
 > 
 
-you have both a heavily patched kernel and a tainted kernel due to
-binary kernel modules.... sounds like you're best of contacting the
-support side of whoever gave you the patches and/or the binary module;
-I don't think there's much lkml can do for you.
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+there is at least one technical reason to need more than one: certain
+types of storage (both big EMC boxes as well as solid state disks)
+don't behave like disks and have no seek penalty; any cpu time spent on
+avoiding seeks is wasted on those, so for these devices one really
+wants to use a different IO scheduler, one which is much lighter weight
