@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbXKYXRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbXKYXZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbXKYXRt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 18:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbXKYXRm
+	id S1757573AbXKYXZn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 18:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbXKYXZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 18:17:42 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:48651 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755741AbXKYXRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 18:17:41 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FH/gUxhg7hKkXZ7TBjWjHnVJ2M482+c4guAadN5ae4YZx06VSq/QILRpNqEOc8FHWWRhl0Nsfq6LsQB2VBT0cdSzLFqC+OKtMjkZgQYVHg2zHwOwBJf4iXxF4Fu+CKjHZy52vWlrMOofKezViQIpdCkUrwCSlbD/2ZlYY4TcHoY=  ;
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH 1/9]: introduce radix_tree_gang_lookup_range
-Date: Mon, 26 Nov 2007 10:17:24 +1100
-User-Agent: KMail/1.9.5
-Cc: xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-References: <20071122003211.GG114266761@sgi.com>
-In-Reply-To: <20071122003211.GG114266761@sgi.com>
+	Sun, 25 Nov 2007 18:25:36 -0500
+Received: from mx40.mail.ru ([194.67.23.36]:51051 "EHLO mx40.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755730AbXKYXZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 18:25:35 -0500
+Date: Mon, 26 Nov 2007 02:19:00 +0300
+From: Anton Vorontsov <cbou@mail.ru>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] power_supply_{leds,sysfs}.c should #include
+	"power_supply.h"
+Message-ID: <20071125231900.GA19266@zarina>
+Reply-To: cbou@mail.ru
+References: <20071105170745.GU12045@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200711261017.24694.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071105170745.GU12045@stusta.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 November 2007 11:32, David Chinner wrote:
-> Introduce radix_tree_gang_lookup_range()
->
-> The inode clustering in XFS requires a gang lookup on the radix tree to
-> find all the inodes in the cluster.  The gang lookup has to set the
-> maximum items to that of a fully populated cluster so we get all the
-> inodes in the cluster, but we only populate the radix tree sparsely (on
-> demand).
->
-> As a result, the gang lookup can search way, way past the index of end
-> of the cluster because it is looking for a fixed number of entries to
-> return.
->
-> We know we want to terminate the search at either a specific index or a
-> maximum number of items, so we need to add a "last_index" parameter to
-> the lookup.
+On Mon, Nov 05, 2007 at 06:07:45PM +0100, Adrian Bunk wrote:
+> Every file should include the headers containing the prototypes for
+> its global functions.
 
-Yeah, this fixes one downside of the gang lookup API. For consistency
-it would be nice to do this for the tag lookup API as well...
+Applied to battery-2.6.git, thanks.
 
+p.s.
+Sorry for the delay, I've not been Cc'ed, so I've found out about
+that patch by pure chance (through looking in the -mm series).
 
-> Furthermore, the existing radix_tree_gang_lookup() can use this same
-> function if we define a RADIX_TREE_MAX_INDEX value so the search is not
-> limited by the last_index.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  drivers/power/power_supply_leds.c  |    2 ++
+>  drivers/power/power_supply_sysfs.c |    2 ++
+>  2 files changed, 4 insertions(+)
+> 
+> e34cc994731ec9102bf5b1c7d6585c0aa87d1fa2 
+> diff --git a/drivers/power/power_supply_leds.c b/drivers/power/power_supply_leds.c
+> index 7f8f359..80ca288 100644
+> --- a/drivers/power/power_supply_leds.c
+> +++ b/drivers/power/power_supply_leds.c
+> @@ -12,6 +12,8 @@
+>  
+>  #include <linux/power_supply.h>
+>  
+> +#include "power_supply.h"
+> +
+>  /* Battery specific LEDs triggers. */
+>  
+>  static void power_supply_update_bat_leds(struct power_supply *psy)
+> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+> index 249f61b..e8ad1fd 100644
+> --- a/drivers/power/power_supply_sysfs.c
+> +++ b/drivers/power/power_supply_sysfs.c
+> @@ -14,6 +14,8 @@
+>  #include <linux/ctype.h>
+>  #include <linux/power_supply.h>
+>  
+> +#include "power_supply.h"
+> +
+>  /*
+>   * This is because the name "current" breaks the device attr macro.
+>   * The "current" word resolves to "(get_current())" so instead of
+> 
 
-Nit: should just define it to be ULONG_MAX.
-
->
-> Signed-off-by: Dave Chinner <dgc@sgi.com>
-
-Otherwise, Acked-by: Nick Piggin <npiggin@suse.de>
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
