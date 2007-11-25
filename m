@@ -1,152 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbXKYWFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXKYWGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbXKYWFq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbXKYWFG
+	id S1758242AbXKYWGE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXKYWFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:05:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46742 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758154AbXKYWFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:05:04 -0500
+	Sun, 25 Nov 2007 17:05:18 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36074 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758326AbXKYWFP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:05:15 -0500
+Date: Sun, 25 Nov 2007 23:05:03 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-driver@qlogic.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] scsi/qla2xxx/qla_os.c section fix
+Message-ID: <20071125220503.GF18284@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 16/27] x86-64 ptrace: use task_pt_regs
-In-Reply-To: Roland McGrath's message of  Sunday, 25 November 2007 13:55:07 -0800 <20071125215507.4B89226F8C5@magilla.localdomain>
-References: <20071125215507.4B89226F8C5@magilla.localdomain>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20071125220429.0EBAA26F8C5@magilla.localdomain>
-Date: Sun, 25 Nov 2007 14:04:29 -0800 (PST)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+qla2x00_remove_one() mustn't be __devexit since it's called from 
+qla2xxx_pci_error_detected().
 
-This cleans up the 64-bit ptrace code to use task_pt_regs instead of its
-own redundant code that does the same thing a different way.
+This patch fixes the following section mismatch:
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
+<--  snip  -->
+
+...
+WARNING: vmlinux.o(.text+0x2a4462): Section mismatch: reference to .exit.text:qla2x00_remove_one (between 'qla2xxx_pci_error_detected' and 'qla2x00_stop_timer')
+...
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
 ---
- arch/x86/kernel/ptrace_64.c |   60 ++++++++----------------------------------
- 1 files changed, 12 insertions(+), 48 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
-index 85fba7b..8123ecb 100644
---- a/arch/x86/kernel/ptrace_64.c
-+++ b/arch/x86/kernel/ptrace_64.c
-@@ -43,44 +43,6 @@
- #define FLAG_MASK 0x54dd5UL
- 
- /*
-- * eflags and offset of eflags on child stack..
-- */
--#define EFLAGS offsetof(struct pt_regs, eflags)
--#define EFL_OFFSET ((int)(EFLAGS-sizeof(struct pt_regs)))
--
--/*
-- * this routine will get a word off of the processes privileged stack.
-- * the offset is how far from the base addr as stored in the TSS.
-- * this routine assumes that all the privileged stacks are in our
-- * data space.
-- */
--static inline unsigned long get_stack_long(struct task_struct *task, int offset)
--{
--	unsigned char *stack;
--
--	stack = (unsigned char *)task->thread.rsp0;
--	stack += offset;
--	return (*((unsigned long *)stack));
--}
--
--/*
-- * this routine will put a word on the processes privileged stack.
-- * the offset is how far from the base addr as stored in the TSS.
-- * this routine assumes that all the privileged stacks are in our
-- * data space.
-- */
--static inline long put_stack_long(struct task_struct *task, int offset,
--	unsigned long data)
--{
--	unsigned char * stack;
--
--	stack = (unsigned char *) task->thread.rsp0;
--	stack += offset;
--	*(unsigned long *) stack = data;
--	return 0;
--}
--
--/*
-  * Called by kernel/ptrace.c when detaching..
-  *
-  * Make sure the single step bit is not set.
-@@ -90,11 +52,16 @@ void ptrace_disable(struct task_struct *child)
- 	user_disable_single_step(child);
+ drivers/scsi/qla2xxx/qla_os.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+764ebbed3c09f765963c20a3a326cf651685a81a 
+diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
+index a5bcf1f..8ecc047 100644
+--- a/drivers/scsi/qla2xxx/qla_os.c
++++ b/drivers/scsi/qla2xxx/qla_os.c
+@@ -1831,7 +1831,7 @@ probe_out:
+ 	return ret;
  }
  
-+static unsigned long *pt_regs_access(struct pt_regs *regs, unsigned long offset)
-+{
-+	BUILD_BUG_ON(offsetof(struct pt_regs, r15) != 0);
-+	return &regs->r15 + (offset / sizeof(regs->r15));
-+}
-+
- static int putreg(struct task_struct *child,
- 	unsigned long regno, unsigned long value)
+-static void __devexit
++static void
+ qla2x00_remove_one(struct pci_dev *pdev)
  {
--	unsigned long tmp;
--
-+	struct pt_regs *regs = task_pt_regs(child);
- 	switch (regno) {
- 		case offsetof(struct user_regs_struct,fs):
- 			if (value && (value & 3) != 3)
-@@ -152,9 +119,7 @@ static int putreg(struct task_struct *child,
- 				clear_tsk_thread_flag(child, TIF_FORCED_TF);
- 			else if (test_tsk_thread_flag(child, TIF_FORCED_TF))
- 				value |= X86_EFLAGS_TF;
--			tmp = get_stack_long(child, EFL_OFFSET);
--			tmp &= ~FLAG_MASK;
--			value |= tmp;
-+			value |= regs->eflags & ~FLAG_MASK;
- 			break;
- 		case offsetof(struct user_regs_struct,cs):
- 			if ((value & 3) != 3)
-@@ -162,12 +127,13 @@ static int putreg(struct task_struct *child,
- 			value &= 0xffff;
- 			break;
- 	}
--	put_stack_long(child, regno - sizeof(struct pt_regs), value);
-+	*pt_regs_access(regs, regno) = value;
- 	return 0;
- }
+ 	scsi_qla_host_t *ha;
+@@ -2965,7 +2965,7 @@ static struct pci_driver qla2xxx_pci_driver = {
+ 	},
+ 	.id_table	= qla2xxx_pci_tbl,
+ 	.probe		= qla2x00_probe_one,
+-	.remove		= __devexit_p(qla2x00_remove_one),
++	.remove		= qla2x00_remove_one,
+ 	.err_handler	= &qla2xxx_err_handler,
+ };
  
- static unsigned long getreg(struct task_struct *child, unsigned long regno)
- {
-+	struct pt_regs *regs = task_pt_regs(child);
- 	unsigned long val;
- 	switch (regno) {
- 		case offsetof(struct user_regs_struct, fs):
-@@ -202,16 +168,14 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
- 			/*
- 			 * If the debugger set TF, hide it from the readout.
- 			 */
--			regno = regno - sizeof(struct pt_regs);
--			val = get_stack_long(child, regno);
-+			val = regs->eflags;
- 			if (test_tsk_thread_flag(child, TIF_IA32))
- 				val &= 0xffffffff;
- 			if (test_tsk_thread_flag(child, TIF_FORCED_TF))
- 				val &= ~X86_EFLAGS_TF;
- 			return val;
- 		default:
--			regno = regno - sizeof(struct pt_regs);
--			val = get_stack_long(child, regno);
-+			val = *pt_regs_access(regs, regno);
- 			if (test_tsk_thread_flag(child, TIF_IA32))
- 				val &= 0xffffffff;
- 			return val;
+
