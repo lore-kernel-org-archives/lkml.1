@@ -1,144 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXKYKKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbXKYKWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbXKYKKz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 05:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbXKYKKq
+	id S1754407AbXKYKWZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 05:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXKYKWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 05:10:46 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:62637 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbXKYKKp (ORCPT
+	Sun, 25 Nov 2007 05:22:16 -0500
+Received: from mail-in-01.arcor-online.net ([151.189.21.41]:37329 "EHLO
+	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750918AbXKYKWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 05:10:45 -0500
-Date: Sun, 25 Nov 2007 11:10:38 +0100 (MET)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: zippel@linux-m68k.org, schmitz@debian.org, geert@linux-m68k.org
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20071125095858.32254.98071.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] include/asm-m68k: Remove atari_joystick.h
+	Sun, 25 Nov 2007 05:22:15 -0500
+From: Prakash Punnoor <prakash@punnoor.de>
+To: "peerchen" <peerchen@gmail.com>
+Subject: Re: [PATCH 1/2] msi: set 'En' bit of MSI Mapping Capability on HT platform
+Date: Sun, 25 Nov 2007 11:21:45 +0100
+User-Agent: KMail/1.9.7
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "akpm" <akpm@linux-foundation.org>, "pchen" <pchen@nvidia.com>,
+       "acurrid" <acurrid@nvidia.com>
+References: <200711251121445151346@gmail.com>
+In-Reply-To: <200711251121445151346@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1568241.mAmby6MDJZ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200711251121.49585.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove include/asm-m68k/atari_joystick.h and clean up.
+--nextPart1568241.mAmby6MDJZ
+Content-Type: text/plain;
+  charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Not compiled, but should be trivial.
-(if FIXED_ATARI_JOYSTICK is defined somehow, please tell how)
+Hi,
 
- b/arch/m68k/atari/atakeyb.c        |    8 --------
- b/arch/m68k/atari/atari_ksyms.c    |    1 -
- b/drivers/input/mouse/atarimouse.c |   10 ----------
- include/asm-m68k/atari_joystick.h  |   22 ----------------------
- 4 files changed, 41 deletions(-)
+> According to the HyperTransport spec, 'En' indicate if the MSI Mapping is
+> active. So it should be set when enable the MSI.
+
+Great! This is what I needed to get MSI going on my MCP51 board. I added so=
+me=20
+ids, but I think there were not necessary, as I only got
+
+PCI: 0000:00:00.0: enabled HT MSI mapping
+PCI: 0000:00:10.1: enabled HT MSI mapping
+
+were those devices are:
+00:00.0 RAM memory: nVidia Corporation C51 Host Bridge (rev a2)
+        Subsystem: ASUSTeK Computer Inc. Unknown device 81c0
+        Flags: bus master, 66MHz, fast devsel, latency 0
+        Capabilities: [44] HyperTransport: Slave or Primary Interface
+        Capabilities: [e0] HyperTransport: MSI Mapping Enable+ Fixed-
+00: de 10 f0 02 06 00 b0 00 a2 00 00 05 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 c0 81
+30: 00 00 00 00 44 00 00 00 00 00 00 00 ff 00 00 00
+
+According to your patch, you named this device
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_C51_MEMC0   0x02F0
+So is the lspci database not correct or your naming? lspci lists some=20
+memcontrollers for me, but they don't seem to have MSI specific items.
 
 
-diff --git a/arch/m68k/atari/atakeyb.c b/arch/m68k/atari/atakeyb.c
-index 880add1..11a622b 100644
---- a/arch/m68k/atari/atakeyb.c
-+++ b/arch/m68k/atari/atakeyb.c
-@@ -30,7 +30,6 @@
- #include <asm/atariints.h>
- #include <asm/atarihw.h>
- #include <asm/atarikb.h>
--#include <asm/atari_joystick.h>
- #include <asm/irq.h>
- 
- extern unsigned int keymap_count;
-@@ -272,9 +271,6 @@ repeat:
- 		case JOYSTICK:
- 			kb_state.buf[1] = scancode;
- 			kb_state.state = KEYBOARD;
--#ifdef FIXED_ATARI_JOYSTICK
--			atari_joystick_interrupt(kb_state.buf);
--#endif
- 			break;
- 
- 		case CLOCK:
-@@ -623,10 +619,6 @@ int __init atari_keyb_init(void)
- 	ikbd_mouse_disable();
- 	ikbd_joystick_disable();
- 
--#ifdef FIXED_ATARI_JOYSTICK
--	atari_joystick_init();
--#endif
--
- 	// flag init done
- 	atari_keyb_done = 1;
- 	return 0;
-diff --git a/arch/m68k/atari/atari_ksyms.c b/arch/m68k/atari/atari_ksyms.c
-index a047571..c6113b4 100644
---- a/arch/m68k/atari/atari_ksyms.c
-+++ b/arch/m68k/atari/atari_ksyms.c
-@@ -5,7 +5,6 @@
- #include <asm/atarihw.h>
- #include <asm/atariints.h>
- #include <asm/atarikb.h>
--#include <asm/atari_joystick.h>
- #include <asm/atari_stdma.h>
- #include <asm/atari_stram.h>
- 
-diff --git a/drivers/input/mouse/atarimouse.c b/drivers/input/mouse/atarimouse.c
-index 98a3561..b8de36f 100644
---- a/drivers/input/mouse/atarimouse.c
-+++ b/drivers/input/mouse/atarimouse.c
-@@ -62,9 +62,6 @@ static int mouse_threshold[2] = {2,2};
- #ifdef __MODULE__
- MODULE_PARM(mouse_threshold, "2i");
- #endif
--#ifdef FIXED_ATARI_JOYSTICK
--extern int atari_mouse_buttons;
--#endif
- static int atamouse_used = 0;
- 
- static struct input_dev *atamouse_dev;
-@@ -74,10 +71,6 @@ static void atamouse_interrupt(char *buf)
- 	int buttons, dx, dy;
- 
- 	buttons = (buf[0] & 1) | ((buf[0] & 2) << 1);
--#ifdef FIXED_ATARI_JOYSTICK
--	buttons |= atari_mouse_buttons & 2;
--	atari_mouse_buttons = buttons;
--#endif
- 
- 	/* only relative events get here */
- 	dx =  buf[1];
-@@ -100,9 +93,6 @@ static int atamouse_open(struct input_dev *dev)
- 	if (atamouse_used++)
- 		return 0;
- 
--#ifdef FIXED_ATARI_JOYSTICK
--	atari_mouse_buttons = 0;
--#endif
- 	ikbd_mouse_y0_top();
- 	ikbd_mouse_thresh(mouse_threshold[0], mouse_threshold[1]);
- 	ikbd_mouse_rel_pos();
-diff --git a/include/asm-m68k/atari_joystick.h b/include/asm-m68k/atari_joystick.h
-deleted file mode 100644
-index 93be7da..0000000
---- a/include/asm-m68k/atari_joystick.h
-+++ /dev/null
-@@ -1,22 +0,0 @@
--#ifndef _LINUX_ATARI_JOYSTICK_H
--#define _LINUX_ATARI_JOYSTICK_H
--
--/*
-- * linux/include/linux/atari_joystick.h
-- * header file for Atari Joystick driver
-- * by Robert de Vries (robert@and.nl) on 19Jul93
-- */
--
--void atari_joystick_interrupt(char*);
--int atari_joystick_init(void);
--extern int atari_mouse_buttons;
--
--struct joystick_status {
--	char		fire;
--	char		dir;
--	int		ready;
--	int		active;
--	wait_queue_head_t wait;
--};
--
--#endif
+00:10.1 Audio device: nVidia Corporation MCP51 High Definition Audio (rev a=
+2)
+        Subsystem: ASUSTeK Computer Inc. Unknown device 81cb
+        Flags: bus master, 66MHz, fast devsel, latency 0, IRQ 319
+        Memory at fe024000 (32-bit, non-prefetchable) [size=3D16K]
+        Capabilities: [44] Power Management version 2
+        Capabilities: [50] Message Signalled Interrupts: Mask+ 64bit+=20
+Queue=3D0/0 Enable+
+        Capabilities: [6c] HyperTransport: MSI Mapping Enable+ Fixed+
+00: de 10 6c 02 06 04 b0 00 a2 00 03 04 00 00 80 00
+10: 00 40 02 fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 cb 81
+30: 00 00 00 00 44 00 00 00 00 00 00 00 05 02 02 05
+
+Yay:
+cat /proc/interrupts
+319:         26       9357   PCI-MSI-edge      HDA Intel
+
+
+So, now sata_nv and nvidia binary graphics driver could activate MSI, as=20
+well. :-)
+
+One thing I noticed in the patch:
++		if (((bridge_dev =3D pci_find_slot(0, 0)) !=3D NULL) &&
+
+You rather want to use pci_get_bus_and_slot instead, as pci_find_slot is=20
+deprecated.
+
+Thanks!
+=2D-=20
+(=A1=E3=3D                 =3D=A1=E3)
+//\ Prakash Punnoor /\\
+V_/                 \_V
+
+--nextPart1568241.mAmby6MDJZ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHSUy9xU2n/+9+t5gRAnmTAKCvkKgRIuWK2wbf43w/T/Un9Mvv0gCghdPa
+jwfdx44G4NPBMjEKHgnrgNE=
+=G5NF
+-----END PGP SIGNATURE-----
+
+--nextPart1568241.mAmby6MDJZ--
