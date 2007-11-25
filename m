@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbXKYWEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbXKYWEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbXKYWEf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 17:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXKYWEL
+	id S1758434AbXKYWEv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 17:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758132AbXKYWE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 17:04:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46723 "EHLO mx1.redhat.com"
+	Sun, 25 Nov 2007 17:04:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46732 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756890AbXKYWEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 17:04:09 -0500
+	id S1756921AbXKYWEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 17:04:25 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -17,103 +17,134 @@ To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 13/27] powerpc: arch_has_single_step
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 15/27] x86-32 ptrace: use task_pt_regs
 In-Reply-To: Roland McGrath's message of  Sunday, 25 November 2007 13:55:07 -0800 <20071125215507.4B89226F8C5@magilla.localdomain>
 References: <20071125215507.4B89226F8C5@magilla.localdomain>
-X-Shopping-List: (1) Fluent dirt
-   (2) Aesthetic warriors
-   (3) Impudent annoyer griddles
-Message-Id: <20071125220334.ACACB26F8C5@magilla.localdomain>
-Date: Sun, 25 Nov 2007 14:03:34 -0800 (PST)
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20071125220420.2924626F8C5@magilla.localdomain>
+Date: Sun, 25 Nov 2007 14:04:20 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This defines the new standard arch_has_single_step macro.  It makes the
-existing set_single_step and clear_single_step entry points global, and
-renames them to the new standard names user_enable_single_step and
-user_disable_single_step, respectively.
+This cleans up the 32-bit ptrace code to use task_pt_regs instead of its
+own redundant code that does the same thing a different way.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/ptrace.c |   12 ++++++------
- include/asm-powerpc/ptrace.h |    7 +++++++
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ arch/x86/kernel/ptrace_32.c |   68 ++++++++++--------------------------------
+ 1 files changed, 16 insertions(+), 52 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 3e17d15..b970d79 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -256,7 +256,7 @@ static int set_evrregs(struct task_struct *task, unsigned long *data)
- #endif /* CONFIG_SPE */
+diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
+index 50882b3..7c33244 100644
+--- a/arch/x86/kernel/ptrace_32.c
++++ b/arch/x86/kernel/ptrace_32.c
+@@ -37,53 +37,20 @@
+  */
+ #define FLAG_MASK 0x00050dd5
  
- 
--static void set_single_step(struct task_struct *task)
-+void user_enable_single_step(struct task_struct *task)
+-/*
+- * Offset of eflags on child stack..
+- */
+-#define EFL_OFFSET offsetof(struct pt_regs, eflags)
+-
+-static inline struct pt_regs *get_child_regs(struct task_struct *task)
+-{
+-	void *stack_top = (void *)task->thread.esp0;
+-	return stack_top - sizeof(struct pt_regs);
+-}
+-
+-/*
+- * This routine will get a word off of the processes privileged stack.
+- * the offset is bytes into the pt_regs structure on the stack.
+- * This routine assumes that all the privileged stacks are in our
+- * data space.
+- */
+-static inline int get_stack_long(struct task_struct *task, int offset)
++static long *pt_regs_access(struct pt_regs *regs, unsigned long regno)
  {
- 	struct pt_regs *regs = task->thread.regs;
- 
-@@ -271,7 +271,7 @@ static void set_single_step(struct task_struct *task)
- 	set_tsk_thread_flag(task, TIF_SINGLESTEP);
+-	unsigned char *stack;
+-
+-	stack = (unsigned char *)task->thread.esp0 - sizeof(struct pt_regs);
+-	stack += offset;
+-	return (*((int *)stack));
+-}
+-
+-/*
+- * This routine will put a word on the processes privileged stack.
+- * the offset is bytes into the pt_regs structure on the stack.
+- * This routine assumes that all the privileged stacks are in our
+- * data space.
+- */
+-static inline int put_stack_long(struct task_struct *task, int offset,
+-	unsigned long data)
+-{
+-	unsigned char * stack;
+-
+-	stack = (unsigned char *)task->thread.esp0 - sizeof(struct pt_regs);
+-	stack += offset;
+-	*(unsigned long *) stack = data;
+-	return 0;
++	BUILD_BUG_ON(offsetof(struct pt_regs, ebx) != 0);
++	if (regno > FS)
++		--regno;
++	return &regs->ebx + regno;
  }
  
--static void clear_single_step(struct task_struct *task)
-+void user_disable_single_step(struct task_struct *task)
+ static int putreg(struct task_struct *child,
+ 	unsigned long regno, unsigned long value)
  {
- 	struct pt_regs *regs = task->thread.regs;
- 
-@@ -313,7 +313,7 @@ static int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
- void ptrace_disable(struct task_struct *child)
- {
- 	/* make sure the single step bit is not set. */
--	clear_single_step(child);
-+	user_disable_single_step(child);
- }
- 
- /*
-@@ -456,7 +456,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
- 		child->exit_code = data;
- 		/* make sure the single step bit is not set. */
--		clear_single_step(child);
-+		user_disable_single_step(child);
- 		wake_up_process(child);
- 		ret = 0;
- 		break;
-@@ -473,7 +473,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+-	switch (regno >> 2) {
++	struct pt_regs *regs = task_pt_regs(child);
++	regno >>= 2;
++	switch (regno) {
+ 		case GS:
+ 			if (value && (value & 3) != 3)
+ 				return -EIO;
+@@ -113,26 +80,25 @@ static int putreg(struct task_struct *child,
+ 				clear_tsk_thread_flag(child, TIF_FORCED_TF);
+ 			else if (test_tsk_thread_flag(child, TIF_FORCED_TF))
+ 				value |= X86_EFLAGS_TF;
+-			value |= get_stack_long(child, EFL_OFFSET) & ~FLAG_MASK;
++			value |= regs->eflags & ~FLAG_MASK;
  			break;
- 		child->exit_code = SIGKILL;
- 		/* make sure the single step bit is not set. */
--		clear_single_step(child);
-+		user_disable_single_step(child);
- 		wake_up_process(child);
- 		break;
  	}
-@@ -483,7 +483,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		if (!valid_signal(data))
+-	if (regno > FS*4)
+-		regno -= 1*4;
+-	put_stack_long(child, regno, value);
++	*pt_regs_access(regs, regno) = value;
+ 	return 0;
+ }
+ 
+-static unsigned long getreg(struct task_struct *child,
+-	unsigned long regno)
++static unsigned long getreg(struct task_struct *child, unsigned long regno)
+ {
++	struct pt_regs *regs = task_pt_regs(child);
+ 	unsigned long retval = ~0UL;
+ 
+-	switch (regno >> 2) {
++	regno >>= 2;
++	switch (regno) {
+ 		case EFL:
+ 			/*
+ 			 * If the debugger set TF, hide it from the readout.
+ 			 */
+-			retval = get_stack_long(child, EFL_OFFSET);
++			retval = regs->eflags;
+ 			if (test_tsk_thread_flag(child, TIF_FORCED_TF))
+ 				retval &= ~X86_EFLAGS_TF;
  			break;
- 		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		set_single_step(child);
-+		user_enable_single_step(child);
- 		child->exit_code = data;
- 		/* give it a chance to run. */
- 		wake_up_process(child);
-diff --git a/include/asm-powerpc/ptrace.h b/include/asm-powerpc/ptrace.h
-index 13fccc5..3063363 100644
---- a/include/asm-powerpc/ptrace.h
-+++ b/include/asm-powerpc/ptrace.h
-@@ -119,6 +119,13 @@ do {									      \
- } while (0)
- #endif /* __powerpc64__ */
- 
-+/*
-+ * These are defined as per linux/ptrace.h, which see.
-+ */
-+#define arch_has_single_step()	(1)
-+extern void user_enable_single_step(struct task_struct *);
-+extern void user_disable_single_step(struct task_struct *);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
+@@ -147,9 +113,7 @@ static unsigned long getreg(struct task_struct *child,
+ 			retval = 0xffff;
+ 			/* fall through */
+ 		default:
+-			if (regno > FS*4)
+-				regno -= 1*4;
+-			retval &= get_stack_long(child, regno);
++			retval &= *pt_regs_access(regs, regno);
+ 	}
+ 	return retval;
+ }
