@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbXKZKao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXKZKbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbXKZKao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 05:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbXKZKae
+	id S1755579AbXKZKbo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 05:31:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXKZKbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 05:30:34 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55199 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbXKZKad (ORCPT
+	Mon, 26 Nov 2007 05:31:34 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:47329 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753535AbXKZKbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 05:30:33 -0500
-Date: Mon, 26 Nov 2007 10:30:28 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, zach.brown@oracle.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2.6.24-rc3-mm1] loop cleanup in fs/namespace.c - repost
-Message-ID: <20071126103028.GQ8181@ftp.linux.org.uk>
-References: <47447184.6040805@gmail.com> <474481B9.9000603@oracle.com> <47448D0A.1040405@gmail.com> <47449932.3090801@oracle.com> <4744B5EF.5010708@gmail.com> <20071121152433.1b5289c4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071121152433.1b5289c4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Mon, 26 Nov 2007 05:31:33 -0500
+Date: Mon, 26 Nov 2007 05:29:35 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Joonwoo Park <joonwpark81@gmail.com>
+cc: netdev@vger.kernel.org, chas@cmf.nrl.navy.mil,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] atm/ambassador: kmalloc + memset conversion to
+ kzalloc
+In-Reply-To: <b25c3fa70711260223w5a15bb1bk4652b3ab8f05c40c@mail.gmail.com>
+Message-ID: <alpine.LFD.0.9999.0711260523420.12603@localhost.localdomain>
+References: <007f01c8300b$1b89ac40$9c94fea9@jason>  <alpine.LFD.0.9999.0711260409110.551@localhost.localdomain> <b25c3fa70711260223w5a15bb1bk4652b3ab8f05c40c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 21, 2007 at 03:24:33PM -0800, Andrew Morton wrote:
-> -repeat:
-> -	if (atomic_dec_and_lock(&mnt->mnt_count, &vfsmount_lock)) {
-> +	while (atomic_dec_and_lock(&mnt->mnt_count, &vfsmount_lock)) {
->  		if (likely(!mnt->mnt_pinned)) {
->  			spin_unlock(&vfsmount_lock);
->  			__mntput(mnt);
-> -			return;
-> +			break;
->  		}
->  		atomic_add(mnt->mnt_pinned + 1, &mnt->mnt_count);
->  		mnt->mnt_pinned = 0;
->  		spin_unlock(&vfsmount_lock);
->  		acct_auto_close_mnt(mnt);
->  		security_sb_umount_close(mnt);
-> -		goto repeat;
->  	}
->  }
->  
-> This patch has no changelog which I can use.
+On Mon, 26 Nov 2007, Joonwoo Park wrote:
 
-BTW, I have a problem with that one.  The change is misleading; FWIW,
-I'm very tempted to turn that into tail recursion, with
+> 2007/11/26, Robert P. J. Day <rpjday@crashcourse.ca>:
+> > i'm not sure the above is a safe thing to do, as you're zeroing that
+> > area, then making a function call and assuming, upon entry to the
+> > function call, that the caller has done the right thing.  i don't see
+> > how you can count on that, depending on who else might want to call
+> > that routine and whether they get sloppy about it.  unless you're
+> > prepared to guarantee that there will never be another call to
+> > setup_dev() from elsewhere.
+>
+> Thanks for your response. But setup_dev is static function and only
+> amb_init calls it.
 
-	if (!atomic_dec_and_lock(&mnt->mnt_count, &vfsmount_lock))
-		return;
+i realized that.  but all you can say is that only amb_init() calls
+setup_dev() *currently*.  when you're not looking, someone else might
+(for whatever reason) call setup_dev() from elsewhere, and *that* call
+might not zero that memory area.
 
-in the very beginning (i.e. invert the test and pull the body to top level).
+IMHO, the only safe transforms of kmalloc+memset -> kzalloc are those
+in which the flow of control is unmistakable and invariant.  splitting
+that across a function call seems like a dangerous thing to do.
+(except, of course, in the case, where the kzalloc() is added inside
+the function -- then all callers are entitled to simplify *their*
+code.  but that's different.)
+
+in any event, i just thought i'd point it out.  if you're absolutely
+sure there will never be another call to setup_dev() from somewhere
+else, then, yes, it's safe.
+
+rday
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
