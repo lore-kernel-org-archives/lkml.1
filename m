@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbXKZX1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbXKZXac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbXKZX1j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 18:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbXKZX1b
+	id S1757546AbXKZXac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 18:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbXKZXaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 18:27:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50576 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756069AbXKZX1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 18:27:31 -0500
-Date: Mon, 26 Nov 2007 15:26:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] softlockup: do the wakeup from a hrtimer
-Message-Id: <20071126152652.8db2793a.akpm@linux-foundation.org>
-In-Reply-To: <20071120084611.GA18721@elte.hu>
-References: <20071120084611.GA18721@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 18:30:24 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51317 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756178AbXKZXaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 18:30:24 -0500
+Message-ID: <474B55F5.1050706@redhat.com>
+Date: Mon, 26 Nov 2007 15:25:41 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com>
+In-Reply-To: <474B1C6D.6080405@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 09:46:11 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Subject: softlockup: do the wakeup from a hrtimer
-> From: Ingo Molnar <mingo@elte.hu>
+H. Peter Anvin wrote:
+> The 6-word limit is a red herring.  There is at least two ways to deal
+> with it (and this doesn't mean wiping the legacy stuff we already have):
 > 
-> David Miller reported soft lockup false-positives that trigger on NOHZ 
-> due to CPUs idling for more than 10 seconds.
-> 
-> The solution is to drive the wakeup of the watchdog threads not from the 
-> timer tick (which has no guaranteed frequency), but from the watchdog 
-> tasks themselves.
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9409
-> 
-> Reported-by: David Miller <davem@davemloft.net>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/softlockup.c |    6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
-> 
-> Index: linux/kernel/softlockup.c
-> ===================================================================
-> --- linux.orig/kernel/softlockup.c
-> +++ linux/kernel/softlockup.c
-> @@ -100,10 +100,6 @@ void softlockup_tick(void)
->  
->  	now = get_timestamp(this_cpu);
->  
-> -	/* Wake up the high-prio watchdog task every second: */
-> -	if (now > (touch_timestamp + 1))
-> -		wake_up_process(per_cpu(watchdog_task, this_cpu));
-> -
->  	/* Warn about unreasonable 10+ seconds delays: */
->  	if (now <= (touch_timestamp + softlockup_thresh))
->  		return;
-> @@ -141,7 +137,7 @@ static int watchdog(void *__bind_cpu)
->  	while (!kthread_should_stop()) {
->  		set_current_state(TASK_INTERRUPTIBLE);
->  		touch_softlockup_watchdog();
-> -		schedule();
-> +		msleep(1000);
->  	}
->  
->  	return 0;
+> - Let each architecture pick a calling convention and redefine the
+> architecture-independent bits to take an arbitrary number of arguments.
+>  This is a one-time panarchitectural change.
+> [...]
 
-I think you wanted msleep_interruptible() there to avoid contributing to
-load average?
+Just think beyond wishful thinking for a moment.  What does it take to
+come up with something completely new and grand?
 
-The set_current_state() can go away.
+Let's start at the basic: you need to signal that the new syscall
+calling convention is used.  Since the syscall entry code is limited (at
+least the likes of syscall/sysenter, it would be easy enough to use int
+$0x81 in addition to int $0x80) you would have to extend the use of the
+syscall number while keeping binary compatibility.  This means
+additional costs for every single syscall.
 
-This will introduce an up-to-one-second delay in responding to
-kthread_should_stop().  Is that bad?
+Once you're past that, how do you implement the expandable syscall
+parameter count?  There are two ways:
+
+- - pass to the real sys_* implementations the number of provided syscall
+parameters and have each function figure out what this means
+
+- - dynamically construct a call to the sys_* functions where the syscall
+magic adds an appropriate number of parameters filled with zeros.  This
+is quite complicated and, more importantly, it requires that you have
+code/data somewhere which specifies how many parameters each of the
+sys_* function actually requires.  The actual sys_* code and the data
+has to be kept in sync at all times.  A maintenance nightmare.
+
+
+The handling of syscalls with many parameters should not at all be a
+driver of this design at all.  Syscalls shouldn't be that complicated, I
+completely agree with ingo.
+
+
+I'm perfectly willing to give you the benefit of doubt, show us a design
+for what you're proposing which is not slower than the current code,
+doesn't impact existing code, and solves the problem in a nice and clean
+way.  I cannot really see it now but I might miss something.  The
+sys_indirect approach ain't pretty but it does it jobs, doesn't impact
+performance, and is expandable in direction we *know* we will want to go
+very soon.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFHS1X12ijCOnn/RHQRAihRAJwLNJ9fT8GTv6MAoO6RZGOub07sGgCdGBLR
+frXyQVB8Oh5VgWY5YJhpitg=
+=FuBx
+-----END PGP SIGNATURE-----
