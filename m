@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbXKZPJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbXKZPKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbXKZPJd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 10:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXKZPJW
+	id S1756343AbXKZPKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 10:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbXKZPKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 10:09:22 -0500
-Received: from mail.transmode.se ([83.241.175.147]:46126 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753640AbXKZPJV convert rfc822-to-8bit (ORCPT
+	Mon, 26 Nov 2007 10:10:24 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:57473 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755659AbXKZPKX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 10:09:21 -0500
-X-Greylist: delayed 308 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Nov 2007 10:09:20 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
+	Mon, 26 Nov 2007 10:10:23 -0500
+Date: Mon, 26 Nov 2007 10:08:21 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: can support for "rpm"-based package building just be dropped?
+In-Reply-To: <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com>
+Message-ID: <alpine.LFD.0.9999.0711261007370.22202@localhost.localdomain>
+References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain> <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Organization: Transmode AB
-X-Mailer: Evolution 2.10.3 
-In-Reply-To: <20071126142915.19642.5842.stgit@localhost.localdomain>
-Content-class: urn:content-classes:message
-Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar forfixed-link property
-Date: Mon, 26 Nov 2007 16:04:08 +0100
-Message-ID: <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar forfixed-link property
-Thread-Index: AcgwPZhTwkT/gsDQTA2685o4Vp2NMg==
-References: <20071126142906.19642.45540.stgit@localhost.localdomain> <20071126142915.19642.5842.stgit@localhost.localdomain>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "Vitaly Bordug" <vitb@kernel.crashing.org>
-Cc: "Jeff Garzik" <jeff@garzik.org>, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Reply-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
-> fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
-> not connected to the real MDIO bus.
-> 
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> 
-> ---
-> 
->  Documentation/powerpc/booting-without-of.txt |    3 +
->  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
->  2 files changed, 42 insertions(+), 17 deletions(-)
-> 
-> 
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> index e9a3cb1..cf25070 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
->        services interrupts for this device.
->      - phy-handle : The phandle for the PHY connected to this ethernet
->        controller.
-> +    - fixed-link : <a b c> where a is emulated phy id - choose any,
-> +      but unique to the all specified fixed-links, b is duplex - 0 half,
-> +      1 full, c is link speed - d#10/d#100/d#1000.
+On Mon, 26 Nov 2007, Ray Lee wrote:
 
-Good work!
-May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
+> On Nov 26, 2007 12:54 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+> >   on current systems, "rpm" no longer has build capability and will
+> > fail thusly:
+> >
+> > rpm --target i386 -ta ../kernel-2.6.24rc3g2ffbb837dirty.tar.gz
+> > --target: unknown option
+> >
+> >   so it would make more sense to just require "rpmbuild" on the
+> > machine, would it not?
+>
+> Only on current machines. You'd break building kernel RPMs on older
+> systems that don't have rpmbuild installed. So the change wouldn't
+> fix anything, and would break some non-zero number of setups that
+> are currently working, making the change a guaranteed net loss.
+>
+> A patch that added version checks against rpm and whinged
+> appropriately about needing rpmbuild would likely be accepted,
+> though.
 
-flow control or not just popped up here today so I got a use for it.
+yes, i suspect that's the right answer.
 
- Jocke 
+rday
 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://crashcourse.ca
+========================================================================
