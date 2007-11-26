@@ -1,61 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbXKZRUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758444AbXKZR2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758607AbXKZRUY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbXKZRUF
+	id S1758444AbXKZR2r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbXKZR2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:20:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50968 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756327AbXKZRUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:20:03 -0500
-Message-ID: <474B003D.7040908@redhat.com>
-Date: Mon, 26 Nov 2007 11:19:57 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mbligh@mbligh.org,
-       Valerie Henson <val.henson@intel.com>
-Subject: [PATCH] fix up ext2_fs.h for userspace after reservations backport
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 12:28:37 -0500
+Received: from ro-out-1112.google.com ([72.14.202.179]:64944 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754752AbXKZR2f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 12:28:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=bS0TmE/OijYzJf9jzcZfydfKyOl0EJEwBYhDPOx4zWv0drEwRoar86og034TW2tB4m7+A/3pRdWZ/Bgwrb0FfbvEr5lJOvKMO2C6hwDPAfbsettEeGvFhdM08xhcABY/sx4OwmaMjCB6vbbJqL/b4itNXcd/gDvlsvnfEGlRl0k=
+From: Denis Cheng <crquan@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dengxw@163.com,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH] [RESEND] crypto test: use print_hex_dump from <linux/kernel.h> instead
+Date: Tue, 27 Nov 2007 01:28:15 +0800
+Message-Id: <1196098095-8995-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <20071126143939.GB28022@gondor.apana.org.au>
+References: <20071126143939.GB28022@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tobias Poschwatta <tp@fonz.de>
+this patch is against cryptodev-2.6, and have passed scripts/checkpatch.pl
 
-In commit a686cd898bd999fd026a51e90fb0a3410d258ddb:
+KERN_DEBUG is stripped out, this acts more like the original in tcrypto.c
 
- "Val's cross-port of the ext3 reservations code into ext2."
+and the last parameter "bool ascii" set to zero to disable ascii output,
+this could keep it happy on Unicode terminals.
 
-include/linux/ext2_fs.h got a new function whose return value is only
-defined if __KERNEL__ is defined. Putting #ifdef __KERNEL__ around the
-function seems to help, patch below.
-
-BR, Tobias
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Denis Cheng <crquan@gmail.com>
 ---
+ crypto/tcrypt.c |   30 ++++++++++++++++--------------
+ 1 files changed, 16 insertions(+), 14 deletions(-)
 
-Index: linux-2.6.24-rc1/include/linux/ext2_fs.h
-===================================================================
---- linux-2.6.24-rc1.orig/include/linux/ext2_fs.h
-+++ linux-2.6.24-rc1/include/linux/ext2_fs.h
-@@ -563,11 +563,13 @@ enum {
- 					 ~EXT2_DIR_ROUND)
- #define EXT2_MAX_REC_LEN		((1<<16)-1)
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 24141fb..665aa87 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -81,14 +81,6 @@ static char *check[] = {
+ 	"camellia", "seed", NULL
+ };
  
-+#ifdef __KERNEL__
- static inline ext2_fsblk_t
- ext2_group_first_block_no(struct super_block *sb, unsigned long group_no)
+-static void hexdump(unsigned char *buf, unsigned int len)
+-{
+-	while (len--)
+-		printk("%02x", *buf++);
+-
+-	printk("\n");
+-}
+-
+ static void tcrypt_complete(struct crypto_async_request *req, int err)
  {
- 	return group_no * (ext2_fsblk_t)EXT2_BLOCKS_PER_GROUP(sb) +
- 		le32_to_cpu(EXT2_SB(sb)->s_es->s_first_data_block);
- }
-+#endif
+ 	struct tcrypt_result *res = req->data;
+@@ -156,7 +148,9 @@ static void test_hash(char *algo, struct hash_testvec *template,
+ 			goto out;
+ 		}
  
- #endif	/* _LINUX_EXT2_FS_H */
+-		hexdump(result, crypto_hash_digestsize(tfm));
++		print_hex_dump("", "", DUMP_PREFIX_OFFSET, 16, 1,
++				result, crypto_hash_digestsize(tfm), 0);
++
+ 		printk("%s\n",
+ 		       memcmp(result, hash_tv[i].digest,
+ 			      crypto_hash_digestsize(tfm)) ?
+@@ -203,7 +197,9 @@ static void test_hash(char *algo, struct hash_testvec *template,
+ 				goto out;
+ 			}
+ 
+-			hexdump(result, crypto_hash_digestsize(tfm));
++			print_hex_dump("", "", DUMP_PREFIX_OFFSET,
++					16, 1,
++					result, crypto_hash_digestsize(tfm), 0);
+ 			printk("%s\n",
+ 			       memcmp(result, hash_tv[i].digest,
+ 				      crypto_hash_digestsize(tfm)) ?
+@@ -319,7 +315,9 @@ static void test_cipher(char *algo, int enc,
+ 			}
+ 
+ 			q = kmap(sg_page(&sg[0])) + sg[0].offset;
+-			hexdump(q, cipher_tv[i].rlen);
++			print_hex_dump("", "", DUMP_PREFIX_OFFSET,
++					16, 1,
++					q, cipher_tv[i].rlen, 0);
+ 
+ 			printk("%s\n",
+ 			       memcmp(q, cipher_tv[i].result,
+@@ -393,7 +391,9 @@ static void test_cipher(char *algo, int enc,
+ 			for (k = 0; k < cipher_tv[i].np; k++) {
+ 				printk("page %u\n", k);
+ 				q = kmap(sg_page(&sg[k])) + sg[k].offset;
+-				hexdump(q, cipher_tv[i].tap[k]);
++				print_hex_dump("", "", DUMP_PREFIX_OFFSET,
++						16, 1,
++						q, cipher_tv[i].tap[k], 0);
+ 				printk("%s\n",
+ 					memcmp(q, cipher_tv[i].result + temp,
+ 						cipher_tv[i].tap[k]) ? "fail" :
+@@ -839,7 +839,8 @@ static void test_deflate(void)
+ 			printk("fail: ret=%d\n", ret);
+ 			continue;
+ 		}
+-		hexdump(result, dlen);
++		print_hex_dump("", "", DUMP_PREFIX_OFFSET, 16, 1,
++				result, dlen, 0);
+ 		printk("%s (ratio %d:%d)\n",
+ 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
+ 		       ilen, dlen);
+@@ -870,7 +871,8 @@ static void test_deflate(void)
+ 			printk("fail: ret=%d\n", ret);
+ 			continue;
+ 		}
+-		hexdump(result, dlen);
++		print_hex_dump("", "", DUMP_PREFIX_OFFSET, 16, 1,
++				result, dlen, 0);
+ 		printk("%s (ratio %d:%d)\n",
+ 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
+ 		       ilen, dlen);
+-- 
+1.5.3.4
 
