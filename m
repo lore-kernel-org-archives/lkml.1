@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbXKZBZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbXKZB22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbXKZBZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 20:25:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbXKZBZr
+	id S1758552AbXKZB22 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 20:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXKZB2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 20:25:47 -0500
-Received: from ozlabs.org ([203.10.76.45]:41763 "EHLO ozlabs.org"
+	Sun, 25 Nov 2007 20:28:18 -0500
+Received: from ozlabs.org ([203.10.76.45]:41798 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755281AbXKZBZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 20:25:46 -0500
+	id S1752792AbXKZB2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 20:28:17 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: Roland Dreier <rdreier@cisco.com>
 Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Mon, 26 Nov 2007 12:25:44 +1100
+Date: Mon, 26 Nov 2007 12:28:14 +1100
 User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 Cc: Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711231129.25982.rusty@rustcorp.com.au> <adaprxyrrv0.fsf@cisco.com>
-In-Reply-To: <adaprxyrrv0.fsf@cisco.com>
+References: <20071122343.446909000@suse.de> <adatznarrzc.fsf@cisco.com>
+In-Reply-To: <adatznarrzc.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711261225.44415.rusty@rustcorp.com.au>
+Message-Id: <200711261228.15155.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 November 2007 07:29:39 Roland Dreier wrote:
->  > Yes, and if a symbol is already used by multiple modules, it's
->  > generically useful.  And if so, why restrict it to in-tree modules?
+On Monday 26 November 2007 07:27:03 Roland Dreier wrote:
+>  > This patch allows to export symbols only for specific modules by
+>  > introducing symbol name spaces. A module name space has a white
+>  > list of modules that are allowed to import symbols for it; all others
+>  > can't use the symbols.
+>  >
+>  > It adds two new macros:
+>  >
+>  > MODULE_NAMESPACE_ALLOW(namespace, module);
 >
-> I agree that we shouldn't make things too hard for out-of-tree
-> modules, but I disagree with your first statement: there clearly is a
-> large class of symbols that are used by multiple modules but which are
-> not generically useful -- they are only useful by a certain small class
-> of modules.
+> I definitely like the idea of organizing exported symbols into
+> namespaces.  However, I feel like it would make more sense to have
+> something like
+>
+> MODULE_NAMESPACE_IMPORT(namespace);
 
-If it is so clear, you should be able to easily provide examples?
+Except C doesn't have namespaces and this mechanism doesn't create them.  So 
+this is just complete and utter makework; as I said before, noone's going to 
+confuse all those udp_* functions if they're not in the udp namespace.
+
+For better or worse, this is not C++.
 
 Rusty.
-
