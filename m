@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXKZWuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbXKZWwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757113AbXKZWuP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:50:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXKZWuE
+	id S1756898AbXKZWwt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbXKZWwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:50:04 -0500
-Received: from nmta.jpl.nasa.gov ([137.78.160.108]:34583 "EHLO
-	nmta3.jpl.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756069AbXKZWuD (ORCPT
+	Mon, 26 Nov 2007 17:52:43 -0500
+Received: from rn-out-0910.google.com ([64.233.170.190]:25035 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753341AbXKZWwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:50:03 -0500
-Subject: Re: Where is the interrupt going?
-From: Al Niessner <Al.Niessner@jpl.nasa.gov>
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1195854833.7195.24.camel@pasglop>
-References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
-	 <1195854833.7195.24.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 26 Nov 2007 14:49:57 -0800
-Message-Id: <1196117397.23293.3.camel@morte.jpl.nasa.gov>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 26 Nov 2007 17:52:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Z613+1f7XHIFuM0YthmvJq2hRH4O0//iCeFKGthJJYZVcE72gIJmQsimdkI243rocaM88O+sTEgVpFw92sAhHL48xYQT8lR7eTiEDr6L1mBH+tEuPYl6aAb1MZgY0BXNZnnjXAbPjguvx9TfDiOWv04NYE6QBOGvnkx5ZaJ7MbY=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 23/27] x86: debugctlmsr kconfig
+Date: Mon, 26 Nov 2007 14:52:34 -0800
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+References: <20071125215507.4B89226F8C5@magilla.localdomain> <200711251709.01304.vda.linux@googlemail.com> <20071126075131.95A0226F8C5@magilla.localdomain>
+In-Reply-To: <20071126075131.95A0226F8C5@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: morte.jpl.nasa.gov [137.78.15.44]
-X-Source-Sender: Al.Niessner@jpl.nasa.gov
-X-AUTH: Authorized
+Content-Disposition: inline
+Message-Id: <200711261452.34825.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 25 November 2007 23:51, Roland McGrath wrote:
+> > Why is it defined in configuration system instead of some *.h file?
+>
+> That seems to be existing practice for this sort of thing.
+> I just followed what I saw.
 
-Yes, as also pointed out by Arjan Van de Ven, I was missing the
-pci_enable_device() call. This seems related to the deprecation of
-pci_find_device (or something like that) in favor of pci_get_device.
-Well, by adding the pci_enable_device it all works well.
+I think that if such conditional constants can be defined
+in header files (IOW: if they are not used elsewhere in config system,
+only in the C source code), they should not be put in config system.
+Don't make it more complex than it needs to be.
 
-On Sat, 2007-11-24 at 08:53 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-11-21 at 17:08 -0800, Al Niessner wrote:
-> > 
-> > p8620 = pci_get_device (APC8620_VENDOR_ID, APC8620_DEVICE_ID, p8620);
-> > <... fail if p8620 is 0 ...>
-> > apcsi[i].ret_val = register_chrdev (MAJOR_NUM,
-> > 
-> > DEVICE_NAME,
-> > 
-> > &apc8620_ops);
-> > <... fail if ret_val < 0 ...>
-> > apcsi[i].board_irq = p8620->irq;
-> > status = request_irq (apcsi[i].board_irq,
-> >                                       apc8620_handler,
-> >                                       IRQF_DISABLED,
-> >                                       DEVICE_NAME,
-> >                                       (void*)&apcsi[i]);
-> 
-> First, that's obviously not the proper way to do a PCI driver but I
-> suppose you know that :-)
-> 
-> Then, make sure you call pci_enable_device() at one point, don't some
-> platforms perform the actual IRQ routing that late ? (And don't sample
-> pdev->irq before the pci_enable_device(), sample it afterward).
-> 
-> Cheers,
-> Ben.
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Al Niessner
-818.354.0859
-
-All opinions stated above are mine and do not necessarily reflect those
-of JPL or NASA.
-
---------
-|  dS  | >= 0
---------
-
-
+Sam what do you think?
+--
+vda
