@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbXKZVJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXKZVR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbXKZVJO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:09:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXKZVJD
+	id S1755296AbXKZVR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXKZVRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:09:03 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42605 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750716AbXKZVJB (ORCPT
+	Mon, 26 Nov 2007 16:17:19 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45957 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751261AbXKZVRS (ORCPT
 	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:09:01 -0500
-Date: Tue, 27 Nov 2007 08:08:44 +1100
+	Mon, 26 Nov 2007 16:17:18 -0500
+Date: Tue, 27 Nov 2007 08:17:05 +1100
 From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org
-Cc: rjw@sisk.pl, xfs@oss.sgi.com
-Subject: Re: XFS related Oops (suspend/resume related)
-Message-ID: <20071126210844.GB119954183@sgi.com>
-References: <20071112064706.GA23595@dose.home.local> <20071112222720.GG995458@sgi.com> <20071113105119.GA11527@dose.home.local> <20071113230445.GE995458@sgi.com> <20071126131210.GA4430@eazy.amigager.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: freeze vs freezer
+Message-ID: <20071126211705.GC119954183@sgi.com>
+References: <4744FD87.7010301@goop.org> <200711240047.21624.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071126131210.GA4430@eazy.amigager.de>
+In-Reply-To: <200711240047.21624.rjw@sisk.pl>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 02:12:10PM +0100, Tino Keitel wrote:
-> On Wed, Nov 14, 2007 at 10:04:45 +1100, David Chinner wrote:
-> > On Tue, Nov 13, 2007 at 11:51:19AM +0100, Tino Keitel wrote:
-> > > On Tue, Nov 13, 2007 at 09:27:20 +1100, David Chinner wrote:
-> > > 
-> > > [...]
-> > > 
-> > > > No. I'd say something got screwed up during suspend/resume. Is it
-> > > > reproducable?
-> > > 
-> > > No. I often use suspend to RAM, and usually it works without such
-> > > failures. I restart squid during the resume prosecure, and the above
-> > > Oops lead to a squid in D state.
+On Sat, Nov 24, 2007 at 12:47:21AM +0100, Rafael J. Wysocki wrote:
+> On Thursday, 22 of November 2007, Jeremy Fitzhardinge wrote:
+> > It seems that a process blocked in a write to an xfs filesystem due to
+> > xfs_freeze cannot be frozen by the freezer.
+> 
+> The freezer doesn't handle tasks in TASK_UNINTERRUPTIBLE and I don't know how
+> to make it handle them without at least partially defeating its purpose.
+
+So how do you handle threads that are blocked on I/O or a lock during
+the system freeze process, then?
+
+> > I see this if I suspend my laptop while doing something xfs-filesystem
+> > intensive, like a kernel build.  My suspend scripts freeze the XFS
+> > filesystem (as Dave said I should), which presumably blocks some writer,
+> > and then the freezer times out and fails to complete.
 > > 
-> > Ok. Sounds like there's not much we can debug at this point. Thanks
-> > for the report, though.
+> > Here's part of the process dump the freezer does when it times out:
+> > 
+> > cc1           D 00000000     0 18138  18137
+> >        dd5f1e24 00200082 00000002 00000000 ecdeeb00 ecdeec64 c200f280 00000001 
+> >        009c09a0 dd5f1e0c dd5f1e0c 0000000f 00000000 00000000 00000000 dd5f1e74 
+> >        c7beb480 dd5f1e88 dd5f1ea8 c0228d97 e8889540 dd5f1e38 c015b75d dd5f1e44 
+> > Call Trace:
+> >  [<c0228d97>] xfs_write+0xf4/0x6d9
+> >  [<c0226038>] xfs_file_aio_write+0x53/0x5b
+> >  [<c0171c15>] do_sync_write+0xae/0xec
+> >  [<c0172343>] vfs_write+0xa4/0x120
+> >  [<c01728d7>] sys_write+0x3b/0x60
+> >  [<c0106fae>] sysenter_past_esp+0x6b/0xa1
+> >  =======================
+> > 
+> > 
+> > I haven't looked at how to fix this yet.  I only just worked out why I
+> > was getting suspend failures.
 > 
-> I got a similar Oops again:
-> 
-> xfs_iget_core: ambiguous vns: vp/0xc00700c0, invp/0xcb5a1680
+> Well, you can add freezer_do_not_count()/freezer_count() annotations to
+> xfs_write() (and whatever else is blocked as a result of the XFS being frozen).
 
-Now there's a message that I haven't seen in about 3 years.
-
-It indicates that the linux inode connected to the xfs_inode is not
-the correct one. i.e. that the linux inode cache is out of step with
-the XFS inode cache.
-
-Basically, that is not supposed to happen. I suspect that the way
-threads are frozen is resulting in an inode lookup racing with
-a reclaim. The reclaim thread gets stopped after any use threads,
-and so we could have the situation that a process blocked in lookup
-has the XFS inode reclaimed and reused before it gets unblocked.
-
-The question is why is it happening now when none of that code in
-XFS has changed?
-
-Rafael, when are threads frozen? Only when they schedule or call
-try_to_freeze()? Did the freezer mechanism change in 2.6.23 (this is
-on 2.6.23.1)?  Is there some way of getting a stack trace of all the
-processes in the system once the machine is frozen and about to
-suspend so we can see if we blocked in a lookup?
+May as well annotate the whole VFS, then, because once the transaction
+subsystem is frozen any operation that modifies the filesystem will get
+blocked like this.
 
 Cheers,
 
