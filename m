@@ -1,124 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXKZSoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbXKZSoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbXKZSoB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 13:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbXKZSny
+	id S1754688AbXKZSoa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 13:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXKZSoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 13:43:54 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:58849 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbXKZSnx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 13:43:53 -0500
-Message-ID: <1618816c0711261043nfa61e63m59d242fbbd6a8d6@mail.gmail.com>
-Date: Mon, 26 Nov 2007 11:43:50 -0700
-From: "Raymano Garibaldi" <raymano@faunos.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Denys Vlasenko" <vda.linux@googlemail.com>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>,
-       "USB development list" <linux-usb-devel@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0711260958001.3987-100000@iolanthe.rowland.org>
+	Mon, 26 Nov 2007 13:44:21 -0500
+Received: from gw.goop.org ([64.81.55.164]:48996 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261AbXKZSoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 13:44:20 -0500
+Message-ID: <474B1404.8020800@goop.org>
+Date: Mon, 26 Nov 2007 10:44:20 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: freeze vs freezer
+References: <4744FD87.7010301@goop.org> <200711240047.21624.rjw@sisk.pl>
+In-Reply-To: <200711240047.21624.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1618816c0711252117l3348e07atfe84a321c5675889@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0711260958001.3987-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for responding Alan.
-
-On 11/26/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Sun, 25 Nov 2007, Raymano Garibaldi wrote:
+Rafael J. Wysocki wrote:
+> On Thursday, 22 of November 2007, Jeremy Fitzhardinge wrote:
+>   
+>> It seems that a process blocked in a write to an xfs filesystem due to
+>> xfs_freeze cannot be frozen by the freezer.
+>>     
 >
-> > The device which has the root fs is a READ-ONLY device. There is no
-> > way for it to change between getting detached and reattached to the
-> > computer which is suspended.
->
-> You might think so at first.  But suppose another device of the same
-> type got plugged in instead -- with different data stored on it.  That
-> would be just as bad.
->
+> The freezer doesn't handle tasks in TASK_UNINTERRUPTIBLE and I don't know how
+> to make it handle them without at least partially defeating its purpose.
+>   
 
-This is possible. However I believe giving an option to the user to
-allow this behavior is important. It's about choice.
+Well, I guess the question is whether an xfs-frozen writer really needs
+to be UNINTERRUPTIBLE from the freezer's perspective (clearly it does
+from usermode's perspective - filesystem writes just don't return EINTR).
 
-> > I understand that this is currently considered a feature but I am
-> > arguing here that there should also be another feature that allows
-> > this  to work under suspend to ram the same as it does with suspend to
-> > disk (hibernation).
-> ...
-> > This scenario is not currently possible with the any kernel after
-> > 2.6.22. It is a very important missing feature.
+>From a quick poke around, it looks to me like freezing is actually
+implemented in the VFS layer rather than in XFS itself: is that right? 
+Could vfs_check_frozen() be changed to something that is freezer-compatible?
+
+>> I see this if I suspend my laptop while doing something xfs-filesystem
+>> intensive, like a kernel build.  My suspend scripts freeze the XFS
+>> filesystem (as Dave said I should), which presumably blocks some writer,
+>> and then the freezer times out and fails to complete.
+>>
+>> Here's part of the process dump the freezer does when it times out:
+>>
+>> cc1           D 00000000     0 18138  18137
+>>        dd5f1e24 00200082 00000002 00000000 ecdeeb00 ecdeec64 c200f280 00000001 
+>>        009c09a0 dd5f1e0c dd5f1e0c 0000000f 00000000 00000000 00000000 dd5f1e74 
+>>        c7beb480 dd5f1e88 dd5f1ea8 c0228d97 e8889540 dd5f1e38 c015b75d dd5f1e44 
+>> Call Trace:
+>>  [<c0228d97>] xfs_write+0xf4/0x6d9
+>>  [<c0226038>] xfs_file_aio_write+0x53/0x5b
+>>  [<c0171c15>] do_sync_write+0xae/0xec
+>>  [<c0172343>] vfs_write+0xa4/0x120
+>>  [<c01728d7>] sys_write+0x3b/0x60
+>>  [<c0106fae>] sysenter_past_esp+0x6b/0xa1
+>>  =======================
+>>
+>>
+>> I haven't looked at how to fix this yet.  I only just worked out why I
+>> was getting suspend failures.
+>>     
 >
-> This has nothing to do with USB particularly; it applies to all forms
-> of hot-pluggable or removable storage.  Even floppy disks.
+> Well, you can add freezer_do_not_count()/freezer_count() annotations to
+> xfs_write() (and whatever else is blocked as a result of the XFS being frozen).
+>   
+
+What would be the implications of that?  Would that just prevent
+freezing while there's something blocked there?
+
+> Generally, that would be risky without the freezing of XFS, however, because it
+> might leak us filesystem data to a storage device after creating a hibernation
+> image which would result in the filesystem corruption after the resume.
 >
+> Still, if you only suspend to RAM, that should be safe.
+>   
 
-True.
+I specifically added it because I was getting data loss due to crashes
+during suspend/resume problems.  It's been pretty stable lately, but I
+may as well remove the xfs_freeze from my suspend scripts if this is the
+solution.
 
-> > And yes. This feature does work under the 2.6.21 kernel, exactly
-> > because the kernel did not have  the USB suspend and persist feature
-> > available.
->
-> Wait a minute.  You're saying that  USB Persist worked under 2.6.21
-> because it wasn't available?  That makes no sense.  Besides, if you
-> don't like USB Persist under 2.6.23, you can always eliminate it by
-> turning off CONFIG_USB_PERSIST.
->
+I think the broader issue is that there's no reason in principle why
+something blocked due to xfs-freezing (or vfs freezing) should prevent
+the freezer from completing.
 
-I have tried this. Simply turning off CONFIG_USB_PERSIST doesn't work.
-In this case the USB drive file system is unmounted on resume, even if
-the drive remained plugged in during suspend.
-
-> > Under the 2.6.21 kernel, during suspend, the kernel is
-> > totally unaware of what is happening to the USB device so nothing
-> > happens when the USB device is detached and reattached while the
-> > computer is suspended, hence making the described scenario above
-> > possible. I currently, and very frequently, use this feature on my
-> > live USB distro, FaunOS which uses kernel 2.6.21.
->
-> It may be the case that _your_ particular computer wasn't aware of
-> unplug or replug events during suspend, but if so then it was a bug and
-> it isn't true in general.  The fact that your computer is now aware of
-> these things proves this.
->
-
-I have tried this on many different computers. Also our distro users
-have successfully tried this throughout the world. Whether it was a
-bug or not, the desired behavior existed in kernel 2.6.21.
-
-> In short, you aren't reporting a bug -- you're asking for a new feature
-> to be added.
->
-> From the point of view of the kernel, being suspended is in some
-> respects like remaining awake.  Hotplug events are detected in either
-> case.  Would you also want the ability to unplug and replug your root
-> fs while the computer was running?  Would it make sense to add such an
-> ability?
->
-
-Yes. I believe because of the advances in solid state drive
-technology, especially detachable ones like USB flash drives, the
-ability to unplug and replug a live root fs is becoming an important
-feature.
-
-> There was a time during the 2.4 kernel series when usb-storage would
-> try to keep track of devices after they had been unplugged and
-> recognize them when they were re-attached.  Linus himself said it was
-> a bad idea and consequently it was removed.  Now you're saying you want
-> it back.  I think you'll have to convince Linus before anyone else will
-> pay attention.  It's worth a try -- he might think your airport
-> scenario is common enough to be worth supporting.
->
-> Alan Stern
->
->
-
-Thanks again Alan. I will post a feature request.
-
-
-Raymano G.
+    J
