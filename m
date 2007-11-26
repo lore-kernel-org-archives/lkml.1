@@ -1,72 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbXKZQ0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbXKZQ2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbXKZQ0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 11:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXKZQ0L
+	id S1756854AbXKZQ2S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 11:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbXKZQ2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 11:26:11 -0500
-Received: from wind.enjellic.com ([209.243.13.15]:36259 "EHLO
-	wind.enjellic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbXKZQ0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 11:26:10 -0500
-Message-Id: <200711261626.lAQGQ8nk023989@wind.enjellic.com>
-From: greg@enjellic.com
-Date: Mon, 26 Nov 2007 10:26:08 -0600
-In-Reply-To: "Kay Sievers" <kay.sievers@vrfy.org>
-       "Re: PCMCIA serial_cs driver binding problems." (Nov 23,  9:40am)
-Reply-To: greg@enjellic.com
-X-Mailer: Mail User's Shell (7.2.5 10/14/92)
-To: "Kay Sievers" <kay.sievers@vrfy.org>, greg@enjellic.com
-Subject: Re: PCMCIA serial_cs driver binding problems.
-Cc: linux-kernel@vger.kernel.org
+	Mon, 26 Nov 2007 11:28:01 -0500
+Received: from styx.suse.cz ([82.119.242.94]:43032 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753093AbXKZQ2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 11:28:00 -0500
+Date: Mon, 26 Nov 2007 17:27:58 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Morten Welinder <mwelinder@gmail.com>, rlove@rlove.org
+Subject: [PATCH] Send IN_ATTRIB events when link count changes
+Message-ID: <20071126162758.GA856@duck.suse.cz>
+References: <118833cc0711201911r3684937p38823649639e0a57@mail.gmail.com> <118833cc0711231154i588cf7c1gb99e050999af8632@mail.gmail.com> <20071126160043.GA5647@atrey.karlin.mff.cuni.cz> <118833cc0711260806x69fc2bb6n572f1e1253a201ef@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <118833cc0711260806x69fc2bb6n572f1e1253a201ef@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 23,  9:40am, "Kay Sievers" wrote:
-} Subject: Re: PCMCIA serial_cs driver binding problems.
+  Hi Andrew,
 
-Hi Kay, thanks for the note.
+  would you pick up this patch for testing in -mm? Thanks.
 
-> > I've tried to manually echo the device number (0.0 or 1.0) into the
-> > /sys/bus/pcmcia/drivers/serial_cs/bind pseudo-file but nothing
-> > happens.  The device number is present as a binding if cardmgr frobs
-> > things with the pcmcia_ioctl bind commands.
+								Honza
 
-> Did you enable this?
->
-> echo -n 1 > /sys/devices/pci0000:00/0000:00:1e.0/0000:15:00.0/0.0/allow_func_id_match
->
-> You can watch "udevmonitor --kernel" while doing this, to get the path and
-> see what events the kernel creates.
->
-> Distros usually set it automatically by udev: ACTION=="add",
-> SUBSYSTEM=="pcmcia", ENV{MODALIAS}=="?*", ATTR{allow_func_id_match}="1"
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
-That fixed the problem instantly, thanks for the tip.
+---
 
-I must have spent a couple of hours Google'ing for hints on this.  Is
-there any documentation floating around or a site which documents
-functionality for these writable pseudo-files in /sys?
+Send inotify events to the inode itself when its link count has changed.
 
-Deducing available or needed functionality would seem to be somewhat
-of a black art... :-)
+Signed-off-by: Jan Kara <jack@suse.cz>
+Acked-by: Morten Welinder <mwelinder@gmail.com>
 
-> Kay
-
-Thanks again for the pointer, best wishes for a productive week.
-
-}-- End of excerpt from "Kay Sievers"
-
-As always,
-Dr. G.W. Wettstein, Ph.D.   Enjellic Systems Development, LLC.
-4206 N. 19th Ave.           Specializing in information infra-structure
-Fargo, ND  58102            development.
-PH: 701-281-1686
-FAX: 701-281-3949           EMAIL: greg@enjellic.com
-------------------------------------------------------------------------------
-"It would appear that we have reached the limits of what it is
- possible to achieve with computer technology, although one should be
- careful with such statements, as they tend to sound pretty silly in 5
- years."
-                                -- John Von Neumann (ca. 1949)
+diff --git a/fs/namei.c b/fs/namei.c
+index 3b993db..9a91130 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2188,6 +2188,7 @@ int vfs_unlink(struct inode *dir, struct
+ 
+ 	/* We don't d_delete() NFS sillyrenamed files--they still exist. */
+ 	if (!error && !(dentry->d_flags & DCACHE_NFSFS_RENAMED)) {
++		fsnotify_link_count(dentry->d_inode);
+ 		d_delete(dentry);
+ 	}
+ 
+@@ -2360,7 +2361,7 @@ int vfs_link(struct dentry *old_dentry,
+ 	error = dir->i_op->link(old_dentry, dir, new_dentry);
+ 	mutex_unlock(&old_dentry->d_inode->i_mutex);
+ 	if (!error)
+-		fsnotify_create(dir, new_dentry);
++		fsnotify_link(dir, new_dentry);
+ 	return error;
+ }
+ 
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index 2bd31fa..b21b818 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -92,6 +92,14 @@ static inline void fsnotify_inoderemove(
+ }
+ 
+ /*
++ * fsnotify_link_count - inode's link count changed
++ */
++static inline void fsnotify_link_count(struct inode *inode)
++{
++	inotify_inode_queue_event(inode, IN_ATTRIB, 0, NULL, NULL);
++}
++
++/*
+  * fsnotify_create - 'name' was linked in
+  */
+ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+@@ -103,6 +111,18 @@ static inline void fsnotify_create(struc
+ }
+ 
+ /*
++ * fsnotify_link - new hardlink in 'inode' directory
++ */
++static inline void fsnotify_link(struct inode *inode, struct dentry *new_dentry)
++{
++	inode_dir_notify(inode, DN_CREATE);
++	inotify_inode_queue_event(inode, IN_CREATE, 0, new_dentry->d_name.name,
++				  new_dentry->d_inode);
++	fsnotify_link_count(new_dentry->d_inode);
++	audit_inode_child(new_dentry->d_name.name, new_dentry, inode);
++}
++
++/*
+  * fsnotify_mkdir - directory 'name' was created
+  */
+ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
