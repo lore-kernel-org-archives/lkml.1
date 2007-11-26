@@ -1,93 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbXKZUff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbXKZUgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbXKZUff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 15:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbXKZUf1
+	id S1756454AbXKZUgM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 15:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXKZUf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 15:35:27 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46870 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754544AbXKZUf0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 15:35:26 -0500
-Date: Mon, 26 Nov 2007 12:33:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       apw@shadowen.org, balbir@linux.vnet.ibm.com, linux-acpi@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Message-Id: <20071126123319.7483e57f.akpm@linux-foundation.org>
-In-Reply-To: <20071126143943.0a01665b@cuia.boston.redhat.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4743CC0B.9000508@linux.vnet.ibm.com>
-	<20071120221839.faab108e.akpm@linux-foundation.org>
-	<20071126143943.0a01665b@cuia.boston.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 15:35:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45531 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754774AbXKZUfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 15:35:54 -0500
+Date: Mon, 26 Nov 2007 21:35:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] scheduler fixes
+Message-ID: <20071126203542.GA17976@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 14:39:43 -0500
-Rik van Riel <riel@redhat.com> wrote:
 
-> On Tue, 20 Nov 2007 22:18:39 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> > > Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
-> > 
-> > ACPI or x86 breakage, I guess.
-> > 
-> > Did 'noapic' work?
-> 
-> I got the same bug as above, 'noapic' gets past that point 
+Linus, please pull the latest scheduler git tree from:
 
-We still don't know what caused this, afaik.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-> and right to the
-> next oops.  I'm posting it here because this one is different from the others
-> in the thread, yet looks vaguely related:
-> 
-> Unable to handle kernel NULL pointer dereference at 0000000000000021 RIP:
->  [<ffffffff8108382a>] refresh_zone_stat_thresholds+0x6d/0x90
-> PGD 0
-> Oops: 0002 [1] SMP
-> last sysfs file:
-> CPU 0
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.24-rc3-mm1 #2
-> RIP: 0010:[<ffffffff8108382a>]  [<ffffffff8108382a>] refresh_zone_stat_thresholds+0x6d/0x90
-> RSP: 0000:ffff81007fb59ec0  EFLAGS: 00010293
-> RAX: 0000000000000000 RBX: 0000000000000004 RCX: 0000000000000001
-> RDX: 0000000000000001 RSI: ffffffff8146fb38 RDI: 0000000000000001
-> RBP: ffff81000000c000 R08: 0000000000000000 R09: 0000000000000000
-> R10: ffff81007fb59e60 R11: 0000000000000028 R12: ffffffff814d4558
-> R13: 0000000000000000 R14: ffffffff814b62c0 R15: 0000000000000000
-> FS:  0000000000000000(0000) GS:ffffffff813d9000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000021 CR3: 0000000000201000 CR4: 00000000000006a0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 1, threadinfo FFFF81007FB58000, task FFFF81007FB56000)
-> Stack:  0000000000000000 0000000000000000 0000000000000000 ffffffff814a3839
->  0000000000000000 ffffffff8148e626 ffff81007fb56000 ffffffff8126d36a
->  0000000000000000 ffffffffffffffff ffffffff8105786b 0000000000000000
-> Call Trace:
->  [<ffffffff814a3839>] setup_vmstat+0x6/0x40
->  [<ffffffff8148e626>] kernel_init+0x169/0x2d8
->  [<ffffffff8126d36a>] trace_hardirqs_on_thunk+0x35/0x3a
->  [<ffffffff8105786b>] trace_hardirqs_on+0x115/0x138
->  [<ffffffff8100ce48>] child_rip+0xa/0x12
->  [<ffffffff8100c55f>] restore_args+0x0/0x30
->  [<ffffffff8148e4bd>] kernel_init+0x0/0x2d8
->  [<ffffffff8100ce3e>] child_rip+0x0/0x12
-> 
-> INFO: lockdep is turned off.
+6 commits: two fixes, a tuning tweak and 3 small cleanups.
 
-hm.  This smells like a startup ordering problem, but everything which
-refresh_zone_stat_thresholds() should be set up by the time we run
-initcalls.  Maybe the zone lists are bad?
+Thanks!
 
+	Ingo
+
+------------------>
+Ingo Molnar (4):
+      sched: fix prev_stime calculation
+      sched: fix kernel/acct.c comment
+      sched: fix RLIMIT_CPU comment
+      sched: bump version of kernel/sched_debug.c
+
+Pavel Emelyanov (1):
+      sched: don't forget to unlock uids_mutex on error paths
+
+Zou Nan hai (1):
+      sched: fix minimum granularity tunings
+
+ fs/proc/array.c                |    4 +++-
+ include/asm-generic/resource.h |    2 +-
+ kernel/acct.c                  |    2 +-
+ kernel/sched_debug.c           |    2 +-
+ kernel/sched_fair.c            |   12 ++++++------
+ kernel/user.c                  |    7 ++++++-
+ 6 files changed, 18 insertions(+), 11 deletions(-)
+
+Index: linux/fs/proc/array.c
+===================================================================
+--- linux.orig/fs/proc/array.c
++++ linux/fs/proc/array.c
+@@ -374,7 +374,9 @@ static cputime_t task_stime(struct task_
+ 	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
+ 			cputime_to_clock_t(task_utime(p));
+ 
+-	p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
++	if (stime >= 0)
++		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
++
+ 	return p->prev_stime;
+ }
+ #endif
+Index: linux/include/asm-generic/resource.h
+===================================================================
+--- linux.orig/include/asm-generic/resource.h
++++ linux/include/asm-generic/resource.h
+@@ -12,7 +12,7 @@
+  *   then it defines them prior including asm-generic/resource.h. )
+  */
+ 
+-#define RLIMIT_CPU		0	/* CPU time in ms */
++#define RLIMIT_CPU		0	/* CPU time in sec */
+ #define RLIMIT_FSIZE		1	/* Maximum filesize */
+ #define RLIMIT_DATA		2	/* max data size */
+ #define RLIMIT_STACK		3	/* max stack size */
+Index: linux/kernel/acct.c
+===================================================================
+--- linux.orig/kernel/acct.c
++++ linux/kernel/acct.c
+@@ -413,7 +413,7 @@ static u32 encode_float(u64 value)
+  *  The acct_process() call is the workhorse of the process
+  *  accounting system. The struct acct is built here and then written
+  *  into the accounting file. This function should only be called from
+- *  do_exit().
++ *  do_exit() or when switching to a different output file.
+  */
+ 
+ /*
+Index: linux/kernel/sched_debug.c
+===================================================================
+--- linux.orig/kernel/sched_debug.c
++++ linux/kernel/sched_debug.c
+@@ -199,7 +199,7 @@ static int sched_debug_show(struct seq_f
+ 	u64 now = ktime_to_ns(ktime_get());
+ 	int cpu;
+ 
+-	SEQ_printf(m, "Sched Debug Version: v0.06-v22, %s %.*s\n",
++	SEQ_printf(m, "Sched Debug Version: v0.07, %s %.*s\n",
+ 		init_utsname()->release,
+ 		(int)strcspn(init_utsname()->version, " "),
+ 		init_utsname()->version);
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -22,7 +22,7 @@
+ 
+ /*
+  * Targeted preemption latency for CPU-bound tasks:
+- * (default: 20ms * ilog(ncpus), units: nanoseconds)
++ * (default: 20ms * (1 + ilog(ncpus)), units: nanoseconds)
+  *
+  * NOTE: this latency value is not the same as the concept of
+  * 'timeslice length' - timeslices in CFS are of variable length
+@@ -36,14 +36,14 @@ unsigned int sysctl_sched_latency = 2000
+ 
+ /*
+  * Minimal preemption granularity for CPU-bound tasks:
+- * (default: 1 msec * ilog(ncpus), units: nanoseconds)
++ * (default: 4 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
+-unsigned int sysctl_sched_min_granularity = 1000000ULL;
++unsigned int sysctl_sched_min_granularity = 4000000ULL;
+ 
+ /*
+  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
+  */
+-static unsigned int sched_nr_latency = 20;
++static unsigned int sched_nr_latency = 5;
+ 
+ /*
+  * After fork, child runs first. (default) If set to 0 then
+@@ -61,7 +61,7 @@ unsigned int __read_mostly sysctl_sched_
+ 
+ /*
+  * SCHED_BATCH wake-up granularity.
+- * (default: 10 msec * ilog(ncpus), units: nanoseconds)
++ * (default: 10 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  *
+  * This option delays the preemption effects of decoupled workloads
+  * and reduces their over-scheduling. Synchronous workloads will still
+@@ -71,7 +71,7 @@ unsigned int sysctl_sched_batch_wakeup_g
+ 
+ /*
+  * SCHED_OTHER wake-up granularity.
+- * (default: 10 msec * ilog(ncpus), units: nanoseconds)
++ * (default: 10 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  *
+  * This option delays the preemption effects of decoupled workloads
+  * and reduces their over-scheduling. Synchronous workloads will still
+Index: linux/kernel/user.c
+===================================================================
+--- linux.orig/kernel/user.c
++++ linux/kernel/user.c
+@@ -337,8 +337,11 @@ struct user_struct * alloc_uid(struct us
+ 		struct user_struct *new;
+ 
+ 		new = kmem_cache_alloc(uid_cachep, GFP_KERNEL);
+-		if (!new)
++		if (!new) {
++			uids_mutex_unlock();
+ 			return NULL;
++		}
++
+ 		new->uid = uid;
+ 		atomic_set(&new->__count, 1);
+ 		atomic_set(&new->processes, 0);
+@@ -355,6 +358,7 @@ struct user_struct * alloc_uid(struct us
+ 
+ 		if (alloc_uid_keyring(new, current) < 0) {
+ 			kmem_cache_free(uid_cachep, new);
++			uids_mutex_unlock();
+ 			return NULL;
+ 		}
+ 
+@@ -362,6 +366,7 @@ struct user_struct * alloc_uid(struct us
+ 			key_put(new->uid_keyring);
+ 			key_put(new->session_keyring);
+ 			kmem_cache_free(uid_cachep, new);
++			uids_mutex_unlock();
+ 			return NULL;
+ 		}
+ 
