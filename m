@@ -1,80 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbXKZVff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXKZVgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbXKZVff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXKZVf2
+	id S1755909AbXKZVgn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbXKZVge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:35:28 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40390 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751849AbXKZVf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:35:27 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: freeze vs freezer
-Date: Mon, 26 Nov 2007 22:53:34 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4744FD87.7010301@goop.org> <200711240047.21624.rjw@sisk.pl> <20071126211705.GC119954183@sgi.com>
-In-Reply-To: <20071126211705.GC119954183@sgi.com>
+	Mon, 26 Nov 2007 16:36:34 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34634 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbXKZVgc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 16:36:32 -0500
+Date: Mon, 26 Nov 2007 15:36:31 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: akpm@osdl.org, torvalds@osdl.org, Andrew Morgan <morgan@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] -mm (2.4.26-rc3-mm1) v2  Smack using capabilities 32
+	and 33
+Message-ID: <20071126213631.GA14892@sergelap.austin.ibm.com>
+References: <474B2EE0.5080102@schaufler-ca.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711262253.35420.rjw@sisk.pl>
+In-Reply-To: <474B2EE0.5080102@schaufler-ca.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 26 of November 2007, David Chinner wrote:
-> On Sat, Nov 24, 2007 at 12:47:21AM +0100, Rafael J. Wysocki wrote:
-> > On Thursday, 22 of November 2007, Jeremy Fitzhardinge wrote:
-> > > It seems that a process blocked in a write to an xfs filesystem due to
-> > > xfs_freeze cannot be frozen by the freezer.
-> > 
-> > The freezer doesn't handle tasks in TASK_UNINTERRUPTIBLE and I don't know how
-> > to make it handle them without at least partially defeating its purpose.
+Quoting Casey Schaufler (casey@schaufler-ca.com):
+> From: Casey Schaufler <casey@schaufler-ca.com>
 > 
-> So how do you handle threads that are blocked on I/O or a lock during
-> the system freeze process, then?
-
-We wait until they can continue.
-
-> > > I see this if I suspend my laptop while doing something xfs-filesystem
-> > > intensive, like a kernel build.  My suspend scripts freeze the XFS
-> > > filesystem (as Dave said I should), which presumably blocks some writer,
-> > > and then the freezer times out and fails to complete.
-> > > 
-> > > Here's part of the process dump the freezer does when it times out:
-> > > 
-> > > cc1           D 00000000     0 18138  18137
-> > >        dd5f1e24 00200082 00000002 00000000 ecdeeb00 ecdeec64 c200f280 00000001 
-> > >        009c09a0 dd5f1e0c dd5f1e0c 0000000f 00000000 00000000 00000000 dd5f1e74 
-> > >        c7beb480 dd5f1e88 dd5f1ea8 c0228d97 e8889540 dd5f1e38 c015b75d dd5f1e44 
-> > > Call Trace:
-> > >  [<c0228d97>] xfs_write+0xf4/0x6d9
-> > >  [<c0226038>] xfs_file_aio_write+0x53/0x5b
-> > >  [<c0171c15>] do_sync_write+0xae/0xec
-> > >  [<c0172343>] vfs_write+0xa4/0x120
-> > >  [<c01728d7>] sys_write+0x3b/0x60
-> > >  [<c0106fae>] sysenter_past_esp+0x6b/0xa1
-> > >  =======================
-> > > 
-> > > 
-> > > I haven't looked at how to fix this yet.  I only just worked out why I
-> > > was getting suspend failures.
-> > 
-> > Well, you can add freezer_do_not_count()/freezer_count() annotations to
-> > xfs_write() (and whatever else is blocked as a result of the XFS being frozen).
+> This patch takes advantage of the increase in capability bits
+> to allocate capabilities for Mandatory Access Control. Whereas
+> Smack was overloading a previously allocated capability it is
+> now using a pair, one for overriding access control checks and
+> the other for changes to the MAC configuration.
 > 
-> May as well annotate the whole VFS, then, because once the transaction
-> subsystem is frozen any operation that modifies the filesystem will get
-> blocked like this.
+> The two capabilities allocated should be obvious in their intent.
+> The comments in capability.h are intended to make it clear that
+> there is no intention that implementations of MAC LSM modules
+> be any more constrained by the presence of these capabilities
+> than an implementation of DAC LSM modules are by the analogous
+> DAC capabilities.
+> 
+> 
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-Well, I don't know how this mechanism actually works, so I can't comment.
+Looks good from here.
 
-Is there a mutex on which tasks block if the filesystem is frozen?
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Greetings,
-Rafael
+> 
+> ---
+> 
+> The companion patch for libcap-2.02 is provided as an attachment.
+> The attachment is not a kernel patch, although it would be easy to
+> mistake it for one.
+> 
+> Introduces CAP_FS_MASK_B1 and uses it as appropriate. I think that
+> I found all the places it needs to be used, but don't hesitate to
+> let me know if I missed something.
+> 
+> Thank you.
+> 
+>  include/linux/capability.h |   24 ++++++++++++++++++++++--
+>  security/smack/smack.h     |    8 --------
+>  security/smack/smack_lsm.c |    8 ++++----
+>  security/smack/smackfs.c   |   12 ++++++------
+>  4 files changed, 32 insertions(+), 20 deletions(-)
+> 
+> diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/include/linux/capability.h linux-2.6.24-rc3-mm1-smack/include/linux/capability.h
+> --- linux-2.6.24-rc3-mm1-base/include/linux/capability.h	2007-11-22 01:51:36.000000000 -0800
+> +++ linux-2.6.24-rc3-mm1-smack/include/linux/capability.h	2007-11-25 21:38:34.000000000 -0800
+> @@ -314,6 +314,23 @@ typedef struct kernel_cap_struct {
+> 
+>  #define CAP_SETFCAP	     31
+> 
+> +/* Override MAC access.
+> +   The base kernel enforces no MAC policy.
+> +   An LSM may enforce a MAC policy, and if it does and it chooses
+> +   to implement capability based overrides of that policy, this is
+> +   the capability it should use to do so. */
+> +
+> +#define CAP_MAC_OVERRIDE     32
+> +
+> +/* Allow MAC configuration or state changes.
+> +   The base kernel requires no MAC configuration.
+> +   An LSM may enforce a MAC policy, and if it does and it chooses
+> +   to implement capability based checks on modifications to that
+> +   policy or the data required to maintain it, this is the
+> +   capability it should use to do so. */
+> +
+> +#define CAP_MAC_ADMIN        33
+> +
+>  /*
+>   * Bit location of each capability (used by user-space library and kernel)
+>   */
+> @@ -336,6 +353,8 @@ typedef struct kernel_cap_struct {
+>  			    | CAP_TO_MASK(CAP_FOWNER)		\
+>  			    | CAP_TO_MASK(CAP_FSETID))
+> 
+> +# define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
+> +
+>  #if _LINUX_CAPABILITY_U32S != 2
+>  # error Fix up hand-coded capability macro initializers
+>  #else /* HAND-CODED capability initializers */
+> @@ -343,8 +362,9 @@ typedef struct kernel_cap_struct {
+>  # define CAP_EMPTY_SET    {{ 0, 0 }}
+>  # define CAP_FULL_SET     {{ ~0, ~0 }}
+>  # define CAP_INIT_EFF_SET {{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }}
+> -# define CAP_FS_SET       {{ CAP_FS_MASK_B0, 0 }}
+> -# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), 0 }}
+> +# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } }
+> +# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
+> +			     CAP_FS_MASK_B1 } }
+> 
+>  #endif /* _LINUX_CAPABILITY_U32S != 2 */
+> 
+> diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/security/smack/smackfs.c linux-2.6.24-rc3-mm1-smack/security/smack/smackfs.c
+> --- linux-2.6.24-rc3-mm1-base/security/smack/smackfs.c	2007-11-22 01:51:43.000000000 -0800
+> +++ linux-2.6.24-rc3-mm1-smack/security/smack/smackfs.c	2007-11-24 11:29:29.000000000 -0800
+> @@ -241,7 +241,7 @@ static ssize_t smk_write_load(struct fil
+>  	 * No partial writes.
+>  	 * Enough data must be present.
+>  	 */
+> -	if (!capable(CAP_MAC_OVERRIDE))
+> +	if (!capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+>  	if (*ppos != 0)
+>  		return -EINVAL;
+> @@ -474,7 +474,7 @@ static ssize_t smk_write_cipso(struct fi
+>  	 * No partial writes.
+>  	 * Enough data must be present.
+>  	 */
+> -	if (!capable(CAP_MAC_OVERRIDE))
+> +	if (!capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+>  	if (*ppos != 0)
+>  		return -EINVAL;
+> @@ -601,7 +601,7 @@ static ssize_t smk_write_doi(struct file
+>  	char temp[80];
+>  	int i;
+> 
+> -	if (!capable(CAP_MAC_OVERRIDE))
+> +	if (!capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	if (count >= sizeof(temp) || count == 0)
+> @@ -666,7 +666,7 @@ static ssize_t smk_write_direct(struct f
+>  	char temp[80];
+>  	int i;
+> 
+> -	if (!capable(CAP_MAC_OVERRIDE))
+> +	if (!capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	if (count >= sizeof(temp) || count == 0)
+> @@ -747,7 +747,7 @@ static ssize_t smk_write_ambient(struct 
+>  	char in[SMK_LABELLEN];
+>  	char *smack;
+> 
+> -	if (!capable(CAP_MAC_OVERRIDE))
+> +	if (!capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	if (count >= SMK_LABELLEN)
+> @@ -840,7 +840,7 @@ static ssize_t smk_write_nltype(struct f
+>  	char *cp;
+>  	int i;
+> 
+> -	if (!capable(CAP_MAC_OVERRIDE))
+> +	if (!capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	if (count >= 40)
+> diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/security/smack/smack.h linux-2.6.24-rc3-mm1-smack/security/smack/smack.h
+> --- linux-2.6.24-rc3-mm1-base/security/smack/smack.h	2007-11-22 01:51:43.000000000 -0800
+> +++ linux-2.6.24-rc3-mm1-smack/security/smack/smack.h	2007-11-22 03:03:19.000000000 -0800
+> @@ -162,14 +162,6 @@ struct smack_known {
+>  #define MAY_NOT		0
+> 
+>  /*
+> - * There are not enough CAP bits available to make this
+> - * real, so Casey borrowed the capability that looks to
+> - * him like it has the best balance of similarity amd
+> - * low use.
+> - */
+> -#define CAP_MAC_OVERRIDE CAP_LINUX_IMMUTABLE
+> -
+> -/*
+>   * These functions are in smack_lsm.c
+>   */
+>  struct inode_smack *new_inode_smack(char *);
+> diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/security/smack/smack_lsm.c linux-2.6.24-rc3-mm1-smack/security/smack/smack_lsm.c
+> --- linux-2.6.24-rc3-mm1-base/security/smack/smack_lsm.c	2007-11-22 01:51:43.000000000 -0800
+> +++ linux-2.6.24-rc3-mm1-smack/security/smack/smack_lsm.c	2007-11-24 11:31:43.000000000 -0800
+> @@ -585,7 +585,7 @@ static int smack_inode_setxattr(struct d
+>  				void *value, size_t size, int flags)
+>  {
+>  	if (strcmp(name, XATTR_NAME_SMACK) == 0 &&
+> -		!__capable(current, CAP_MAC_OVERRIDE))
+> +		!__capable(current, CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
+> @@ -649,14 +649,14 @@ static int smack_inode_getxattr(struct d
+>   * @dentry: the object
+>   * @name: name of the attribute
+>   *
+> - * Removing the Smack attribute requires CAP_MAC_OVERRIDE
+> + * Removing the Smack attribute requires CAP_MAC_ADMIN
+>   *
+>   * Returns 0 if access is permitted, an error code otherwise
+>   */
+>  static int smack_inode_removexattr(struct dentry *dentry, char *name)
+>  {
+>  	if (strcmp(name, XATTR_NAME_SMACK) == 0 &&
+> -		!__capable(current, CAP_MAC_OVERRIDE))
+> +		!__capable(current, CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
+> @@ -1956,7 +1956,7 @@ static int smack_setprocattr(struct task
+>  {
+>  	char *newsmack;
+> 
+> -	if (!__capable(p, CAP_MAC_OVERRIDE))
+> +	if (!__capable(p, CAP_MAC_ADMIN))
+>  		return -EPERM;
+> 
+>  	/*
+> 
+
+> diff -uprN libcap-2.02/libcap/include/linux/capability.h libcap-2.02-smack/libcap/include/linux/capability.h
+> --- libcap-2.02/libcap/include/linux/capability.h	2007-11-10 09:34:04.000000000 -0800
+> +++ libcap-2.02-smack/libcap/include/linux/capability.h	2007-11-25 20:51:56.000000000 -0800
+> @@ -314,6 +314,23 @@ typedef struct kernel_cap_struct {
+> 
+>  #define CAP_SETFCAP	     31
+> 
+> +/* Override MAC access.
+> +   The base kernel enforces no MAC policy.
+> +   An LSM may enforce a MAC policy, and if it does and it chooses
+> +   to implement capability based overrides of that policy, this is
+> +   the capability it should use to do so. */
+> +
+> +#define CAP_MAC_OVERRIDE     32
+> +
+> +/* Allow MAC configuration or state changes.
+> +   The base kernel requires no MAC configuration.
+> +   An LSM may enforce a MAC policy, and if it does and it chooses
+> +   to implement capability based checks on modifications to that
+> +   policy or the data required to maintain it, this is the
+> +   capability it should use to do so. */
+> +
+> +#define CAP_MAC_ADMIN        33
+> +
+>  /*
+>   * Bit location of each capability (used by user-space library and kernel)
+>   */
+> @@ -336,6 +353,8 @@ typedef struct kernel_cap_struct {
+>  			    |CAP_TO_MASK(CAP_FOWNER)            \
+>  			    |CAP_TO_MASK(CAP_FSETID))
+> 
+> +# define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
+> +
+>  #if _LINUX_CAPABILITY_U32S != 2
+>  # error Fix up hand-coded capability macro initializers
+>  #else /* HAND-CODED capability initializers */
+> @@ -343,8 +362,9 @@ typedef struct kernel_cap_struct {
+>  # define CAP_EMPTY_SET    {{ 0, 0 }}
+>  # define CAP_FULL_SET     {{ ~0, ~0 }}
+>  # define CAP_INIT_EFF_SET {{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }}
+> -# define CAP_FS_SET       {{ CAP_FS_MASK_B0, 0 }}
+> -# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), 0 }}
+> +# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 }}
+> +# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
+> +			     CAP_FS_MASK_B1 }}
+> 
+>  #endif /* _LINUX_CAPABILITY_U32S != 2 */
+> 
+
