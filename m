@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXKZWQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbXKZWSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXKZWQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:16:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbXKZWQH
+	id S1756797AbXKZWSA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:18:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXKZWRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:16:07 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59329 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755030AbXKZWQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:16:07 -0500
-Date: Mon, 26 Nov 2007 14:15:45 -0800
-From: Greg KH <gregkh@suse.de>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       lcm@us.ibm.com
-Subject: Re: Avoid creating P2P prefetch window for expansion ROMs
-Message-ID: <20071126221545.GA15268@suse.de>
-References: <4742CB2C.76E4.0078.0@novell.com> <20071120174945.GA6024@us.ibm.com> <47440D1F.76E4.0078.0@novell.com> <20071126215953.GA23277@us.ibm.com>
+	Mon, 26 Nov 2007 17:17:53 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2031 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754433AbXKZWRw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 17:17:52 -0500
+Date: Mon, 26 Nov 2007 17:17:51 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Raymano Garibaldi <raymano@faunos.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+In-Reply-To: <1618816c0711261043nfa61e63m59d242fbbd6a8d6@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0711261713280.14778-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071126215953.GA23277@us.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 01:59:54PM -0800, Gary Hade wrote:
-> Greg, 
-> Without a closer look at the code and the information I
-> requested above I am not 100% certain that my expansion ROM
-> allocation fix is incomplete but it seems pretty likely that
-> it is.  If you feel that the possible regression that Jan
-> reported is more important than the issue I was trying to solve
-> feel free to remove the change until I can come up with
-> something better.
+On Mon, 26 Nov 2007, Raymano Garibaldi wrote:
 
-If you want me to revert the changes in Linus's tree right now, that's
-fine, I will, just send me a patch to do so.
+> > Wait a minute.  You're saying that  USB Persist worked under 2.6.21
+> > because it wasn't available?  That makes no sense.  Besides, if you
+> > don't like USB Persist under 2.6.23, you can always eliminate it by
+> > turning off CONFIG_USB_PERSIST.
+> >
+> 
+> I have tried this. Simply turning off CONFIG_USB_PERSIST doesn't work.
+> In this case the USB drive file system is unmounted on resume, even if
+> the drive remained plugged in during suspend.
 
-But if you think you can work to solve this problem quickly, then I'm
-more than willing to keep the changes in the tree.
+Something about this doesn't sound right.
 
-It's up to you.
+When you have CONFIG_USB_PERSIST enabled, do you remember to turn on 
+the Persist feature for the root fs device by writing a "1" to the 
+device's power/persist file in sysfs?
 
-thanks,
+Can you try building a kernel with CONFIG_USB_PERSIST and 
+CONFIG_USB_DEBUG both enabled, and post the dmesg log from immediately 
+after resuming?
 
-greg k-h
+Alan Stern
+
