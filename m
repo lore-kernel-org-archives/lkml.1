@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbXKZVnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbXKZVqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbXKZVnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXKZVnj
+	id S1754725AbXKZVqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbXKZVqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:43:39 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57338 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbXKZVni (ORCPT
+	Mon, 26 Nov 2007 16:46:10 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36193 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754727AbXKZVqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:43:38 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] teach set_special_pids() to use struct pid
-References: <20071126142555.GA16528@tv-sign.ru>
-	<m18x4kon6i.fsf@ebiederm.dsl.xmission.com>
-	<20071126201757.GB84@tv-sign.ru>
-Date: Mon, 26 Nov 2007 14:42:33 -0700
-In-Reply-To: <20071126201757.GB84@tv-sign.ru> (Oleg Nesterov's message of
-	"Mon, 26 Nov 2007 23:17:57 +0300")
-Message-ID: <m1myt0n0om.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 26 Nov 2007 16:46:09 -0500
+Date: Mon, 26 Nov 2007 22:45:55 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message
+	followed by soft lockup)
+Message-ID: <20071126214554.GD917@stusta.de>
+References: <200711222007.12497.elendil@planet.nl> <200711260028.18489.rjw@sisk.pl> <20071125233458.GC5006@stusta.de> <200711260130.06985.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200711260130.06985.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Mon, Nov 26, 2007 at 01:30:06AM +0100, Rafael J. Wysocki wrote:
+> On Monday, 26 of November 2007, Adrian Bunk wrote:
+>...
+> > That's not possible, but as already said it's not required.
+> > And more important, it's unrelated to any problems we have.
+> > 
+> > And it sounds funny that you first write specifications mandating stuff 
+> > like "IMO, first, it should ask for what the bug is against" and then 
+> > demand an additional email interface that bypasses everything you 
+> > demanded previously.
+> 
+> I just realize that there are people who wouldn't like to use the web interface
+> and would prefer to use email instead.
 
-> On 11/26, Eric W. Biederman wrote:
->>
->> Oleg Nesterov <oleg@tv-sign.ru> writes:
->> 
->> > -	set_special_pids(1, 1);
->> > +	if (current->nsproxy != &init_nsproxy) {
->> > +		get_nsproxy(&init_nsproxy);
->> > +		switch_task_namespaces(current, &init_nsproxy);
->> > +	}
->> 
->> Is there a reason for moving this hunk of code?
->> 
->> I don't see one as set_special_pids does everything with either
->> struct pid or global pid values.  And attach_pid and detach_pid
->> don't care.
->
-> No particular reason, except "keep related code together".
->
-> There was another minor reason. Without the next patch we are doing find_pid(1).
-> This is correct, we scan the global namespace, but still it looks a bit tidier
-> to switch namespace first, so we could use find_vpid() in unlikely case we need
-> it.
+In the cases where these are kernel developers that do (or should) 
+handle dozens of bugs each week I see a point if they have problems 
+integrating some medium into their workflow.
 
-True.  I just pointed it out because it seemed an unnecessary chunk.
-Regardless it is harmless either way.
+But in all software, no matter whether open source or commercial, bug 
+reporters simply have to use whatever the vendor offers as support 
+channel.
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> Moreover, you won't force people to use the web interface only for reporting
+> bugs, because frankly for some kinds of problems it's too heavywieght
 
-Eric
+That developers who know what they are doing might bypass the bug
+tracking is not a problem.
+
+> (compilation problems and purely software, reproducible things like that are
+> much faster resolved using email; this also applies to easily reproducible bugs
+> in general).  Still, it wouldn't hurt if they were automatically tracked.
+
+This sounds like "a bit pregnant"...
+
+Tracking requires things like e.g. categorizing the issue and marking it 
+as fixed when it got fixed.
+
+> > > Also, if you "switch to email", and then want to switch back to the web
+> > > interface, the Cc list from the email messages will be lost.
+> > 
+> > The perfect is the enemy of the good.
+> 
+> Sure.
+> 
+> Greetings,
+> Rafael
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
