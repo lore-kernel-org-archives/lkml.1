@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXKZOkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbXKZOng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbXKZOkc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 09:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbXKZOkX
+	id S1755506AbXKZOng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 09:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXKZOn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 09:40:23 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:35571 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754940AbXKZOkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 09:40:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=plBROmJ1NsVrLeGGbhgOb86P8xZ7eEITgENzllqRdAJbfrDc2pV4TEbVwdfwy0VKhG5MlfFmUfAAQctoKl4ewBTBrh2uau8Gp0Q1I6NKxgyBc/Y4qyFl81LnbRchy0GvdxsAkU+Fkqjkdlc1jt0lCC4/ETY5xUeMwkfP5tH8egA=
-Message-ID: <d120d5000711260640y68c6136fy181b63af85bf6ae6@mail.gmail.com>
-Date: Mon, 26 Nov 2007 09:40:14 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>,
-       "Kristoffer Ericson" <kristoffer.ericson@gmail.com>,
-       Dmitry <dmitry.torokhov@gmail.com>,
-       "Russell King" <linux@arm.linux.org.uk>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: Re: Question regarding naming scheme (HP Jornada 6XX/7XX)
-In-Reply-To: <20071126043030.GA25664@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 09:43:29 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:35938 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401AbXKZOn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 09:43:29 -0500
+Date: Mon, 26 Nov 2007 17:43:42 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] fix setsid() for sub-namespace /sbin/init
+Message-ID: <20071126144342.GA17265@tv-sign.ru>
+References: <20071126142553.GA16525@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-References: <20071126000329.8e7304c5.Kristoffer.ericson@gmail.com>
-	 <20071126043030.GA25664@linux-sh.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071126142553.GA16525@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 25, 2007 11:30 PM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Mon, Nov 26, 2007 at 12:03:29AM +0100, Kristoffer Ericson wrote:
+On 11/26, Oleg Nesterov wrote:
 >
-> > Why I want to use 600-series/700-series instead of 6XX/7XX is simply
-> > because 600-series/700-series leaves no doubt.
-> >
-> Apparently your end users are more technically apt than I am, as I have
-> no idea how using 00 over XX makes things any less ambiguous.
->
-> We already have a 6xx mach-type that drivers can set their dependency on.
-> If it's not 680-only, then that's a perfectly reasonable dependency. Feel
-> free to change the Kconfig text to make the description more useful, but
-> please don't start idly shuffling around code and symbols because users
-> can't work out why a driver is available that they can't support.
+> sys_setsid() still deals with pid_t's from the global namespace. This means
+> that the "session > 1" check can't help for sub-namespace init, setsid() can't
+> succeed because copy_process(CLONE_NEWPID) populates PIDTYPE_PGID/SID links.
+> 
+> Remove the usage of task_struct->pid and convert the code to use "struct pid".
+> This also simplifies and speedups the code, saves one find_pid().
 
-Agreed. Users simply should not care what a particular module is
-called. If Kconfig entries and/or its help is unclear on whta devices
-are supported by the drivers let's fix that.
+Паша, глянь пжалста. Я не думаю, что это нужно для 2.6.24, bug (если я еще раз
+не ошибся и он есть) очень мелкий, но все-таки...
 
--- 
-Dmitry
+Вопрос. вот у нас есть task_struct *p = find_task_by_vpid(pid), почему у нас нет
+хелпера получить его pid_t ? task_pid_vnr() вернет не то, что нужно (что уже не
+очень хорошо с точки зрения именования ;), и мы должны делать
+
+	task_pid_nr_ns(p, current->nsproxy->pid_ns);
+
+УЖОС!!! :-(
+
+Oleg.
+
