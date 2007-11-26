@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbXKZSwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXKZS5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbXKZSwq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 13:52:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbXKZSwj
+	id S1754598AbXKZS5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 13:57:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXKZS5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 13:52:39 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53701 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbXKZSwi (ORCPT
+	Mon, 26 Nov 2007 13:57:30 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:54311 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752078AbXKZS5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 13:52:38 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] teach set_special_pids() to use struct pid
-References: <20071126142555.GA16528@tv-sign.ru>
-Date: Mon, 26 Nov 2007 11:51:17 -0700
-In-Reply-To: <20071126142555.GA16528@tv-sign.ru> (Oleg Nesterov's message of
-	"Mon, 26 Nov 2007 17:25:55 +0300")
-Message-ID: <m18x4kon6i.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 26 Nov 2007 13:57:30 -0500
+Date: Mon, 26 Nov 2007 19:57:16 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
+Message-ID: <20071126185716.GA917@stusta.de>
+References: <20071125161631.GA21947@stusta.de> <20071126122706.GA5167@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071126122706.GA5167@ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Mon, Nov 26, 2007 at 12:27:07PM +0000, Pavel Machek wrote:
+> On Sun 2007-11-25 17:16:31, Adrian Bunk wrote:
+> > This patch removes the EXPERIMENTAL option and all dependencies on 
+> > EXPERIMENTAL because they are pointless.
+> > 
+> > Complete rationale:
+> > - Many people and all distributions are currently forced to enable
+> >   CONFIG_EXPERIMENTAL since the options for many device drivers depend
+> >   on this option.
+> >   I have yet to see someone not being able to install his favorite
+> >   distribution on his computer only because the distribution did choose
+> >   to disable all SATA drivers with dependencies on EXPERIMENTAL in their
+> >   kernels...
+> > - History has shown that often the dependency on EXPERIMENTAL is not
+> >   removed when the code has proven usable.
+> >   As an example, is our NFSv4 support really still in an
+> >   "alpha-test phase" [1], or is it already ready for being used?
+> >   I don't know the answer in this specific case, but I wouldn't answer
+> >   "still in an alpha-test phase" only based on the fact that the NFSv4
+> >   options still depend on EXPERIMENTAL.
+> > - It might have been differently 10 years ago, but today everything that
+> >   is available in a released kernel should also be in a usable state.
+> > 
+> > [1] quoted from the CONFIG_EXPERIMENTAL help text
+> 
+> I don't think this is good idea. But perhaps 'experimental' should be
+> removed from stuff that is really stable these days, like SATA?
 
-> Change set_special_pids() to work with struct pid, not pid_t from global name
-> space. This again speedups and imho cleanups the code.
->
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+It's not the SATA subsystem itself that is experimental.
+There are some some drivers that are still experimental.
 
-Overall I like it, and the version I keep meaning to send missed
-the fact we only need a single argument.
+That's the same like e.g. with network drivers where the subsystem is 
+stable but some drivers are not (yet).
 
-> -static void set_special_pids(pid_t session, pid_t pgrp)
-> +static void set_special_pids(struct pid *pid)
->  {
->  	write_lock_irq(&tasklist_lock);
-> -	__set_special_pids(session, pgrp);
-> +	__set_special_pids(pid);
->  	write_unlock_irq(&tasklist_lock);
->  }
->  
-> @@ -385,7 +386,11 @@ void daemonize(const char *name, ...)
->  	 */
->  	current->flags |= PF_NOFREEZE;
->  
-> -	set_special_pids(1, 1);
-> +	if (current->nsproxy != &init_nsproxy) {
-> +		get_nsproxy(&init_nsproxy);
-> +		switch_task_namespaces(current, &init_nsproxy);
-> +	}
+And therefore people are forced to enable CONFIG_EXPERIMENTAL for 
+getting the kernel running on their hardware.
 
-Is there a reason for moving this hunk of code?
+But e.g. the fact that a user must enable an experimental SATA driver 
+does not imply he also wants experimental network subsystem features.
 
-I don't see one as set_special_pids does everything with either
-struct pid or global pid values.  And attach_pid and detach_pid
-don't care.
+> 							Pavel
 
-Eric
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
