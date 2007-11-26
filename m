@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbXKZXr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbXKZXs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbXKZXr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 18:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbXKZXrt
+	id S1757615AbXKZXs2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 18:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbXKZXry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 18:47:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49163 "EHLO mx1.redhat.com"
+	Mon, 26 Nov 2007 18:47:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49169 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756531AbXKZXrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 18:47:48 -0500
-Subject: [PATCH 2/3 -v2] mmap: round mmap hint address above mmap_min_addr
+	id S1757603AbXKZXrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 18:47:53 -0500
+Subject: [PATCH 3/3-v2] security: allow capable check to permit mmap or low
+	vm space
 From: Eric Paris <eparis@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: jmorris@namei.org, sds@tycho.nsa.gov, selinux@tycho.nsa.gov,
        alan@redhat.com, chrisw@redhat.com, hpa@zytor.com,
        akpm@linux-foundation.org
 Content-Type: text/plain
-Date: Mon, 26 Nov 2007 18:47:40 -0500
-Message-Id: <1196120860.16779.14.camel@localhost.localdomain>
+Date: Mon, 26 Nov 2007 18:47:46 -0500
+Message-Id: <1196120866.16779.16.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 (2.10.3-7.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If mmap_min_addr is set and a process attempts to mmap (not fixed) with
-a non-null hint address less than mmap_min_addr the mapping will fail
-the security checks.  Since this is just a hint address this patch will
-round such a hint address above mmap_min_addr.
-
-gcj was found to try to be very frugal with vm usage and give hint
-addresses in the 8k-32k range.  Without this patch all such programs
-failed and with the patch they happily get a higher address.
-
-This patch is wrappad in CONFIG_SECURITY since mmap_min_addr doesn't
-exist without it and there would be no security check possible no matter
-what.  So we should not bother compiling in this rounding if it is just a
-waste of time.
+On a kernel with CONFIG_SECURITY but without an LSM which implements
+security_file_mmap it is impossible for an application to mmap addresses
+lower than mmap_min_addr.  Based on a suggestion from a developer in the
+openwall community this patch adds a check for CAP_SYS_RAWIO.  It is
+assumed that any process with this capability can harm the system a lot
+more easily than writing some stuff on the zero page and then trying to
+get the kernel to trip over itself.  It also means that programs like X
+on i686 which use vm86 emulation can work even with mmap_min_addr set.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 
 ---
 
- include/linux/mm.h |   16 ++++++++++++++++
- mm/mmap.c          |    3 +++
- mm/nommu.c         |    3 +++
- 3 files changed, 22 insertions(+), 0 deletions(-)
+ security/dummy.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 520238c..1b7b95c 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -12,6 +12,7 @@
- #include <linux/prio_tree.h>
- #include <linux/debug_locks.h>
- #include <linux/mm_types.h>
-+#include <linux/security.h>
- 
- struct mempolicy;
- struct anon_vma;
-@@ -513,6 +514,21 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
+diff --git a/security/dummy.c b/security/dummy.c
+index 6d895ad..3ccfbbe 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -426,7 +426,7 @@ static int dummy_file_mmap (struct file *file, unsigned long reqprot,
+ 			    unsigned long addr,
+ 			    unsigned long addr_only)
+ {
+-	if (addr < mmap_min_addr)
++	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
+ 		return -EACCES;
+ 	return 0;
  }
- 
- /*
-+ * If a hint addr is less than mmap_min_addr change hint to be as
-+ * low as possible but still greater than mmap_min_addr
-+ */
-+static inline unsigned long round_hint_to_min(unsigned long hint)
-+{
-+#ifdef CONFIG_SECURITY
-+	hint &= PAGE_MASK;
-+	if (((void *)hint != NULL) &&
-+	    (hint < mmap_min_addr))
-+		return PAGE_ALIGN(mmap_min_addr);
-+#endif
-+	return hint;
-+}
-+
-+/*
-  * Some inline functions in vmstat.h depend on page_zone()
-  */
- #include <linux/vmstat.h>
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 938313c..f4cfc6a 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -912,6 +912,9 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 	if (!len)
- 		return -EINVAL;
- 
-+	if (!(flags & MAP_FIXED))
-+		addr = round_hint_to_min(addr);
-+
- 	error = arch_mmap_check(addr, len, flags);
- 	if (error)
- 		return error;
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 35622c5..b989cb9 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -829,6 +829,9 @@ unsigned long do_mmap_pgoff(struct file *file,
- 	void *result;
- 	int ret;
- 
-+	if (!(flags & MAP_FIXED))
-+		addr = round_hint_to_min(addr);
-+
- 	/* decide whether we should attempt the mapping, and if so what sort of
- 	 * mapping */
- 	ret = validate_mmap_request(file, addr, len, prot, flags, pgoff,
 
 
