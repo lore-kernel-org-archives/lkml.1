@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbXKZWSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbXKZWTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbXKZWSp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbXKZWSd
+	id S1756938AbXKZWTH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbXKZWSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:18:33 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:20825 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755812AbXKZWSb (ORCPT
+	Mon, 26 Nov 2007 17:18:51 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44332 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755785AbXKZWSu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:18:31 -0500
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-X-Message-Flag: Warning: May contain useful information
-References: <20071122343.446909000@suse.de> <adatznarrzc.fsf@cisco.com>
-	<200711261228.15155.rusty@rustcorp.com.au>
-	<20071126102533.1c774870@freepuppy.rosehill.pdx.hemminger.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 26 Nov 2007 14:18:25 -0800
-In-Reply-To: <20071126102533.1c774870@freepuppy.rosehill.pdx.hemminger.net> (Stephen Hemminger's message of "Mon, 26 Nov 2007 10:25:33 -0800")
-Message-ID: <adave7or6q6.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Nov 2007 22:18:25.0689 (UTC) FILETIME=[43837090:01C8307A]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Mon, 26 Nov 2007 17:18:50 -0500
+Date: Mon, 26 Nov 2007 14:17:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: mingo@elte.hu, riel@redhat.com, kamalesh@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com, linux-acpi@vger.kernel.org,
+       tglx@linutronix.de, clameter@sgi.com
+Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
+Message-Id: <20071126141713.3dcd492b.akpm@linux-foundation.org>
+In-Reply-To: <474B43E1.9080407@gmail.com>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	<4743CC0B.9000508@linux.vnet.ibm.com>
+	<20071120221839.faab108e.akpm@linux-foundation.org>
+	<20071126143943.0a01665b@cuia.boston.redhat.com>
+	<20071126123319.7483e57f.akpm@linux-foundation.org>
+	<20071126204540.GA19874@elte.hu>
+	<474B43E1.9080407@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Agreed. On first glance, I was intrigued but:
- > 
- > 1) Why is everyone so concerned that export symbol space is large?
- > 	- does it cost cpu or running memory?
- > 	- does it cause bugs?
- > 	- or are you just worried about "evil modules"?
- > 
- > 2) These aren't real namespaces
- > 	- all global names still have to be unique
- > 	- still have to handle the "non-modular build" namespace conflicts
- > 	- there isn't a big problem with conflicting symbols today.
+On Mon, 26 Nov 2007 23:08:33 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Perhaps changing the name from "namespace" to "interface" would help?
-Then a module could have something like
+> On 11/26/2007 09:45 PM, Ingo Molnar wrote:
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> >> On Mon, 26 Nov 2007 14:39:43 -0500
+> >> Rik van Riel <riel@redhat.com> wrote:
+> >>
+> >>> On Tue, 20 Nov 2007 22:18:39 -0800
+> >>> Andrew Morton <akpm@linux-foundation.org> wrote:
+> >>>
+> >>>>> ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> >>>>> Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
+> >>>> ACPI or x86 breakage, I guess.
+> >>>>
+> >>>> Did 'noapic' work?
+> >>> I got the same bug as above, 'noapic' gets past that point 
+> >> We still don't know what caused this, afaik.
+> > 
+> > yes. Is it a regression? If yes, could someone try to bisect it so that 
+> > we can fix it? If it's caused by x86.git then the 'mm' branch of the x86 
+> > git tree can be used for bisection:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+> 
+> I did, but it's hard, if you don't know the BAD point. HEAD boots fine and 'x86:
+> randomize brk' too (the top of git-x86.patch).
 
-MODULE_USE_INTERFACE(foo);
+So the bug wasn't in git-x86 in 2.6.24-rc3-mm1.
 
-and I think that makes it clearer what the advantage of this is: it
-marks symbols as being part of a certain interface, requires modules
-that use that interface to declare that use explicitly, and allows
-reviewers to say "Hey why is this code using the scsi interface when
-it's a webcam driver?"
+But it might be in there now, as some patches got moved over.
 
- - R.
+Or it could be git-acpi.  Or lots of other things.
+
+> Andrew, how do you pull it, git
+> #mm doesn't fit to the ids from the patch.
+
+The -mm git tree reimports the plain git-foo.patch files back into a new
+git tree, so the commit IDs won't line up.
+
+The way to find the culprit patch in 2.6.24-rc3-mm1 is
+http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt.  It
+will be quite quick.
+
+> Maybe if you can emit a broken-out with the fresh pull to test?
+
+http://userweb.kernel.org/~akpm/mmotm/ is current.  But it probably won't
+compile.  I'd suggest bisecting 2.6.24-rc3-mm1 would be easier.  
