@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbXKZICx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbXKZIGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbXKZICx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 03:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXKZICp
+	id S1754501AbXKZIGA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 03:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXKZIFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 03:02:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47027 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752842AbXKZICp (ORCPT
+	Mon, 26 Nov 2007 03:05:51 -0500
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:44754 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbXKZIFu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 03:02:45 -0500
-Date: Mon, 26 Nov 2007 00:01:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Robert Richter" <robert.richter@amd.com>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Extended interrupt LVT support for AMD Barcelona
-Message-Id: <20071126000145.fc4056bb.akpm@linux-foundation.org>
-In-Reply-To: <20071120162511.E1EF28098@erda.amd.com>
-References: <20071120162511.E1EF28098@erda.amd.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 03:05:50 -0500
+Date: Mon, 26 Nov 2007 09:05:44 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] m68k: zorro7xx needs <asm/amigahw.h>
+Message-ID: <Pine.LNX.4.64.0711260904560.5800@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 16:11:34 +0100 "Robert Richter" <robert.richter@amd.com> wrote:
+m68k: zorro7xx needs <asm/amigahw.h> if !CONFIG_AMIGA_PCMCIA
 
-> This patch adds extended interrupt support for AMD Barcelona CPUs. The
-> patch provides functions to setup MCE and IBS interrupt
-> vectors. Compared to the previous K8 implementation the vector offsets
-> are centrally handled now in apic_64.c. Thus, the APIC setup code is
-> responsible for vector mappings. The vector mapping is hardcoded for
-> now.
-> 
-> Also macro definitions in apicdef.h has been updated.
-> 
+Reported by Ingo Juergensmann <ij@2007.bluespice.org>
 
-Please send a signed-off-by: for this work, as per Documentation/SubmittingPatches,
-thanks.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Please apply for 2.6.24.
+
+ drivers/scsi/zorro7xx.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/drivers/scsi/zorro7xx.c
++++ b/drivers/scsi/zorro7xx.c
+@@ -13,7 +13,10 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/zorro.h>
++
++#include <asm/amigahw.h>
+ #include <asm/amigaints.h>
++
+ #include <scsi/scsi_host.h>
+ #include <scsi/scsi_transport_spi.h>
+ 
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
