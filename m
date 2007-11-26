@@ -1,62 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbXKZFNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbXKZFRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbXKZFNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 00:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbXKZFNZ
+	id S1757083AbXKZFRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 00:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXKZFRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 00:13:25 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56073 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751158AbXKZFNY (ORCPT
+	Mon, 26 Nov 2007 00:17:06 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:25803 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbXKZFRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 00:13:24 -0500
-Date: Sun, 25 Nov 2007 21:12:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [2.6 patch] make I/O schedulers non-modular
-Message-Id: <20071125211259.c69040fa.akpm@linux-foundation.org>
-In-Reply-To: <200711260757.00386.a1426z@gawab.com>
-References: <20071125172237.GC6658@kernel.dk>
-	<200711260757.00386.a1426z@gawab.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 26 Nov 2007 00:17:05 -0500
+Message-ID: <1618816c0711252117l3348e07atfe84a321c5675889@mail.gmail.com>
+Date: Sun, 25 Nov 2007 22:17:04 -0700
+From: "Raymano Garibaldi" <raymano@faunos.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Denys Vlasenko" <vda.linux@googlemail.com>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "USB development list" <linux-usb-devel@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0711251052430.22777-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071124223903.6c72f527.akpm@linux-foundation.org>
+	 <Pine.LNX.4.44L0.0711251052430.22777-100000@netrider.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The device which has the root fs is a READ-ONLY device. There is no
+way for it to change between getting detached and reattached to the
+computer which is suspended. In such a case there is no possibility of
+hibernation because there is nothing to write back to.
 
-(cc's lovingly restored.  Please do not do that)
+I understand that this is currently considered a feature but I am
+arguing here that there should also be another feature that allows
+this  to work under suspend to ram the same as it does with suspend to
+disk (hibernation).
 
-On Mon, 26 Nov 2007 07:57:00 +0300 Al Boldi <a1426z@gawab.com> wrote:
+Here's a scenario:
 
-> Jens Axboe wrote:
-> > On Sun, Nov 25 2007, Adrian Bunk wrote:
-> > > Is there any technical reason why we need 4 different schedulers at all?
+1) You are at the airport working on a laptop without a hard drive,
+which you have booted up using a live USB distro on a read-only USB
+key drive.
+
+2) You want to board your plane so you suspend your laptop. You can't
+keep the USB stick in your laptop because you can not fit the laptop
+back in the bag with the USB stick still attached. So you detach the
+USB stick while the laptop is still suspended.
+
+3) You get on the plane and after some time when you are allowed to
+work again you stick back in the USB stick, resume the laptop and
+continue work where you left off.
+
+This scenario is not currently possible with the any kernel after
+2.6.22. It is a very important missing feature.
+
+And yes. This feature does work under the 2.6.21 kernel, exactly
+because the kernel did not have  the USB suspend and persist feature
+available. Under the 2.6.21 kernel, during suspend, the kernel is
+totally unaware of what is happening to the USB device so nothing
+happens when the USB device is detached and reattached while the
+computer is suspended, hence making the described scenario above
+possible. I currently, and very frequently, use this feature on my
+live USB distro, FaunOS which uses kernel 2.6.21.
+
+
+Thank you,
+
+Raymano G.
+
+
+
+
+
+
+
+On 11/25/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Sat, 24 Nov 2007, Andrew Morton wrote:
+>
+> > On Tue, 20 Nov 2007 17:04:32 -0700 "Raymano Garibaldi" <raymano@faunos.com> wrote:
 > >
-> > Until we have the perfect scheduler :-)
+> > > Is there any other information that I can provide which might help in
+> > > resolving this bug?
 > >
-> > With some hard work and testing, we should be able to get rid of 'as'.
-> > It still beats cfq for some of the workloads that deadline is good at,
-> > so not quite yet.
+> > Let's cc the USB developers.
 > >
-> > > I have the gut feeling that the usual thing happens and people e.g. not
-> > > report some cfq problems because as works for them...
-> >
-> > There's always a risk with "duplicate", like several drivers for the
-> > same hardware. I'm not disputing that.
-> 
-> Actually, both 'cfq' and 'as' are broken, and have been repeatedly reported 
-> as such.  Deadline is the only one that currently looks sane, and seems like 
-> a good starting point for a more involved iosched.  But keep in mind, the 
-> fact that 'cfq' and 'as' are broken may also point to a lower-level block-io 
-> problem.  So, incrementally improving deadline may help discovering the 
-> problems both 'cfq' and 'as' are plagued with.
-> 
-
-Sorry, but these are vague and unuseful assertions.
-
-Please send bug reports, preferably with testcases which developers can use
-when fixing the bugs.
+> > > On 11/18/07, Raymano Garibaldi <raymano@faunos.com> wrote:
+> > > > The last time I tried this and it worked was 2.6.21. Below is a
+>
+> Sorry, that's not possible.  2.6.21 doesn't include USB Persist
+> support.  Nor does 2.6.22.
+>
+> There were some experimental patches with early versions of USB Persist
+> for those kernels.  They are different from what eventually went into
+> 2.6.23.
+>
+> > > > On 11/18/07, Denys Vlasenko <vda.linux@googlemail.com> wrote:
+> > > > > On Sunday 18 November 2007 20:14, Raymano Garibaldi wrote:
+> > > > > > In kernel 2.6.23.8 USB_PERSIST feature does not work if the same USB
+> > > > > > device is detached and reattached while computer is suspended. The
+> > > > > > mount points for the USB storage device mounted before suspend are
+> > > > > > lost and the device has to be remounted after resume.
+>
+> USB Persist was never meant to allow you to detach and reattach a
+> device while the computer is suspended; it was meant to deal with
+> hibernation.  So what you observed is the correct behavior, not a bug.
+> Detaching and reattaching a device while the computer is suspended
+> should result in exactly the same behavior as detaching and reattaching
+> the device while the computer is awake.
+>
+> If you try doing the same thing but with the computer in hibernation
+> instead of suspended, you may find it more in line with what you
+> expect.
+>
+> Alan Stern
+>
+>
