@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbXKZJOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbXKZJOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbXKZJOG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 04:14:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbXKZJNx
+	id S1756770AbXKZJOY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 04:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXKZJOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 04:13:53 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:36133 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752961AbXKZJNw (ORCPT
+	Mon, 26 Nov 2007 04:14:12 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:23425 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756521AbXKZJOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 04:13:52 -0500
-Date: Mon, 26 Nov 2007 04:11:49 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Joonwoo Park <joonwpark81@gmail.com>
-cc: netdev@vger.kernel.org, chas@cmf.nrl.navy.mil,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] atm/ambassador: kmalloc + memset conversion to
- kzalloc
-In-Reply-To: <007f01c8300b$1b89ac40$9c94fea9@jason>
-Message-ID: <alpine.LFD.0.9999.0711260409110.551@localhost.localdomain>
-References: <007f01c8300b$1b89ac40$9c94fea9@jason>
+	Mon, 26 Nov 2007 04:14:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P33wU2CpfsrEmFe1jXDOW1dW9t/kzg56CY6+feaiNVzbeOoGBtRCGO7YQDil3RXZwOYEZxW0g8xKdHAREf+d2emzstA9FTfLL5VDZ/Rjb49N5WVx9GNE/cBFBs4iY7hXlexBqFB0CfAb7WwdpjTIcr0ONreG3Mo1Bm87yQPxxtk=
+Message-ID: <5eeb9ad90711260114x793d506ay4ee5d1bb0cd8eb88@mail.gmail.com>
+Date: Mon, 26 Nov 2007 10:14:08 +0100
+From: DM <dm.n9107@gmail.com>
+To: "Daniel Drake" <dsd@gentoo.org>
+Subject: Re: [RFC] Documentation about unaligned memory access
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, kune@deine-taler.de,
+       johannes@sipsolutions.net
+In-Reply-To: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, Joonwoo Park wrote:
-
-> atm/ambassador: kmalloc + memset conversion to kzalloc
+On Nov 23, 2007 1:15 AM, Daniel Drake <dsd@gentoo.org> wrote:
+[...]
 >
-> Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+> Before I do so, any comments on the following?
 >
-> Thanks.
-> Joonwoo
->
-> ---
-> diff --git a/drivers/atm/ambassador.c b/drivers/atm/ambassador.c
-> index b34b382..4f99ba3 100644
-> --- a/drivers/atm/ambassador.c
-> +++ b/drivers/atm/ambassador.c
-> @@ -2163,7 +2163,6 @@ static int __devinit amb_init (amb_dev * dev)
->  static void setup_dev(amb_dev *dev, struct pci_dev *pci_dev)
->  {
->        unsigned char pool;
-> -      memset (dev, 0, sizeof(amb_dev));
->
->        // set up known dev items straight away
->        dev->pci_dev = pci_dev;
-> @@ -2253,7 +2252,7 @@ static int __devinit amb_probe(struct pci_dev *pci_dev, const struct pci_device_
->  		goto out_disable;
->  	}
->
-> -	dev = kmalloc (sizeof(amb_dev), GFP_KERNEL);
-> +	dev = kzalloc(sizeof(amb_dev), GFP_KERNEL);
->  	if (!dev) {
->  		PRINTK (KERN_ERR, "out of memory!");
->  		err = -ENOMEM;
-> ---
+[...]
+>         void myfunc(u8 *data, u32 value)
+>         {
+>                 [...]
+>                 value = cpu_to_le32(value);
+>                 memcpy(data, value, sizeof(value));
+>                 [...]
+>         }
 
-i'm not sure the above is a safe thing to do, as you're zeroing that
-area, then making a function call and assuming, upon entry to the
-function call, that the caller has done the right thing.  i don't see
-how you can count on that, depending on who else might want to call
-that routine and whether they get sloppy about it.  unless you're
-prepared to guarantee that there will never be another call to
-setup_dev() from elsewhere.
+I suppose you mean:
+memcpy(data, &value, sizeof(value));
 
-
-rday
-
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+/DM
