@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXKZHLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbXKZHOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbXKZHLb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 02:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbXKZHLV
+	id S1754135AbXKZHOv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 02:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXKZHOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 02:11:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:40299 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbXKZHLU (ORCPT
+	Mon, 26 Nov 2007 02:14:41 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:23382 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbXKZHOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 02:11:20 -0500
+	Mon, 26 Nov 2007 02:14:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=received:from:to:cc:subject:date:message-id:x-mailer;
-        b=fexPjuCtVA5J2SfNENAxq9pUiRlEvFG3V6dVC2u0xscjfPZG0wGWMKT4VROka4IhIfUetJwudZ0ayjmlZ8I49cumdVuTXiLIAO7fb73+6AFkFXyzjc8wSFJXCMCUePzlrmi5rnuA11qMNfrT4mJt3vNNiQ3pKzFIaVEn9BzkTI4=
+        b=IBEGbHCEY1RxwjxBqJ48XMu0Thgk/fHNObjJLbkTQCvxetZQd1mkKUYXuAYwnNu50/1IUzAXACwHq3ko0xDU8506suYoq81g6Aog6n9l1WwnkgvqUM5HYh769H8vhTnKEJySUOwiR7qj7EsiVlCSxE9U2V2KFiCcSvgm5YprSNY=
 From: Denis Cheng <crquan@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 1/2] crypto test: use print_hex_dump from <linux/kernel.h>
-Date: Mon, 26 Nov 2007 15:13:02 +0800
-Message-Id: <1196061182-6368-1-git-send-email-crquan@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 2/2] ide-scsi: use print_hex_dump from <linux/kernel.h>
+Date: Mon, 26 Nov 2007 15:16:13 +0800
+Message-Id: <1196061373-6394-1-git-send-email-crquan@gmail.com>
 X-Mailer: git-send-email 1.5.3.4
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -31,83 +30,67 @@ these utilities implemented in lib/hexdump.c are more handy, please use this.
 Cc: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Denis Cheng <crquan@gmail.com>
 ---
- crypto/tcrypt.c |   21 +++++++--------------
- 1 files changed, 7 insertions(+), 14 deletions(-)
+there are still much other private hexdump implementations in the source,
+which reinvent the wheel, we can find them through:
 
-diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
-index 24141fb..8766023 100644
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -81,14 +81,6 @@ static char *check[] = {
- 	"camellia", "seed", NULL
- };
+  $ grep -RsIn hexdump <kernel-src>
+  ...
+
+ drivers/scsi/ide-scsi.c |   18 ++++--------------
+ 1 files changed, 4 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
+index 8d0244c..8f3fc1d 100644
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -242,16 +242,6 @@ static void idescsi_output_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsign
+ 	}
+ }
  
--static void hexdump(unsigned char *buf, unsigned int len)
+-static void hexdump(u8 *x, int len)
 -{
--	while (len--)
--		printk("%02x", *buf++);
+-	int i;
 -
--	printk("\n");
+-	printk("[ ");
+-	for (i = 0; i < len; i++)
+-		printk("%x ", x[i]);
+-	printk("]\n");
 -}
 -
- static void tcrypt_complete(struct crypto_async_request *req, int err)
+ static int idescsi_check_condition(ide_drive_t *drive, struct request *failed_command)
  {
- 	struct tcrypt_result *res = req->data;
-@@ -156,7 +148,8 @@ static void test_hash(char *algo, struct hash_testvec *template,
- 			goto out;
+ 	idescsi_scsi_t *scsi = drive_to_idescsi(drive);
+@@ -282,7 +272,7 @@ static int idescsi_check_condition(ide_drive_t *drive, struct request *failed_co
+ 	pc->scsi_cmd = ((idescsi_pc_t *) failed_command->special)->scsi_cmd;
+ 	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
+ 		printk ("ide-scsi: %s: queue cmd = ", drive->name);
+-		hexdump(pc->c, 6);
++		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->c, 6, 1);
+ 	}
+ 	rq->rq_disk = scsi->disk;
+ 	return ide_do_drive_cmd(drive, rq, ide_preempt);
+@@ -337,7 +327,7 @@ static int idescsi_end_request (ide_drive_t *drive, int uptodate, int nrsecs)
+ 		idescsi_pc_t *opc = (idescsi_pc_t *) rq->buffer;
+ 		if (log) {
+ 			printk ("ide-scsi: %s: wrap up check %lu, rst = ", drive->name, opc->scsi_cmd->serial_number);
+-			hexdump(pc->buffer,16);
++			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->buffer, 16, 1);
  		}
+ 		memcpy((void *) opc->scsi_cmd->sense_buffer, pc->buffer, SCSI_SENSE_BUFFERSIZE);
+ 		kfree(pc->buffer);
+@@ -816,10 +806,10 @@ static int idescsi_queue (struct scsi_cmnd *cmd,
  
--		hexdump(result, crypto_hash_digestsize(tfm));
-+		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, crypto_hash_digestsize(tfm), 1);
-+
- 		printk("%s\n",
- 		       memcmp(result, hash_tv[i].digest,
- 			      crypto_hash_digestsize(tfm)) ?
-@@ -203,7 +196,7 @@ static void test_hash(char *algo, struct hash_testvec *template,
- 				goto out;
- 			}
- 
--			hexdump(result, crypto_hash_digestsize(tfm));
-+			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, crypto_hash_digestsize(tfm), 1);
- 			printk("%s\n",
- 			       memcmp(result, hash_tv[i].digest,
- 				      crypto_hash_digestsize(tfm)) ?
-@@ -319,7 +312,7 @@ static void test_cipher(char *algo, int enc,
- 			}
- 
- 			q = kmap(sg_page(&sg[0])) + sg[0].offset;
--			hexdump(q, cipher_tv[i].rlen);
-+			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, q, cipher_tv[i].rlen, 1);
- 
- 			printk("%s\n",
- 			       memcmp(q, cipher_tv[i].result,
-@@ -393,7 +386,7 @@ static void test_cipher(char *algo, int enc,
- 			for (k = 0; k < cipher_tv[i].np; k++) {
- 				printk("page %u\n", k);
- 				q = kmap(sg_page(&sg[k])) + sg[k].offset;
--				hexdump(q, cipher_tv[i].tap[k]);
-+				print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, q, cipher_tv[i].tap[k], 1);
- 				printk("%s\n",
- 					memcmp(q, cipher_tv[i].result + temp,
- 						cipher_tv[i].tap[k]) ? "fail" :
-@@ -839,7 +832,7 @@ static void test_deflate(void)
- 			printk("fail: ret=%d\n", ret);
- 			continue;
+ 	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
+ 		printk ("ide-scsi: %s: que %lu, cmd = ", drive->name, cmd->serial_number);
+-		hexdump(cmd->cmnd, cmd->cmd_len);
++		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, cmd->cmnd, cmd->cmd_len, 1);
+ 		if (memcmp(pc->c, cmd->cmnd, cmd->cmd_len)) {
+ 			printk ("ide-scsi: %s: que %lu, tsl = ", drive->name, cmd->serial_number);
+-			hexdump(pc->c, 12);
++			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->c, 12, 1);
  		}
--		hexdump(result, dlen);
-+		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, dlen, 1);
- 		printk("%s (ratio %d:%d)\n",
- 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
- 		       ilen, dlen);
-@@ -870,7 +863,7 @@ static void test_deflate(void)
- 			printk("fail: ret=%d\n", ret);
- 			continue;
- 		}
--		hexdump(result, dlen);
-+		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, dlen, 1);
- 		printk("%s (ratio %d:%d)\n",
- 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
- 		       ilen, dlen);
+ 	}
+ 
 -- 
 1.5.3.5
 
