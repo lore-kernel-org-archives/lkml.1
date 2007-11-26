@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbXKZU0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbXKZU26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbXKZU0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 15:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXKZU0A
+	id S1755971AbXKZU26 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 15:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbXKZU2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 15:26:00 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34536 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753848AbXKZUZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 15:25:59 -0500
-Date: Mon, 26 Nov 2007 21:25:47 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>, david-b@pacbell.net,
-       randy.dunlap@oracle.com, toralf.foerster@gmx.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6 patch] ipv4/arp.c:arp_process(): remove bogus #ifdef mess
-Message-ID: <20071126202547.GB917@stusta.de>
-References: <200711071434.52607.david-b@pacbell.net> <20071107225232.GB26163@stusta.de> <20071108033010.GF26163@stusta.de> <20071119.212639.217993660.davem@davemloft.net> <20071125163003.GC21947@stusta.de> <20071126151926.GD28022@gondor.apana.org.au>
+	Mon, 26 Nov 2007 15:28:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34556 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbXKZU2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 15:28:50 -0500
+Date: Mon, 26 Nov 2007 21:28:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
+       Dipankar <dipankar@in.ibm.com>
+Subject: Re: [Patch 4/4] sched: Improve fairness of cpu bandwidth
+	allocation for task groups
+Message-ID: <20071126202836.GA17012@elte.hu>
+References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071126151926.GD28022@gondor.apana.org.au>
+In-Reply-To: <20071126050905.GF5304@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 11:19:26PM +0800, Herbert Xu wrote:
-> On Sun, Nov 25, 2007 at 04:30:03PM +0000, Adrian Bunk wrote:
-> > > > 
-> > > > Please look at net/ipv4/arp.c:arp_process()
-> > > > 
-> > > > Am I right that CONFIG_NET_ETHERNET=n and CONFIG_NETDEV_1000=y or 
-> > > > CONFIG_NETDEV_10000=y will not be handled correctly there?
-> > > > 
-> > > > And the best solution is to nuke all #ifdef's in this function and make 
-> > > > the code unconditionally available?
-> > > 
-> > > I think removing those specific ifdefs in arp_process()
-> > > is the best option, yes.
-> > 
-> > Patch below.
-> 
-> Thanks Adrian.  Patch applied to net-2.6.
-> 
-> Do we need this for stable too?
 
-Unless I'm misunderstanding the code we currently wrongly ignore 
-some ARP packages based on the setting of an unrelated option, so
-it seems to be a -stable candidate when it's in Linus' tree.
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-> Chers,
+> +	/* we don't want this thread's execution to be limited by the shares
+> +	 * assigned to default group (init_task_group). Hence make it run
+> +	 * as a RT task.
+> +	 */
+> +	schedparm.sched_priority = 0; /* run at the lowest RT prio */
+> +	ret = sched_setscheduler(current, SCHED_RR, &schedparm);
+> +	if (ret)
+> +		printk(KERN_ERR "Couldn't set SCHED_RR policy for load balance"
+> +				"monitor thread (error = %d) \n", ret);
 
-cu
-Adrian
+the first SCHED_RR priority is 1, not 0 - so this call will always fail.
 
--- 
+> +		lock_cpu_hotplug(); /* Prevent cpus going down or coming up */
+> +		lock_doms_cur();    /* lockout changes to doms_cur[] array */
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+please put comments in front of the line like we do in most of sched.c.
 
+> +		rcu_read_lock();  /* to walk rq->sd chain on various cpus and to
+> +				   * walk task group list in rebalance_shares().
+> +				   */
+
+the proper comment format is in front of the line and in:
+
+	/*
+	 * Comment.
+	 */
+
+	Ingo
