@@ -1,36 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbXKZIp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXKZIrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbXKZIp2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 03:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXKZIpP
+	id S1755234AbXKZIrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 03:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXKZIrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 03:45:15 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34525 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbXKZIpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 03:45:14 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [CFT][PATCH] proc_net: Remove userspace visible changes.
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-	<m1prxznrpz.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Mon, 26 Nov 2007 01:43:45 -0700
-In-Reply-To: <m1prxznrpz.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Sat, 24 Nov 2007 16:34:00 -0700")
-Message-ID: <m1ir3po0qm.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 Nov 2007 03:47:13 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:41656 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753225AbXKZIrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 03:47:12 -0500
+Date: Mon, 26 Nov 2007 09:47:06 +0100 (MET)
+Message-Id: <200711260847.lAQ8l6rE027837@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: joshin@hotmail.com, linux-kernel@vger.kernel.org, mikpe@it.uu.se
+Subject: Re: Small System Paging Problem - OOM-killer goes nuts
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 25 Nov 2007 22:28:03 -0700, Josh Goldsmith wrote:
+> Is your 486 running a IDE disk on a normal interface or via USB?  I wonder 
+> if the NSLU2 only having I/O via USB might be significant.
 
-Forget this patch.  It works but I have found something better.
-Full explanation in the morning.
+My 486 has neither PCI nor USB, the disk is attached to a
+plain ancient IDE port.
 
-Eric
+>  Also, this is a 
+> 2.6 kernel and I've seen spurious reports across the internet about similar 
+> oom-killer problems since about 2.6.7.
+
+If it is, I don't think it's ARM-specific. The last two years
+I've done a lot of work with 2.6 kernels on a DS101 ARM box.
+It's similar to the NSLU2 except it has 64MB of RAM and a built-in
+PCI PATA controller. I've stressed it quite a bit, but never
+seen the OOM killer trigger on it.
+
+So you using USB storage might be relevant.
