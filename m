@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbXKZTYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbXKZTdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755005AbXKZTYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 14:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXKZTYj
+	id S1755046AbXKZTdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 14:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbXKZTdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 14:24:39 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50194 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbXKZTYi (ORCPT
+	Mon, 26 Nov 2007 14:33:13 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:31725 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbXKZTdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 14:24:38 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH? 3/3] move daemonized kernel threads into the swapper's session
-References: <20071126142556.GA16531@tv-sign.ru>
-	<m14pf8omvz.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 26 Nov 2007 12:23:26 -0700
-In-Reply-To: <m14pf8omvz.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Mon, 26 Nov 2007 11:57:36 -0700")
-Message-ID: <m1ve7on74h.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 26 Nov 2007 14:33:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Apv722H6NvcMZbvLfF4qdIWWB53xpIIcRiDL4q56D17rzQny//ohvZTRqaLIk7JhUGBm2zgBTpOrtiZ5ZI/wlGYS/pJ7aftdBBVCGcLnLik00XSfMJos1zQWGFND186pbvzJcER8NNkxQq8sG0hPx9mOgM5ZmkHgOUUygnL1ybA=
+Message-ID: <474B1F6F.1090907@gmail.com>
+Date: Mon, 26 Nov 2007 20:33:03 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Rik van Riel <riel@redhat.com>
+CC: Dave Young <hidave.darkstar@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<a8e1da0711202151t6c9d52acjf1f876085b95dfce@mail.gmail.com>	<20071120220046.db5c8fde.akpm@linux-foundation.org>	<a8e1da0711202203v6a2a9945pcfa5cfe67b83b504@mail.gmail.com> <20071126134834.132c3081@cuia.boston.redhat.com>
+In-Reply-To: <20071126134834.132c3081@cuia.boston.redhat.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+On 11/26/2007 07:48 PM, Rik van Riel wrote:
+>>>> ERROR: "empty_zero_page" [drivers/kvm/kvm.ko] undefined!
+[...]
+> FYI, x86_64 has the exact same issue.
 
+yes:
+hot-fixes/git-x86-dont-unexport-empty_zero_page.patch
 
-> Hmm.  I wonder if we could ensure kernel_thread always
-> returns a global pid_t, and then reallocate the struct
-> pid for the task we have just daemonized so that it only
-> has a single pid in the init_pid_ns.
-
-Well we can't reallocate the struct pid, if anyone was using
-it we would have problems, but we can certainly remove all
-pid_t values except for those in the init_pid_ns.
-
-We definitely have some serious issues with kernel_thread
-and signal sending though.
-
-Eric
-
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
