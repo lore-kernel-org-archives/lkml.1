@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXKZS5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbXKZS6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbXKZS5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 13:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXKZS5a
+	id S1754836AbXKZS6u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 13:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKZS6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 13:57:30 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:54311 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752078AbXKZS5a (ORCPT
+	Mon, 26 Nov 2007 13:58:44 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34980 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbXKZS6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 13:57:30 -0500
-Date: Mon, 26 Nov 2007 19:57:16 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-Message-ID: <20071126185716.GA917@stusta.de>
-References: <20071125161631.GA21947@stusta.de> <20071126122706.GA5167@ucw.cz>
+	Mon, 26 Nov 2007 13:58:43 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH? 3/3] move daemonized kernel threads into the swapper's session
+References: <20071126142556.GA16531@tv-sign.ru>
+Date: Mon, 26 Nov 2007 11:57:36 -0700
+In-Reply-To: <20071126142556.GA16531@tv-sign.ru> (Oleg Nesterov's message of
+	"Mon, 26 Nov 2007 17:25:56 +0300")
+Message-ID: <m14pf8omvz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071126122706.GA5167@ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 12:27:07PM +0000, Pavel Machek wrote:
-> On Sun 2007-11-25 17:16:31, Adrian Bunk wrote:
-> > This patch removes the EXPERIMENTAL option and all dependencies on 
-> > EXPERIMENTAL because they are pointless.
-> > 
-> > Complete rationale:
-> > - Many people and all distributions are currently forced to enable
-> >   CONFIG_EXPERIMENTAL since the options for many device drivers depend
-> >   on this option.
-> >   I have yet to see someone not being able to install his favorite
-> >   distribution on his computer only because the distribution did choose
-> >   to disable all SATA drivers with dependencies on EXPERIMENTAL in their
-> >   kernels...
-> > - History has shown that often the dependency on EXPERIMENTAL is not
-> >   removed when the code has proven usable.
-> >   As an example, is our NFSv4 support really still in an
-> >   "alpha-test phase" [1], or is it already ready for being used?
-> >   I don't know the answer in this specific case, but I wouldn't answer
-> >   "still in an alpha-test phase" only based on the fact that the NFSv4
-> >   options still depend on EXPERIMENTAL.
-> > - It might have been differently 10 years ago, but today everything that
-> >   is available in a released kernel should also be in a usable state.
-> > 
-> > [1] quoted from the CONFIG_EXPERIMENTAL help text
-> 
-> I don't think this is good idea. But perhaps 'experimental' should be
-> removed from stuff that is really stable these days, like SATA?
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-It's not the SATA subsystem itself that is experimental.
-There are some some drivers that are still experimental.
+> Any reason why daemonized kthread still uses 1,1 special pids? This patch
+> sets 0,0 pids, this matches kthread_create'ed threads.
 
-That's the same like e.g. with network drivers where the subsystem is 
-stable but some drivers are not (yet).
+You got it in your reply...
 
-And therefore people are forced to enable CONFIG_EXPERIMENTAL for 
-getting the kernel running on their hardware.
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-But e.g. the fact that a user must enable an experimental SATA driver 
-does not imply he also wants experimental network subsystem features.
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-> 							Pavel
 
-cu
-Adrian
 
--- 
+Hmm.  I wonder if we could ensure kernel_thread always
+returns a global pid_t, and then reallocate the struct
+pid for the task we have just daemonized so that it only
+has a single pid in the init_pid_ns.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+That would remove our capturing of child pid namespaces.
 
+Eric
