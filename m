@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXKZPsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXKZPzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbXKZPsg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 10:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbXKZPsX
+	id S1755469AbXKZPzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 10:55:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXKZPzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 10:48:23 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:41564 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbXKZPsW (ORCPT
+	Mon, 26 Nov 2007 10:55:18 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:36417 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbXKZPzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 10:48:22 -0500
-Subject: Re: [RFC] Documentation about unaligned memory access
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, kune@deine-taler.de
-In-Reply-To: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
-References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YpCO1EmPixG11+GBGIp6"
-Date: Mon, 26 Nov 2007 15:51:43 +0100
-Message-Id: <1196088703.4149.266.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Mon, 26 Nov 2007 10:55:16 -0500
+Date: Mon, 26 Nov 2007 10:53:10 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Ray Lee <ray-lk@madrabbit.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: can support for "rpm"-based package building just be dropped?
+In-Reply-To: <Pine.LNX.4.64.0711261622060.19299@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.0.9999.0711261048050.24142@localhost.localdomain>
+References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain> <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com> <Pine.LNX.4.64.0711261622060.19299@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 Nov 2007, Jan Engelhardt wrote:
 
---=-YpCO1EmPixG11+GBGIp6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>
+> On Nov 26 2007 06:58, Ray Lee wrote:
+> >On Nov 26, 2007 12:54 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+> >>   on current systems, "rpm" no longer has build capability and will
+> >> fail thusly:
+> >>
+> >> rpm --target i386 -ta ../kernel-2.6.24rc3g2ffbb837dirty.tar.gz
+> >> --target: unknown option
+> >>
+> >>   so it would make more sense to just require "rpmbuild" on the
+> >> machine, would it not?
+> >
+> >Only on current machines. You'd break building kernel RPMs on older
+> >systems that don't have rpmbuild installed.
+>
+> Those old machines probably do not even run a distro-fabricated gcc that
+> would compile a git head kernel.
 
+well, in a nutshell, the problem scenario is that it's entirely
+possible to have a modern distro (say, fedora 8, like i'm using) on
+which you have the latest "rpm" package installed, but not "rpmbuild".
+at which point scripts/package/Makefile, based on this:
 
-> Going back to an earlier example:
-> 	void myfunc(u8 *data, u32 value)
-> 	{
-> 		[...]
-> 		*((u16 *) data) =3D cpu_to_le32(value);
-> 		[...]
+RPM := $(shell if [ -x "/usr/bin/rpmbuild" ]; then echo rpmbuild; \
+                   else echo rpm; fi)
 
-typo? should it be a u32 cast?
+will select "rpm" as the value of the variable RPM, at which point
+things go south in a hurry as soon as you try to build an rpm package
+using $(RPM) aka "rpm".
 
-> To avoid the unaligned memory access, you could rewrite it as follows:
->=20
-> 	void myfunc(u8 *data, u32 value)
-> 	{
-> 		[...]
-> 		value =3D cpu_to_le32(value);
-> 		memcpy(data, value, sizeof(value));
-> 		[...]
-> 	}
+perhaps a solution would be to have two variables -- RPM and RPMBUILD
+-- and set them appropriately based on what the Makefile finds.  and,
+of course, whine incessantly if you have an unworkable setup.
 
-I think you should use put_unaligned here as well. Or maybe just reorder
-this vs. the section below where you use get/put_unaligned.
+anyway, have at it.
 
-johannes
+rday
 
---=-YpCO1EmPixG11+GBGIp6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR0rdfKVg1VMiehFYAQIMHw/+NHqAcirhzfhcRP3qIzLRFCUcgbCKLoRb
-lfvi3uWi7RLrw2388okzWmLPWJknNUJnIrNkEISunI6RqALUnO9jQnQ0ogSLCSth
-OwkTOZ6Bo0EyfO9yJufBLEhhOWTZ7SjAjLESrEA4cI9MxPSkr9grVm3Bix/boBYU
-cF5zWiokE4GeymW3Dnh5ce2vgsop7AE6Tn0PfUJiMTQMKEQDCBUa5AB2MTj0FPmS
-SLf0f3iKESJqBRheVsf5Jytz+3H8ehJP4zI2alr6JT7KvtoiVrQrRe2gEonNFyLB
-YYuO8FulQz7qjHVufyIGqeKEz8i9LKL65q/dpT3nlOI0/YnRKFujdsykRPTgNYIv
-yFIAM3ZhusBG2a//fGNKvSfViuRatWgR9T+KxAXYWSHW1/V1MCiZ1yhiQEpw0OFq
-1WetdOx+C1AkA8Vqrpb+6bCaz3MO3sa+b+9po54ZM6hAnTJlHpWcdMd0ZjsUBhEP
-eCqUXHdTXAwYrsFJ6kxSeSQiaESu1Q+zw9v6s4Co6kpJUkIezggjAU7PnvFX8oWI
-oOFihYUmW5g8EugPSuuqZ3WmTXqiG5ggBL4Mzk0AiSZib/UV5F8O0PAA0KFRH0Rb
-CjPTAtggrkFeyk1pInXhg2TfkbHcfq5QBQhY9Q3vX7+UJ03Ofopav8zmkpGXZMVa
-HunuxZ/LoXs=
-=/asZ
------END PGP SIGNATURE-----
-
---=-YpCO1EmPixG11+GBGIp6--
-
+http://crashcourse.ca
+========================================================================
