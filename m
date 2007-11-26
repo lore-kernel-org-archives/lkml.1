@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbXKZQx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbXKZQxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759394AbXKZQx1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 11:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbXKZQxR
+	id S1759498AbXKZQxy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 11:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbXKZQxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 11:53:17 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53460 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757254AbXKZQxQ (ORCPT
+	Mon, 26 Nov 2007 11:53:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:63853 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755983AbXKZQxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 11:53:16 -0500
-Date: Mon, 26 Nov 2007 11:53:02 -0500
-Message-Id: <200711261653.lAQGr2Et011553@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org
-Subject: Re: unionfs: several more problems 
-In-reply-to: Your message of "Tue, 20 Nov 2007 19:14:59 GMT."
-             <Pine.LNX.4.64.0711201802480.9934@blonde.wat.veritas.com> 
-X-MailKey: Erez_Zadok
+	Mon, 26 Nov 2007 11:53:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=hlT7xwvXr2RISqxzNYZuqvS3DiAJqTOT0v4WE8cUOP6rjIAt2f8d9NPkekgqpaCudi5NTlKobK6LNV/s0YfecbtvH1mhF8ZrL33BxcWXDZjvFQX54CEDupjX2CVNQInMCruwuAxmT1qbpKe/0P+ks9pW0WvcfTILfbtc3vFBmwI=
+Date: Mon, 26 Nov 2007 17:53:39 +0100
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Paul Mundt" <lethal@linux-sh.org>,
+       "Kristoffer Ericson" <kristoffer.ericson@gmail.com>,
+       "Russell King" <linux@arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: Question regarding naming scheme (HP Jornada 6XX/7XX)
+Message-Id: <20071126175339.5e8fa5b4.Kristoffer.ericson@gmail.com>
+In-Reply-To: <d120d5000711260640y68c6136fy181b63af85bf6ae6@mail.gmail.com>
+References: <20071126000329.8e7304c5.Kristoffer.ericson@gmail.com>
+	<20071126043030.GA25664@linux-sh.org>
+	<d120d5000711260640y68c6136fy181b63af85bf6ae6@mail.gmail.com>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0711201802480.9934@blonde.wat.veritas.com>, Hugh Dickins writes:
+On Mon, 26 Nov 2007 09:40:14 -0500
+"Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
 
-[...]
-> Please try running LTP (e.g. ltp-full-20071031.tgz) after something like
-[...]
+> On Nov 25, 2007 11:30 PM, Paul Mundt <lethal@linux-sh.org> wrote:
+> > On Mon, Nov 26, 2007 at 12:03:29AM +0100, Kristoffer Ericson wrote:
+> >
+> > > Why I want to use 600-series/700-series instead of 6XX/7XX is simply
+> > > because 600-series/700-series leaves no doubt.
+> > >
+> > Apparently your end users are more technically apt than I am, as I have
+> > no idea how using 00 over XX makes things any less ambiguous.
+> >
+> > We already have a 6xx mach-type that drivers can set their dependency on.
+> > If it's not 680-only, then that's a perfectly reasonable dependency. Feel
+> > free to change the Kconfig text to make the description more useful, but
+> > please don't start idly shuffling around code and symbols because users
+> > can't work out why a driver is available that they can't support.
+> 
+> Agreed. Users simply should not care what a particular module is
+> called. If Kconfig entries and/or its help is unclear on whta devices
+> are supported by the drivers let's fix that.
+> 
+Ok, guess the idea was shot down then :). I'll look at Kconfigs to see how I can make it clearer.
+thx for feedback.
 
-Hugh,
-
-I just posted a series of patches to unionfs (already in unionfs.git on
-korg), which fix every problem LTP found, as well as other problems
-mentioned in your email.  With this series of patches, the same set of tests
-which pass on ext3 also pass with unionfs mounted over ext3.
-
-I'd like to call your attention to one small unionfs_writepage fix.  One of
-the ltp fs tests (rwtest04) triggered a BUG_ON(PageWriteback(page)) in
-fs/buffer.c:1706, when we call the lower ->writepage.  This was due to
-multiple writers to the same page.  Looking at other kernel code, it seems
-that the right fix is to use wait_on_page_writeback(lower_page) to serialize
-concurrent writebacks to the same page, no?  The small patch below fixed the
-problem.  Let me know what you think.
-
-Thanks,
-Erez.
-
-
-diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
-index eef43aa..d0fd4d0 100644
---- a/fs/unionfs/mmap.c
-+++ b/fs/unionfs/mmap.c
-@@ -73,6 +73,7 @@ static int unionfs_writepage(struct page *page, struct writeback_control *wbc)
- 
- 	BUG_ON(!lower_mapping->a_ops->writepage);
- 	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
-+	wait_on_page_writeback(lower_page); /* prevent multiple writers */
- 	err = lower_mapping->a_ops->writepage(lower_page, wbc);
- 	if (err < 0)
- 		goto out_release;
+> -- 
+> Dmitry
