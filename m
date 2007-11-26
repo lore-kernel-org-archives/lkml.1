@@ -1,53 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbXKZHDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXKZHLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbXKZHDd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 02:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXKZHDZ
+	id S1753893AbXKZHLb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 02:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbXKZHLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 02:03:25 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58522 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbXKZHDY (ORCPT
+	Mon, 26 Nov 2007 02:11:21 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:40299 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbXKZHLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 02:03:24 -0500
-Date: Mon, 26 Nov 2007 16:06:35 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: kosaki <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1 (sync is slow ?)
-Message-Id: <20071126160635.015ca748.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <474867B2.4080809@googlemail.com>
-References: <20071121174215.caff4551.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071121004909.6157bb9a.akpm@linux-foundation.org>
-	<20071124190604.276B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<474867B2.4080809@googlemail.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 02:11:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=fexPjuCtVA5J2SfNENAxq9pUiRlEvFG3V6dVC2u0xscjfPZG0wGWMKT4VROka4IhIfUetJwudZ0ayjmlZ8I49cumdVuTXiLIAO7fb73+6AFkFXyzjc8wSFJXCMCUePzlrmi5rnuA11qMNfrT4mJt3vNNiQ3pKzFIaVEn9BzkTI4=
+From: Denis Cheng <crquan@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 1/2] crypto test: use print_hex_dump from <linux/kernel.h>
+Date: Mon, 26 Nov 2007 15:13:02 +0800
+Message-Id: <1196061182-6368-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Nov 2007 19:04:34 +0100
-Gabriel C <nix.or.die@googlemail.com> wrote:
-> >> It seems OK here from a quick test (i386, ext3-on-IDE).
-> >>
-> >> Maybe device driver/block breakage?
-> 
-> Try revert
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff_plain;h=8655a546c83fc43f0a73416bbd126d02de7ad6c0;hp=5bc717b6bdaaf52edf365eb7d9d8c89fec79df5d
-> 
-> See also :
-> http://lkml.org/lkml/2007/11/23/5
-> 
-> and search for '2.6.24-rc3-mm1: I/O error, system hangs' on LKML
-> 
+these utilities implemented in lib/hexdump.c are more handy, please use this.
 
-Thank you!
-The problem was fixed by reverting the patch you pointed out.
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ crypto/tcrypt.c |   21 +++++++--------------
+ 1 files changed, 7 insertions(+), 14 deletions(-)
 
--Kame
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 24141fb..8766023 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -81,14 +81,6 @@ static char *check[] = {
+ 	"camellia", "seed", NULL
+ };
+ 
+-static void hexdump(unsigned char *buf, unsigned int len)
+-{
+-	while (len--)
+-		printk("%02x", *buf++);
+-
+-	printk("\n");
+-}
+-
+ static void tcrypt_complete(struct crypto_async_request *req, int err)
+ {
+ 	struct tcrypt_result *res = req->data;
+@@ -156,7 +148,8 @@ static void test_hash(char *algo, struct hash_testvec *template,
+ 			goto out;
+ 		}
+ 
+-		hexdump(result, crypto_hash_digestsize(tfm));
++		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, crypto_hash_digestsize(tfm), 1);
++
+ 		printk("%s\n",
+ 		       memcmp(result, hash_tv[i].digest,
+ 			      crypto_hash_digestsize(tfm)) ?
+@@ -203,7 +196,7 @@ static void test_hash(char *algo, struct hash_testvec *template,
+ 				goto out;
+ 			}
+ 
+-			hexdump(result, crypto_hash_digestsize(tfm));
++			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, crypto_hash_digestsize(tfm), 1);
+ 			printk("%s\n",
+ 			       memcmp(result, hash_tv[i].digest,
+ 				      crypto_hash_digestsize(tfm)) ?
+@@ -319,7 +312,7 @@ static void test_cipher(char *algo, int enc,
+ 			}
+ 
+ 			q = kmap(sg_page(&sg[0])) + sg[0].offset;
+-			hexdump(q, cipher_tv[i].rlen);
++			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, q, cipher_tv[i].rlen, 1);
+ 
+ 			printk("%s\n",
+ 			       memcmp(q, cipher_tv[i].result,
+@@ -393,7 +386,7 @@ static void test_cipher(char *algo, int enc,
+ 			for (k = 0; k < cipher_tv[i].np; k++) {
+ 				printk("page %u\n", k);
+ 				q = kmap(sg_page(&sg[k])) + sg[k].offset;
+-				hexdump(q, cipher_tv[i].tap[k]);
++				print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, q, cipher_tv[i].tap[k], 1);
+ 				printk("%s\n",
+ 					memcmp(q, cipher_tv[i].result + temp,
+ 						cipher_tv[i].tap[k]) ? "fail" :
+@@ -839,7 +832,7 @@ static void test_deflate(void)
+ 			printk("fail: ret=%d\n", ret);
+ 			continue;
+ 		}
+-		hexdump(result, dlen);
++		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, dlen, 1);
+ 		printk("%s (ratio %d:%d)\n",
+ 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
+ 		       ilen, dlen);
+@@ -870,7 +863,7 @@ static void test_deflate(void)
+ 			printk("fail: ret=%d\n", ret);
+ 			continue;
+ 		}
+-		hexdump(result, dlen);
++		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, result, dlen, 1);
+ 		printk("%s (ratio %d:%d)\n",
+ 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
+ 		       ilen, dlen);
+-- 
+1.5.3.5
 
