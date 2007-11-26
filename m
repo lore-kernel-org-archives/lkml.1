@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbXKZSAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbXKZSBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbXKZSAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 13:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXKZSAc
+	id S1756519AbXKZSBz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 13:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXKZSBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 13:00:32 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37514 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754319AbXKZSAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 13:00:31 -0500
-Date: Mon, 26 Nov 2007 12:00:28 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Chris Wright <chrisw@sous-sol.org>, chris@friedhoff.org
-Subject: [PATCH] file capabilities: don't prevent signaling setuid root
-	programs.
-Message-ID: <20071126180028.GA9106@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 26 Nov 2007 13:01:48 -0500
+Received: from mfe1.polimi.it ([131.175.12.23]:53532 "EHLO polimi.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751494AbXKZSBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 13:01:47 -0500
+Date: Mon, 26 Nov 2007 19:00:09 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
+Message-ID: <20071126190009.1de9bb23@morte>
+In-Reply-To: <200711242031.26134.rjw@sisk.pl>
+References: <20071124175112.58193424@morte>
+	<200711241948.58881.rjw@sisk.pl>
+	<20071124194635.58f5a44b@morte>
+	<200711242031.26134.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.11.26.93610
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='BODY_SIZE_700_799 0, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is needed to preserve legacy behavior when
-CONFIG_SECURITY_FILE_CAPABILITIES=y.  Without this patch, xinit can't
-kill X, so manually starting X in runlevel 3 then exiting your window
-manager will not cause X to exit. 
+On Sat, 24 Nov 2007 20:31:25 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-thanks,
--serge
+> On Saturday, 24 of November 2007, Stefano Brivio wrote:
+> > On Sat, 24 Nov 2007 19:48:58 +0100
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > NO_HZ?  Highres timers?
+> > 
+> > CONFIG_HZ_1000=y
+> > # CONFIG_HIGH_RES_TIMERS is not set
+> >  
+> > > I understand that the previous kernels behave correctly.  All of them?
+> > 
+> > 2.6.21 behaved correctly. Sorry but git-bisect would take a lot of time
+> > (I can't reliably reproduce the jiffies jump), so I would avoid that if
+> > not strictly needed.
+> 
+> Well, it would be good to know if 2.6.23 behaves correctly, at least.
 
->From 81a6d780ad570f9a326fc27912ec0e373f5fa14f Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Tue, 20 Nov 2007 08:47:35 +0000
-Subject: [PATCH] file capabilities: don't prevent signaling setuid root programs.
+Will try that ASAP, sorry for the delay.
 
-An unprivileged process must be able to kill a setuid root
-program started by the same user.  This is legacy behavior
-needed for instance for xinit to kill X when the window manager
-exits.
 
-When an unprivileged user runs a setuid root program in !SECURE_NOROOT
-mode, fP, fI, and fE are set full on, so pP' and pE' are full on.
-Then cap_task_kill() prevents the user from signaling the setuid root
-task.  This is a change in behavior compared to when
-!CONFIG_SECURITY_FILE_CAPABILITIES.
-
-This patch introduces a special check into cap_task_kill() just
-to check whether a non-root user is signaling a setuid root
-program started by the same user.  If so, then signal is allowed.
-
-Changelog:
-	Nov 26: move test up above CAP_KILL test as per Andrew
-		Morgan's suggestion.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/commoncap.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 302e8d0..5bc1895 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -526,6 +526,15 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
- 		return 0;
- 
-+	/*
-+	 * Running a setuid root program raises your capabilities.
-+	 * Killing your own setuid root processes was previously
-+	 * allowed.
-+	 * We must preserve legacy signal behavior in this case.
-+	 */
-+	if (p->euid == 0 && p->uid == current->uid)
-+		return 0;
-+
- 	/* sigcont is permitted within same session */
- 	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
- 		return 0;
 -- 
-1.5.2.5
-
+Ciao
+Stefano
