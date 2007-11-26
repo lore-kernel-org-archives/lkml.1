@@ -1,96 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbXKZHOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbXKZHkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbXKZHOv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 02:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXKZHOl
+	id S1753920AbXKZHkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 02:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbXKZHkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 02:14:41 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:23382 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbXKZHOj (ORCPT
+	Mon, 26 Nov 2007 02:40:07 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44833 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752810AbXKZHkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 02:14:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:cc:subject:date:message-id:x-mailer;
-        b=IBEGbHCEY1RxwjxBqJ48XMu0Thgk/fHNObjJLbkTQCvxetZQd1mkKUYXuAYwnNu50/1IUzAXACwHq3ko0xDU8506suYoq81g6Aog6n9l1WwnkgvqUM5HYh769H8vhTnKEJySUOwiR7qj7EsiVlCSxE9U2V2KFiCcSvgm5YprSNY=
-From: Denis Cheng <crquan@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 2/2] ide-scsi: use print_hex_dump from <linux/kernel.h>
-Date: Mon, 26 Nov 2007 15:16:13 +0800
-Message-Id: <1196061373-6394-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.3.4
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 26 Nov 2007 02:40:06 -0500
+Date: Sun, 25 Nov 2007 23:39:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>
+Subject: Re: enable dual rng on VIA C7
+Message-Id: <20071125233949.f64b2ecd.akpm@linux-foundation.org>
+In-Reply-To: <47374EA4.1060009@xs4all.nl>
+References: <47374EA4.1060009@xs4all.nl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-these utilities implemented in lib/hexdump.c are more handy, please use this.
+On Sun, 11 Nov 2007 19:49:08 +0100 Udo van den Heuvel <udovdh@xs4all.nl> wrote:
 
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
-there are still much other private hexdump implementations in the source,
-which reinvent the wheel, we can find them through:
+> Any reason why the second rng on the VIA C7 CPU is not enabled?
+> 
+> Kind regards,
+> Udo
+> 
+> 
+> [via-rng.patch  text/plain (634B)]
+> --- old/drivers/char/hw_random/via-rng.c	2007-11-11 19:39:49.000000000 +0100
+> +++ new/drivers/char/hw_random/via-rng.c	2007-11-11 19:40:41.000000000 +0100
+> @@ -41,6 +41,7 @@
+>  	VIA_STRFILT_ENABLE	= (1 << 14),
+>  	VIA_RAWBITS_ENABLE	= (1 << 13),
+>  	VIA_RNG_ENABLE		= (1 << 6),
+> +	VIA_RNG_DUAL            = (1 << 9),
+>  	VIA_XSTORE_CNT_MASK	= 0x0F,
+>  
+>  	VIA_RNG_CHUNK_8		= 0x00,	/* 64 rand bits, 64 stored bits */
+> @@ -128,6 +129,7 @@
+>  	lo &= ~(0x7f << VIA_STRFILT_CNT_SHIFT);
+>  	lo &= ~VIA_XSTORE_CNT_MASK;
+>  	lo &= ~(VIA_STRFILT_ENABLE | VIA_STRFILT_FAIL | VIA_RAWBITS_ENABLE);
+> +	lo |= VIA_RNG_DUAL;
+>  	lo |= VIA_RNG_ENABLE;
+>  
+>  	if (lo != old_lo)
+> 
 
-  $ grep -RsIn hexdump <kernel-src>
-  ...
+Does the patch work?
 
- drivers/scsi/ide-scsi.c |   18 ++++--------------
- 1 files changed, 4 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
-index 8d0244c..8f3fc1d 100644
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -242,16 +242,6 @@ static void idescsi_output_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsign
- 	}
- }
- 
--static void hexdump(u8 *x, int len)
--{
--	int i;
--
--	printk("[ ");
--	for (i = 0; i < len; i++)
--		printk("%x ", x[i]);
--	printk("]\n");
--}
--
- static int idescsi_check_condition(ide_drive_t *drive, struct request *failed_command)
- {
- 	idescsi_scsi_t *scsi = drive_to_idescsi(drive);
-@@ -282,7 +272,7 @@ static int idescsi_check_condition(ide_drive_t *drive, struct request *failed_co
- 	pc->scsi_cmd = ((idescsi_pc_t *) failed_command->special)->scsi_cmd;
- 	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
- 		printk ("ide-scsi: %s: queue cmd = ", drive->name);
--		hexdump(pc->c, 6);
-+		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->c, 6, 1);
- 	}
- 	rq->rq_disk = scsi->disk;
- 	return ide_do_drive_cmd(drive, rq, ide_preempt);
-@@ -337,7 +327,7 @@ static int idescsi_end_request (ide_drive_t *drive, int uptodate, int nrsecs)
- 		idescsi_pc_t *opc = (idescsi_pc_t *) rq->buffer;
- 		if (log) {
- 			printk ("ide-scsi: %s: wrap up check %lu, rst = ", drive->name, opc->scsi_cmd->serial_number);
--			hexdump(pc->buffer,16);
-+			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->buffer, 16, 1);
- 		}
- 		memcpy((void *) opc->scsi_cmd->sense_buffer, pc->buffer, SCSI_SENSE_BUFFERSIZE);
- 		kfree(pc->buffer);
-@@ -816,10 +806,10 @@ static int idescsi_queue (struct scsi_cmnd *cmd,
- 
- 	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
- 		printk ("ide-scsi: %s: que %lu, cmd = ", drive->name, cmd->serial_number);
--		hexdump(cmd->cmnd, cmd->cmd_len);
-+		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, cmd->cmnd, cmd->cmd_len, 1);
- 		if (memcmp(pc->c, cmd->cmnd, cmd->cmd_len)) {
- 			printk ("ide-scsi: %s: que %lu, tsl = ", drive->name, cmd->serial_number);
--			hexdump(pc->c, 12);
-+			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->c, 12, 1);
- 		}
- 	}
- 
--- 
-1.5.3.5
-
+It's missing a signed-off-by:, btw
