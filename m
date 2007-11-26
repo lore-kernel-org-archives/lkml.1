@@ -1,525 +1,553 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbXKZQGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbXKZQNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756447AbXKZQGY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 11:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXKZQGO
+	id S1754821AbXKZQNP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 11:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbXKZQM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 11:06:14 -0500
-Received: from elvis.franken.de ([193.175.24.41]:49702 "EHLO elvis.franken.de"
+	Mon, 26 Nov 2007 11:12:57 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:39489 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579AbXKZQGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 11:06:11 -0500
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-cc: ralf@linux-mips.org, akpm@linux-foundation.org
-Date: Mon, 26 Nov 2007 16:58:03 +0100
-Subject: [UPDATED PATCH] IP22ZILOG: fix lockup and sysrq
-Message-Id: <20071126160538.507EAC2B22@solo.franken.de>
+	id S1751174AbXKZQMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 11:12:55 -0500
+Date: Mon, 26 Nov 2007 11:12:54 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20071126161254.GA15497@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- fix lockup when switching from early console to real console
-- make sysrq reliable
-- fix panic, if sysrq is issued before console is opened
 
-Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
----
- arch/mips/sgi-ip22/ip22-setup.c |   19 ---
- drivers/serial/ip22zilog.c      |  247 +++++++++++++++++----------------------
- include/asm-mips/system.h       |    2 -
- include/linux/serial_core.h     |    2 +-
- 4 files changed, 107 insertions(+), 163 deletions(-)
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
-diff --git a/arch/mips/sgi-ip22/ip22-setup.c b/arch/mips/sgi-ip22/ip22-setup.c
-index 174f09e..5f389ee 100644
---- a/arch/mips/sgi-ip22/ip22-setup.c
-+++ b/arch/mips/sgi-ip22/ip22-setup.c
-@@ -31,25 +31,6 @@
- unsigned long sgi_gfxaddr;
- EXPORT_SYMBOL_GPL(sgi_gfxaddr);
+to receive the following updates:
+
+ drivers/net/Kconfig            |    2 +-
+ drivers/net/amd8111e.c         |    6 ++++++
+ drivers/net/bfin_mac.c         |    2 +-
+ drivers/net/ehea/ehea.h        |    2 +-
+ drivers/net/ehea/ehea_main.c   |   20 ++++++++++++--------
+ drivers/net/ehea/ehea_qmr.h    |    4 ++--
+ drivers/net/forcedeth.c        |   38 +++++++++++++++++++++++++-------------
+ drivers/net/ibm_newemac/core.c |   31 ++++++++++++++++++++-----------
+ drivers/net/ibm_newemac/core.h |    1 +
+ drivers/net/sky2.c             |    6 +-----
+ drivers/net/smc911x.c          |   19 +++++--------------
+ drivers/net/smc911x.h          |    2 +-
+ drivers/net/smc91x.h           |    2 +-
+ drivers/net/tulip/dmfe.c       |    4 ++--
+ drivers/net/usb/dm9601.c       |    2 +-
+ include/linux/pci_ids.h        |    4 ++++
+ 16 files changed, 84 insertions(+), 61 deletions(-)
+
+Ayaz Abdulla (2):
+      forcedeth: new mcp79 pci ids
+      forcedeth boot delay fix
+
+Benjamin Herrenschmidt (1):
+      ibm_newemac: Fix possible lockup on close
+
+Jeff Garzik (1):
+      dmfe: checkpatch fix (add whitespace)
+
+Jiri Bohac (1):
+      amd8111e: don't call napi_enable if configured w/o NAPI
+
+Maxim Levitsky (1):
+      NET: dmfe: don't access configuration space in D3 state
+
+Mike Frysinger (1):
+      Blackfin SMC91x Driver: punt CONFIG_BFIN -- we already have CONFIG_BLACKFIN
+
+Peter Korsgaard (4):
+      dm9601: Fix printk
+      smc911x: Fix undefined CONFIG_ symbol warning
+      smc911x: Fix unused variable warning.
+      smc911x: Fix multicast handling
+
+Stephen Hemminger (1):
+      sky2: disable rx checksum on Yukon XL
+
+Thomas Klein (2):
+      ehea: Improve tx packets counting
+      ehea: Reworked rcv queue handling to log only fatal errors
+
+Vitja Makarov (1):
+      Blackfin EMAC driver: fix bug - NAT doesn't work with bfin_mac driver
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index e8d69b0..1437b37 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -888,7 +888,7 @@ config SMC91X
+ 	tristate "SMC 91C9x/91C1xxx support"
+ 	select CRC32
+ 	select MII
+-	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || SOC_AU1X00 || BFIN
++	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || SOC_AU1X00 || BLACKFIN
+ 	help
+ 	  This is a driver for SMC's 91x series of Ethernet chipsets,
+ 	  including the SMC91C94 and the SMC91C111. Say Y if you want it
+diff --git a/drivers/net/amd8111e.c b/drivers/net/amd8111e.c
+index eebf5bb..e7fdd81 100644
+--- a/drivers/net/amd8111e.c
++++ b/drivers/net/amd8111e.c
+@@ -1340,7 +1340,9 @@ static int amd8111e_close(struct net_device * dev)
+ 	struct amd8111e_priv *lp = netdev_priv(dev);
+ 	netif_stop_queue(dev);
  
--/*
-- * Stop-A is originally a Sun thing that isn't standard on IP22 so to avoid
-- * accidents it's disabled by default on IP22.
-- *
-- * FIXME: provide a mechanism to change the value of stop_a_enabled.
-- */
--int stop_a_enabled;
--
--void ip22_do_break(void)
--{
--	if (!stop_a_enabled)
--		return;
--
--	printk("\n");
--	ArcEnterInteractiveMode();
--}
--
--EXPORT_SYMBOL(ip22_do_break);
--
- extern void ip22_be_init(void) __init;
++#ifdef CONFIG_AMD8111E_NAPI
+ 	napi_disable(&lp->napi);
++#endif
  
- void __init plat_mem_setup(void)
-diff --git a/drivers/serial/ip22zilog.c b/drivers/serial/ip22zilog.c
-index f3257f7..9c95bc0 100644
---- a/drivers/serial/ip22zilog.c
-+++ b/drivers/serial/ip22zilog.c
-@@ -45,8 +45,6 @@
+ 	spin_lock_irq(&lp->lock);
  
- #include "ip22zilog.h"
+@@ -1372,7 +1374,9 @@ static int amd8111e_open(struct net_device * dev )
+ 					 dev->name, dev))
+ 		return -EAGAIN;
  
--void ip22_do_break(void);
--
- /*
-  * On IP22 we need to delay after register accesses but we do not need to
-  * flush writes.
-@@ -81,12 +79,9 @@ struct uart_ip22zilog_port {
- #define IP22ZILOG_FLAG_REGS_HELD	0x00000040
- #define IP22ZILOG_FLAG_TX_STOPPED	0x00000080
- #define IP22ZILOG_FLAG_TX_ACTIVE	0x00000100
-+#define IP22ZILOG_FLAG_RESET_DONE	0x00000200
++#ifdef CONFIG_AMD8111E_NAPI
+ 	napi_enable(&lp->napi);
++#endif
  
--	unsigned int			cflag;
--
--	/* L1-A keyboard break state.  */
--	int				kbd_id;
--	int				l1_down;
-+	unsigned int			tty_break;
+ 	spin_lock_irq(&lp->lock);
  
- 	unsigned char			parity_mask;
- 	unsigned char			prev_status;
-@@ -250,13 +245,26 @@ static void ip22zilog_maybe_update_regs(struct uart_ip22zilog_port *up,
- 	}
- }
+@@ -1380,7 +1384,9 @@ static int amd8111e_open(struct net_device * dev )
  
--static void ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
--				   struct zilog_channel *channel)
-+#define Rx_BRK 0x0100                   /* BREAK event software flag.  */
-+#define Rx_SYS 0x0200                   /* SysRq event software flag.  */
+ 	if(amd8111e_restart(dev)){
+ 		spin_unlock_irq(&lp->lock);
++#ifdef CONFIG_AMD8111E_NAPI
+ 		napi_disable(&lp->napi);
++#endif
+ 		if (dev->irq)
+ 			free_irq(dev->irq, dev);
+ 		return -ENOMEM;
+diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+index 084acfd..f0f8516 100644
+--- a/drivers/net/bfin_mac.c
++++ b/drivers/net/bfin_mac.c
+@@ -676,7 +676,7 @@ static void bf537mac_rx(struct net_device *dev)
+ 	skb->protocol = eth_type_trans(skb, dev);
+ #if defined(BFIN_MAC_CSUM_OFFLOAD)
+ 	skb->csum = current_rx_ptr->status.ip_payload_csum;
+-	skb->ip_summed = CHECKSUM_PARTIAL;
++	skb->ip_summed = CHECKSUM_COMPLETE;
+ #endif
+ 
+ 	netif_rx(skb);
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index f78e5bf..5f82a46 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0080"
++#define DRV_VERSION	"EHEA_0083"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index f0319f1..869e160 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -136,7 +136,7 @@ static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+ 	struct ehea_port *port = netdev_priv(dev);
+ 	struct net_device_stats *stats = &port->stats;
+ 	struct hcp_ehea_port_cb2 *cb2;
+-	u64 hret, rx_packets;
++	u64 hret, rx_packets, tx_packets;
+ 	int i;
+ 
+ 	memset(stats, 0, sizeof(*stats));
+@@ -162,7 +162,11 @@ static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+ 	for (i = 0; i < port->num_def_qps; i++)
+ 		rx_packets += port->port_res[i].rx_packets;
+ 
+-	stats->tx_packets = cb2->txucp + cb2->txmcp + cb2->txbcp;
++	tx_packets = 0;
++	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
++		tx_packets += port->port_res[i].tx_packets;
 +
-+static struct tty_struct *ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
-+						  struct zilog_channel *channel)
- {
--	struct tty_struct *tty = up->port.info->tty;	/* XXX info==NULL? */
-+	struct tty_struct *tty;
-+	unsigned char ch, flag;
-+	unsigned int r1;
-+
-+	tty = NULL;
-+	if (up->port.info != NULL &&
-+	    up->port.info->tty != NULL)
-+		tty = up->port.info->tty;
++	stats->tx_packets = tx_packets;
+ 	stats->multicast = cb2->rxmcp;
+ 	stats->rx_errors = cb2->rxuerr;
+ 	stats->rx_bytes = cb2->rxo;
+@@ -406,11 +410,6 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
+ 	if (cqe->status & EHEA_CQE_STAT_ERR_CRC)
+ 		pr->p_stats.err_frame_crc++;
  
--	while (1) {
--		unsigned char ch, r1, flag;
-+	for (;;) {
-+		ch = readb(&channel->control);
-+		ZSDELAY();
-+		if (!(ch & Rx_CH_AV))
-+			break;
- 
- 		r1 = read_zsreg(channel, R1);
- 		if (r1 & (PAR_ERR | Rx_OVR | CRC_ERR)) {
-@@ -265,43 +273,26 @@ static void ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
- 			ZS_WSYNC(channel);
- 		}
- 
--		ch = readb(&channel->control);
--		ZSDELAY();
--
--		/* This funny hack depends upon BRK_ABRT not interfering
--		 * with the other bits we care about in R1.
--		 */
--		if (ch & BRK_ABRT)
--			r1 |= BRK_ABRT;
--
- 		ch = readb(&channel->data);
- 		ZSDELAY();
- 
- 		ch &= up->parity_mask;
- 
--		if (ZS_IS_CONS(up) && (r1 & BRK_ABRT)) {
--			/* Wait for BREAK to deassert to avoid potentially
--			 * confusing the PROM.
--			 */
--			while (1) {
--				ch = readb(&channel->control);
--				ZSDELAY();
--				if (!(ch & BRK_ABRT))
--					break;
--			}
--			ip22_do_break();
--			return;
--		}
-+		/* Handle the null char got when BREAK is removed.  */
-+		if (!ch)
-+			r1 |= up->tty_break;
- 
- 		/* A real serial line, record the character and status.  */
- 		flag = TTY_NORMAL;
- 		up->port.icount.rx++;
--		if (r1 & (BRK_ABRT | PAR_ERR | Rx_OVR | CRC_ERR)) {
--			if (r1 & BRK_ABRT) {
--				r1 &= ~(PAR_ERR | CRC_ERR);
-+		if (r1 & (PAR_ERR | Rx_OVR | CRC_ERR | Rx_SYS | Rx_BRK)) {
-+			up->tty_break = 0;
-+
-+			if (r1 & (Rx_SYS | Rx_BRK)) {
- 				up->port.icount.brk++;
--				if (uart_handle_break(&up->port))
--					goto next_char;
-+				if (r1 & Rx_SYS)
-+					continue;
-+				r1 &= ~(PAR_ERR | CRC_ERR);
- 			}
- 			else if (r1 & PAR_ERR)
- 				up->port.icount.parity++;
-@@ -310,30 +301,21 @@ static void ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
- 			if (r1 & Rx_OVR)
- 				up->port.icount.overrun++;
- 			r1 &= up->port.read_status_mask;
--			if (r1 & BRK_ABRT)
-+			if (r1 & Rx_BRK)
- 				flag = TTY_BREAK;
- 			else if (r1 & PAR_ERR)
- 				flag = TTY_PARITY;
- 			else if (r1 & CRC_ERR)
- 				flag = TTY_FRAME;
- 		}
--		if (uart_handle_sysrq_char(&up->port, ch))
--			goto next_char;
- 
--		if (up->port.ignore_status_mask == 0xff ||
--		    (r1 & up->port.ignore_status_mask) == 0)
--		    	tty_insert_flip_char(tty, ch, flag);
-+		if (uart_handle_sysrq_char(&up->port, ch))
-+			continue;
- 
--		if (r1 & Rx_OVR)
--			tty_insert_flip_char(tty, 0, TTY_OVERRUN);
--	next_char:
--		ch = readb(&channel->control);
--		ZSDELAY();
--		if (!(ch & Rx_CH_AV))
--			break;
-+		if (tty)
-+			uart_insert_char(&up->port, r1, Rx_OVR, ch, flag);
- 	}
--
--	tty_flip_buffer_push(tty);
-+	return tty;
- }
- 
- static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
-@@ -348,6 +330,15 @@ static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
- 	ZSDELAY();
- 	ZS_WSYNC(channel);
- 
-+	if (up->curregs[R15] & BRKIE) {
-+		if ((status & BRK_ABRT) && !(up->prev_status & BRK_ABRT)) {
-+			if (uart_handle_break(&up->port))
-+				up->tty_break = Rx_SYS;
-+			else
-+				up->tty_break = Rx_BRK;
-+		}
-+	}
-+
- 	if (ZS_WANTS_MODEM_STATUS(up)) {
- 		if (status & SYNC)
- 			up->port.icount.dsr++;
-@@ -356,10 +347,10 @@ static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
- 		 * But it does not tell us which bit has changed, we have to keep
- 		 * track of this ourselves.
- 		 */
--		if ((status & DCD) ^ up->prev_status)
-+		if ((status ^ up->prev_status) ^ DCD)
- 			uart_handle_dcd_change(&up->port,
- 					       (status & DCD));
--		if ((status & CTS) ^ up->prev_status)
-+		if ((status ^ up->prev_status) ^ CTS)
- 			uart_handle_cts_change(&up->port,
- 					       (status & CTS));
- 
-@@ -447,19 +438,21 @@ static irqreturn_t ip22zilog_interrupt(int irq, void *dev_id)
- 	while (up) {
- 		struct zilog_channel *channel
- 			= ZILOG_CHANNEL_FROM_PORT(&up->port);
-+		struct tty_struct *tty;
- 		unsigned char r3;
- 
- 		spin_lock(&up->port.lock);
- 		r3 = read_zsreg(channel, R3);
- 
- 		/* Channel A */
-+		tty = NULL;
- 		if (r3 & (CHAEXT | CHATxIP | CHARxIP)) {
- 			writeb(RES_H_IUS, &channel->control);
- 			ZSDELAY();
- 			ZS_WSYNC(channel);
- 
- 			if (r3 & CHARxIP)
--				ip22zilog_receive_chars(up, channel);
-+				tty = ip22zilog_receive_chars(up, channel);
- 			if (r3 & CHAEXT)
- 				ip22zilog_status_handle(up, channel);
- 			if (r3 & CHATxIP)
-@@ -467,18 +460,22 @@ static irqreturn_t ip22zilog_interrupt(int irq, void *dev_id)
- 		}
- 		spin_unlock(&up->port.lock);
- 
-+		if (tty)
-+			tty_flip_buffer_push(tty);
-+
- 		/* Channel B */
- 		up = up->next;
- 		channel = ZILOG_CHANNEL_FROM_PORT(&up->port);
- 
- 		spin_lock(&up->port.lock);
-+		tty = NULL;
- 		if (r3 & (CHBEXT | CHBTxIP | CHBRxIP)) {
- 			writeb(RES_H_IUS, &channel->control);
- 			ZSDELAY();
- 			ZS_WSYNC(channel);
- 
- 			if (r3 & CHBRxIP)
--				ip22zilog_receive_chars(up, channel);
-+				tty = ip22zilog_receive_chars(up, channel);
- 			if (r3 & CHBEXT)
- 				ip22zilog_status_handle(up, channel);
- 			if (r3 & CHBTxIP)
-@@ -486,6 +483,9 @@ static irqreturn_t ip22zilog_interrupt(int irq, void *dev_id)
- 		}
- 		spin_unlock(&up->port.lock);
- 
-+		if (tty)
-+			tty_flip_buffer_push(tty);
-+
- 		up = up->next;
- 	}
- 
-@@ -681,11 +681,46 @@ static void ip22zilog_break_ctl(struct uart_port *port, int break_state)
- 	spin_unlock_irqrestore(&port->lock, flags);
- }
- 
-+static void __ip22zilog_reset(struct uart_ip22zilog_port *up)
-+{
-+	struct zilog_channel *channel;
-+	int i;
-+
-+	if (up->flags & IP22ZILOG_FLAG_RESET_DONE)
-+		return;
-+
-+	/* Let pending transmits finish.  */
-+	channel = ZILOG_CHANNEL_FROM_PORT(&up->port);
-+	for (i = 0; i < 1000; i++) {
-+		unsigned char stat = read_zsreg(channel, R1);
-+		if (stat & ALL_SNT)
-+			break;
-+		udelay(100);
-+	}
-+
-+	if (!ZS_IS_CHANNEL_A(up)) {
-+		up++;
-+		channel = ZILOG_CHANNEL_FROM_PORT(&up->port);
-+	}
-+	write_zsreg(channel, R9, FHWRES);
-+	ZSDELAY_LONG();
-+	(void) read_zsreg(channel, R0);
-+
-+	up->flags |= IP22ZILOG_FLAG_RESET_DONE;
-+	up->next->flags |= IP22ZILOG_FLAG_RESET_DONE;
-+}
-+
- static void __ip22zilog_startup(struct uart_ip22zilog_port *up)
- {
- 	struct zilog_channel *channel;
- 
- 	channel = ZILOG_CHANNEL_FROM_PORT(&up->port);
-+
-+	__ip22zilog_reset(up);
-+
-+	__load_zsregs(channel, up->curregs);
-+	/* set master interrupt enable */
-+	write_zsreg(channel, R9, up->curregs[R9]);
- 	up->prev_status = readb(&channel->control);
- 
- 	/* Enable receiver and transmitter.  */
-@@ -859,8 +894,6 @@ ip22zilog_set_termios(struct uart_port *port, struct ktermios *termios,
- 	else
- 		up->flags &= ~IP22ZILOG_FLAG_MODEM_STATUS;
- 
--	up->cflag = termios->c_cflag;
--
- 	ip22zilog_maybe_update_regs(up, ZILOG_CHANNEL_FROM_PORT(port));
- 	uart_update_timeout(port, termios->c_cflag, baud);
- 
-@@ -992,74 +1025,29 @@ ip22zilog_console_write(struct console *con, const char *s, unsigned int count)
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- }
- 
--void
--ip22serial_console_termios(struct console *con, char *options)
--{
--	int baud = 9600, bits = 8, cflag;
--	int parity = 'n';
--	int flow = 'n';
--
--	if (options)
--		uart_parse_options(options, &baud, &parity, &bits, &flow);
--
--	cflag = CREAD | HUPCL | CLOCAL;
--
--	switch (baud) {
--		case 150: cflag |= B150; break;
--		case 300: cflag |= B300; break;
--		case 600: cflag |= B600; break;
--		case 1200: cflag |= B1200; break;
--		case 2400: cflag |= B2400; break;
--		case 4800: cflag |= B4800; break;
--		case 9600: cflag |= B9600; break;
--		case 19200: cflag |= B19200; break;
--		case 38400: cflag |= B38400; break;
--		default: baud = 9600; cflag |= B9600; break;
+-	if (netif_msg_rx_err(pr->port)) {
+-		ehea_error("CQE Error for QP %d", pr->qp->init_attr.qp_nr);
+-		ehea_dump(cqe, sizeof(*cqe), "CQE");
 -	}
 -
--	con->cflag = cflag | CS8;			/* 8N1 */
--
--	uart_update_timeout(&ip22zilog_port_table[con->index].port, cflag, baud);
--}
--
- static int __init ip22zilog_console_setup(struct console *con, char *options)
- {
- 	struct uart_ip22zilog_port *up = &ip22zilog_port_table[con->index];
- 	unsigned long flags;
--	int baud, brg;
--
--	printk("Console: ttyS%d (IP22-Zilog)\n", con->index);
-+	int baud = 9600, bits = 8;
-+	int parity = 'n';
-+	int flow = 'n';
- 
--	/* Get firmware console settings.  */
--	ip22serial_console_termios(con, options);
-+	up->flags |= IP22ZILOG_FLAG_IS_CONS;
- 
--	/* Firmware console speed is limited to 150-->38400 baud so
--	 * this hackish cflag thing is OK.
--	 */
--	switch (con->cflag & CBAUD) {
--	case B150: baud = 150; break;
--	case B300: baud = 300; break;
--	case B600: baud = 600; break;
--	case B1200: baud = 1200; break;
--	case B2400: baud = 2400; break;
--	case B4800: baud = 4800; break;
--	default: case B9600: baud = 9600; break;
--	case B19200: baud = 19200; break;
--	case B38400: baud = 38400; break;
--	};
--
--	brg = BPS_TO_BRG(baud, ZS_CLOCK / ZS_CLOCK_DIVISOR);
-+	printk(KERN_INFO "Console: ttyS%d (IP22-Zilog)\n", con->index);
- 
- 	spin_lock_irqsave(&up->port.lock, flags);
- 
--	up->curregs[R15] = BRKIE;
--	ip22zilog_convert_to_zs(up, con->cflag, 0, brg);
-+	up->curregs[R15] |= BRKIE;
- 
- 	__ip22zilog_startup(up);
- 
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- 
--	return 0;
-+	if (options)
-+		uart_parse_options(options, &baud, &parity, &bits, &flow);
-+	return uart_set_options(&up->port, con, baud, parity, bits, flow);
- }
- 
- static struct uart_driver ip22zilog_reg;
-@@ -1140,25 +1128,10 @@ static void __init ip22zilog_prepare(void)
- 		up[(chip * 2) + 1].port.line = (chip * 2) + 1;
- 		up[(chip * 2) + 1].flags |= IP22ZILOG_FLAG_IS_CHANNEL_A;
- 	}
--}
--
--static void __init ip22zilog_init_hw(void)
--{
--	int i;
--
--	for (i = 0; i < NUM_CHANNELS; i++) {
--		struct uart_ip22zilog_port *up = &ip22zilog_port_table[i];
--		struct zilog_channel *channel = ZILOG_CHANNEL_FROM_PORT(&up->port);
--		unsigned long flags;
--		int baud, brg;
- 
--		spin_lock_irqsave(&up->port.lock, flags);
--
--		if (ZS_IS_CHANNEL_A(up)) {
--			write_zsreg(channel, R9, FHWRES);
--			ZSDELAY_LONG();
--			(void) read_zsreg(channel, R0);
--		}
-+	for (channel = 0; channel < NUM_CHANNELS; channel++) {
-+		struct uart_ip22zilog_port *up = &ip22zilog_port_table[channel];
-+		int brg;
- 
- 		/* Normal serial TTY. */
- 		up->parity_mask = 0xff;
-@@ -1169,16 +1142,10 @@ static void __init ip22zilog_init_hw(void)
- 		up->curregs[R9] = NV | MIE;
- 		up->curregs[R10] = NRZ;
- 		up->curregs[R11] = TCBR | RCBR;
--		baud = 9600;
--		brg = BPS_TO_BRG(baud, ZS_CLOCK / ZS_CLOCK_DIVISOR);
-+		brg = BPS_TO_BRG(9600, ZS_CLOCK / ZS_CLOCK_DIVISOR);
- 		up->curregs[R12] = (brg & 0xff);
- 		up->curregs[R13] = (brg >> 8) & 0xff;
- 		up->curregs[R14] = BRENAB;
--		__load_zsregs(channel, up->curregs);
--	        /* set master interrupt enable */
--	        write_zsreg(channel, R9, up->curregs[R9]);
--
--		spin_unlock_irqrestore(&up->port.lock, flags);
- 	}
- }
- 
-@@ -1195,8 +1162,6 @@ static int __init ip22zilog_ports_init(void)
- 		panic("IP22-Zilog: Unable to register zs interrupt handler.\n");
+ 	if (rq == 2) {
+ 		*processed_rq2 += 1;
+ 		skb = get_skb_by_index(pr->rq2_skba.arr, pr->rq2_skba.len, cqe);
+@@ -422,7 +421,11 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
  	}
  
--	ip22zilog_init_hw();
--
- 	ret = uart_register_driver(&ip22zilog_reg);
- 	if (ret == 0) {
- 		int i;
-diff --git a/include/asm-mips/system.h b/include/asm-mips/system.h
-index 1030562..a944eda 100644
---- a/include/asm-mips/system.h
-+++ b/include/asm-mips/system.h
-@@ -209,8 +209,6 @@ extern void *set_except_vector(int n, void *addr);
- extern unsigned long ebase;
- extern void per_cpu_trap_init(void);
+ 	if (cqe->status & EHEA_CQE_STAT_FAT_ERR_MASK) {
+-		ehea_error("Critical receive error. Resetting port.");
++		if (netif_msg_rx_err(pr->port)) {
++			ehea_error("Critical receive error for QP %d. "
++				   "Resetting port.", pr->qp->init_attr.qp_nr);
++			ehea_dump(cqe, sizeof(*cqe), "CQE");
++		}
+ 		schedule_work(&pr->port->reset_task);
+ 		return 1;
+ 	}
+@@ -2000,6 +2003,7 @@ static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	}
  
--extern int stop_a_enabled;
--
- /*
-  * See include/asm-ia64/system.h; prevents deadlock on SMP
-  * systems.
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 6a5203f..9963f81 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -437,7 +437,7 @@ uart_handle_sysrq_char(struct uart_port *port, unsigned int ch)
- #ifdef SUPPORT_SYSRQ
- 	if (port->sysrq) {
- 		if (ch && time_before(jiffies, port->sysrq)) {
--			handle_sysrq(ch, port->info->tty);
-+			handle_sysrq(ch, port->info ? port->info->tty : NULL);
- 			port->sysrq = 0;
- 			return 1;
+ 	ehea_post_swqe(pr->qp, swqe);
++	pr->tx_packets++;
+ 
+ 	if (unlikely(atomic_read(&pr->swqe_avail) <= 1)) {
+ 		spin_lock_irqsave(&pr->netif_queue, flags);
+diff --git a/drivers/net/ehea/ehea_qmr.h b/drivers/net/ehea/ehea_qmr.h
+index 562de0e..bc62d38 100644
+--- a/drivers/net/ehea/ehea_qmr.h
++++ b/drivers/net/ehea/ehea_qmr.h
+@@ -145,8 +145,8 @@ struct ehea_rwqe {
+ #define EHEA_CQE_VLAN_TAG_XTRACT   0x0400
+ 
+ #define EHEA_CQE_TYPE_RQ           0x60
+-#define EHEA_CQE_STAT_ERR_MASK     0x720F
+-#define EHEA_CQE_STAT_FAT_ERR_MASK 0x1F
++#define EHEA_CQE_STAT_ERR_MASK     0x700F
++#define EHEA_CQE_STAT_FAT_ERR_MASK 0xF
+ #define EHEA_CQE_STAT_ERR_TCP      0x4000
+ #define EHEA_CQE_STAT_ERR_IP       0x2000
+ #define EHEA_CQE_STAT_ERR_CRC      0x1000
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index 92ce2e3..a96583c 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -5286,19 +5286,15 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
+ 		if (readl(base + NvRegTransmitterControl) & NVREG_XMITCTL_SYNC_PHY_INIT) {
+ 			np->mac_in_use = readl(base + NvRegTransmitterControl) & NVREG_XMITCTL_MGMT_ST;
+ 			dprintk(KERN_INFO "%s: mgmt unit is running. mac in use %x.\n", pci_name(pci_dev), np->mac_in_use);
+-			for (i = 0; i < 5000; i++) {
+-				msleep(1);
+-				if (nv_mgmt_acquire_sema(dev)) {
+-					/* management unit setup the phy already? */
+-					if ((readl(base + NvRegTransmitterControl) & NVREG_XMITCTL_SYNC_MASK) ==
+-					    NVREG_XMITCTL_SYNC_PHY_INIT) {
+-						/* phy is inited by mgmt unit */
+-						phyinitialized = 1;
+-						dprintk(KERN_INFO "%s: Phy already initialized by mgmt unit.\n", pci_name(pci_dev));
+-					} else {
+-						/* we need to init the phy */
+-					}
+-					break;
++			if (nv_mgmt_acquire_sema(dev)) {
++				/* management unit setup the phy already? */
++				if ((readl(base + NvRegTransmitterControl) & NVREG_XMITCTL_SYNC_MASK) ==
++				    NVREG_XMITCTL_SYNC_PHY_INIT) {
++					/* phy is inited by mgmt unit */
++					phyinitialized = 1;
++					dprintk(KERN_INFO "%s: Phy already initialized by mgmt unit.\n", pci_name(pci_dev));
++				} else {
++					/* we need to init the phy */
+ 				}
+ 			}
  		}
--- 
-1.4.4.4
-
+@@ -5613,6 +5609,22 @@ static struct pci_device_id pci_tbl[] = {
+ 		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_35),
+ 		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
+ 	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_36),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_37),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_38),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_39),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
+ 	{0,},
+ };
+ 
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 0de3aa2..eb0718b 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -642,9 +642,11 @@ static void emac_reset_work(struct work_struct *work)
+ 	DBG(dev, "reset_work" NL);
+ 
+ 	mutex_lock(&dev->link_lock);
+-	emac_netif_stop(dev);
+-	emac_full_tx_reset(dev);
+-	emac_netif_start(dev);
++	if (dev->opened) {
++		emac_netif_stop(dev);
++		emac_full_tx_reset(dev);
++		emac_netif_start(dev);
++	}
+ 	mutex_unlock(&dev->link_lock);
+ }
+ 
+@@ -1063,10 +1065,9 @@ static int emac_open(struct net_device *ndev)
+ 	dev->rx_sg_skb = NULL;
+ 
+ 	mutex_lock(&dev->link_lock);
++	dev->opened = 1;
+ 
+-	/* XXX Start PHY polling now. Shouldn't wr do like sungem instead and
+-	 * always poll the PHY even when the iface is down ? That would allow
+-	 * things like laptop-net to work. --BenH
++	/* Start PHY polling now.
+ 	 */
+ 	if (dev->phy.address >= 0) {
+ 		int link_poll_interval;
+@@ -1145,9 +1146,11 @@ static void emac_link_timer(struct work_struct *work)
+ 	int link_poll_interval;
+ 
+ 	mutex_lock(&dev->link_lock);
+-
+ 	DBG2(dev, "link timer" NL);
+ 
++	if (!dev->opened)
++		goto bail;
++
+ 	if (dev->phy.def->ops->poll_link(&dev->phy)) {
+ 		if (!netif_carrier_ok(dev->ndev)) {
+ 			/* Get new link parameters */
+@@ -1170,13 +1173,14 @@ static void emac_link_timer(struct work_struct *work)
+ 		link_poll_interval = PHY_POLL_LINK_OFF;
+ 	}
+ 	schedule_delayed_work(&dev->link_work, link_poll_interval);
+-
++ bail:
+ 	mutex_unlock(&dev->link_lock);
+ }
+ 
+ static void emac_force_link_update(struct emac_instance *dev)
+ {
+ 	netif_carrier_off(dev->ndev);
++	smp_rmb();
+ 	if (dev->link_polling) {
+ 		cancel_rearming_delayed_work(&dev->link_work);
+ 		if (dev->link_polling)
+@@ -1191,11 +1195,14 @@ static int emac_close(struct net_device *ndev)
+ 
+ 	DBG(dev, "close" NL);
+ 
+-	if (dev->phy.address >= 0)
++	if (dev->phy.address >= 0) {
++		dev->link_polling = 0;
+ 		cancel_rearming_delayed_work(&dev->link_work);
+-
++	}
++	mutex_lock(&dev->link_lock);
+ 	emac_netif_stop(dev);
+-	flush_scheduled_work();
++	dev->opened = 0;
++	mutex_unlock(&dev->link_lock);
+ 
+ 	emac_rx_disable(dev);
+ 	emac_tx_disable(dev);
+@@ -2756,6 +2763,8 @@ static int __devexit emac_remove(struct of_device *ofdev)
+ 
+ 	unregister_netdev(dev->ndev);
+ 
++	flush_scheduled_work();
++
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_TAH))
+ 		tah_detach(dev->tah_dev, dev->tah_port);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+diff --git a/drivers/net/ibm_newemac/core.h b/drivers/net/ibm_newemac/core.h
+index 4011803..a010b24 100644
+--- a/drivers/net/ibm_newemac/core.h
++++ b/drivers/net/ibm_newemac/core.h
+@@ -258,6 +258,7 @@ struct emac_instance {
+ 	int				stop_timeout;	/* in us */
+ 	int				no_mcast;
+ 	int				mcast_pending;
++	int				opened;
+ 	struct work_struct		reset_work;
+ 	spinlock_t			lock;
+ };
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index a2070db..8c4c743 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1320,15 +1320,11 @@ static int sky2_up(struct net_device *dev)
+ 	 */
+ 	if (otherdev && netif_running(otherdev) &&
+  	    (cap = pci_find_capability(hw->pdev, PCI_CAP_ID_PCIX))) {
+- 		struct sky2_port *osky2 = netdev_priv(otherdev);
+  		u16 cmd;
+ 
+ 		pci_read_config_word(hw->pdev, cap + PCI_X_CMD, &cmd);
+  		cmd &= ~PCI_X_CMD_MAX_SPLIT;
+ 		pci_write_config_word(hw->pdev, cap + PCI_X_CMD, cmd);
+-
+- 		sky2->rx_csum = 0;
+- 		osky2->rx_csum = 0;
+  	}
+ 
+ 	if (netif_msg_ifup(sky2))
+@@ -4013,7 +4009,7 @@ static __devinit struct net_device *sky2_init_netdev(struct sky2_hw *hw,
+ 	sky2->duplex = -1;
+ 	sky2->speed = -1;
+ 	sky2->advertising = sky2_supported_modes(hw);
+-	sky2->rx_csum = 1;
++	sky2->rx_csum = (hw->chip_id != CHIP_ID_YUKON_XL);
+ 	sky2->wol = wol;
+ 
+ 	spin_lock_init(&sky2->phy_lock);
+diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
+index dd18af0..1a3d80b 100644
+--- a/drivers/net/smc911x.c
++++ b/drivers/net/smc911x.c
+@@ -428,7 +428,6 @@ static inline void smc911x_drop_pkt(struct net_device *dev)
+  */
+ static inline void	 smc911x_rcv(struct net_device *dev)
+ {
+-	struct smc911x_local *lp = netdev_priv(dev);
+ 	unsigned long ioaddr = dev->base_addr;
+ 	unsigned int pkt_len, status;
+ 	struct sk_buff *skb;
+@@ -473,6 +472,7 @@ static inline void	 smc911x_rcv(struct net_device *dev)
+ 		skb_put(skb,pkt_len-4);
+ #ifdef SMC_USE_DMA
+ 		{
++		struct smc911x_local *lp = netdev_priv(dev);
+ 		unsigned int fifo;
+ 		/* Lower the FIFO threshold if possible */
+ 		fifo = SMC_GET_FIFO_INT();
+@@ -1379,13 +1379,6 @@ static void smc911x_set_multicast_list(struct net_device *dev)
+ 	unsigned int multicast_table[2];
+ 	unsigned int mcr, update_multicast = 0;
+ 	unsigned long flags;
+-	/* table for flipping the order of 5 bits */
+-	static const unsigned char invert5[] =
+-		{0x00, 0x10, 0x08, 0x18, 0x04, 0x14, 0x0C, 0x1C,
+-		 0x02, 0x12, 0x0A, 0x1A, 0x06, 0x16, 0x0E, 0x1E,
+-		 0x01, 0x11, 0x09, 0x19, 0x05, 0x15, 0x0D, 0x1D,
+-		 0x03, 0x13, 0x0B, 0x1B, 0x07, 0x17, 0x0F, 0x1F};
+-
+ 
+ 	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __FUNCTION__);
+ 
+@@ -1432,7 +1425,7 @@ static void smc911x_set_multicast_list(struct net_device *dev)
+ 
+ 		cur_addr = dev->mc_list;
+ 		for (i = 0; i < dev->mc_count; i++, cur_addr = cur_addr->next) {
+-			int position;
++			u32 position;
+ 
+ 			/* do we have a pointer here? */
+ 			if (!cur_addr)
+@@ -1442,12 +1435,10 @@ static void smc911x_set_multicast_list(struct net_device *dev)
+ 			if (!(*cur_addr->dmi_addr & 1))
+ 				 continue;
+ 
+-			/* only use the low order bits */
+-			position = crc32_le(~0, cur_addr->dmi_addr, 6) & 0x3f;
++			/* upper 6 bits are used as hash index */
++			position = ether_crc(ETH_ALEN, cur_addr->dmi_addr)>>26;
+ 
+-			/* do some messy swapping to put the bit in the right spot */
+-			multicast_table[invert5[position&0x1F]&0x1] |=
+-				(1<<invert5[(position>>1)&0x1F]);
++			multicast_table[position>>5] |= 1 << (position&0x1f);
+ 		}
+ 
+ 		/* be sure I get rid of flags I might have set */
+diff --git a/drivers/net/smc911x.h b/drivers/net/smc911x.h
+index 16a0edc..d04e4fa 100644
+--- a/drivers/net/smc911x.h
++++ b/drivers/net/smc911x.h
+@@ -37,7 +37,7 @@
+   #define SMC_USE_16BIT		0
+   #define SMC_USE_32BIT		1
+   #define SMC_IRQ_SENSE		IRQF_TRIGGER_FALLING
+-#elif CONFIG_SH_MAGIC_PANEL_R2
++#elif defined(CONFIG_SH_MAGIC_PANEL_R2)
+   #define SMC_USE_SH_DMA	0
+   #define SMC_USE_16BIT		0
+   #define SMC_USE_32BIT		1
+diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
+index db34e1e..07b7f71 100644
+--- a/drivers/net/smc91x.h
++++ b/drivers/net/smc91x.h
+@@ -55,7 +55,7 @@
+ #define SMC_insw(a, r, p, l)	readsw((a) + (r), p, l)
+ #define SMC_outsw(a, r, p, l)	writesw((a) + (r), p, l)
+ 
+-#elif defined(CONFIG_BFIN)
++#elif defined(CONFIG_BLACKFIN)
+ 
+ #define SMC_IRQ_FLAGS		IRQF_TRIGGER_HIGH
+ #define RPC_LSA_DEFAULT		RPC_LED_100_10
+diff --git a/drivers/net/tulip/dmfe.c b/drivers/net/tulip/dmfe.c
+index ca90566..b4891ca 100644
+--- a/drivers/net/tulip/dmfe.c
++++ b/drivers/net/tulip/dmfe.c
+@@ -2118,8 +2118,8 @@ static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
+ 	pci_enable_wake(pci_dev, PCI_D3cold, 1);
+ 
+ 	/* Power down device*/
+-	pci_set_power_state(pci_dev, pci_choose_state (pci_dev,state));
+ 	pci_save_state(pci_dev);
++	pci_set_power_state(pci_dev, pci_choose_state (pci_dev, state));
+ 
+ 	return 0;
+ }
+@@ -2129,8 +2129,8 @@ static int dmfe_resume(struct pci_dev *pci_dev)
+ 	struct net_device *dev = pci_get_drvdata(pci_dev);
+ 	u32 tmp;
+ 
+-	pci_restore_state(pci_dev);
+ 	pci_set_power_state(pci_dev, PCI_D0);
++	pci_restore_state(pci_dev);
+ 
+ 	/* Re-initilize DM910X board */
+ 	dmfe_init_dm910x(dev);
+diff --git a/drivers/net/usb/dm9601.c b/drivers/net/usb/dm9601.c
+index 2c68573..1ffdd10 100644
+--- a/drivers/net/usb/dm9601.c
++++ b/drivers/net/usb/dm9601.c
+@@ -94,7 +94,7 @@ static void dm_write_async_callback(struct urb *urb)
+ 	struct usb_ctrlrequest *req = (struct usb_ctrlrequest *)urb->context;
+ 
+ 	if (urb->status < 0)
+-		printk(KERN_DEBUG "dm_write_async_callback() failed with %d",
++		printk(KERN_DEBUG "dm_write_async_callback() failed with %d\n",
+ 		       urb->status);
+ 
+ 	kfree(req);
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 1ee009e..111aa10 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1237,6 +1237,10 @@
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_33              0x0761
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_34              0x0762
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_35              0x0763
++#define PCI_DEVICE_ID_NVIDIA_NVENET_36              0x0AB0
++#define PCI_DEVICE_ID_NVIDIA_NVENET_37              0x0AB1
++#define PCI_DEVICE_ID_NVIDIA_NVENET_38              0x0AB2
++#define PCI_DEVICE_ID_NVIDIA_NVENET_39              0x0AB3
+ 
+ #define PCI_VENDOR_ID_IMS		0x10e0
+ #define PCI_DEVICE_ID_IMS_TT128		0x9128
