@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbXKZH7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbXKZICx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbXKZH7R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 02:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbXKZH7G
+	id S1754703AbXKZICx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 03:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXKZICp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 02:59:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51783 "EHLO
+	Mon, 26 Nov 2007 03:02:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47027 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753033AbXKZH7E (ORCPT
+	by vger.kernel.org with ESMTP id S1752842AbXKZICp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 02:59:04 -0500
-Date: Sun, 25 Nov 2007 23:58:43 -0800
+	Mon, 26 Nov 2007 03:02:45 -0500
+Date: Mon, 26 Nov 2007 00:01:45 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: lkml <linux-kernel@vger.kernel.org>, kexec-ml <kexec@lists.infradead.org>
-Subject: Re: [PATCH 4/5] Fix the configuration dependencies
-Message-Id: <20071125235843.69440d4a.akpm@linux-foundation.org>
-In-Reply-To: <473D0170.1060304@mxs.nes.nec.co.jp>
-References: <473CFE14.3010400@mxs.nes.nec.co.jp>
-	<473D0170.1060304@mxs.nes.nec.co.jp>
+To: "Robert Richter" <robert.richter@amd.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Extended interrupt LVT support for AMD Barcelona
+Message-Id: <20071126000145.fc4056bb.akpm@linux-foundation.org>
+In-Reply-To: <20071120162511.E1EF28098@erda.amd.com>
+References: <20071120162511.E1EF28098@erda.amd.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,77 +26,17 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Nov 2007 11:33:20 +0900 "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp> wrote:
+On Fri, 16 Nov 2007 16:11:34 +0100 "Robert Richter" <robert.richter@amd.com> wrote:
 
+> This patch adds extended interrupt support for AMD Barcelona CPUs. The
+> patch provides functions to setup MCE and IBS interrupt
+> vectors. Compared to the previous K8 implementation the vector offsets
+> are centrally handled now in apic_64.c. Thus, the APIC setup code is
+> responsible for vector mappings. The vector mapping is hardcoded for
+> now.
 > 
-> This patch fixes the configuration dependencies in the vmcoreinfo data.
-> 
-> i386's "node_data" is defined in arch/x86/mm/discontig_32.c,
-> and x86_64's one is defined in arch/x86/mm/numa_64.c.
-> They depend on CONFIG_NUMA:
->   arch/x86/mm/Makefile_32:7
->     obj-$(CONFIG_NUMA) += discontig_32.o
->   arch/x86/mm/Makefile_64:7
->     obj-$(CONFIG_NUMA) += numa_64.o
-> 
-> ia64's "pgdat_list" is defined in arch/ia64/mm/discontig.c,
-> and it depends on CONFIG_DISCONTIGMEM and CONFIG_SPARSEMEM:
->   arch/ia64/mm/Makefile:9-10
->     obj-$(CONFIG_DISCONTIGMEM) += discontig.o
->     obj-$(CONFIG_SPARSEMEM)    += discontig.o
-> 
-> ia64's "node_memblk" is defined in arch/ia64/mm/numa.c,
-> and it depends on CONFIG_NUMA:
->   arch/ia64/mm/Makefile:8
->     obj-$(CONFIG_NUMA)         += numa.o
-> 
-> Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
-> ---
-> diff -rpuN a/arch/ia64/kernel/machine_kexec.c b/arch/ia64/kernel/machine_kexec.c
-> --- a/arch/ia64/kernel/machine_kexec.c	2007-11-14 15:39:06.000000000 +0900
-> +++ b/arch/ia64/kernel/machine_kexec.c	2007-11-14 15:41:41.000000000 +0900
-> @@ -129,10 +129,11 @@ void machine_kexec(struct kimage *image)
->  
->  void arch_crash_save_vmcoreinfo(void)
->  {
-> -#if defined(CONFIG_ARCH_DISCONTIGMEM_ENABLE) && defined(CONFIG_NUMA)
-> +#if defined(CONFIG_DISCONTIGMEM) || defined(CONFIG_SPARSEMEM)
->  	VMCOREINFO_SYMBOL(pgdat_list);
->  	VMCOREINFO_LENGTH(pgdat_list, MAX_NUMNODES);
-> -
-> +#endif
-> +#ifdef CONFIG_NUMA
->  	VMCOREINFO_SYMBOL(node_memblk);
->  	VMCOREINFO_LENGTH(node_memblk, NR_NODE_MEMBLKS);
->  	VMCOREINFO_STRUCT_SIZE(node_memblk_s);
-> diff -rpuN a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
-> --- a/arch/x86/kernel/machine_kexec_32.c	2007-11-14 15:39:19.000000000 +0900
-> +++ b/arch/x86/kernel/machine_kexec_32.c	2007-11-14 15:39:33.000000000 +0900
-> @@ -151,7 +151,7 @@ NORET_TYPE void machine_kexec(struct kim
->  
->  void arch_crash_save_vmcoreinfo(void)
->  {
-> -#ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
-> +#ifdef CONFIG_NUMA
->  	VMCOREINFO_SYMBOL(node_data);
->  	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
->  #endif
-> diff -rpuN a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
-> --- a/arch/x86/kernel/machine_kexec_64.c	2007-11-14 15:39:19.000000000 +0900
-> +++ b/arch/x86/kernel/machine_kexec_64.c	2007-11-14 15:39:33.000000000 +0900
-> @@ -235,7 +235,7 @@ void arch_crash_save_vmcoreinfo(void)
->  {
->  	VMCOREINFO_SYMBOL(init_level4_pgt);
->  
-> -#ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
-> +#ifdef CONFIG_NUMA
->  	VMCOREINFO_SYMBOL(node_data);
->  	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
->  #endif
-> _
+> Also macro definitions in apicdef.h has been updated.
 > 
 
-x86_64-make-sparsemem-vmemmap-the-default-memory-model-v2.patch removes the
-`VMCOREINFO_SYMBOL(node_data);' from arch/x86/kernel/machine_kexec_64.c
-altogether, so I dropped that part of your patch.
-
+Please send a signed-off-by: for this work, as per Documentation/SubmittingPatches,
+thanks.
