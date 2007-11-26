@@ -1,100 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXKZWT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbXKZWTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbXKZWT0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:19:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757164AbXKZWS6
+	id S1757495AbXKZWTn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbXKZWTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:18:58 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50889 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757143AbXKZWS4 (ORCPT
+	Mon, 26 Nov 2007 17:19:16 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35448 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757251AbXKZWTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:18:56 -0500
-Date: Mon, 26 Nov 2007 14:18:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: bbpetkov@yahoo.de
-Cc: lucy@keyspan.com, greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] keyspan: init termios properly
-Message-Id: <20071126141852.a609cdb6.akpm@linux-foundation.org>
-In-Reply-To: <20071118131130.GA3991@gollum.tnic>
-References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
-	<20071118131130.GA3991@gollum.tnic>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 17:19:14 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>
+Subject: [PATCH 2.6.24-rc3] Fix /proc/net breakage
+References: <20071119191000.GA1560@elf.ucw.cz>
+	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
+Date: Mon, 26 Nov 2007 15:17:54 -0700
+In-Reply-To: <4743026B.2020907@openvz.org> (Pavel Emelyanov's message of "Tue,
+	20 Nov 2007 18:51:07 +0300")
+Message-ID: <m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Nov 2007 14:11:30 +0100
-Borislav Petkov <bbpetkov@yahoo.de> wrote:
 
-> On Thu, Nov 15, 2007 at 01:10:16PM -0800, Lucy McCoy wrote:
->  
-> > static int keyspan_open (struct usb_serial_port *port, struct file *filp)
-> > {
-> > 	struct keyspan_port_private 	*p_priv;
-> > 	struct keyspan_serial_private 	*s_priv;
-> > 	struct usb_serial 		*serial = port->serial;
-> > 	const struct keyspan_device_details	*d_details;
-> > 	int				i, err;
-> > 	struct urb			*urb;
-> > 	
-> > 	s_priv = usb_get_serial_data(serial);
-> > 	p_priv = usb_get_serial_port_data(port);
-> > 	d_details = p_priv->device_details;
-> > 	
-> > 	dbg("%s - port%d.", __FUNCTION__, port->number); 
-> > 
-> > 	/* Set some sane defaults */
-> > 	p_priv->rts_state = 1;
-> > 	p_priv->dtr_state = 1;
-> > 	p_priv->baud = 9600;
-> > 
-> > 	/* set CTS/RTS handshake etc. */
-> > 	p_priv->cflag = CS8;   /* 8/N/1  */
-> > 	p_priv->flow_control = flow_none;
-> > 
-> > 	/* force baud and lcr to be set on open */
-> > 	p_priv->old_baud = 0;
-> > 	p_priv->old_cflag = 0;
-> > 
-> > 	p_priv->out_flip = 0;
-> > 	p_priv->in_flip = 0;
-> > 
-> > 	/* Reset low level data toggle and start reading from endpoints */
-> > 	for (i = 0; i < 2; i++) {
-> > 		if ((urb = p_priv->in_urbs[i]) == NULL)
-> > 			continue;
-> > 		urb->dev = serial->dev;
-> > 
-> > 		/* make sure endpoint data toggle is synchronized with the device */
-> > 		
-> > 		usb_clear_halt(urb->dev, urb->pipe);
-> > 
-> > 		if ((err = usb_submit_urb(urb, GFP_KERNEL)) != 0) {
-> > 			dbg("%s - submit urb %d failed (%d)", __FUNCTION__, i, err);
-> > 		}
-> > 	}
-> > 
-> > 	/* Reset low level data toggle on out endpoints */
-> > 	for (i = 0; i < 2; i++) {
-> > 		if ((urb = p_priv->out_urbs[i]) == NULL)
-> > 			continue;
-> > 		urb->dev = serial->dev;
-> > 		/* usb_settoggle(urb->dev, usb_pipeendpoint(urb->pipe), usb_pipeout(urb->pipe), 0); */
-> > 	}
-> > 
-> > 	keyspan_send_setup(port, 1);
-> > 	//mdelay(100);
-> > 	//keyspan_set_termios(port, NULL);
-> > 
-> > 	return (0);
-> > }
-> > 
-> 
-> yes, after testing this i can confirm that this one fixes the NULL ptr
-> problem here so you might want to submit a proper patch to Greg.
+Pavel Emelyanov <xemul@openvz.org> writes:
 
-I'll merge revert-keyspan-init-termios-properly.patch soon, but afaik we
-are still awaiting the real fix for this problem?  
+> Rafael J. Wysocki wrote:
+>> On Monday, 19 of November 2007, Pavel Machek wrote:
+>>> Hi!
+>>>
+>>> I think that this worked before:
+>>>
+>>> root@amd:/proc# find . -name "timer_info"
+>>> find: WARNING: Hard link count is wrong for ./net: this may be a bug
+>>> in your filesystem driver.  Automatically turning on find's -noleaf
+>>> option.  Earlier results may have failed to include directories that
+>>> should have been searched.
+>>> root@amd:/proc#
+>> 
+>> I'm seeing that too.
+>
+> I have a better things with 2.6.24-rc3 ;)
+>
+> # cd /proc/net
+> # ls ..
+> ls: reading directory ..: Not a directory
+>
+> and this
+>
+> # cd /proc
+> # find
+> ...
+> ./net
+> find: . changed during execution of find
+> # find net
+> find: net changed during execution of find
+> # find net/
+> <this works ok however>
+>
+> Moreover. Program that opens /proc/net and dumps the /proc/self/fd
+> files produces the following:
+>
+> # cd /
+> # a.out /proc/net
+> ...
+> lr-x------  1 root root 64 Nov 20 18:02 3 -> /proc/net/net (deleted)
+> ...
+> # cd /proc/net
+> # a.out .
+> ...
+> lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net/net (deleted)
+> ...
+> # a.out ..
+> ...
+> lr-x------  1 root root 64 Nov 20 18:03 3 -> /proc/net
+> ...
+
+Well I clearly goofed when I added the initial network namespace support
+for /proc/net.  Currently things work but there are odd details visible
+to user space, even when we have a single network namespace.
+
+Since we do not cache proc_dir_entry dentries at the moment we can
+just modify ->lookup to return a different directory inode depending
+on the network namespace of the process looking at /proc/net, replacing
+the current technique of using a magic and fragile follow_link method.
+
+To accomplish that this patch:
+- introduces a shadow_proc method to allow different dentries to
+  be returned from proc_lookup.
+- Removes the old /proc/net follow_link magic
+- Fixes a weakness in our not caching of proc generic dentries.
+
+As shadow_proc uses a task struct to decided which dentry to return we
+can go back later and fix the proc generic caching without modifying any code that
+uses the shadow_proc method.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/proc/generic.c       |   12 ++++++-
+ fs/proc/proc_net.c      |   86 +++--------------------------------------------
+ include/linux/proc_fs.h |    3 ++
+ 3 files changed, 19 insertions(+), 82 deletions(-)
+
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index a9806bc..c2b7523 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -374,9 +374,16 @@ static int proc_delete_dentry(struct dentry * dentry)
+ 	return 1;
+ }
+ 
++static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata *nd)
++{
++	d_drop(dentry);
++	return 0;
++}
++
+ static struct dentry_operations proc_dentry_operations =
+ {
+ 	.d_delete	= proc_delete_dentry,
++	.d_revalidate	= proc_revalidate_dentry,
+ };
+ 
+ /*
+@@ -397,8 +404,11 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+ 			if (de->namelen != dentry->d_name.len)
+ 				continue;
+ 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
+-				unsigned int ino = de->low_ino;
++				unsigned int ino;
+ 
++				if (de->shadow_proc)
++					de = de->shadow_proc(current, de);
++				ino = de->low_ino;
+ 				de_get(de);
+ 				spin_unlock(&proc_subdir_lock);
+ 				error = -EINVAL;
+diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
+index 131f9c6..0afe21e 100644
+--- a/fs/proc/proc_net.c
++++ b/fs/proc/proc_net.c
+@@ -50,89 +50,14 @@ struct net *get_proc_net(const struct inode *inode)
+ }
+ EXPORT_SYMBOL_GPL(get_proc_net);
+ 
+-static struct proc_dir_entry *proc_net_shadow;
++static struct proc_dir_entry *shadow_pde;
+ 
+-static struct dentry *proc_net_shadow_dentry(struct dentry *parent,
++static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
+ 						struct proc_dir_entry *de)
+ {
+-	struct dentry *shadow = NULL;
+-	struct inode *inode;
+-	if (!de)
+-		goto out;
+-	de_get(de);
+-	inode = proc_get_inode(parent->d_inode->i_sb, de->low_ino, de);
+-	if (!inode)
+-		goto out_de_put;
+-	shadow = d_alloc_name(parent, de->name);
+-	if (!shadow)
+-		goto out_iput;
+-	shadow->d_op = parent->d_op; /* proc_dentry_operations */
+-	d_instantiate(shadow, inode);
+-out:
+-	return shadow;
+-out_iput:
+-	iput(inode);
+-out_de_put:
+-	de_put(de);
+-	goto out;
+-}
+-
+-static void *proc_net_follow_link(struct dentry *parent, struct nameidata *nd)
+-{
+-	struct net *net = current->nsproxy->net_ns;
+-	struct dentry *shadow;
+-	shadow = proc_net_shadow_dentry(parent, net->proc_net);
+-	if (!shadow)
+-		return ERR_PTR(-ENOENT);
+-
+-	dput(nd->dentry);
+-	/* My dentry count is 1 and that should be enough as the
+-	 * shadow dentry is thrown away immediately.
+-	 */
+-	nd->dentry = shadow;
+-	return NULL;
++	return task->nsproxy->net_ns->proc_net;
+ }
+ 
+-static struct dentry *proc_net_lookup(struct inode *dir, struct dentry *dentry,
+-				      struct nameidata *nd)
+-{
+-	struct net *net = current->nsproxy->net_ns;
+-	struct dentry *shadow;
+-
+-	shadow = proc_net_shadow_dentry(nd->dentry, net->proc_net);
+-	if (!shadow)
+-		return ERR_PTR(-ENOENT);
+-
+-	dput(nd->dentry);
+-	nd->dentry = shadow;
+-
+-	return shadow->d_inode->i_op->lookup(shadow->d_inode, dentry, nd);
+-}
+-
+-static int proc_net_setattr(struct dentry *dentry, struct iattr *iattr)
+-{
+-	struct net *net = current->nsproxy->net_ns;
+-	struct dentry *shadow;
+-	int ret;
+-
+-	shadow = proc_net_shadow_dentry(dentry->d_parent, net->proc_net);
+-	if (!shadow)
+-		return -ENOENT;
+-	ret = shadow->d_inode->i_op->setattr(shadow, iattr);
+-	dput(shadow);
+-	return ret;
+-}
+-
+-static const struct file_operations proc_net_dir_operations = {
+-	.read			= generic_read_dir,
+-};
+-
+-static struct inode_operations proc_net_dir_inode_operations = {
+-	.follow_link	= proc_net_follow_link,
+-	.lookup		= proc_net_lookup,
+-	.setattr	= proc_net_setattr,
+-};
+-
+ static __net_init int proc_net_ns_init(struct net *net)
+ {
+ 	struct proc_dir_entry *root, *netd, *net_statd;
+@@ -185,9 +110,8 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
+ 
+ int __init proc_net_init(void)
+ {
+-	proc_net_shadow = proc_mkdir("net", NULL);
+-	proc_net_shadow->proc_iops = &proc_net_dir_inode_operations;
+-	proc_net_shadow->proc_fops = &proc_net_dir_operations;
++	shadow_pde = proc_mkdir("net", NULL);
++	shadow_pde->shadow_proc = proc_net_shadow;
+ 
+ 	return register_pernet_subsys(&proc_net_ns_ops);
+ }
+diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+index b070b3b..a5d22c1 100644
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -48,6 +48,8 @@ typedef	int (read_proc_t)(char *page, char **start, off_t off,
+ typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
+ 			   unsigned long count, void *data);
+ typedef int (get_info_t)(char *, char **, off_t, int);
++typedef struct proc_dir_entry *(shadow_proc_t)(struct task_struct *task,
++						struct proc_dir_entry *pde);
+ 
+ struct proc_dir_entry {
+ 	unsigned int low_ino;
+@@ -79,6 +81,7 @@ struct proc_dir_entry {
+ 	int pde_users;	/* number of callers into module in progress */
+ 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
+ 	struct completion *pde_unload_completion;
++	shadow_proc_t *shadow_proc;
+ };
+ 
+ struct kcore_list {
+-- 
+1.5.3.rc6.17.g1911
