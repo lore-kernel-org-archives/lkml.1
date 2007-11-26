@@ -1,338 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbXKZVD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbXKZVJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbXKZVD6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbXKZVDt
+	id S1755569AbXKZVJO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:09:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXKZVJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:03:49 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:58933 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985AbXKZVDr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:03:47 -0500
-Date: Mon, 26 Nov 2007 16:02:32 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/2] UML - Cover stubs with a VMA
-Message-ID: <20071126210232.GA11574@c2.user-mode-linux.org>
+	Mon, 26 Nov 2007 16:09:03 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42605 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750716AbXKZVJB (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 16:09:01 -0500
+Date: Tue, 27 Nov 2007 08:08:44 +1100
+From: David Chinner <dgc@sgi.com>
+To: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org
+Cc: rjw@sisk.pl, xfs@oss.sgi.com
+Subject: Re: XFS related Oops (suspend/resume related)
+Message-ID: <20071126210844.GB119954183@sgi.com>
+References: <20071112064706.GA23595@dose.home.local> <20071112222720.GG995458@sgi.com> <20071113105119.GA11527@dose.home.local> <20071113230445.GE995458@sgi.com> <20071126131210.GA4430@eazy.amigager.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20071126131210.GA4430@eazy.amigager.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Give the stubs a VMA.  This allows the removal of a truly nasty kludge
-to make sure that mm->nr_ptes was correct in exit_mmap.  The
-underlying problem was always that the stubs, which have ptes, and
-thus allocated a page table, weren't covered by a VMA.
+On Mon, Nov 26, 2007 at 02:12:10PM +0100, Tino Keitel wrote:
+> On Wed, Nov 14, 2007 at 10:04:45 +1100, David Chinner wrote:
+> > On Tue, Nov 13, 2007 at 11:51:19AM +0100, Tino Keitel wrote:
+> > > On Tue, Nov 13, 2007 at 09:27:20 +1100, David Chinner wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > No. I'd say something got screwed up during suspend/resume. Is it
+> > > > reproducable?
+> > > 
+> > > No. I often use suspend to RAM, and usually it works without such
+> > > failures. I restart squid during the resume prosecure, and the above
+> > > Oops lead to a squid in D state.
+> > 
+> > Ok. Sounds like there's not much we can debug at this point. Thanks
+> > for the report, though.
+> 
+> I got a similar Oops again:
+> 
+> xfs_iget_core: ambiguous vns: vp/0xc00700c0, invp/0xcb5a1680
 
-This patch fixes that by using install_special_mapping in
-arch_dup_mmap and activate_context to create the VMA.  The stubs have
-to be moved, since shift_arg_pages seems to assume that the stack is
-the only VMA present at that point during exec, and uses vma_adjust to
-fiddle its VMA.  However, that extends the stub VMA by the amount
-removed from the stack VMA.
+Now there's a message that I haven't seen in about 3 years.
 
-To avoid this problem, the stubs were moved to a different fixed
-location at the start of the address space.
+It indicates that the linux inode connected to the xfs_inode is not
+the correct one. i.e. that the linux inode cache is out of step with
+the XFS inode cache.
 
-The init_stub_pte calls were moved from init_new_context to
-arch_dup_mmap because I was occasionally seeing arch_dup_mmap not
-being called, causing exit_mmap to die.  Rather than figure out what
-was really happening, I decided it was cleaner to just move the calls
-so that there's no doubt that both the pte and VMA creation happen, no
-matter what. arch_exit_mmap is used to clear the stub ptes at exit
-time.
+Basically, that is not supposed to happen. I suspect that the way
+threads are frozen is resulting in an inode lookup racing with
+a reclaim. The reclaim thread gets stopped after any use threads,
+and so we could have the situation that a process blocked in lookup
+has the XFS inode reclaimed and reused before it gets unblocked.
 
-The STUB_* constants in as-layout.h no longer depend on UM_TASK_SIZE,
-that that definition is removed, along with the comments complaining
-about gcc.
+The question is why is it happening now when none of that code in
+XFS has changed?
 
-Because the stubs are no longer at the top of the address space, some
-care is needed while flushing TLBs.  update_pte_range checks for
-addresses in the stub range and skips them.  flush_thread now issues
-two unmaps, one for the range before STUB_START and one for the range
-after STUB_END.
+Rafael, when are threads frozen? Only when they schedule or call
+try_to_freeze()? Did the freezer mechanism change in 2.6.23 (this is
+on 2.6.23.1)?  Is there some way of getting a stack trace of all the
+processes in the system once the machine is frozen and about to
+suspend so we can see if we blocked in a lookup?
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/include/as-layout.h      |   19 +------
- arch/um/include/common-offsets.h |    3 -
- arch/um/kernel/exec.c            |    5 +
- arch/um/kernel/skas/mmu.c        |  104 ++++++++++++++++++++++-----------------
- arch/um/kernel/tlb.c             |   11 +---
- include/asm-um/mmu_context.h     |    7 +-
- 6 files changed, 75 insertions(+), 74 deletions(-)
+Cheers,
 
-Index: linux-2.6.22/arch/um/kernel/skas/mmu.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/skas/mmu.c	2007-11-21 12:14:15.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/skas/mmu.c	2007-11-26 11:45:04.000000000 -0500
-@@ -34,25 +34,6 @@ static int init_stub_pte(struct mm_struc
- 	if (!pte)
- 		goto out_pte;
- 
--	/*
--	 * There's an interaction between the skas0 stub pages, stack
--	 * randomization, and the BUG at the end of exit_mmap.  exit_mmap
--	 * checks that the number of page tables freed is the same as had
--	 * been allocated.  If the stack is on the last page table page,
--	 * then the stack pte page will be freed, and if not, it won't.  To
--	 * avoid having to know where the stack is, or if the process mapped
--	 * something at the top of its address space for some other reason,
--	 * we set TASK_SIZE to end at the start of the last page table.
--	 * This keeps exit_mmap off the last page, but introduces a leak
--	 * of that page.  So, we hang onto it here and free it in
--	 * destroy_context_skas.
--	 */
--
--	mm->context.last_page_table = pmd_page_vaddr(*pmd);
--#ifdef CONFIG_3_LEVEL_PGTABLES
--	mm->context.last_pmd = (unsigned long) __va(pud_val(*pud));
--#endif
--
- 	*pte = mk_pte(virt_to_page(kernel), __pgprot(_PAGE_PRESENT));
- 	*pte = pte_mkread(*pte);
- 	return 0;
-@@ -76,24 +57,6 @@ int init_new_context(struct task_struct 
- 		stack = get_zeroed_page(GFP_KERNEL);
- 		if (stack == 0)
- 			goto out;
--
--		/*
--		 * This zeros the entry that pgd_alloc didn't, needed since
--		 * we are about to reinitialize it, and want mm.nr_ptes to
--		 * be accurate.
--		 */
--		mm->pgd[USER_PTRS_PER_PGD] = __pgd(0);
--
--		ret = init_stub_pte(mm, STUB_CODE,
--				    (unsigned long) &__syscall_stub_start);
--		if (ret)
--			goto out_free;
--
--		ret = init_stub_pte(mm, STUB_DATA, stack);
--		if (ret)
--			goto out_free;
--
--		mm->nr_ptes--;
- 	}
- 
- 	to_mm->id.stack = stack;
-@@ -137,6 +100,64 @@ int init_new_context(struct task_struct 
- 	return ret;
- }
- 
-+void arch_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
-+{
-+	struct page **pages;
-+	int err, ret;
-+
-+	if (!skas_needs_stub)
-+		return;
-+
-+	ret = init_stub_pte(mm, STUB_CODE,
-+			    (unsigned long) &__syscall_stub_start);
-+	if (ret)
-+		goto out;
-+
-+	ret = init_stub_pte(mm, STUB_DATA, mm->context.id.stack);
-+	if (ret)
-+		goto out;
-+
-+	pages = kmalloc(2 * sizeof(struct page *), GFP_KERNEL);
-+	if (pages == NULL) {
-+		printk(KERN_ERR "arch_dup_mmap failed to allocate 2 page "
-+		       "pointers\n");
-+		goto out;
-+	}
-+
-+	pages[0] = virt_to_page(&__syscall_stub_start);
-+	pages[1] = virt_to_page(mm->context.id.stack);
-+
-+	/* dup_mmap already holds mmap_sem */
-+	err = install_special_mapping(mm, STUB_START, STUB_END - STUB_START,
-+				      VM_READ | VM_MAYREAD | VM_EXEC |
-+				      VM_MAYEXEC | VM_DONTCOPY, pages);
-+	if (err) {
-+		printk(KERN_ERR "install_special_mapping returned %d\n", err);
-+		goto out_free;
-+	}
-+	return;
-+
-+out_free:
-+	kfree(pages);
-+out:
-+	force_sigsegv(SIGSEGV, current);
-+}
-+
-+void arch_exit_mmap(struct mm_struct *mm)
-+{
-+	pte_t *pte;
-+
-+	pte = virt_to_pte(mm, STUB_CODE);
-+	if (pte != NULL)
-+		pte_clear(mm, STUB_CODE, pte);
-+
-+	pte = virt_to_pte(mm, STUB_DATA);
-+	if (pte == NULL)
-+		return;
-+
-+	pte_clear(mm, STUB_DATA, pte);
-+}
-+
- void destroy_context(struct mm_struct *mm)
- {
- 	struct mm_context *mmu = &mm->context;
-@@ -146,15 +167,8 @@ void destroy_context(struct mm_struct *m
- 	else
- 		os_kill_ptraced_process(mmu->id.u.pid, 1);
- 
--	if (!proc_mm || !ptrace_faultinfo) {
-+	if (skas_needs_stub)
- 		free_page(mmu->id.stack);
--		pte_lock_deinit(virt_to_page(mmu->last_page_table));
--		pte_free_kernel(mm, (pte_t *) mmu->last_page_table);
--		dec_zone_page_state(virt_to_page(mmu->last_page_table), NR_PAGETABLE);
--#ifdef CONFIG_3_LEVEL_PGTABLES
--		pmd_free(mm, (pmd_t *) mmu->last_pmd);
--#endif
--	}
- 
- 	free_ldt(mmu);
- }
-Index: linux-2.6.22/include/asm-um/mmu_context.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/mmu_context.h	2007-11-21 12:14:15.000000000 -0500
-+++ linux-2.6.22/include/asm-um/mmu_context.h	2007-11-21 12:26:06.000000000 -0500
-@@ -6,11 +6,12 @@
- #ifndef __UM_MMU_CONTEXT_H
- #define __UM_MMU_CONTEXT_H
- 
--#include <asm-generic/mm_hooks.h>
--
- #include "linux/sched.h"
- #include "um_mmu.h"
- 
-+extern void arch_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm);
-+extern void arch_exit_mmap(struct mm_struct *mm);
-+
- #define get_mmu_context(task) do ; while(0)
- #define activate_context(tsk) do ; while(0)
- 
-@@ -30,6 +31,8 @@ static inline void activate_mm(struct mm
- 	 */
- 	if (old != new && (current->flags & PF_BORROWED_MM))
- 		__switch_mm(&new->context.id);
-+
-+	arch_dup_mmap(old, new);
- }
- 
- static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next, 
-Index: linux-2.6.22/arch/um/include/as-layout.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/as-layout.h	2007-11-21 12:26:05.000000000 -0500
-+++ linux-2.6.22/arch/um/include/as-layout.h	2007-11-21 12:26:06.000000000 -0500
-@@ -29,21 +29,10 @@
- #define _AC(X, Y)	__AC(X, Y)
- #endif
- 
--/*
-- * The "- 1"'s are to avoid gcc complaining about integer overflows
-- * and unrepresentable decimal constants.  With 3-level page tables,
-- * TASK_SIZE is 0x80000000, which gets turned into its signed decimal
-- * equivalent in asm-offsets.s.  gcc then complains about that being
-- * unsigned only in C90.  To avoid that, UM_TASK_SIZE is defined as
-- * TASK_SIZE - 1.  To compensate, we need to add the 1 back here.
-- * However, adding it back to UM_TASK_SIZE produces more gcc
-- * complaints.  So, I adjust the thing being subtracted from
-- * UM_TASK_SIZE instead.  Bah.
-- */
--#define STUB_CODE _AC((unsigned long), \
--		      UM_TASK_SIZE - (2 * UM_KERN_PAGE_SIZE - 1))
--#define STUB_DATA _AC((unsigned long), UM_TASK_SIZE - (UM_KERN_PAGE_SIZE - 1))
--#define STUB_START _AC(, STUB_CODE)
-+#define STUB_START _AC(, 0x100000)
-+#define STUB_CODE _AC((unsigned long), STUB_START)
-+#define STUB_DATA _AC((unsigned long), STUB_CODE + UM_KERN_PAGE_SIZE)
-+#define STUB_END _AC((unsigned long), STUB_DATA + UM_KERN_PAGE_SIZE)
- 
- #ifndef __ASSEMBLY__
- 
-Index: linux-2.6.22/arch/um/kernel/exec.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/exec.c	2007-11-21 12:26:05.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/exec.c	2007-11-21 12:26:06.000000000 -0500
-@@ -19,12 +19,13 @@
- void flush_thread(void)
- {
- 	void *data = NULL;
--	unsigned long end = proc_mm ? TASK_SIZE : STUB_START;
- 	int ret;
- 
- 	arch_flush_thread(&current->thread.arch);
- 
--	ret = unmap(&current->mm->context.id, 0, end, 1, &data);
-+	ret = unmap(&current->mm->context.id, 0, STUB_START, 0, &data);
-+	ret = ret || unmap(&current->mm->context.id, STUB_END,
-+			   TASK_SIZE - STUB_END, 1, &data);
- 	if (ret) {
- 		printk(KERN_ERR "flush_thread - clearing address space failed, "
- 		       "err = %d\n", ret);
-Index: linux-2.6.22/arch/um/kernel/tlb.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/tlb.c	2007-11-21 12:26:05.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/tlb.c	2007-11-21 12:26:06.000000000 -0500
-@@ -184,6 +184,9 @@ static inline int update_pte_range(pmd_t
- 
- 	pte = pte_offset_kernel(pmd, addr);
- 	do {
-+		if ((addr >= STUB_START) && (addr < STUB_END))
-+			continue;
-+
- 		r = pte_read(*pte);
- 		w = pte_write(*pte);
- 		x = pte_exec(*pte);
-@@ -486,9 +489,6 @@ void __flush_tlb_one(unsigned long addr)
- static void fix_range(struct mm_struct *mm, unsigned long start_addr,
- 		      unsigned long end_addr, int force)
- {
--	if (!proc_mm && (end_addr > STUB_START))
--		end_addr = STUB_START;
--
- 	fix_range_common(mm, start_addr, end_addr, force);
- }
- 
-@@ -502,8 +502,6 @@ void flush_tlb_range(struct vm_area_stru
- 
- void flush_tlb_mm(struct mm_struct *mm)
- {
--	unsigned long end;
--
- 	/*
- 	 * Don't bother flushing if this address space is about to be
- 	 * destroyed.
-@@ -511,8 +509,7 @@ void flush_tlb_mm(struct mm_struct *mm)
- 	if (atomic_read(&mm->mm_users) == 0)
- 		return;
- 
--	end = proc_mm ? TASK_SIZE : STUB_START;
--	fix_range(mm, 0, end, 0);
-+	fix_range(mm, 0, TASK_SIZE, 0);
- }
- 
- void force_flush_all(void)
-Index: linux-2.6.22/arch/um/include/common-offsets.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/common-offsets.h	2007-11-21 12:26:05.000000000 -0500
-+++ linux-2.6.22/arch/um/include/common-offsets.h	2007-11-21 12:26:06.000000000 -0500
-@@ -39,6 +39,3 @@ DEFINE(UM_HZ, HZ);
- DEFINE(UM_USEC_PER_SEC, USEC_PER_SEC);
- DEFINE(UM_NSEC_PER_SEC, NSEC_PER_SEC);
- DEFINE(UM_NSEC_PER_USEC, NSEC_PER_USEC);
--
--/* See as-layout.h for an explanation of the "- 1".  Bah. */
--DEFINE(UM_TASK_SIZE, TASK_SIZE - 1);
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
