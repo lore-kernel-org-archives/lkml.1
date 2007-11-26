@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXKZWjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbXKZWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbXKZWjB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbXKZWiw
+	id S1756586AbXKZWrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXKZWrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:38:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40698 "EHLO ogre.sisk.pl"
+	Mon, 26 Nov 2007 17:47:06 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:38758 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753591AbXKZWiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:38:51 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: kernel bugzilla is FPOS (was: Re: "buggy cmd640" message followed by soft lockup)
-Date: Mon, 26 Nov 2007 23:57:04 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200711222007.12497.elendil@planet.nl> <200711260130.06985.rjw@sisk.pl> <20071126214554.GD917@stusta.de>
-In-Reply-To: <20071126214554.GD917@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1753783AbXKZWrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 17:47:03 -0500
+Date: Mon, 26 Nov 2007 14:46:57 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Gary Hade <garyhade@us.ibm.com>, Jan Beulich <jbeulich@novell.com>,
+       linux-kernel@vger.kernel.org, lcm@us.ibm.com
+Subject: Re: Avoid creating P2P prefetch window for expansion ROMs
+Message-ID: <20071126224657.GB23277@us.ibm.com>
+References: <4742CB2C.76E4.0078.0@novell.com> <20071120174945.GA6024@us.ibm.com> <47440D1F.76E4.0078.0@novell.com> <20071126215953.GA23277@us.ibm.com> <20071126221545.GA15268@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711262357.04817.rjw@sisk.pl>
+In-Reply-To: <20071126221545.GA15268@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 26 of November 2007, Adrian Bunk wrote:
-> On Mon, Nov 26, 2007 at 01:30:06AM +0100, Rafael J. Wysocki wrote:
-> > On Monday, 26 of November 2007, Adrian Bunk wrote:
-> >...
-> > > That's not possible, but as already said it's not required.
-> > > And more important, it's unrelated to any problems we have.
-> > > 
-> > > And it sounds funny that you first write specifications mandating stuff 
-> > > like "IMO, first, it should ask for what the bug is against" and then 
-> > > demand an additional email interface that bypasses everything you 
-> > > demanded previously.
-> > 
-> > I just realize that there are people who wouldn't like to use the web interface
-> > and would prefer to use email instead.
+On Mon, Nov 26, 2007 at 02:15:45PM -0800, Greg KH wrote:
+> On Mon, Nov 26, 2007 at 01:59:54PM -0800, Gary Hade wrote:
+> > Greg, 
+> > Without a closer look at the code and the information I
+> > requested above I am not 100% certain that my expansion ROM
+> > allocation fix is incomplete but it seems pretty likely that
+> > it is.  If you feel that the possible regression that Jan
+> > reported is more important than the issue I was trying to solve
+> > feel free to remove the change until I can come up with
+> > something better.
 > 
-> In the cases where these are kernel developers that do (or should) 
-> handle dozens of bugs each week I see a point if they have problems 
-> integrating some medium into their workflow.
+> If you want me to revert the changes in Linus's tree right now, that's
+> fine, I will, just send me a patch to do so.
 > 
-> But in all software, no matter whether open source or commercial, bug 
-> reporters simply have to use whatever the vendor offers as support 
-> channel.
-
-Yes.
-
-That's why we should tell them what the channel is. :-)
-
-> > Moreover, you won't force people to use the web interface only for reporting
-> > bugs, because frankly for some kinds of problems it's too heavywieght
+> But if you think you can work to solve this problem quickly, then I'm
+> more than willing to keep the changes in the tree.
 > 
-> That developers who know what they are doing might bypass the bug
-> tracking is not a problem.
-> 
-> > (compilation problems and purely software, reproducible things like that are
-> > much faster resolved using email; this also applies to easily reproducible bugs
-> > in general).  Still, it wouldn't hurt if they were automatically tracked.
-> 
-> This sounds like "a bit pregnant"...
-> 
-> Tracking requires things like e.g. categorizing the issue and marking it 
-> as fixed when it got fixed.
+> It's up to you.
 
-Yes, but that may be done after the fact.  It's not a big problem to review an
-email thread starting from a bug report and see if it lead to a fix (I do that
-on a regular basis).  [Note: They tend to be relatively short. ]  You can even
-check if the fix has been merged.
+Thanks Greg.  If I am unable to provide a revised (or properly
+defend the current one :) in the next few days I will send you
+a revert patch.
 
-Still, you need to know which threads to review.
+Gary
 
-Greetings,
-Rafael
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
