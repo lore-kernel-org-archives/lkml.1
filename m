@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXKZPXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbXKZPYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbXKZPXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 10:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXKZPXM
+	id S1755692AbXKZPYe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 10:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbXKZPYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 10:23:12 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37169 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbXKZPXL (ORCPT
+	Mon, 26 Nov 2007 10:24:24 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3802 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750914AbXKZPYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 10:23:11 -0500
-Date: Mon, 26 Nov 2007 16:23:10 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can support for "rpm"-based package building just be dropped?
-In-Reply-To: <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711261622060.19299@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain>
- <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 Nov 2007 10:24:23 -0500
+Date: Mon, 26 Nov 2007 23:24:15 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Joonwoo Park <joonwpark81@gmail.com>
+Cc: "'Patrick McHardy'" <kaber@trash.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] xfrm_hash: kmalloc + memset conversion to kzalloc
+Message-ID: <20071126152415.GE28022@gondor.apana.org.au>
+References: <007c01c8300b$176975a0$9c94fea9@jason> <474A8D97.2030808@trash.net> <000301c83016$774dcba0$9c94fea9@jason>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000301c83016$774dcba0$9c94fea9@jason>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 26, 2007 at 10:23:51AM +0000, Joonwoo Park wrote:
+> 2007/11/26, Patrick McHardy <kaber@trash.net>:
+> > How about also switching vmalloc/get_free_pages to GFP_ZERO
+> > and getting rid of the memset entirely while you're at it?
+> > 
+> 
+> xfrm_hash: kmalloc + memset conversion to kzalloc
+> fix to avoid memset entirely.
 
-On Nov 26 2007 06:58, Ray Lee wrote:
->On Nov 26, 2007 12:54 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
->>   on current systems, "rpm" no longer has build capability and will
->> fail thusly:
->>
->> rpm --target i386 -ta ../kernel-2.6.24rc3g2ffbb837dirty.tar.gz
->> --target: unknown option
->>
->>   so it would make more sense to just require "rpmbuild" on the
->> machine, would it not?
->
->Only on current machines. You'd break building kernel RPMs on older
->systems that don't have rpmbuild installed.
-
-Those old machines probably do not even run a distro-fabricated gcc that
-would compile a git head kernel.
+Patch applied.  Thanks everyone!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
