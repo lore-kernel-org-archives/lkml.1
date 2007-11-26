@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXKZVVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbXKZVW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbXKZVVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbXKZVVh
+	id S1756501AbXKZVW6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXKZVWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:21:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45194 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753304AbXKZVVh (ORCPT
+	Mon, 26 Nov 2007 16:22:50 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:32787 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753858AbXKZVWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:21:37 -0500
-Date: Mon, 26 Nov 2007 13:20:36 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] x86 allnoconfig memory model
-Message-Id: <20071126132036.343e3ee0.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0711261258480.25688@schroedinger.engr.sgi.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<20071126111320.69d0aead.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0711261127250.23080@schroedinger.engr.sgi.com>
-	<20071126124730.34c43da1.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0711261258480.25688@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 16:22:49 -0500
+To: jdike@addtoit.com
+CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-reply-to: <20071126205242.GA11444@c2.user-mode-linux.org> (message from
+	Jeff Dike on Mon, 26 Nov 2007 15:52:42 -0500)
+Subject: Re: uml doesn't work on 2.6.24-rc2
+References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu> <20071114011002.GA11477@c2.user-mode-linux.org> <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu> <20071114142247.GA5848@c2.user-mode-linux.org> <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu> <20071126205242.GA11444@c2.user-mode-linux.org>
+Message-Id: <E1IwlPY-0000Q7-0r@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 26 Nov 2007 22:22:36 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 13:00:03 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Mon, 26 Nov 2007, Randy Dunlap wrote:
+> On Wed, Nov 14, 2007 at 04:26:11PM +0100, Miklos Szeredi wrote:
+> > This one fixed the EINVAL messages, and now UML boots, but consumes
+> > 100% CPU constantly.
 > 
-> > This patch allows allnoconfig to build cleanly.
-> 
-> Well this sortof works.
-> 
-> One can again select a memory model but there is only one to choose from.
-> It would be best if the memory model selection would not occur.
+> Can you disable NO_HZ and try the patch below, which WorksForMe (TM)?
 
-Unfortunately I just dropped that patch because git-x86 has gone and
-combined include/asm-x86/sparsemem_32.h and include/asm-x86/sparsemem_64.h
-into the same file.
+Yes, it fixes the busy looping for me as well.  Thanks!
 
+There's still something strange, as top shows 50% time spent in I/O
+wait when UML is running.  But ps doesn't show any process in "D"
+state.
+
+Can't remember seeing this earlier.
+
+Miklos
