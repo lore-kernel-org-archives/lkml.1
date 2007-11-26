@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbXKZCNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbXKZCUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758607AbXKZCNU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 21:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbXKZCNM
+	id S1758325AbXKZCUj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 21:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXKZCU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 21:13:12 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41400 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757378AbXKZCNL (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 21:13:11 -0500
-Message-ID: <474A2B62.20204@sgi.com>
-Date: Mon, 26 Nov 2007 13:11:46 +1100
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 25 Nov 2007 21:20:28 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:64117 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753640AbXKZCU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 21:20:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=W57fZS3lRyjEiaTl7D7Bz2WgXqp4ze52xytzyv5w0QA/EvY3f6+YTU9gZCW4u9v9jyXt7GEDlcyJkwfjW6jNSe1M7uDcgwrqXkmuMIQj5OlIGXVFqg3Smu90Mq9z1Sy4CvqfW2iYw8dXHvVbcWHOT7QasKeVGcKQ+OtxreqyTC4=
+Message-ID: <474A2D65.2090302@gmail.com>
+Date: Mon, 26 Nov 2007 11:20:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: xfs-oss <xfs@oss.sgi.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9]: Reduce Log I/O latency
-References: <20071122003339.GH114266761@sgi.com>
-In-Reply-To: <20071122003339.GH114266761@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] sata_nv: don't use legacy DMA in ADMA mode (v3)
+References: <4749FE58.4060800@shaw.ca>
+In-Reply-To: <4749FE58.4060800@shaw.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: 2.6.x-xfs-new/fs/xfs/xfs_log.c
-> ===================================================================
-> --- 2.6.x-xfs-new.orig/fs/xfs/xfs_log.c	2007-11-22 10:47:21.945395328 +1100
-> +++ 2.6.x-xfs-new/fs/xfs/xfs_log.c	2007-11-22 10:53:11.556186722 +1100
-> @@ -1443,6 +1443,8 @@ xlog_sync(xlog_t		*log,
->  	XFS_BUF_ZEROFLAGS(bp);
->  	XFS_BUF_BUSY(bp);
->  	XFS_BUF_ASYNC(bp);
-> +	XFS_BUF_SET_LOGBUF(bp);
-> +
->  	/*
->  	 * Do an ordered write for the log block.
->  	 * Its unnecessary to flush the first split block in the log wrap case.
+Robert Hancock wrote:
+> We need to run any DMA command with result taskfile requested in ADMA mode
+> when the port is in ADMA mode, otherwise it may try to use the legacy DMA engine
+> in ADMA mode which is not allowed. Enforce this with BUG_ON() since data
+> corruption could potentially result if this happened. Also, fail any attempt to
+> try and issue NCQ commands with result taskfile requested, since the hardware
+> doesn't allow this.
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-Whichever way you go with this one Dave you should probably add another
-XFS_BUF_SET_LOGBUF() call for the buffer split case further down in the
-same function.
+Acked-by: Tejun Heo <htejun@gmail.com>
+
+Thanks.
+
+-- 
+tejun
