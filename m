@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbXKZRBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbXKZRDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757642AbXKZRBd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXKZRBZ
+	id S1758028AbXKZRDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXKZRDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:01:25 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:13869 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbXKZRBY (ORCPT
+	Mon, 26 Nov 2007 12:03:07 -0500
+Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:1481 "EHLO
+	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbXKZRDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:01:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=tSTuaVE8KxMqDzp9o010N3mw6pe/7ZDtOxVGeXy+EHK02RYWgqjiqySLhVtST7thD6POFOpSRDFIxS+XvYgGz4xSNg+qkPvUrcXHERB9rxmpjz+8nAr/VHp81UYkiTkQuF9hVGRMZU2FZkdSxafAcskyvYSh73K7AB9MCC4mYQA=
-Message-ID: <671c20540711260901w6662fcabv779ce4fc51ec3d14@mail.gmail.com>
-Date: Mon, 26 Nov 2007 12:01:22 -0500
-From: "Tom Burns" <tom.i.burns@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Clarification re: outstanding IPC flaws
+	Mon, 26 Nov 2007 12:03:05 -0500
+Message-ID: <474AFC2F.1040309@xs4all.nl>
+Date: Mon, 26 Nov 2007 18:02:39 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+       folkert van Heusden <folkert@vanheusden.com>
+Subject: Re: enable dual rng on VIA C7
+References: <47374EA4.1060009@xs4all.nl> <20071125233949.f64b2ecd.akpm@linux-foundation.org>
+In-Reply-To: <20071125233949.f64b2ecd.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+OpenPGP: id=8300CC02
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi List,
+Andrew Morton wrote:
+> On Sun, 11 Nov 2007 19:49:08 +0100 Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+> 
+>> Any reason why the second rng on the VIA C7 CPU is not enabled?
+(...)
+> Does the patch work?
 
-  Reading current kernel git ipc/sem.c I see the following comment:
+Yes, at least:
 
---
- * - The previous code had two flaws:
-...
- *   2) It did not wake up all zero waiting processes. We try to do
- *      better but only get the semops right which only wait for zero or
- *      increase. If there are decrement operations in the operations
- *      array we do the same as before.
+dd if=/dev/hwrng of=/dev/null bs=1024 count=1024
+shows a higher speed than without the patch.
 
---
+> It's missing a signed-off-by:, btw
 
-I have some questions about this comment.
+I did not know we are already that far ;-)
+I mean: can this patch be aplied without hurting C3/C7 CPU's with just
+one RNG? Maybe an expert needs to test/answer?
+Maybe some logic needs to be applied around the extra bit?
 
-Most importantly - does this mean that if I have multiple processes
-queued inside semop() calls with sem_val = -1 (also, if it matters,
-SEM_UNDO flag is set), I can expect to eventually see none of the
-queued processes woken up when whoever has the semaphore releases it?
-
-If that's the case, is there any semop best-use example I should be
-following for multiple multi-threaded processes sharing multiple
-semaphores?
-
-Currently I have some globally reachable semaphores doing semop calls
-with SEM_UNDO.  They usually work fine with multiple processes waiting
-on each other to lock the semaphore, but under certain circumstances a
-semaphore will be released and none of the processes waiting on the
-semaphore will be woken up.
-
-Thanks in advance,
-Tom Burns
-Software Developer
+Kind regards,
+Udo
