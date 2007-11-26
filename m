@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbXKZRxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbXKZSAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbXKZRxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbXKZRxi
+	id S1756144AbXKZSAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 13:00:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXKZSAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:53:38 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35302 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752064AbXKZRxi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:53:38 -0500
-Date: Mon, 26 Nov 2007 09:53:17 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bron Gondwana <brong@fastmail.fm>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christian Kujau <lists@nerdbynature.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       robm@fastmail.fm
-Subject: Re: [PATCH 1/1] mm: add dirty_highmem option
-In-Reply-To: <20071122034204.GA14079@brong.net>
-Message-ID: <alpine.LFD.0.9999.0711260949490.5869@woody.linux-foundation.org>
-References: <alpine.LFD.0.9999.0711142020220.2786@woody.linux-foundation.org> <20071115052538.GA21522@brong.net> <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org> <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org>
- <20071115115049.GA8297@brong.net> <alpine.LFD.0.9999.0711150818320.2786@woody.linux-foundation.org> <1195155601.22457.25.camel@lappy> <1195159457.22457.35.camel@lappy> <alpine.LFD.0.9999.0711151252340.4260@woody.linux-foundation.org>
- <alpine.LFD.0.9999.0711151300250.4260@woody.linux-foundation.org> <20071122034204.GA14079@brong.net>
+	Mon, 26 Nov 2007 13:00:32 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37514 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754319AbXKZSAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 13:00:31 -0500
+Date: Mon, 26 Nov 2007 12:00:28 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-security-module@vger.kernel.org,
+       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Wright <chrisw@sous-sol.org>, chris@friedhoff.org
+Subject: [PATCH] file capabilities: don't prevent signaling setuid root
+	programs.
+Message-ID: <20071126180028.GA9106@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch is needed to preserve legacy behavior when
+CONFIG_SECURITY_FILE_CAPABILITIES=y.  Without this patch, xinit can't
+kill X, so manually starting X in runlevel 3 then exiting your window
+manager will not cause X to exit. 
 
+thanks,
+-serge
 
-On Thu, 22 Nov 2007, Bron Gondwana wrote:
-> 
-> This patch includes some code cleanup from Linus and a toggle in
-> /proc/sys/vm/dirty_highmem which can be set to 1 to add the highmem
-> back to the total available memory count.
+>From 81a6d780ad570f9a326fc27912ec0e373f5fa14f Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Tue, 20 Nov 2007 08:47:35 +0000
+Subject: [PATCH] file capabilities: don't prevent signaling setuid root programs.
 
-Just to verify - can you confirm that this "just fixes it" for you?
+An unprivileged process must be able to kill a setuid root
+program started by the same user.  This is legacy behavior
+needed for instance for xinit to kill X when the window manager
+exits.
 
-I think this is the right approach to take, and seems very safe (ie people 
-who know that their loads are ok can just set the flag), but I do want to 
-verify that there was nothing else going on, and that you now see the same 
-performance as you did in 2.6.16?
+When an unprivileged user runs a setuid root program in !SECURE_NOROOT
+mode, fP, fI, and fE are set full on, so pP' and pE' are full on.
+Then cap_task_kill() prevents the user from signaling the setuid root
+task.  This is a change in behavior compared to when
+!CONFIG_SECURITY_FILE_CAPABILITIES.
 
-The other alternative, of course, would be to simply allow the dirty 
-percentages to be > 100%, but that's just *odd* ;)
+This patch introduces a special check into cap_task_kill() just
+to check whether a non-root user is signaling a setuid root
+program started by the same user.  If so, then signal is allowed.
 
-		Linus
+Changelog:
+	Nov 26: move test up above CAP_KILL test as per Andrew
+		Morgan's suggestion.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ security/commoncap.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 302e8d0..5bc1895 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -526,6 +526,15 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
+ 	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
+ 		return 0;
+ 
++	/*
++	 * Running a setuid root program raises your capabilities.
++	 * Killing your own setuid root processes was previously
++	 * allowed.
++	 * We must preserve legacy signal behavior in this case.
++	 */
++	if (p->euid == 0 && p->uid == current->uid)
++		return 0;
++
+ 	/* sigcont is permitted within same session */
+ 	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+ 		return 0;
+-- 
+1.5.2.5
+
