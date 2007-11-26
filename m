@@ -1,124 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXKZIQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXKZIT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbXKZIQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 03:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbXKZIQb
+	id S1754799AbXKZIT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 03:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXKZITs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 03:16:31 -0500
-Received: from ozlabs.org ([203.10.76.45]:42828 "EHLO ozlabs.org"
+	Mon, 26 Nov 2007 03:19:48 -0500
+Received: from mga11.intel.com ([192.55.52.93]:28491 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752999AbXKZIQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 03:16:30 -0500
-Subject: Re: [PATCH] ehea: Add kdump support
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Thomas Klein <osstklei@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <200711091433.51259.osstklei@de.ibm.com>
-References: <200711091433.51259.osstklei@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yy5JIdwYhC9mcuqd40ej"
-Date: Mon, 26 Nov 2007 19:16:28 +1100
-Message-Id: <1196064988.19855.15.camel@concordia>
+	id S1752855AbXKZITr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 03:19:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,466,1188802800"; 
+   d="scan'208";a="215581905"
+Subject: [PATCH -mm 3/4 -v6] x86_64 EFI runtime service support: document
+	for EFI runtime services
+From: "Huang, Ying" <ying.huang@intel.com>
+To: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 26 Nov 2007 16:23:49 +0800
+Message-Id: <1196065429.14142.17.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 26 Nov 2007 08:19:39.0014 (UTC) FILETIME=[167A4260:01C83005]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds document for EFI x86_64 runtime services support.
 
---=-yy5JIdwYhC9mcuqd40ej
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-On Fri, 2007-11-09 at 14:33 +0100, Thomas Klein wrote:
-> To support ehea driver reloading in a kdump kernel the driver has to perf=
-orm
-> firmware handle deregistrations when the original kernel crashes. As ther=
-e's
-> currently no notifier chain for machine crashes this patch enables kdump =
-support
-> in the ehea driver by bending the ppc_md.machine_crash_shutdown hook to i=
-ts own
-> machine crash handler. The original machine_crash_shutdown() fn is called
-> afterwards. This works fine as long as the ehea driver is the only one wh=
-ich
-> does so. Problems may occur if other drivers do the same and unload regul=
-arly.
-> This patch enables 2.6.24-rc2 to use kdump with ehea and only puts a very
-> low risk on base kernel. In 2.6.24 we know ehea is the only user of this
-> mechanism. The next step for 2.6.25 would be to add a proper notifier cha=
-in.
-> The full solution might be that register_reboot_notifier() provides sth
-> like a SYS_CRASH action. Please apply.
->=20
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
->=20
-> ---
->  drivers/net/ehea/ehea.h      |    2 +-
->  drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
->  2 files changed, 29 insertions(+), 1 deletions(-)
->=20
+---
+ Documentation/x86_64/boot-options.txt |    9 ++++++++-
+ Documentation/x86_64/uefi.txt         |    9 +++++++++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
-Hi Thomas,
-
-I'm sorry, but this patch is all wrong IMHO.
-
-For kdump we have to assume that the kernel is fundamentally broken,
-we've panicked, so something bad has happened - every line of kernel
-code that is run decreases the chance that we'll successfully make it
-into the kdump kernel.
-
-So just calling unregister_driver() is no good, that's going to call
-lots of code, try to take lots of locks, rely on lots of data structures
-being uncorrupted etc. etc.
-
-And the hijacking of machine_crash_shutdown() is IMO not an acceptable
-solution, as you say it only works if EHEA is the only driver to do it.
-And as soon as EHEA does it other drivers will want to do it.
-
-What we need is the _minimal_ set of actions that can happen to make
-EHEA work in the kdump kernel.
-
-Solutions that might be better:
-
- a) if there are a finite number of handles and we can predict their=20
-    values, just delete them all in the kdump kernel before the driver
-    loads.
- b) if there are a small & finite number of handles, save their values=20
-    in a device tree property and have the kdump kernel read them and=20
-    delete them before the driver loads.
- c) if neither of those work, provide a minimal routine that _only_
-    deletes the handles in the crashed kernel.
- d) <something else>
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-yy5JIdwYhC9mcuqd40ej
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHSoDcdSjSd0sB4dIRAmrHAJ44uAhPPnPmXxqcbiZBmDYoMIWxJgCgr5fL
-qTu8td4i0rgrOuOESNq2MkA=
-=cH8k
------END PGP SIGNATURE-----
-
---=-yy5JIdwYhC9mcuqd40ej--
-
+--- a/Documentation/x86_64/boot-options.txt
++++ b/Documentation/x86_64/boot-options.txt
+@@ -110,7 +110,7 @@ Idle loop
+ 
+ Rebooting
+ 
+-   reboot=b[ios] | t[riple] | k[bd] | a[cpi] [, [w]arm | [c]old]
++   reboot=b[ios] | t[riple] | k[bd] | a[cpi] | e[fi] [, [w]arm | [c]old]
+    bios	  Use the CPU reboot vector for warm reset
+    warm   Don't set the cold reboot flag
+    cold   Set the cold reboot flag
+@@ -119,6 +119,9 @@ Rebooting
+    acpi   Use the ACPI RESET_REG in the FADT. If ACPI is not configured or the
+           ACPI reset does not work, the reboot path attempts the reset using
+           the keyboard controller.
++   efi    Use efi reset_system runtime service. If EFI is not configured or the
++          EFI reset does not work, the reboot path attempts the reset using
++          the keyboard controller.
+ 
+    Using warm reset will be much faster especially on big memory
+    systems because the BIOS will not go through the memory check.
+@@ -303,4 +306,8 @@ Debugging
+ 		newfallback: use new unwinder but fall back to old if it gets
+ 			stuck (default)
+ 
++EFI
++
++  noefi		Disable EFI support
++
+ Miscellaneous
+--- a/Documentation/x86_64/uefi.txt
++++ b/Documentation/x86_64/uefi.txt
+@@ -19,6 +19,10 @@ Mechanics:
+ - Build the kernel with the following configuration.
+ 	CONFIG_FB_EFI=y
+ 	CONFIG_FRAMEBUFFER_CONSOLE=y
++  If EFI runtime services are expected, the following configuration should
++  be selected.
++	CONFIG_EFI=y
++	CONFIG_EFI_VARS=y or m		# optional
+ - Create a VFAT partition on the disk
+ - Copy the following to the VFAT partition:
+ 	elilo bootloader with x86_64 support, elilo configuration file,
+@@ -27,3 +31,8 @@ Mechanics:
+ 	can be found in the elilo sourceforge project.
+ - Boot to EFI shell and invoke elilo choosing the kernel image built
+   in first step.
++- If some or all EFI runtime services don't work, you can try following
++  kernel command line parameters to turn off some or all EFI runtime
++  services.
++	noefi		turn off all EFI runtime services
++	reboot_type=k	turn off EFI reboot runtime service
