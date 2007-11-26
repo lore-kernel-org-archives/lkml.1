@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbXKZPOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbXKZPQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbXKZPOr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 10:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXKZPOk
+	id S1752194AbXKZPQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 10:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXKZPQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 10:14:40 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:58092 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbXKZPOj (ORCPT
+	Mon, 26 Nov 2007 10:16:03 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36115 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750875AbXKZPQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 10:14:39 -0500
-Date: Mon, 26 Nov 2007 10:12:37 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can support for "rpm"-based package building just be dropped?
-In-Reply-To: <alpine.LFD.0.9999.0711261007370.22202@localhost.localdomain>
-Message-ID: <alpine.LFD.0.9999.0711261010480.22378@localhost.localdomain>
-References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain> <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com> <alpine.LFD.0.9999.0711261007370.22202@localhost.localdomain>
+	Mon, 26 Nov 2007 10:16:01 -0500
+Date: Mon, 26 Nov 2007 10:16:00 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Raymano Garibaldi <raymano@faunos.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+In-Reply-To: <1618816c0711252117l3348e07atfe84a321c5675889@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0711260958001.3987-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, Robert P. J. Day wrote:
+On Sun, 25 Nov 2007, Raymano Garibaldi wrote:
 
-> On Mon, 26 Nov 2007, Ray Lee wrote:
->
-> > On Nov 26, 2007 12:54 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> > >   on current systems, "rpm" no longer has build capability and will
-> > > fail thusly:
-> > >
-> > > rpm --target i386 -ta ../kernel-2.6.24rc3g2ffbb837dirty.tar.gz
-> > > --target: unknown option
-> > >
-> > >   so it would make more sense to just require "rpmbuild" on the
-> > > machine, would it not?
-> >
-> > Only on current machines. You'd break building kernel RPMs on older
-> > systems that don't have rpmbuild installed. So the change wouldn't
-> > fix anything, and would break some non-zero number of setups that
-> > are currently working, making the change a guaranteed net loss.
-> >
-> > A patch that added version checks against rpm and whinged
-> > appropriately about needing rpmbuild would likely be accepted,
-> > though.
->
-> yes, i suspect that's the right answer.
->
-> rday
+> The device which has the root fs is a READ-ONLY device. There is no
+> way for it to change between getting detached and reattached to the
+> computer which is suspended.
 
-BTW, is there someone who knows what the relevant version is of "rpm"
-that stopped incorporating the packaging functionality?  i'm a bit
-swamped today but if someone wants to whip up a patch and get it in
-before the next major release, that would be useful, i would think.
+You might think so at first.  But suppose another device of the same 
+type got plugged in instead -- with different data stored on it.  That 
+would be just as bad.
 
-in short, can someone else handle this?  :-)
+> I understand that this is currently considered a feature but I am
+> arguing here that there should also be another feature that allows
+> this  to work under suspend to ram the same as it does with suspend to
+> disk (hibernation).
+...
+> This scenario is not currently possible with the any kernel after
+> 2.6.22. It is a very important missing feature.
 
-rday
+This has nothing to do with USB particularly; it applies to all forms
+of hot-pluggable or removable storage.  Even floppy disks.
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> And yes. This feature does work under the 2.6.21 kernel, exactly
+> because the kernel did not have  the USB suspend and persist feature
+> available.
 
-http://crashcourse.ca
-========================================================================
+Wait a minute.  You're saying that USB Persist worked under 2.6.21
+because it wasn't available?  That makes no sense.  Besides, if you
+don't like USB Persist under 2.6.23, you can always eliminate it by
+turning off CONFIG_USB_PERSIST.
+
+> Under the 2.6.21 kernel, during suspend, the kernel is
+> totally unaware of what is happening to the USB device so nothing
+> happens when the USB device is detached and reattached while the
+> computer is suspended, hence making the described scenario above
+> possible. I currently, and very frequently, use this feature on my
+> live USB distro, FaunOS which uses kernel 2.6.21.
+
+It may be the case that _your_ particular computer wasn't aware of
+unplug or replug events during suspend, but if so then it was a bug and
+it isn't true in general.  The fact that your computer is now aware of
+these things proves this.
+
+In short, you aren't reporting a bug -- you're asking for a new feature 
+to be added.
+
+>From the point of view of the kernel, being suspended is in some
+respects like remaining awake.  Hotplug events are detected in either
+case.  Would you also want the ability to unplug and replug your root
+fs while the computer was running?  Would it make sense to add such an
+ability?
+
+There was a time during the 2.4 kernel series when usb-storage would 
+try to keep track of devices after they had been unplugged and 
+recognize them when they were re-attached.  Linus himself said it was 
+a bad idea and consequently it was removed.  Now you're saying you want 
+it back.  I think you'll have to convince Linus before anyone else will 
+pay attention.  It's worth a try -- he might think your airport 
+scenario is common enough to be worth supporting.
+
+Alan Stern
+
