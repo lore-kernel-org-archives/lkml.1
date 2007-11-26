@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbXKZXEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXKZXOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757252AbXKZXEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 18:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbXKZXEO
+	id S1756721AbXKZXOd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 18:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbXKZXOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 18:04:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35925 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755985AbXKZXEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 18:04:13 -0500
-Date: Tue, 27 Nov 2007 00:03:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: disable hpet legacy replacement for kexec
-Message-ID: <20071126230357.GB9623@elte.hu>
-References: <20071126193353.GA1676@elte.hu> <87sl2s4ran.fsf@duaron.myhome.or.jp>
+	Mon, 26 Nov 2007 18:14:24 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:28209 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753999AbXKZXOX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 18:14:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Sc7AT+7/K072b0g/ofCKLJBkGemhZkj82lpxOPfB15qJZF1X4cZ8g1+fFNYubcGSo6GgqvNO3O1+Jl0QWfuxGzo5UKzDD3mWM9vjSZ+PPDn5iY1ZSwe8VgXPRk/YdebGaYL9iKEcopKlr1z/xhJX9XbK4l6Cyfr2wymwgUQUnUE=
+Message-ID: <474B5349.2070500@gmail.com>
+Date: Tue, 27 Nov 2007 00:14:17 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87sl2s4ran.fsf@duaron.myhome.or.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1078]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@elte.hu, riel@redhat.com, kamalesh@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com, linux-acpi@vger.kernel.org,
+       tglx@linutronix.de, clameter@sgi.com
+Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<4743CC0B.9000508@linux.vnet.ibm.com>	<20071120221839.faab108e.akpm@linux-foundation.org>	<20071126143943.0a01665b@cuia.boston.redhat.com>	<20071126123319.7483e57f.akpm@linux-foundation.org>	<20071126204540.GA19874@elte.hu>	<474B43E1.9080407@gmail.com> <20071126141713.3dcd492b.akpm@linux-foundation.org>
+In-Reply-To: <20071126141713.3dcd492b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/26/2007 11:17 PM, Andrew Morton wrote:
+>> Maybe if you can emit a broken-out with the fresh pull to test?
+> 
+> http://userweb.kernel.org/~akpm/mmotm/ is current.  But it probably won't
+> compile. 
 
-* OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+Yes it did :). And it worked. Both in qemu and on my desktop...
 
-> This seems to introduced after 2.6.23, so if possible, I'd like to fix 
-> before 2.6.24. What do you think the following?
+qemu output at:
+http://www.fi.muni.cz/~xslaby/sklad/qemu-output.txt
 
-looks good to me - i've queued it up.
-
-	Ingo
+thanks,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
