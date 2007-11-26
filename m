@@ -1,40 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbXKZHvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbXKZHyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbXKZHvq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 02:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbXKZHvj
+	id S1754448AbXKZHyk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 02:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXKZHya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 02:51:39 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46456 "EHLO mx1.redhat.com"
+	Mon, 26 Nov 2007 02:54:30 -0500
+Received: from mail.suse.de ([195.135.220.2]:52333 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752806AbXKZHvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 02:51:38 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 23/27] x86: debugctlmsr kconfig
-In-Reply-To: Denys Vlasenko's message of  Sunday, 25 November 2007 17:09:01 -0800 <200711251709.01304.vda.linux@googlemail.com>
-References: <20071125215507.4B89226F8C5@magilla.localdomain>
-	<20071125220802.76C2F26F8C5@magilla.localdomain>
-	<200711251709.01304.vda.linux@googlemail.com>
-X-Zippy-Says: Half a mind is a terrible thing to waste!
-Message-Id: <20071126075131.95A0226F8C5@magilla.localdomain>
-Date: Sun, 25 Nov 2007 23:51:31 -0800 (PST)
+	id S1753193AbXKZHy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 02:54:29 -0500
+Date: Mon, 26 Nov 2007 08:54:26 +0100
+From: Hannes Reinecke <hare@suse.de>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Laurent Riffard <laurent.riffard@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
+Message-ID: <20071126075426.GC11261@ochil.suse.de>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <4744A6F2.4030302@free.fr> <20071121144116.c932727b.akpm@linux-foundation.org> <4746814F.80502@free.fr> <4746866B.5070207@suse.de> <4746BB9D.2030508@suse.de> <1195926253.3195.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1195926253.3195.16.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why is it defined in configuration system instead of some *.h file?
+On Sat, Nov 24, 2007 at 07:44:13PM +0200, James Bottomley wrote:
+> Probing intermittent failures in Domain Validation, even with the fixes
+> applied leads me to the conclusion that there are further problems with
+> this commit:
+> 
+> commit fc5eb4facedbd6d7117905e775cee1975f894e79
+> Author: Hannes Reinecke <hare@suse.de>
+> Date:   Tue Nov 6 09:23:40 2007 +0100
+> 
+>     [SCSI] Do not requeue requests if REQ_FAILFAST is set
+>  
+> The essence of the problems is that you're causing REQ_FAILFAST to
+> terminate commands with error on requeuing conditions, some of which are
+> relatively common on most SCSI devices.  While this may be the correct
+> behaviour for multi-path, it's certainly wrong for the previously
+> understood meaning of REQ_FAILFAST, which was don't retry on error,
+> which is why domain validation and other applications use it to control
+> error handling, but don't expect to get failures for a simple requeue
+> are now spitting errors.
+> 
+> I honestly can't see that, even for the multi-path case, returning an
+> error when we're over queue depth is the correct thing to do (it may not
+> matter to something like a symmetrix, but an array that has a non-zero
+> cost associated with a path change, like a CPQ HSV or the AVT
+> controllers, will show fairly large slow downs if you do this).  Even if
+> this is the desired behaviour (and I think that's a policy issue),
+> DID_NO_CONNECT is almost certainly the wrong error to be sending back.
+> 
+> This patch fixes up domain validation to work again correctly, however,
+> I really think it's just a bandaid.  Do you want to rethink the above
+> commit?
+> 
+Given the amounted error, yes, I'll have to.
+But we still face the initial problem that requeued requests will be
+stuck in the queue forever (ie until the timeout catches it), causing
+failover to be painfully slow.
 
-That seems to be existing practice for this sort of thing.
-I just followed what I saw.
+Anyway, I'll think it over.
 
+Cheers,
 
-Thanks,
-Roland
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 N�rnberg
+GF: Markus Rex, HRB 16746 (AG N�rnberg)
