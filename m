@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXKZBct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXKZB6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbXKZBct (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 20:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbXKZBck
+	id S1758260AbXKZB6j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 20:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXKZB6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 20:32:40 -0500
-Received: from hpsmtp-eml17.KPNXCHANGE.COM ([213.75.38.117]:52377 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754290AbXKZBcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 20:32:39 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: "buggy cmd640" message followed by soft lockup
-Date: Mon, 26 Nov 2007 02:32:35 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200711222007.12497.elendil@planet.nl> <200711242038.06677.elendil@planet.nl> <200711250013.51279.bzolnier@gmail.com>
-In-Reply-To: <200711250013.51279.bzolnier@gmail.com>
+	Sun, 25 Nov 2007 20:58:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49636 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753807AbXKZB6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Nov 2007 20:58:30 -0500
+Date: Sun, 25 Nov 2007 20:57:57 -0500
+From: Dave Jones <davej@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 23/27] x86: debugctlmsr kconfig
+Message-ID: <20071126015757.GA16807@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Roland McGrath <roland@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+References: <20071125215507.4B89226F8C5@magilla.localdomain> <20071125220802.76C2F26F8C5@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711260232.36820.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Nov 2007 01:32:37.0616 (UTC) FILETIME=[3A30A700:01C82FCC]
+In-Reply-To: <20071125220802.76C2F26F8C5@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Dropped Rafael from CC)
+On Sun, Nov 25, 2007 at 02:08:02PM -0800, Roland McGrath wrote:
+ > 
+ > This adds the (internal) Kconfig macro CONFIG_X86_DEBUGCTLMSR,
+ > to be defined when configuring to support only hardware that
+ > definitely supports MSR_IA32_DEBUGCTLMSR with the BTF flag.
+ > 
+ > The Intel documentation says "P6 family" and later processors all have it.
+ > I think the Kconfig dependencies are right to have it set for those and
+ > unset for others (i.e., when 586 and earlier are supported).
 
-On Sunday 25 November 2007, Bartlomiej Zolnierkiewicz wrote:
-> So either something went very very wrong or the oops itself is incorrect.
->
-> Please put BUG() before the put_cmd640_reg() above so the next time
-> BUG happens we will know which one is it.
+What about the non-Intel vendors ?
+Was this msr present on AMD K6 ? Geode? Winchip? VIA C3 ?
+If not, then this patch isn't complete. 
 
-I've spent quite a bit of time on this issue over the weekend and have seen 
-all kinds of "interesting" behavior with various kernels with different 
-debug patches, but no definite clues (except confirmation that on "good" 
-boots no cmd64x hardware is detected).
+	Dave
 
-At some point I scrapped the virtual machine I had been using and created a 
-new one. Since then I've been unable to reproduce the problem. I'm still 
-quite confused by the issue exactly because it was so consistent when it 
-_did_ happen and am still not sure if it can be blamed completely on the 
-quirkiness of Virtualbox.
-
-I'll keep testing new kernels in VirtualBox and will keep alert for the 
-issue, but for now I think it's best to forget about it.
-
-Bartlomiej: thanks for your feedback and suggestions.
-
-Cheers,
-FJP
+-- 
+http://www.codemonkey.org.uk
