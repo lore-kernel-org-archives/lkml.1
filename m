@@ -1,79 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbXKZVlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbXKZVm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbXKZVlq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXKZVlj
+	id S1754943AbXKZVm7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbXKZVmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:41:39 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57333 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754285AbXKZVli (ORCPT
+	Mon, 26 Nov 2007 16:42:51 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:32856 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbXKZVmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:41:38 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] fix setsid() for sub-namespace /sbin/init
-References: <20071126142553.GA16525@tv-sign.ru>
-	<m1zlx0n7ga.fsf@ebiederm.dsl.xmission.com>
-	<20071126201139.GA84@tv-sign.ru>
-Date: Mon, 26 Nov 2007 14:40:22 -0700
-In-Reply-To: <20071126201139.GA84@tv-sign.ru> (Oleg Nesterov's message of
-	"Mon, 26 Nov 2007 23:11:39 +0300")
-Message-ID: <m1r6icn0s9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 26 Nov 2007 16:42:51 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: disable hpet legacy replacement for kexec
+References: <20071126193353.GA1676@elte.hu>
+Date: Tue, 27 Nov 2007 06:42:40 +0900
+In-Reply-To: <20071126193353.GA1676@elte.hu> (Ingo Molnar's message of "Mon,
+	26 Nov 2007 20:33:53 +0100")
+Message-ID: <87sl2s4ran.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+Hi,
 
-> On 11/26, Eric W. Biederman wrote:
->>
->> Oleg Nesterov <oleg@tv-sign.ru> writes:
->> 
->> > sys_setsid() still deals with pid_t's from the global namespace. This means
->> > that the "session > 1" check can't help for sub-namespace init, setsid()
-> can't
->> > succeed because copy_process(CLONE_NEWPID) populates PIDTYPE_PGID/SID links.
->> 
->> We can do even better.  We can remove the misguided code from
->> copy_process(CLONE_NEWPID) that populates the PIDTYPE_PGID/SID links
->> and generally does set setsid by hand,
->
-> Yes you are right. IIRC there was a patch from you, but I didn't follow the
-> discussion, sorry, so I don't know what was the verdict.
+This seems to introduced after 2.6.23, so if possible, I'd like to fix
+before 2.6.24. What do you think the following?
 
-Since session == pgrp == 0 is the historical start condition for /sbin/init there
-is no problem from the session perspective, it in fact is better.
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-The only case that might have cared was setting si_pid when sending signals,
-and it turns out it is both simple and necessary to handle that case across
-namespaces anyway.
 
-So there is no reason not to handle this.
+If HPET was enabled by pci quirks, we use i8253 as initial clockevent
+because pci quirks doesn't run until pci is initialized.
 
-> If we remove that "almost setsid" from copy_process(), we can remove the fat
-> comment and the "session != 1" chunk from setsid().
->
->> and the code from kernel_init
->> that call set_special_pid(), allowing us to remove the special case
->> entirely.
->
-> This is different, perhaps we can keep this call. kernel_thread(kernel_init)
-> attaches /sbin/init to init_struct_pid. Nothing bad, and a "good" init should
-> do setsid() anyway. But who knows? Some special environment may expect that
-> getpgrp() != 0. Not that I really disagree on this issue though.
+The above means the kernel (or something) is assuming HPET legacy
+replacement is disabled and can use i8253 at boot.
 
-init starting with session == pgrp == 0 is historical linux behavior.  I consider
-the current 2.6 behavior a temporary aberation from the historical linux behavior.
+If we used kexec, it isn't true. So, this patch disables HPET legacy
+replacement for kexec in machine_shutdown().
 
-sysvinit does call setsid.  And nothing really bad will happen if someone forgets
-to call setsid, in some obscure version of init.
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
 
-Plus once we do this the code will be easier to maintain because we have
-removed one obscure special case.
+ arch/x86/kernel/hpet.c      |   14 ++++++++++++++
+ arch/x86/kernel/reboot_32.c |    4 ++++
+ arch/x86/kernel/reboot_64.c |    4 ++++
+ include/asm-x86/hpet.h      |    1 +
+ 4 files changed, 23 insertions(+)
 
-Eric
+diff -puN arch/x86/kernel/hpet.c~kexec-need-to-disable-hpet arch/x86/kernel/hpet.c
+--- linux-2.6/arch/x86/kernel/hpet.c~kexec-need-to-disable-hpet	2007-11-24 09:38:23.000000000 +0900
++++ linux-2.6-hirofumi/arch/x86/kernel/hpet.c	2007-11-27 04:57:00.000000000 +0900
+@@ -446,6 +446,20 @@ static __init int hpet_late_init(void)
+ }
+ fs_initcall(hpet_late_init);
+ 
++void hpet_disable(void)
++{
++	if (is_hpet_capable()) {
++		unsigned long cfg = hpet_readl(HPET_CFG);
++
++		if (hpet_legacy_int_enabled) {
++			cfg &= ~HPET_CFG_LEGACY;
++			hpet_legacy_int_enabled = 0;
++		}
++		cfg &= ~HPET_CFG_ENABLE;
++		hpet_writel(cfg, HPET_CFG);
++	}
++}
++
+ #ifdef CONFIG_HPET_EMULATE_RTC
+ 
+ /* HPET in LegacyReplacement Mode eats up RTC interrupt line. When, HPET
+diff -puN arch/x86/kernel/reboot_32.c~kexec-need-to-disable-hpet arch/x86/kernel/reboot_32.c
+--- linux-2.6/arch/x86/kernel/reboot_32.c~kexec-need-to-disable-hpet	2007-11-24 09:38:23.000000000 +0900
++++ linux-2.6-hirofumi/arch/x86/kernel/reboot_32.c	2007-11-27 04:57:50.000000000 +0900
+@@ -11,6 +11,7 @@
+ #include <linux/reboot.h>
+ #include <asm/uaccess.h>
+ #include <asm/apic.h>
++#include <asm/hpet.h>
+ #include <asm/desc.h>
+ #include "mach_reboot.h"
+ #include <asm/reboot_fixups.h>
+@@ -326,6 +327,9 @@ static void native_machine_shutdown(void
+ #ifdef CONFIG_X86_IO_APIC
+ 	disable_IO_APIC();
+ #endif
++#ifdef CONFIG_HPET_TIMER
++	hpet_disable();
++#endif
+ }
+ 
+ void __attribute__((weak)) mach_reboot_fixups(void)
+diff -puN arch/x86/kernel/reboot_64.c~kexec-need-to-disable-hpet arch/x86/kernel/reboot_64.c
+--- linux-2.6/arch/x86/kernel/reboot_64.c~kexec-need-to-disable-hpet	2007-11-24 09:38:23.000000000 +0900
++++ linux-2.6-hirofumi/arch/x86/kernel/reboot_64.c	2007-11-27 04:57:56.000000000 +0900
+@@ -17,6 +17,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/apic.h>
++#include <asm/hpet.h>
+ #include <asm/gart.h>
+ 
+ /*
+@@ -113,6 +114,9 @@ void machine_shutdown(void)
+ 
+ 	disable_IO_APIC();
+ 
++#ifdef CONFIG_HPET_TIMER
++	hpet_disable();
++#endif
+ 	local_irq_restore(flags);
+ 
+ 	pci_iommu_shutdown();
+diff -puN include/asm-x86/hpet.h~kexec-need-to-disable-hpet include/asm-x86/hpet.h
+--- linux-2.6/include/asm-x86/hpet.h~kexec-need-to-disable-hpet	2007-11-24 09:38:23.000000000 +0900
++++ linux-2.6-hirofumi/include/asm-x86/hpet.h	2007-11-27 04:54:32.000000000 +0900
+@@ -61,6 +61,7 @@ extern unsigned long force_hpet_address;
+ extern int hpet_force_user;
+ extern int is_hpet_enabled(void);
+ extern int hpet_enable(void);
++extern void hpet_disable(void);
+ extern unsigned long hpet_readl(unsigned long a);
+ extern void force_hpet_resume(void);
+ 
+_
