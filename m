@@ -1,99 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbXKZNpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbXKZNpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbXKZNpB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 08:45:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXKZNox
+	id S1753951AbXKZNpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 08:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXKZNpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 08:44:53 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:33867 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751033AbXKZNow (ORCPT
+	Mon, 26 Nov 2007 08:45:34 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:31264 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbXKZNpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 08:44:52 -0500
-Date: Mon, 26 Nov 2007 14:12:10 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: David Chinner <dgc@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: XFS related Oops
-Message-ID: <20071126131210.GA4430@eazy.amigager.de>
-Mail-Followup-To: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org
-References: <20071112064706.GA23595@dose.home.local> <20071112222720.GG995458@sgi.com> <20071113105119.GA11527@dose.home.local> <20071113230445.GE995458@sgi.com>
+	Mon, 26 Nov 2007 08:45:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
+        b=B1peXdHcoU9+Gd39olfTkTZodf3mLESJOmykLE49pzqfAvbBPBHE9niC8K5J+rrGZG+4J4btif5ALhJXgD3jyZDueGKbQAbN/0K8HYUAo9otkjwnO2XbIBSqpbXbUoXGez9+b1Wc6BYYt5i/o+uDiH7VA6NOLWbl+T0siyIP4R4=
+Message-ID: <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
+Date: Mon, 26 Nov 2007 14:45:32 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
+Cc: "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071113230445.GE995458@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_5441_21490065.1196084732436"
+References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
+X-Google-Sender-Auth: 1c43e0f779acb7a4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 14, 2007 at 10:04:45 +1100, David Chinner wrote:
-> On Tue, Nov 13, 2007 at 11:51:19AM +0100, Tino Keitel wrote:
-> > On Tue, Nov 13, 2007 at 09:27:20 +1100, David Chinner wrote:
-> > 
-> > [...]
-> > 
-> > > No. I'd say something got screwed up during suspend/resume. Is it
-> > > reproducable?
-> > 
-> > No. I often use suspend to RAM, and usually it works without such
-> > failures. I restart squid during the resume prosecure, and the above
-> > Oops lead to a squid in D state.
-> 
-> Ok. Sounds like there's not much we can debug at this point. Thanks
-> for the report, though.
+------=_Part_5441_21490065.1196084732436
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I got a similar Oops again:
+Attached the same patch, but it also cleans the manage.c code a bit,
+because the IRQ types 'simple IRQ', 'level-IRQ' and 'FastEOI' were
+handled differently while they should be handled the same.
 
-xfs_iget_core: ambiguous vns: vp/0xc00700c0, invp/0xcb5a1680
-------------[ cut here ]------------
-kernel BUG at fs/xfs/support/debug.c:55!
-invalid opcode: 0000 [#2]
-SMP 
-Modules linked in: dvb_usb_cinergyT2 rfcomm l2cap bluetooth i915 drm
-cpufreq_stats firewire_ohci firewire_core dvb_usb crc_itu_t usblp evdev
-snd_hda_intel rtc_cmos sky2 dvb_core applesmc led_class coretemp hwmon
-CPU:    0
-EIP:    0060:[<c025a45a>]    Tainted: G      D VLI
-EFLAGS: 00010246   (2.6.23.1 #4)
-EIP is at cmn_err+0x9a/0xa0
-eax: c049efb0   ebx: c044ffac   ecx: 00000001   edx: 00000286
-esi: 00000000   edi: 00000286   ebp: f75f86f0   esp: eab9fccc
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process gc_approx (pid: 29386, ti=eab9e000 task=e409b030
-task.ti=eab9e000)
-Stack: c04531ce c043a07d c05544c0 eab9fcf4 c0071500 00002094 00000000
-c022855b 
-       00000000 c044ffac c00700c0 cb5a1680 f796ac00 c18828c4 c04fb280
-f75f86f4 
-       00000000 00000000 f748e800 cb5a1680 00000000 c0071500 cb5a169c
-cb5a1680 
-Call Trace:
- [<c022855b>] xfs_iget_core+0x54b/0x690
- [<c0228774>] xfs_iget+0xd4/0x160
- [<c024474b>] xfs_dir_lookup_int+0x9b/0x100
- [<c0247ec5>] xfs_lookup+0x75/0xa0
- [<c0256874>] xfs_vn_lookup+0x54/0x90
- [<c0177a32>] do_lookup+0x122/0x1a0
- [<c01794d4>] __link_path_walk+0x784/0xd80
- [<c0179b35>] link_path_walk+0x65/0xc0
- [<c0179b15>] link_path_walk+0x45/0xc0
- [<c0179db3>] do_path_lookup+0x73/0x1b0
- [<c0178a55>] getname+0xa5/0xc0
- [<c017a7bb>] __user_walk_fd+0x3b/0x60
- [<c0173992>] vfs_stat_fd+0x22/0x60
- [<c0173a7f>] sys_stat64+0xf/0x30
- [<c0181885>] dput+0x85/0x100
- [<c0171744>] __fput+0x114/0x160
- [<c01856eb>] mntput_no_expire+0x1b/0x80
- [<c016ead7>] filp_close+0x47/0x80
- [<c016ff93>] sys_close+0x63/0xc0
- [<c010428e>] sysenter_past_esp+0x5f/0x85
- [<c03e0000>] __mutex_lock_interruptible_slowpath+0xb0/0x290
- =======================
-Code: 45 c0 89 44 24 04 e8 e6 ec ec ff 89 fa b8 b0 ef 49 c0 e8 5a 6e 18
-00 85 f6 74 10 83 c4 10 5b 5e 5f c3 c6 81 c0 44 55 c0 00 eb c1 <0f> 0b
-eb fe 90 90 83 ec 10 85 d2 89 1c 24 89 cb 89 74 24 04 89 
-EIP: [<c025a45a>] cmn_err+0x9a/0xa0 SS:ESP 0068:eab9fccc
+Kind Regards,
 
-Regards,
-Tino
+Remy
+
+2007/11/26, Remy Bohmer <linux@bohmer.net>:
+> Hello,
+>
+> I use 2.6.23.1-rt5 on the Atmel AT91 series.
+> Interrupt threading on Preempt-RT and ARM works fine, except for
+> (edge-triggered) GPIO interrupts. There is a problem when a new
+> interrupt arives while the interrupt thread is handling the previous
+> interrupt. If this occurs the interrupt handling stalls forever.
+>
+> This is caused by a unbalanced interrupt mask/unmask problem in the kernel.
+> The attached patch fixes this. More information about this problem is
+> documented inside the patch itself.
+>
+> This patch is meant for Preempt-RT only.
+>
+> Kind Regards,
+>
+> Remy Bohmer
+>
+>
+
+------=_Part_5441_21490065.1196084732436
+Content-Type: text/x-patch; name=fix-gpio-irq-stalling-bug.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f9h1zef7
+Content-Disposition: attachment; filename=fix-gpio-irq-stalling-bug.patch
+
+T24gQVJNIHRoZXJlIGlzIGEgcHJvYmxlbSB3aGVyZSB0aGUgaW50ZXJydXB0IGhhbmRsZXIgc3Rh
+bGxzIHdoZW4gdGhleSBhcmUgCmNvbWluZyBmYXN0ZXIgdGhhbiB0aGUga2VybmVsIGNhbiBoYW5k
+bGUuCgpUaGUgcHJvYmxlbSBvY2N1cnMgd2hlbiB0aGUgcm91dGluZSBoYW5kbGVfc2ltcGxlX2ly
+cSgpIG1hc2tzIHRoZSBpbnRlcnJ1cHQgCndoZW4gYW4gSVJRLXRocmVhZCBpcyBoYW5kbGluZyB0
+aGUgaW50ZXJydXB0IGF0IHRoZSBzYW1lIHRpbWUuIChJUlFfSU5QUk9HUkVTUwppcyBzZXQpLiBU
+aGUgaW50ZXJydXB0IHRocmVhZCwgaG93ZXZlciBkb2VzICoqbmV2ZXIqKiBhIApkZXNjLT5jaGlw
+LT51bm1hc2soKSwgc28gdGhlIGludGVycnVwdCBiZWNvbWVzIGRpc2FibGVkIGZvcmV2ZXIuCgpJ
+UlFfRElTQUJMRUQgaXMgdXN1YWxseSBub3Qgc2V0IGZvciB0aGlzIGludGVycnVwdAoKVGhpcyBp
+cyBpbiBrZXJuZWwvaXJxL2NoaXAuYywgd2hlcmUgdGhlIGlycSBpcyBtYXNrZWQgd2hlbiBhIElS
+US10aHJlYWQgaXMKcnVubmluZzogCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCnZvaWQgZmFzdGNhbGwKaGFu
+ZGxlX3NpbXBsZV9pcnEodW5zaWduZWQgaW50IGlycSwgc3RydWN0IGlycV9kZXNjICpkZXNjKQp7
+CgouLi4uCi4uLi4KCglpZiAodW5saWtlbHkoIWFjdGlvbiB8fCAoZGVzYy0+c3RhdHVzICYgKElS
+UV9JTlBST0dSRVNTIHwKCQkJCQkJIElSUV9ESVNBQkxFRCkpKSkgewooISEpLT4JCWlmIChkZXNj
+LT5jaGlwLT5tYXNrKQooISEpLT4JCQlkZXNjLT5jaGlwLT5tYXNrKGlycSk7CgkJZGVzYy0+c3Rh
+dHVzICY9IH4oSVJRX1JFUExBWSB8IElSUV9XQUlUSU5HKTsKCQlkZXNjLT5zdGF0dXMgfD0gSVJR
+X1BFTkRJTkc7CgkJZ290byBvdXRfdW5sb2NrOwoJfQoKLi4uLgouLi4uCn0KLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0KCk1hc2tpbmcgdGhlIGludGVycnVwdCBzZWVtcyB2YWxpZCwgYmVjYXVzZSB0aGUgaW50
+ZXJydXB0IGhhbmRsZXIgdGhyZWFkIGlzIApzdGlsbCBydW5uaW5nLCBzbyBpdCBjYW4gaGFuZGxl
+IHRoZSBuZXcgcGVuZGluZyBpbnRlcnJ1cHQuIEJ1dCwgaXQgaGFzIHRvIGJlCnVtYXNrZWQgc29t
+ZXdoZXJlLiBUaGUgbG9naWNhbCBwbGFjZSBpcyB0byBkbyB0aGlzIGluIGtlcm5lbC9pcnEvbWFu
+YWdlLmMsIApiZWNhdXNlIHRoaXMgc2l0dWF0aW9uIGlzIGFsc28gaGFuZGxlZCBmb3IgdGhlIHRo
+cmVhZF9sZXZlbF9pcnEoKSBhbmQgCnRocmVhZF9mYXN0ZW9pX2lycSgpLCBidXQgbm90IGZvciB0
+aHJlYWRfc2ltcGxlX2lycSgpLiBUaGlzIHBhdGNoIGFkZHMgdGhpcwpmb3IgdGhlc2Uga2luZCBv
+ZiBpbnRlcnJ1cHRzIGFsc28uCgpTaWduZWQtb2ZmLWJ5OiBSZW15IEJvaG1lciA8bGludXhAYm9o
+bWVyLm5ldD4KLS0tCiBrZXJuZWwvaXJxL21hbmFnZS5jIHwgICAyOSArKystLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgMjYgZGVsZXRp
+b25zKC0pCgpJbmRleDogbGludXgtMi42LjIzL2tlcm5lbC9pcnEvbWFuYWdlLmMKPT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PQotLS0gbGludXgtMi42LjIzLm9yaWcva2VybmVsL2lycS9tYW5hZ2UuYwkyMDA3LTExLTI2IDEz
+OjQ2OjU4LjAwMDAwMDAwMCArMDEwMAorKysgbGludXgtMi42LjIzL2tlcm5lbC9pcnEvbWFuYWdl
+LmMJMjAwNy0xMS0yNiAxNDo0MzozMi4wMDAwMDAwMDAgKzAxMDAKQEAgLTY0NiwyOCArNjQ2LDcg
+QEAgc3RhdGljIHZvaWQgdGhyZWFkX3NpbXBsZV9pcnEoaXJxX2Rlc2NfdAogCQkJbm90ZV9pbnRl
+cnJ1cHQoaXJxLCBkZXNjLCBhY3Rpb25fcmV0KTsKIAl9CiAJZGVzYy0+c3RhdHVzICY9IH5JUlFf
+SU5QUk9HUkVTUzsKLX0KLQotLyoKLSAqIHRocmVhZGVkIGxldmVsIHR5cGUgaXJxIGhhbmRsZXIK
+LSAqLwotc3RhdGljIHZvaWQgdGhyZWFkX2xldmVsX2lycShpcnFfZGVzY190ICpkZXNjKQotewot
+CXVuc2lnbmVkIGludCBpcnEgPSBkZXNjIC0gaXJxX2Rlc2M7Ci0KLQl0aHJlYWRfc2ltcGxlX2ly
+cShkZXNjKTsKLQlpZiAoIShkZXNjLT5zdGF0dXMgJiBJUlFfRElTQUJMRUQpICYmIGRlc2MtPmNo
+aXAtPnVubWFzaykKLQkJZGVzYy0+Y2hpcC0+dW5tYXNrKGlycSk7Ci19Ci0KLS8qCi0gKiB0aHJl
+YWRlZCBmYXN0ZW9pIHR5cGUgaXJxIGhhbmRsZXIKLSAqLwotc3RhdGljIHZvaWQgdGhyZWFkX2Zh
+c3Rlb2lfaXJxKGlycV9kZXNjX3QgKmRlc2MpCi17Ci0JdW5zaWduZWQgaW50IGlycSA9IGRlc2Mg
+LSBpcnFfZGVzYzsKIAotCXRocmVhZF9zaW1wbGVfaXJxKGRlc2MpOwogCWlmICghKGRlc2MtPnN0
+YXR1cyAmIElSUV9ESVNBQkxFRCkgJiYgZGVzYy0+Y2hpcC0+dW5tYXNrKQogCQlkZXNjLT5jaGlw
+LT51bm1hc2soaXJxKTsKIH0KQEAgLTc0NywxMiArNzI2LDEwIEBAIHN0YXRpYyB2b2lkIGRvX2hh
+cmRpcnEoc3RydWN0IGlycV9kZXNjICoKIAlpZiAoIShkZXNjLT5zdGF0dXMgJiBJUlFfSU5QUk9H
+UkVTUykpCiAJCWdvdG8gb3V0OwogCi0JaWYgKGRlc2MtPmhhbmRsZV9pcnEgPT0gaGFuZGxlX3Np
+bXBsZV9pcnEpCisJaWYgKChkZXNjLT5oYW5kbGVfaXJxID09IGhhbmRsZV9zaW1wbGVfaXJxKSB8
+fAorCSAgICAoZGVzYy0+aGFuZGxlX2lycSA9PSBoYW5kbGVfbGV2ZWxfaXJxKSAgfHwKKwkgICAg
+KGRlc2MtPmhhbmRsZV9pcnEgPT0gaGFuZGxlX2Zhc3Rlb2lfaXJxKSkKIAkJdGhyZWFkX3NpbXBs
+ZV9pcnEoZGVzYyk7Ci0JZWxzZSBpZiAoZGVzYy0+aGFuZGxlX2lycSA9PSBoYW5kbGVfbGV2ZWxf
+aXJxKQotCQl0aHJlYWRfbGV2ZWxfaXJxKGRlc2MpOwotCWVsc2UgaWYgKGRlc2MtPmhhbmRsZV9p
+cnEgPT0gaGFuZGxlX2Zhc3Rlb2lfaXJxKQotCQl0aHJlYWRfZmFzdGVvaV9pcnEoZGVzYyk7CiAJ
+ZWxzZSBpZiAoZGVzYy0+aGFuZGxlX2lycSA9PSBoYW5kbGVfZWRnZV9pcnEpCiAJCXRocmVhZF9l
+ZGdlX2lycShkZXNjKTsKIAllbHNlCg==
+------=_Part_5441_21490065.1196084732436--
