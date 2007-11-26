@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbXKZRgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbXKZRpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbXKZRgf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:36:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbXKZRg1
+	id S1754316AbXKZRpV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKZRpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:36:27 -0500
-Received: from smtpoutm.mac.com ([17.148.16.78]:64934 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756830AbXKZRg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:36:26 -0500
-In-Reply-To: <4748EDCB.90403@crispincowan.com>
-References: <335711.34116.qm@web36610.mail.mud.yahoo.com> <4747C003.3070709@kernel.org> <47480D76.8030701@crispincowan.com> <823A64A2-C962-403C-A0EB-95EA79B2DB91@mac.com> <4748EDCB.90403@crispincowan.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8F9AE768-CCAB-4D14-BEBA-0A19938113BA@mac.com>
-Cc: Andrew Morgan <morgan@kernel.org>, casey@schaufler-ca.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, darwish.07@gmail.com, jmorris@namei.org,
-       method@manicmethod.com, paul.moore@hp.com,
-       LSM List <linux-security-module@vger.kernel.org>
+	Mon, 26 Nov 2007 12:45:09 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:33160 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbXKZRpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 12:45:06 -0500
+Date: Mon, 26 Nov 2007 09:43:21 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, dengxw@163.com,
+       herbert@gondor.apana.org.au
+Subject: [PATCH] hexdump: don't print bytes with bit 7 set
+Message-Id: <20071126094321.c5c82f49.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: + smack-version-11c-simplified-mandatory-access-control-kernel.patch added to -mm tree
-Date: Mon, 26 Nov 2007 12:36:09 -0500
-To: Crispin Cowan <crispin@crispincowan.com>
-X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 24, 2007, at 22:36:43, Crispin Cowan wrote:
-> Kyle Moffett wrote:
->> Actually, a fully-secured strict-mode SELinux system will have no  
->> unconfined_t processes; none of my test systems have any.   
->> Generally "unconfined_t" is used for situations similar to what  
->> AppArmor was designed for, where the only "interesting" security  
->> is that of the daemon (which is properly labelled) and one or more  
->> of the users are unconfined.
->
-> Interesting. In a Targeted Policy, you do your policy  
-> administration from unconfined_t. But how do you administer a  
-> Strict Policy machine? I can think of 2 ways:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-[snip]
+As Herbert Xu pointed out, bytes (chars) with bit 7 (0x80) set are
+true with isprint() but they may not be isascii() but be Unicode
+instead, so don't try to print them in hex dumps.
 
-> * there is some type that is tighter than unconfined_t but none the
->   less has sufficient privilege to change policy
->
-> To me, this would be semantically equivalent to unconfined_t,  
-> because any rogue code or user with this type could then fabricate  
-> unconfined_t and do what they want
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ lib/hexdump.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Well, in a strict SELinux system, someone who has been permitted the  
-"Security Administrator" role (secadm_r) and who has logged in  
-through a "login_t" process may modify and reload the policy.  They  
-are also permitted to view all files up to their clearance, write  
-files below their level, and relabel files.  On the other hand, they  
-do not have any system-administration privileges (those are reserve  
-for sysadm_r).
-
-Under the default policy the security administrator may disable  
-SELinux completely, although that too can be adjusted as "load  
-policy" is yet another specialized permission.
-
-Cheers,
-Kyle Moffett
+--- linux-2.6.24-rc3.orig/lib/hexdump.c
++++ linux-2.6.24-rc3/lib/hexdump.c
+@@ -106,7 +106,8 @@ void hex_dump_to_buffer(const void *buf,
+ 	while (lx < (linebuflen - 1) && lx < (ascii_column - 1))
+ 		linebuf[lx++] = ' ';
+ 	for (j = 0; (j < rowsize) && (j < len) && (lx + 2) < linebuflen; j++)
+-		linebuf[lx++] = isprint(ptr[j]) ? ptr[j] : '.';
++		linebuf[lx++] = (isascii(ptr[j]) && isprint(ptr[j])) ? ptr[j]
++				: '.';
+ nil:
+ 	linebuf[lx++] = '\0';
+ }
