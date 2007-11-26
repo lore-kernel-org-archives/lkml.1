@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbXKZOdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbXKZOkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbXKZOdf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 09:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbXKZOd1
+	id S1755095AbXKZOkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 09:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbXKZOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 09:33:27 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58445 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbXKZOd1 (ORCPT
+	Mon, 26 Nov 2007 09:39:52 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2976 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752654AbXKZOjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 09:33:27 -0500
-Date: Mon, 26 Nov 2007 14:33:05 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       hch@infradead.org
-Subject: Re: [PATCH 05/27] rename open_namei() to open_pathname()
-Message-ID: <20071126143305.GA10266@infradead.org>
-References: <20071101230826.9A4F6E00@kernel> <20071101230832.9835ED1E@kernel>
-MIME-Version: 1.0
+	Mon, 26 Nov 2007 09:39:51 -0500
+Date: Mon, 26 Nov 2007 22:39:39 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Denis Cheng <crquan@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/2] crypto test: use print_hex_dump from <linux/kernel.h>
+Message-ID: <20071126143939.GB28022@gondor.apana.org.au>
+References: <1196061182-6368-1-git-send-email-crquan@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071101230832.9835ED1E@kernel>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1196061182-6368-1-git-send-email-crquan@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 04:08:32PM -0700, Dave Hansen wrote:
+On Mon, Nov 26, 2007 at 03:13:02PM +0800, Denis Cheng wrote:
+> these utilities implemented in lib/hexdump.c are more handy, please use this.
 > 
-> open_namei() no longer touches namei's.  rename it
-> to something more appropriate: open_pathname().
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
 
-The name is quite non-descriptive.  What about just leaving it as
-filp_open and merging this into the previous patches to avoid
-the spurious renaming?
+OK this is pretty nice.  But you just missed out because the
+GCM patches that just went in added more hexdump uses :)
 
-And btw, exported functions that get half-rewritten should always
-grow a kerneldoc comment.  Then again this particular one really
-shouldn't be exported, but that's for another series.
+So could you please refresh your patch against the latest cryptodev
+tree? Please also clamp those long lines to 80 characters.
+
+On an unrelated note, lib/hexdump.c should not print 8-bit text
+even though they pass the is_print test.  They just turn up as
+crap on Unicode terminals.
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
