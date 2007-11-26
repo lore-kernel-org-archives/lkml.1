@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbXKZVuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbXKZVwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbXKZVuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXKZVud
+	id S1756578AbXKZVwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:52:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbXKZVwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:50:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40474 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755181AbXKZVuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:50:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: XFS related Oops (suspend/resume related)
-Date: Mon, 26 Nov 2007 23:07:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <20071112064706.GA23595@dose.home.local> <20071126131210.GA4430@eazy.amigager.de> <20071126210844.GB119954183@sgi.com>
-In-Reply-To: <20071126210844.GB119954183@sgi.com>
+	Mon, 26 Nov 2007 16:52:32 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47995 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751409AbXKZVwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 16:52:31 -0500
+Date: Mon, 26 Nov 2007 13:52:31 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] x86 allnoconfig memory model
+In-Reply-To: <20071126132036.343e3ee0.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711261351270.26057@schroedinger.engr.sgi.com>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+ <20071126111320.69d0aead.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0711261127250.23080@schroedinger.engr.sgi.com>
+ <20071126124730.34c43da1.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0711261258480.25688@schroedinger.engr.sgi.com>
+ <20071126132036.343e3ee0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711262307.56742.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 26 of November 2007, David Chinner wrote:
-> On Mon, Nov 26, 2007 at 02:12:10PM +0100, Tino Keitel wrote:
-> > On Wed, Nov 14, 2007 at 10:04:45 +1100, David Chinner wrote:
-> > > On Tue, Nov 13, 2007 at 11:51:19AM +0100, Tino Keitel wrote:
-> > > > On Tue, Nov 13, 2007 at 09:27:20 +1100, David Chinner wrote:
-> > > > 
-> > > > [...]
-> > > > 
-> > > > > No. I'd say something got screwed up during suspend/resume. Is it
-> > > > > reproducable?
-> > > > 
-> > > > No. I often use suspend to RAM, and usually it works without such
-> > > > failures. I restart squid during the resume prosecure, and the above
-> > > > Oops lead to a squid in D state.
-> > > 
-> > > Ok. Sounds like there's not much we can debug at this point. Thanks
-> > > for the report, though.
-> > 
-> > I got a similar Oops again:
-> > 
-> > xfs_iget_core: ambiguous vns: vp/0xc00700c0, invp/0xcb5a1680
-> 
-> Now there's a message that I haven't seen in about 3 years.
-> 
-> It indicates that the linux inode connected to the xfs_inode is not
-> the correct one. i.e. that the linux inode cache is out of step with
-> the XFS inode cache.
-> 
-> Basically, that is not supposed to happen. I suspect that the way
-> threads are frozen is resulting in an inode lookup racing with
-> a reclaim. The reclaim thread gets stopped after any use threads,
-> and so we could have the situation that a process blocked in lookup
-> has the XFS inode reclaimed and reused before it gets unblocked.
-> 
-> The question is why is it happening now when none of that code in
-> XFS has changed?
-> 
-> Rafael, when are threads frozen? Only when they schedule or call
-> try_to_freeze()?
+On Mon, 26 Nov 2007, Andrew Morton wrote:
 
-Kernel threads freeze only when they call try_to_freeze().  User space tasks
-freeze while executing the signals handling code.
+> Unfortunately I just dropped that patch because git-x86 has gone and
+> combined include/asm-x86/sparsemem_32.h and include/asm-x86/sparsemem_64.h
+> into the same file.
 
-> Did the freezer mechanism change in 2.6.23 (this is on 2.6.23.1)?
+git-x86 still contains separate sparsemem_32/64.h here.
+git lag?
 
-Yes.  Kernel threads are not sent fake signals by the freezer any more.
+christoph@stapp:~/x86/linux-2.6-x86/.git$ cat config
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[remote "origin"]
+        url = 
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+        remote = origin
+        merge = refs/heads/master
 
-> Is there some way of getting a stack trace of all the 
-> processes in the system once the machine is frozen and about to
-> suspend so we can see if we blocked in a lookup?
-
-Yes.  Please add show_state() before the last "return" in freeze_processes().
-
-On 2.6.23.1 you can test the freezer alone by doing
-
-# echo testproc > /sys/power/disk
-# echo disk > /sys/power/state
-
-Greetings,
-Rafael
