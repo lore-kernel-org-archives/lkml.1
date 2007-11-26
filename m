@@ -1,84 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbXKZTk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbXKZToV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbXKZTk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 14:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbXKZTku
+	id S1755515AbXKZToV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 14:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbXKZToO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 14:40:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55013 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493AbXKZTkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 14:40:49 -0500
-Date: Mon, 26 Nov 2007 14:39:43 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-acpi@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Message-ID: <20071126143943.0a01665b@cuia.boston.redhat.com>
-In-Reply-To: <20071120221839.faab108e.akpm@linux-foundation.org>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4743CC0B.9000508@linux.vnet.ibm.com>
-	<20071120221839.faab108e.akpm@linux-foundation.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 14:44:14 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50503 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753607AbXKZToN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 14:44:13 -0500
+Date: Mon, 26 Nov 2007 11:44:12 -0800
+From: Micah Dowty <micah@vmware.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Cyrus Massoumi <cyrusm@gmx.net>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Menage <menage@google.com>,
+       Peter Williams <pwil3058@bigpond.net.au>
+Subject: Re: High priority tasks break SMP balancer?
+Message-ID: <20071126194412.GC21266@vmware.com>
+References: <20071117010352.GA13666@vmware.com> <b647ffbd0711171110q9f695e1qb42ba73dc23b626d@mail.gmail.com> <20071119185116.GA28173@vmware.com> <b647ffbd0711191422q6be59c44gfbc72f0fc3167768@mail.gmail.com> <20071119230516.GC4736@vmware.com> <20071120055755.GE20436@elte.hu> <20071120180643.GD4736@vmware.com> <b647ffbd0711201347tedf7ac0sc6476118353feab3@mail.gmail.com> <20071122074652.GA6502@vmware.com> <b647ffbd0711220453i15e786ubbb02c3431869048@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0711220453i15e786ubbb02c3431869048@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Nov 2007 22:18:39 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Dmitry,
 
-> > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> > Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
+Thank you for the detailed explanation of the scheduler behaviour I've
+been seeing.
+
+On Thu, Nov 22, 2007 at 01:53:02PM +0100, Dmitry Adamushko wrote:
+> >  - Is there a good way to detect, without any kernel debug flags
+> >    set, whether the current machine has any scheduling domains
+> >    that are missing the SD_BALANCE_NEWIDLE bit?
 > 
-> ACPI or x86 breakage, I guess.
+> e.g. by reading its config and kernel version. But as a generic way
+> (sort of API for user-space), I guess, no.
+
+Would it be reasonable perhaps to look for the numa_* entries in
+/proc/zoneinfo, vmstat, or slabinfo?
+
+> > I'm looking for
+> >    a good way to work around the problem I'm seeing with VMware's
+> >    code. Right now the best I can do is disable all thread priority
+> >    elevation when running on an SMP machine with Linux 2.6.20 or
+> >    later.
 > 
-> Did 'noapic' work?
+> why are your application depends on the load-balancer's decisions?
+> Maybe it's just smth wrong with its logic instead? :-/
 
-I got the same bug as above, 'noapic' gets past that point and right to the
-next oops.  I'm posting it here because this one is different from the others
-in the thread, yet looks vaguely related:
+The application doesn't really depend on the load-balancer's decisions
+per se, it just happens that this behaviour I'm seeing on NUMA systems
+is extremely bad for performance.
 
-Unable to handle kernel NULL pointer dereference at 0000000000000021 RIP:
- [<ffffffff8108382a>] refresh_zone_stat_thresholds+0x6d/0x90
-PGD 0
-Oops: 0002 [1] SMP
-last sysfs file:
-CPU 0
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.24-rc3-mm1 #2
-RIP: 0010:[<ffffffff8108382a>]  [<ffffffff8108382a>] refresh_zone_stat_thresholds+0x6d/0x90
-RSP: 0000:ffff81007fb59ec0  EFLAGS: 00010293
-RAX: 0000000000000000 RBX: 0000000000000004 RCX: 0000000000000001
-RDX: 0000000000000001 RSI: ffffffff8146fb38 RDI: 0000000000000001
-RBP: ffff81000000c000 R08: 0000000000000000 R09: 0000000000000000
-R10: ffff81007fb59e60 R11: 0000000000000028 R12: ffffffff814d4558
-R13: 0000000000000000 R14: ffffffff814b62c0 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffffffff813d9000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000021 CR3: 0000000000201000 CR4: 00000000000006a0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 1, threadinfo FFFF81007FB58000, task FFFF81007FB56000)
-Stack:  0000000000000000 0000000000000000 0000000000000000 ffffffff814a3839
- 0000000000000000 ffffffff8148e626 ffff81007fb56000 ffffffff8126d36a
- 0000000000000000 ffffffffffffffff ffffffff8105786b 0000000000000000
-Call Trace:
- [<ffffffff814a3839>] setup_vmstat+0x6/0x40
- [<ffffffff8148e626>] kernel_init+0x169/0x2d8
- [<ffffffff8126d36a>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8105786b>] trace_hardirqs_on+0x115/0x138
- [<ffffffff8100ce48>] child_rip+0xa/0x12
- [<ffffffff8100c55f>] restore_args+0x0/0x30
- [<ffffffff8148e4bd>] kernel_init+0x0/0x2d8
- [<ffffffff8100ce3e>] child_rip+0x0/0x12
+In this context, the application is a virtual machine runtime which is
+executing either an SMP VM or it's executing a guest which has a
+virtual GPU. In either case, there are at least three threads:
 
-INFO: lockdep is turned off.
+  - Two virtual CPU/GPU threads, which are nice(0) and often CPU-bound
+  - A low-latency event handling thread, at nice(-10)
 
--- 
-All Rights Reversed
+The event handling thread performs periodic tasks like delivering
+timer interrupts and completing I/O operations. It isn't expected to
+use much CPU, but it does run very frequently. To get the best latency
+performance, we've been running it at nice(-10). The intention is that
+this event handling thread should usually be able to preempt either of
+the CPU-bound threads.
+
+The behaviour we expect is that on a system which is otherwise lightly
+loaded, the two CPU-bound threads each get nearly an entire physical
+CPU to themselves. The event handling thread periodically wakes up,
+preempts one of the CPU-bound threads briefly, then goes to sleep and
+yields the CPU back to one of the CPU-bound threads.
+
+The actual behaviour I see when the load balancer makes this
+unfavorable decision is that the two CPU-bound threads share a single
+CPU, and the other CPU is mostly idle. Best case, the virtual machine
+runs half as fast as it could be running. Worst case it runs much
+slower, because the CPU-bound threads often need to wait for each
+other to catch up if they don't always run at about the same
+rate. This involves a lot of extra synchronization overhead.
+
+My current workaround for this is to avoid ever boosting our thread
+priority on a kernel in which this problem could occur. Currently this
+is any 2.6.20 or later kernel running with at least two CPUs. I'd like
+to narrow this test now to only cover kernels with NUMA enabled.
+
+Hopefully this explains why the scheduler behaviour I've observed is
+undesirable for this particular workload. I would be surprised if I'm
+the only one who has a workload that is negatively impacted by it, but
+it does seem difficult to reconcile this workload's requirements with
+the cache properties expected from a NUMA-aware scheduler.
+
+Is there something I'm doing wrong, or is this just a weakness in the
+current scheduler implementation? If it's the latter, are there any
+planned improvements?
+
+Thank you again,
+--Micah
