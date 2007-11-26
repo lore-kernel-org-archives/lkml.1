@@ -1,40 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbXKZVW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbXKZVff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbXKZVW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 16:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXKZVWu
+	id S1755277AbXKZVff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 16:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXKZVf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 16:22:50 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:32787 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753858AbXKZVWt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 16:22:49 -0500
-To: jdike@addtoit.com
-CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-reply-to: <20071126205242.GA11444@c2.user-mode-linux.org> (message from
-	Jeff Dike on Mon, 26 Nov 2007 15:52:42 -0500)
-Subject: Re: uml doesn't work on 2.6.24-rc2
-References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu> <20071114011002.GA11477@c2.user-mode-linux.org> <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu> <20071114142247.GA5848@c2.user-mode-linux.org> <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu> <20071126205242.GA11444@c2.user-mode-linux.org>
-Message-Id: <E1IwlPY-0000Q7-0r@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 26 Nov 2007 22:22:36 +0100
+	Mon, 26 Nov 2007 16:35:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40390 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751849AbXKZVf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 16:35:27 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: freeze vs freezer
+Date: Mon, 26 Nov 2007 22:53:34 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4744FD87.7010301@goop.org> <200711240047.21624.rjw@sisk.pl> <20071126211705.GC119954183@sgi.com>
+In-Reply-To: <20071126211705.GC119954183@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711262253.35420.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Nov 14, 2007 at 04:26:11PM +0100, Miklos Szeredi wrote:
-> > This one fixed the EINVAL messages, and now UML boots, but consumes
-> > 100% CPU constantly.
+On Monday, 26 of November 2007, David Chinner wrote:
+> On Sat, Nov 24, 2007 at 12:47:21AM +0100, Rafael J. Wysocki wrote:
+> > On Thursday, 22 of November 2007, Jeremy Fitzhardinge wrote:
+> > > It seems that a process blocked in a write to an xfs filesystem due to
+> > > xfs_freeze cannot be frozen by the freezer.
+> > 
+> > The freezer doesn't handle tasks in TASK_UNINTERRUPTIBLE and I don't know how
+> > to make it handle them without at least partially defeating its purpose.
 > 
-> Can you disable NO_HZ and try the patch below, which WorksForMe (TM)?
+> So how do you handle threads that are blocked on I/O or a lock during
+> the system freeze process, then?
 
-Yes, it fixes the busy looping for me as well.  Thanks!
+We wait until they can continue.
 
-There's still something strange, as top shows 50% time spent in I/O
-wait when UML is running.  But ps doesn't show any process in "D"
-state.
+> > > I see this if I suspend my laptop while doing something xfs-filesystem
+> > > intensive, like a kernel build.  My suspend scripts freeze the XFS
+> > > filesystem (as Dave said I should), which presumably blocks some writer,
+> > > and then the freezer times out and fails to complete.
+> > > 
+> > > Here's part of the process dump the freezer does when it times out:
+> > > 
+> > > cc1           D 00000000     0 18138  18137
+> > >        dd5f1e24 00200082 00000002 00000000 ecdeeb00 ecdeec64 c200f280 00000001 
+> > >        009c09a0 dd5f1e0c dd5f1e0c 0000000f 00000000 00000000 00000000 dd5f1e74 
+> > >        c7beb480 dd5f1e88 dd5f1ea8 c0228d97 e8889540 dd5f1e38 c015b75d dd5f1e44 
+> > > Call Trace:
+> > >  [<c0228d97>] xfs_write+0xf4/0x6d9
+> > >  [<c0226038>] xfs_file_aio_write+0x53/0x5b
+> > >  [<c0171c15>] do_sync_write+0xae/0xec
+> > >  [<c0172343>] vfs_write+0xa4/0x120
+> > >  [<c01728d7>] sys_write+0x3b/0x60
+> > >  [<c0106fae>] sysenter_past_esp+0x6b/0xa1
+> > >  =======================
+> > > 
+> > > 
+> > > I haven't looked at how to fix this yet.  I only just worked out why I
+> > > was getting suspend failures.
+> > 
+> > Well, you can add freezer_do_not_count()/freezer_count() annotations to
+> > xfs_write() (and whatever else is blocked as a result of the XFS being frozen).
+> 
+> May as well annotate the whole VFS, then, because once the transaction
+> subsystem is frozen any operation that modifies the filesystem will get
+> blocked like this.
 
-Can't remember seeing this earlier.
+Well, I don't know how this mechanism actually works, so I can't comment.
 
-Miklos
+Is there a mutex on which tasks block if the filesystem is frozen?
+
+Greetings,
+Rafael
