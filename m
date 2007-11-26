@@ -1,119 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbXKZWYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbXKZW0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757192AbXKZWYO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXKZWX5
+	id S1757010AbXKZW0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbXKZW0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:23:57 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:25362 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755277AbXKZWX4 (ORCPT
+	Mon, 26 Nov 2007 17:26:09 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54651 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755107AbXKZW0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:23:56 -0500
-Date: Mon, 26 Nov 2007 15:22:53 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       kaneshige.kenji@jp.fujitsu.com, pcihpd-discuss@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
-Message-ID: <20071126222253.GA31708@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-	gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
-	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
-	pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071119233225.GA6931@us.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 26 Nov 2007 17:26:08 -0500
+Date: Mon, 26 Nov 2007 14:25:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: eike-kernel@sf-tec.de, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       astarikovskiy@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix segfault when printing battery status
+Message-Id: <20071126142510.9f89ea0e.akpm@linux-foundation.org>
+In-Reply-To: <47416EFF.3070402@gmail.com>
+References: <200711182049.33355.eike-kernel@sf-tec.de>
+	<47415B46.4020709@gmail.com>
+	<200711191129.35144.eike-kernel@sf-tec.de>
+	<47416EFF.3070402@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gary, Kenji-san, et. al,
+On Mon, 19 Nov 2007 14:09:51 +0300
+Alexey Starikovskiy <aystarik@gmail.com> wrote:
 
-* Gary Hade <garyhade@us.ibm.com>:
+> Rolf Eike Beer wrote:
+> > Alexey Starikovskiy wrote:
+> >   
+> >> Rolf Eike Beer wrote:
+> >>     
+> >>> cat
+> >>> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:19/PNP0C0A:00/power_
+> >>> supply/BAT1/status
+> >>>
+> >>> This leads to a stacktrace as acpi_battery_get_property() returns 0 for a
+> >>> case where it does not set val->intval. These value is used as an array
+> >>> index in
+> >>> drivers/power/power_supply_sysfs.c::power_supply_show_property(). I had a
+> >>> situation where the value was 4096 which caused a problem as the array
+> >>> only has 5 entries.
+> >>>
+> >>> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+> >>>       
+> >> Rolf, thanks for remainding.
+> >>     
+> >
+> > Huh? This one is unrelated to the problem I reported two weeks ago...
+> >
+> > Eike
+> >   
+> You are second to send the same patch, first one I already acked.
+> But it seems that Len did not pick it up yet.
+> Look for "ACPI: Always return valid 'status' from 
+> acpi_battery_get_property()"
+> if interested...
 > 
-> Alex, What I was trying to suggest is a boot-time kernel
-> option, not a kernel configuration option.  The basic idea is
-> to give the user (with a single binary kernel) the ability to
-> include your ACPI-PCI slot driver feature changes only when
-> they are really needed.  In addition to reducing the number of
-> system/PCI hotplug driver combinations where your changes would
-> need to be validated, I believe would also help alleviate other
-> worries (e.g. Andi Kleen's memory consumption concern).  I
-> believe this goal could also be achieved with the kernel config
-> option by making the pci_slot module runtime loadable with the
-> PCI hotplug drivers only visiting your new code when the
-> pci_slot driver is loaded, although I think this would be more
-> difficult to implement.
 
-I have modified my patch series so that the final patch that
-introduces my ACPI-PCI slot driver is a full-fledged module, that
-has a tristate Kconfig option.
-
-It can be modprobe'd/rmmod'ed in any combination, and in any
-order with other PCI hotplug modules. There is no ordering
-dependency, even at module unload time, so you can safely rmmod
-pci_slot, and safely continue using features provided by the PCI
-hotplug drivers (acpiphp, pciehp, etc.). The opposite works too.
-
-The one limitation is that two separate hotplug drivers cannot
-both claim the same device (2nd module loaded will get -EBUSY
-errors), but I do not believe that is a regression from current
-behavior.
-
-I have only tested with acpiphp and pciehp, as that's the only
-hardware I have, but I believe my code will play nicely with the
-other PCI hp drivers as well.
-
-The patch series is fully bisectable, and the correct behavior
-occurs no matter which patch you happen to have applied.
-
-I'll be sending v5 of patches 3 and 4 shortly (patches 1 and 2
-did not change). It is still based on 2.6.24-rc2, because I was
-too scared to do another git rebase while using stgit. :-/
-
-> Also, I notice that even with your current CONFIG_ACPI_PCI_SLOT
-> implementation your numerous PCI hotplug driver changes (except
-> for only two places in pci_hotplug_core.c where there is 
-> `#ifndef CONFIG_ACPI_PCI_SLOT` and `#ifdef CONFIG_ACPI_PCI_SLOT`)
-> are _always_ exposed.  So, even with CONFIG_ACPI_PCI_SLOT disabled
-> there is IMO a need for testing of the affected PCI hotplug drivers
-> on more than a small number of isolated systems.
-
-You are, of course, correct.
-
-In my opinion, though, I would say most of the changes to the PCI
-hotplug drivers themselves are pretty straightforward, as in
-removing the different ways of getting the PCI address.
-
-The scary part of the changes (aside from the ACPI-PCI slot
-driver) revolve around the new struct pci_slot, which is
-relatively self-contained, and only expose themselves via the
-pci_create_slot/pci_destroy_slot interfaces which only the PCI
-hotplug corecares about.
-
-Regardless, your point stands. How do you suggest I get more
-testing time? Is this patchset appropriate for the -mm tree yet?
-Or do you think it still needs more work?
-
-> The good news is that I was able to test your v3 changes
-> (w/2.6.24-rc3 source) on our x3850 today with 'acpiphp' and,
-> except for the above mentioned inability to run-time
-> include/exclude them, they seemed to work fine.  The previous
-> boot-time ACPI error messages are gone and I was able to
-> successfully hot-remove and hot-add both PCI-X and PCIe
-> adapters.
-
-Thanks for testing. Please let me know how v5 works for you too.
-
-chers,
-
-/ac
-
+This fix is in Len's tree and was in his 2.6.24-rc3 pull request to
+Linus.
