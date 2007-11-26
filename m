@@ -1,200 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbXKZUgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbXKZUjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbXKZUgM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 15:36:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXKZUf5
+	id S1756233AbXKZUjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 15:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbXKZUjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 15:35:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45531 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754774AbXKZUfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 15:35:54 -0500
-Date: Mon, 26 Nov 2007 21:35:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] scheduler fixes
-Message-ID: <20071126203542.GA17976@elte.hu>
+	Mon, 26 Nov 2007 15:39:09 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:53656 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753283AbXKZUjH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 15:39:07 -0500
+Message-ID: <474B2EE0.5080102@schaufler-ca.com>
+Date: Mon, 26 Nov 2007 12:38:56 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: akpm@osdl.org, torvalds@osdl.org, Andrew Morgan <morgan@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [PATCH] -mm (2.4.26-rc3-mm1) v2  Smack using capabilities 32 and
+ 33
+Content-Type: multipart/mixed;
+ boundary="------------040407070503060508040406"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------040407070503060508040406
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Linus, please pull the latest scheduler git tree from:
+From: Casey Schaufler <casey@schaufler-ca.com>
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+This patch takes advantage of the increase in capability bits
+to allocate capabilities for Mandatory Access Control. Whereas
+Smack was overloading a previously allocated capability it is
+now using a pair, one for overriding access control checks and
+the other for changes to the MAC configuration.
 
-6 commits: two fixes, a tuning tweak and 3 small cleanups.
+The two capabilities allocated should be obvious in their intent.
+The comments in capability.h are intended to make it clear that
+there is no intention that implementations of MAC LSM modules
+be any more constrained by the presence of these capabilities
+than an implementation of DAC LSM modules are by the analogous
+DAC capabilities.
 
-Thanks!
 
-	Ingo
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
------------------->
-Ingo Molnar (4):
-      sched: fix prev_stime calculation
-      sched: fix kernel/acct.c comment
-      sched: fix RLIMIT_CPU comment
-      sched: bump version of kernel/sched_debug.c
+---
 
-Pavel Emelyanov (1):
-      sched: don't forget to unlock uids_mutex on error paths
+The companion patch for libcap-2.02 is provided as an attachment.
+The attachment is not a kernel patch, although it would be easy to
+mistake it for one.
 
-Zou Nan hai (1):
-      sched: fix minimum granularity tunings
+Introduces CAP_FS_MASK_B1 and uses it as appropriate. I think that
+I found all the places it needs to be used, but don't hesitate to
+let me know if I missed something.
 
- fs/proc/array.c                |    4 +++-
- include/asm-generic/resource.h |    2 +-
- kernel/acct.c                  |    2 +-
- kernel/sched_debug.c           |    2 +-
- kernel/sched_fair.c            |   12 ++++++------
- kernel/user.c                  |    7 ++++++-
- 6 files changed, 18 insertions(+), 11 deletions(-)
+Thank you.
 
-Index: linux/fs/proc/array.c
-===================================================================
---- linux.orig/fs/proc/array.c
-+++ linux/fs/proc/array.c
-@@ -374,7 +374,9 @@ static cputime_t task_stime(struct task_
- 	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
- 			cputime_to_clock_t(task_utime(p));
+ include/linux/capability.h |   24 ++++++++++++++++++++++--
+ security/smack/smack.h     |    8 --------
+ security/smack/smack_lsm.c |    8 ++++----
+ security/smack/smackfs.c   |   12 ++++++------
+ 4 files changed, 32 insertions(+), 20 deletions(-)
+
+diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/include/linux/capability.h linux-2.6.24-rc3-mm1-smack/include/linux/capability.h
+--- linux-2.6.24-rc3-mm1-base/include/linux/capability.h	2007-11-22 01:51:36.000000000 -0800
++++ linux-2.6.24-rc3-mm1-smack/include/linux/capability.h	2007-11-25 21:38:34.000000000 -0800
+@@ -314,6 +314,23 @@ typedef struct kernel_cap_struct {
  
--	p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
-+	if (stime >= 0)
-+		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
+ #define CAP_SETFCAP	     31
+ 
++/* Override MAC access.
++   The base kernel enforces no MAC policy.
++   An LSM may enforce a MAC policy, and if it does and it chooses
++   to implement capability based overrides of that policy, this is
++   the capability it should use to do so. */
 +
- 	return p->prev_stime;
- }
- #endif
-Index: linux/include/asm-generic/resource.h
-===================================================================
---- linux.orig/include/asm-generic/resource.h
-+++ linux/include/asm-generic/resource.h
-@@ -12,7 +12,7 @@
-  *   then it defines them prior including asm-generic/resource.h. )
-  */
- 
--#define RLIMIT_CPU		0	/* CPU time in ms */
-+#define RLIMIT_CPU		0	/* CPU time in sec */
- #define RLIMIT_FSIZE		1	/* Maximum filesize */
- #define RLIMIT_DATA		2	/* max data size */
- #define RLIMIT_STACK		3	/* max stack size */
-Index: linux/kernel/acct.c
-===================================================================
---- linux.orig/kernel/acct.c
-+++ linux/kernel/acct.c
-@@ -413,7 +413,7 @@ static u32 encode_float(u64 value)
-  *  The acct_process() call is the workhorse of the process
-  *  accounting system. The struct acct is built here and then written
-  *  into the accounting file. This function should only be called from
-- *  do_exit().
-+ *  do_exit() or when switching to a different output file.
-  */
- 
- /*
-Index: linux/kernel/sched_debug.c
-===================================================================
---- linux.orig/kernel/sched_debug.c
-+++ linux/kernel/sched_debug.c
-@@ -199,7 +199,7 @@ static int sched_debug_show(struct seq_f
- 	u64 now = ktime_to_ns(ktime_get());
- 	int cpu;
- 
--	SEQ_printf(m, "Sched Debug Version: v0.06-v22, %s %.*s\n",
-+	SEQ_printf(m, "Sched Debug Version: v0.07, %s %.*s\n",
- 		init_utsname()->release,
- 		(int)strcspn(init_utsname()->version, " "),
- 		init_utsname()->version);
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -22,7 +22,7 @@
- 
- /*
-  * Targeted preemption latency for CPU-bound tasks:
-- * (default: 20ms * ilog(ncpus), units: nanoseconds)
-+ * (default: 20ms * (1 + ilog(ncpus)), units: nanoseconds)
-  *
-  * NOTE: this latency value is not the same as the concept of
-  * 'timeslice length' - timeslices in CFS are of variable length
-@@ -36,14 +36,14 @@ unsigned int sysctl_sched_latency = 2000
- 
- /*
-  * Minimal preemption granularity for CPU-bound tasks:
-- * (default: 1 msec * ilog(ncpus), units: nanoseconds)
-+ * (default: 4 msec * (1 + ilog(ncpus)), units: nanoseconds)
-  */
--unsigned int sysctl_sched_min_granularity = 1000000ULL;
-+unsigned int sysctl_sched_min_granularity = 4000000ULL;
- 
- /*
-  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
-  */
--static unsigned int sched_nr_latency = 20;
-+static unsigned int sched_nr_latency = 5;
- 
- /*
-  * After fork, child runs first. (default) If set to 0 then
-@@ -61,7 +61,7 @@ unsigned int __read_mostly sysctl_sched_
- 
- /*
-  * SCHED_BATCH wake-up granularity.
-- * (default: 10 msec * ilog(ncpus), units: nanoseconds)
-+ * (default: 10 msec * (1 + ilog(ncpus)), units: nanoseconds)
-  *
-  * This option delays the preemption effects of decoupled workloads
-  * and reduces their over-scheduling. Synchronous workloads will still
-@@ -71,7 +71,7 @@ unsigned int sysctl_sched_batch_wakeup_g
- 
- /*
-  * SCHED_OTHER wake-up granularity.
-- * (default: 10 msec * ilog(ncpus), units: nanoseconds)
-+ * (default: 10 msec * (1 + ilog(ncpus)), units: nanoseconds)
-  *
-  * This option delays the preemption effects of decoupled workloads
-  * and reduces their over-scheduling. Synchronous workloads will still
-Index: linux/kernel/user.c
-===================================================================
---- linux.orig/kernel/user.c
-+++ linux/kernel/user.c
-@@ -337,8 +337,11 @@ struct user_struct * alloc_uid(struct us
- 		struct user_struct *new;
- 
- 		new = kmem_cache_alloc(uid_cachep, GFP_KERNEL);
--		if (!new)
-+		if (!new) {
-+			uids_mutex_unlock();
- 			return NULL;
-+		}
++#define CAP_MAC_OVERRIDE     32
 +
- 		new->uid = uid;
- 		atomic_set(&new->__count, 1);
- 		atomic_set(&new->processes, 0);
-@@ -355,6 +358,7 @@ struct user_struct * alloc_uid(struct us
++/* Allow MAC configuration or state changes.
++   The base kernel requires no MAC configuration.
++   An LSM may enforce a MAC policy, and if it does and it chooses
++   to implement capability based checks on modifications to that
++   policy or the data required to maintain it, this is the
++   capability it should use to do so. */
++
++#define CAP_MAC_ADMIN        33
++
+ /*
+  * Bit location of each capability (used by user-space library and kernel)
+  */
+@@ -336,6 +353,8 @@ typedef struct kernel_cap_struct {
+ 			    | CAP_TO_MASK(CAP_FOWNER)		\
+ 			    | CAP_TO_MASK(CAP_FSETID))
  
- 		if (alloc_uid_keyring(new, current) < 0) {
- 			kmem_cache_free(uid_cachep, new);
-+			uids_mutex_unlock();
- 			return NULL;
- 		}
++# define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
++
+ #if _LINUX_CAPABILITY_U32S != 2
+ # error Fix up hand-coded capability macro initializers
+ #else /* HAND-CODED capability initializers */
+@@ -343,8 +362,9 @@ typedef struct kernel_cap_struct {
+ # define CAP_EMPTY_SET    {{ 0, 0 }}
+ # define CAP_FULL_SET     {{ ~0, ~0 }}
+ # define CAP_INIT_EFF_SET {{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }}
+-# define CAP_FS_SET       {{ CAP_FS_MASK_B0, 0 }}
+-# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), 0 }}
++# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } }
++# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
++			     CAP_FS_MASK_B1 } }
  
-@@ -362,6 +366,7 @@ struct user_struct * alloc_uid(struct us
- 			key_put(new->uid_keyring);
- 			key_put(new->session_keyring);
- 			kmem_cache_free(uid_cachep, new);
-+			uids_mutex_unlock();
- 			return NULL;
- 		}
+ #endif /* _LINUX_CAPABILITY_U32S != 2 */
  
+diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/security/smack/smackfs.c linux-2.6.24-rc3-mm1-smack/security/smack/smackfs.c
+--- linux-2.6.24-rc3-mm1-base/security/smack/smackfs.c	2007-11-22 01:51:43.000000000 -0800
++++ linux-2.6.24-rc3-mm1-smack/security/smack/smackfs.c	2007-11-24 11:29:29.000000000 -0800
+@@ -241,7 +241,7 @@ static ssize_t smk_write_load(struct fil
+ 	 * No partial writes.
+ 	 * Enough data must be present.
+ 	 */
+-	if (!capable(CAP_MAC_OVERRIDE))
++	if (!capable(CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 	if (*ppos != 0)
+ 		return -EINVAL;
+@@ -474,7 +474,7 @@ static ssize_t smk_write_cipso(struct fi
+ 	 * No partial writes.
+ 	 * Enough data must be present.
+ 	 */
+-	if (!capable(CAP_MAC_OVERRIDE))
++	if (!capable(CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 	if (*ppos != 0)
+ 		return -EINVAL;
+@@ -601,7 +601,7 @@ static ssize_t smk_write_doi(struct file
+ 	char temp[80];
+ 	int i;
+ 
+-	if (!capable(CAP_MAC_OVERRIDE))
++	if (!capable(CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	if (count >= sizeof(temp) || count == 0)
+@@ -666,7 +666,7 @@ static ssize_t smk_write_direct(struct f
+ 	char temp[80];
+ 	int i;
+ 
+-	if (!capable(CAP_MAC_OVERRIDE))
++	if (!capable(CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	if (count >= sizeof(temp) || count == 0)
+@@ -747,7 +747,7 @@ static ssize_t smk_write_ambient(struct 
+ 	char in[SMK_LABELLEN];
+ 	char *smack;
+ 
+-	if (!capable(CAP_MAC_OVERRIDE))
++	if (!capable(CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	if (count >= SMK_LABELLEN)
+@@ -840,7 +840,7 @@ static ssize_t smk_write_nltype(struct f
+ 	char *cp;
+ 	int i;
+ 
+-	if (!capable(CAP_MAC_OVERRIDE))
++	if (!capable(CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	if (count >= 40)
+diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/security/smack/smack.h linux-2.6.24-rc3-mm1-smack/security/smack/smack.h
+--- linux-2.6.24-rc3-mm1-base/security/smack/smack.h	2007-11-22 01:51:43.000000000 -0800
++++ linux-2.6.24-rc3-mm1-smack/security/smack/smack.h	2007-11-22 03:03:19.000000000 -0800
+@@ -162,14 +162,6 @@ struct smack_known {
+ #define MAY_NOT		0
+ 
+ /*
+- * There are not enough CAP bits available to make this
+- * real, so Casey borrowed the capability that looks to
+- * him like it has the best balance of similarity amd
+- * low use.
+- */
+-#define CAP_MAC_OVERRIDE CAP_LINUX_IMMUTABLE
+-
+-/*
+  * These functions are in smack_lsm.c
+  */
+ struct inode_smack *new_inode_smack(char *);
+diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/security/smack/smack_lsm.c linux-2.6.24-rc3-mm1-smack/security/smack/smack_lsm.c
+--- linux-2.6.24-rc3-mm1-base/security/smack/smack_lsm.c	2007-11-22 01:51:43.000000000 -0800
++++ linux-2.6.24-rc3-mm1-smack/security/smack/smack_lsm.c	2007-11-24 11:31:43.000000000 -0800
+@@ -585,7 +585,7 @@ static int smack_inode_setxattr(struct d
+ 				void *value, size_t size, int flags)
+ {
+ 	if (strcmp(name, XATTR_NAME_SMACK) == 0 &&
+-		!__capable(current, CAP_MAC_OVERRIDE))
++		!__capable(current, CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
+@@ -649,14 +649,14 @@ static int smack_inode_getxattr(struct d
+  * @dentry: the object
+  * @name: name of the attribute
+  *
+- * Removing the Smack attribute requires CAP_MAC_OVERRIDE
++ * Removing the Smack attribute requires CAP_MAC_ADMIN
+  *
+  * Returns 0 if access is permitted, an error code otherwise
+  */
+ static int smack_inode_removexattr(struct dentry *dentry, char *name)
+ {
+ 	if (strcmp(name, XATTR_NAME_SMACK) == 0 &&
+-		!__capable(current, CAP_MAC_OVERRIDE))
++		!__capable(current, CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
+@@ -1956,7 +1956,7 @@ static int smack_setprocattr(struct task
+ {
+ 	char *newsmack;
+ 
+-	if (!__capable(p, CAP_MAC_OVERRIDE))
++	if (!__capable(p, CAP_MAC_ADMIN))
+ 		return -EPERM;
+ 
+ 	/*
+
+
+--------------040407070503060508040406
+Content-Type: text/plain;
+ name="libcap-2.02.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="libcap-2.02.patch"
+
+diff -uprN libcap-2.02/libcap/include/linux/capability.h libcap-2.02-smack/libcap/include/linux/capability.h
+--- libcap-2.02/libcap/include/linux/capability.h	2007-11-10 09:34:04.000000000 -0800
++++ libcap-2.02-smack/libcap/include/linux/capability.h	2007-11-25 20:51:56.000000000 -0800
+@@ -314,6 +314,23 @@ typedef struct kernel_cap_struct {
+ 
+ #define CAP_SETFCAP	     31
+ 
++/* Override MAC access.
++   The base kernel enforces no MAC policy.
++   An LSM may enforce a MAC policy, and if it does and it chooses
++   to implement capability based overrides of that policy, this is
++   the capability it should use to do so. */
++
++#define CAP_MAC_OVERRIDE     32
++
++/* Allow MAC configuration or state changes.
++   The base kernel requires no MAC configuration.
++   An LSM may enforce a MAC policy, and if it does and it chooses
++   to implement capability based checks on modifications to that
++   policy or the data required to maintain it, this is the
++   capability it should use to do so. */
++
++#define CAP_MAC_ADMIN        33
++
+ /*
+  * Bit location of each capability (used by user-space library and kernel)
+  */
+@@ -336,6 +353,8 @@ typedef struct kernel_cap_struct {
+ 			    |CAP_TO_MASK(CAP_FOWNER)            \
+ 			    |CAP_TO_MASK(CAP_FSETID))
+ 
++# define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
++
+ #if _LINUX_CAPABILITY_U32S != 2
+ # error Fix up hand-coded capability macro initializers
+ #else /* HAND-CODED capability initializers */
+@@ -343,8 +362,9 @@ typedef struct kernel_cap_struct {
+ # define CAP_EMPTY_SET    {{ 0, 0 }}
+ # define CAP_FULL_SET     {{ ~0, ~0 }}
+ # define CAP_INIT_EFF_SET {{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }}
+-# define CAP_FS_SET       {{ CAP_FS_MASK_B0, 0 }}
+-# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), 0 }}
++# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 }}
++# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
++			     CAP_FS_MASK_B1 }}
+ 
+ #endif /* _LINUX_CAPABILITY_U32S != 2 */
+ 
+
+--------------040407070503060508040406--
