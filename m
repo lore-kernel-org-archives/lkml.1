@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbXKZRpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbXKZRq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbXKZRpV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKZRpJ
+	id S1755536AbXKZRq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKZRqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:45:09 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:33160 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbXKZRpG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:45:06 -0500
-Date: Mon, 26 Nov 2007 09:43:21 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, dengxw@163.com,
-       herbert@gondor.apana.org.au
-Subject: [PATCH] hexdump: don't print bytes with bit 7 set
-Message-Id: <20071126094321.c5c82f49.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 26 Nov 2007 12:46:22 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:32894 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752055AbXKZRqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 12:46:21 -0500
+Date: Mon, 26 Nov 2007 18:46:17 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Madhusudhan C <madhu_lkml@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmc select voltage functionality
+Message-ID: <20071126184617.04029484@poseidon.drzeus.cx>
+In-Reply-To: <655340.80743.qm@web44811.mail.sp1.yahoo.com>
+References: <655340.80743.qm@web44811.mail.sp1.yahoo.com>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, 22 Nov 2007 05:34:11 -0800 (PST)
+Madhusudhan C <madhu_lkml@yahoo.com> wrote:
 
-As Herbert Xu pointed out, bytes (chars) with bit 7 (0x80) set are
-true with isprint() but they may not be isascii() but be Unicode
-instead, so don't try to print them in hex dumps.
+> Hi Pierre,
+> 
+> I have a question on the mmc_select_voltage fn of the mmc core file drivers/mmc/core/core.c.
+> 
+> During the power up sequence the mmc_power_up fn sets the OCR bit to setup 3V. Subsequentely the mmc_select_voltage fn selects the lowest voltage
+> the card can support.The host->ios.power_mode is not changed to MMC_POWER_UP before calling mmc_set_ios from this function hence the power_mode remains in MMC_POWER_ON state.So my question is, how should the controller driver handle this change in volatge. Under which case of power mode should the controller driver change the voltage again when a dual voltage card is detected?
+> 
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- lib/hexdump.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+To be completely correct, the MMC layer should probably power down the card first, yes. Right now most drivers will handle all of these things as they see fit. Haven't seen a single bug report about it yet so...
 
---- linux-2.6.24-rc3.orig/lib/hexdump.c
-+++ linux-2.6.24-rc3/lib/hexdump.c
-@@ -106,7 +106,8 @@ void hex_dump_to_buffer(const void *buf,
- 	while (lx < (linebuflen - 1) && lx < (ascii_column - 1))
- 		linebuf[lx++] = ' ';
- 	for (j = 0; (j < rowsize) && (j < len) && (lx + 2) < linebuflen; j++)
--		linebuf[lx++] = isprint(ptr[j]) ? ptr[j] : '.';
-+		linebuf[lx++] = (isascii(ptr[j]) && isprint(ptr[j])) ? ptr[j]
-+				: '.';
- nil:
- 	linebuf[lx++] = '\0';
- }
+Just change the voltage in whatever way makes sense for your controller.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
