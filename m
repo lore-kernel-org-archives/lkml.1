@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXKZQ6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbXKZRBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbXKZQ6Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 11:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbXKZQ57
+	id S1757642AbXKZRBd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXKZRBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 11:57:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47999 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754153AbXKZQ56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 11:57:58 -0500
-Message-ID: <474AF9D9.8070209@redhat.com>
-Date: Mon, 26 Nov 2007 11:52:41 -0500
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 26 Nov 2007 12:01:25 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:13869 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbXKZRBY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 12:01:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=tSTuaVE8KxMqDzp9o010N3mw6pe/7ZDtOxVGeXy+EHK02RYWgqjiqySLhVtST7thD6POFOpSRDFIxS+XvYgGz4xSNg+qkPvUrcXHERB9rxmpjz+8nAr/VHp81UYkiTkQuF9hVGRMZU2FZkdSxafAcskyvYSh73K7AB9MCC4mYQA=
+Message-ID: <671c20540711260901w6662fcabv779ce4fc51ec3d14@mail.gmail.com>
+Date: Mon, 26 Nov 2007 12:01:22 -0500
+From: "Tom Burns" <tom.i.burns@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Clarification re: outstanding IPC flaws
 MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: greg@kroah.com, chrisw@sous-sol.org, kronos.it@gmail.com,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [2.6.22.y][PATCH] atl1: disable broken 64-bit DMA
-References: <20071124191518.GA3672@osprey.hogchain.net>
-In-Reply-To: <20071124191518.GA3672@osprey.hogchain.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> atl1: disable broken 64-bit DMA
-> 
-> [ Upstream commit: 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 ]
-> 
-> The L1 network chip can DMA to 64-bit addresses, but multiple descriptor
-> rings share a single register for the high 32 bits of their address, so
-> only a single, aligned, 4 GB physical address range can be used at a time.
-> As a result, we need to confine the driver to a 32-bit DMA mask, otherwise
-> we see occasional data corruption errors in systems containing 4 or more
-> gigabytes of RAM.
-> 
-> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-> Cc: Luca Tettamanti <kronos.it@gmail.com>
-> Cc: Chris Snook <csnook@redhat.com>
+Hi List,
 
-Acked-By: Chris Snook <csnook@redhat.com>
+  Reading current kernel git ipc/sem.c I see the following comment:
+
+--
+ * - The previous code had two flaws:
+...
+ *   2) It did not wake up all zero waiting processes. We try to do
+ *      better but only get the semops right which only wait for zero or
+ *      increase. If there are decrement operations in the operations
+ *      array we do the same as before.
+
+--
+
+I have some questions about this comment.
+
+Most importantly - does this mean that if I have multiple processes
+queued inside semop() calls with sem_val = -1 (also, if it matters,
+SEM_UNDO flag is set), I can expect to eventually see none of the
+queued processes woken up when whoever has the semaphore releases it?
+
+If that's the case, is there any semop best-use example I should be
+following for multiple multi-threaded processes sharing multiple
+semaphores?
+
+Currently I have some globally reachable semaphores doing semop calls
+with SEM_UNDO.  They usually work fine with multiple processes waiting
+on each other to lock the semaphore, but under certain circumstances a
+semaphore will be released and none of the processes waiting on the
+semaphore will be woken up.
+
+Thanks in advance,
+Tom Burns
+Software Developer
