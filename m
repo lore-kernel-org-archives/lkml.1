@@ -1,32 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbXKZWTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXKZWT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756938AbXKZWTH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbXKZWSv
+	id S1757355AbXKZWT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:19:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757164AbXKZWS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:18:51 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44332 "EHLO
+	Mon, 26 Nov 2007 17:18:58 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50889 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755785AbXKZWSu (ORCPT
+	by vger.kernel.org with ESMTP id S1757143AbXKZWS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:18:50 -0500
-Date: Mon, 26 Nov 2007 14:17:13 -0800
+	Mon, 26 Nov 2007 17:18:56 -0500
+Date: Mon, 26 Nov 2007 14:18:52 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: mingo@elte.hu, riel@redhat.com, kamalesh@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com, linux-acpi@vger.kernel.org,
-       tglx@linutronix.de, clameter@sgi.com
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Message-Id: <20071126141713.3dcd492b.akpm@linux-foundation.org>
-In-Reply-To: <474B43E1.9080407@gmail.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4743CC0B.9000508@linux.vnet.ibm.com>
-	<20071120221839.faab108e.akpm@linux-foundation.org>
-	<20071126143943.0a01665b@cuia.boston.redhat.com>
-	<20071126123319.7483e57f.akpm@linux-foundation.org>
-	<20071126204540.GA19874@elte.hu>
-	<474B43E1.9080407@gmail.com>
+To: bbpetkov@yahoo.de
+Cc: lucy@keyspan.com, greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] keyspan: init termios properly
+Message-Id: <20071126141852.a609cdb6.akpm@linux-foundation.org>
+In-Reply-To: <20071118131130.GA3991@gollum.tnic>
+References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
+	<20071118131130.GA3991@gollum.tnic>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,52 +26,75 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 23:08:33 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
+On Sun, 18 Nov 2007 14:11:30 +0100
+Borislav Petkov <bbpetkov@yahoo.de> wrote:
 
-> On 11/26/2007 09:45 PM, Ingo Molnar wrote:
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, Nov 15, 2007 at 01:10:16PM -0800, Lucy McCoy wrote:
+>  
+> > static int keyspan_open (struct usb_serial_port *port, struct file *filp)
+> > {
+> > 	struct keyspan_port_private 	*p_priv;
+> > 	struct keyspan_serial_private 	*s_priv;
+> > 	struct usb_serial 		*serial = port->serial;
+> > 	const struct keyspan_device_details	*d_details;
+> > 	int				i, err;
+> > 	struct urb			*urb;
+> > 	
+> > 	s_priv = usb_get_serial_data(serial);
+> > 	p_priv = usb_get_serial_port_data(port);
+> > 	d_details = p_priv->device_details;
+> > 	
+> > 	dbg("%s - port%d.", __FUNCTION__, port->number); 
 > > 
-> >> On Mon, 26 Nov 2007 14:39:43 -0500
-> >> Rik van Riel <riel@redhat.com> wrote:
-> >>
-> >>> On Tue, 20 Nov 2007 22:18:39 -0800
-> >>> Andrew Morton <akpm@linux-foundation.org> wrote:
-> >>>
-> >>>>> ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> >>>>> Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
-> >>>> ACPI or x86 breakage, I guess.
-> >>>>
-> >>>> Did 'noapic' work?
-> >>> I got the same bug as above, 'noapic' gets past that point 
-> >> We still don't know what caused this, afaik.
+> > 	/* Set some sane defaults */
+> > 	p_priv->rts_state = 1;
+> > 	p_priv->dtr_state = 1;
+> > 	p_priv->baud = 9600;
 > > 
-> > yes. Is it a regression? If yes, could someone try to bisect it so that 
-> > we can fix it? If it's caused by x86.git then the 'mm' branch of the x86 
-> > git tree can be used for bisection:
+> > 	/* set CTS/RTS handshake etc. */
+> > 	p_priv->cflag = CS8;   /* 8/N/1  */
+> > 	p_priv->flow_control = flow_none;
 > > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+> > 	/* force baud and lcr to be set on open */
+> > 	p_priv->old_baud = 0;
+> > 	p_priv->old_cflag = 0;
+> > 
+> > 	p_priv->out_flip = 0;
+> > 	p_priv->in_flip = 0;
+> > 
+> > 	/* Reset low level data toggle and start reading from endpoints */
+> > 	for (i = 0; i < 2; i++) {
+> > 		if ((urb = p_priv->in_urbs[i]) == NULL)
+> > 			continue;
+> > 		urb->dev = serial->dev;
+> > 
+> > 		/* make sure endpoint data toggle is synchronized with the device */
+> > 		
+> > 		usb_clear_halt(urb->dev, urb->pipe);
+> > 
+> > 		if ((err = usb_submit_urb(urb, GFP_KERNEL)) != 0) {
+> > 			dbg("%s - submit urb %d failed (%d)", __FUNCTION__, i, err);
+> > 		}
+> > 	}
+> > 
+> > 	/* Reset low level data toggle on out endpoints */
+> > 	for (i = 0; i < 2; i++) {
+> > 		if ((urb = p_priv->out_urbs[i]) == NULL)
+> > 			continue;
+> > 		urb->dev = serial->dev;
+> > 		/* usb_settoggle(urb->dev, usb_pipeendpoint(urb->pipe), usb_pipeout(urb->pipe), 0); */
+> > 	}
+> > 
+> > 	keyspan_send_setup(port, 1);
+> > 	//mdelay(100);
+> > 	//keyspan_set_termios(port, NULL);
+> > 
+> > 	return (0);
+> > }
+> > 
 > 
-> I did, but it's hard, if you don't know the BAD point. HEAD boots fine and 'x86:
-> randomize brk' too (the top of git-x86.patch).
+> yes, after testing this i can confirm that this one fixes the NULL ptr
+> problem here so you might want to submit a proper patch to Greg.
 
-So the bug wasn't in git-x86 in 2.6.24-rc3-mm1.
-
-But it might be in there now, as some patches got moved over.
-
-Or it could be git-acpi.  Or lots of other things.
-
-> Andrew, how do you pull it, git
-> #mm doesn't fit to the ids from the patch.
-
-The -mm git tree reimports the plain git-foo.patch files back into a new
-git tree, so the commit IDs won't line up.
-
-The way to find the culprit patch in 2.6.24-rc3-mm1 is
-http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt.  It
-will be quite quick.
-
-> Maybe if you can emit a broken-out with the fresh pull to test?
-
-http://userweb.kernel.org/~akpm/mmotm/ is current.  But it probably won't
-compile.  I'd suggest bisecting 2.6.24-rc3-mm1 would be easier.  
+I'll merge revert-keyspan-init-termios-properly.patch soon, but afaik we
+are still awaiting the real fix for this problem?  
