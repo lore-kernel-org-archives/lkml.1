@@ -1,128 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758444AbXKZR2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbXKZRda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758444AbXKZR2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbXKZR2h
+	id S1758750AbXKZRda (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXKZRdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:28:37 -0500
-Received: from ro-out-1112.google.com ([72.14.202.179]:64944 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754752AbXKZR2f (ORCPT
+	Mon, 26 Nov 2007 12:33:22 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:16937 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754219AbXKZRdV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:28:35 -0500
+	Mon, 26 Nov 2007 12:33:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bS0TmE/OijYzJf9jzcZfydfKyOl0EJEwBYhDPOx4zWv0drEwRoar86og034TW2tB4m7+A/3pRdWZ/Bgwrb0FfbvEr5lJOvKMO2C6hwDPAfbsettEeGvFhdM08xhcABY/sx4OwmaMjCB6vbbJqL/b4itNXcd/gDvlsvnfEGlRl0k=
-From: Denis Cheng <crquan@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dengxw@163.com,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH] [RESEND] crypto test: use print_hex_dump from <linux/kernel.h> instead
-Date: Tue, 27 Nov 2007 01:28:15 +0800
-Message-Id: <1196098095-8995-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <20071126143939.GB28022@gondor.apana.org.au>
-References: <20071126143939.GB28022@gondor.apana.org.au>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XE5NVVo0jhGlzW+vaWHPoRJZw56HuxfhLvceDtBkfo4fHZReSrYSKiYtWrrVbRlKOSUV84EsZDoKMz5PtCZi6CaHEtO9RwgRTKSI+OS6Y20cAb3HSaNvxPnExCYQe/ooXxXE1sCCx+ldQfngmxmb9xlKMsNpgN96E0JLAitZqUg=
+Message-ID: <1ba2fa240711260933x5ed85123vc33d7d3a5e1bd866@mail.gmail.com>
+Date: Mon, 26 Nov 2007 19:33:20 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Dan Williams" <dcbw@redhat.com>
+Subject: Re: [PATCH 2/2] iwlwifi: add power management support -v2
+Cc: "=?ISO-8859-1?Q?Miguel_Bot=F3n?=" <mboton.lkml@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, linville@tuxdriver.com,
+       yi.zhu@intel.com
+In-Reply-To: <1196097270.23210.0.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <200711170006.49654.mboton.lkml@gmail.com>
+	 <1ba2fa240711162215p30b8bc7fj9f36020378ff596a@mail.gmail.com>
+	 <200711261718.14711.mboton@gmail.com>
+	 <1ba2fa240711260911i705350f3hefeddc7a09f76d1a@mail.gmail.com>
+	 <1196097270.23210.0.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this patch is against cryptodev-2.6, and have passed scripts/checkpatch.pl
+>
+> At some point everyone needs to standardize on power levels so that
+> userland has a hope of mapping the right state to the right power level
+> in the driver.  Otherwise, we get into a situation where broadcom power
+> levels don't map the same way iwl powerlevels do, and then we can't ever
+> do the right thing.
+>
+Agree, these are just misleading  names IMHO.
 
-KERN_DEBUG is stripped out, this acts more like the original in tcrypto.c
-
-and the last parameter "bool ascii" set to zero to disable ascii output,
-this could keep it happy on Unicode terminals.
-
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- crypto/tcrypt.c |   30 ++++++++++++++++--------------
- 1 files changed, 16 insertions(+), 14 deletions(-)
-
-diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
-index 24141fb..665aa87 100644
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -81,14 +81,6 @@ static char *check[] = {
- 	"camellia", "seed", NULL
- };
- 
--static void hexdump(unsigned char *buf, unsigned int len)
--{
--	while (len--)
--		printk("%02x", *buf++);
--
--	printk("\n");
--}
--
- static void tcrypt_complete(struct crypto_async_request *req, int err)
- {
- 	struct tcrypt_result *res = req->data;
-@@ -156,7 +148,9 @@ static void test_hash(char *algo, struct hash_testvec *template,
- 			goto out;
- 		}
- 
--		hexdump(result, crypto_hash_digestsize(tfm));
-+		print_hex_dump("", "", DUMP_PREFIX_OFFSET, 16, 1,
-+				result, crypto_hash_digestsize(tfm), 0);
-+
- 		printk("%s\n",
- 		       memcmp(result, hash_tv[i].digest,
- 			      crypto_hash_digestsize(tfm)) ?
-@@ -203,7 +197,9 @@ static void test_hash(char *algo, struct hash_testvec *template,
- 				goto out;
- 			}
- 
--			hexdump(result, crypto_hash_digestsize(tfm));
-+			print_hex_dump("", "", DUMP_PREFIX_OFFSET,
-+					16, 1,
-+					result, crypto_hash_digestsize(tfm), 0);
- 			printk("%s\n",
- 			       memcmp(result, hash_tv[i].digest,
- 				      crypto_hash_digestsize(tfm)) ?
-@@ -319,7 +315,9 @@ static void test_cipher(char *algo, int enc,
- 			}
- 
- 			q = kmap(sg_page(&sg[0])) + sg[0].offset;
--			hexdump(q, cipher_tv[i].rlen);
-+			print_hex_dump("", "", DUMP_PREFIX_OFFSET,
-+					16, 1,
-+					q, cipher_tv[i].rlen, 0);
- 
- 			printk("%s\n",
- 			       memcmp(q, cipher_tv[i].result,
-@@ -393,7 +391,9 @@ static void test_cipher(char *algo, int enc,
- 			for (k = 0; k < cipher_tv[i].np; k++) {
- 				printk("page %u\n", k);
- 				q = kmap(sg_page(&sg[k])) + sg[k].offset;
--				hexdump(q, cipher_tv[i].tap[k]);
-+				print_hex_dump("", "", DUMP_PREFIX_OFFSET,
-+						16, 1,
-+						q, cipher_tv[i].tap[k], 0);
- 				printk("%s\n",
- 					memcmp(q, cipher_tv[i].result + temp,
- 						cipher_tv[i].tap[k]) ? "fail" :
-@@ -839,7 +839,8 @@ static void test_deflate(void)
- 			printk("fail: ret=%d\n", ret);
- 			continue;
- 		}
--		hexdump(result, dlen);
-+		print_hex_dump("", "", DUMP_PREFIX_OFFSET, 16, 1,
-+				result, dlen, 0);
- 		printk("%s (ratio %d:%d)\n",
- 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
- 		       ilen, dlen);
-@@ -870,7 +871,8 @@ static void test_deflate(void)
- 			printk("fail: ret=%d\n", ret);
- 			continue;
- 		}
--		hexdump(result, dlen);
-+		print_hex_dump("", "", DUMP_PREFIX_OFFSET, 16, 1,
-+				result, dlen, 0);
- 		printk("%s (ratio %d:%d)\n",
- 		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
- 		       ilen, dlen);
--- 
-1.5.3.4
-
+> dan
+>
+> > Tomas
+>
+> >
+> > > --
+> > >        Miguel Botón
+> > >
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
