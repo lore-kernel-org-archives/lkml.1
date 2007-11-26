@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbXKZWrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbXKZWsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbXKZWrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXKZWrG
+	id S1757004AbXKZWsF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbXKZWrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:47:06 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38758 "EHLO e4.ny.us.ibm.com"
+	Mon, 26 Nov 2007 17:47:55 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:42094 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753783AbXKZWrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:47:03 -0500
-Date: Mon, 26 Nov 2007 14:46:57 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Gary Hade <garyhade@us.ibm.com>, Jan Beulich <jbeulich@novell.com>,
-       linux-kernel@vger.kernel.org, lcm@us.ibm.com
-Subject: Re: Avoid creating P2P prefetch window for expansion ROMs
-Message-ID: <20071126224657.GB23277@us.ibm.com>
-References: <4742CB2C.76E4.0078.0@novell.com> <20071120174945.GA6024@us.ibm.com> <47440D1F.76E4.0078.0@novell.com> <20071126215953.GA23277@us.ibm.com> <20071126221545.GA15268@suse.de>
+	id S1755694AbXKZWrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 17:47:55 -0500
+Date: Tue, 27 Nov 2007 01:46:49 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] fix setsid() for sub-namespace /sbin/init
+Message-ID: <20071126224649.GA393@tv-sign.ru>
+References: <20071126142553.GA16525@tv-sign.ru> <m1zlx0n7ga.fsf@ebiederm.dsl.xmission.com> <20071126201139.GA84@tv-sign.ru> <m1r6icn0s9.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071126221545.GA15268@suse.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <m1r6icn0s9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 02:15:45PM -0800, Greg KH wrote:
-> On Mon, Nov 26, 2007 at 01:59:54PM -0800, Gary Hade wrote:
-> > Greg, 
-> > Without a closer look at the code and the information I
-> > requested above I am not 100% certain that my expansion ROM
-> > allocation fix is incomplete but it seems pretty likely that
-> > it is.  If you feel that the possible regression that Jan
-> > reported is more important than the issue I was trying to solve
-> > feel free to remove the change until I can come up with
-> > something better.
+On 11/26, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
 > 
-> If you want me to revert the changes in Linus's tree right now, that's
-> fine, I will, just send me a patch to do so.
+> > This is different, perhaps we can keep this call. kernel_thread(kernel_init)
+> > attaches /sbin/init to init_struct_pid. Nothing bad, and a "good" init should
+> > do setsid() anyway. But who knows? Some special environment may expect that
+> > getpgrp() != 0. Not that I really disagree on this issue though.
 > 
-> But if you think you can work to solve this problem quickly, then I'm
-> more than willing to keep the changes in the tree.
-> 
-> It's up to you.
+> init starting with session == pgrp == 0 is historical linux behavior.  I consider
+> the current 2.6 behavior a temporary aberation from the historical linux behavior.
 
-Thanks Greg.  If I am unable to provide a revised (or properly
-defend the current one :) in the next few days I will send you
-a revert patch.
+Ah, OK.
 
-Gary
+> Plus once we do this the code will be easier to maintain because we have
+> removed one obscure special case.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Yes indeed. So we can remove this special case code as soon as copy_process()
+is changed.
+
+Oleg.
+
