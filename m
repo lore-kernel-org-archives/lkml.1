@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbXKZRMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbXKZRM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757085AbXKZRMM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbXKZRL5
+	id S1758325AbXKZRM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbXKZRMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:11:57 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:29102 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753361AbXKZRLz convert rfc822-to-8bit (ORCPT
+	Mon, 26 Nov 2007 12:12:48 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:62742 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753756AbXKZRMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:11:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YRO6HqySb7uEuKPlwHkrzbvchqUskLhE94UQBkSCgI8Pme8V5PQvShWxIwPCq1sNJeuKZJTj/oA9AsQfHc9wxbJhM9vPvwCsqbh02yGa8rT/ujggkoKlBwOYUIn8h3inbVXlJj9e6MYWkyPLxH7a+upi0VfZzJDyL0/Iwzl1hAk=
-Message-ID: <1ba2fa240711260911i705350f3hefeddc7a09f76d1a@mail.gmail.com>
-Date: Mon, 26 Nov 2007 19:11:51 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "=?ISO-8859-1?Q?Miguel_Bot=F3n?=" <mboton.lkml@gmail.com>
-Subject: Re: [PATCH 2/2] iwlwifi: add power management support -v2
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       yi.zhu@intel.com
-In-Reply-To: <200711261718.14711.mboton@gmail.com>
+	Mon, 26 Nov 2007 12:12:48 -0500
+Date: Mon, 26 Nov 2007 17:12:23 +0000
+From: Ben Dooks <ben@fluff.org>
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, kune@deine-taler.de, johannes@sipsolutions.net
+Subject: Re: [RFC] Documentation about unaligned memory access
+Message-ID: <20071126171223.GB7855@fluff.org.uk>
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net> <20071123114329.GG7681@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200711170006.49654.mboton.lkml@gmail.com>
-	 <1ba2fa240711162215p30b8bc7fj9f36020378ff596a@mail.gmail.com>
-	 <200711261718.14711.mboton@gmail.com>
+In-Reply-To: <20071123114329.GG7681@zakalwe.fi>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 26, 2007 6:18 PM, Miguel Botón <mboton.lkml@gmail.com> wrote:
->
-> On Saturday 17 November 2007 07:15:05 Tomas Winkler wrote:
-> > Why power management shouldn't be enabled while in AC? The semantic of this
-> > ioctls is quite unclear.
->
-I
-> IWL_POWER_AC and IWL_POWER_BATTERY are just two power modes. IWL_POWER_AC
-> would be the default power mode when we're in AC (no power saving) and
-> IWL_POWER_BATTERY would be the default power mode when we're in battery
-> (power saving mode). That's why we set IWL_POWER_ENABLED flag with
-> IWL_POWER_BATTERY, because it is the only power mode that saves power.
->
-> We can change to IWL_POWER_BATTERY or IWL_POWER_AC in any moment.
->
-> This patch, depending if power management is enabled or not, sets which power
-> mode we should use, Then, it checks if we're already using this mode or not.
->
-I'm not sure who introduced this names (lazy to look to history) but
-that's very misleading. Nothing says that while in
-AC we cannot do power saving and vice versa. This naming is scattered
-all over the code, there should be only one place where AC and BATTERY
-are  translated into appropriate (maybe configurable) power levels. We
-have 5 power levels defined for iwlwifi.
+On Fri, Nov 23, 2007 at 01:43:29PM +0200, Heikki Orsila wrote:
+> On Fri, Nov 23, 2007 at 12:15:53AM +0000, Daniel Drake wrote:
+> > Why unaligned access is bad
+> > ===========================
+> > 
+> > Most architectures are unable to perform unaligned memory accesses. Any
+> > unaligned access causes a processor exception.
+> 
+> "Some architectures are unable to perform unaligned memory accesses, 
+> either an exception is generated, or the data 
+> access is silently invalid. In architectures that allow unaligned 
+> access, natural aligned accesses are usually faster than non-aligned."
+> 
+> > In summary: if your code causes unaligned memory accesses to happen, your code
+> > will not work on some platforms, and will perform *very* badly on others.
+> 
+> *very* -> *slower*
+> 
+> > Natural alignment
+> > =================
+> 
+> Please move this definition before "Why unaligned access is bad".
+> 
+> Also, it would be nice to have a table of ISAs:
+> 
+> ISA		Need		Need
+> 		natural		alignment
+> 		alignment	by x
+> --------------------------------------------
+> m68k		No		2
+> powerpc/ppc	Yes		Word size
+> x86		No		No
+> x86_64		No		No
+arm32		Yes		2 for 16bit data, 4 for 32bit
 
-Tomas
+Note, if the unaligned handler is running, the alignment will be fixed
+by the fault handler (at the cost of taking a fault). If the unaligned
+handler is turned off, you get a "free" shift of the data instead.
 
-> --
->        Miguel Botón
->
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
