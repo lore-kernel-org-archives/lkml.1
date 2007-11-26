@@ -1,123 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbXKZXXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXKZXZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbXKZXXu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 18:23:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXKZXXl
+	id S1757588AbXKZXZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 18:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbXKZXZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 18:23:41 -0500
-Received: from mga02.intel.com ([134.134.136.20]:44773 "EHLO mga02.intel.com"
+	Mon, 26 Nov 2007 18:25:14 -0500
+Received: from ns.suse.de ([195.135.220.2]:59574 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755584AbXKZXXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 18:23:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,216,1194249600"; 
-   d="scan'208";a="280430208"
-Message-ID: <474B5564.4090501@intel.com>
-Date: Mon, 26 Nov 2007 15:23:16 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>, Ian Wienand <ianw@gelato.unsw.edu.au>
-CC: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH] e100: free IRQ to remove warning when rebooting
-References: <20071120053044.GE29070@cse.unsw.EDU.AU> <47479260.7010101@garzik.org>
-In-Reply-To: <47479260.7010101@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Nov 2007 23:23:39.0467 (UTC) FILETIME=[604E91B0:01C83083]
+	id S1756117AbXKZXZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 18:25:12 -0500
+Subject: patch kobject-two-typo-fixes.patch added to gregkh-2.6 tree
+To: johannes@sipsolutions.net, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Mon, 26 Nov 2007 15:24:42 -0800
+In-Reply-To: <1194267551.13501.2.camel@johannes.berg>
+Message-Id: <20071126232510.C4A0E1454447@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Ian Wienand wrote:
->> Hi,
->>
->> When rebooting today I got
->>
->> Will now restart.
->> ACPI: PCI interrupt for device 0000:00:03.0 disabled
->> GSI 20 (level, low) -> CPU 1 (0x0100) vector 53 unregistered
->> Destroying IRQ53 without calling free_irq
->> WARNING: at
->> /home/insecure/ianw/programs/git-kernel/linux-2.6/kernel/irq/chip.c:76
->> dynamic_irq_cleanup()
->>
->> Call Trace:
->>  [<a000000100014340>] show_stack+0x40/0xa0
->>                                 sp=e00000407c927b40 bsp=e00000407c920eb8
->>  [<a0000001000143d0>] dump_stack+0x30/0x60
->>                                 sp=e00000407c927d10 bsp=e00000407c920ea0
->>  [<a0000001000e58e0>] dynamic_irq_cleanup+0x160/0x1e0
->>                                 sp=e00000407c927d10 bsp=e00000407c920e70
->>  [<a0000001000106b0>] destroy_and_reserve_irq+0x30/0xc0
->>                                 sp=e00000407c927d10 bsp=e00000407c920e40
->>  [<a0000001000508f0>] iosapic_unregister_intr+0x5b0/0x5e0
->>                                 sp=e00000407c927d10 bsp=e00000407c920dd8
->>  [<a00000010000aa70>] acpi_unregister_gsi+0x30/0x60
->>                                 sp=e00000407c927d10 bsp=e00000407c920db8
->>  [<a00000010042e300>] acpi_pci_irq_disable+0x140/0x160
->>                                 sp=e00000407c927d10 bsp=e00000407c920d88
->>  [<a000000100774200>] pcibios_disable_device+0xa0/0xc0
->>                                 sp=e00000407c927d20 bsp=e00000407c920d68
->>  [<a0000001003778d0>] pci_disable_device+0x130/0x160
->>                                 sp=e00000407c927d20 bsp=e00000407c920d38
->>  [<a000000100525d20>] e100_shutdown+0x1c0/0x220
->>                                 sp=e00000407c927d30 bsp=e00000407c920d08
->>  [<a00000010037d0e0>] pci_device_shutdown+0x80/0xc0
->>                                 sp=e00000407c927d30 bsp=e00000407c920ce8
->>  [<a0000001004ecb70>] device_shutdown+0xf0/0x180
->>                                 sp=e00000407c927d30 bsp=e00000407c920cc8
->>  [<a0000001000ac4e0>] kernel_restart+0x60/0x120
->>                                 sp=e00000407c927d30 bsp=e00000407c920ca8
->>  [<a0000001000ac990>] sys_reboot+0x3b0/0x480
->>                                 sp=e00000407c927d30 bsp=e00000407c920c30
->>  [<a00000010000b4e0>] ia64_ret_from_syscall+0x0/0x20
->>                                 sp=e00000407c927e30 bsp=e00000407c920c30
->>  [<a000000000010620>] ia64_ivt+0xffffffff00010620/0x400
->>                                 sp=e00000407c928000 bsp=e00000407c920c30
->> Restarting system.
->>
->> I think the solution might be to free the IRQ before the
->> pci_device_shutdown
->>
->> Signed-off-by: Ian Wienand <ianw@gelato.unsw.edu.au>
->>
->> ---
->>
->>  e100.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
->> index 3dbaec6..8ae5ac3 100644
->> --- a/drivers/net/e100.c
->> +++ b/drivers/net/e100.c
->> @@ -2782,6 +2782,7 @@ static void e100_shutdown(struct pci_dev *pdev)
->>          pci_enable_wake(pdev, PCI_D3cold, 0);
->>      }
->>  
->> +    free_irq(pdev->irq, netdev);
->>      pci_disable_device(pdev);
->>      pci_set_power_state(pdev, PCI_D3hot);
-> 
-> agreed, though I think free_irq() should come after pci_disable_device()
-> like it does in e100_suspend().
-> 
-> auke?
 
-I actually think that's unintentional (the free_irq being after
-pci_disable_device()) and possibly wrong. Looking at all our other drivers and
-various others I see a consistent pattern of enable_device->enable_irq ->
-free_irq->disable_device which makes much more sense to me since it's symmetric
-and you can't enable irq's on a disabled device anyway.
+This is a note to let you know that I've just added the patch titled
 
-So, I'd like to ACK this patch and I'll owe you a patch to fix the order up for
-the e100_suspend code to change the order - but obviously I'll give that one a
-test first.
+     Subject: kobject: two typo fixes
 
-Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
+to my gregkh-2.6 tree.  Its filename is
+
+     kobject-two-typo-fixes.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
-Thanks,
+>From johannes@sipsolutions.net  Mon Nov 26 15:12:16 2007
+From: Johannes Berg <johannes@sipsolutions.net>
+Date: Mon, 05 Nov 2007 13:59:11 +0100
+Subject: kobject: two typo fixes
+To: trivial@kernel.org
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Message-ID: <1194267551.13501.2.camel@johannes.berg>
 
-Auke
+
+This fixes two typos from commit
+34358c26a2c96b2a068dc44e0ac602106a466bce.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ lib/kobject.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -377,8 +377,8 @@ int kobject_rename(struct kobject * kobj
+ 		struct kobject *temp_kobj;
+ 		temp_kobj = kset_find_obj(kobj->kset, new_name);
+ 		if (temp_kobj) {
+-			printk(KERN_WARNING "kobject '%s' can not be renamed "
+-			       "to '%s' as '%s' is already in existance.\n",
++			printk(KERN_WARNING "kobject '%s' cannot be renamed "
++			       "to '%s' as '%s' is already in existence.\n",
+ 			       kobject_name(kobj), new_name, new_name);
+ 			kobject_put(temp_kobj);
+ 			return -EINVAL;
+
+
+Patches currently in gregkh-2.6 which might be from johannes@sipsolutions.net are
+
+driver/kobject-two-typo-fixes.patch
