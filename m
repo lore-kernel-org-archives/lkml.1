@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXKZTz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXKZTzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbXKZTz3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 14:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXKZTzU
+	id S1755970AbXKZTzm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 14:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbXKZTzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 14:55:20 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:38183 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162AbXKZTzT (ORCPT
+	Mon, 26 Nov 2007 14:55:24 -0500
+Received: from exchange.columbia.tresys.com ([216.250.243.126]:45864 "HELO
+	exchange.columbia.tresys.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754499AbXKZTzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 14:55:19 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 26 Nov 2007 11:55:15 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-In-Reply-To: <474B1960.2030104@zytor.com>
-Message-ID: <Pine.LNX.4.64.0711261111110.22680@alien.or.mcafeemobile.com>
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com>
- <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com>
- <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org>
- <20071126184528.GA16071@elte.hu> <474B1960.2030104@zytor.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 26 Nov 2007 14:55:22 -0500
+Message-ID: <474B249E.1050504@manicmethod.com>
+Date: Mon, 26 Nov 2007 14:55:10 -0500
+From: Joshua Brindle <method@manicmethod.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Crispin Cowan <crispin@crispincowan.com>,
+       Andrew Morgan <morgan@kernel.org>, casey@schaufler-ca.com,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, darwish.07@gmail.com, jmorris@namei.org,
+       paul.moore@hp.com, LSM List <linux-security-module@vger.kernel.org>
+Subject: Re: + smack-version-11c-simplified-mandatory-access-control-kernel.patch
+ added to -mm tree
+References: <335711.34116.qm@web36610.mail.mud.yahoo.com> <4747C003.3070709@kernel.org> <47480D76.8030701@crispincowan.com> <823A64A2-C962-403C-A0EB-95EA79B2DB91@mac.com> <4748EDCB.90403@crispincowan.com> <8F9AE768-CCAB-4D14-BEBA-0A19938113BA@mac.com>
+In-Reply-To: <8F9AE768-CCAB-4D14-BEBA-0A19938113BA@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Nov 2007 19:55:20.0977 (UTC) FILETIME=[46A05810:01C83066]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, H. Peter Anvin wrote:
+Kyle Moffett wrote:
+> On Nov 24, 2007, at 22:36:43, Crispin Cowan wrote:
+>> Kyle Moffett wrote:
+>>> Actually, a fully-secured strict-mode SELinux system will have no 
+>>> unconfined_t processes; none of my test systems have any.  Generally 
+>>> "unconfined_t" is used for situations similar to what AppArmor was 
+>>> designed for, where the only "interesting" security is that of the 
+>>> daemon (which is properly labelled) and one or more of the users are 
+>>> unconfined.
+>>
+>> Interesting. In a Targeted Policy, you do your policy administration 
+>> from unconfined_t. But how do you administer a Strict Policy machine? 
+>> I can think of 2 ways:
+>
+> [snip]
+>
+>> * there is some type that is tighter than unconfined_t but none the
+>>   less has sufficient privilege to change policy
+>>
+>> To me, this would be semantically equivalent to unconfined_t, because 
+>> any rogue code or user with this type could then fabricate 
+>> unconfined_t and do what they want
+>
+> Well, in a strict SELinux system, someone who has been permitted the 
+> "Security Administrator" role (secadm_r) and who has logged in through 
+> a "login_t" process may modify and reload the policy.  They are also 
+> permitted to view all files up to their clearance, write files below 
+> their level, and relabel files.  On the other hand, they do not have 
+> any system-administration privileges (those are reserve for sysadm_r).
+>
 
-> Ingo Molnar wrote:
-> > 
-> > So it's not like sys_indirect() would break some magic pristine state of a
-> > flat parameter space - on the contrary, most of the nontrivial syscalls take
-> > pointers to structures or pointers to streams of information. The parameter
-> > count histogram i believe further underlines this point:
-> > 
-> >   #args   #syscalls
-> >   -----------------
-> >       0       22
-> >       1       51
-> >       2       83
-> >       3       85
-> >       4       40
-> >       5       23
-> >       6        8
-> > 
-> > the natural 'center' of function call parameter counts is around 1-4
-> > parameters, and that is natural. (most operators that the human brain
-> > prefers to operate with are like that - having higher complexity than that
-> > often defeats the purpose of getting an API used by ... humans.)
-> > 
-> 
-> I was preparing a response to Linus' email, but I really feel this needs to be
-> addressed specifically.
-> 
-> When it comes to dealing with the operator-visible state, what matters is what
-> happens on the API level, NOT on the system call level. Furthermore, the
-> proposed sys_indirect interface just means that there are parameters hidden
-> from immediately view, even though they fundamentally change the operation
-> performed, and that it is much harder to correlate, say, the output of
-> strace(1) with what actually happened in the program.  So from a
-> *psychological* point of view, this seems to be an insane design choice.
+Ofcourse secadm can give himself privileges to anything he wants, that 
+isn't necessarily the point though, he is trusted to change the policy. 
+He is, however, protected from other people: he can't, for example, read 
+user_home_t files. This protects the integrity of his environment and 
+the processes he runs. unconfined_t, of course, does not have this 
+protection.
 
-I think there are two different issues. One is the proliferation of system 
-calls, and the other is the sane design of internal kernel APIs.
-The first one is not very interesting to me, since I don't have any strong 
-opinions in either cases.
-The second is the one I'd care most. I think that, whatever is the 
-solution used to address the first, internal kernel APIs should be 
-designed so that parameters flow down from the system call to the 
-parameter's user code. IMO, besides very few cases where it could make 
-some sense [*], setting some thread-global bits in the upper layer, to be 
-magically picked up by code in the lower layers, does not lead to readable 
-interfaces.
+> Under the default policy the security administrator may disable 
+> SELinux completely, although that too can be adjusted as "load policy" 
+> is yet another specialized permission.
+>
 
-
-
-[*] Things that already read from a shared context, that is already 
-    exposed to the user through some sort of set/get APIs.
-
-
-
-- Davide
-
+load policy is pretty course grained, there are ways to make policy 
+modification privileges more fine grained though such as by using the 
+policy management server.
 
