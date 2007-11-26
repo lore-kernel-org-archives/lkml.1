@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbXKZX0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbXKZX1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbXKZX0l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 18:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbXKZX0d
+	id S1757987AbXKZX1j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 18:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbXKZX1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 18:26:33 -0500
-Received: from mga11.intel.com ([192.55.52.93]:30554 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754385AbXKZX0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 18:26:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,216,1194249600"; 
-   d="scan'208";a="216087594"
-Message-ID: <474B5610.4030800@intel.com>
-Date: Mon, 26 Nov 2007 15:26:08 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-CC: Auke Kok <auke-jan.h.kok@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: e1000 driver problems
-References: <20061017205316.25914.qmail@web83109.mail.mud.yahoo.com> <45354850.6050900@intel.com> <20071120143803.GA5638@ics.muni.cz>
-In-Reply-To: <20071120143803.GA5638@ics.muni.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 26 Nov 2007 18:27:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50576 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756069AbXKZX1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 18:27:31 -0500
+Date: Mon, 26 Nov 2007 15:26:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] softlockup: do the wakeup from a hrtimer
+Message-Id: <20071126152652.8db2793a.akpm@linux-foundation.org>
+In-Reply-To: <20071120084611.GA18721@elte.hu>
+References: <20071120084611.GA18721@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Nov 2007 23:26:31.0737 (UTC) FILETIME=[C6FCE290:01C83083]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lukas Hejtmanek wrote:
-> Hello,
+On Tue, 20 Nov 2007 09:46:11 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
+> Subject: softlockup: do the wakeup from a hrtimer
+> From: Ingo Molnar <mingo@elte.hu>
 > 
-> I have laptop thinkpad T61 with 82566MM Gigabit Network Connection (rev 03)
-> (8086:1049). I have kernel 2.6.24-rc3. E1000E driver does not work (the card
-> is not detected although it is PCI-E), with E1000 driver, it works mostly OK
-> unless I force speed to 100Mbits. (ethtool -s eth0 autoneg off speed 100)
-
-this device (the ich8 onboard NIC) will not be supported in e1000e until 2.6.25.
-
-> I got message about device hang:
-> Nov 20 10:57:24 anubis kernel: [  212.307502] e1000: eth0: e1000_watchdog:
-> 10/100 speed: disabling TSO
-> Nov 20 11:03:02 anubis kernel: [  242.811474]   Tx Queue             <0>
-> Nov 20 11:03:02 anubis kernel: [  242.811476]   TDH                  <80>
-> Nov 20 11:03:02 anubis kernel: [  242.811478]   TDT                  <81>
-> Nov 20 11:03:02 anubis kernel: [  242.811480]   next_to_use          <81>
-> Nov 20 11:03:02 anubis kernel: [  242.811482]   next_to_clean        <80>
-> Nov 20 11:03:02 anubis kernel: [  242.811484] buffer_info[next_to_clean]
-> Nov 20 11:03:02 anubis kernel: [  242.811486]   time_stamp <100079cdf>
-> Nov 20 11:03:02 anubis kernel: [  242.811488]   next_to_watch        <80>
-> Nov 20 11:03:02 anubis kernel: [  242.811489]   jiffies <100079e68>
-> Nov 20 11:03:02 anubis kernel: [  242.811491]   next_to_watch.status <0>
-> Nov 20 11:03:04 anubis kernel: [  243.000047]   Tx Queue             <0>
-> Nov 20 11:03:04 anubis kernel: [  243.000049]   TDH                  <80>
-> Nov 20 11:03:04 anubis kernel: [  243.000051]   TDT                  <81>
-> Nov 20 11:03:04 anubis kernel: [  243.000053]   next_to_use          <81>
-> and so on.
+> David Miller reported soft lockup false-positives that trigger on NOHZ 
+> due to CPUs idling for more than 10 seconds.
 > 
-> Is it known problem?
+> The solution is to drive the wakeup of the watchdog threads not from the 
+> timer tick (which has no guaranteed frequency), but from the watchdog 
+> tasks themselves.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9409
+> 
+> Reported-by: David Miller <davem@davemloft.net>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/softlockup.c |    6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+> 
+> Index: linux/kernel/softlockup.c
+> ===================================================================
+> --- linux.orig/kernel/softlockup.c
+> +++ linux/kernel/softlockup.c
+> @@ -100,10 +100,6 @@ void softlockup_tick(void)
+>  
+>  	now = get_timestamp(this_cpu);
+>  
+> -	/* Wake up the high-prio watchdog task every second: */
+> -	if (now > (touch_timestamp + 1))
+> -		wake_up_process(per_cpu(watchdog_task, this_cpu));
+> -
+>  	/* Warn about unreasonable 10+ seconds delays: */
+>  	if (now <= (touch_timestamp + softlockup_thresh))
+>  		return;
+> @@ -141,7 +137,7 @@ static int watchdog(void *__bind_cpu)
+>  	while (!kthread_should_stop()) {
+>  		set_current_state(TASK_INTERRUPTIBLE);
+>  		touch_softlockup_watchdog();
+> -		schedule();
+> +		msleep(1000);
+>  	}
+>  
+>  	return 0;
 
-there have been indeed know reports of these "fake" hangs. basically the counter
-logic for these newer devices reports hangs too quickly for 10/100 speeds while
-they actually are not occurring (the line is just very busy).
+I think you wanted msleep_interruptible() there to avoid contributing to
+load average?
 
-The fix for this has been to grant more time for the hardware to recover from this
-busy state. I'll make sure to check if the upstream drivers are OK in this regard.
+The set_current_state() can go away.
 
-you can try our out-of-tree e1000 driver (7.6.x or newer) which should work OK for
-you with respect to this problem. Please give that a try.
-
-Cheers,
-
-Auke
+This will introduce an up-to-one-second delay in responding to
+kthread_should_stop().  Is that bad?
