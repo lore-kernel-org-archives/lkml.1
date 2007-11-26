@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbXKZWsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXKZWuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbXKZWsF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 17:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbXKZWrz
+	id S1757113AbXKZWuP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 17:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXKZWuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 17:47:55 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:42094 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755694AbXKZWrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 17:47:55 -0500
-Date: Tue, 27 Nov 2007 01:46:49 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] fix setsid() for sub-namespace /sbin/init
-Message-ID: <20071126224649.GA393@tv-sign.ru>
-References: <20071126142553.GA16525@tv-sign.ru> <m1zlx0n7ga.fsf@ebiederm.dsl.xmission.com> <20071126201139.GA84@tv-sign.ru> <m1r6icn0s9.fsf@ebiederm.dsl.xmission.com>
+	Mon, 26 Nov 2007 17:50:04 -0500
+Received: from nmta.jpl.nasa.gov ([137.78.160.108]:34583 "EHLO
+	nmta3.jpl.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756069AbXKZWuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 17:50:03 -0500
+Subject: Re: Where is the interrupt going?
+From: Al Niessner <Al.Niessner@jpl.nasa.gov>
+To: benh@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1195854833.7195.24.camel@pasglop>
+References: <1195693710.5544.240.camel@morte.jpl.nasa.gov>
+	 <1195854833.7195.24.camel@pasglop>
+Content-Type: text/plain
+Date: Mon, 26 Nov 2007 14:49:57 -0800
+Message-Id: <1196117397.23293.3.camel@morte.jpl.nasa.gov>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1r6icn0s9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: morte.jpl.nasa.gov [137.78.15.44]
+X-Source-Sender: Al.Niessner@jpl.nasa.gov
+X-AUTH: Authorized
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
+
+Yes, as also pointed out by Arjan Van de Ven, I was missing the
+pci_enable_device() call. This seems related to the deprecation of
+pci_find_device (or something like that) in favor of pci_get_device.
+Well, by adding the pci_enable_device it all works well.
+
+On Sat, 2007-11-24 at 08:53 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2007-11-21 at 17:08 -0800, Al Niessner wrote:
+> > 
+> > p8620 = pci_get_device (APC8620_VENDOR_ID, APC8620_DEVICE_ID, p8620);
+> > <... fail if p8620 is 0 ...>
+> > apcsi[i].ret_val = register_chrdev (MAJOR_NUM,
+> > 
+> > DEVICE_NAME,
+> > 
+> > &apc8620_ops);
+> > <... fail if ret_val < 0 ...>
+> > apcsi[i].board_irq = p8620->irq;
+> > status = request_irq (apcsi[i].board_irq,
+> >                                       apc8620_handler,
+> >                                       IRQF_DISABLED,
+> >                                       DEVICE_NAME,
+> >                                       (void*)&apcsi[i]);
 > 
-> > This is different, perhaps we can keep this call. kernel_thread(kernel_init)
-> > attaches /sbin/init to init_struct_pid. Nothing bad, and a "good" init should
-> > do setsid() anyway. But who knows? Some special environment may expect that
-> > getpgrp() != 0. Not that I really disagree on this issue though.
+> First, that's obviously not the proper way to do a PCI driver but I
+> suppose you know that :-)
 > 
-> init starting with session == pgrp == 0 is historical linux behavior.  I consider
-> the current 2.6 behavior a temporary aberation from the historical linux behavior.
+> Then, make sure you call pci_enable_device() at one point, don't some
+> platforms perform the actual IRQ routing that late ? (And don't sample
+> pdev->irq before the pci_enable_device(), sample it afterward).
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Al Niessner
+818.354.0859
 
-Ah, OK.
+All opinions stated above are mine and do not necessarily reflect those
+of JPL or NASA.
 
-> Plus once we do this the code will be easier to maintain because we have
-> removed one obscure special case.
+--------
+|  dS  | >= 0
+--------
 
-Yes indeed. So we can remove this special case code as soon as copy_process()
-is changed.
-
-Oleg.
 
