@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbXKZXav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbXKZXbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758216AbXKZXav (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 18:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbXKZXal
+	id S1758373AbXKZXbT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 18:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbXKZXbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 18:30:41 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46232 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756178AbXKZXak (ORCPT
+	Mon, 26 Nov 2007 18:31:07 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45858 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756425AbXKZXbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 18:30:40 -0500
-Date: Mon, 26 Nov 2007 15:28:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: mingo@elte.hu, riel@redhat.com, kamalesh@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com, linux-acpi@vger.kernel.org,
-       tglx@linutronix.de, clameter@sgi.com
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Message-Id: <20071126152832.f6c808f3.akpm@linux-foundation.org>
-In-Reply-To: <474B5349.2070500@gmail.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4743CC0B.9000508@linux.vnet.ibm.com>
-	<20071120221839.faab108e.akpm@linux-foundation.org>
-	<20071126143943.0a01665b@cuia.boston.redhat.com>
-	<20071126123319.7483e57f.akpm@linux-foundation.org>
-	<20071126204540.GA19874@elte.hu>
-	<474B43E1.9080407@gmail.com>
-	<20071126141713.3dcd492b.akpm@linux-foundation.org>
-	<474B5349.2070500@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 18:31:06 -0500
+Date: Tue, 27 Nov 2007 00:30:53 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [RFC][PATCH] Update REPORTING-BUGS
+Message-ID: <20071126233052.GF917@stusta.de>
+References: <200711252157.10212.rjw@sisk.pl> <200711260151.38572.rjw@sisk.pl> <20071126212033.GC917@stusta.de> <200711262344.25223.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200711262344.25223.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007 00:14:17 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 11/26/2007 11:17 PM, Andrew Morton wrote:
-> >> Maybe if you can emit a broken-out with the fresh pull to test?
+On Mon, Nov 26, 2007 at 11:44:24PM +0100, Rafael J. Wysocki wrote:
+> On Monday, 26 of November 2007, Adrian Bunk wrote:
+> > On Mon, Nov 26, 2007 at 01:51:37AM +0100, Rafael J. Wysocki wrote:
+> > > On Monday, 26 of November 2007, Adrian Bunk wrote:
+>...
+> > > > We will never get 100% of all bugs fixed.
+> > > > 
+> > > > Let's get back to the fact that we have many bug reports that could be 
+> > > > fixed within a reasonable amount of time but are not.
+> > > 
+> > > Do you have specific examples?
 > > 
-> > http://userweb.kernel.org/~akpm/mmotm/ is current.  But it probably won't
-> > compile. 
+> > Take e.g. #3938
 > 
-> Yes it did :). And it worked. Both in qemu and on my desktop...
+> Are you sure that this one hasn't been fixed?  The reporter doesn't seem to be
+> responsive ...
+> 
+> > or #4039
+> 
+> Same here.
 
-boggle.  Let's slap 2.6.25 on it and take the rest of the year off.
+Saying "reporter doesn't seem to be responsive" is a joke if there was
+zero activity in solving any of these bugs for nearly three years.
 
-> qemu output at:
-> http://www.fi.muni.cz/~xslaby/sklad/qemu-output.txt
+They might (or might not) be fixed by chance now, but they should have
+been fixed in the beginning of 2005 as a result of the bug reports.
 
-Thanks for testing.
+You can now claim these are too old, but you'll find for any bug age 
+bugs that both should be solvable for a developer knowing the kernel 
+code in question and that have not been seriously debugged.
+
+> > as examples.  
+> 
+> Greetings,
+> Rafael
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
