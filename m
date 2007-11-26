@@ -1,91 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbXKZQ2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbXKZQpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbXKZQ2b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 11:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbXKZQ2K
+	id S1755509AbXKZQpW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 11:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbXKZQpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 11:28:10 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:45071 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755622AbXKZQ2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 11:28:09 -0500
-Date: Mon, 26 Nov 2007 10:28:03 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: akpm@osdl.org, torvalds@osdl.org, Andrew Morgan <morgan@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] -mm (2.6.24-rc3-mm1) Smack using capabilities 32 and 33
-Message-ID: <20071126162803.GA3541@sergelap.austin.ibm.com>
-References: <47490DE2.4030608@schaufler-ca.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47490DE2.4030608@schaufler-ca.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 26 Nov 2007 11:45:08 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:52740 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240AbXKZQpH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 11:45:07 -0500
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: [GIT PULL -mm] 00/16 Unionfs updates/fixes/cleanups
+Date: Mon, 26 Nov 2007 11:43:57 -0500
+Message-Id: <11960954531503-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Casey Schaufler (casey@schaufler-ca.com):
-> From: Casey Schaufler <casey@schaufler-ca.com>
-> 
-> This patch takes advantage of the increase in capability bits
-> to allocate capabilities for Mandatory Access Control. Whereas
-> Smack was overloading a previously allocated capability it is
-> now using a pair, one for overriding access control checks and
-> the other for changes to the MAC configuration.
-> 
-> The two capabilities allocated should be obvious in their intent.
-> The comments in capability.h are intended to make it clear that
-> there is no intention that implementations of MAC LSM modules
-> be any more constrained by the presence of these capabilities
-> than an implementation of DAC LSM modules are by the analogous
-> DAC capabilities.
-> 
-> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-> 
-> ---
-> 
-> The companion patch for libcap-2.02 is provided as an attachment.
-> The attachment is not a kernel patch, although it would be easy to
-> mistake it for one.
-> 
-> Thank you.
-> 
->  include/linux/capability.h |   20 +++++++++++++++++++-
->  security/smack/smack.h     |    8 --------
->  security/smack/smack_lsm.c |    8 ++++----
->  security/smack/smackfs.c   |   12 ++++++------
->  4 files changed, 29 insertions(+), 19 deletions(-)
-> 
-> diff -uprN -X linux-2.6.24-rc3-mm1-base/Documentation/dontdiff linux-2.6.24-rc3-mm1-base/include/linux/capability.h linux-2.6.24-rc3-mm1-smack/include/linux/capability.h
-> --- linux-2.6.24-rc3-mm1-base/include/linux/capability.h	2007-11-22 01:51:36.000000000 -0800
-> +++ linux-2.6.24-rc3-mm1-smack/include/linux/capability.h	2007-11-24 11:26:51.000000000 -0800
-> @@ -314,6 +314,23 @@ typedef struct kernel_cap_struct {
-> 
->  #define CAP_SETFCAP	     31
-> 
-> +/* Override MAC access.
-> +   The base kernel enforces no MAC policy.
-> +   An LSM may enforce a MAC policy, and if it does and it chooses
-> +   to implement capability based overrides of that policy, this is
-> +   the capability it should use to do so. */
-> +
-> +#define CAP_MAC_OVERRIDE     32
-> +
-> +/* Allow MAC configuration or state changes.
-> +   The base kernel requires no MAC configuration.
-> +   An LSM may enforce a MAC policy, and if it does and it chooses
-> +   to implement capability based checks on modifications to that
-> +   policy or the data required to maintain it, this is the
-> +   capability it should use to do so. */
-> +
-> +#define CAP_MAC_ADMIN        33
-> +
 
-I do like the descriptions.
+The following is a series of patches related to Unionfs.  The main changes
+here are bug fixes (mostly discovered using ltp-full-20071031), as well as
+full support for splice(2) and swapon(2).
 
-(Will wait for Andrew's comments to be addressed before reviewing the
-rest)
+These patches were tested (where appropriate) on Linus's 2.6.24 latest code
+(as of v2.6.24-rc3-19-g2ffbb83), MM (mmotm-2007-11-21-16-25), as well as the
+backports to 2.6.{23,22,21,20,19,18,9} on ext2/3/4, xfs, reiserfs, nfs2/3/4,
+jffs2, ramfs, tmpfs, cramfs, and squashfs (where available).  See
+http://unionfs.filesystems.org/ to download back-ported unionfs code.
 
-thanks,
--serge
+Please pull from the 'master' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/ezk/unionfs.git
+
+to receive the following:
+
+Erez Zadok (15):
+      Unionfs: use f_path instead of f_dentry/mnt
+      Unionfs: minor coding standards applied
+      Unionfs: minor cleanup in the debugging infrastructure
+      Unionfs: set lower mnt after mkdir which resulted in copyup
+      Unionfs: handle whiteouts more efficiently in filldir
+      Unionfs: remove useless debugging messages
+      Unionfs: release lower resources on successful rmdir
+      Unionfs: don't create whiteouts on rightmost branch
+      Unionfs: create opaque directories' whiteouts unconditionally
+      Unionfs: update times in setattr
+      Unionfs: reintroduce a bmap method
+      Unionfs: support splice(2)
+      Unionfs: prevent multiple writers to lower_page
+      Unionfs: update our inode size correctly upon partial write
+      Unionfs: use generic_file_aio_read/write
+
+Hugh Dickins (1):
+      Unionfs: minor cleanup in writepage
+
+ commonfops.c |    5 ----
+ copyup.c     |    4 +--
+ debug.c      |   66 +++++++++++++++++++++++++++--------------------------------
+ dentry.c     |   15 ++-----------
+ dirfops.c    |   18 +++++++++++-----
+ dirhelper.c  |    2 -
+ fanout.h     |    2 -
+ file.c       |   28 ++-----------------------
+ inode.c      |   19 +++++++++++++++-
+ mmap.c       |   52 +++++++++++++++++++++++++++++++++++-----------
+ rdstate.c    |   11 ++++++---
+ subr.c       |   14 ++++++++++++
+ union.h      |    3 +-
+ unlink.c     |   56 ++++++++++++++++++++++++++++++++++++++++++--------
+ 14 files changed, 182 insertions(+), 113 deletions(-)
+
+---
+Erez Zadok
+ezk@cs.sunysb.edu
