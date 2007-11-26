@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbXKZHyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbXKZH7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448AbXKZHyk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 02:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXKZHya
+	id S1754628AbXKZH7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 02:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbXKZH7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 02:54:30 -0500
-Received: from mail.suse.de ([195.135.220.2]:52333 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbXKZHy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 02:54:29 -0500
-Date: Mon, 26 Nov 2007 08:54:26 +0100
-From: Hannes Reinecke <hare@suse.de>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
-Message-ID: <20071126075426.GC11261@ochil.suse.de>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <4744A6F2.4030302@free.fr> <20071121144116.c932727b.akpm@linux-foundation.org> <4746814F.80502@free.fr> <4746866B.5070207@suse.de> <4746BB9D.2030508@suse.de> <1195926253.3195.16.camel@localhost.localdomain>
+	Mon, 26 Nov 2007 02:59:06 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51783 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753033AbXKZH7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 02:59:04 -0500
+Date: Sun, 25 Nov 2007 23:58:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Cc: lkml <linux-kernel@vger.kernel.org>, kexec-ml <kexec@lists.infradead.org>
+Subject: Re: [PATCH 4/5] Fix the configuration dependencies
+Message-Id: <20071125235843.69440d4a.akpm@linux-foundation.org>
+In-Reply-To: <473D0170.1060304@mxs.nes.nec.co.jp>
+References: <473CFE14.3010400@mxs.nes.nec.co.jp>
+	<473D0170.1060304@mxs.nes.nec.co.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1195926253.3195.16.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 24, 2007 at 07:44:13PM +0200, James Bottomley wrote:
-> Probing intermittent failures in Domain Validation, even with the fixes
-> applied leads me to the conclusion that there are further problems with
-> this commit:
+On Fri, 16 Nov 2007 11:33:20 +0900 "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp> wrote:
+
 > 
-> commit fc5eb4facedbd6d7117905e775cee1975f894e79
-> Author: Hannes Reinecke <hare@suse.de>
-> Date:   Tue Nov 6 09:23:40 2007 +0100
+> This patch fixes the configuration dependencies in the vmcoreinfo data.
 > 
->     [SCSI] Do not requeue requests if REQ_FAILFAST is set
+> i386's "node_data" is defined in arch/x86/mm/discontig_32.c,
+> and x86_64's one is defined in arch/x86/mm/numa_64.c.
+> They depend on CONFIG_NUMA:
+>   arch/x86/mm/Makefile_32:7
+>     obj-$(CONFIG_NUMA) += discontig_32.o
+>   arch/x86/mm/Makefile_64:7
+>     obj-$(CONFIG_NUMA) += numa_64.o
+> 
+> ia64's "pgdat_list" is defined in arch/ia64/mm/discontig.c,
+> and it depends on CONFIG_DISCONTIGMEM and CONFIG_SPARSEMEM:
+>   arch/ia64/mm/Makefile:9-10
+>     obj-$(CONFIG_DISCONTIGMEM) += discontig.o
+>     obj-$(CONFIG_SPARSEMEM)    += discontig.o
+> 
+> ia64's "node_memblk" is defined in arch/ia64/mm/numa.c,
+> and it depends on CONFIG_NUMA:
+>   arch/ia64/mm/Makefile:8
+>     obj-$(CONFIG_NUMA)         += numa.o
+> 
+> Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+> ---
+> diff -rpuN a/arch/ia64/kernel/machine_kexec.c b/arch/ia64/kernel/machine_kexec.c
+> --- a/arch/ia64/kernel/machine_kexec.c	2007-11-14 15:39:06.000000000 +0900
+> +++ b/arch/ia64/kernel/machine_kexec.c	2007-11-14 15:41:41.000000000 +0900
+> @@ -129,10 +129,11 @@ void machine_kexec(struct kimage *image)
 >  
-> The essence of the problems is that you're causing REQ_FAILFAST to
-> terminate commands with error on requeuing conditions, some of which are
-> relatively common on most SCSI devices.  While this may be the correct
-> behaviour for multi-path, it's certainly wrong for the previously
-> understood meaning of REQ_FAILFAST, which was don't retry on error,
-> which is why domain validation and other applications use it to control
-> error handling, but don't expect to get failures for a simple requeue
-> are now spitting errors.
+>  void arch_crash_save_vmcoreinfo(void)
+>  {
+> -#if defined(CONFIG_ARCH_DISCONTIGMEM_ENABLE) && defined(CONFIG_NUMA)
+> +#if defined(CONFIG_DISCONTIGMEM) || defined(CONFIG_SPARSEMEM)
+>  	VMCOREINFO_SYMBOL(pgdat_list);
+>  	VMCOREINFO_LENGTH(pgdat_list, MAX_NUMNODES);
+> -
+> +#endif
+> +#ifdef CONFIG_NUMA
+>  	VMCOREINFO_SYMBOL(node_memblk);
+>  	VMCOREINFO_LENGTH(node_memblk, NR_NODE_MEMBLKS);
+>  	VMCOREINFO_STRUCT_SIZE(node_memblk_s);
+> diff -rpuN a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
+> --- a/arch/x86/kernel/machine_kexec_32.c	2007-11-14 15:39:19.000000000 +0900
+> +++ b/arch/x86/kernel/machine_kexec_32.c	2007-11-14 15:39:33.000000000 +0900
+> @@ -151,7 +151,7 @@ NORET_TYPE void machine_kexec(struct kim
+>  
+>  void arch_crash_save_vmcoreinfo(void)
+>  {
+> -#ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
+> +#ifdef CONFIG_NUMA
+>  	VMCOREINFO_SYMBOL(node_data);
+>  	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
+>  #endif
+> diff -rpuN a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
+> --- a/arch/x86/kernel/machine_kexec_64.c	2007-11-14 15:39:19.000000000 +0900
+> +++ b/arch/x86/kernel/machine_kexec_64.c	2007-11-14 15:39:33.000000000 +0900
+> @@ -235,7 +235,7 @@ void arch_crash_save_vmcoreinfo(void)
+>  {
+>  	VMCOREINFO_SYMBOL(init_level4_pgt);
+>  
+> -#ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
+> +#ifdef CONFIG_NUMA
+>  	VMCOREINFO_SYMBOL(node_data);
+>  	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
+>  #endif
+> _
 > 
-> I honestly can't see that, even for the multi-path case, returning an
-> error when we're over queue depth is the correct thing to do (it may not
-> matter to something like a symmetrix, but an array that has a non-zero
-> cost associated with a path change, like a CPQ HSV or the AVT
-> controllers, will show fairly large slow downs if you do this).  Even if
-> this is the desired behaviour (and I think that's a policy issue),
-> DID_NO_CONNECT is almost certainly the wrong error to be sending back.
-> 
-> This patch fixes up domain validation to work again correctly, however,
-> I really think it's just a bandaid.  Do you want to rethink the above
-> commit?
-> 
-Given the amounted error, yes, I'll have to.
-But we still face the initial problem that requeued requests will be
-stuck in the queue forever (ie until the timeout catches it), causing
-failover to be painfully slow.
 
-Anyway, I'll think it over.
+x86_64-make-sparsemem-vmemmap-the-default-memory-model-v2.patch removes the
+`VMCOREINFO_SYMBOL(node_data);' from arch/x86/kernel/machine_kexec_64.c
+altogether, so I dropped that part of your patch.
 
-Cheers,
-
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 N�rnberg
-GF: Markus Rex, HRB 16746 (AG N�rnberg)
