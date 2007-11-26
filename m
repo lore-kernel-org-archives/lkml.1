@@ -1,312 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbXKZEwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbXKZEwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758583AbXKZEwU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Nov 2007 23:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXKZEwG
+	id S1758753AbXKZEwf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Nov 2007 23:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXKZEwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Nov 2007 23:52:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37407 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756044AbXKZEwE (ORCPT
+	Sun, 25 Nov 2007 23:52:25 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:39545 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758618AbXKZEwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Nov 2007 23:52:04 -0500
-Date: Sun, 25 Nov 2007 20:51:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wagner Ferenc <wferi@niif.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: bonding sysfs output
-Message-Id: <20071125205150.4e49915f.akpm@linux-foundation.org>
-In-Reply-To: <87tznafjeu.fsf@szonett.ki.iif.hu>
-References: <87tznafjeu.fsf@szonett.ki.iif.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sun, 25 Nov 2007 23:52:23 -0500
+Date: Mon, 26 Nov 2007 10:35:11 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
+       Dipankar <dipankar@in.ibm.com>
+Subject: [Patch 3/4 v1] sched: change how cpu load is calculated
+Message-ID: <20071126050511.GD5304@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071126050044.GA5304@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Nov 2007 16:12:57 +0100 Wagner Ferenc <wferi@niif.hu> wrote:
+This patch changes how the cpu load exerted by fair_sched_class tasks
+is calculated. Load exerted by fair_sched_class tasks on a cpu is now a
+summation of the group weights, rather than summation of task weights.
+Weight exerted by a group on a cpu is dependent on the shares allocated to it.
 
-> Hi,
-> 
-> Am I totally of the limit with the attached patch against
-> drivers/net/bonding/bond_sysfs.c?  I'd like to receive some comments,
-> as I'm not a kernel developer.
+This version of patch (v1 of Patch 3/4) has zero impact for 
+!CONFIG_FAIR_GROUP_SCHED case.
 
-Plese alwayts cc netdev@vger.kernel.org on networking-related matters.
+Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 
-> I propose it as a fix for trailing NULs and spaces like eg.
-> 
-> $ od -c /sys/class/net/bond0/bonding/slaves 
-> 0000000   e   t   h   -   l   e   f   t       e   t   h   -   r   i   g
-> 0000020   h   t      \n  \0
-> 0000025
-> 
-> I'm afraid there're other problems with "++more++" handling, but let's
-> not consider those just yet.  Find the patch attached.  The first
-> hunks also renames buffer to buf, for consistency's shake.
-> 
-> The original version had varying behaviour for Not Applicable cases.
-> This patch also settles for empty files (not even a line feed) in
-> those cases, but I'm not sure about the general policy on this matter.
-> 
+---
+ kernel/sched.c      |   38 ++++++++++++++++++++++++++++++--------
+ kernel/sched_fair.c |   31 +++++++++++++++++++++++++++----
+ kernel/sched_rt.c   |    2 ++
+ 3 files changed, 59 insertions(+), 12 deletions(-)
 
-hm, there are a lot of changes there.  Were they all actually needed to fix
-the one bug which you have described?
-
-
---- bond_sysfs.c.orig	2007-11-16 19:14:27.000000000 +0100
-+++ bond_sysfs.c	2007-11-25 16:01:23.092973099 +0100
-@@ -74,7 +74,7 @@
-  * "show" function for the bond_masters attribute.
-  * The class parameter is ignored.
-  */
--static ssize_t bonding_show_bonds(struct class *cls, char *buffer)
-+static ssize_t bonding_show_bonds(struct class *cls, char *buf)
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -869,15 +869,25 @@
+ 		   struct rq_iterator *iterator);
+ #endif
+ 
+-#include "sched_stats.h"
+-#include "sched_idletask.c"
+-#include "sched_fair.c"
+-#include "sched_rt.c"
+-#ifdef CONFIG_SCHED_DEBUG
+-# include "sched_debug.c"
+-#endif
++#ifdef CONFIG_FAIR_GROUP_SCHED
+ 
+-#define sched_class_highest (&rt_sched_class)
++static inline void inc_cpu_load(struct rq *rq, unsigned long load)
++{
++	update_load_add(&rq->load, load);
++}
++
++static inline void dec_cpu_load(struct rq *rq, unsigned long load)
++{
++	update_load_sub(&rq->load, load);
++}
++
++static inline void inc_load(struct rq *rq, const struct task_struct *p) { }
++static inline void dec_load(struct rq *rq, const struct task_struct *p) { }
++
++#else	/* CONFIG_FAIR_GROUP_SCHED */
++
++static inline void inc_cpu_load(struct rq *rq, unsigned long load) { }
++static inline void dec_cpu_load(struct rq *rq, unsigned long load) { }
+ 
+ static inline void inc_load(struct rq *rq, const struct task_struct *p)
  {
- 	int res = 0;
- 	struct bonding *bond;
-@@ -86,14 +86,13 @@
- 			/* not enough space for another interface name */
- 			if ((PAGE_SIZE - res) > 10)
- 				res = PAGE_SIZE - 10;
--			res += sprintf(buffer + res, "++more++");
-+			res += sprintf(buf + res, "++more++ ");
+@@ -889,6 +899,18 @@
+ 	update_load_sub(&rq->load, p->se.load.weight);
+ }
+ 
++#endif	/* CONFIG_FAIR_GROUP_SCHED */
++
++#include "sched_stats.h"
++#include "sched_idletask.c"
++#include "sched_fair.c"
++#include "sched_rt.c"
++#ifdef CONFIG_SCHED_DEBUG
++# include "sched_debug.c"
++#endif
++
++#define sched_class_highest (&rt_sched_class)
++
+ static void inc_nr_running(struct task_struct *p, struct rq *rq)
+ {
+ 	rq->nr_running++;
+Index: current/kernel/sched_fair.c
+===================================================================
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -755,15 +755,26 @@
+ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
+ {
+ 	struct cfs_rq *cfs_rq;
+-	struct sched_entity *se = &p->se;
++	struct sched_entity *se = &p->se,
++			    *topse = NULL;	/* Highest schedulable entity */
++	int incload = 1;
+ 
+ 	for_each_sched_entity(se) {
+-		if (se->on_rq)
++		topse = se;
++		if (se->on_rq) {
++			incload = 0;
  			break;
- 		}
--		res += sprintf(buffer + res, "%s ",
-+		res += sprintf(buf + res, "%s ",
- 			       bond->dev->name);
++		}
+ 		cfs_rq = cfs_rq_of(se);
+ 		enqueue_entity(cfs_rq, se, wakeup);
+ 		wakeup = 1;
  	}
--	res += sprintf(buffer + res, "\n");
--	res++;
-+	if (res) buf[res-1] = '\n'; /* eat the leftover space */
- 	up_read(&(bonding_rwsem));
- 	return res;
++	/* Increment cpu load if we just enqueued the first task of a group on
++	 * 'rq->cpu'. 'topse' represents the group to which task 'p' belongs
++	 * at the highest grouping level.
++	 */
++	if (incload)
++		inc_cpu_load(rq, topse->load.weight);
  }
-@@ -237,14 +236,13 @@
- 			/* not enough space for another interface name */
- 			if ((PAGE_SIZE - res) > 10)
- 				res = PAGE_SIZE - 10;
--			res += sprintf(buf + res, "++more++");
-+			res += sprintf(buf + res, "++more++ ");
+ 
+ /*
+@@ -774,16 +785,28 @@
+ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int sleep)
+ {
+ 	struct cfs_rq *cfs_rq;
+-	struct sched_entity *se = &p->se;
++	struct sched_entity *se = &p->se,
++			    *topse = NULL; 	/* Highest schedulable entity */
++	int decload = 1;
+ 
+ 	for_each_sched_entity(se) {
++		topse = se;
+ 		cfs_rq = cfs_rq_of(se);
+ 		dequeue_entity(cfs_rq, se, sleep);
+ 		/* Don't dequeue parent if it has other entities besides us */
+-		if (cfs_rq->load.weight)
++		if (cfs_rq->load.weight) {
++			if (parent_entity(se))
++				decload = 0;
  			break;
- 		}
- 		res += sprintf(buf + res, "%s ", slave->dev->name);
++		}
+ 		sleep = 1;
  	}
- 	read_unlock_bh(&bond->lock);
--	res += sprintf(buf + res, "\n");
--	res++;
-+	if (res) buf[res-1] = '\n'; /* eat the leftover space */
- 	return res;
++	/* Decrement cpu load if we just dequeued the last task of a group on
++	 * 'rq->cpu'. 'topse' represents the group to which task 'p' belongs
++	 * at the highest grouping level.
++	 */
++	if (decload)
++		dec_cpu_load(rq, topse->load.weight);
  }
  
-@@ -401,7 +399,7 @@
+ /*
+Index: current/kernel/sched_rt.c
+===================================================================
+--- current.orig/kernel/sched_rt.c
++++ current/kernel/sched_rt.c
+@@ -31,6 +31,7 @@
  
- 	return sprintf(buf, "%s %d\n",
- 			bond_mode_tbl[bond->params.mode].modename,
--			bond->params.mode) + 1;
-+			bond->params.mode);
+ 	list_add_tail(&p->run_list, array->queue + p->prio);
+ 	__set_bit(p->prio, array->bitmap);
++	inc_cpu_load(rq, p->se.load.weight);
  }
  
- static ssize_t bonding_store_mode(struct device *d,
-@@ -452,17 +450,14 @@
- 				      struct device_attribute *attr,
- 				      char *buf)
- {
--	int count;
-+	int count = 0;
- 	struct bonding *bond = to_bond(d);
- 
--	if ((bond->params.mode != BOND_MODE_XOR) &&
--	    (bond->params.mode != BOND_MODE_8023AD)) {
--		// Not Applicable
--		count = sprintf(buf, "NA\n") + 1;
--	} else {
-+	if ((bond->params.mode == BOND_MODE_XOR) ||
-+	    (bond->params.mode == BOND_MODE_8023AD)) {
- 		count = sprintf(buf, "%s %d\n",
- 			xmit_hashtype_tbl[bond->params.xmit_policy].modename,
--			bond->params.xmit_policy) + 1;
-+			bond->params.xmit_policy);
- 	}
- 
- 	return count;
-@@ -522,7 +517,7 @@
- 
- 	return sprintf(buf, "%s %d\n",
- 		       arp_validate_tbl[bond->params.arp_validate].modename,
--		       bond->params.arp_validate) + 1;
-+		       bond->params.arp_validate);
+ /*
+@@ -45,6 +46,7 @@
+ 	list_del(&p->run_list);
+ 	if (list_empty(array->queue + p->prio))
+ 		__clear_bit(p->prio, array->bitmap);
++	dec_cpu_load(rq, p->se.load.weight);
  }
  
- static ssize_t bonding_store_arp_validate(struct device *d,
-@@ -574,7 +569,7 @@
- {
- 	struct bonding *bond = to_bond(d);
- 
--	return sprintf(buf, "%d\n", bond->params.arp_interval) + 1;
-+	return sprintf(buf, "%d\n", bond->params.arp_interval);
- }
- 
- static ssize_t bonding_store_arp_interval(struct device *d,
-@@ -671,10 +666,7 @@
- 			res += sprintf(buf + res, "%u.%u.%u.%u ",
- 			       NIPQUAD(bond->params.arp_targets[i]));
- 	}
--	if (res)
--		res--;  /* eat the leftover space */
--	res += sprintf(buf + res, "\n");
--	res++;
-+	if (res) buf[res-1] = '\n'; /* eat the leftover space */
- 	return res;
- }
- 
-@@ -775,7 +767,7 @@
- {
- 	struct bonding *bond = to_bond(d);
- 
--	return sprintf(buf, "%d\n", bond->params.downdelay * bond->params.miimon) + 1;
-+	return sprintf(buf, "%d\n", bond->params.downdelay * bond->params.miimon);
- }
- 
- static ssize_t bonding_store_downdelay(struct device *d,
-@@ -832,7 +824,7 @@
- {
- 	struct bonding *bond = to_bond(d);
- 
--	return sprintf(buf, "%d\n", bond->params.updelay * bond->params.miimon) + 1;
-+	return sprintf(buf, "%d\n", bond->params.updelay * bond->params.miimon);
- 
- }
- 
-@@ -896,7 +888,7 @@
- 
- 	return sprintf(buf, "%s %d\n",
- 		bond_lacp_tbl[bond->params.lacp_fast].modename,
--		bond->params.lacp_fast) + 1;
-+		bond->params.lacp_fast);
- }
- 
- static ssize_t bonding_store_lacp(struct device *d,
-@@ -952,7 +944,7 @@
- {
- 	struct bonding *bond = to_bond(d);
- 
--	return sprintf(buf, "%d\n", bond->params.miimon) + 1;
-+	return sprintf(buf, "%d\n", bond->params.miimon);
- }
- 
- static ssize_t bonding_store_miimon(struct device *d,
-@@ -1053,9 +1045,7 @@
- 	struct bonding *bond = to_bond(d);
- 
- 	if (bond->primary_slave)
--		count = sprintf(buf, "%s\n", bond->primary_slave->dev->name) + 1;
--	else
--		count = sprintf(buf, "\n") + 1;
-+		count = sprintf(buf, "%s\n", bond->primary_slave->dev->name);
- 
- 	return count;
- }
-@@ -1116,7 +1106,7 @@
- {
- 	struct bonding *bond = to_bond(d);
- 
--	return sprintf(buf, "%d\n", bond->params.use_carrier) + 1;
-+	return sprintf(buf, "%d\n", bond->params.use_carrier);
- }
- 
- static ssize_t bonding_store_carrier(struct device *d,
-@@ -1158,7 +1148,7 @@
- {
- 	struct slave *curr;
- 	struct bonding *bond = to_bond(d);
--	int count;
-+	int count = 0;
- 
- 
- 	read_lock(&bond->curr_slave_lock);
-@@ -1166,9 +1156,7 @@
- 	read_unlock(&bond->curr_slave_lock);
- 
- 	if (USES_PRIMARY(bond->params.mode) && curr)
--		count = sprintf(buf, "%s\n", curr->dev->name) + 1;
--	else
--		count = sprintf(buf, "\n") + 1;
-+		count = sprintf(buf, "%s\n", curr->dev->name);
- 	return count;
- }
- 
-@@ -1259,7 +1247,7 @@
- 	curr = bond->curr_active_slave;
- 	read_unlock(&bond->curr_slave_lock);
- 
--	return sprintf(buf, "%s\n", (curr) ? "up" : "down") + 1;
-+	return sprintf(buf, "%s\n", (curr) ? "up" : "down");
- }
- static DEVICE_ATTR(mii_status, S_IRUGO, bonding_show_mii_status, NULL);
- 
-@@ -1276,10 +1264,8 @@
- 
- 	if (bond->params.mode == BOND_MODE_8023AD) {
- 		struct ad_info ad_info;
--		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.aggregator_id) + 1;
-+		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.aggregator_id);
- 	}
--	else
--		count = sprintf(buf, "\n") + 1;
- 
- 	return count;
- }
-@@ -1298,10 +1284,8 @@
- 
- 	if (bond->params.mode == BOND_MODE_8023AD) {
- 		struct ad_info ad_info;
--		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0: ad_info.ports) + 1;
-+		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0: ad_info.ports);
- 	}
--	else
--		count = sprintf(buf, "\n") + 1;
- 
- 	return count;
- }
-@@ -1320,10 +1304,8 @@
- 
- 	if (bond->params.mode == BOND_MODE_8023AD) {
- 		struct ad_info ad_info;
--		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.actor_key) + 1;
-+		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.actor_key);
- 	}
--	else
--		count = sprintf(buf, "\n") + 1;
- 
- 	return count;
- }
-@@ -1342,10 +1324,8 @@
- 
- 	if (bond->params.mode == BOND_MODE_8023AD) {
- 		struct ad_info ad_info;
--		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.partner_key) + 1;
-+		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.partner_key);
- 	}
--	else
--		count = sprintf(buf, "\n") + 1;
- 
- 	return count;
- }
-@@ -1371,11 +1351,9 @@
- 				       ad_info.partner_system[2],
- 				       ad_info.partner_system[3],
- 				       ad_info.partner_system[4],
--				       ad_info.partner_system[5]) + 1;
-+				       ad_info.partner_system[5]);
- 		}
- 	}
--	else
--		count = sprintf(buf, "\n") + 1;
- 
- 	return count;
- }
+ /*
 
 
+-- 
+Regards,
+vatsa
