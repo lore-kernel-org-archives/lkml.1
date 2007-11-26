@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXKZKbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXKZKpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbXKZKbo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 05:31:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXKZKbe
+	id S1754751AbXKZKpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 05:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbXKZKpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 05:31:34 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:47329 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbXKZKbd (ORCPT
+	Mon, 26 Nov 2007 05:45:08 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:25954 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753300AbXKZKpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 05:31:33 -0500
-Date: Mon, 26 Nov 2007 05:29:35 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Joonwoo Park <joonwpark81@gmail.com>
-cc: netdev@vger.kernel.org, chas@cmf.nrl.navy.mil,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] atm/ambassador: kmalloc + memset conversion to
- kzalloc
-In-Reply-To: <b25c3fa70711260223w5a15bb1bk4652b3ab8f05c40c@mail.gmail.com>
-Message-ID: <alpine.LFD.0.9999.0711260523420.12603@localhost.localdomain>
-References: <007f01c8300b$1b89ac40$9c94fea9@jason>  <alpine.LFD.0.9999.0711260409110.551@localhost.localdomain> <b25c3fa70711260223w5a15bb1bk4652b3ab8f05c40c@mail.gmail.com>
+	Mon, 26 Nov 2007 05:45:06 -0500
+In-Reply-To: <1196064988.19855.15.camel@concordia>
+References: <200711091433.51259.osstklei@de.ibm.com> <1196064988.19855.15.camel@concordia>
+Subject: Re: [PATCH] ehea: Add kdump support
+To: michael@ellerman.id.au
+Cc: Jan-Bernd Themann <THEMANN@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+       Michael Neuling <mikey@neuling.org>, netdev <netdev@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>, tklein@linux.ibm.com
+X-Mailer: Lotus Notes Release 8.0 August 02, 2007
+Message-ID: <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Mon, 26 Nov 2007 11:45:02 +0100
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 26/11/2007 11:45:03
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, Joonwoo Park wrote:
-
-> 2007/11/26, Robert P. J. Day <rpjday@crashcourse.ca>:
-> > i'm not sure the above is a safe thing to do, as you're zeroing that
-> > area, then making a function call and assuming, upon entry to the
-> > function call, that the caller has done the right thing.  i don't see
-> > how you can count on that, depending on who else might want to call
-> > that routine and whether they get sloppy about it.  unless you're
-> > prepared to guarantee that there will never be another call to
-> > setup_dev() from elsewhere.
+Michael Ellerman wrote on 26.11.2007 09:16:28:
+> Solutions that might be better:
 >
-> Thanks for your response. But setup_dev is static function and only
-> amb_init calls it.
+>  a) if there are a finite number of handles and we can predict their
+>     values, just delete them all in the kdump kernel before the driver
+>     loads.
 
-i realized that.  but all you can say is that only amb_init() calls
-setup_dev() *currently*.  when you're not looking, someone else might
-(for whatever reason) call setup_dev() from elsewhere, and *that* call
-might not zero that memory area.
+Guessing the values does not work, because of the handle structure
+defined by the hypervisor.
 
-IMHO, the only safe transforms of kmalloc+memset -> kzalloc are those
-in which the flow of control is unmistakable and invariant.  splitting
-that across a function call seems like a dangerous thing to do.
-(except, of course, in the case, where the kzalloc() is added inside
-the function -- then all callers are entitled to simplify *their*
-code.  but that's different.)
+>  b) if there are a small & finite number of handles, save their values
+>     in a device tree property and have the kdump kernel read them and
+>     delete them before the driver loads.
 
-in any event, i just thought i'd point it out.  if you're absolutely
-sure there will never be another call to setup_dev() from somewhere
-else, then, yes, it's safe.
+5*16*nr_ports+1+1=   >82. a ML16 has 4 adapters with up to 16 ports, so the
+number
+is not small anymore....
+The device tree functions are currently not exported.
 
-rday
+If you crashdump to a new kernel, will it get the device tree
+representation
+of the crashed kernel or of the initial one of open firmware?
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+>  c) if neither of those work, provide a minimal routine that _only_
+>     deletes the handles in the crashed kernel.
 
-http://crashcourse.ca
-========================================================================
+I would hope this has the highest chance to actually work.
+For this we would have to add a proper notifier chain.
+Do you agree?
+
+>  d) <something else>
+
+Firmware change? But that's not something you will get very soon.
+
+Christoph R.
+
