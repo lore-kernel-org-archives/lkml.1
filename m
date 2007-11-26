@@ -1,48 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbXKZIH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXKZIQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755056AbXKZIH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 03:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbXKZIHV
+	id S1754551AbXKZIQn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 03:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbXKZIQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 03:07:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46665 "EHLO mx1.redhat.com"
+	Mon, 26 Nov 2007 03:16:31 -0500
+Received: from ozlabs.org ([203.10.76.45]:42828 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753005AbXKZIHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 03:07:20 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Dave Jones <davej@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 23/27] x86: debugctlmsr kconfig
-In-Reply-To: Dave Jones's message of  Sunday, 25 November 2007 20:57:57 -0500 <20071126015757.GA16807@redhat.com>
-References: <20071125215507.4B89226F8C5@magilla.localdomain>
-	<20071125220802.76C2F26F8C5@magilla.localdomain>
-	<20071126015757.GA16807@redhat.com>
-X-Shopping-List: (1) Zealous fads
-   (2) Vacuous venomous potions
-   (3) Piteous vivacious omissions
-Message-Id: <20071126080644.44F3726F8C5@magilla.localdomain>
-Date: Mon, 26 Nov 2007 00:06:44 -0800 (PST)
+	id S1752999AbXKZIQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 03:16:30 -0500
+Subject: Re: [PATCH] ehea: Add kdump support
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Thomas Klein <osstklei@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <200711091433.51259.osstklei@de.ibm.com>
+References: <200711091433.51259.osstklei@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yy5JIdwYhC9mcuqd40ej"
+Date: Mon, 26 Nov 2007 19:16:28 +1100
+Message-Id: <1196064988.19855.15.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What about the non-Intel vendors ?
-> Was this msr present on AMD K6 ? Geode? Winchip? VIA C3 ?
-> If not, then this patch isn't complete. 
 
-I know modern AMD processors have it.  I don't know about any others, nor
-off hand where to look to find out.  Is there a better way to compose the
-"depends on" condition so that it will be true on the modern common
-processors and future common flavors, but false on the various ones we
-don't know about?  (I really just looked around a little and figured that
-!X86_F00F_BUG about corresponded to "P6 family".)
+--=-yy5JIdwYhC9mcuqd40ej
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, 2007-11-09 at 14:33 +0100, Thomas Klein wrote:
+> To support ehea driver reloading in a kdump kernel the driver has to perf=
+orm
+> firmware handle deregistrations when the original kernel crashes. As ther=
+e's
+> currently no notifier chain for machine crashes this patch enables kdump =
+support
+> in the ehea driver by bending the ppc_md.machine_crash_shutdown hook to i=
+ts own
+> machine crash handler. The original machine_crash_shutdown() fn is called
+> afterwards. This works fine as long as the ehea driver is the only one wh=
+ich
+> does so. Problems may occur if other drivers do the same and unload regul=
+arly.
+> This patch enables 2.6.24-rc2 to use kdump with ehea and only puts a very
+> low risk on base kernel. In 2.6.24 we know ehea is the only user of this
+> mechanism. The next step for 2.6.25 would be to add a proper notifier cha=
+in.
+> The full solution might be that register_reboot_notifier() provides sth
+> like a SYS_CRASH action. Please apply.
+>=20
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+>=20
+> ---
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
+>  2 files changed, 29 insertions(+), 1 deletions(-)
+>=20
 
-Thanks,
-Roland
+Hi Thomas,
+
+I'm sorry, but this patch is all wrong IMHO.
+
+For kdump we have to assume that the kernel is fundamentally broken,
+we've panicked, so something bad has happened - every line of kernel
+code that is run decreases the chance that we'll successfully make it
+into the kdump kernel.
+
+So just calling unregister_driver() is no good, that's going to call
+lots of code, try to take lots of locks, rely on lots of data structures
+being uncorrupted etc. etc.
+
+And the hijacking of machine_crash_shutdown() is IMO not an acceptable
+solution, as you say it only works if EHEA is the only driver to do it.
+And as soon as EHEA does it other drivers will want to do it.
+
+What we need is the _minimal_ set of actions that can happen to make
+EHEA work in the kdump kernel.
+
+Solutions that might be better:
+
+ a) if there are a finite number of handles and we can predict their=20
+    values, just delete them all in the kdump kernel before the driver
+    loads.
+ b) if there are a small & finite number of handles, save their values=20
+    in a device tree property and have the kdump kernel read them and=20
+    delete them before the driver loads.
+ c) if neither of those work, provide a minimal routine that _only_
+    deletes the handles in the crashed kernel.
+ d) <something else>
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-yy5JIdwYhC9mcuqd40ej
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHSoDcdSjSd0sB4dIRAmrHAJ44uAhPPnPmXxqcbiZBmDYoMIWxJgCgr5fL
+qTu8td4i0rgrOuOESNq2MkA=
+=cH8k
+-----END PGP SIGNATURE-----
+
+--=-yy5JIdwYhC9mcuqd40ej--
+
