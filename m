@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbXKZKxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbXKZK4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbXKZKxc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 05:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbXKZKxU
+	id S1755069AbXKZK4c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 05:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbXKZK4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 05:53:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:63257 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbXKZKxT (ORCPT
+	Mon, 26 Nov 2007 05:56:25 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53657 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbXKZK4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 05:53:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S0wgPdmfMTB1gzwlg77fY/5bab77/mK9FzYGCuOjHH8S87vwqU8bE11SE8sUqQuWLoLlVfRbqa2JA54sknB9B+dJ+1m+P/L5YPpSV+0VLDvkcBDsQsISBy3z+u9hGA5hZcTwEfmXuN0cnKllITQWhL+ntryUan1EHw36RFOp12U=
-Message-ID: <b25c3fa70711260253we514310g2652d40440dc514e@mail.gmail.com>
-Date: Mon, 26 Nov 2007 19:53:19 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [PATCH 4/4] atm/ambassador: kmalloc + memset conversion to kzalloc
-Cc: netdev@vger.kernel.org, chas@cmf.nrl.navy.mil,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.9999.0711260523420.12603@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Nov 2007 05:56:24 -0500
+Date: Mon, 26 Nov 2007 10:56:19 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] Keep UML Kconfig in sync with x86
+Message-ID: <20071126105619.GR8181@ftp.linux.org.uk>
+References: <20071119190224.GA7723@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <007f01c8300b$1b89ac40$9c94fea9@jason>
-	 <alpine.LFD.0.9999.0711260409110.551@localhost.localdomain>
-	 <b25c3fa70711260223w5a15bb1bk4652b3ab8f05c40c@mail.gmail.com>
-	 <alpine.LFD.0.9999.0711260523420.12603@localhost.localdomain>
+In-Reply-To: <20071119190224.GA7723@c2.user-mode-linux.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/11/26, Robert P. J. Day <rpjday@crashcourse.ca>:
-> i realized that.  but all you can say is that only amb_init() calls
-> setup_dev() *currently*.  when you're not looking, someone else might
-> (for whatever reason) call setup_dev() from elsewhere, and *that* call
-> might not zero that memory area.
->
-> IMHO, the only safe transforms of kmalloc+memset -> kzalloc are those
-> in which the flow of control is unmistakable and invariant.  splitting
-> that across a function call seems like a dangerous thing to do.
-> (except, of course, in the case, where the kzalloc() is added inside
-> the function -- then all callers are entitled to simplify *their*
-> code.  but that's different.)
->
-> in any event, i just thought i'd point it out.  if you're absolutely
-> sure there will never be another call to setup_dev() from somewhere
-> else, then, yes, it's safe.
->
+On Mon, Nov 19, 2007 at 02:02:24PM -0500, Jeff Dike wrote:
+> Fix a 2.6.24-rc3 UML build breakage introduced by commit
+> 1032c0ba9da5c5b53173ad2dcf8b2a2da78f8b17 - it introduces X86_32, with
+> many things which UML needs depending on it.
+> 
+> This patch adds definitions of X86_32 and RWSEM_XCHGADD_ALGORITHM to
+> the UML/i386 Kconfig.
 
-I understood your opinions. and partially agree with you.
-But isn't it a unfounded fear?
+That's not enough, unfortunately.  If we go that way, we need to add
+dependencies on !UML for several options.
 
-Thanks
-Joonwoo
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 5fd6688..ddd3a25 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -12,7 +12,7 @@ if CRYPTO_HW
+ 
+ config CRYPTO_DEV_PADLOCK
+ 	tristate "Support for VIA PadLock ACE"
+-	depends on X86_32
++	depends on X86_32 && !UML
+ 	select CRYPTO_ALGAPI
+ 	help
+ 	  Some VIA processors come with an integrated crypto engine
+diff --git a/kernel/Kconfig.instrumentation b/kernel/Kconfig.instrumentation
+index f5f2c76..2ea1e34 100644
+--- a/kernel/Kconfig.instrumentation
++++ b/kernel/Kconfig.instrumentation
+@@ -21,7 +21,7 @@ config PROFILING
+ config OPROFILE
+ 	tristate "OProfile system profiling (EXPERIMENTAL)"
+ 	depends on PROFILING
+-	depends on ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
++	depends on (ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64) && !UML
+ 	help
+ 	  OProfile is a profiling system capable of profiling the
+ 	  whole system, include the kernel, kernel modules, libraries,
+@@ -32,7 +32,7 @@ config OPROFILE
+ config KPROBES
+ 	bool "Kprobes"
+ 	depends on KALLSYMS && MODULES
+-	depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
++	depends on (X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32) && !UML
+ 	help
+ 	  Kprobes allows you to trap at almost any kernel address and
+ 	  execute a callback function.  register_kprobe() establishes
