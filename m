@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbXKZRq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXKZRrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbXKZRq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 12:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKZRqW
+	id S1753383AbXKZRrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 12:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXKZRrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 12:46:22 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:32894 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbXKZRqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 12:46:21 -0500
-Date: Mon, 26 Nov 2007 18:46:17 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Madhusudhan C <madhu_lkml@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmc select voltage functionality
-Message-ID: <20071126184617.04029484@poseidon.drzeus.cx>
-In-Reply-To: <655340.80743.qm@web44811.mail.sp1.yahoo.com>
-References: <655340.80743.qm@web44811.mail.sp1.yahoo.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Mon, 26 Nov 2007 12:47:17 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:57845 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbXKZRrR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 12:47:17 -0500
+Date: Mon, 26 Nov 2007 12:47:02 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] uml doesn't work on 2.6.24-rc2
+Message-ID: <20071126174702.GA10143@c2.user-mode-linux.org>
+References: <E1Is5FL-00078H-00@dorka.pomaz.szeredi.hu> <20071114011002.GA11477@c2.user-mode-linux.org> <E1IsFbA-0007y2-00@dorka.pomaz.szeredi.hu> <20071114142247.GA5848@c2.user-mode-linux.org> <E1IsK83-0008CJ-00@dorka.pomaz.szeredi.hu> <20071114173639.GA7899@c2.user-mode-linux.org> <E1IsPo5-0008RU-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IsPo5-0008RU-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Nov 2007 05:34:11 -0800 (PST)
-Madhusudhan C <madhu_lkml@yahoo.com> wrote:
+On Wed, Nov 14, 2007 at 10:29:57PM +0100, Miklos Szeredi wrote:
+> nanosleep({0, 0}, {0, 0})               = 0
+> gettimeofday({1195075504, 182333}, NULL) = 0
+> setitimer(ITIMER_VIRTUAL, {it_interval={0, 0}, it_value={0, 0}}, {it_interval={0, 0}, it_value={0, 0}}) = 0
+> nanosleep({0, 0}, {0, 0})               = 0
 
-> Hi Pierre,
-> 
-> I have a question on the mmc_select_voltage fn of the mmc core file drivers/mmc/core/core.c.
-> 
-> During the power up sequence the mmc_power_up fn sets the OCR bit to setup 3V. Subsequentely the mmc_select_voltage fn selects the lowest voltage
-> the card can support.The host->ios.power_mode is not changed to MMC_POWER_UP before calling mmc_set_ios from this function hence the power_mode remains in MMC_POWER_ON state.So my question is, how should the controller driver handle this change in volatge. Under which case of power mode should the controller driver change the voltage again when a dual voltage card is detected?
-> 
+Can you see if this still happens with rc3-mm1?
 
-To be completely correct, the MMC layer should probably power down the card first, yes. Right now most drivers will handle all of these things as they see fit. Haven't seen a single bug report about it yet so...
+I can't reproduce it any more, which gets in the way of debugging it.
 
-Just change the voltage in whatever way makes sense for your controller.
+				Jeff
 
-Rgds
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Work email - jdike at linux dot intel dot com
