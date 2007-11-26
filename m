@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbXKZO5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbXKZO6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbXKZO5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 09:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbXKZO5J
+	id S1755690AbXKZO6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 09:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXKZO60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 09:57:09 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:60548 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbXKZO5I (ORCPT
+	Mon, 26 Nov 2007 09:58:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:7371 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbXKZO6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 09:57:08 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Nov 2007 09:57:07 EST
-Date: Mon, 26 Nov 2007 06:50:25 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: Arne Georg Gleditsch <argggh@dolphinics.no>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@gentoo.org>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net, kune@deine-taler.de,
-       johannes@sipsolutions.net
-Subject: Re: [RFC] Documentation about unaligned memory access
-In-Reply-To: <kjmpry1mgzs.fsf@pelargir.dolphinics.no>
-Message-ID: <Pine.LNX.4.64.0711260631200.21739@twinlark.arctic.org>
-References: <20071123001554.12F8B9D4A1F@zog.reactivated.net>
- <20071123012911.3266dba6@the-village.bc.nu> <alpine.DEB.0.99999.0711222206000.32648@twinlark.arctic.org>
- <kjmpry1mgzs.fsf@pelargir.dolphinics.no>
+	Mon, 26 Nov 2007 09:58:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=J0YT9li9q2Wscw7YXAXAmlsw2qcPjslPB2l7iLOwM0F7yDM3et5VgffJXI9OA7FgHRwJ2GOZzXDrB1HLiUOprRk8rFQSwSabbXFywXIIJdwNjNFcY4A6Km9vLdjrzR3WLmx/lpeBJkC3hYJqWnbmDAgcmFiIMyZMfrMPbU+J+2s=
+Message-ID: <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com>
+Date: Mon, 26 Nov 2007 06:58:23 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: Re: can support for "rpm"-based package building just be dropped?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain>
+X-Google-Sender-Auth: 4ad6ae157a28e94f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Nov 2007, Arne Georg Gleditsch wrote:
+On Nov 26, 2007 12:54 AM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+>   on current systems, "rpm" no longer has build capability and will
+> fail thusly:
+>
+> rpm --target i386 -ta ../kernel-2.6.24rc3g2ffbb837dirty.tar.gz
+> --target: unknown option
+>
+>   so it would make more sense to just require "rpmbuild" on the
+> machine, would it not?
 
-> dean gaudet <dean@arctic.org> writes:
-> > on AMD x86 pre-family 10h the boundary is 8 bytes, and on fam 10h it's 16 
-> > bytes.  the penalty is a mere 3 cycles if an access crosses the specified 
-> > boundary.
-> 
-> Worth noting though, is that atomic accesses that cross cache lines on
-> an Opteron system is going to lock down the Hypertransport fabric for
-> you during the operation -- which is obviously not so nice.
+Only on current machines. You'd break building kernel RPMs on older
+systems that don't have rpmbuild installed. So the change wouldn't fix
+anything, and would break some non-zero number of setups that are
+currently working, making the change a guaranteed net loss.
 
-ooh awesome, i hadn't measured that before.
-
-on a 2 node sockF / revF with a random pointer chase running on cpu 0 / 
-node 0 i see the avg load-to-load cache miss latency jump from 77ns to 
-109ns when i add an unaligned lock-intensive workload on one core of node 
-1.  the worst i can get the pointer chase latency to is 273ns when i add 
-two threads on node 1 fighting over an unaligned lock.
-
-on a 4 node (square) the worst case i can get seems to be an increase from 
-98ns with no antagonist to 385ns with 6 antagonists fighting over an 
-unaligned lock on the other 3 nodes.
-
-cool.
-
--dean
+A patch that added version checks against rpm and whinged
+appropriately about needing rpmbuild would likely be accepted, though.
