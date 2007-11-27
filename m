@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbXK0IpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbXK0IqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbXK0IpS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXK0Io7
+	id S1756532AbXK0IqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 03:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXK0IqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:44:59 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46701 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751705AbXK0Io6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:44:58 -0500
-Date: Tue, 27 Nov 2007 00:44:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wagner Ferenc <wferi@niif.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: bonding sysfs output
-Message-Id: <20071127004445.a046f791.akpm@linux-foundation.org>
-In-Reply-To: <87lk8lflzf.fsf@szonett.ki.iif.hu>
-References: <87tznafjeu.fsf@szonett.ki.iif.hu>
-	<20071125205150.4e49915f.akpm@linux-foundation.org>
-	<87lk8lflzf.fsf@szonett.ki.iif.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 27 Nov 2007 03:46:06 -0500
+Received: from mx10.go2.pl ([193.17.41.74]:39439 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752758AbXK0IqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 03:46:05 -0500
+Date: Tue, 27 Nov 2007 09:50:38 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: "Rafael J\. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [RFC][PATCH] Update REPORTING-BUGS (rev. 2)
+Message-ID: <20071127085038.GA1919@ff.dom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711262202.24984.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 09:29:40 +0100 Wagner Ferenc <wferi@niif.hu> wrote:
-
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On 26-11-2007 22:02, Rafael J. Wysocki wrote:
+...
 > 
-> > On Sun, 25 Nov 2007 16:12:57 +0100 Wagner Ferenc <wferi@niif.hu> wrote:
-> >
-> >> I propose it as a fix for trailing NULs and spaces like eg.
-> >> 
-> >> $ od -c /sys/class/net/bond0/bonding/slaves 
-> >> 0000000   e   t   h   -   l   e   f   t       e   t   h   -   r   i   g
-> >> 0000020   h   t      \n  \0
-> >> 0000025
-> >> 
-> >> I'm afraid there're other problems with "++more++" handling, but let's
-> >> not consider those just yet.  Find the patch attached.  The first
-> >> hunks also renames buffer to buf, for consistency's shake.
-> >> 
-> >> The original version had varying behaviour for Not Applicable cases.
-> >> This patch also settles for empty files (not even a line feed) in
-> >> those cases, but I'm not sure about the general policy on this matter.
-> >
-> > hm, there are a lot of changes there.  Were they all actually needed to fix
-> > the one bug which you have described?
+> For completness, below is an updated version of the patch, modified to take
+> some Adrian's comments into account.
 > 
-> Trailing NULs are present in each file under /sys/class/net/*/bonding
-> and also in /sys/class/net/bonding_masters.  That is, in every file
-> provided by drivers/net/bonding/bond_sysfs.c.  Most of the patch is
-> concerned with this.
-> 
-> Closely related is the presence of trailing spaces in multivalue
-> files.  There are three such files, one of them has the trailing space
-> removed.  This patch removes it from the other two.  During this it
-> also renames one function argument 'buffer' to 'buf', for consistency.
-> 
-> On the policy side: some files are not applicable to some types of
-> bonds, and return a single linefeed in that case.  Except for one
-> single case, which returns 'NA\n'.  The patch changes these cases into
-> emtpy files.
-> 
-> If these are worthy changes, I'm absolutely willing to split up the
-> patch into three parts as the above.
+> Comments welcome.
 
-Well that would be good if poss, thanks.
+...You mean any comments?...
 
-But fixing bugs is way more important than niceties of patch presentation
-however I wasn't prepared to fix the rejects which that patch is hitting in
-the considerably-changed bonding_show_ad_partner_mac().  Please:
+Well, I've written something similar about something similar somewhere
+else, which you could remember, but here I'm even more "brutal", sorry!
+So, I think this text is wrong - at least in this place. I probably can
+repeat some of Adrian's comments, but IMHO the main thing is that this
+shouldn't deter any user, who got this, maybe momentary idea to report
+something. So, it definitely shouldn't be longer than maybe 5 sentences,
+with any "you should" if possible.
 
-- raise patches against the latest Linus tree
-(ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/)
+So, maybe it could start just like Adrian proposed:
 
-- cc netdev@vger.kernel.org on networking-related matters
+>> Go to http://bugzilla.kernel.org/ and click on "Enter a new bug report".
 
-- Include a Signed-off-by: as per Documentation/SubmittingPatches
+plus e.g.:
 
-- Try to ensure that the full explanation (such as you have above) is
-covered in the changelog text.
+"Alternatively you can write an e-mail to linux-kerel@vger.kernel.org
+ with '[BUG]' at the beginning of a subject (no need to subscribe).
 
-Thanks.
+ If you feel like doing this with more details, read this document,
+ please: ..."
+
+Regards,
+Jarek P.
+
+PS: Btw., did you notice how even main developers respect current
+(previous?) version of this doc while reporting bugs here?
