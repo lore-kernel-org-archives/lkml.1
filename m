@@ -1,129 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbXK0XBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbXK0XCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760232AbXK0XBw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXK0XBn
+	id S1760018AbXK0XCX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759056AbXK0XCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:01:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58483 "EHLO
+	Tue, 27 Nov 2007 18:02:03 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59126 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752406AbXK0XBm (ORCPT
+	by vger.kernel.org with ESMTP id S1752527AbXK0XCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:01:42 -0500
-Date: Tue, 27 Nov 2007 15:01:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       miklos@szeredi.hu
-Subject: Re: [PATCH] UML - Fix !NO_HZ busy-loop
-Message-Id: <20071127150108.fb94aaca.akpm@linux-foundation.org>
-In-Reply-To: <20071127200347.GA8847@c2.user-mode-linux.org>
-References: <20071127200347.GA8847@c2.user-mode-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 27 Nov 2007 18:02:00 -0500
+Date: Tue, 27 Nov 2007 15:00:22 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071127150022.61bdff7e@freepuppy.rosehill>
+In-Reply-To: <20071127223743.GI24223@one.firstfloor.org>
+References: <20071122343.446909000@suse.de>
+	<200711261228.15155.rusty@rustcorp.com.au>
+	<adahcj9sfan.fsf@cisco.com>
+	<200711271549.37670.rusty@rustcorp.com.au>
+	<1196202698.3415.119.camel@jcmlaptop>
+	<20071127223743.GI24223@one.firstfloor.org>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007 15:03:47 -0500
-Jeff Dike <jdike@addtoit.com> wrote:
+On Tue, 27 Nov 2007 23:37:43 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-> [ This one needs to get into 2.6.24 ]
+> > With my "Enterprise" hat on, I can see where Andi was coming from
+> > originally. 
 > 
-> With NO_HZ disabled, the UML idle loop effectively becomes a busy
-> loop, as it will sleep for no time.
-> 
-> The cause was forgetting to restart the tick after waking up from
-> sleep.  It was disabled before sleeping, and the remaining time used
-> as the interval to sleep.  So, the tick needs to be restarted when
-> nanosleep finishes.
-> 
-> This is done by introducing after_sleep_interval, which is empty in
-> the NO_HZ case, but which sets the tick starting in the !NO_HZ case.
-> 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> ---
->  arch/um/os-Linux/time.c |   54 +++++++++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 51 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.22/arch/um/os-Linux/time.c
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-11-14 10:33:29.000000000 -0500
-> +++ linux-2.6.22/arch/um/os-Linux/time.c	2007-11-26 15:50:46.000000000 -0500
-> @@ -59,7 +59,7 @@ long long disable_timer(void)
->  {
->  	struct itimerval time = ((struct itimerval) { { 0, 0 }, { 0, 0 } });
->  
-> -	if(setitimer(ITIMER_VIRTUAL, &time, &time) < 0)
-> +	if (setitimer(ITIMER_VIRTUAL, &time, &time) < 0)
->  		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
->  		       "errno = %d\n", errno);
->  
-> @@ -74,13 +74,61 @@ long long os_nsecs(void)
->  	return timeval_to_ns(&tv);
->  }
->  
-> +#ifdef UML_CONFIG_NO_HZ
+> For the record my original motivation was to fix the "TCP exports everything
+> for ipv6.ko" case cleanly. I later realized that it would be useful for the
+> ABI stability issues too, but it was really not my primary motivation.
+> This is why I didn't even mention that in the original patch description.
 
-Nothing ever defines this?
-
-> +static int after_sleep_interval(struct timespec *ts)
-> +{
-> +}
-> +#else
-> +static inline long long timespec_to_us(const struct timespec *ts)
-> +{
-> +	return ((long long) ts->tv_sec * UM_USEC_PER_SEC) +
-> +		ts->tv_nsec / UM_NSEC_PER_USEC;
-> +}
-> +
-> +static int after_sleep_interval(struct timespec *ts)
-> +{
-> +	int usec = UM_USEC_PER_SEC / UM_HZ;
-> +	long long start_usecs = timespec_to_us(ts);
-> +	struct timeval tv;
-> +	struct itimerval interval;
-> +
-> +	/*
-> +	 * It seems that rounding can increase the value returned from
-> +	 * setitimer to larger than the one passed in.  Over time,
-> +	 * this will cause the remaining time to be greater than the
-> +	 * tick interval.  If this happens, then just reduce the first
-> +	 * tick to the interval value.
-> +	 */
-> +	if (start_usecs > usec)
-> +		start_usecs = usec;
-> +	tv = ((struct timeval) { .tv_sec  = start_usecs / UM_USEC_PER_SEC,
-> +				 .tv_usec = start_usecs % UM_USEC_PER_SEC });
-> +	interval = ((struct itimerval) { { 0, usec }, tv });
-> +
-> +	if (setitimer(ITIMER_VIRTUAL, &interval, NULL) == -1)
-> +		return -errno;
-> +
-> +	return 0;
-> +}
-> +#endif
-> +
->  extern void alarm_handler(int sig, struct sigcontext *sc);
->  
->  void idle_sleep(unsigned long long nsecs)
->  {
-> -	struct timespec ts = { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
-> -			       .tv_nsec = nsecs % UM_NSEC_PER_SEC };
-> +	struct timespec ts;
-> +
-> +	/*
-> +	 * nsecs can come in as zero, in which case, this starts a
-> +	 * busy loop.  To prevent this, reset nsecs to the tick
-> +	 * interval if it is zero.
-> +	 */
-> +	if (nsecs == 0)
-> +		nsecs = UM_NSEC_PER_SEC / UM_HZ;
-> +	ts = ((struct timespec) { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
-> +				  .tv_nsec	= nsecs % UM_NSEC_PER_SEC });
->  
->  	if (nanosleep(&ts, &ts) == 0)
->  		alarm_handler(SIGVTALRM, NULL);
-> +	after_sleep_interval(&ts);
->  }
+Since ipv6 can never be removed because it references itself, the whole concept
+of a modular ipv6 is flawed. Sometime ago a patch was sent to remove the ipv6 module
+unload hooks but as I recall Dave rejected it believing the unload code could be
+fixed.
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
