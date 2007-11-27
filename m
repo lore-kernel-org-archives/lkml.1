@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbXK0TEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXK0TKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759563AbXK0TEA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 14:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbXK0TDw
+	id S1759266AbXK0TKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 14:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbXK0TK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 14:03:52 -0500
-Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:20366 "HELO
-	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757340AbXK0TDw (ORCPT
+	Tue, 27 Nov 2007 14:10:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44897 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbXK0TK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 14:03:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6mzECkuJdhtMdBH8TZqc1N+dO0Ro0geiMEOUSiV9vbxl4x9Ru/C6OzY5uHkmpdoMQG6E79dHU1qXGVp2Yicv3Q4D1VoNJS7wlfy/w2ZwDdbyYTbdywjFAlm7mPenOhWJ9K05aYEzeJnCzrFBqol49s4Z4xeHK29sNQAsWm2Ceas=  ;
-X-YMail-OSG: zz_ENBkVM1nX0rH05P7woQh1N.qRVi68IBJe00oBPEGKV8BO7WlxvxpcJ.bi9exs3.sb0TSgSA--
-From: David Brownell <david-b@pacbell.net>
-To: "eric miao" <eric.y.miao@gmail.com>
-Subject: Re: [patch/rfc 1/4] GPIO implementation framework
-Date: Tue, 27 Nov 2007 11:03:48 -0800
-User-Agent: KMail/1.9.6
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
-       "Bill Gatliff" <bgat@billgatliff.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <andrew@sanpeople.com>,
-       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
-       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       "Ben Dooks" <ben@trinity.fluff.org>
-References: <200710291809.29936.david-b@pacbell.net> <200711261746.55235.david-b@pacbell.net> <f17812d70711270258v1e2b47aam74da33687728a78@mail.gmail.com>
-In-Reply-To: <f17812d70711270258v1e2b47aam74da33687728a78@mail.gmail.com>
+	Tue, 27 Nov 2007 14:10:27 -0500
+Date: Tue, 27 Nov 2007 11:09:19 -0800
+From: Greg KH <greg@kroah.com>
+To: darnok@68k.org
+Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
+       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
+       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com
+Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
+Message-ID: <20071127190919.GA10686@kroah.com>
+References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <200711262323.35416.konrad@darnok.org> <20071127052955.GB777@kroah.com> <20071127180950.GA6736@andromeda.dapyr.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711271103.49200.david-b@pacbell.net>
+In-Reply-To: <20071127180950.GA6736@andromeda.dapyr.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 November 2007, eric miao wrote:
+On Tue, Nov 27, 2007 at 02:09:50PM -0400, darnok@68k.org wrote:
+> On Mon, Nov 26, 2007 at 09:29:55PM -0800, Greg KH wrote:
+> > On Mon, Nov 26, 2007 at 11:23:31PM -0500, Konrad Rzeszutek wrote:
+> > > On Monday 26 November 2007 22:31:38 Greg KH wrote:
+> > > > > +#if defined(CONFIG_ISCSI_IBFT) || defined(CONFIG_ISCSI_IBFT_MODULE)
+> > > ..snip..
+> > > > > +static ssize_t find_ibft(void)
+> > > > > +{
+> > > ..snip..
+> > > > > +}
+> > > >
+> > > > What is a function (not even an inline one) doing in a .h file?
+> > > 
+> > > I was not sure where to put it. This function (find_ibft) is used by the 
+> > > setup_[32|64].c and the iscsi_ibft.c code. Randy suggested I put in .c file, 
+> > > but I am not sure exactly where? Should I make a new file in called 
+> > > libs/iscsi_ibft_helper.c ?
+> > 
+> > Put it in your .c file and make it a global function to be called by
+> > someone else if they need it.
+> 
+> If the kernel is built with CONFIG_ISCSI_IBFT=m, the
+> setup_[32|64],c code would depend on the 'find_ibft' symbol which is
+> in a module (in the iscsi_ibft.c), which is not available during
+> the bootup phase and not linked to vmlinuz.
 
->    c) removal of "gpiochip_is_requested()", and use "gpio_desc->requested"
->       instead
+Ah, then don't allow that :)
 
-That's problematic for GPIO code that needs to know if a given
-GPIO has been requested ... since you don't export gpio_desc[]
-(and shouldn't) that functionality has effectively been removed!
+> This isn't an issue if the module is built with CONFIG_ISCSI_IBFT=y of
+> course.
+> 
+> Or did by 'your .c file' mean a new file in arch/x86/kernel directory?
 
-So that would break two patches now in MM (mcp23s08 support, and
-the avr32 platform conversion) plus others not yet merged...
+I didn't realize an external file, outside of your changes, needed this
+function.  If it does, then perhaps you need to just place it elsewhere.
 
+thanks,
 
->    d) make gpio_ensure_requested() use gpio_desc, and simplify the code a
->       bit
-
-That's problematic too ... since it no longer actually ensures
-that the chip gets marked as requested.  :(
-
-
-
-Since struct gpio_desc isn't exported, it might as well be
-private to lib/gpiolib.c instead of public in the header...
+greg k-h
