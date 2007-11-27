@@ -1,93 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbXK0Kuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbXK0KvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbXK0Kuc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 05:50:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXK0KuW
+	id S1758778AbXK0KvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 05:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbXK0KvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 05:50:22 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33274 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbXK0KuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 05:50:21 -0500
-Date: Tue, 27 Nov 2007 11:50:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071127105016.GC24223@one.firstfloor.org>
-References: <20071122343.446909000@suse.de> <200711261225.44415.rusty@rustcorp.com.au> <adalk8lsg3z.fsf@cisco.com> <200711271526.53065.rusty@rustcorp.com.au>
-Mime-Version: 1.0
+	Tue, 27 Nov 2007 05:51:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38227 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755863AbXK0KvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 05:51:01 -0500
+Date: Tue, 27 Nov 2007 11:50:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fw: Re: [PATCH 1/3] signal(i386): alternative signal stack
+	wraparound occurs
+Message-ID: <20071127105045.GG6286@elte.hu>
+References: <20071126143317.dd884128.akpm@linux-foundation.org> <20071126230242.GA9623@elte.hu> <20071127030222.ACD7326F8C5@magilla.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711271526.53065.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071127030222.ACD7326F8C5@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 03:26:52PM +1100, Rusty Russell wrote:
-> On Monday 26 November 2007 16:58:08 Roland Dreier wrote:
-> >  > > I agree that we shouldn't make things too hard for out-of-tree
-> >  > > modules, but I disagree with your first statement: there clearly is a
-> >  > > large class of symbols that are used by multiple modules but which are
-> >  > > not generically useful -- they are only useful by a certain small
-> >  > > class of modules.
-> >  >
-> >  > If it is so clear, you should be able to easily provide examples?
-> >
-> > Sure -- Andi's example of symbols required only by TCP congestion
-> > modules;
+
+* Roland McGrath <roland@redhat.com> wrote:
+
+[...]
+> I think it would be sensible for the signal handler setup code to 
+> detect when it would itself be causing a stack overflow.  Maybe 
+> something like the following patch (untested).  This issue exists in 
+> the same way on all machines, so ideally they would all do a similar 
+> check.
 > 
-> Exactly.  Why exactly should someone not write a new TCP congestion module?
+> When it's the handler function itself or its callees that cause the 
+> overflow, rather than the signal handler frame setup alone crossing 
+> the boundary, this still won't help.  But I don't see any way to 
+> distinguish that from the valid longjmp case.
 
-Agreed the congestion modules are a corner case. I even mentioned that in the
-patch. I would be happy to drop that one if that is the consensus.
-It was more done as a example anyways. That is why I made it an separate
-namespace from "tcp"
+thanks Roland for the detailed analysis. I've queued up the patch below 
+in the x86 tree. I suspect we can wait with this for v2.6.25, due to 
+this being long-standing behavior of Linux? Thus we could observe the 
+effects of this patch for a longer time.
 
-But for many other TCP symbols it makes a lot of sense: all the functions
-only used by tcp_ipv6.c. If someone wants to write support for a "IPv7" or
-similar they really should do it in tree. So I think the "tcp" and  "inet"
-namespaces make a lot of sense.
+I'm wondering how widespread sigaltstack use is in general. Googling 
+around gives:
 
-> Right.  So presumably there will only ever be two drivers using this core 
-> code, so no new users will ever be written?  Now we've found one use case, is 
+  http://google.com/codesearch?q=sigaltstack
 
-If there are new users they will need to get proper review and should
-be in tree.  MODULE_ALLOW() enforces that.
+~400 matches. A more common signal API in comparison:
 
-> it worth the complexity of namespaces?  Is it worth the halfway point of 
+  http://google.com/codesearch?q=sigaction
 
-What complexity? You're always claiming it is complex. It isn't really.
+gives ~139,000 matches. So i guess the right approach would be to also 
+extend LTP's sigaltstack tests to cover whatever new desired behavior - 
+so that we at least have a minimal chance of catching obvious breakages 
+here.
 
-> export-to-module?
-> 
+	Ingo
 
-> No, we've seen the solution and various people applying it.  I'm still trying 
-> to discover the problem it's solving.
+--------------->
+Subject: x86: protect against sigaltstack wraparound
+From: Roland McGrath <roland@redhat.com>
 
-Again for rusty @)
+cf http://lkml.org/lkml/2007/10/3/41
 
-Goals are:
-- Limit the interfaces available for out of tree modules to reasonably 
-stable ones that are already used by a larger set of drivers.
+To summarize: on Linux, SA_ONSTACK decides whether you are already on the
+signal stack based on the value of the SP at the time of a signal.  If
+you are not already inside the range, you are not "on the signal stack"
+and so the new signal handler frame starts over at the base of the signal
+stack.
 
-This can also have further downstream advantages.
-For example it might be a reasonable future rule to require all unconditionally
-EXPORT_SYMBOL()s to have a complete LinuxDoc documentation entry.
+sigaltstack (and sigstack before it) was invented in BSD.  There, the
+SA_ONSTACK behavior has always been different.  It uses a kernel state
+flag to decide, rather than the SP value.  When you first take an
+SA_ONSTACK signal and switch to the alternate signal stack, it sets the
+SS_ONSTACK flag in the thread's sigaltstack state in the kernel.
+Thereafter you are "on the signal stack" and don't switch SP before
+pushing a handler frame no matter what the SP value is.  Only when you
+sigreturn from the original handler context do you clear the SS_ONSTACK
+flag so that a new handler frame will start over at the base of the
+alternate signal stack.
 
-- Explicitely declare in source what is clearly internal and not intended to
-be a generally usable interface.
+The undesireable effect of the Linux behavior is that an overflow of the
+alternate signal stack can not only go undetected, but lead to a ring
+buffer effect of clobbering the original handler frame at the base of the
+signal stack for each successive signal that comes just after the
+overflow.  This is what Shi Weihua's test case demonstrates.  Normally
+this does not come up because of the signal mask, but the test case uses
+SA_NODEFER for its SIGSEGV handler.
 
-e.g. for the LinuxDoc example above such internal functions don't necessarily
-need full LinuxDoc documentation.
+The other subtle part of the existing Linux semantics is that a simple
+longjmp out of a signal handler serves to take you off the signal stack
+in a safe and reliable fashion without having used sigreturn (nor having
+just returned from the handler normally, which means the same).  After
+the longjmp (or even informal stack switching not via any proper libc or
+kernel interface), the alternate signal stack stands ready to be used
+again.
 
-- Force review from core maintainers for use of such internal interfaces
+A paranoid program would allocate a PROT_NONE red zone around its
+alternate signal stack.  Then a small overflow would trigger a SIGSEGV in
+handler setup, and be fatal (core dump) whether or not SIGSEGV is
+blocked.  As with thread stack red zones, that cannot catch all overflows
+(or underflows).  e.g., a local array as large as page size allocated in
+a function called from a handler, but not actually touched before more
+calls push more stack, could cause an overflow that silently pushes into
+some unrelated allocated pages.
 
-- Limit size of exported API to make stable ABIs for enterprise
-distributions easier
-[Yes I know that is not a popular topic on l-k, but it's a day-to-day
-problem for these distros and out of tree solutions do not work]
+The BSD behavior does not do anything in particular about overflow.  But
+it does at least avoid the wraparound or "ring buffer effect", so you'll
+just get a straightforward all-out overflow down your address space past
+the low end of the alternate signal stack.  I don't know what the BSD
+behavior is for longjmp out of an SA_ONSTACK handler.
 
--Andi
+The POSIX wording relating to sigaltstack is pretty minimal.  I don't
+think it speaks to this issue one way or another.  (The program that
+overflows its stack is clearly in undefined behavior territory of one
+sort or another anyhow.)
+
+Given the longjmp issue and the potential for highly subtle complications
+in existing programs relying on this in arcane ways deep in their code, I
+am very dubious about changing the behavior to the BSD style persistent
+flag.  I think Shi Weihua's patches have a similar effect by tracking the
+SP used in the last handler setup.
+
+I think it would be sensible for the signal handler setup code to detect
+when it would itself be causing a stack overflow.  Maybe something like
+the following patch (untested).  This issue exists in the same way on all
+machines, so ideally they would all do a similar check.
+
+When it's the handler function itself or its callees that cause the
+overflow, rather than the signal handler frame setup alone crossing the
+boundary, this still won't help.  But I don't see any way to distinguish
+that from the valid longjmp case.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/signal_32.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-x86.q/arch/x86/kernel/signal_32.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/signal_32.c
++++ linux-x86.q/arch/x86/kernel/signal_32.c
+@@ -296,6 +296,13 @@ get_sigframe(struct k_sigaction *ka, str
+ 	/* Default to using normal stack */
+ 	esp = regs->esp;
+ 
++	/*
++	 * If we are on the alternate signal stack and would overflow it, don't.
++	 * Return an always-bogus address instead so we will die with SIGSEGV.
++	 */
++	if (on_sig_stack(esp) && !likely(on_sig_stack(esp - frame_size)))
++		return (void __user *) -1L;
++
+ 	/* This is the X/Open sanctioned signal stack switching.  */
+ 	if (ka->sa.sa_flags & SA_ONSTACK) {
+ 		if (sas_ss_flags(esp) == 0)
