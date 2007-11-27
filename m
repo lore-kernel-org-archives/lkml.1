@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbXK0Afy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXK0AjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbXK0Afy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbXK0Afn
+	id S1758205AbXK0AjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXK0AjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:35:43 -0500
-Received: from ozlabs.org ([203.10.76.45]:33427 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754469AbXK0Afm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:35:42 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: Christoph Raisch <RAISCH@de.ibm.com>
-cc: michael@ellerman.id.au, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>, tklein@linux.ibm.com
-Subject: Re: [PATCH] ehea: Add kdump support 
-In-reply-to: <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com> 
-References: <200711091433.51259.osstklei@de.ibm.com> <1196064988.19855.15.camel@concordia> <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com>
-Comments: In-reply-to Christoph Raisch <RAISCH@de.ibm.com>
-   message dated "Mon, 26 Nov 2007 11:45:02 +0100."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
-Date: Tue, 27 Nov 2007 11:35:18 +1100
-Message-ID: <11699.1196123718@neuling.org>
+	Mon, 26 Nov 2007 19:39:13 -0500
+Received: from namei.org ([69.55.235.186]:50739 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751261AbXK0AjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 19:39:12 -0500
+Date: Tue, 27 Nov 2007 11:38:24 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Eric Paris <eparis@redhat.com>
+cc: linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, selinux@tycho.nsa.gov,
+       alan@redhat.com, chrisw@redhat.com, hpa@zytor.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 3/3-v2] security: allow capable check to permit mmap or
+ low vm space
+In-Reply-To: <1196120866.16779.16.camel@localhost.localdomain>
+Message-ID: <Xine.LNX.4.64.0711271137300.26171@us.intercode.com.au>
+References: <1196120866.16779.16.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com> you wrote:
-> Michael Ellerman wrote on 26.11.2007 09:16:28:
-> > Solutions that might be better:
-> >
-> >  a) if there are a finite number of handles and we can predict their
-> >     values, just delete them all in the kdump kernel before the driver
-> >     loads.
-> 
-> Guessing the values does not work, because of the handle structure
-> defined by the hypervisor.
-> 
-> >  b) if there are a small & finite number of handles, save their values
-> >     in a device tree property and have the kdump kernel read them and
-> >     delete them before the driver loads.
-> 
-> 5*16*nr_ports+1+1=   >82. a ML16 has 4 adapters with up to 16 ports, so the
-> number is not small anymore....
+On Mon, 26 Nov 2007, Eric Paris wrote:
 
-I assume this machine with a huge number of adapters has a huge amount
-of memory too! :-)
-
-> The device tree functions are currently not exported.
-
-We can add this.
-
-> If you crashdump to a new kernel, will it get the device tree
-> representation of the crashed kernel or of the initial one of open
-> firmware?
-
-The kexec tools userspace control this.  Normally it just takes the
-current device tree plus some modifications (eg. initrd location
-changes).
-
-So provided the ehea driver export this info somewhere, it can be
-grabbed by the kexec tools and stuffed in the device tree of the new
-kernel.  
-
-That being said, the proper place to have this would be original device
-tree.
-
+> On a kernel with CONFIG_SECURITY but without an LSM which implements
+> security_file_mmap it is impossible for an application to mmap addresses
+> lower than mmap_min_addr.  Based on a suggestion from a developer in the
+> openwall community this patch adds a check for CAP_SYS_RAWIO.  It is
+> assumed that any process with this capability can harm the system a lot
+> more easily than writing some stuff on the zero page and then trying to
+> get the kernel to trip over itself.  It also means that programs like X
+> on i686 which use vm86 emulation can work even with mmap_min_addr set.
 > 
-> >  c) if neither of those work, provide a minimal routine that _only_
-> >     deletes the handles in the crashed kernel.
-> 
-> I would hope this has the highest chance to actually work.
-> For this we would have to add a proper notifier chain.
-> Do you agree?
-> 
-> >  d) <something else>
-> 
-> Firmware change? But that's not something you will get very soon.
-> 
-> Christoph R.
-> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
+
+If nobody hollers, I'll push it to Linus when the next merge window opens.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
