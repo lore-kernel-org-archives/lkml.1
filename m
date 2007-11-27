@@ -1,35 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbXK0Q3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXK0Q3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbXK0Q3c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbXK0Q3W
+	id S1757561AbXK0Q3o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758922AbXK0Q3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:29:22 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:17985 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756876AbXK0Q3V (ORCPT
+	Tue, 27 Nov 2007 11:29:24 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:24964 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757091AbXK0Q3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 27 Nov 2007 11:29:21 -0500
-Message-Id: <20071127162210.262064983@de.ibm.com>
+Message-Id: <20071127162919.357661634@de.ibm.com>
+References: <20071127162210.262064983@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Nov 2007 17:22:10 +0100
+Date: Tue, 27 Nov 2007 17:22:11 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [patch 0/4] Latest patches for s390
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/4] cio: Issue SenseID per path.
+Content-Disposition: inline; filename=001-cio-senseid.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches have been added to the 2.6.24 queue:
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Christian Borntraeger (2):
-      [S390] dcssblk: prevent early access without own make_request function
-      [S390] Fix compile error on 31bit without preemption
+We may receive a unit check for every path when we issue a SenseID.
+Unfortunately, the channel subsystem will try on a different path
+every time if we use a lpm of 0xff, which will exhaust our retry
+counter.
 
-Cornelia Huck (1):
-      [S390] cio: Issue SenseID per path.
+Therefore, revert SenseID to its previous per-path behaviour and
+just leave out the suspend multipath reconnect.
 
-Peter Oberparleiter (1):
-      [S390] cio: add missing reprobe loop end statement
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ drivers/s390/cio/device_id.c |   37 ++++++++++++++++++++++++++++---------
+ 1 file changed, 28 insertions(+), 9 deletions(-)
+
+Index: quilt-2.6/drivers/s390/cio/device_id.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/cio/device_id.c
++++ quilt-2.6/drivers/s390/cio/device_id.c
+@@ -113,6 +113,7 @@ __ccw_device_sense_id_start(struct ccw_d
+ {
+ 	struct subchannel *sch;
+ 	struct ccw1 *ccw;
++	int ret;
+ 
+ 	sch = to_subchannel(cdev->dev.parent);
+ 	/* Setup sense channel program. */
+@@ -124,9 +125,25 @@ __ccw_device_sense_id_start(struct ccw_d
+ 
+ 	/* Reset device status. */
+ 	memset(&cdev->private->irb, 0, sizeof(struct irb));
+-	cdev->private->flags.intretry = 0;
+ 
+-	return cio_start(sch, ccw, LPM_ANYPATH);
++	/* Try on every path. */
++	ret = -ENODEV;
++	while (cdev->private->imask != 0) {
++		if ((sch->opm & cdev->private->imask) != 0 &&
++		    cdev->private->iretry > 0) {
++			cdev->private->iretry--;
++			/* Reset internal retry indication. */
++			cdev->private->flags.intretry = 0;
++			ret = cio_start (sch, cdev->private->iccws,
++					 cdev->private->imask);
++			/* ret is 0, -EBUSY, -EACCES or -ENODEV */
++			if (ret != -EACCES)
++				return ret;
++		}
++		cdev->private->imask >>= 1;
++		cdev->private->iretry = 5;
++	}
++	return ret;
+ }
+ 
+ void
+@@ -136,7 +153,8 @@ ccw_device_sense_id_start(struct ccw_dev
+ 
+ 	memset (&cdev->private->senseid, 0, sizeof (struct senseid));
+ 	cdev->private->senseid.cu_type = 0xFFFF;
+-	cdev->private->iretry = 3;
++	cdev->private->imask = 0x80;
++	cdev->private->iretry = 5;
+ 	ret = __ccw_device_sense_id_start(cdev);
+ 	if (ret && ret != -EBUSY)
+ 		ccw_device_sense_id_done(cdev, ret);
+@@ -252,13 +270,14 @@ ccw_device_sense_id_irq(struct ccw_devic
+ 		ccw_device_sense_id_done(cdev, ret);
+ 		break;
+ 	case -EACCES:		/* channel is not operational. */
++		sch->lpm &= ~cdev->private->imask;
++		cdev->private->imask >>= 1;
++		cdev->private->iretry = 5;
++		/* fall through. */
+ 	case -EAGAIN:		/* try again. */
+-		cdev->private->iretry--;
+-		if (cdev->private->iretry > 0) {
+-			ret = __ccw_device_sense_id_start(cdev);
+-			if (ret == 0 || ret == -EBUSY)
+-				break;
+-		}
++		ret = __ccw_device_sense_id_start(cdev);
++		if (ret == 0 || ret == -EBUSY)
++			break;
+ 		/* fall through. */
+ 	default:		/* Sense ID failed. Try asking VM. */
+ 		if (MACHINE_IS_VM) {
 
 -- 
 blue skies,
