@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbXK0ITv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbXK0IZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbXK0ITv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXK0ITo
+	id S1754994AbXK0IZc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 03:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbXK0IZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:19:44 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46592 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbXK0ITn (ORCPT
+	Tue, 27 Nov 2007 03:25:24 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:3344 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbXK0IZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:19:43 -0500
-Message-ID: <474BD316.3030709@bull.net>
-Date: Tue, 27 Nov 2007 09:19:34 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 27 Nov 2007 03:25:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hVnpCeB1rN7v/5FdvbW6gUm1Pm1jmXcRQdemgpCoxs8uUBM2v5gI+Mu7NWiUmF8Fiyi7EZHvVpkqVFUG6d1CvYXlAbcD+mN+J7Y+63JkNHAoQXpNHka56pkVbkb8nz25Dck36tpqVoYCwuC6Ic3zUxObQFyeMTyxK23FwSPCRjk=
+Message-ID: <a8e1da0711270025v4c6c04b6gf8d5916670f5efa6@mail.gmail.com>
+Date: Tue, 27 Nov 2007 16:25:22 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: 2.6.24-rc3-mm1 - brick my Dell Latitude D820
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <4210.1196147786@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: consolidate sem_exit_ns(), msg_exit_ns
- and shm_exit_ns()
-References: <20071123175250.0f584913.pierre.peiffer@bull.net>	<20071126224438.df547263.akpm@linux-foundation.org> <20071126224636.ca1ef92e.akpm@linux-foundation.org>
-In-Reply-To: <20071126224636.ca1ef92e.akpm@linux-foundation.org>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 27/11/2007 09:27:01,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 27/11/2007 09:27:03,
-	Serialize complete at 27/11/2007 09:27:03
-Content-Transfer-Encoding: 7bit
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	 <4210.1196147786@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Nov 27, 2007 3:16 PM,  <Valdis.Kletnieks@vt.edu> wrote:
+> On Tue, 20 Nov 2007 20:45:25 PST, Andrew Morton said:
+> >
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm1/
+>
+> Finally got both time and motivation to at least start a bisect..
+>
+> 2.6.23-mm1 works on my D820 (x86_64 kernel, Core2 Duo T7200)
+>
+> 24-rc3-mm1 (plus 3 patches from hotfixes/) bricks *instantly* at boot - grub
+> prints its 3 or 4 lines saying what it loaded, the screen clears, and *blam*
+> dead. No serial console output, no pair of penguins on the monitor, no
+> netconsole, no earlyprintk=vga output, no alt-sysrq, only thing that does
+> *anything* is "hold the power button for 5 seconds".  Whatever it is, it
+> happens *very* early (before we get as far as the 'Linux version 2.6.mumble'
+> banner), and happens *hard*.
+>
+> I've bisected it down this far:
+>
+> git-ipwireless_cs.patch GOOD
+> git-x86.patch
+> git-x86-fixup.patch
+> git-x86-thread_order-borkage.patch
+> git-x86-thread_order-borkage-fix.patch
+> git-x86-identify_cpu-fix.patch
+> git-x86-memory_add_physaddr_to_nid-export-for-acpi-memhotplugko.patch
+> git-x86-memory_add_physaddr_to_nid-export-for-acpi-memhotplugko-checkpatch-fixes.patch
+> git-x86-inlining-borkage.patch
+> x86_64-set-cpu_index-to-nr_cpus-instead-of-0.patch
+> x86_64-make-sparsemem-vmemmap-the-default-memory-model-v2.patch BAD
+>
+> Anybody got any good debugging ideas before I go through and do the final
+> 3 or 4 bisects?  I suspect I'll need them once I find the offending patch
+> to tell *why* said patch dies on my box - I've seen enough traffic regarding
+> -rc3-mm1 dying *later* to know it's probably a subtle issue and not one
+> that will be obvious once I finger a specific patch.  For example, it's
+> probably not the IO-APIC panic that people are seeing, because their kernels
+> live long enough to panic. ;)
 
+Hi,
+does boot_delay helps?
 
-Andrew Morton wrote:
-> On Mon, 26 Nov 2007 22:44:38 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
->> On Fri, 23 Nov 2007 17:52:50 +0100 Pierre Peiffer <pierre.peiffer@bull.net> wrote:
->>
->>> sem_exit_ns(), msg_exit_ns() and shm_exit_ns() are all called when an ipc_namespace is
->>> released to free all ipcs of each type.
->>> But in fact, they do the same thing: they loop around all ipcs to free them
->>> individually by calling a specific routine.
->>>
->>> This patch proposes to consolidate this by introducing a common function, free_ipcs(),
->>> that do the job. The specific routine to call on each individual ipcs is passed as
->>> parameter. For this, these ipc-specific 'free' routines are reworked to take a
->>> generic 'struct ipc_perm' as parameter.
->> This conflicts in more-than-trivial ways with Pavel's
->> move-the-ipc-namespace-under-ipc_ns-option.patch, which was in
->> 2.6.24-rc3-mm1.
->>
-> 
-> err, no, it wasn't that patch.  For some reason your change assumes that
-> msg_exit_ns() (for example) doesn't have these lines:
-> 
->         kfree(ns->ids[IPC_MSG_IDS]);
->         ns->ids[IPC_MSG_IDS] = NULL;
-> 
-> in it.
-
-Yes, in fact, I've made this patch on top of this one:
-http://lkml.org/lkml/2007/11/22/49
-
-As the patch mentioned by this previous thread was acked by Cedric and Pavel,
-I've assumed that you will take both. But I've not made this clear, sorry.
-
--- 
-Pierre
+Regards
+dave
