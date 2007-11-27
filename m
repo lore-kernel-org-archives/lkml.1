@@ -1,28 +1,40 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbXKZS74 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 26 Nov 2007 13:59:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXKZS7p
+	id S1753325AbXK0GaL (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 27 Nov 2007 01:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXK0G35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 13:59:45 -0500
-Received: from fallbackmx07.syd.optusnet.com.au ([211.29.132.9]:54598 "EHLO
-	fallbackmx07.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753269AbXKZS7p (ORCPT
+	Tue, 27 Nov 2007 01:29:57 -0500
+Received: from 216-73-125-80.ocdc-01.net ([216.73.125.80]:52912 "EHLO
+	sdcp5.ocservers.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbXK0G34 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 13:59:45 -0500
-X-Greylist: delayed 21967 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Nov 2007 13:59:44 EST
-Message-Id: <200711261230.lAQCU6YL026365@mail01.syd.optusnet.com.au>
-Content-Type: text/plain
-Content-Disposition: inline
-Content-Transfer-Encoding: binary
-Mime-Version: 1.0
-X-Mailer: MIME-tools 5.420 (Entity 5.420)
-From: "Fondazion Di Vittorio." <info@fondazionedivittorio.it>
-Date: Mon, 26 Nov 2007 23:30:06 +1100
-Subject: Fondazion Di Vittorio, ITALY
-Reply-To: ecowas_fdv_payoutdept1@yahoo.it
-To: unlisted-recipients:; (no To-header on input)
+	Tue, 27 Nov 2007 01:29:56 -0500
+X-Greylist: delayed 3429 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Nov 2007 01:29:56 EST
+To: linux-kernel@vger.kernel.org
+X-Autorespond: ***SPAM*** Returned mail: see transcript for details
+From: "Christine Abraham" <cabraham@prbo.org>
+Content-type: text/plain; charset=utf-8
+Subject: out of office
+Message-Id: <E1Iwt3u-0006Nk-0a@sdcp5.ocservers.net>
+Date: Mon, 26 Nov 2007 21:32:46 -0800
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - sdcp5.ocservers.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [32025 32026] / [47 12]
+X-AntiAbuse: Sender Address Domain - sdcp5.ocservers.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755524AbXKZS74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753325AbXK0GaL@vger.kernel.org>
 
-<<< No Message Collected >>>
+I am responding to the oil spill in San Francisco Bay and will have very limited email contact for the forseeable future. If this is urgent, please call my cell phone (415-717-6348), and I'll get back to you as soon as possible.  
+
+Thanks for your patience, 
+Christine Abraham
+
+Christine Abraham
+Marine Ecology Division 
+PRBO Conservation Science 
+3820 Cypress Dr. #11
+Petaluma, California
+94954
+707-781-2555 ext. 334
