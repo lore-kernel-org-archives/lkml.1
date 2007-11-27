@@ -1,130 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbXK0DDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbXK0DD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbXK0DDQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 22:03:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbXK0DDB
+	id S1756148AbXK0DD2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 22:03:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXK0DDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 22:03:01 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37739 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753695AbXK0DDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 22:03:00 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
+	Mon, 26 Nov 2007 22:03:14 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52910 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754914AbXK0DDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 22:03:12 -0500
+Date: Tue, 27 Nov 2007 12:06:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Fw: Re: [PATCH 1/3] signal(i386): alternative signal stack
-	wraparound occurs
-In-Reply-To: Ingo Molnar's message of  Tuesday, 27 November 2007 00:02:42 +0100 <20071126230242.GA9623@elte.hu>
-References: <20071126143317.dd884128.akpm@linux-foundation.org>
-	<20071126230242.GA9623@elte.hu>
-X-Shopping-List: (1) Didactic outrageous watch expectorants
-   (2) Odious miscreant salmon
-   (3) Vibrant bogs
-   (4) Graphic battalions
-   (5) Epileptic intrusion adhesives
-Message-Id: <20071127030222.ACD7326F8C5@magilla.localdomain>
-Date: Mon, 26 Nov 2007 19:02:22 -0800 (PST)
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH][for -mm] per-zone and reclaim enhancements for memory
+ controller take 3 [7/10] calculate the number of pages to be scanned per
+ cgroup
+Message-Id: <20071127120625.abb39148.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cf http://lkml.org/lkml/2007/10/3/41
+Define function for calculating the number of scan target on each Zone/LRU.
 
-To summarize: on Linux, SA_ONSTACK decides whether you are already on the
-signal stack based on the value of the SP at the time of a signal.  If
-you are not already inside the range, you are not "on the signal stack"
-and so the new signal handler frame starts over at the base of the signal
-stack.
+Changelog V1->V2.
+ - fixed types of variable.
 
-sigaltstack (and sigstack before it) was invented in BSD.  There, the
-SA_ONSTACK behavior has always been different.  It uses a kernel state
-flag to decide, rather than the SP value.  When you first take an
-SA_ONSTACK signal and switch to the alternate signal stack, it sets the
-SS_ONSTACK flag in the thread's sigaltstack state in the kernel.
-Thereafter you are "on the signal stack" and don't switch SP before
-pushing a handler frame no matter what the SP value is.  Only when you
-sigreturn from the original handler context do you clear the SS_ONSTACK
-flag so that a new handler frame will start over at the base of the
-alternate signal stack.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-The undesireable effect of the Linux behavior is that an overflow of the
-alternate signal stack can not only go undetected, but lead to a ring
-buffer effect of clobbering the original handler frame at the base of the
-signal stack for each successive signal that comes just after the
-overflow.  This is what Shi Weihua's test case demonstrates.  Normally
-this does not come up because of the signal mask, but the test case uses
-SA_NODEFER for its SIGSEGV handler.
+ include/linux/memcontrol.h |   15 +++++++++++++++
+ mm/memcontrol.c            |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
 
-The other subtle part of the existing Linux semantics is that a simple
-longjmp out of a signal handler serves to take you off the signal stack
-in a safe and reliable fashion without having used sigreturn (nor having
-just returned from the handler normally, which means the same).  After
-the longjmp (or even informal stack switching not via any proper libc or
-kernel interface), the alternate signal stack stands ready to be used
-again.
-
-A paranoid program would allocate a PROT_NONE red zone around its
-alternate signal stack.  Then a small overflow would trigger a SIGSEGV in
-handler setup, and be fatal (core dump) whether or not SIGSEGV is
-blocked.  As with thread stack red zones, that cannot catch all overflows
-(or underflows).  e.g., a local array as large as page size allocated in
-a function called from a handler, but not actually touched before more
-calls push more stack, could cause an overflow that silently pushes into
-some unrelated allocated pages.
-
-The BSD behavior does not do anything in particular about overflow.  But
-it does at least avoid the wraparound or "ring buffer effect", so you'll
-just get a straightforward all-out overflow down your address space past
-the low end of the alternate signal stack.  I don't know what the BSD
-behavior is for longjmp out of an SA_ONSTACK handler.
-
-The POSIX wording relating to sigaltstack is pretty minimal.  I don't
-think it speaks to this issue one way or another.  (The program that
-overflows its stack is clearly in undefined behavior territory of one
-sort or another anyhow.)
-
-Given the longjmp issue and the potential for highly subtle complications
-in existing programs relying on this in arcane ways deep in their code, I
-am very dubious about changing the behavior to the BSD style persistent
-flag.  I think Shi Weihua's patches have a similar effect by tracking the
-SP used in the last handler setup.
-
-I think it would be sensible for the signal handler setup code to detect
-when it would itself be causing a stack overflow.  Maybe something like
-the following patch (untested).  This issue exists in the same way on all
-machines, so ideally they would all do a similar check.  
-
-When it's the handler function itself or its callees that cause the
-overflow, rather than the signal handler frame setup alone crossing the
-boundary, this still won't help.  But I don't see any way to distinguish
-that from the valid longjmp case.
-
-
-Thanks,
-Roland
-
----
-
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index d58d455..0000000 100644  
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -295,6 +295,13 @@ get_sigframe(struct k_sigaction *ka, str
- 	/* Default to using normal stack */
- 	esp = regs->esp;
+Index: linux-2.6.24-rc3-mm1/include/linux/memcontrol.h
+===================================================================
+--- linux-2.6.24-rc3-mm1.orig/include/linux/memcontrol.h	2007-11-27 11:22:14.000000000 +0900
++++ linux-2.6.24-rc3-mm1/include/linux/memcontrol.h	2007-11-27 11:22:51.000000000 +0900
+@@ -73,6 +73,10 @@
+ extern void mem_cgroup_record_reclaim_priority(struct mem_cgroup *mem,
+ 							int priority);
  
-+	/*
-+	 * If we are on the alternate signal stack and would overflow it, don't.
-+	 * Return an always-bogus address instead so we will die with SIGSEGV.
-+	 */
-+	if (on_sig_stack(esp) && !likely(on_sig_stack(esp - frame_size)))
-+		return (void __user *) -1L;
++extern long mem_cgroup_calc_reclaim_active(struct mem_cgroup *mem,
++				struct zone *zone, int priority);
++extern long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
++				struct zone *zone, int priority);
+ 
+ #else /* CONFIG_CGROUP_MEM_CONT */
+ static inline void mm_init_cgroup(struct mm_struct *mm,
+@@ -173,6 +177,17 @@
+ 	return 0;
+ }
+ 
++static inline long mem_cgroup_calc_reclaim_active(struct mem_cgroup *mem,
++					struct zone *zone, int priority)
++{
++	return 0;
++}
 +
- 	/* This is the X/Open sanctioned signal stack switching.  */
- 	if (ka->sa.sa_flags & SA_ONSTACK) {
- 		if (sas_ss_flags(esp) == 0)
++static inline long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
++					struct zone *zone, int priority)
++{
++	return 0;
++}
+ #endif /* CONFIG_CGROUP_MEM_CONT */
+ 
+ #endif /* _LINUX_MEMCONTROL_H */
+Index: linux-2.6.24-rc3-mm1/mm/memcontrol.c
+===================================================================
+--- linux-2.6.24-rc3-mm1.orig/mm/memcontrol.c	2007-11-27 11:22:14.000000000 +0900
++++ linux-2.6.24-rc3-mm1/mm/memcontrol.c	2007-11-27 11:24:04.000000000 +0900
+@@ -472,6 +472,39 @@
+ 	mem->prev_priority = priority;
+ }
+ 
++/*
++ * Calculate # of pages to be scanned in this priority/zone.
++ * See also vmscan.c
++ *
++ * priority starts from "DEF_PRIORITY" and decremented in each loop.
++ * (see include/linux/mmzone.h)
++ */
++
++long mem_cgroup_calc_reclaim_active(struct mem_cgroup *mem,
++				   struct zone *zone, int priority)
++{
++	long nr_active;
++	int nid = zone->zone_pgdat->node_id;
++	int zid = zone_idx(zone);
++	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(mem, nid, zid);
++
++	nr_active = MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE);
++	return (nr_active >> priority);
++}
++
++long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
++					struct zone *zone, int priority)
++{
++	long nr_inactive;
++	int nid = zone->zone_pgdat->node_id;
++	int zid = zone_idx(zone);
++	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(mem, nid, zid);
++
++	nr_inactive = MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE);
++
++	return (nr_inactive >> priority);
++}
++
+ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
+ 					struct list_head *dst,
+ 					unsigned long *scanned, int order,
+
