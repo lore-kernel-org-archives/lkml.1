@@ -1,43 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbXK0Xc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbXK0XmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760426AbXK0Xc5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:32:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758328AbXK0Xcu
+	id S1759890AbXK0XmK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:42:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbXK0Xl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:32:50 -0500
-Received: from gw.goop.org ([64.81.55.164]:49841 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756727AbXK0Xct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:32:49 -0500
-Message-ID: <474CA923.9080207@goop.org>
-Date: Tue, 27 Nov 2007 15:32:51 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/3] x86: clean up bitops-related warnings
-References: <20071127230124.271668615@goop.org> <20071127230130.508648745@goop.org> <200711280017.33344.ak@suse.de>
-In-Reply-To: <200711280017.33344.ak@suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 27 Nov 2007 18:41:56 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:26323 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbXK0Xlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 18:41:55 -0500
+Date: Tue, 27 Nov 2007 15:40:55 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch
+ specific percpu setup
+Message-Id: <20071127154055.35e07833.randy.dunlap@oracle.com>
+In-Reply-To: <20071127001430.313046247@sgi.com>
+References: <20071127001407.859743255@sgi.com>
+	<20071127001430.313046247@sgi.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wednesday 28 November 2007 00:01:26 Jeremy Fitzhardinge wrote:
->   
->> Add casts to appropriate places to silence spurious bitops warnings.
->>     
->
-> Looks a bit ugly. Perhaps it would be better to define standard wrappers
->
-> clear_bit_unaligned/any/bettername() etc. ?
+On Mon, 26 Nov 2007 16:14:12 -0800 Christoph Lameter wrote:
 
-Well, most of the casts are already in wrapper functions.  The
-setup_64.c ones are ugly, but the following patch cleans them up.
+> The use of the __GENERIC_PERCPU is a bit problematic since arches
+> may want to run their own percpu setup while using the generic
+> percpu definitions. Replace it through a kconfig variable.
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Andi Kleen <ak@suse.de>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> ---
+> 
+> Index: linux-2.6/arch/ia64/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/ia64/Kconfig	2007-11-26 15:38:56.415112360 -0800
+> +++ linux-2.6/arch/ia64/Kconfig	2007-11-26 15:40:10.425862722 -0800
+> @@ -75,6 +75,10 @@ config GENERIC_TIME_VSYSCALL
+>  	bool
+>  	default y
+>  
+> +config ARCH_SETS_UP_PER_CPU_AREA
+> +	bool
+> +	default y
+> +
+>  config DMI
+>  	bool
+>  	default y
 
-    J
+> Index: linux-2.6/arch/sparc64/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/sparc64/Kconfig	2007-11-26 15:38:56.447111936 -0800
+> +++ linux-2.6/arch/sparc64/Kconfig	2007-11-26 15:40:10.425862722 -0800
+> @@ -66,6 +66,10 @@ config AUDIT_ARCH
+>  	bool
+>  	default y
+>  
+> +config ARCH_SETS_UP_PER_CPU_AREA
+> +	bool
+> +	default y
 
+	def_bool y
+  is the preferred form for those 2-liners above...
+
+
+> +
+>  config ARCH_NO_VIRT_TO_BUS
+>  	def_bool y
+>  
+
+
+---
+~Randy
