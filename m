@@ -1,102 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbXK0O06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbXK0Oak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbXK0O06 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 09:26:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXK0O0u
+	id S1757456AbXK0Oak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 09:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbXK0Oac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 09:26:50 -0500
-Received: from il.qumranet.com ([82.166.9.18]:45670 "EHLO il.qumranet.com"
+	Tue, 27 Nov 2007 09:30:32 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4994 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752372AbXK0O0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 09:26:49 -0500
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] KVM fixes for Linux 2.6.24-rc3
-Date: Tue, 27 Nov 2007 16:27:28 +0200
-Message-Id: <11961736482266-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3
+	id S1753671AbXK0Oac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 09:30:32 -0500
+Date: Tue, 27 Nov 2007 09:28:26 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Andi Kleen <ak@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Neil Horman <nhorman@redhat.com>, hbabu@us.ibm.com, vgoyal@in.ibm.com,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071127142826.GB31376@hmsreliant.think-freely.org>
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711271445.56792.ak@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, Nov 27, 2007 at 02:45:56PM +0100, Andi Kleen wrote:
+> his is any less reliable that what we have currently.
+> > 
+> > It doesn't make things more reliable, and it adds code to a code path
+> > that already has to much code to be solid reliable (thus your
+> > problem). 
+> > 
+> > Putting the system back in PIC legacy mode on the kexec on panic path
+> > was supposed to be a short term hack until we could remove the need
+> > by always deliver interrupts in apic mode.
+> > 
+> > If you can't root cause your problem and figure out how the apics
+> > are misconfigured for legacy mode
+> 
+> Probably legacy mode always routes to CPU #0. Makes sense and is
+> not really a misconfiguration of legacy mode.
+> 
+> But if CPU #0 has interrupts disabled no interrupts get delivered.
+> 
+> So choices are:
+> - Move to CPU #0
+> - Do not use legacy mode during shutdown.
+> - Or do not rely on interrupts after enabling legacy mode
+> - Or do not disable interrupts on the other CPUs when they're
+> halted.
+> 
+> First and last option are probably unreliable for the kdump case.
+> Second or third sound best. 
+> 
 
-Please pull the the kvm updates in
+Not sure if this is applicable, but I assume not relying on interrupts in legacy
+mode would be equivalent to specifying irqpoll on the kdump kernel command line?
+If so, there seems to be a problem with that solution, as doing so still results
+in the same hang on the system in question.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
 
-fixing some x86 emulator and AMD FPU handling regressions.
+As for solution 2, that brings me to my previous question.  Is that really as
+simple as just not moving the apic to legacy mode?  It would seem some
+additional programming would be in order to route the interrupt in question to
+the proper cpu.
 
-Amit Shah (2):
-      KVM: x86 emulator: Use emulator_write_emulated and not emulator_write_std
-      KVM: SVM: Fix FPU leak while emulating clts
+Regards
+Neil
 
-Avi Kivity (1):
-      KVM: SVM: Unload guest fpu on vcpu_put()
-
-Izik Eidus (2):
-      KVM: x86 emulator: fix JMP_REL
-      KVM: x86 emulator: fix the saving of of the eip value
-
- drivers/kvm/kvm_main.c    |    3 +--
- drivers/kvm/svm.c         |    1 +
- drivers/kvm/x86_emulate.c |    6 +++---
- 3 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 07ae280..47c10b8 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1188,8 +1188,7 @@ int emulate_invlpg(struct kvm_vcpu *vcpu, gva_t address)
- 
- int emulate_clts(struct kvm_vcpu *vcpu)
- {
--	vcpu->cr0 &= ~X86_CR0_TS;
--	kvm_x86_ops->set_cr0(vcpu, vcpu->cr0);
-+	kvm_x86_ops->set_cr0(vcpu, vcpu->cr0 & ~X86_CR0_TS);
- 	return X86EMUL_CONTINUE;
- }
- 
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 7a6eead..4e04e49 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -663,6 +663,7 @@ static void svm_vcpu_put(struct kvm_vcpu *vcpu)
- 		wrmsrl(host_save_user_msrs[i], svm->host_user_msrs[i]);
- 
- 	rdtscll(vcpu->host_tsc);
-+	kvm_put_guest_fpu(vcpu);
- }
- 
- static void svm_vcpu_decache(struct kvm_vcpu *vcpu)
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 33b1814..bd46de6 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -448,8 +448,7 @@ struct operand {
- 
- #define JMP_REL(rel) 							\
- 	do {								\
--		_eip += (int)(rel);					\
--		_eip = ((op_bytes == 2) ? (uint16_t)_eip : (uint32_t)_eip); \
-+		register_address_increment(_eip, rel);			\
- 	} while (0)
- 
- /*
-@@ -1147,7 +1146,7 @@ done_prefixes:
- 			}
- 			register_address_increment(_regs[VCPU_REGS_RSP],
- 						   -dst.bytes);
--			if ((rc = ops->write_std(
-+			if ((rc = ops->write_emulated(
- 				     register_address(ctxt->ss_base,
- 						      _regs[VCPU_REGS_RSP]),
- 				     &dst.val, dst.bytes, ctxt->vcpu)) != 0)
-@@ -1359,6 +1358,7 @@ special_insn:
- 		}
- 		src.val = (unsigned long) _eip;
- 		JMP_REL(rel);
-+		op_bytes = ad_bytes;
- 		goto push;
- 	}
- 	case 0xe9: /* jmp rel */
+> I suspect the real fix would be to enable IOAPIC mode really
+> early and never use the timers in legacy mode. Then the kdump
+> kernel wouldn't care about the legacy mode pointing to the wrong CPU.
+> 
+> IIrc Eric even had  a patch for that a long time ago, but it broke some 
+> things so it wasn't included. But perhaps it should be revisited.
+> 
+> -Andi
