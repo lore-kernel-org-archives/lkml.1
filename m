@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbXK0Jfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXK0Jhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758564AbXK0Jfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 04:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbXK0JfV
+	id S1758254AbXK0Jhq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 04:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbXK0Jhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 04:35:21 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34851 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752758AbXK0JfU (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 04:35:20 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: mchan@broadcom.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: 2.6.23-mm1 tg3 wake-on-lan oddity...
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196156118_2790P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 27 Nov 2007 04:37:39 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:47803 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752369AbXK0Jhj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 04:37:39 -0500
+Message-ID: <474BE197.9060402@student.ltu.se>
+Date: Tue, 27 Nov 2007 10:21:27 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: WANG Cong <xiyou.wangcong@gmail.com>
+CC: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [VIDEO]: Complement va_start() with va_end() + style fixes
+References: <20071127065410.4293.71568.sendpatchset@thinktank.campus.ltu.se> <20071127090101.GA2626@hacking>
+In-Reply-To: <20071127090101.GA2626@hacking>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Nov 2007 04:35:18 -0500
-Message-ID: <24400.1196156118@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196156118_2790P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <24394.1196156118.1@turing-police.cc.vt.edu>
+Complement va_start() with va_end() + minor style fixes in the same function.
 
-Scenario - Dell Latitude D820 laptop, tg3 driver says this at boot:
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested on i386 with allyesconfig and allmodconfig.
+Thanks to WANG Cong for pointing out the missing 'style fix'-description.
 
-eth0: Tigon3 [partno(BCM5752KFBG) rev 6002 PHY(5752)] (PCI Express) 10/100/1000Base-T Ethernet 00:15:c5:c8:33:4e
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-eth0: dma_rwctrl[76180000] dma_mask[64-bit]
+ saa5246a.c |   10 ++++++----
+ saa5249.c  |    8 +++++---
+ 2 files changed, 11 insertions(+), 7 deletions(-)
 
-# (lspci; lspci -n) | grep 09
-09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5752 Gigabit Ethernet PCI Express (rev 02)
-09:00.0 0200: 14e4:1600 (rev 02)
 
-(I think that's most of the likely-relevant info...)
+diff --git a/drivers/media/video/saa5246a.c b/drivers/media/video/saa5246a.c
+index ad02329..996b494 100644
+--- a/drivers/media/video/saa5246a.c
++++ b/drivers/media/video/saa5246a.c
+@@ -187,12 +187,14 @@ static int i2c_senddata(struct saa5246a_device *t, ...)
+ {
+ 	unsigned char buf[64];
+ 	int v;
+-	int ct=0;
++	int ct = 0;
+ 	va_list argp;
+-	va_start(argp,t);
++	va_start(argp, t);
+ 
+-	while((v=va_arg(argp,int))!=-1)
+-		buf[ct++]=v;
++	while ((v = va_arg(argp, int)) != -1)
++		buf[ct++] = v;
++
++	va_end(argp);
+ 	return i2c_sendbuf(t, buf[0], ct-1, buf+1);
+ }
+ 
+diff --git a/drivers/media/video/saa5249.c b/drivers/media/video/saa5249.c
+index 94bb59a..da5ca30 100644
+--- a/drivers/media/video/saa5249.c
++++ b/drivers/media/video/saa5249.c
+@@ -282,12 +282,14 @@ static int i2c_senddata(struct saa5249_device *t, ...)
+ {
+ 	unsigned char buf[64];
+ 	int v;
+-	int ct=0;
++	int ct = 0;
+ 	va_list argp;
+ 	va_start(argp,t);
+ 
+-	while((v=va_arg(argp,int))!=-1)
+-		buf[ct++]=v;
++	while ((v = va_arg(argp, int)) != -1)
++		buf[ct++] = v;
++
++	va_end(argp);
+ 	return i2c_sendbuf(t, buf[0], ct-1, buf+1);
+ }
+ 
 
-Issue:
 
-I (for unrelated reasons) run powertop, and it suggests I conserve power
-by doing 'ethtool -s eth0 wol d'.  I look at it, and think that it's daft,
-because (a) the Dell factory default is WOL disabled and (b) if it wasn't
-the default, I'd have *set* it to disabled, and (c) I even went back and
-rebooted and checked the BIOS setting - disabled. Nonetheless:
-
-# ethtool eth0 | grep Wake
-        Supports Wake-on: g
-        Wake-on: g
-
-Is this expected behavior?
-
---==_Exmh_1196156118_2790P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHS+TWcC3lWbTT17ARApEWAKDWCl3iX1sGcQLMS80cIblSREuOfwCgiWWc
-pzMcG2P9/3vRFPIfghy3Rz0=
-=L00V
------END PGP SIGNATURE-----
-
---==_Exmh_1196156118_2790P--
