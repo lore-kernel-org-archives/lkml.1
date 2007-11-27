@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbXK0NqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXK0Nq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbXK0NqQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbXK0NqB
+	id S1757538AbXK0Nq6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:46:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXK0Nqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:46:01 -0500
-Received: from ns.suse.de ([195.135.220.2]:42086 "EHLO mx1.suse.de"
+	Tue, 27 Nov 2007 08:46:50 -0500
+Received: from dspnet.fr.eu.org ([213.186.44.138]:2742 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753097AbXK0NqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:46:01 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Date: Tue, 27 Nov 2007 14:45:56 +0100
-User-Agent: KMail/1.9.6
-Cc: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       hbabu@us.ibm.com, vgoyal@in.ibm.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1751018AbXK0Nqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 08:46:49 -0500
+Date: Tue, 27 Nov 2007 14:46:45 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>, Ray Lee <ray-lk@madrabbit.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: can support for "rpm"-based package building just be dropped?
+Message-ID: <20071127134645.GB20000@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Ray Lee <ray-lk@madrabbit.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain> <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com> <Pine.LNX.4.64.0711261622060.19299@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.9999.0711261048050.24142@localhost.localdomain> <Pine.LNX.4.64.0711261704070.19299@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.9999.0711261110040.25316@localhost.localdomain> <Pine.LNX.4.64.0711261716220.22369@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711271445.56792.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0711261716220.22369@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-his is any less reliable that what we have currently.
-> 
-> It doesn't make things more reliable, and it adds code to a code path
-> that already has to much code to be solid reliable (thus your
-> problem). 
-> 
-> Putting the system back in PIC legacy mode on the kexec on panic path
-> was supposed to be a short term hack until we could remove the need
-> by always deliver interrupts in apic mode.
-> 
-> If you can't root cause your problem and figure out how the apics
-> are misconfigured for legacy mode
+On Mon, Nov 26, 2007 at 05:17:18PM +0100, Jan Engelhardt wrote:
+> rpm -b does not work in opensuse anymore (redirects you to use rpmbuild), and I
+> bet fedora will do the same, so if you don't have rpm-build, tough luck for
+> make rpm.
 
-Probably legacy mode always routes to CPU #0. Makes sense and is
-not really a misconfiguration of legacy mode.
+The point, if I understand it correctly, was that when rpmbuild is not
+install and rpm is not building-capable not to fall back to rpm and
+instead yell loudly that rpmbuild is missing.
 
-But if CPU #0 has interrupts disabled no interrupts get delivered.
+To which some said that right now "do not fall back, ever, just
+require rpmbuild" may just be the best.
 
-So choices are:
-- Move to CPU #0
-- Do not use legacy mode during shutdown.
-- Or do not rely on interrupts after enabling legacy mode
-- Or do not disable interrupts on the other CPUs when they're
-halted.
+I have no opinion though.
 
-First and last option are probably unreliable for the kdump case.
-Second or third sound best. 
-
-I suspect the real fix would be to enable IOAPIC mode really
-early and never use the timers in legacy mode. Then the kdump
-kernel wouldn't care about the legacy mode pointing to the wrong CPU.
-
-IIrc Eric even had  a patch for that a long time ago, but it broke some 
-things so it wasn't included. But perhaps it should be revisited.
-
--Andi
+  OG.
 
