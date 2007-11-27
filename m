@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbXK0Wbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbXK0WcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbXK0Wbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXK0Wbd
+	id S1759463AbXK0WcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXK0WcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:31:33 -0500
-Received: from iriserv.iradimed.com ([72.242.190.170]:20834 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751745AbXK0Wbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:31:32 -0500
-Message-ID: <474C9AC9.8000400@cfl.rr.com>
-Date: Tue, 27 Nov 2007 17:31:37 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Dave Jones <davej@redhat.com>, Stephen Clark <Stephen.Clark@seclark.us>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Power Saving
-References: <47422D3B.8080704@seclark.us> <20071120005443.GB9243@redhat.com> <474232D9.20407@seclark.us> <20071120011236.GA17420@redhat.com> <474236A0.8030601@zytor.com>
-In-Reply-To: <474236A0.8030601@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Nov 2007 17:32:05 -0500
+Received: from panic.printk.net ([217.147.83.20]:38595 "EHLO panic.printk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753629AbXK0WcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:32:04 -0500
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+From: Jon Masters <jonathan@jonmasters.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+In-Reply-To: <200711271549.37670.rusty@rustcorp.com.au>
+References: <20071122343.446909000@suse.de>
+	 <200711261228.15155.rusty@rustcorp.com.au> <adahcj9sfan.fsf@cisco.com>
+	 <200711271549.37670.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Tue, 27 Nov 2007 17:31:38 -0500
+Message-Id: <1196202698.3415.119.camel@jcmlaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Nov 2007 22:31:47.0070 (UTC) FILETIME=[4B9639E0:01C83145]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15572.001
-X-TM-AS-Result: No--9.463500-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> And more importantly, there is no power advantages over T states as 
-> opposed to C states.  They pretty much mean pulsing the system in and 
-> out of either C1 or C2 depending on the CPU/chipset.
+On Tue, 2007-11-27 at 15:49 +1100, Rusty Russell wrote:
+> On Monday 26 November 2007 17:15:44 Roland Dreier wrote:
 
-Well, they FORCE the use of the C states to save power, even if the 
-kernel doesn't want to because it still has runnable tasks.  This can be 
-useful if you know you are running a task that busy waits but would not 
-suffer from having the performance of the cpu cut in half.  Since it is 
-busy waiting, the kernel never activates the C states, but the 
-throttling will force it and thus, save you power and heat.
+> > It seems pretty   
+> > clear to me that having a mechanism that requires modules to make
+> > explicit which (semi-)internal APIs makes reviewing easier
+> 
+> Perhaps you've got lots of patches were people are using internal APIs they 
+> shouldn't?
+
+With my "Enterprise" hat on, I can see where Andi was coming from
+originally. Just like we do in RHEL, SuSE have a concept of a kernel ABI
+and we too have a concept of a whitelist of symbols - a subset of kernel
+ABI that is approved for use by third parties (this is nothing to do
+with licensing, this is to do with ABI stability we try to ensure).
+
+As part of figuring out what should and should not be used by external
+modules (outside of the core kernel), we've gained a bit of experience,
+and it would be nice to be able to help others - this is nothing to do
+with upstream "ABI stability", but just to be of a public service by
+documenting those functions that are never intended for modules but
+which necessarily are exported because they have one or two users.
+
+> > , makes it 
+> > easier to communicate "please don't use that API" to module authors,
+> 
+> Well, introduce an EXPORT_SYMBOL_INTERNAL().  It's a lot less code.  But you'd 
+> still need to show that people are having trouble knowing what APIs to use.
+
+I suggested this exact idea privately at OLS. I still think it's the
+best compromise, though I like bits of the namespace idea. An
+EXPORT_SYMBOL_INTERNAL would indeed be trivial.
+
+Jon.
 
 
