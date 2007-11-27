@@ -1,104 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbXK0T7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbXK0UBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbXK0T7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 14:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbXK0T7Y
+	id S1758092AbXK0UBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbXK0UBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 14:59:24 -0500
-Received: from qb-out-0506.google.com ([72.14.204.232]:27595 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbXK0T7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 14:59:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=bfwPBnJ3+JtjOrNvyE6xNi2dEqM0WiEVIwQnuzRhc22I3fuAeIaLD5MyVZ+Ds/a2KTydZxP+/Gv72Cn5ynIByEy6/+64s3fCHDppvqLFnL/8WNYJM/Y9T6BcdHQ17BfJF0uAKS0bqPfyJQ8qL6KtTn60r6gihyBfVMWcYdicAXI=
-Date: Wed, 28 Nov 2007 02:58:56 +0700
-From: Riki Oktarianto <rkoktarianto@gmail.com>
-To: Nicolas Boichat <nicolas@boichat.ch>
-Cc: linux-kernel@vger.kernel.org, mactel-linux-devel@lists.sourceforge.net
-Subject: [PATCH] applesmc - sensors set for MacBook2
-Message-ID: <20071127195856.GA13324@ceren>
+	Tue, 27 Nov 2007 15:01:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35854 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754301AbXK0UBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:01:23 -0500
+Date: Tue, 27 Nov 2007 15:00:11 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Ben Woodard <woodard@redhat.com>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071127200011.GA3703@redhat.com>
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my mid-2007 MacBook2, reading Ts0P sensor always failed with this message:
-applesmc: wait status failed: 5 != 50.
+On Tue, Nov 27, 2007 at 02:42:20PM -0500, Neil Horman wrote:
 
-So I assume that there's no such Ts0p sensor in this model (please confirm,
-anyone). If there's the case, then we need a new set of sensors defined for
-MacBook2.
+[..]
+> 
+> Ben I tend to agree.  I think re-enabling the APIC early in the boot process
+> provides a greater degree of reliability in that it more quickly restores the
+> system to a state where booting on a cpu other than cpu0 will be more likely to
+> work, but I have to say that overall it seems like booting a secondary kernel on
+> cpu0, when possible offers the highest degree of reliability.
+> 
+> Perhaps what we need is a 'both solution'.  Re-enabling the apic to full smp
+> functionality early in the boot process is a good solution for the problems
+> which we are hypothesizing here, and would be a good thing to do in general, but
+> it doesn't preclude also attmpting to switch back to cpu0 during a crash.
+> 
+> Perhaps it would be worthwhile to:
+> 
+> 1) Investigate the early enablement of the ioapic for x86[_64]
+> 2) implement my prevoiusly proposed patch with the addition of a handshake
+> element, such that:
+> 	a) when the boot cpu gets the ipi from machine_crash_shutdown it flags
+> 	   the fact that it is going to boot the kexec kernel with a global
+> 	   variable
+> 	b) the crashing cpu loops waiting for either:
+> 		I) a timeout of 1 second
+> 		II) a reduction of the halt count to zero
+> 		III) the setting of the flag mentioned in (a)
+> 	c) the crashing cpu, if it sees that it is not the boot cpu AND
+> 	   that the flag in (III) is set, will halt itself, otherwise it
+> 	   will set the flag and boot the kexec image itself.
+> 
+> With this modification, we can try to relocate to cpu0,  and if we fail, we fall
+> back to booting on the crashing processor.
+> 
+> I'll work up a patch that implements (2), unless there are strong objections.  I
+> see no reason why we can't implment this 'both' solution.
+> 
 
---
+Hi Neil,
 
-Signed-off-by: Riki Oktarianto <rkoktarianto@gmail.com>
+If we implement first solution, we don't have to implement second. Problem
+will automatically be solved.
 
---- linux-2.6.24-rc3.orig/drivers/hwmon/applesmc.c
-+++ linux-2.6.24-rc3/drivers/hwmon/applesmc.c
-@@ -84,12 +84,15 @@ static const char* temperature_sensors_s
- /* Set 0: Macbook Pro */
- 	{ "TA0P", "TB0T", "TC0D", "TC0P", "TG0H", "TG0P", "TG0T", "Th0H",
- 	  "Th1H", "Tm0P", "Ts0P", "Ts1P", NULL },
--/* Set 1: Macbook set */
-+/* Set 1: Macbook2 set */
-+	{ "TB0T", "TC0D", "TC0P", "TM0P", "TN0P", "TN1P", "Th0H", "Th0S",
-+	  "Th1H", NULL },
-+/* Set 2: Macbook set */
- 	{ "TB0T", "TC0D", "TC0P", "TM0P", "TN0P", "TN1P", "Th0H", "Th0S",
- 	  "Th1H", "Ts0P", NULL },
--/* Set 2: Macmini set */
-+/* Set 3: Macmini set */
- 	{ "TC0D", "TC0P", NULL },
--/* Set 3: Mac Pro (2 x Quad-Core) */
-+/* Set 4: Mac Pro (2 x Quad-Core) */
- 	{ "TA0P", "TCAG", "TCAH", "TCBG", "TCBH", "TC0C", "TC0D", "TC0P",
- 	  "TC1C", "TC1D", "TC2C", "TC2D", "TC3C", "TC3D", "THTG", "TH0P",
- 	  "TH1P", "TH2P", "TH3P", "TMAP", "TMAS", "TMBS", "TM0P", "TM0S",
-@@ -1212,12 +1215,14 @@ static void applesmc_release_acceleromet
- static __initdata struct dmi_match_data applesmc_dmi_data[] = {
- /* MacBook Pro: accelerometer, backlight and temperature set 0 */
- 	{ .accelerometer = 1, .light = 1, .temperature_set = 0 },
--/* MacBook: accelerometer and temperature set 1 */
-+/* MacBook2: accelerometer and temperature set 1 */
- 	{ .accelerometer = 1, .light = 0, .temperature_set = 1 },
--/* MacMini: temperature set 2 */
--	{ .accelerometer = 0, .light = 0, .temperature_set = 2 },
--/* MacPro: temperature set 3 */
-+/* MacBook: accelerometer and temperature set 2 */
-+	{ .accelerometer = 1, .light = 0, .temperature_set = 2 },
-+/* MacMini: temperature set 3 */
- 	{ .accelerometer = 0, .light = 0, .temperature_set = 3 },
-+/* MacPro: temperature set 4 */
-+	{ .accelerometer = 0, .light = 0, .temperature_set = 4 },
- };
- 
- /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
-@@ -1229,16 +1234,20 @@ static __initdata struct dmi_system_id a
- 		(void*)&applesmc_dmi_data[0]},
- 	{ applesmc_dmi_match, "Apple MacBook", {
- 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
--	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook") },
-+	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook2") },
- 		(void*)&applesmc_dmi_data[1]},
-+	{ applesmc_dmi_match, "Apple MacBook", {
-+	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
-+	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook") },
-+		(void*)&applesmc_dmi_data[2]},
- 	{ applesmc_dmi_match, "Apple Macmini", {
- 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
- 	  DMI_MATCH(DMI_PRODUCT_NAME,"Macmini") },
--		(void*)&applesmc_dmi_data[2]},
-+		(void*)&applesmc_dmi_data[3]},
- 	{ applesmc_dmi_match, "Apple MacPro2", {
- 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
- 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacPro2") },
--		(void*)&applesmc_dmi_data[3]},
-+		(void*)&applesmc_dmi_data[4]},
- 	{ .ident = NULL }
- };
- 
+In general adding more code in crash shutdown path is not good. We are
+trying to make that code path as small as possible.
+
+OTOH, I think we have not root caused this problem yet. We don't know yet
+why interrupts are not coming to non-boot cpu. I think we can go little
+deeper to compare the system state in normal boot and kdump boot and see
+what has changed. System state would include, LAPIC and IOAPIC entries
+etc.
+
+Are we putting the system back in PIC mode or virtual wire mode? I have
+not seen systems which support PIC mode. All latest systems seems
+to be having virtual wire mode. I think in case of PIC mode, interrupts
+can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
+to deliver interrupt to any of the cpus and that's what we have been
+relying on  until and unless there is something board specific.
+
+Thanks
+Vivek
