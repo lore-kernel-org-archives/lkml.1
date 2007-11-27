@@ -1,69 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbXK0VMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbXK0VN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbXK0VMW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 16:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbXK0VMP
+	id S1759709AbXK0VN3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 16:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbXK0VNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 16:12:15 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42155 "EHLO
+	Tue, 27 Nov 2007 16:13:21 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42402 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752305AbXK0VMO (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 16:12:14 -0500
-Date: Wed, 28 Nov 2007 08:11:58 +1100
-From: David Chinner <dgc@sgi.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS related Oops (suspend/resume related)
-Message-ID: <20071127211155.GK119954183@sgi.com>
-References: <20071112064706.GA23595@dose.home.local> <20071126210844.GB119954183@sgi.com> <200711262307.56742.rjw@sisk.pl> <200711271651.39180.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711271651.39180.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+	with ESMTP id S1756902AbXK0VNV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 16:13:21 -0500
+Date: Tue, 27 Nov 2007 13:13:20 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Mackerras <paulus@samba.org>
+cc: Kumar Gala <galak@kernel.crashing.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 11/14] Powerpc: Use generic per cpu
+In-Reply-To: <18252.34032.207280.742887@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0711271311370.4590@schroedinger.engr.sgi.com>
+References: <20071127001407.859743255@sgi.com> <20071127001431.688565525@sgi.com>
+ <F81BD9A7-9D76-4C2C-AF80-AAA3F70F061E@kernel.crashing.org>
+ <Pine.LNX.4.64.0711271016260.2310@schroedinger.engr.sgi.com>
+ <18252.34032.207280.742887@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 04:51:38PM +0100, Rafael J. Wysocki wrote:
-> On Monday, 26 of November 2007, Rafael J. Wysocki wrote:
-> > On Monday, 26 of November 2007, David Chinner wrote:
-> > > Now there's a message that I haven't seen in about 3 years.
-> > > 
-> > > It indicates that the linux inode connected to the xfs_inode is not
-> > > the correct one. i.e. that the linux inode cache is out of step with
-> > > the XFS inode cache.
-> > > 
-> > > Basically, that is not supposed to happen. I suspect that the way
-> > > threads are frozen is resulting in an inode lookup racing with
-> > > a reclaim. The reclaim thread gets stopped after any use threads,
-> > > and so we could have the situation that a process blocked in lookup
-> > > has the XFS inode reclaimed and reused before it gets unblocked.
-> > > 
-> > > The question is why is it happening now when none of that code in
-> > > XFS has changed?
-> > > 
-> > > Rafael, when are threads frozen? Only when they schedule or call
-> > > try_to_freeze()?
-> > 
-> > Kernel threads freeze only when they call try_to_freeze().  User space tasks
-> > freeze while executing the signals handling code.
-> > 
-> > > Did the freezer mechanism change in 2.6.23 (this is on 2.6.23.1)?
-> > 
-> > Yes.  Kernel threads are not sent fake signals by the freezer any more.
-> 
-> Ah, sorry, this change has been merged after 2.6.23.  However, before 2.6.23
-> we had another important change that caused all kernel threads to have
-> PF_NOFREEZE set by default, unless they call set_freezable() explicitly.
+On Wed, 28 Nov 2007, Paul Mackerras wrote:
 
-So try_to_freeze() will never freeze a thread if it has not been
-set_freezable()? And xfsbufd will never be frozen?
+> Did you try both 32-bit (CONFIG_64BIT=n) and 64-bit (CONFIG_64BIT=y)
+> configurations?  The paca only exists in 64-bit kernels.
 
-Cheers,
+I build both and there is no dependency on 32bit or 64 bit in 
+include/asm-powerpc/percpu.h. Both access the paca (whatever that is).
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
