@@ -1,120 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXK0AwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbXK0AxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbXK0AwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXK0AwF
+	id S1757524AbXK0AxS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXK0AxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:52:05 -0500
-Received: from mga02.intel.com ([134.134.136.20]:55321 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbXK0AwD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:52:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,216,1194249600"; 
-   d="scan'208";a="280499869"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 26 Nov 2007 19:53:08 -0500
+Received: from namei.org ([69.55.235.186]:51251 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753238AbXK0AxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 19:53:05 -0500
+Date: Tue, 27 Nov 2007 11:51:41 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>, Eric Paris <eparis@redhat.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH -mm 2/2] do_wait: cleanup delay_group_leader() usage
+In-Reply-To: <20071123195942.GA166@tv-sign.ru>
+Message-ID: <Xine.LNX.4.64.0711271147100.26171@us.intercode.com.au>
+References: <20071123195942.GA166@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] [ACPI] utilities/: Compliment va_start() with va_end().
-Date: Mon, 26 Nov 2007 16:52:01 -0800
-Message-ID: <B28E9812BAF6E2498B7EC5C427F293A403BCBB45@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <474B61B4.9020309@student.ltu.se>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] [ACPI] utilities/: Compliment va_start() with va_end().
-Thread-Index: AcgwjF1MUBLZPMCuRnuo8c6+LkonaAAAzP3g
-References: <200711250205.34299.lenb@kernel.org> <B28E9812BAF6E2498B7EC5C427F293A403BCB8FA@orsmsx415.amr.corp.intel.com> <474B61B4.9020309@student.ltu.se>
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "Richard Knutsson" <ricknu-0@student.ltu.se>
-Cc: "Len Brown" <lenb@kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-acpi@vger.kernel.org>
-X-OriginalArrivalTime: 27 Nov 2007 00:52:02.0827 (UTC) FILETIME=[B95B15B0:01C8308F]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, it's official ANSI C, so I agree with the portability. I'm probably
-asking more about the history of the thing.
+[added LSM list]
+
+On Fri, 23 Nov 2007, Oleg Nesterov wrote:
+
+> eligible_child() == 2 means delay_group_leader(). With the previous patch this
+> only matters for EXIT_ZOMBIE task, we can move that special check to the only
+> place it is really needed.
+> 
+> Also, with this patch we don't skip security_task_wait() for the group leaders
+> in a non-empty thread group. I don't really understand the exact semantics of
+> security_task_wait(), but imho this change is a bugfix.
+
+The semantics in terms of SELinux are that calls to wait() type calls need 
+to be mediated by policy, as information can be transfered via the exit 
+status.
+
+It looks like a correct bugfix to me, but I'd be interested to see what 
+others have to say.
 
 
->-----Original Message-----
->From: Richard Knutsson [mailto:ricknu-0@student.ltu.se]
->Sent: Monday, November 26, 2007 4:16 PM
->To: Moore, Robert
->Cc: Len Brown; linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org
->Subject: Re: [PATCH] [ACPI] utilities/: Compliment va_start() with
->va_end().
->
->Moore, Robert wrote:
->> This is an interesting one to me.
->>
->> From various documentation:
->>
->> After all arguments have been retrieved, va_end resets the pointer to
->> NULL.
->>
->> va_end
->> Each invocation of va_start must be matched by a corresponding
->> invocation of va_end in the same function. After the call va_end(ap)
-the
->> variable ap is undefined. Multiple transversals of the list, each
->> bracketed by va_start and va_end are possible. va_end may be a macro
-or
->> a function.
->>
->> Now, I'm all for defensive programming, but I don't really see the
-point
->> of va_end when the list will be only traversed once.
->>
->>
->First off, I think it is a good idea to follow the documentation, which
->stated:
->"va_end
->Each invocation of va_start must be matched by a corresponding
->invocation of va_end in the same function."
->
->Then if it is not really needed, does it take up extra cycles?
->"In practice, with most C compilers, calling |va_end| does nothing
->and you do not really need to call it.  This is always true in the GNU
-C
->compiler."[1]
->
->Portability:
->"But you might as well call |va_end| just in case your
->program is someday compiled with a peculiar compiler."[2]
->This argument is not as likely thou, but who knows? (Since I guess
-Intel's
->compiler is included in the 'most C compilers')
->
->>
->> We don't set all local pointers to NULL at function exit, what is the
->> point of doing it here?
->>
->I think it is a good thing if the code follows the documentation, both
->for the person who tries
->to understand the code (to see when the 'args' is no longer needed and
->not getting confused
->by the absent of va_end(), after all, IMHO we should write the code how
->we want things to
->work and let the compiler do the optimizations (it usually does a
-better
->job at it then we do))
->and to automated searches (that is how I found this one).
->> I suppose some implementation could allocate memory at va_start, but
-in
->> practice, does this happen?
->>
->Not sure what you mean.
->> Bob
->>
->>
->cu
->Richard Knutsson
->
->[1]
->http://www.cs.utah.edu/dept/old/texinfo/glibc-manual-0.02/library_28.ht
-ml
->[2] The rest of [1]'s line.
+
+> Also rearrange the code a bit to kill an ugly "check_continued" backdoor.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> --- PT/kernel/exit.c~6_delay_leader	2007-11-23 20:31:21.000000000 +0300
+> +++ PT/kernel/exit.c	2007-11-23 21:29:44.000000000 +0300
+> @@ -1137,12 +1137,6 @@ static int eligible_child(pid_t pid, int
+>  	if (((p->exit_signal != SIGCHLD) ^ ((options & __WCLONE) != 0))
+>  	    && !(options & __WALL))
+>  		return 0;
+> -	/*
+> -	 * Do not consider thread group leaders that are
+> -	 * in a non-empty thread group:
+> -	 */
+> -	if (delay_group_leader(p))
+> -		return 2;
+>  
+>  	err = security_task_wait(p);
+>  	if (err)
+> @@ -1494,10 +1488,9 @@ repeat:
+>  	tsk = current;
+>  	do {
+>  		struct task_struct *p;
+> -		int ret;
+>  
+>  		list_for_each_entry(p, &tsk->children, sibling) {
+> -			ret = eligible_child(pid, options, p);
+> +			int ret = eligible_child(pid, options, p);
+>  			if (!ret)
+>  				continue;
+>  
+> @@ -1521,19 +1514,17 @@ repeat:
+>  				retval = wait_task_stopped(p,
+>  						(options & WNOWAIT), infop,
+>  						stat_addr, ru);
+> -			} else if (p->exit_state == EXIT_ZOMBIE) {
+> +			} else if (p->exit_state == EXIT_ZOMBIE &&
+> +					!delay_group_leader(p)) {
+>  				/*
+> -				 * Eligible but we cannot release it yet:
+> +				 * We don't reap group leaders with subthreads.
+>  				 */
+> -				if (ret == 2)
+> -					goto check_continued;
+>  				if (!likely(options & WEXITED))
+>  					continue;
+>  				retval = wait_task_zombie(p,
+>  						(options & WNOWAIT), infop,
+>  						stat_addr, ru);
+>  			} else if (p->exit_state != EXIT_DEAD) {
+> -check_continued:
+>  				/*
+>  				 * It's running now, so it might later
+>  				 * exit, stop, or stop and then continue.
+> 
+
+-- 
+James Morris
+<jmorris@namei.org>
