@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbXK0VSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759294AbXK0VXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbXK0VSp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 16:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbXK0VSi
+	id S1759294AbXK0VXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 16:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbXK0VXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 16:18:38 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43738 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757012AbXK0VSh (ORCPT
+	Tue, 27 Nov 2007 16:23:30 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:40993 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754776AbXK0VX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 16:18:37 -0500
-Date: Tue, 27 Nov 2007 13:18:36 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Mosberger-Tang <dmosberger@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, tony.luck@intel.com
-Subject: Re: [patch 04/14] ia64: Remove the __SMALL_ADDR_AREA attribute for
- per cpu access
-In-Reply-To: <ed5aea430711271310i144c005cj25101b7dd6b0d6d9@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711271316110.4590@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com>  <20071127001430.083503280@sgi.com>
-  <ed5aea430711262120p45bb5b2t1b16872e74547369@mail.gmail.com> 
- <Pine.LNX.4.64.0711271014550.2310@schroedinger.engr.sgi.com>
- <ed5aea430711271310i144c005cj25101b7dd6b0d6d9@mail.gmail.com>
+	Tue, 27 Nov 2007 16:23:29 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Nov 2007 16:23:29 EST
+Message-ID: <474C88EB.9040300@hp.com>
+Date: Tue, 27 Nov 2007 13:15:23 -0800
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@kernel.org>
+CC: Dave Jones <davej@redhat.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+References: <20071122343.446909000@suse.de> <adatznarrzc.fsf@cisco.com>	<200711261228.15155.rusty@rustcorp.com.au>	<20071126102533.1c774870@freepuppy.rosehill.pdx.hemminger.net>	<20071127190037.GB30057@redhat.com> <20071127210942.GF3406@stusta.de>
+In-Reply-To: <20071127210942.GF3406@stusta.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007, David Mosberger-Tang wrote:
+> The real problem is that these drivers are not in the upstream kernel.
+> 
+> Are there common reasons why these drivers are not upstream?
 
-> Uniformity for the sake of uniformity?  The small data addressing is
-> really elegant and I don't think it should be dropped just for the
-> sake of uniformity.
+One might be that upstream has not accepted them.  Anything doing or 
+smelling of TOE comes to mind right away.
 
-Uniformity for the sake of code size reduction and easier maintenance. 
-
-Yes I think it would be great to have this feature on all arches if 
-possible. If someone could work with the gcc /linker folks to get this 
-done that would be great.
-
-But the feature has been removed from gcc and so its not usable for IA64 
-with a current compiler anymore. This is basically removing useless code.
-
-
+rick jones
