@@ -1,106 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbXK0WjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbXK0Wkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbXK0WjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXK0WjI
+	id S1759778AbXK0Wkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXK0Wka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:39:08 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46602 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752132AbXK0WjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:39:05 -0500
-Date: Tue, 27 Nov 2007 14:38:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: linux-kernel@vger.kernel.org, jack@suse.cz, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: /proc dcache deadlock in do_exit
-Message-Id: <20071127143852.601509ac.akpm@linux-foundation.org>
-In-Reply-To: <20071127132022.GW6840@v2.random>
-References: <20071127132022.GW6840@v2.random>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 27 Nov 2007 17:40:30 -0500
+Received: from mail.vapor.com ([85.114.133.49]:47459 "EHLO mail.vapor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751277AbXK0Wk3 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:40:29 -0500
+Subject: [SKY2] Problems (2.6.24-rc3-git1)
+From: Ian Kumlien <pomac@vapor.com>
+Reply-To: pomac@vapor.com
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Linux-kernel <Linux-kernel@vger.kernel.org>
+In-Reply-To: <20071002215914.13d1e8cf@freepuppy.rosehill>
+References: <1191372129.26233.12.camel@localhost>
+	 <20071002180209.47c350a3@freepuppy.rosehill>
+	 <1191375274.26233.17.camel@localhost>
+	 <20071002215914.13d1e8cf@freepuppy.rosehill>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-sOWQBCDg3XI8GF53fcGA"
+Date: Tue, 27 Nov 2007 23:40:22 +0100
+Message-Id: <1196203222.27041.0.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007 14:20:22 +0100
-Andrea Arcangeli <andrea@suse.de> wrote:
 
-> Hi,
-> 
-> this patch fixes a sles9 system hang in start_this_handle from a
-> customer with some heavy workload where all tasks are waiting on
-> kjournald to commit the transaction, but kjournald waits on t_updates
-> to go down to zero (it never does). This was reported as a lowmem
-> shortage deadlock but when checking the debug data I noticed the VM
-> wasn't under pressure at all (well it was really under vm pressure,
-> because lots of tasks hanged in the VM prune_dcache methods trying to
-> flush dirty inodes, but no task was hanging in GFP_NOFS mode, the
-> holder of the journal handle should have if this was a vm issue in the
-> first place). No task was apparently holding the leftover handle in
-> the committing transaction, so I deduced t_updates was stuck to 1
-> because a journal_stop was never run by some path (this turned out to
-> be correct). With a debug patch adding proper reverse links and stack
-> trace logging in ext3 deployed in production, I found journal_stop is
-> never run because mark_inode_dirty_sync is called inside release_task
-> called by do_exit. (that was quite fun because I would have never
-> thought about this subtleness, I thought a regular path in ext3 had a
-> bug and it forgot to call journal_stop)
-> 
-> do_exit->release_task->mark_inode_dirty_sync->schedule() (will never
-> come back to run journal_stop)
+--=-sOWQBCDg3XI8GF53fcGA
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I don't see why the schedule() will not return?  Because the task has
-PF_EXITING set?  Doesn't TASK_DEAD do that?
+[Repost, no reply has been recived]
 
-> The reason is that shrink_dcache_parent is racy by design (feature not
-> a bug) and it can do blocking I/O in some case, but the point is that
-> calling shrink_dcache_parent at the last stage of do_exit isn't safe
-> for self-reaping tasks.
-> 
-> I guess the memory pressure of the unbalanced highmem system allowed
-> to trigger this more easily.
-> 
-> Now mainline doesn't have this line in iput (like sles9 has):
-> 
->     	     if (inode->i_state & I_DIRTY_DELAYED)
-> 	     			mark_inode_dirty_sync(inode);
-> 
-> so it will probably not crash with ext3, but for example ext2
-> implements an I/O-blocking ext2_put_inode that will lead to similar
-> screwups with ext2_free_blocks never coming back and it's definitely
-> wrong to call blocking-IO paths inside do_exit. So this should fix a
-> subtle bug in mainline too (not verified in practice though). The
-> equivalent fix for ext3 is also not verified yet to fix the problem in
-> sles9 but I don't have doubt it will (it usually takes days to crash,
-> so it'll take weeks to be sure).
-> 
-> An alternate fix would be to offload that work to a kernel thread, but
-> I don't think a reschedule for this is worth it, the vm should be able
-> to collect those entries for the synchronous release_task.
-> 
-> Signed-off-by: Andrea Arcangeli <andrea@suse.de>
-> 
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -2265,7 +2265,8 @@ static void proc_flush_task_mnt(struct v
->  	name.len = snprintf(buf, sizeof(buf), "%d", pid);
->  	dentry = d_hash_and_lookup(mnt->mnt_root, &name);
->  	if (dentry) {
-> -		shrink_dcache_parent(dentry);
-> +		if (!(current->flags & PF_EXITING))
-> +			shrink_dcache_parent(dentry);
->  		d_drop(dentry);
->  		dput(dentry);
->  	}
+Hi,
 
-What are the implications of not running shrink_dcache_parent() on the exit
-path sometimes?  We'll leave procfs stuff behind?  Will they be reaped by
-memory pressure later on?
+A little while ago, something went horribly wrong.
 
+I could still use my mouse and the desktop was still alive more or
+less... everything using networking was dead AND the keyboard was
+dead... So i composed commands using existing text on the screen.
+
+The device:
+sky2 0000:02:00.0: v1.20 addr 0xdbffc000 irq 17 Yukon-EC (0xb6) rev 2
+sky2 0000:02:00.0: PCI Express Advanced Error Reporting not configured or M=
+MCONFIG problem?
+sky2 0000:02:00.0: No interrupt generated using MSI, switching to INTx mode=
+.
+sky2 eth0: addr 00:15:f2:aa:8b:3e
+
+=46rom dmesg:
+sky2 eth0: hung mac 124:39 fifo 195 (185:180)
+sky2 eth0: receiver hang detected
+sky2 eth0: disabling interface
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 442 .. 461 report=3D442 done=3D442
+
+And it continues until i press the reset button.
+
+
+--=20
+Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
+
+--=-sOWQBCDg3XI8GF53fcGA
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
+
+iD8DBQBHTJzT7F3Euyc51N8RAvlKAJ91HoLaaATJKp8+ILQzkLytCdc6EgCfVI6f
+NpF7ZCLguDIdIeaqvCrYS/s=
+=BvGe
+-----END PGP SIGNATURE-----
+
+--=-sOWQBCDg3XI8GF53fcGA--
 
