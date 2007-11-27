@@ -1,121 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXK0Smk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbXK0SvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759272AbXK0Smk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 13:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbXK0Sm2
+	id S1758903AbXK0SvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 13:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbXK0SvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 13:42:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53380 "EHLO mx1.redhat.com"
+	Tue, 27 Nov 2007 13:51:00 -0500
+Received: from mga02.intel.com ([134.134.136.20]:45766 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758685AbXK0Sm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 13:42:27 -0500
-Message-ID: <474C64CB.7080004@redhat.com>
-Date: Tue, 27 Nov 2007 10:41:15 -0800
-From: Ben Woodard <woodard@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1755972AbXK0Su6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 13:50:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,220,1194249600"; 
+   d="scan'208";a="281065775"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andi Kleen <ak@suse.de>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       hbabu@us.ibm.com, vgoyal@in.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot
- cpu
-References: <20071127014740.GA28622@hmsreliant.think-freely.org>	<20071127131355.GA14887@hmsendeavour.rdu.redhat.com>	<m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>	<200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [ANNOUNCE] Open-FCoE - Fibre Channel over Ethernet Project
+Date: Tue, 27 Nov 2007 10:49:11 -0800
+Message-ID: <10A7D0016239E24092DEF05CCC582E43028A636B@fmsmsx411.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ANNOUNCE] Open-FCoE - Fibre Channel over Ethernet Project
+thread-index: AcgxJjMuo2k7YYRNSxGxmuClHL5oZQ==
+From: "Love, Robert W" <robert.w.love@intel.com>
+To: <linux-scsi@vger.kernel.org>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: <devel@open-fcoe.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, "Rob Love" <robert.w.love@linux.intel.com>,
+       "Love, Robert W" <robert.w.love@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>,
+       "Zou, Yi" <yi.zou@intel.com>, "Dev, Vasu" <vasu.dev@intel.com>,
+       <james.bottomley@hansenpartnership.com>, <davem@davemloft.net>,
+       <jeff@garzik.org>, "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mike Christie" <michaelc@cs.wisc.edu>
+X-OriginalArrivalTime: 27 Nov 2007 18:49:12.0769 (UTC) FILETIME=[33CD9B10:01C83126]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Andi Kleen <ak@suse.de> writes:
-> 
->> his is any less reliable that what we have currently.
->>> It doesn't make things more reliable, and it adds code to a code path
->>> that already has to much code to be solid reliable (thus your
->>> problem). 
->>>
->>> Putting the system back in PIC legacy mode on the kexec on panic path
->>> was supposed to be a short term hack until we could remove the need
->>> by always deliver interrupts in apic mode.
->>>
->>> If you can't root cause your problem and figure out how the apics
->>> are misconfigured for legacy mode
->> Probably legacy mode always routes to CPU #0. Makes sense and is
->> not really a misconfiguration of legacy mode.
-> 
+Hello Linux Community,
 
-The BIOS and kernel writer's guide for Opteron explicitly states that 
-the platform will boot on CPU0 kind of by definition. So this seems like 
-a fair statement. I can easily see BIOS writers or hardware designers 
-interpreting that to mean that they only have to make sure that 
-interrupts get to the CPU that the BIOS thinks of as CPU0 when the APIC 
-is in legacy mode.
+    I'd like to introduce a new Open Source project named Open-FCoE.
+FCoE is the acronym for Fibre Channel over Ethernet, which is the
+encapsulation of Fibre Channel frames within Ethernet packets. FCoE will
+allow systems with an Ethernet adapter and a Fibre Channel Forwarder to
+login to a Fibre Channel fabric (the FCF is a "gateway" that bridges the
+LAN and the SAN). That fabric login was previously reserved exclusively
+for Fibre Channel HBAs. This technology reduces complexity in the data
+center by aiding network convergence. It is targeted for 10Gps Ethernet
+NICs but will work on any Ethernet NIC supporting pause frames. Our code
+base provides a Fibre Channel protocol processing module as well as an
+Ethernet based transport module. The Open-FC module acts as a LLD for
+SCSI and the Open-FCoE transport uses net_device to send and receive
+packets.
 
-I have a query out to some SuperMicro engineers to find out if it is a 
-hardware limitation or if it is APIC misconfiguration. Maybe we can 
-solve this problem with a BIOS update.
+    We've set up a "web home" for this project at www.Open-FCoE.org. Its
+purpose is to support development and users; it's very light on content
+right now. 
 
-> Possible. So far I have not seen a hardware setup that would force
-> interrupts to cpu #0 in legacy mode.  But I would not be truly
-> surprised if it happened that there was hardware that only worked that
-> way.
-> 
->> But if CPU #0 has interrupts disabled no interrupts get delivered.
->>
->> So choices are:
->> - Move to CPU #0
->> - Do not use legacy mode during shutdown.
->     (Do not use legacy mode in the kdump kernel. removing it from shutdown
->      is just minor optimization)
->> - Or do not rely on interrupts after enabling legacy mode
->> - Or do not disable interrupts on the other CPUs when they're
->> halted.
->>
->> First and last option are probably unreliable for the kdump case.
->> Second or third sound best. 
->>
-
-I can agree with the fourth option being a very bad one but I really 
-haven't seen anything in this discussion which supports the assertion 
-that "Move to the CPU that the BIOS originally called CPU#0" is going to 
-be unreliable. Admittedly we haven't tried this on every single x86_64 
-platform that we have but on the handful that we have tried so far, it 
-hasn't been a problem. Why is everybody jumping to the assumption that 
-it will be less reliable?
-
->> I suspect the real fix would be to enable IOAPIC mode really
->> early and never use the timers in legacy mode. Then the kdump
->> kernel wouldn't care about the legacy mode pointing to the wrong CPU.
-> 
-> Exactly.  If we can work out the details that should be a much more reliable
-> mode of operation.
-> 
->> IIrc Eric even had  a patch for that a long time ago, but it broke some 
->> things so it wasn't included. But perhaps it should be revisited.
-> 
-> My real problem was the failure case was obscure (a bad interaction
-> with ACPI on Linus's laptop) and I didn't have the time to track it
-> down when it showed up.
-> 
-> My patch had two parts.  Some cleanups to enable the code to be enabled
-> early, and the actually early enable.  I figure if we can get the
-> cleanups in one major kernel version and then in the next enable
-> the apic mode before we start getting interrupts we should be in good
-> shape.
-> 
-> I expect with x86 becoming an embedded platform with multiple cpus we
-> may start seeing systems that don't actually support legacy PIC mode
-> for interrupt delivery.
-> 
-> Eric
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+    We have a lot of code and it will take time for us to harden and
+improve upon it. We're still early in development but are making this
+code available as soon as possible so that our project's development can
+truly be open.
 
 
--- 
--ben
--=-
+This is our code's organization as it is today.
+
+1) git://open-fcoe.org/openfc/open-fcoe-upstream.git
+      
+      This repository is based on the SCSI 2.6.24 bug fix tree. Two
+patches are applied to add our code and resolve any compatibility
+problems between our code and 2.6.24.
+
+2) git://open-fcoe.org/openfc/open-fcoe.git
+
+       This repository contains our user space tools. It also contains
+an out-of-kernel Makefile that allows a user to build the kernel modules
+within this layout. Pulling our kernel code from open-fcoe-upstream into
+this code base and then tarring it up provides an easily distributable
+package.
+
+3) git://open-fcoe.org/openfc/open-fcoe-misc.git
+
+       This repository contains our SW target code. The SW target allows
+someone to connect two systems back-to-back and run FCoE traffic from
+one to another. Currently our target uses SCST which is not upstream.
+This is causing us a problem because the target shares code with the
+initiator.  Since the initiator is building with 2.6.24 and SCST isn't
+we're in a bind.  A priority of ours will be to get the target back to a
+better shape as it's our primary development tool.
+
+
+We also have a lot of things to fix. Here are our initial concerns,
+
+1) Kernel/Userspace interaction needs direction. Currently we're using
+ioctls, which are no longer desirable. We're planning to change the
+implementation to netlink. Also, some non-data path code will probably
+need to move to user space. Open-iSCSI has spent a lot of time on its
+kernel to user interaction; we will likely borrow from that model as
+much as we can.
+
+2) SW Target and its integration with the kernel.
+
+3) Reduction of code, removal of unnecessary abstraction.
+
+4) Non-GPL code. We're currently using a BSD queue.h and some CRC code
+from BSD as well. We need to convert this code to use kernel code.
+
+5) Documentation. Our basic documentation needs some help so people can
+use the initiator and target easily.
+
+
+We have a mailing list established on our website, but believe that the
+community will want us to discuss this technology on the SCSI mailing
+list. That is where we plan to start discussing this code.
+
+We're looking forward to building a strong community around this
+technology and code base. We're eager to start coding and improving our
+code with any other community contributors!
+
+
+Robert Love
+Open-FCoE.org
