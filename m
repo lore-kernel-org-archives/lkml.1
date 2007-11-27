@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbXK0FZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbXK0Fan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbXK0FZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 00:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbXK0FZ1
+	id S1757406AbXK0Fan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 00:30:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXK0Faf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 00:25:27 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:32904 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbXK0FZ1 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 00:25:27 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Patrick McHardy <kaber@trash.net>
-Cc: kloczek@rudy.mif.pg.gda.pl, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.9
-In-Reply-To: Your message of "Tue, 27 Nov 2007 02:39:08 +0100."
-             <474B753C.7060303@trash.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20071126180132.GA25230@kroah.com> <Pine.BSO.4.63.0711270211090.18832@rudy.mif.pg.gda.pl>
-            <474B753C.7060303@trash.net>
+	Tue, 27 Nov 2007 00:30:35 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60016 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751034AbXK0Fae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 00:30:34 -0500
+Date: Mon, 26 Nov 2007 21:29:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] mmc: Add missing sg_init_table() call
+Message-Id: <20071126212955.07f65b0d.akpm@linux-foundation.org>
+In-Reply-To: <1195759971-19825-1-git-send-email-hskinnemoen@atmel.com>
+References: <1195759971-19825-1-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196141091_2838P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Nov 2007 00:24:51 -0500
-Message-ID: <26193.1196141091@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196141091_2838P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 22 Nov 2007 20:32:51 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-On Tue, 27 Nov 2007 02:39:08 +0100, Patrick McHardy said:
-> Tomasz K wrote:
-> > On Mon, 26 Nov 2007, Greg Kroah-Hartman wrote:
-> > [..]
-> >
-> > Still there is no aroud officialy released iptables tarball with 
-> > support for rules for new xt_{connlimit,time,u32} modules.
-> > Anyone know where are patches for manage connlimit, time, u32 rules 
-> > which will be included in next release ?
+> mmc_init_queue only initializes the scatterlists with sg_init_table()
+> when using a bounce buffer. This leads to a BUG() when CONFIG_DEBUG_SG
+> is set.
 > 
-> A well chosen thread to ask this question. xt_time is not even
-> included in 2.6.23.
+
+I assume that 2.6.23 is not afflicted in this way?
+
+> ---
+>  drivers/mmc/card/queue.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> http://netfilter.org/news.html#2007-10-15
+> diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+> index 1b9c9b6..30cd13b 100644
+> --- a/drivers/mmc/card/queue.c
+> +++ b/drivers/mmc/card/queue.c
+> @@ -180,12 +180,13 @@ int mmc_init_queue(struct mmc_queue *mq, struct mmc_card *card, spinlock_t *lock
+>  		blk_queue_max_hw_segments(mq->queue, host->max_hw_segs);
+>  		blk_queue_max_segment_size(mq->queue, host->max_seg_size);
+>  
+> -		mq->sg = kzalloc(sizeof(struct scatterlist) *
+> +		mq->sg = kmalloc(sizeof(struct scatterlist) *
+>  			host->max_phys_segs, GFP_KERNEL);
+>  		if (!mq->sg) {
+>  			ret = -ENOMEM;
+>  			goto cleanup_queue;
+>  		}
+> +		sg_init_table(mq->sg, host->max_phys_segs);
+>  	}
+>  
+>  	init_MUTEX(&mq->thread_sem);
 
-And I don't see any mention of connlimit, time, or u32 in the Changelog for that...
+Pierre, I can queue this up but if you merge it into your tree I shall drop
+it and shall lose track of it.  So it's then all down to you to remember to
+get the fix into 2.6.24.
 
-I admit I haven't peeked inside the actual tarball to see if they added stuff
-and didn't Changelog it...
+(Except this particular bug looks like a post-2.6.23 regression, so I can cc
+the Rafael which never forgets, so it will then get tracked all the way into
+Linus's tree)
 
---==_Exmh_1196141091_2838P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHS6ojcC3lWbTT17ARAt8eAKCtK9OahAS8X80r0w8wLITDmGWX3wCgzSOb
-GcWhxwsrf81+UC3nwkJlNbk=
-=yM26
------END PGP SIGNATURE-----
-
---==_Exmh_1196141091_2838P--
