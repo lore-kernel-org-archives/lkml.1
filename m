@@ -1,79 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbXK0Wcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbXK0Whz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbXK0Wcp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:32:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759574AbXK0WcX
+	id S1759203AbXK0Whz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbXK0Whq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:32:23 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47872 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754067AbXK0WcV (ORCPT
+	Tue, 27 Nov 2007 17:37:46 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34097 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbXK0Whp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:32:21 -0500
-X-Sasl-enc: +HTXqI0nWpB/yaJIUgIHvPDrx85TAQGjwA/tRobHoolO 1196202740
-Message-ID: <474C9B31.8000408@imap.cc>
-Date: Tue, 27 Nov 2007 23:33:21 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: git guidance
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6DCC4CA401EC931903014573"
+	Tue, 27 Nov 2007 17:37:45 -0500
+Date: Tue, 27 Nov 2007 23:37:43 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Roland Dreier <rdreier@cisco.com>,
+       Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071127223743.GI24223@one.firstfloor.org>
+References: <20071122343.446909000@suse.de> <200711261228.15155.rusty@rustcorp.com.au> <adahcj9sfan.fsf@cisco.com> <200711271549.37670.rusty@rustcorp.com.au> <1196202698.3415.119.camel@jcmlaptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196202698.3415.119.camel@jcmlaptop>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6DCC4CA401EC931903014573
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+> With my "Enterprise" hat on, I can see where Andi was coming from
+> originally. 
 
-So I've watched Linus' Google Tech Talk about git and let him convince
-me that I've been stupid to use CVS, that Subversion is even worse,
-and the only sensible approach is to use git. Went ahead and tried to
-convert my driver development to git.
+For the record my original motivation was to fix the "TCP exports everything
+for ipv6.ko" case cleanly. I later realized that it would be useful for the
+ABI stability issues too, but it was really not my primary motivation.
+This is why I didn't even mention that in the original patch description.
 
-It didn't work too well. The first result was one of maximal
-embarrassment: I produced a patch that didn't even compile when
-applied to the official tree. This shouldn't happen with git, right?
-Well, it did. So now I'm back to keeping a virgin kernel source tree
-alongside my development area in order to produce diffs. That can't
-be right?
+-Andi
 
-Obviously I'm still being stupid. (Probably an aftereffect of using
-CVS for too long.) But where do I turn for guidance? I read all the
-docs and READMEs I could find, but I still don't understand why GIT
-doesn't produce the results I need, and what to do differently.
-
-Does somebody have a step by step tutorial for doing the standard
-"edit - test - modify - retest - submit - edit - resubmit" sequence
-with GIT? Is there a GIT newsgroup or mailinglist? Or should I just
-post my silly questions to LKML?
-
-TIA
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig6DCC4CA401EC931903014573
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHTJs5MdB4Whm86/kRAsbLAJ9WWnutzYPwsOOPnbkMo9IQv3bD8wCfaeyV
-RPSyo5Dl5hKiarKVyK6fJj8=
-=r/lI
------END PGP SIGNATURE-----
-
---------------enig6DCC4CA401EC931903014573--
