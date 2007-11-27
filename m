@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbXK0Akw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbXK0AsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758396AbXK0Akw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbXK0Akp
+	id S1755801AbXK0AsO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXK0Ar7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:40:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51868 "EHLO mx1.redhat.com"
+	Mon, 26 Nov 2007 19:47:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34866 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754916AbXK0Ako (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:40:44 -0500
-From: "Arnaldo Carvalho de Melo" <acme@redhat.com>
-Date: Mon, 26 Nov 2007 22:40:16 -0200
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, kune@deine-taler.de
-Subject: Re: [RFC] Documentation about unaligned memory access
-Message-ID: <20071127004016.GD4684@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
-	davem@davemloft.net, kune@deine-taler.de
-References: <20071123001554.12F8B9D4A1F@zog.reactivated.net> <1196088427.4149.262.camel@johannes.berg>
+	id S1753188AbXK0Ar6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 19:47:58 -0500
+Message-ID: <474B6810.6070703@redhat.com>
+Date: Mon, 26 Nov 2007 16:42:56 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1196088427.4149.262.camel@johannes.berg>
-X-Url: http://oops.ghostprotocols.net:81/blog
-Organization: OOPS Labs
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com> <474B55F5.1050706@redhat.com> <474B6179.4040508@zytor.com>
+In-Reply-To: <474B6179.4040508@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Nov 26, 2007 at 03:47:06PM +0100, Johannes Berg escreveu:
-> 
-> > Sidenote: in the above example, you may wish to reorder the fields in the
-> > above structure so that the overall structure uses less memory. For example,
-> > moving field3 to sit inbetween field1 and field2 (where the padding is
-> > inserted) would shrink the overall structure by 1 byte:
-> > 
-> > 	struct foo {
-> > 		u16 field1;
-> > 		u8 field3;
-> > 		u32 field2;
-> > 	};
-> 
-> You can reorder to u32, u16, u8 order and save another byte :)
-> 
-> A reference to pahole could be appropriate here, and probably a small
-> note that some large existing structures like netdev have deliberate
-> holes to achieve cache alignment.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-shameless plug:
+H. Peter Anvin wrote:
+> No.
+> 
+> I already said I'm not looking at changing the calling convention for
+> existing syscalls.
 
-https://ols2006.108.redhat.com/2007/Reprints/melo-Reprint.pdf
+I did not suggest or ask for that at all.
 
-- Arnaldo
+I was asking you to consider the real implementation details for a new
+syscall mechanism.
+
+We do not want to abandon the use of syscall/sysenter and go back to int
+(on x86/x86-64).  This means that you have to come up with a mechanism
+which hooks into the current syscall/sysenter path while preserving full
+backward compatibility.
+
+Now it's your turn.  How do you do this without additional costs?
+
+
+> Hardly so, as evidenced by the fact that we have successfully done so
+> for 15 years already; a number of Linux architectures require this
+> information for the existing system calls.
+
+Nothing at this scale is there in the moment, as far as I can see.  And
+nothing so critical for getting right.
+
+Talk is cheap.  You still haven't shown one bit if design how you want
+to achieve your grand goal.  The time for hand-waiving is over.  Do some
+work or step out of the way.  Nothing you have said so far in the least
+convinces me and your arguments like "sys_indirect adds parameters" are
+not really contested.  Yes, that's what sys_indirect does.  So what?  It
+does this with almost no cost which outweighs the ugliness factor in my
+book.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFHS2gQ2ijCOnn/RHQRAlN5AKCWZQL97sROWBv33//Uj/MN+CNi3gCdFgCU
+uLVEOfclERpakp1kdYzy2oI=
+=stVB
+-----END PGP SIGNATURE-----
