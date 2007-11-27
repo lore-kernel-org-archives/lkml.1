@@ -1,114 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbXK0DGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbXK0DHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbXK0DGW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 22:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbXK0DGH
+	id S1756403AbXK0DHW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 22:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbXK0DHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 22:06:07 -0500
-Received: from www.poetrypoetry.com ([64.135.207.42]:46254 "EHLO
-	www.poetrypoetry.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754721AbXK0DGG (ORCPT
+	Mon, 26 Nov 2007 22:07:09 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53085 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515AbXK0DHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 22:06:06 -0500
-X-Greylist: delayed 1773 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Nov 2007 22:06:06 EST
-Message-ID: <41877.67.173.156.207.1196130992.squirrel@www.techfinesse.net>
-Date: Mon, 26 Nov 2007 20:36:32 -0600 (CST)
-Subject: Dynticks Causing High Context Switch Rate in ksoftirqd
-From: bdupree@techfinesse.com
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
-MIME-Version: 1.0
+	Mon, 26 Nov 2007 22:07:07 -0500
+Date: Tue, 27 Nov 2007 12:10:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH][for -mm] per-zone and reclaim enhancements for memory
+ controller take 3 [9/10] per zone lru for cgroup
+Message-Id: <20071127121030.e6110d2d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Question: Why is ksoftirqd eating about 5 to 10 percent of my CPU on an idle
-system? The problem occurs if I config the kernel with tickless
-support (i.e. CONFIG_TICK_ONESHOT=y).  (Thanks to "oprofile" for putting me
-onto this.)
+This patch implements per-zone lru for memory cgroup.
+This patch makes use of mem_cgroup_per_zone struct for per zone lru.
 
-I have noted this same problem on kernel versions: 2.6.23.1, 2.6.23.8 and
-2.6.23.9
+LRU can be accessed by
 
-**************************************************************************
-*** Output from "vmstat -n 1 10" -- Note very high context switch rate ***
-*** This is on a idle machine!                                         ***
-**************************************************************************
+   mz = mem_cgroup_zoneinfo(mem_cgroup, node, zone);
+   &mz->active_list
+   &mz->inactive_list
 
-procs -----------memory---------- ---swap-- -----io---- --system--
-----cpu----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy
-id wa
- 0  0      0 1925556   4768 116104    0    0   124     2    6  7538  1  2
-96  1
- 0  0      0 1925556   4768 116104    0    0     0     0    2 147329  0  1
-99  0
- 0  0      0 1925548   4768 116104    0    0     0     0    0 154515  0  1
-99  0
- 0  0      0 1925548   4768 116104    0    0     0     0    1 153898  0  2
-98  0
- 0  0      0 1925548   4780 116104    0    0     0    16    3 155216  0  1
-99  0
- 0  0      0 1925548   4780 116104    0    0     0     0    1 161718  0  1
-99  0
- 0  0      0 1925548   4780 116104    0    0     0     0    0 147587  0  2
-98  0
- 0  0      0 1925548   4780 116104    0    0     0     0    1 153524  0  2
-98  0
- 0  0      0 1925448   4780 116104    0    0     0     0    0 153434  0  1
-99  0
- 0  0      0 1925448   4792 116092    0    0     0    16    4 153527  0  2
-98  0
+   or
+   mz = page_cgroup_zoneinfo(page_cgroup);
+   &mz->active_list
+   &mz->inactive_list
 
-********************
-*** System Stats ***
-********************
+Changelog v1->v2
+  - merged to mem_cgroup_per_zone struct.
+  - handle page migraiton.
 
- Distro: Slackware 10.2
- Mobo:   MSI MasterX FA6R E7210
- CPUs:   Dual 2.4 GHz P4 Xeons 400 MHz FSB - Hyperthreading enabled
- Mem:    2 GB ECC DDR PC 266
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
 
-******************
-*** PCI Config ***
-******************
+ mm/memcontrol.c |   63 ++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 39 insertions(+), 24 deletions(-)
 
-00:00.0 Host bridge: Intel Corporation 82875P/E7210 Memory Controller Hub
-(rev 02)
-00:03.0 PCI bridge: Intel Corporation 82875P/E7210 Processor to PCI to CSA
-Bridge (rev 02)
-00:06.0 System peripheral: Intel Corporation 82875P/E7210 Processor to I/O
-Memory Interface (rev 02)
-00:1c.0 PCI bridge: Intel Corporation 6300ESB 64-bit PCI-X Bridge (rev 02)
-00:1d.0 USB Controller: Intel Corporation 6300ESB USB Universal Host
-Controller (rev 02)
-00:1d.1 USB Controller: Intel Corporation 6300ESB USB Universal Host
-Controller (rev 02)
-00:1d.4 System peripheral: Intel Corporation 6300ESB Watchdog Timer (rev 02)
-00:1d.5 PIC: Intel Corporation 6300ESB I/O Advanced Programmable Interrupt
-Controller (rev 02)
-00:1d.7 USB Controller: Intel Corporation 6300ESB USB2 Enhanced Host
-Controller (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 0a)
-00:1f.0 ISA bridge: Intel Corporation 6300ESB LPC Interface Controller
-(rev 02)
-00:1f.1 IDE interface: Intel Corporation 6300ESB PATA Storage Controller
-(rev 02)
-00:1f.2 IDE interface: Intel Corporation 6300ESB SATA Storage Controller
-(rev 02)
-00:1f.3 SMBus: Intel Corporation 6300ESB SMBus Controller (rev 02)
-01:01.0 Ethernet controller: Intel Corporation 82547GI Gigabit Ethernet
-Controller
-02:02.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X
-Fusion-MPT Dual Ultra320 SCSI (rev 08)
-03:09.0 Mass storage controller: Silicon Image, Inc. SiI 3114
-[SATALink/SATARaid] Serial ATA Controller (rev 02)
-03:0a.0 Ethernet controller: Intel Corporation 82541GI/PI Gigabit Ethernet
-Controller
-03:0c.0 VGA compatible controller: ATI Technologies Inc Rage XL (rev 27)
-
+Index: linux-2.6.24-rc3-mm1/mm/memcontrol.c
+===================================================================
+--- linux-2.6.24-rc3-mm1.orig/mm/memcontrol.c	2007-11-27 11:24:04.000000000 +0900
++++ linux-2.6.24-rc3-mm1/mm/memcontrol.c	2007-11-27 11:24:16.000000000 +0900
+@@ -89,6 +89,8 @@
+ };
+ 
+ struct mem_cgroup_per_zone {
++	struct list_head	active_list;
++	struct list_head	inactive_list;
+ 	unsigned long count[NR_MEM_CGROUP_ZSTAT];
+ };
+ /* Macro for accessing counter */
+@@ -122,10 +124,7 @@
+ 	/*
+ 	 * Per cgroup active and inactive list, similar to the
+ 	 * per zone LRU lists.
+-	 * TODO: Consider making these lists per zone
+ 	 */
+-	struct list_head active_list;
+-	struct list_head inactive_list;
+ 	struct mem_cgroup_lru_info info;
+ 	/*
+ 	 * spin_lock to protect the per cgroup LRU
+@@ -367,10 +366,10 @@
+ 
+ 	if (!to) {
+ 		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) += 1;
+-		list_add(&pc->lru, &pc->mem_cgroup->inactive_list);
++		list_add(&pc->lru, &mz->inactive_list);
+ 	} else {
+ 		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE) += 1;
+-		list_add(&pc->lru, &pc->mem_cgroup->active_list);
++		list_add(&pc->lru, &mz->active_list);
+ 	}
+ 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc->flags, true);
+ }
+@@ -388,11 +387,11 @@
+ 	if (active) {
+ 		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE) += 1;
+ 		pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+-		list_move(&pc->lru, &pc->mem_cgroup->active_list);
++		list_move(&pc->lru, &mz->active_list);
+ 	} else {
+ 		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) += 1;
+ 		pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
+-		list_move(&pc->lru, &pc->mem_cgroup->inactive_list);
++		list_move(&pc->lru, &mz->inactive_list);
+ 	}
+ }
+ 
+@@ -518,11 +517,16 @@
+ 	LIST_HEAD(pc_list);
+ 	struct list_head *src;
+ 	struct page_cgroup *pc, *tmp;
++	int nid = z->zone_pgdat->node_id;
++	int zid = zone_idx(z);
++	struct mem_cgroup_per_zone *mz;
+ 
++	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+ 	if (active)
+-		src = &mem_cont->active_list;
++		src = &mz->active_list;
+ 	else
+-		src = &mem_cont->inactive_list;
++		src = &mz->inactive_list;
++
+ 
+ 	spin_lock(&mem_cont->lru_lock);
+ 	scan = 0;
+@@ -544,13 +548,6 @@
+ 			continue;
+ 		}
+ 
+-		/*
+-		 * Reclaim, per zone
+-		 * TODO: make the active/inactive lists per zone
+-		 */
+-		if (page_zone(page) != z)
+-			continue;
+-
+ 		scan++;
+ 		list_move(&pc->lru, &pc_list);
+ 
+@@ -832,6 +829,8 @@
+ 	int count;
+ 	unsigned long flags;
+ 
++	if (list_empty(list))
++		return;
+ retry:
+ 	count = FORCE_UNCHARGE_BATCH;
+ 	spin_lock_irqsave(&mem->lru_lock, flags);
+@@ -867,20 +866,27 @@
+ int mem_cgroup_force_empty(struct mem_cgroup *mem)
+ {
+ 	int ret = -EBUSY;
++	int node, zid;
+ 	css_get(&mem->css);
+ 	/*
+ 	 * page reclaim code (kswapd etc..) will move pages between
+ `	 * active_list <-> inactive_list while we don't take a lock.
+ 	 * So, we have to do loop here until all lists are empty.
+ 	 */
+-	while (!(list_empty(&mem->active_list) &&
+-		 list_empty(&mem->inactive_list))) {
++	while (mem->res.usage > 0) {
+ 		if (atomic_read(&mem->css.cgroup->count) > 0)
+ 			goto out;
+-		/* drop all page_cgroup in active_list */
+-		mem_cgroup_force_empty_list(mem, &mem->active_list);
+-		/* drop all page_cgroup in inactive_list */
+-		mem_cgroup_force_empty_list(mem, &mem->inactive_list);
++		for_each_node_state(node, N_POSSIBLE)
++			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
++				struct mem_cgroup_per_zone *mz;
++				mz = mem_cgroup_zoneinfo(mem, node, zid);
++				/* drop all page_cgroup in active_list */
++				mem_cgroup_force_empty_list(mem,
++							&mz->active_list);
++				/* drop all page_cgroup in inactive_list */
++				mem_cgroup_force_empty_list(mem,
++							&mz->inactive_list);
++			}
+ 	}
+ 	ret = 0;
+ out:
+@@ -1092,15 +1098,25 @@
+ static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+ {
+ 	struct mem_cgroup_per_node *pn;
++	struct mem_cgroup_per_zone *mz;
++	int zone;
+ 
+ 	pn = kmalloc_node(sizeof(*pn), GFP_KERNEL, node);
+ 	if (!pn)
+ 		return 1;
++
+ 	mem->info.nodeinfo[node] = pn;
+ 	memset(pn, 0, sizeof(*pn));
++
++	for (zone = 0; zone < MAX_NR_ZONES; zone++) {
++		mz = &pn->zoneinfo[zone];
++		INIT_LIST_HEAD(&mz->active_list);
++		INIT_LIST_HEAD(&mz->inactive_list);
++	}
+ 	return 0;
+ }
+ 
++
+ static struct mem_cgroup init_mem_cgroup;
+ 
+ static struct cgroup_subsys_state *
+@@ -1119,8 +1135,7 @@
+ 		return NULL;
+ 
+ 	res_counter_init(&mem->res);
+-	INIT_LIST_HEAD(&mem->active_list);
+-	INIT_LIST_HEAD(&mem->inactive_list);
++
+ 	spin_lock_init(&mem->lru_lock);
+ 	mem->control_type = MEM_CGROUP_TYPE_ALL;
+ 	memset(&mem->info, 0, sizeof(mem->info));
 
