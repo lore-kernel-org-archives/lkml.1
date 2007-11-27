@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbXK0Ees@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbXK0Ege@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757616AbXK0Ees (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXK0Eek
+	id S1757793AbXK0Ege (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbXK0Eg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:34:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40730 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752855AbXK0Eej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:34:39 -0500
-Date: Mon, 26 Nov 2007 23:34:11 -0500
-From: Dave Jones <davej@redhat.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-Message-ID: <20071127043411.GF15764@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Valdis.Kletnieks@vt.edu,
-	Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@kernel.org>,
-	linux-kernel@vger.kernel.org
-References: <20071125161631.GA21947@stusta.de> <20071126122706.GA5167@ucw.cz> <20547.1196135084@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20547.1196135084@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 26 Nov 2007 23:36:27 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:56936 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754237AbXK0Eg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 23:36:26 -0500
+Date: Mon, 26 Nov 2007 22:36:17 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Dynticks Causing High Context Switch Rate in ksoftirqd
+In-reply-to: <fa.c70Wy8WHP3DOaDydQ2D94+Xxx/8@ifi.uio.no>
+To: bdupree@techfinesse.com
+Cc: linux-kernel@vger.kernel.org
+Message-id: <474B9EC1.5020304@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.c70Wy8WHP3DOaDydQ2D94+Xxx/8@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 10:44:44PM -0500, Valdis.Kletnieks@vt.edu wrote:
- 
- > I suspect that given the "once it escapes, it's cast in stone" view we take
- > towards user-visible API/etc, there isn't much *real* room for an
- > 'EXPERIMENTAL' flag anymore.  Most of the usage should probably be confined to
- > individual drivers, where all we should need is a 'default n' and suitable
- > warning verbiage in the Kconfig file warning about the driver eating your
- > filesystems and small animals for breakfast.
+bdupree@techfinesse.com wrote:
+> Question: Why is ksoftirqd eating about 5 to 10 percent of my CPU on an idle
+> system? The problem occurs if I config the kernel with tickless
+> support (i.e. CONFIG_TICK_ONESHOT=y).  (Thanks to "oprofile" for putting me
+> onto this.)
+> 
+> I have noted this same problem on kernel versions: 2.6.23.1, 2.6.23.8 and
+> 2.6.23.9
+> 
+> **************************************************************************
+> *** Output from "vmstat -n 1 10" -- Note very high context switch rate ***
+> *** This is on a idle machine!                                         ***
+> **************************************************************************
+> 
+> procs -----------memory---------- ---swap-- -----io---- --system--
+> ----cpu----
+>  r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy
+> id wa
+>  0  0      0 1925556   4768 116104    0    0   124     2    6  7538  1  2
+> 96  1
+>  0  0      0 1925556   4768 116104    0    0     0     0    2 147329  0  1
+> 99  0
 
-Potential corruptors are usually flagged with (DANGEROUS) in the text,
-(One may argue that they shouldn't have escaped -mm)
-
- >  We certainly shouldn't have
- > one big flag for *all* in-progress drivers - I don't need to accidentally
- > enable a busticated ethernet driver because I want a USB widget.
-
-So no ethernet driver at all is better than a broken but mostly working one?
-Again if it isn't mostly working, it shouldn't have escaped -mm
-
-	Dave
+What did oprofile show? It should be able to narrow down what 
+function(s) are responsible for the CPU usage..
 
 -- 
-http://www.codemonkey.org.uk
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
