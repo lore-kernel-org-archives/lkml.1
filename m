@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbXK0WoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbXK0Wt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759974AbXK0WoP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbXK0WoA
+	id S1759454AbXK0Wt1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXK0WtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:44:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46057 "EHLO ogre.sisk.pl"
+	Tue, 27 Nov 2007 17:49:18 -0500
+Received: from gw.goop.org ([64.81.55.164]:44390 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752687AbXK0Wn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:43:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: freeze vs freezer
-Date: Wed, 28 Nov 2007 00:01:59 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+	id S1752132AbXK0WtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:49:18 -0500
+Message-ID: <474C9EEE.4090904@goop.org>
+Date: Tue, 27 Nov 2007 14:49:18 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Kyle Moffett <mrmacman_g4@mac.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Len Brown <lenb@kernel.org>
-References: <4744FD87.7010301@goop.org> <200711271840.24825.rjw@sisk.pl> <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com>
-In-Reply-To: <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: freeze vs freezer
+References: <4744FD87.7010301@goop.org> <200711271840.24825.rjw@sisk.pl> <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com> <200711280002.00755.rjw@sisk.pl>
+In-Reply-To: <200711280002.00755.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711280002.00755.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 27 of November 2007, Kyle Moffett wrote:
-> On Nov 27, 2007, at 12:40:24, Rafael J. Wysocki wrote:
-> > On Tuesday, 27 of November 2007, Matthew Garrett wrote:
-> >> On Mon, Nov 26, 2007 at 10:53:34PM +0100, Rafael J. Wysocki wrote:
-> >>> On Monday, 26 of November 2007, David Chinner wrote:
-> >>>> So how do you handle threads that are blocked on I/O or a lock  
-> >>>> during the system freeze process, then?
-> >>>
-> >>> We wait until they can continue.
-> >>
-> >> So if I have a process blocked on an unavilable NFS mount, I can't
-> >> suspend?
-> >
-> > That's correct, you can't.
-> >
-> > [And I know what you're going to say. ;-)]
-> 
-> Why exactly does suspend/hibernation depend on "TASK_INTERRUPTIBLE"  
-> instead of a zero preempt_count()?  Really what we should do is just  
-> iterate over all of the actual physical devices and tell each one  
-> "Block new IO requests preemptably, finish pending DMA, put the  
-> hardware in low-power mode, and prepare for suspend/hibernate".  As  
-> long as each driver knows how to do those simple things we can have  
-> an entirely consistent kernel image for both suspend and for  
-> hibernation.
+Rafael J. Wysocki wrote:
+> Well, this is more-or-less how we all imagine that should be done eventually.
+>
+> The main problem is how to implement it without causing too much breakage.
+> Also, there are some dirty details that need to be taken into consideration.
+>   
 
-Well, this is more-or-less how we all imagine that should be done eventually.
+For Xen suspend/resume, I'd like to use the freezer to get all threads
+into a known consistent state (where, specifically, they don't have any
+outstanding pagetable updates pending).  In other words, the freezer as
+it currently stands is what I want, modulo some of these issues where it
+gets caught up unexpectedly.  If threads end up getting frozen anywhere
+preempt isn't explicitly disabled, it wouldn't work for me.
 
-The main problem is how to implement it without causing too much breakage.
-Also, there are some dirty details that need to be taken into consideration.
-
-> When all tasks are preemptable we can very trivially rely on the  
-> drivers to enforce the "Stop new IO submission" with a dirt-simple  
-> semaphore or waitqueue.  The sleep itself will be  
-> TASK_UNINTERRUPTIBLE, but it will be done from a preemptible context.
-
-If there are any drivers that make their devices available via mmap(), that
-won't be sufficient.
-
-Probably, we'll need a two iterations over devices to handle all corner cases.
-
-Moreover, for hibernation we need to resume at least some devices in order
-to save the image, which shouldn't result in unblocking the waiting tasks.
-
-> That way the system suspend time is the sum of the suspend times of  
-> the devices on the system, and the suspend time of any given device  
-> is the sum of its maximum non-preemptible critical section and the  
-> time to flush all of its remaining pending DMA/etc.  This is almost  
-> completely independent of the load-level of the machine, and it does  
-> not depend on things like NFS filesystems.  The one gotcha is that it  
-> does not flush dirty filesystem pages to disk first, although that  
-> could be fixed with a few VFS and blockdev hooks which hierarchically  
-> flush and "freeze" block devices and filesystems before actually  
-> disabling devices much the way that device-mapper can pause a device  
-> to take a snapshot and end up with a clean journal on the filesystem  
-> afterwards.
-
-Yes, I generally agree.
-
-Greetings,
-Rafael
+    J
