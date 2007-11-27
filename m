@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbXK0C3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbXK0C3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbXK0C3k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 21:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXK0C3c
+	id S1755256AbXK0C3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 21:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbXK0C3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 21:29:32 -0500
-Received: from ro-out-1112.google.com ([72.14.202.181]:44179 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbXK0C3b (ORCPT
+	Mon, 26 Nov 2007 21:29:39 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2769 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754118AbXK0C3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 21:29:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=a/A113r6KJFoIWZpTLBa/bajJr8R4V9DwYb96FgTa1XolMbbNYyQKrkgO69+aZWMPa4OmIntkxuoyRFyWqd8jgUih//yFYUQpbWjmQ/GGTeTGuoP73IoVIq1Xk6SclhYlopoqGOMFekHF2ntz2DpWjEC+Eihq8Tl4cbPlB2Zlg0=
-Date: Tue, 27 Nov 2007 10:26:10 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, Dave Hansen <haveblue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       linux-mm@kvack.org
-Subject: [Patch](Resend) mm/sparse.c: Improve the error handling for
-	sparse_add_one_section()
-Message-ID: <20071127022609.GA4164@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <1195507022.27759.146.camel@localhost> <20071123055150.GA2488@hacking> <20071126191316.99CF.Y-GOTO@jp.fujitsu.com>
+	Mon, 26 Nov 2007 21:29:38 -0500
+Date: Mon, 26 Nov 2007 21:29:36 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: greg@kroah.com, <kay.sievers@vrfy.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kobjects: drop child->parent ref at unregistration
+In-Reply-To: <20071126145810.eb848f23.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0711262124090.22315-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071126191316.99CF.Y-GOTO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 07:19:49PM +0900, Yasunori Goto wrote:
->Hi, Cong-san.
->
->>  	ms->section_mem_map |= SECTION_MARKED_PRESENT;
->>  
->>  	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
->>  
->>  out:
->>  	pgdat_resize_unlock(pgdat, &flags);
->> -	if (ret <= 0)
->> -		__kfree_section_memmap(memmap, nr_pages);
->> +
->>  	return ret;
->>  }
->>  #endif
->
->Hmm. When sparse_init_one_section() returns error, memmap and 
->usemap should be free.
+On Mon, 26 Nov 2007, Andrew Morton wrote:
 
-Hi, Yasunori.
+> On Mon, 19 Nov 2007 10:53:40 -0500 (EST)
+> Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > This patch (as1015) reverts changes that were made to the driver core
+> > about four years ago.  The intent back then was to avoid certain kinds
+> > of invalid memory accesses by leaving kernel objects allocated as long
+> > as any of their children were still allocated.  The original and
+> > correct approach was to wait only as long as any children were still
+> > _registered_; that's what this patch reinstates.
+> 
+> What happened with this?
 
-Thanks for your comments. Is the following one fine for you?
+As far as I know, it's on Greg's queue.
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> > This fixes a problem in the SCSI core made visible by the class_device
+> > to regular device conversion: A reference loop (scsi_device holds
+> > reference to request_queue, which is the child of a gendisk, which is
+> > the child of the scsi_device) prevents the data structures from being
+> > released, even though they are deregistered okay.
+> > 
+> > It's possible that this change will cause a few bugs to surface,
+> > things that have been hidden for several years.  They can be fixed
+> > easily enough by having the child device take an explicit reference to
+> > the parent whenever needed.
+> > 
+> 
+> How will such bugs manifest?  Ideally via a nice printk and a stack trace
+> followed by damage avoidance.
 
----
+They will manifest in the same way as any other use-after-free bug: an 
+oops message and either death of the current process or a system hang.
 
-Index: linux-2.6/mm/sparse.c
-===================================================================
---- linux-2.6.orig/mm/sparse.c
-+++ linux-2.6/mm/sparse.c
-@@ -391,9 +391,17 @@ int sparse_add_one_section(struct zone *
- 	 * no locking for this, because it does its own
- 	 * plus, it does a kmalloc
- 	 */
--	sparse_index_init(section_nr, pgdat->node_id);
-+	ret = sparse_index_init(section_nr, pgdat->node_id);
-+	if (ret < 0)
-+		return ret;
- 	memmap = kmalloc_section_memmap(section_nr, pgdat->node_id, nr_pages);
-+	if (!memmap)
-+		return -ENOMEM;
- 	usemap = __kmalloc_section_usemap();
-+	if (!usemap) {
-+		__kfree_section_memmap(memmap, nr_pages);
-+		return -ENOMEM;
-+	}
- 
- 	pgdat_resize_lock(pgdat, &flags);
- 
-@@ -403,10 +411,6 @@ int sparse_add_one_section(struct zone *
- 		goto out;
- 	}
- 
--	if (!usemap) {
--		ret = -ENOMEM;
--		goto out;
--	}
- 	ms->section_mem_map |= SECTION_MARKED_PRESENT;
- 
- 	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
-@@ -414,7 +418,7 @@ int sparse_add_one_section(struct zone *
- out:
- 	pgdat_resize_unlock(pgdat, &flags);
- 	if (ret <= 0)
--		__kfree_section_memmap(memmap, nr_pages);
-+		kfree(usemap);
- 	return ret;
- }
- #endif
+Obviously I'm not aware of any such bugs -- if I were, I'd fix them.  
+Greg has expressed concern that some USB serial drivers might have this 
+problem.  I'll do what testing I can (not much because I don't have any 
+USB serial devices).
+
+> If it's via a mysterious crash or something similarly obscure then can we
+> improve that?
+
+I can't think of anything offhand.  Maybe someone else can.
+
+Alan Stern
 
