@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbXK0ET0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXK0ET6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbXK0ET0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:19:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXK0ETT
+	id S1757588AbXK0ET6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXK0ETu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:19:19 -0500
-Received: from qmta07.westchester.pa.mail.comcast.net ([76.96.62.64]:46203
-	"EHLO QMTA07.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755204AbXK0ETT (ORCPT
+	Mon, 26 Nov 2007 23:19:50 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33961 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755028AbXK0ETt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:19:19 -0500
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Nov 2007 23:19:18 EST
-X-Authority-Analysis: v=1.0 c=1 a=PGn15t7drhMA:10 a=GG0w21oKAAAA:8 a=pQs5aej7AAAA:8 a=Cl1uwOHQh07nyNwJ_2kA:9 a=RF9A9rAkMEI3anD7jCLicO-t0KkA:4 a=c5zHXd76wwQA:10
-Message-ID: <474B9944.5050804@comcast.net>
-Date: Mon, 26 Nov 2007 23:12:52 -0500
-From: John Richard Moser <nigelenki@comcast.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       travis@sgi.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Mon, 26 Nov 2007 23:19:49 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: kexec@lists.infradead.org, ak@suse.de, vgoyal@in.ibm.com, hbabu@us.ibm.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [rfc 08/45] cpu alloc: x86 support
-References: <20071120011132.143632442@sgi.com> <200711200416.32954.ak@suse.de> <Pine.LNX.4.64.0711191945260.21813@schroedinger.engr.sgi.com> <200711201301.25373.ak@suse.de>
-In-Reply-To: <200711201301.25373.ak@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071127014740.GA28622@hmsreliant.think-freely.org>
+Date: Mon, 26 Nov 2007 21:12:25 -0700
+In-Reply-To: <20071127014740.GA28622@hmsreliant.think-freely.org> (Neil
+	Horman's message of "Mon, 26 Nov 2007 20:47:40 -0500")
+Message-ID: <m1d4twmimu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Neil Horman <nhorman@tuxdriver.com> writes:
 
+> Hey all-
+> 	I've been working on an issue lately involving multi socket x86_64
+> systems connected via hypertransport bridges.  It appears that some systems,
+> disable the hypertransport connections during a kdump operation when all but the
+> crashing processor gets halted in machine_crash_shutdown.  This becomes a
+> problem when the ioapic attempts to route interrupts to the only remaining
+> processor.  Even though the active processor is targeted for interrupt
+> reception, the fact that the hypertransport connections are inactive result in
+> interrupts not getting delivered.  The effective result is that timer interrupts
+> are not delivered to the running cpu, and the system hangs on reboot into the
+> kdump kernel during calibrate_delay.  I've found that I've been able to avoid
+> this hang, by forcing a transition to the bios defined boot cpu during the
+> crashing kernel shutdown.  This patch accomplished that.  Tested by myself and
+> the origional reporter with successful results.
 
-Andi Kleen wrote:
-> On Tuesday 20 November 2007 04:50, Christoph Lameter wrote:
->> On Tue, 20 Nov 2007, Andi Kleen wrote:
+If you can get to calibrate_delay hypertransport is still routing traffic.
+Your diagnosis of the problem is wrong.  Most likely it is just an ioapic
+programming error in restoring the system to PIC mode.
 
-> You could in theory move the modules, but then you would need to implement
-> a full PIC dynamic linker for them  first and also increase runtime overhead
-> for them because they would need to use a GOT/PLT.
+I agree that there is a problem.
 
-On x86-64?  The GOT/PLT should stay in cache due to temporal locality. 
-The x86-64 instruction set itself handles GOT-relative addressing rather 
-well; what's a 1% loss on x86 is like 0.01% on x86-64, so I'm thinking 
-100 times better?
+The reliable fix is to totally skip the PIC interrupt mode and go directly
+to apic mode.
 
-I think I got this by `-fpic -pie` compiling nbyte benchmark versus 
-fixed position, each with and without on 32-bit (which made about a 1% 
-difference) and on 64-bit (which made a 0.01% difference).  It was a 
-long time ago.
+To make the code kexec on panic code path reliable we need to remove code
+not add it.
 
-Still, yeah I know.  Complexity.
+Frankly I think switching cpus is one of the least reliable things that
+we can do in general.
 
-(You have the ability to textrel these things too, and just rewrite 
-non-PIC, depending on how you feel about that)
--- 
-Bring back the Firefox plushy!
-http://digg.com/linux_unix/Is_the_Firefox_plush_gone_for_good
-https://bugzilla.mozilla.org/show_bug.cgi?id=322367
+Eric
