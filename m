@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbXK0HzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbXK0H6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbXK0HzR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 02:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXK0HzE
+	id S1754921AbXK0H6g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 02:58:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXK0H62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 02:55:04 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:50922 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbXK0HzC (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 02:55:02 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1 - brick my Dell Latitude D820
-In-Reply-To: Your message of "Mon, 26 Nov 2007 23:27:03 PST."
-             <20071126232703.c956addc.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <4210.1196147786@turing-police.cc.vt.edu>
-            <20071126232703.c956addc.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196150096_2790P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Nov 2007 02:54:56 -0500
-Message-ID: <6421.1196150096@turing-police.cc.vt.edu>
+	Tue, 27 Nov 2007 02:58:28 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:41035 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbXK0H62 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 02:58:28 -0500
+Message-ID: <474BCE0E.4090900@cosmosbay.com>
+Date: Tue, 27 Nov 2007 08:58:06 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] get rid of NR_OPEN and introduce a sysctl_nr_open
+References: <200711200023.lAK0NtEe004292@imap1.linux-foundation.org> <20071120004832.393cc5a8@the-village.bc.nu> <474291E7.5060700@cosmosbay.com> <20071120001411.4db1eb04.akpm@linux-foundation.org> <474420EE.4060603@cosmosbay.com> <20071126201717.450e44eb.akpm@linux-foundation.org>            <474BC29F.4060706@cosmosbay.com> <4651.1196148356@turing-police.cc.vt.edu>
+In-Reply-To: <4651.1196148356@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 27 Nov 2007 08:58:18 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196150096_2790P
-Content-Type: text/plain; charset=us-ascii
+Valdis.Kletnieks@vt.edu a écrit :
+> On Tue, 27 Nov 2007 08:09:19 +0100, Eric Dumazet said:
+> 
+>> Changing NR_OPEN is not considered safe because of vmalloc space potential 
+>> exhaust.
+> 
+> Verbiage about this point...
+> 
+> 
+>> +nr_open
+>> +-------
+>> +
+>> +Denotes the maximum number of file-handles a process can
+>> +allocate. Default value is 1024*1024 (1048576) which should be
+>> +enough for most machines. Actual limit depends on RLIMIT_NOFILE
+>> +resource limit.
+>> +
+> 
+> should probably be in here - can you add something of the form "Setting this
+> too high can cause vmalloc failures, especially on smaller-RAM machines",
+> and/or *say* how much RAM the default takes?  Sure, it's 1M entries, but
+> my tuning on a 2G-RAM machine will differ if these are byte-sized, or 128-byte
+> sized - one is off in a corner, the other is 1/16th of my entire memory.
 
-On Mon, 26 Nov 2007 23:27:03 PST, Andrew Morton said:
+vmalloc failures can already happen if you start 32 processes on i386 kernels, 
+each of them wanting to open file handle number 600.000 (if their 
+RLIMIT_NOFILE >= 600000)
 
-> > git-x86.patch
-> > git-x86-fixup.patch
-> > git-x86-thread_order-borkage.patch
-> > git-x86-thread_order-borkage-fix.patch
-> > git-x86-identify_cpu-fix.patch
-> > git-x86-memory_add_physaddr_to_nid-export-for-acpi-memhotplugko.patch
-> > git-x86-memory_add_physaddr_to_nid-export-for-acpi-memhotplugko-checkpatch-fixes.patch
-> > git-x86-inlining-borkage.patch
-> > x86_64-set-cpu_index-to-nr_cpus-instead-of-0.patch
-> > x86_64-make-sparsemem-vmemmap-the-default-memory-model-v2.patch BAD
+fcntl(0, F_DUPFD, 600000);
 
-> You could try http://userweb.kernel.org/~akpm/mmotm/ - we might have already
-> fixed it.
+We are not going to add warnings about vmalloc on every sysctl around there 
+that could allow a root user to exhaust vmalloc space. This is a vmalloc issue 
+on 32bit kernel, and quite frankly I never hit this limit.
 
-I suspect that trying -rc3-mm1 but refreshing just the 10 patches above
-from -mmotm would be far less likely to pull in other heartburn?
+If you take a look at vmalloc() implementation, fact that it uses a 'struct 
+vm_struct *vmlist;' to track all active zones show that vmalloc() is not used 
+that much.
 
-> Otherwise, please proceed to work out which diff I need to drop and hope like
-> hell that it isn't git-x86..
+> 
+> Also, would it be useful to *lower* the value drastically, if you know a priori
+> that no process should get up to 1K file handles, much less 1M? Does that
+> buy me anything different than setting RLIMIT_NOFILE=1024?
 
-That's a 41,240 line diff, the rest *total* to about 400 lines.  I don't have
-warm-n-fuzzies about my odds here. ;)
+NR_OPEN is the max value that RLIMIT_NOFILE can reach, nothing more.
 
-I'm a git-idiot, but *do* know how to git-bisect through Linus tree - what
-would I need to do to git-bisect through git-x86.patch? (I do *not* know how
-to deal with more than 1 source git tree, so if the magic is just 'get a
-linus tree, merge git-x86, then bisect as usual", I'm stuck on "merge git-x86")..
+You can set it to 256*1024*1024 or 4*1024 it wont change memory needs on your 
+machine, unless you raise RLIMIT_NOFILE and one of your program leaks file 
+handles, or really want to open simultaneously many of them.
 
+Most programs wont open more than 500 files, so their file table is allocated 
+via kmalloc()
 
---==_Exmh_1196150096_2790P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHS81QcC3lWbTT17ARAqXqAJ9Bvg3XtirNpUAf+y50k53GQSQnMACfahdr
-X0XsWXANM2MDLUCzqx0G0mE=
-=mx/v
------END PGP SIGNATURE-----
-
---==_Exmh_1196150096_2790P--
