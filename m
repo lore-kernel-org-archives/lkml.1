@@ -1,86 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757713AbXK0Uwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbXK0UxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757713AbXK0Uwy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbXK0Uwp
+	id S1759570AbXK0UxV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbXK0UxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:52:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37500 "EHLO mx1.redhat.com"
+	Tue, 27 Nov 2007 15:53:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37515 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756949AbXK0Uwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:52:44 -0500
-Message-ID: <474C832C.1060903@redhat.com>
-Date: Tue, 27 Nov 2007 12:50:52 -0800
-From: Ben Woodard <woodard@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1756617AbXK0UxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:53:07 -0500
+Date: Tue, 27 Nov 2007 15:52:55 -0500
+From: Neil Horman <nhorman@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+Message-ID: <20071127205255.GH14887@hmsendeavour.rdu.redhat.com>
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com> <20071127200011.GA3703@redhat.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Neil Horman <nhorman@tuxdriver.com>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com, vgoyal@in.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot
- cpu
-References: <20071127014740.GA28622@hmsreliant.think-freely.org>	<200711271445.56792.ak@suse.de>	<20071127142826.GB31376@hmsreliant.think-freely.org>	<200711271543.11809.ak@suse.de>	<20071127144856.GC31376@hmsreliant.think-freely.org> <m14pf7k8ns.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m14pf7k8ns.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127200011.GA3703@redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Neil Horman <nhorman@tuxdriver.com> writes:
+On Tue, Nov 27, 2007 at 03:00:11PM -0500, Vivek Goyal wrote:
+> On Tue, Nov 27, 2007 at 02:42:20PM -0500, Neil Horman wrote:
 > 
->> So, it sounds to me then, like unless I'm willing to really re-write the APIC
->> setup code (which I don't feel qualified to do quite yet), that the immediate
->> solution would be to not rely on interrupts in legacy mode, which was according
->> to my understanding, what the use of the irqpoll command line option was
->> supposed to enable.  Any thoughts as to why that might not be working in this
->> case, or suggested tests to determine a cause there?
+> [..]
+> > 
+> > Ben I tend to agree.  I think re-enabling the APIC early in the boot process
+> > provides a greater degree of reliability in that it more quickly restores the
+> > system to a state where booting on a cpu other than cpu0 will be more likely to
+> > work, but I have to say that overall it seems like booting a secondary kernel on
+> > cpu0, when possible offers the highest degree of reliability.
+> > 
+> > Perhaps what we need is a 'both solution'.  Re-enabling the apic to full smp
+> > functionality early in the boot process is a good solution for the problems
+> > which we are hypothesizing here, and would be a good thing to do in general, but
+> > it doesn't preclude also attmpting to switch back to cpu0 during a crash.
+> > 
+> > Perhaps it would be worthwhile to:
+> > 
+> > 1) Investigate the early enablement of the ioapic for x86[_64]
+> > 2) implement my prevoiusly proposed patch with the addition of a handshake
+> > element, such that:
+> > 	a) when the boot cpu gets the ipi from machine_crash_shutdown it flags
+> > 	   the fact that it is going to boot the kexec kernel with a global
+> > 	   variable
+> > 	b) the crashing cpu loops waiting for either:
+> > 		I) a timeout of 1 second
+> > 		II) a reduction of the halt count to zero
+> > 		III) the setting of the flag mentioned in (a)
+> > 	c) the crashing cpu, if it sees that it is not the boot cpu AND
+> > 	   that the flag in (III) is set, will halt itself, otherwise it
+> > 	   will set the flag and boot the kexec image itself.
+> > 
+> > With this modification, we can try to relocate to cpu0,  and if we fail, we fall
+> > back to booting on the crashing processor.
+> > 
+> > I'll work up a patch that implements (2), unless there are strong objections.  I
+> > see no reason why we can't implment this 'both' solution.
+> > 
 > 
-> Hmm.  It looks like irqpoll expects to have at least one irq working.
-> I wonder if we can fix that.
+> Hi Neil,
 > 
-> Looking at it from the other direction what does this line
-> from check_timer() look like when you boot a normal kernel?
+> If we implement first solution, we don't have to implement second. Problem
+> will automatically be solved.
 > 
-> 	apic_printk(APIC_VERBOSE,KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
-> 		cfg->vector, apic1, pin1, apic2, pin2);
+Agreed, assuming:
+1) The problems we have been hypothesising are accurate.  As you note below, Ben
+and I have dug deep to find the problem, but we could try to go deeper.
+
+2) There are no other issues with (re)booting a system on the non-boot cpu.  It
+seems to me that if its possible to reboot on cpu0, we should try.  I understand
+that we're trying to keep that code small for obvious reasons, but if we have a
+fall back method to the crashing cpu, it seems reasonable safe to me.
+ 
+> In general adding more code in crash shutdown path is not good. We are
+> trying to make that code path as small as possible.
+> 
+> OTOH, I think we have not root caused this problem yet. We don't know yet
+> why interrupts are not coming to non-boot cpu. I think we can go little
+> deeper to compare the system state in normal boot and kdump boot and see
+> what has changed. System state would include, LAPIC and IOAPIC entries
+> etc.
 > 
 
-Here is what I get on a normal boot of the problem motherboard:
+> Are we putting the system back in PIC mode or virtual wire mode? I have
+> not seen systems which support PIC mode. All latest systems seems
+> to be having virtual wire mode. I think in case of PIC mode, interrupts
+> can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
+> to deliver interrupt to any of the cpus and that's what we have been
+> relying on  until and unless there is something board specific.
+> 
 
-..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+This is actually a very interesting question.  Looking at disable_IO_APIC in the
+latest git tree, which is used to revert the APIC to a legacy mode, we do one of
+two things.  If the on board 8259 is routed through the IOAPIC, then we
+configure the APIC to be in virtual wire mode, so that the interrupt is
+delivered via the APIC to whatever processor you want to configure.  If however,
+the 8259 bypasses the IOAPIC, then we simply disable the LAPICS LVT0 interrupt,
+so that any legacy timer interrupts from the apic are ignored, ostesibly because
+the 8259 will assert the interrupt pin on the processor it is wired to directly.
+I wonder if most (almost all) modern systems use the former configuration, while
+the supermicro board in question in a rare exception, uses the latter.  If the
+8259 was routed directly to cpu0, that would explain this hang.
 
-
-> I'm curious what values we see at boot for the legacy mode the first
-> time it is setup, and possibly what chipset you are on.
-> I know we have had a few times where we have failed to reprogram
-> the ioapic properly at shutdown.  So it can't hurt to look at
-> that possibility one last time.
-> 
-> 
-> For whatever it is worth my original attempt at using only the
-> apic mode was commit: f2b36db692b7ff6972320ad9839ae656a3b0ee3e
-> Looks like I didn't have an x86_64 version.
-> 
-> It looks like about half the cleanups I needed was to decouple
-> smp cpu startup and apic initialization.  I think the hotplug cpu
-> case has done a more thorough version of that now.
-> 
-> There was a bit of reshuffling needed to get the everything initialized
-> in the right order when we started apic mode sooner.
-> 
-> Anyway I might just take another look at this if I can find enough
-> moments to string together.
-> 
-> Eric
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
-
+Regards
+Neil
+> Thanks
+> Vivek
 
 -- 
--ben
--=-
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
