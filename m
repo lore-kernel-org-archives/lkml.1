@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbXK0J5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbXK0J6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbXK0J5B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 04:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXK0J4u
+	id S1757946AbXK0J6A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 04:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXK0J5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 04:56:50 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:58265 "EHLO tac.ki.iif.hu"
+	Tue, 27 Nov 2007 04:57:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:38860 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753480AbXK0J4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 04:56:49 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: bonding sysfs output
-References: <87tznafjeu.fsf@szonett.ki.iif.hu>
-	<20071125205150.4e49915f.akpm@linux-foundation.org>
-	<87lk8lflzf.fsf@szonett.ki.iif.hu>
-	<20071127004445.a046f791.akpm@linux-foundation.org>
-Date: Tue, 27 Nov 2007 10:56:43 +0100
-In-Reply-To: <20071127004445.a046f791.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Tue, 27 Nov 2007 00:44:45 -0800")
-Message-ID: <87prxwnh9g.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	id S1753480AbXK0J5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 04:57:52 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18251.59930.30260.145217@cargo.ozlabs.ibm.com>
+Date: Tue, 27 Nov 2007 20:57:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: time accounting problem (powerpc only?)
+In-Reply-To: <1196094193.4149.287.camel@johannes.berg>
+References: <1195814816.4149.94.camel@johannes.berg>
+	<1196094193.4149.287.camel@johannes.berg>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Johannes Berg writes:
 
-> On Mon, 26 Nov 2007 09:29:40 +0100 Wagner Ferenc <wferi@niif.hu> wrote:
->
->> Trailing NULs are present in each file under /sys/class/net/*/bonding
->> and also in /sys/class/net/bonding_masters.  That is, in every file
->> provided by drivers/net/bonding/bond_sysfs.c.  Most of the patch is
->> concerned with this.
->> 
->> Closely related is the presence of trailing spaces in multivalue
->> files.  There are three such files, one of them has the trailing space
->> removed.  This patch removes it from the other two.  During this it
->> also renames one function argument 'buffer' to 'buf', for consistency.
->> 
->> On the policy side: some files are not applicable to some types of
->> bonds, and return a single linefeed in that case.  Except for one
->> single case, which returns 'NA\n'.  The patch changes these cases into
->> emtpy files.
->> 
->> If these are worthy changes, I'm absolutely willing to split up the
->> patch into three parts as the above.
->
-> Well that would be good if poss, thanks.
+> Contrary to what I claimed later in the thread, my 64-bit powerpc box
+> (quad-core G5) doesn't suffer from this problem.
+> 
+> Does anybody have any idea? I don't even know how to debug it further.
 
-Will do.  Not exactly a simple thing, as the changes collide.
+I see it on my G4 powerbook.  However, a compute-bound task runs just
+as fast (i.e. completes in the same elapsed time) as on older kernels,
+so it does look like it is just an accounting problem.  If the CPU was
+really spending more than half its time servicing hardware interrupts,
+the task should take more than twice as long to complete.
 
-> But fixing bugs is way more important than niceties of patch presentation
-> however I wasn't prepared to fix the rejects which that patch is hitting in
-> the considerably-changed bonding_show_ad_partner_mac().  Please:
+Paul.
 
-Yes, the patch was against 2.6.23.8.  Forgot to mention. :(
-
-> - raise patches against the latest Linus tree
-> (ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/)
-
-I thought it was better to change to git.  Isn't it so?
-SubmittingPatches has nothing to say about that...
-Can I find collected best practices somewhere?  Which tree, which
-branch, how/when to rebase, format-patch, etc...
-
-(If given no further instructions, I'll try my best and you can
-reflect on the result.  I mean, the above questions are not blocking
-me, feel free not to answer.)
-
-> - cc netdev@vger.kernel.org on networking-related matters
->
-> - Include a Signed-off-by: as per Documentation/SubmittingPatches
->
-> - Try to ensure that the full explanation (such as you have above) is
-> covered in the changelog text.
-
-Ok.
--- 
-Thanks for your time,
-Feri.
