@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbXK0IRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbXK0ITv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbXK0IRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbXK0IRF
+	id S1755355AbXK0ITv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 03:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXK0ITo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:17:05 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56501 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751318AbXK0IRE (ORCPT
+	Tue, 27 Nov 2007 03:19:44 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46592 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbXK0ITn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:17:04 -0500
-Date: Tue, 27 Nov 2007 00:17:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm1 - brick my Dell Latitude D820
-Message-Id: <20071127001701.aa3268a7.akpm@linux-foundation.org>
-In-Reply-To: <6421.1196150096@turing-police.cc.vt.edu>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4210.1196147786@turing-police.cc.vt.edu>
-	<20071126232703.c956addc.akpm@linux-foundation.org>
-	<6421.1196150096@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 Nov 2007 03:19:43 -0500
+Message-ID: <474BD316.3030709@bull.net>
+Date: Tue, 27 Nov 2007 09:19:34 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH 2.6.24-rc3-mm1] IPC: consolidate sem_exit_ns(), msg_exit_ns
+ and shm_exit_ns()
+References: <20071123175250.0f584913.pierre.peiffer@bull.net>	<20071126224438.df547263.akpm@linux-foundation.org> <20071126224636.ca1ef92e.akpm@linux-foundation.org>
+In-Reply-To: <20071126224636.ca1ef92e.akpm@linux-foundation.org>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 27/11/2007 09:27:01,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 27/11/2007 09:27:03,
+	Serialize complete at 27/11/2007 09:27:03
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007 02:54:56 -0500 Valdis.Kletnieks@vt.edu wrote:
 
-> On Mon, 26 Nov 2007 23:27:03 PST, Andrew Morton said:
+
+Andrew Morton wrote:
+> On Mon, 26 Nov 2007 22:44:38 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > > git-x86.patch
-> > > git-x86-fixup.patch
-> > > git-x86-thread_order-borkage.patch
-> > > git-x86-thread_order-borkage-fix.patch
-> > > git-x86-identify_cpu-fix.patch
-> > > git-x86-memory_add_physaddr_to_nid-export-for-acpi-memhotplugko.patch
-> > > git-x86-memory_add_physaddr_to_nid-export-for-acpi-memhotplugko-checkpatch-fixes.patch
-> > > git-x86-inlining-borkage.patch
-> > > x86_64-set-cpu_index-to-nr_cpus-instead-of-0.patch
-> > > x86_64-make-sparsemem-vmemmap-the-default-memory-model-v2.patch BAD
+>> On Fri, 23 Nov 2007 17:52:50 +0100 Pierre Peiffer <pierre.peiffer@bull.net> wrote:
+>>
+>>> sem_exit_ns(), msg_exit_ns() and shm_exit_ns() are all called when an ipc_namespace is
+>>> released to free all ipcs of each type.
+>>> But in fact, they do the same thing: they loop around all ipcs to free them
+>>> individually by calling a specific routine.
+>>>
+>>> This patch proposes to consolidate this by introducing a common function, free_ipcs(),
+>>> that do the job. The specific routine to call on each individual ipcs is passed as
+>>> parameter. For this, these ipc-specific 'free' routines are reworked to take a
+>>> generic 'struct ipc_perm' as parameter.
+>> This conflicts in more-than-trivial ways with Pavel's
+>> move-the-ipc-namespace-under-ipc_ns-option.patch, which was in
+>> 2.6.24-rc3-mm1.
+>>
 > 
-> > You could try http://userweb.kernel.org/~akpm/mmotm/ - we might have already
-> > fixed it.
+> err, no, it wasn't that patch.  For some reason your change assumes that
+> msg_exit_ns() (for example) doesn't have these lines:
 > 
-> I suspect that trying -rc3-mm1 but refreshing just the 10 patches above
-> from -mmotm would be far less likely to pull in other heartburn?
-
-All the above are no longer in -mm.  They got merged, dropped,
-otherwise-fixed, etc.
-
-> > Otherwise, please proceed to work out which diff I need to drop and hope like
-> > hell that it isn't git-x86..
+>         kfree(ns->ids[IPC_MSG_IDS]);
+>         ns->ids[IPC_MSG_IDS] = NULL;
 > 
-> That's a 41,240 line diff, the rest *total* to about 400 lines.  I don't have
-> warm-n-fuzzies about my odds here. ;)
+> in it.
 
-No.
+Yes, in fact, I've made this patch on top of this one:
+http://lkml.org/lkml/2007/11/22/49
 
-> I'm a git-idiot, but *do* know how to git-bisect through Linus tree - what
-> would I need to do to git-bisect through git-x86.patch? (I do *not* know how
-> to deal with more than 1 source git tree, so if the magic is just 'get a
-> linus tree, merge git-x86, then bisect as usual", I'm stuck on "merge git-x86")..
+As the patch mentioned by this previous thread was acked by Cedric and Pavel,
+I've assumed that you will take both. But I've not made this clear, sorry.
 
-umm, I'm minimally git-afflicted hence am the wrong person to ask. 
-Something like:
-
-
-- checkout Linus's tree
-
-- echo 'git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#mm' > .git/branches/git-x86
-
-- git-fetch git-x86
-
-- git-checkout git-x86
-
-- start bisecting.
+-- 
+Pierre
