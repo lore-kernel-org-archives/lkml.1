@@ -1,104 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbXK0N7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbXK0N7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757607AbXK0N7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbXK0N7M
+	id S1758140AbXK0N7e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbXK0N7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:59:12 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:3351 "EHLO ra.tuxdriver.com"
+	Tue, 27 Nov 2007 08:59:21 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:54196 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbXK0N7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:59:11 -0500
-Date: Tue, 27 Nov 2007 08:53:56 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Neil Horman <nhorman@redhat.com>, hbabu@us.ibm.com, vgoyal@in.ibm.com,
-       kexec@lists.infradead.org, ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
-	boot cpu
-Message-ID: <20071127135356.GA31376@hmsreliant.think-freely.org>
-References: <20071127014740.GA28622@hmsreliant.think-freely.org> <m1d4twmimu.fsf@ebiederm.dsl.xmission.com> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	id S1757372AbXK0N7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 08:59:19 -0500
+Date: Tue, 27 Nov 2007 16:59:48 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/3] start the global /sbin/init with 0,0 special pids
+Message-ID: <20071127135948.GA8370@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 06:28:13AM -0700, Eric W. Biederman wrote:
-> Neil Horman <nhorman@redhat.com> writes:
-> 
-> > What makes you say this?  I don't see any need for interrupts prior to
-> > calibrate_delay()
-> 
-> Yes.  calibrate_delay() is the first place we send interrupts over
-> hypertransport.  However I/O still works.  Thus hypertransport from
-> the first cpu is working, and hypertransport itself is working.
-> 
-> This is an interrupt specific problem not some generic hypertransport
-> problem.
-> 
-Is it possible that the hypertansport bus can be in a state where I/O would
-work, but not interrupt routing?  I confess my knoweldge of this system bus is
-lacking.
+As Eric pointed out, there is no problem with init starting with sid == pgid
+== 0, and this was historical linux behavior changed in 2.6.18.
 
-> >> I agree that there is a problem.
-> >> 
-> >> The reliable fix is to totally skip the PIC interrupt mode and go directly
-> >> to apic mode.
-> >> 
-> >> To make the code kexec on panic code path reliable we need to remove code
-> >> not add it.
-> >> 
-> >> Frankly I think switching cpus is one of the least reliable things that
-> >> we can do in general.
-> >> 
-> > I understand the sentiment here, but its not like we're adding additional
-> > functionality with this patch.  We're already sending an IPI to all the
-> > processors to halt them
-> 
-> And we don't care if they halt.  If they don't get the IPI we timeout.
-> Making the IPI mandatory is a _singificant_ change.
-> 
-But how likely is a kdump kernel to work properly if an errant cpu is running
-unhalted while we try to boot?   I understand your point regarding the
-significance of the need for reliable IPI's, but in fairness, I think that we
-rely on IPI delivery here, weather we want to or not. 
+Remove kernel_init()->__set_special_pids().
 
-> The only reason that code is on the kexec on panic code path is that
-> there is no other possible place we could put it.
-> 
-> > , we're just adding logic here so that we can detect the
-> > boot cpu and use it to jump to the kexec image instead of halting.  I don't
-> > think this is any less reliable that what we have currently.
-> 
-> It doesn't make things more reliable, and it adds code to a code path
-> that already has to much code to be solid reliable (thus your
-> problem). 
-> 
-> Putting the system back in PIC legacy mode on the kexec on panic path
-> was supposed to be a short term hack until we could remove the need
-> by always deliver interrupts in apic mode.
-> 
-> If you can't root cause your problem and figure out how the apics
-> are misconfigured for legacy mode let's remove the need for going into
-> to legacy PIC mode and do what we should be able to do reliably.  The
-> reward is much higher, as we kill all possibility of restoring PIC
-> mode wrong because we don't need to bother.
-> 
-I understand your suggestion, but to do that don't we need to do more than just
-not move the apic to legacy pic mode?  It was my understanding that the ioapic
-delivered timer interrupts to one cpu, who's interrupt handler then distributed
-it to the other cpu's via IPI.  That suggests to me that we will need to
-re-write the apic config so that the crashing processor is the target of the
-ioapic interrupt delivery.
+This change and the previous change in daemonize() mean that /sbin/init does
+not need the special "session != 1" hack in sys_setsid() any longer. We can't
+remove this check yet, we should cleanup copy_process(CLONE_NEWPID) first, so
+update the comment only.
 
-And if this is truly the case, I would really like to furhter understand why
-this isn't working on this specific system before I implment anything.  Any
-suggestions for how to further root cause this problem?
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Regards
-Neil
+--- PT/init/main.c~4_glob_init	2007-11-26 16:56:24.000000000 +0300
++++ PT/init/main.c	2007-11-27 15:21:56.000000000 +0300
+@@ -829,7 +829,6 @@ static int __init kernel_init(void * unu
+ 	 */
+ 	init_pid_ns.child_reaper = current;
+ 
+-	__set_special_pids(task_pid(current));
+ 	cad_pid = task_pid(current);
+ 
+ 	smp_prepare_cpus(max_cpus);
+--- PT/kernel/sys.c~4_glob_init	2007-11-26 17:42:40.000000000 +0300
++++ PT/kernel/sys.c	2007-11-27 16:58:38.000000000 +0300
+@@ -1054,12 +1054,11 @@ asmlinkage long sys_setsid(void)
+ 	if (group_leader->signal->leader)
+ 		goto out;
+ 
+-	/* Fail if a process group id already exists that equals the proposed
+-	 * session id.
++	/* Fail if a process group id already exists that equals the
++	 * proposed session id.
+ 	 *
+-	 * Don't check if session == 1 because kernel threads and CLONE_NEWPID
+-	 * tasks use this session id and so the check will always fail and make
+-	 * it so init cannot successfully call setsid.
++	 * Don't check if session == 1, clone(CLONE_NEWPID) creates
++	 * this group/session beforehand.
+ 	 */
+ 	if (session != 1 && pid_task(sid, PIDTYPE_PGID))
+ 		goto out;
 
-> Eric
