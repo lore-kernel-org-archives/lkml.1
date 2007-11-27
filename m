@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXK0WHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbXK0WNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbXK0WHv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbXK0WHn
+	id S1759447AbXK0WNU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbXK0WNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:07:43 -0500
-Received: from mx1.suse.de ([195.135.220.2]:57185 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754745AbXK0WHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:07:42 -0500
-Date: Tue, 27 Nov 2007 14:12:20 -0800
-From: Greg KH <gregkh@suse.de>
-To: Michael Lothian <mike@fireburn.co.uk>
-Cc: Frank Seidel <fseidel@suse.de>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, greg@kroah.com,
-       p.hardwick@option.com, Marcel Holtmann <marcel@holtmann.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [RFC] Re: nozomi version 2.1d for review
-Message-ID: <20071127221220.GA27944@suse.de>
-References: <200711091449.24648.fseidel@suse.de> <200711111743.30348.fseidel@suse.de> <fc94aae90711251728u4861d714r4363f9a5c40a4088@mail.gmail.com> <200711261204.28311.fseidel@suse.de> <fc94aae90711271220k3684e7a1x9ec0b2e9c1db78e2@mail.gmail.com>
+	Tue, 27 Nov 2007 17:13:08 -0500
+Received: from mx2.go2.pl ([193.17.41.42]:49492 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755514AbXK0WNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:13:07 -0500
+Message-ID: <474C9714.1080308@o2.pl>
+Date: Tue, 27 Nov 2007 23:15:48 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fc94aae90711271220k3684e7a1x9ec0b2e9c1db78e2@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make I/O schedulers non-modular
+References: <20071125172237.GC6658@kernel.dk> <20071127070912.GB1735@ff.dom.local> <20071127164723.GA3406@stusta.de>
+In-Reply-To: <20071127164723.GA3406@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 08:20:52PM +0000, Michael Lothian wrote:
-> Thanks for the info
+Adrian Bunk wrote, On 11/27/2007 05:47 PM:
+
+> On Tue, Nov 27, 2007 at 08:09:12AM +0100, Jarek Poplawski wrote:
+>> On 25-11-2007 18:22, Jens Axboe wrote:
+>>> On Sun, Nov 25 2007, Adrian Bunk wrote:
+>> ...
+>>>> Is there any technical reason why we need 4 different schedulers at all?
+>>> Until we have the perfect scheduler :-)
+>> IMHO this is not enough yet. There is something called "the right
+>> of choice",
 > 
-> Is there any news on when this is going to go upstream? I've been
-> asking for a while, each time there is a flurry of activity but then
-> it fizzles out by the time the 2 week window is open and is forgotten
-> about again
+> That's a common misconception about open source software:
+> 
+> There is nothing like a "right of choice".
+> There is a "right to change the source code".
 
-I have it queued up in my tree to go to Linus for 2.6.25.  Is that ok?
 
-Frank, want me to take the last version you just sent out and update my
-version?
+Maybe you are right, maybe I've used wrong words... But, e.g., google
+pretends to know about this first right too. And I've meant generally,
+not about open software.
 
-thanks,
+> 
+> This means you cannot demand from anyone to offer any choices, but you 
+> can fork the code yourself and use and distribute modified code 
+> containing any choices you consider reasonable.
+ 
 
-greg k-h
+I don't demand anything. I've only expressed my personal opinion
+that usually (if possible) the choice is better than no choice.
+And, since I don't know anything in open source forbiding this, I
+can ask, why you demand to take away offered choices; actually, I
+think it would be much easier if you could fork the other way...
+
+>> and, it seems, things are usually far from perfect
+>> where this right is not respected.
+> 
+> That's wrong.
+> 
+> It's actually often much worse to have different choices with different 
+> features and bugfixes than having one version that contains all features 
+> and all bugfixes.
+> 
+
+
+It's only a part of the theory: usually it's easier to find some bugs
+if there is a possibility to compare a performance with other options;
+there is also kind of stimulation and flow of new ideas between them.
+Otherwise it's not so hard to overlook some stagnation.
+
+Regards,
+Jarek P.
