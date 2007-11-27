@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbXK0E1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbXK0Eaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbXK0E1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbXK0E0y
+	id S1755542AbXK0Eaz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXK0Eas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:26:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:43551 "EHLO ozlabs.org"
+	Mon, 26 Nov 2007 23:30:48 -0500
+Received: from ozlabs.org ([203.10.76.45]:45372 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754755AbXK0E0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:26:53 -0500
+	id S1752541AbXK0Ear (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 23:30:47 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Tue, 27 Nov 2007 15:26:52 +1100
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch specific percpu setup
+Date: Tue, 27 Nov 2007 15:30:47 +1100
 User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711261225.44415.rusty@rustcorp.com.au> <adalk8lsg3z.fsf@cisco.com>
-In-Reply-To: <adalk8lsg3z.fsf@cisco.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+References: <20071127001407.859743255@sgi.com> <20071127001430.313046247@sgi.com>
+In-Reply-To: <20071127001430.313046247@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711271526.53065.rusty@rustcorp.com.au>
+Message-Id: <200711271530.47696.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 November 2007 16:58:08 Roland Dreier wrote:
->  > > I agree that we shouldn't make things too hard for out-of-tree
->  > > modules, but I disagree with your first statement: there clearly is a
->  > > large class of symbols that are used by multiple modules but which are
->  > > not generically useful -- they are only useful by a certain small
->  > > class of modules.
->  >
->  > If it is so clear, you should be able to easily provide examples?
->
-> Sure -- Andi's example of symbols required only by TCP congestion
-> modules;
+On Tuesday 27 November 2007 11:14:12 Christoph Lameter wrote:
+> The use of the __GENERIC_PERCPU is a bit problematic since arches
+> may want to run their own percpu setup while using the generic
+> percpu definitions. Replace it through a kconfig variable.
 
-Exactly.  Why exactly should someone not write a new TCP congestion module?
+Thanks for this Christoph!
 
-> the SCSI internals that Christoph wants to mark
+These patches are great: the early experiments are obviously over, and so this 
+consolidation is overdue.
 
-He didn't justify those though, either.
+Have you considered moving x86-64's setup_per_cpu_areas into generic code?  
+It's a bit messier because some archs might not have set up NUMA stuff yet, 
+but it's logically generic...
 
-> ; the symbols  exported by my mlx4_core driver (which I admit are
-> currently only used 
-> by the mlx4_ib driver, but which will also be used by at least the
-> ethernet NIC driver for the same hardware).
-
-Right.  So presumably there will only ever be two drivers using this core 
-code, so no new users will ever be written?  Now we've found one use case, is 
-it worth the complexity of namespaces?  Is it worth the halfway point of 
-export-to-module?
-
-What problem will it solve?
-
-> I thought this was 
-> already covered repeatedly in the thread and indeed in Andi's code so
-> there was no need to repeat it...
-
-No, we've seen the solution and various people applying it.  I'm still trying 
-to discover the problem it's solving.
-
-Hope that helps,
+Thanks!
 Rusty.
