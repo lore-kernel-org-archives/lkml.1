@@ -1,93 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbXK0Cj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbXK0CkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbXK0Cj2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 21:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXK0CjU
+	id S1754865AbXK0CkQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 21:40:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXK0CkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 21:39:20 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46298 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbXK0CjT (ORCPT
+	Mon, 26 Nov 2007 21:40:04 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50395 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbXK0CkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 21:39:19 -0500
-Message-ID: <474B8319.8000606@zytor.com>
-Date: Mon, 26 Nov 2007 18:38:17 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 26 Nov 2007 21:40:02 -0500
+Date: Mon, 26 Nov 2007 18:39:58 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Huang <James.Huang@watchguard.com>
+Cc: linux-kernel@vger.kernel.org, Manfred Spraul <manfred@colorfullife.com>,
+       jamesclhuang@yahoo.com, ego@in.ibm.com
+Subject: Re: __rcu_process_callbacks() in Linux 2.6
+Message-ID: <20071127023958.GF9136@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <590353.52909.qm@web83819.mail.sp1.yahoo.com> <F474D80A8B96F34D8D70C85A98D6FC178D8BE7@VS02SE.wgti.net>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com> <alpine.LFD.0.9999.0711261801390.5869@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0711261801390.5869@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <F474D80A8B96F34D8D70C85A98D6FC178D8BE7@VS02SE.wgti.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Mon, Nov 26, 2007 at 02:48:08PM -0800, James Huang wrote:
 > 
->> The 6-word limit is a red herring.  There is at least two ways to deal with it
->> (and this doesn't mean wiping the legacy stuff we already have):
->>
->> - Let each architecture pick a calling convention and redefine the
->> architecture-independent bits to take an arbitrary number of arguments.  This
->> is a one-time panarchitectural change.
+> > -----Original Message-----
+> > From: James Huang [mailto:jamesclhuang@yahoo.com]
+> > Sent: Monday, November 26, 2007 2:21 PM
+> > To: James Huang
+> > Subject: Fw: __rcu_process_callbacks() in Linux 2.6
+> > 
+> > ----- Forwarded Message ----
+> > From: Manfred Spraul <manfred@colorfullife.com>
+> > To: James Huang <jamesclhuang@yahoo.com>
+> > Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>; linux-
+> > kernel@vger.kernel.org
+> > Sent: Monday, November 26, 2007 10:28:37 AM
+> > Subject: __rcu_process_callbacks() in Linux 2.6
+> > 
+> > Hi James,
+> > 
+> > If I understand the issue correctly, then the race is:
+> > 
+> > step 1: cpu 1: starts a new rcu batch (i.e. rcp->cur++, smb_mb)
+> > 
+> > step 2: cpu 2: completes the quiet state
+> > step 3: cpu 2: reads pointer 0x123 (ptr to a rcu protected struct)
+> > 
+> > step 4: cpu 3: call_rcu(0x123): rcu protected struct added to
+> rdp->nxtlist
+> > step 5: cpu 3: moves a new batch into rdp->curlist, rdp->batch = rcp-
+> > >cur+1.
+> > xxxxxxxxxxxxxxx Problem: where is the smp_rmb() that guarantees that
+> > xxxxxxxxxxxxxxx  update to rcp->cur from step 1 is seen by cpu 3?
+> > step 6: cpu 3: completes quiet state
+> > step 7: cpu 3: struct 0x123 destroyed
+> > 
+> > step 8: cpu 2: accesses pointer 0x123, but the struct is already
+> destroyed
+> > 
+> > James: Is that the race?
 > 
-> Not applicable on x86-32.
 > 
-> The six-word limit is effectively a hardware limit there. Once it goes 
-> past that limit, one of the words needs to be a pointer to extended 
-> information that is fundamentally slower to access. Happily, only very 
-> rare system calls do that (and none of them are of the simple variety 
-> where we see a few cycles easily).
+> [James Huang] 
 > 
-> On other architectures, we could more easily just use more registers. But 
-> x86-32 is still a big part (bulk) of what matters for most people.
+> Yes, this is the race condition that I am concerned about.
 > 
+> 
+> > 
+> > I agree with Paul, there are smb_rmb's on cpu 3 between Step 1 and
+> Step 5:
+> > Either the test_and_set_bit in tasklet_action for rcu_process_callback
+> > if step 4 happens before the tasklet or somewhere in the irq handler
+> > path if step 4 happens in an irq handler that interrupted
+> > rcu_process_callback.
+> > 
+> > Thus theoretically no additional smb_rmb() should be necessary.
+> > What is missing is proper documentation.
+> > 
+> 
+> 
+> [James Huang] 
+> 
+> Is it true that a smb_rmb() before a read operation (say from variable
+> X) will guarantee that the read will always retrieve the most "current"
+> value of X?   I can not find such a guarantee in atomic_ops.txt or
+> memory-barriers.txt under Linux's documentation directory.  What is
+> described in both documents is relative ordering, e.g.
+> 
+>             CPU1                       CPU2
+>            ------                     ------
+>           write X = x1
+>           smp_wmb()  
+>           write Y = y1 
+> 
+>                                       read Y
+>                                       smp_rmb()
+>                                       read X
+> 
+> Then CPU2 will read X with a value of x1 if it reads Y with a value of
+> y1.
+> 
+> Please point me to the right section in the document if smp_rmb() does
+> provide such a guarantee.
 
-Well, x86-32 and x86-64 are surprisingly similar here, for very 
-different reasons (x86-64 is because there are only seven clobbered 
-registers that aren't destroyed by the syscall instruction itself.)
+You are correct, smp_rmb() is about ordering rather than about any sort
+of immediacy.  For one thing, it can be quite difficult to say exactly what
+the most "current" version of X might be at a given point in time from
+the viewpoint of a given CPU -- the different CPUs might well disagree as
+to what the "current" version is for awhile (though they are guaranteed
+to come to agreement).
 
-However, on both of these we could make the user-space side cheaper, by 
-making sure that we don't have to do additional copies in user space. 
-For both these architectures, anything more than 3 parameters (i386) or 
-6 parameters (x86-64) will be already in memory on the stack, so if we 
-can use that image as-is then we at least save the intra-user-space copy 
-that goes along with it.
+> Thanks,
+> -- James Huang
+> 
+> > I'm analyzing the code right now:
+> > Is it really true that typically a cpu only completes data in every
+> other
+> > rcu
+> > cycle? I.e. that most structures are stored in the rcu callback list
+> until
+> > two
+> > quiet states happened?
 
-x86-64 requires some minor thought, since the obvious way of doing it 
-(using arg register 6 to push in a pointer) would end up with a 
-discontiguous frame.  One can do it with something like this, although 
-it's not clear to me it is a win at all (the more obvious sequence using 
-XCHG isn't usable since XCHG locks unconditionally):
+That is correct.  This does mean that we should be able to leverage
+locking primitives and memory barriers executed from the scheduling
+clock interrupt.
 
-	pop	%r10			# Return address
-	push	%r9			# Argument 6
-	movq	%rsp, %r11
-	push	%r10
-	movq	%rcx, %r10
-	syscall
-	cmpq	$-4095, %rax
-	jae	...
-	pop	%r10
-	pop	%r9
-	push	%r10
-	retq
+> > I've tried to track the values of rcp->cur and rdp->batch.
+> > If next_pending is set, then cpu_quiet() immetiately starts
+> > the next rcu cycle and a cpu cannot both complete the currently
+> > pending rcu callbacks and add new callbacks to the next cycle,
+> > thus a cpu only takes part in every other rcu cycle.
+> > 
+> > The oocalc file is at
+> > http://www.colorfullife.com/~manfred/rcu.ods
+> > http://www.colorfullife.com/~manfred/rcu.pdf
+> > 
+> > Is that analysis correct? Perhaps the whole code should be rewritten?
 
-The number of registers do vary, obviously, with s390 being the smallest 
-number (5).
+I believe that the sequencing in spreadsheet is correct (and thank
+you very much for going through it!!!), but it seems to be silent on
+memory-barrier issues.
 
-> Immediately when you do anything but registers, it is much *much* more 
-> costly. The "get_user()" and "copy_from_user()" stuff is not exactly slow, 
-> but it's quite noticeable overhead for simple system calls. It gets worse 
-> if this all is described by some indirect table setup.
+I also believe that Gautham's new CPU-hotplug setup will make
+it possible to simplify the code quite a bit.  And given that the
+grace-period-detection code is not on any sort of hot code path, it should
+be possible to use a less-aggressive design, perhaps one using straight
+locking to guard the shared structures.  Also, we are working in the
+-rt implementation on a scheme that allows CPUs to stay asleep through
+a grace period without the heavy overhead that is otherwise required to
+interact with them.  The trick is to maintain a per-CPU counter that is
+incremented on each entry and exit to low-power state.  But I would like
+to get this right in -rt before trying it in Classic RCU.  ;-)
 
-True, of course, although we're talking here about different ways to 
-pull arguments out of userspace memory; *definitely* agreed with that we 
-don't want to have any additional indirection necessary.
-
-	-hpa
+						Thanx, Paul
