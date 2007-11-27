@@ -1,76 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbXK0GCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbXK0GDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbXK0GCP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 01:02:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXK0GCA
+	id S1758382AbXK0GDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 01:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbXK0GD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 01:02:00 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:6862 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbXK0GB7 (ORCPT
+	Tue, 27 Nov 2007 01:03:26 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:33632 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750713AbXK0GDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 01:01:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=N6DuYCGqQFPlu+JeThtoweNtGAtQomMdRC/ZgQh31skbrtyBMVYKLsJZQbuY/ezLSPvMChHXosxAF8H3eEGasMvrCykUBjqePhAb4swZdDZ4UhNQB3g7+ffZL8IapzBq9/M5+y7LSnkoHWXJGkhANHbbbTDi3buPRMwtXGJHClg=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates for 2.6.24-rc3
-Date: Tue, 27 Nov 2007 01:01:34 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 27 Nov 2007 01:03:25 -0500
+X-Greylist: delayed 1892 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Nov 2007 01:03:24 EST
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+From: Tom Tucker <tom@opengridcomputing.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+In-Reply-To: <200711271549.37670.rusty@rustcorp.com.au>
+References: <20071122343.446909000@suse.de>
+	 <200711261228.15155.rusty@rustcorp.com.au> <adahcj9sfan.fsf@cisco.com>
+	 <200711271549.37670.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: Open Grid Computing, Inc.
+Date: Mon, 26 Nov 2007 23:35:42 -0600
+Message-Id: <1196141742.9876.49.camel@trinity.ogc.int>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711270101.35090.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull from:
+On Tue, 2007-11-27 at 15:49 +1100, Rusty Russell wrote:
+> On Monday 26 November 2007 17:15:44 Roland Dreier wrote:
+> >  > Except C doesn't have namespaces and this mechanism doesn't create them.
+> >  >  So this is just complete and utter makework; as I said before, noone's
+> >  > going to confuse all those udp_* functions if they're not in the udp
+> >  > namespace.
+> >
+> > I don't understand why you're so opposed to organizing the kernel's
+> > exported symbols in a more self-documenting way.
+> 
+> No, I was the one who moved exports near their declarations.  That's 
+> organised.  I just don't see how this new "organization" will help: oh good, 
+> I won't accidentally use the udp functions any more?!?
+> 
+> > It seems pretty   
+> > clear to me that having a mechanism that requires modules to make
+> > explicit which (semi-)internal APIs makes reviewing easier
+> 
+> Perhaps you've got lots of patches were people are using internal APIs they 
+> shouldn't?
+> 
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+Maybe the issue is "who can tell" since what is external and what is
+internal is not explicitly defined?
 
-to receive updates for the input subsystem.
+> > , makes it 
+> > easier to communicate "please don't use that API" to module authors,
+> 
+> Well, introduce an EXPORT_SYMBOL_INTERNAL().  It's a lot less code.  But you'd 
+> still need to show that people are having trouble knowing what APIs to use.
 
-Changelog:
----------
+> > and takes at least a small step towards bringing the kernel's exported
+> > API under control.
+> 
+> There is no "exported API" to bring under control.  
 
-Aristeu Rozanski (2):
-      Input: add definitions for frame forward and frame back keys
-      Input: adds the context menu key (HUT GenDesc 0x84)
+Hmm...apparently, there are those that are struggling...
 
-Dmitry Torokhov (3):
-      sony-laptop: fit input devices into sysfs tree
-      sonypi: fit input devices into sysfs tree
-      Sonypi: use synchronize_irq instead of sycnronize_sched
+> There are symbols we 
+> expose for the kernel's own use which can be used by external modules at 
+> their own risk.  
+> 
+> > What's the real downside? 
+> 
+> No.  That's the wrong question.  What's the real upside?
 
-Herbert Valerio Riedel (1):
-      Input: gpio-keys - request and configure GPIOs
+Explicitly documenting what comprises the kernel API (external,
+supported) and what comprises the kernel implementation (internal, not
+supported).
 
-Jiri Kosina (1):
-      Input: i8042 - add i8042.noloop quirk for MS Virtual Machine
+> 
+> Let's not put code in the core because "it doesn't seem to hurt".
+> 
 
-Mike Frysinger (1):
-      Input: bf54x-keys - keypad does not exist on BF544 parts
+agreed.
 
-Diffstat:
---------
- drivers/char/sonypi.c                 |    8 ++++--
- drivers/input/keyboard/Kconfig        |    2 +-
- drivers/input/keyboard/gpio_keys.c    |   38 ++++++++++++++++++++++++--------
- drivers/input/serio/i8042-x86ia64io.h |    8 +++++++
- drivers/misc/sony-laptop.c            |   10 +++++---
- include/linux/input.h                 |    5 ++++
- 6 files changed, 53 insertions(+), 18 deletions(-)
+> I'm sure you think there's a real problem, but I'm still waiting for someone 
+> to *show* it to me.  Then we can look at solutions.
+
+I think the benefits should include:
+
+- forcing developers to identify their exports as part of the
+implementation or as part of the kernel API
+
+- making it easier for reviewers to identify when developers are adding
+to the kernel API and thereby focusing the appropriate level of review
+to the new function
+
+- making it obvious to developers when they are binding their
+implementation to a particular kernel release
 
 
--- 
-Dmitry
+
+> Rusty.
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
