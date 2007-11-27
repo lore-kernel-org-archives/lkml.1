@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbXK0Pnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbXK0PwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbXK0Pnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 10:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXK0Pn0
+	id S1758226AbXK0PwB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 10:52:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXK0Pvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 10:43:26 -0500
-Received: from vena.lwn.net ([206.168.112.25]:40888 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbXK0PnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 10:43:25 -0500
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro. 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Tue, 27 Nov 2007 15:49:37 +1100."
-             <200711271549.37670.rusty@rustcorp.com.au> 
-Date: Tue, 27 Nov 2007 08:43:24 -0700
-Message-ID: <25602.1196178204@lwn.net>
+	Tue, 27 Nov 2007 10:51:52 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:65151 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbXK0Pvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 10:51:51 -0500
+From: Andre Haupt <andre@bitwigglers.org>
+To: linux-kernel@vger.kernel.org
+Cc: jsimmons@users.sourceforge.net, kernel-janitors@vger.kernel.org,
+       adaplas@gmail.com, Andre Haupt <andre@bitwigglers.org>
+Subject: [PATCH 1/2] fbmon: remove unnecessary local variable
+Date: Tue, 27 Nov 2007 16:51:39 +0100
+Message-Id: <1196178700387-git-send-email-andre@bitwigglers.org>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: y
+References: y
+Message-Id: <94ed2e6692de667821f02aacc69b8df99de683cf.1196176751.git.andre@bitwigglers.org>
+X-Provags-ID: V01U2FsdGVkX1+uEzlNT0Po6MfNln9EVlkiUq05tHwnbkYF6Xk
+ I86m5VGrIOe2ytl+iBt0yPDjFzw6RlMVTxaubkBDDYqAXoT156
+ XT1VZUhl9qqLquls04idIuDl1KU+dDY7xk/yHCgwyY=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty said:
+This fixes a sparse warning about symbol 'i' shadowing an earlier one.
 
-> Well, introduce an EXPORT_SYMBOL_INTERNAL().  It's a lot less code.  But you'd 
-> still need to show that people are having trouble knowing what APIs to use.
+From: Andre Haupt <andre@bitwigglers.org>
+Signed-off-by: Andre Haupt <andre@bitwigglers.org>
+---
+ drivers/video/fbmon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Might the recent discussion on the exporting of sys_open() and
-sys_read() be an example here?  There would appear to be a consensus
-that people should not have used those functions, but they are now
-proving difficult to unexport.
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 4ba9c08..3f3a4e9 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -686,7 +686,7 @@ static int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
+ 	/* estimate monitor limits based on modes supported */
+ 	if (retval) {
+ 		struct fb_videomode *modes, *mode;
+-		int num_modes, i, hz, hscan, pixclock;
++		int num_modes, hz, hscan, pixclock;
+ 		int vtotal, htotal;
+ 
+ 		modes = fb_create_modedb(edid, &num_modes);
+-- 
+1.4.4.4
 
-Perhaps the best use of the namespace stuff might be for *future*
-exports which are needed to help make the mainline kernel fully modular,
-but which are not meant to be part of a more widely-used API?
-
-jon
