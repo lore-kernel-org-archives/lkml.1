@@ -1,183 +1,482 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbXK0DFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbXK0DFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbXK0DFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 22:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXK0DFB
+	id S1756529AbXK0DFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 22:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbXK0DFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 22:05:01 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59626 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbXK0DE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 22:04:59 -0500
-Date: Mon, 26 Nov 2007 19:04:54 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
-Message-ID: <20071127030454.GC23277@us.ibm.com>
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com> <20071126222253.GA31708@ldl.fc.hp.com>
+	Mon, 26 Nov 2007 22:05:14 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52998 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755022AbXK0DFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 22:05:11 -0500
+Date: Tue, 27 Nov 2007 12:08:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH][for -mm] per-zone and reclaim enhancements for memory
+ controller take 3 [8/10] modifies vmscan.c for isolate globa/cgroup lru
+ activity
+Message-Id: <20071127120818.d8f9345a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071126222253.GA31708@ldl.fc.hp.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 03:22:53PM -0700, Alex Chiang wrote:
-> Hi Gary, Kenji-san, et. al,
-> 
-> * Gary Hade <garyhade@us.ibm.com>:
-> > 
-> > Alex, What I was trying to suggest is a boot-time kernel
-> > option, not a kernel configuration option.  The basic idea is
-> > to give the user (with a single binary kernel) the ability to
-> > include your ACPI-PCI slot driver feature changes only when
-> > they are really needed.  In addition to reducing the number of
-> > system/PCI hotplug driver combinations where your changes would
-> > need to be validated, I believe would also help alleviate other
-> > worries (e.g. Andi Kleen's memory consumption concern).  I
-> > believe this goal could also be achieved with the kernel config
-> > option by making the pci_slot module runtime loadable with the
-> > PCI hotplug drivers only visiting your new code when the
-> > pci_slot driver is loaded, although I think this would be more
-> > difficult to implement.
-> 
-> I have modified my patch series so that the final patch that
-> introduces my ACPI-PCI slot driver is a full-fledged module, that
-> has a tristate Kconfig option.
-> 
-> It can be modprobe'd/rmmod'ed in any combination, and in any
-> order with other PCI hotplug modules. There is no ordering
-> dependency, even at module unload time, so you can safely rmmod
-> pci_slot, and safely continue using features provided by the PCI
-> hotplug drivers (acpiphp, pciehp, etc.). The opposite works too.
+When using memory controller, there are 2 levels of memory reclaim.
+ 1. zone memory reclaim because of system/zone memory shortage.
+ 2. memory cgroup memory reclaim because of hitting limit.
 
-Nice!  I like the loadable module approach much better than my
-boot-time kernel option suggestion.
+These two can be distinguished by sc->mem_cgroup parameter.
+(scan_global_lru() macro)
 
-> 
-> The one limitation is that two separate hotplug drivers cannot
-> both claim the same device (2nd module loaded will get -EBUSY
-> errors), but I do not believe that is a regression from current
-> behavior.
+This patch tries to make memory cgroup reclaim routine avoid affecting
+system/zone memory reclaim. This patch inserts if (scan_global_lru()) and
+hook to memory_cgroup reclaim support functions.
 
-I cannot confirm this since the systems I am using only support
-a single hotplug driver (acpiphp).
+This patch can be a help for isolating system lru activity and group lru
+activity and shows what additional functions are necessary.
 
-> 
-> I have only tested with acpiphp and pciehp, as that's the only
-> hardware I have, but I believe my code will play nicely with the
-> other PCI hp drivers as well.
+ * mem_cgroup_calc_mapped_ratio() ... calculate mapped ratio for cgroup.
+ * mem_cgroup_reclaim_imbalance() ... calculate active/inactive balance in
+                                        cgroup.
+ * mem_cgroup_calc_reclaim_active() ... calculate the number of active pages to
+                                be scanned in this priority in mem_cgroup.
 
-I have only tested your changes with acpiphp.
+ * mem_cgroup_calc_reclaim_inactive() ... calculate the number of inactive pages
+                                to be scanned in this priority in mem_cgroup.
 
-> 
-> The patch series is fully bisectable, and the correct behavior
-> occurs no matter which patch you happen to have applied.
+ * mem_cgroup_all_unreclaimable() .. checks cgroup's page is all unreclaimable
+                                     or not.
+ * mem_cgroup_get_reclaim_priority() ...
+ * mem_cgroup_note_reclaim_priority() ... record reclaim priority (temporal)
+ * mem_cgroup_remember_reclaim_priority()
+                             .... record reclaim priority as
+                                  zone->prev_priority.
+                                  This value is used for calc reclaim_mapped.
+Changelog V1->V2:
+ - merged calc_reclaim_mapped patch in previous version.
 
-Based on my testing (see below) this appears to be true.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> 
-> I'll be sending v5 of patches 3 and 4 shortly (patches 1 and 2
-> did not change). It is still based on 2.6.24-rc2, because I was
-> too scared to do another git rebase while using stgit. :-/
+ mm/vmscan.c |  326 ++++++++++++++++++++++++++++++++++++------------------------
+ 1 file changed, 197 insertions(+), 129 deletions(-)
 
-I have been using 2.6.24-rc3 source for my testing.
-
-> 
-> > Also, I notice that even with your current CONFIG_ACPI_PCI_SLOT
-> > implementation your numerous PCI hotplug driver changes (except
-> > for only two places in pci_hotplug_core.c where there is 
-> > `#ifndef CONFIG_ACPI_PCI_SLOT` and `#ifdef CONFIG_ACPI_PCI_SLOT`)
-> > are _always_ exposed.  So, even with CONFIG_ACPI_PCI_SLOT disabled
-> > there is IMO a need for testing of the affected PCI hotplug drivers
-> > on more than a small number of isolated systems.
-> 
-> You are, of course, correct.
-> 
-> In my opinion, though, I would say most of the changes to the PCI
-> hotplug drivers themselves are pretty straightforward, as in
-> removing the different ways of getting the PCI address.
-> 
-> The scary part of the changes (aside from the ACPI-PCI slot
-> driver) revolve around the new struct pci_slot, which is
-> relatively self-contained, and only expose themselves via the
-> pci_create_slot/pci_destroy_slot interfaces which only the PCI
-> hotplug corecares about.
-
-I think this sounds like a reasonable argument for not
-doing what I was trying to suggest.
-
-> 
-> Regardless, your point stands. How do you suggest I get more
-> testing time?
-
-I am only able to test with acpiphp.  In addition to the
-testing on the x3850 described below I would also like to
-do some testing on an x3950 which has a mix of hotplug and
-non-hotplug slots.  If this testing which I hope to complete
-this week goes well, I will be satisfied.
-
-I will let others speak for the other hotplug drivers
-and platforms.
-
-> Is this patchset appropriate for the -mm tree yet?
-
-I would defer to our illustrious maintainers on this one. :)
-
-> Or do you think it still needs more work?
-
-I am now much more comfortable with your changes with respect
-to acpiphp on the systems I worry about but others may have
-concerns with respect to the other hotplug drivers, or even
-acpiphp, on other systems.
-
-> 
-> > The good news is that I was able to test your v3 changes
-> > (w/2.6.24-rc3 source) on our x3850 today with 'acpiphp' and,
-> > except for the above mentioned inability to run-time
-> > include/exclude them, they seemed to work fine.  The previous
-> > boot-time ACPI error messages are gone and I was able to
-> > successfully hot-remove and hot-add both PCI-X and PCIe
-> > adapters.
-> 
-> Thanks for testing. Please let me know how v5 works for you too.
-
-I just tried your v5 (1/4 v3, 2/4 v3, 3/4 v5, 4/4 v5) applied 
-to 2.6.24-rc3 source with acpiphp on the x3850 and found 
-nothing to complain about.  About time, eh? :)
-
-Following boot, 'pci_slot' was already loaded and slot directories
-(each containing an address file) for all 6 (2 PCI-X, 4 PCIe)
-slots were present.  I then successfully modprobed acpiphp and
-successfully hot-removed the PCI-X and PCIe cards that were present
-during boot.  I then successfully hot-added the same cards to
-the slots they occupied during boot and to slots that were vacant
-during boot.
-
-I then unloaded acpiphp and pci_slot and reloaded both in
-the opposite order (acpiphp 1st, pci_slot 2nd) and
-successfully repeated the above hot-remove/hot-add operations. 
-
-I then unloaded both drivers again, reloaded only acpiphp,
-and successfully repeated the same hot-remove/hot-add operations.
-
-I will let you know how it goes on the x3950.
-
-Thanks for all your hard work on this.
-
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Index: linux-2.6.24-rc3-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.24-rc3-mm1.orig/mm/vmscan.c	2007-11-26 16:38:46.000000000 +0900
++++ linux-2.6.24-rc3-mm1/mm/vmscan.c	2007-11-26 16:42:38.000000000 +0900
+@@ -863,7 +863,8 @@
+ 		__mod_zone_page_state(zone, NR_ACTIVE, -nr_active);
+ 		__mod_zone_page_state(zone, NR_INACTIVE,
+ 						-(nr_taken - nr_active));
+-		zone->pages_scanned += nr_scan;
++		if (scan_global_lru(sc))
++			zone->pages_scanned += nr_scan;
+ 		spin_unlock_irq(&zone->lru_lock);
+ 
+ 		nr_scanned += nr_scan;
+@@ -950,6 +951,113 @@
+ }
+ 
+ /*
++ * Determine we should try to reclaim mapped pages.
++ * This is called only when sc->mem_cgroup is NULL.
++ */
++static int calc_reclaim_mapped(struct scan_control *sc, struct zone *zone,
++				int priority)
++{
++	long mapped_ratio;
++	long distress;
++	long swap_tendency;
++	long imbalance;
++	int reclaim_mapped;
++	int prev_priority;
++
++	if (scan_global_lru(sc) && zone_is_near_oom(zone))
++		return 1;
++	/*
++	 * `distress' is a measure of how much trouble we're having
++	 * reclaiming pages.  0 -> no problems.  100 -> great trouble.
++	 */
++	if (scan_global_lru(sc))
++		prev_priority = zone->prev_priority;
++	else
++		prev_priority = mem_cgroup_get_reclaim_priority(sc->mem_cgroup);
++
++	distress = 100 >> min(prev_priority, priority);
++
++	/*
++	 * The point of this algorithm is to decide when to start
++	 * reclaiming mapped memory instead of just pagecache.  Work out
++	 * how much memory
++	 * is mapped.
++	 */
++	if (scan_global_lru(sc))
++		mapped_ratio = ((global_page_state(NR_FILE_MAPPED) +
++				global_page_state(NR_ANON_PAGES)) * 100) /
++					vm_total_pages;
++	else
++		mapped_ratio = mem_cgroup_calc_mapped_ratio(sc->mem_cgroup);
++
++	/*
++	 * Now decide how much we really want to unmap some pages.  The
++	 * mapped ratio is downgraded - just because there's a lot of
++	 * mapped memory doesn't necessarily mean that page reclaim
++	 * isn't succeeding.
++	 *
++	 * The distress ratio is important - we don't want to start
++	 * going oom.
++	 *
++	 * A 100% value of vm_swappiness overrides this algorithm
++	 * altogether.
++	 */
++	swap_tendency = mapped_ratio / 2 + distress + sc->swappiness;
++
++	/*
++	 * If there's huge imbalance between active and inactive
++	 * (think active 100 times larger than inactive) we should
++	 * become more permissive, or the system will take too much
++	 * cpu before it start swapping during memory pressure.
++	 * Distress is about avoiding early-oom, this is about
++	 * making swappiness graceful despite setting it to low
++	 * values.
++	 *
++	 * Avoid div by zero with nr_inactive+1, and max resulting
++	 * value is vm_total_pages.
++	 */
++	if (scan_global_lru(sc)) {
++		imbalance  = zone_page_state(zone, NR_ACTIVE);
++		imbalance /= zone_page_state(zone, NR_INACTIVE) + 1;
++	} else
++		imbalance = mem_cgroup_reclaim_imbalance(sc->mem_cgroup);
++
++	/*
++	 * Reduce the effect of imbalance if swappiness is low,
++	 * this means for a swappiness very low, the imbalance
++	 * must be much higher than 100 for this logic to make
++	 * the difference.
++	 *
++	 * Max temporary value is vm_total_pages*100.
++	 */
++	imbalance *= (vm_swappiness + 1);
++	imbalance /= 100;
++
++	/*
++	 * If not much of the ram is mapped, makes the imbalance
++	 * less relevant, it's high priority we refill the inactive
++	 * list with mapped pages only in presence of high ratio of
++	 * mapped pages.
++	 *
++	 * Max temporary value is vm_total_pages*100.
++	 */
++	imbalance *= mapped_ratio;
++	imbalance /= 100;
++
++	/* apply imbalance feedback to swap_tendency */
++	swap_tendency += imbalance;
++
++	/*
++	 * Now use this metric to decide whether to start moving mapped
++	 * memory onto the inactive list.
++	 */
++	if (swap_tendency >= 100)
++		reclaim_mapped = 1;
++
++	return reclaim_mapped;
++}
++
++/*
+  * This moves pages from the active list to the inactive list.
+  *
+  * We move them the other way if the page is referenced by one or more
+@@ -966,6 +1074,8 @@
+  * The downside is that we have to touch page->_count against each page.
+  * But we had to alter page->flags anyway.
+  */
++
++
+ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 				struct scan_control *sc, int priority)
+ {
+@@ -979,100 +1089,21 @@
+ 	struct pagevec pvec;
+ 	int reclaim_mapped = 0;
+ 
+-	if (sc->may_swap) {
+-		long mapped_ratio;
+-		long distress;
+-		long swap_tendency;
+-		long imbalance;
+-
+-		if (zone_is_near_oom(zone))
+-			goto force_reclaim_mapped;
+-
+-		/*
+-		 * `distress' is a measure of how much trouble we're having
+-		 * reclaiming pages.  0 -> no problems.  100 -> great trouble.
+-		 */
+-		distress = 100 >> min(zone->prev_priority, priority);
+-
+-		/*
+-		 * The point of this algorithm is to decide when to start
+-		 * reclaiming mapped memory instead of just pagecache.  Work out
+-		 * how much memory
+-		 * is mapped.
+-		 */
+-		mapped_ratio = ((global_page_state(NR_FILE_MAPPED) +
+-				global_page_state(NR_ANON_PAGES)) * 100) /
+-					vm_total_pages;
+-
+-		/*
+-		 * Now decide how much we really want to unmap some pages.  The
+-		 * mapped ratio is downgraded - just because there's a lot of
+-		 * mapped memory doesn't necessarily mean that page reclaim
+-		 * isn't succeeding.
+-		 *
+-		 * The distress ratio is important - we don't want to start
+-		 * going oom.
+-		 *
+-		 * A 100% value of vm_swappiness overrides this algorithm
+-		 * altogether.
+-		 */
+-		swap_tendency = mapped_ratio / 2 + distress + sc->swappiness;
+-
+-		/*
+-		 * If there's huge imbalance between active and inactive
+-		 * (think active 100 times larger than inactive) we should
+-		 * become more permissive, or the system will take too much
+-		 * cpu before it start swapping during memory pressure.
+-		 * Distress is about avoiding early-oom, this is about
+-		 * making swappiness graceful despite setting it to low
+-		 * values.
+-		 *
+-		 * Avoid div by zero with nr_inactive+1, and max resulting
+-		 * value is vm_total_pages.
+-		 */
+-		imbalance  = zone_page_state(zone, NR_ACTIVE);
+-		imbalance /= zone_page_state(zone, NR_INACTIVE) + 1;
+-
+-		/*
+-		 * Reduce the effect of imbalance if swappiness is low,
+-		 * this means for a swappiness very low, the imbalance
+-		 * must be much higher than 100 for this logic to make
+-		 * the difference.
+-		 *
+-		 * Max temporary value is vm_total_pages*100.
+-		 */
+-		imbalance *= (vm_swappiness + 1);
+-		imbalance /= 100;
+-
+-		/*
+-		 * If not much of the ram is mapped, makes the imbalance
+-		 * less relevant, it's high priority we refill the inactive
+-		 * list with mapped pages only in presence of high ratio of
+-		 * mapped pages.
+-		 *
+-		 * Max temporary value is vm_total_pages*100.
+-		 */
+-		imbalance *= mapped_ratio;
+-		imbalance /= 100;
+-
+-		/* apply imbalance feedback to swap_tendency */
+-		swap_tendency += imbalance;
+-
+-		/*
+-		 * Now use this metric to decide whether to start moving mapped
+-		 * memory onto the inactive list.
+-		 */
+-		if (swap_tendency >= 100)
+-force_reclaim_mapped:
+-			reclaim_mapped = 1;
+-	}
++	if (sc->may_swap)
++		reclaim_mapped = calc_reclaim_mapped(sc, zone, priority);
+ 
+ 	lru_add_drain();
+ 	spin_lock_irq(&zone->lru_lock);
+ 	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
+ 					ISOLATE_ACTIVE, zone,
+ 					sc->mem_cgroup, 1);
+-	zone->pages_scanned += pgscanned;
++	/*
++	 * zone->pages_scanned is used for detect zone's oom
++	 * mem_cgroup remembers nr_scan by itself.
++	 */
++	if (scan_global_lru(sc))
++		zone->pages_scanned += pgscanned;
++
+ 	__mod_zone_page_state(zone, NR_ACTIVE, -pgmoved);
+ 	spin_unlock_irq(&zone->lru_lock);
+ 
+@@ -1165,25 +1196,39 @@
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
+ 
+-	/*
+-	 * Add one to `nr_to_scan' just to make sure that the kernel will
+-	 * slowly sift through the active list.
+-	 */
+-	zone->nr_scan_active +=
+-		(zone_page_state(zone, NR_ACTIVE) >> priority) + 1;
+-	nr_active = zone->nr_scan_active;
+-	if (nr_active >= sc->swap_cluster_max)
+-		zone->nr_scan_active = 0;
+-	else
+-		nr_active = 0;
++	if (scan_global_lru(sc)) {
++		/*
++		 * Add one to nr_to_scan just to make sure that the kernel
++		 * will slowly sift through the active list.
++		 */
++		zone->nr_scan_active +=
++			(zone_page_state(zone, NR_ACTIVE) >> priority) + 1;
++		nr_active = zone->nr_scan_active;
++		zone->nr_scan_inactive +=
++			(zone_page_state(zone, NR_INACTIVE) >> priority) + 1;
++		nr_inactive = zone->nr_scan_inactive;
++		if (nr_inactive >= sc->swap_cluster_max)
++			zone->nr_scan_inactive = 0;
++		else
++			nr_inactive = 0;
++
++		if (nr_active >= sc->swap_cluster_max)
++			zone->nr_scan_active = 0;
++		else
++			nr_active = 0;
++	} else {
++		/*
++		 * This reclaim occurs not because zone memory shortage but
++		 * because memory controller hits its limit.
++		 * Then, don't modify zone reclaim related data.
++		 */
++		nr_active = mem_cgroup_calc_reclaim_active(sc->mem_cgroup,
++					zone, priority);
++
++		nr_inactive = mem_cgroup_calc_reclaim_inactive(sc->mem_cgroup,
++					zone, priority);
++	}
+ 
+-	zone->nr_scan_inactive +=
+-		(zone_page_state(zone, NR_INACTIVE) >> priority) + 1;
+-	nr_inactive = zone->nr_scan_inactive;
+-	if (nr_inactive >= sc->swap_cluster_max)
+-		zone->nr_scan_inactive = 0;
+-	else
+-		nr_inactive = 0;
+ 
+ 	while (nr_active || nr_inactive) {
+ 		if (nr_active) {
+@@ -1228,25 +1273,39 @@
+ 	unsigned long nr_reclaimed = 0;
+ 	int i;
+ 
++
+ 	sc->all_unreclaimable = 1;
+ 	for (i = 0; zones[i] != NULL; i++) {
+ 		struct zone *zone = zones[i];
+ 
+ 		if (!populated_zone(zone))
+ 			continue;
++		/*
++		 * Take care memory controller reclaiming has small influence
++		 * to global LRU.
++		 */
++		if (scan_global_lru(sc)) {
++			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
++				continue;
++			note_zone_scanning_priority(zone, priority);
+ 
+-		if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+-			continue;
+-
+-		note_zone_scanning_priority(zone, priority);
+-
+-		if (zone_is_all_unreclaimable(zone) && priority != DEF_PRIORITY)
+-			continue;	/* Let kswapd poll it */
+-
+-		sc->all_unreclaimable = 0;
++			if (zone_is_all_unreclaimable(zone) &&
++						priority != DEF_PRIORITY)
++				continue;	/* Let kswapd poll it */
++			sc->all_unreclaimable = 0;
++		} else {
++			/*
++			 * Ignore cpuset limitation here. We just want to reduce
++			 * # of used pages by us regardless of memory shortage.
++			 */
++			sc->all_unreclaimable = 0;
++			mem_cgroup_note_reclaim_priority(sc->mem_cgroup,
++							priority);
++		}
+ 
+ 		nr_reclaimed += shrink_zone(priority, zone, sc);
+ 	}
++
+ 	return nr_reclaimed;
+ }
+  
+@@ -1275,15 +1334,19 @@
+ 	int i;
+ 
+ 	count_vm_event(ALLOCSTALL);
++	/*
++	 * mem_cgroup will not do shrink_slab.
++	 */
++	if (scan_global_lru(sc)) {
++		for (i = 0; zones[i] != NULL; i++) {
++			struct zone *zone = zones[i];
+ 
+-	for (i = 0; zones[i] != NULL; i++) {
+-		struct zone *zone = zones[i];
+-
+-		if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+-			continue;
++			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
++				continue;
+ 
+-		lru_pages += zone_page_state(zone, NR_ACTIVE)
+-				+ zone_page_state(zone, NR_INACTIVE);
++			lru_pages += zone_page_state(zone, NR_ACTIVE)
++					+ zone_page_state(zone, NR_INACTIVE);
++		}
+ 	}
+ 
+ 	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+@@ -1340,14 +1403,19 @@
+ 	 */
+ 	if (priority < 0)
+ 		priority = 0;
+-	for (i = 0; zones[i] != NULL; i++) {
+-		struct zone *zone = zones[i];
+ 
+-		if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+-			continue;
++	if (scan_global_lru(sc)) {
++		for (i = 0; zones[i] != NULL; i++) {
++			struct zone *zone = zones[i];
++
++			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
++				continue;
++
++			zone->prev_priority = priority;
++		}
++	} else
++		mem_cgroup_record_reclaim_priority(sc->mem_cgroup, priority);
+ 
+-		zone->prev_priority = priority;
+-	}
+ 	return ret;
+ }
+ 
 
