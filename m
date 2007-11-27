@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbXK0XT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbXK0XUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760129AbXK0XT7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbXK0XTw
+	id S1760324AbXK0XUy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbXK0XUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:19:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42597 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754094AbXK0XTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:19:51 -0500
-Message-ID: <474CA520.60804@redhat.com>
-Date: Tue, 27 Nov 2007 15:15:44 -0800
-From: Ben Woodard <woodard@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 27 Nov 2007 18:20:47 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53388 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbXK0XUr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 18:20:47 -0500
+Date: Wed, 28 Nov 2007 00:20:46 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Tilman Schmidt <tilman@imap.cc>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: git guidance
+In-Reply-To: <474C9B31.8000408@imap.cc>
+Message-ID: <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr>
+References: <474C9B31.8000408@imap.cc>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com, vgoyal@in.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot
- cpu
-References: <20071127014740.GA28622@hmsreliant.think-freely.org>	<200711271445.56792.ak@suse.de>	<20071127142826.GB31376@hmsreliant.think-freely.org>	<200711271543.11809.ak@suse.de>	<20071127144856.GC31376@hmsreliant.think-freely.org>	<m14pf7k8ns.fsf@ebiederm.dsl.xmission.com>	<474C832C.1060903@redhat.com>	<20071127210558.GI14887@hmsendeavour.rdu.redhat.com> <m1r6ibia9v.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6ibia9v.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Neil Horman <nhorman@redhat.com> writes:
-> 
->>> ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> 
-> Ben, what chipset is this?
 
-nVidia MCP55 pro
+On Nov 27 2007 23:33, Tilman Schmidt wrote:
+>
+>It didn't work too well. The first result was one of maximal
+>embarrassment: I produced a patch that didn't even compile when
+>applied to the official tree. This shouldn't happen with git, right?
+>Well, it did. So now I'm back to keeping a virgin kernel source tree
+>alongside my development area in order to produce diffs. That can't
+>be right?
+>
+No, it can't. Use stgit/quilt ;p
 
-It is the original version of 
-http://www.supermicro.com/Aplus/motherboard/Opteron8000/MCP55/H8QM8-2.cfm
+>Does somebody have a step by step tutorial for doing the standard
+>"edit - test - modify - retest - submit - edit - resubmit" sequence
+>with GIT? Is there a GIT newsgroup or mailinglist? Or should I just
+>post my silly questions to LKML?
+>
+http://www.linuxworld.com/video/?bcpid=1138309735&bclid=1213841149&bctid=1221911905
 
-i.e. not the -2. However, they don't seem to advertise the original 
-version. Supermicro assures me that they are practically the same but I 
-haven't played with the -2 version yet.
-
-
-> 
->> Ok, I think from what I understand of what we're reading here, the apic2 = -1
->> and pin2 = -1 indicate that the 8259 has no direct connection to any cpu, which
->> means that on shutdown disable_IO_APIC should take us into virtual wire mode.
->> As such enabling the APIC early in boot should fix us, but more consisely,
->> rewriting the entry in the IOAPIC to deliver int0 to the only running cpu should
->> accomplish the same goal for this problem.  Does that sound reasonable (at least
->> as a test to ensure we understand the problem) to everyone?
-> 
-> Close.  There are two options with virtual wire mode.  
-> - Either the local apic is in virtual wire mode, and somehow the
->   legacy interrupts make it to the local cpu.
-> - Or an ioapic is in virtual wire mode and the legacy interrupt
->   controller is connected to it.
-> 
-> So I guess fundamentally for any SMP system that only supports the
-> cpu being in local apic mode and only routes interrupts to the boot
-> strap processor we could be in trouble.  That is what our current
-> information about your system suggests.
-> 
-> However most systems actually connect the i8254 PIC interrupt
-> controller to the ioapic in virtual wire mode.  As I recall the
-> standard mapping is to ioapic 0, pin 0.  With ioapic 0, pin 2 being
-> the timer interrupt (Possibly it is the other way around).
-> 
-> So as a test we could feed those values into ioapic_8259 and see
-> if the kdump case works.  I believe we prefer putting the ioapic
-> into virtual wire mode over putting the cpu into virtual wire
-> mode.  We can only control which cpu receives the legacy interrupts if
-> we are putting the ioapic in virtual wire mode.
-> 
-> It may also be an interesting test to just enable the timer for the
-> ioapic in early boot, as you have suggested.  I don't have a clue what
-> that will do.
-> 
-> Eric
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
-
-
--- 
--ben
--=-
+James Bottomley's intro helps a lot.
