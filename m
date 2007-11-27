@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbXK0Iyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbXK0I4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbXK0Iyg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXK0Iy3
+	id S1756211AbXK0I4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 03:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXK0Iz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:54:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40786 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751082AbXK0Iy2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:54:28 -0500
-Date: Tue, 27 Nov 2007 00:53:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 01/27] ptrace: arch_has_single_step
-Message-Id: <20071127005329.9dfcf473.akpm@linux-foundation.org>
-In-Reply-To: <20071125215507.4B89226F8C5@magilla.localdomain>
-References: <20071125215507.4B89226F8C5@magilla.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 03:55:59 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:1977 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbXK0Iz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 03:55:59 -0500
+Date: Tue, 27 Nov 2007 09:54:56 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] mmc: Add missing sg_init_table() call
+Message-ID: <20071127085456.GC5029@kernel.dk>
+References: <1195759971-19825-1-git-send-email-hskinnemoen@atmel.com> <20071126212955.07f65b0d.akpm@linux-foundation.org> <20071127065703.63fea228@poseidon.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127065703.63fea228@poseidon.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Nov 2007 13:55:07 -0800 (PST) Roland McGrath <roland@redhat.com> wrote:
+On Tue, Nov 27 2007, Pierre Ossman wrote:
+> On Mon, 26 Nov 2007 21:29:55 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > 
+> > Pierre, I can queue this up but if you merge it into your tree I shall drop
+> > it and shall lose track of it.  So it's then all down to you to remember to
+> > get the fix into 2.6.24.
+> > 
+> > (Except this particular bug looks like a post-2.6.23 regression, so I can cc
+> > the Rafael which never forgets, so it will then get tracked all the way into
+> > Linus's tree)
+> > 
+> 
+> Jens said he applied it, so I figured the issue was handled. Jens,
+> what happened to it?
 
-> This defines the new macro arch_has_single_step() in linux/ptrace.h, a
-> default for when asm/ptrace.h does not define it.  It declares the new
-> user_enable_single_step and user_disable_single_step functions.
-> This is not used yet, but paves the way to harmonize on this interface
-> for the arch-specific calls on all machines.
+It's in my for-linus branch, it was applied when I wrote that reply. So
+it's going upstream, the pull request has been sent to Linus.
 
-I think I'll duck this lot for now in view of the (relatively small) amount
-of followup.
+My error here was not updating the for-akpm branch that Andrew pulls, so
+he doesn't notice the patch. That is also updated now.
 
-I did do an experimental will-it-apply and got a tremendous number of
-rejects against the x86 git tree, almost all of which went away when `patch
--l' was used.  Seems that someone has gone on a whitespace rampage through
-arch/x86/ia32/ptrace32.c and arch/x86/ia32/ptrace64.c.
+-- 
+Jens Axboe
 
-That's kinda/sorta OK, but `patch -l' is a bit more inclined to misplace
-hunks and it's all a bit risky.
