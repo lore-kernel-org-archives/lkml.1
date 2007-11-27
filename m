@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXK0DpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbXK0DvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXK0DpM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 22:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXK0DpA
+	id S1755713AbXK0DvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 22:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXK0DvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 22:45:00 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:60914 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbXK0Do7 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 22:44:59 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-In-Reply-To: Your message of "Mon, 26 Nov 2007 12:27:07 GMT."
-             <20071126122706.GA5167@ucw.cz>
-From: Valdis.Kletnieks@vt.edu
-References: <20071125161631.GA21947@stusta.de>
-            <20071126122706.GA5167@ucw.cz>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196135084_2838P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 26 Nov 2007 22:51:12 -0500
+Received: from bay0-omc3-s28.bay0.hotmail.com ([65.54.246.228]:55085 "EHLO
+	bay0-omc3-s28.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754099AbXK0DvL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 22:51:11 -0500
+Message-ID: <BLU103-DAV17D83CDEA333FB9BC87580D6760@phx.gbl>
+X-Originating-IP: [130.13.252.143]
+X-Originating-Email: [joshin@hotmail.com]
+From: "Josh Goldsmith" <joshin@hotmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: Re: Small System Paging Problem - OOM-killer goes nuts
+Date: Mon, 26 Nov 2007 20:50:54 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-Date: Mon, 26 Nov 2007 22:44:44 -0500
-Message-ID: <20547.1196135084@turing-police.cc.vt.edu>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-OriginalArrivalTime: 27 Nov 2007 03:51:10.0652 (UTC) FILETIME=[BF8F07C0:01C830A8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196135084_2838P
-Content-Type: text/plain; charset=us-ascii
+>When you untar, which filesystem do you untar too?
+I've untarred it to Ext3, Ext2, and Reiser filesystems.  I've been fighting
+with this for a while.
 
-On Mon, 26 Nov 2007 12:27:07 GMT, Pavel Machek said:
+I did manage to get it to happen again doing a recursive chmod after
+untarring the kernel (I stopped the untar a few times to let the system
+catch up).
 
-> I don't think this is good idea. But perhaps 'experimental' should be
-> removed from stuff that is really stable these days, like SATA?
+Interesting output below.
 
-I suspect that given the "once it escapes, it's cast in stone" view we take
-towards user-visible API/etc, there isn't much *real* room for an
-'EXPERIMENTAL' flag anymore.  Most of the usage should probably be confined to
-individual drivers, where all we should need is a 'default n' and suitable
-warning verbiage in the Kconfig file warning about the driver eating your
-filesystems and small animals for breakfast.  We certainly shouldn't have
-one big flag for *all* in-progress drivers - I don't need to accidentally
-enable a busticated ethernet driver because I want a USB widget.  And if
-you're worried about people accidentally enabling it, then *each driver*
-should have a 'Do you really mean it?' flag with *opposite* sense (so
-that 'make allyesconfig' doesn't turn it on by accident).
+-J
 
-Anything bigger than that, we probably want to redefine 'experimental'
-as "it doesn't escape from -mm to mainline till it's ready".
+top - 17:58:03 up  3:08,  1 user,  load average: 3.54, 4.09, 4.08
+Tasks:  53 total,   2 running,  51 sleeping,   0 stopped,   0 zombie
+Cpu(s):  2.1%us, 11.4%sy,  0.6%ni,  0.0%id, 81.4%wa,  2.7%hi,  1.8%si,
+0.0%st
+Mem:     30352k total,    28252k used,     2100k free,    19448k buffers
+Swap:   465876k total,    15736k used,   450140k free,     1072k cached
 
---==_Exmh_1196135084_2838P
-Content-Type: application/pgp-signature
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 1357 root      30  15  1568  168   88 R  8.1  0.6   0:07.87 chmod
+  168 root      10  -5     0    0    0 S  3.1  0.0   6:39.25 usb-storage
+ 1353 root      15   0  2408  540  400 R  2.2  1.8   0:14.29 top
+  989 root      15   0  3600  292  192 S  1.2  1.0   0:37.81 sshd
+    2 root      34  19     0    0    0 S  0.6  0.0   2:14.65 ksoftirqd/0
+   56 root      15   0     0    0    0 S  0.3  0.0   0:23.85 pdflush
+   58 root      10  -5     0    0    0 S  0.3  0.0   0:54.70 kswapd0
+  950 root      15   0  3128  108   64 S  0.3  0.4   0:13.88 ntpd
+    1 root      16   0  1440    0    0 S  0.0  0.0   0:10.40 init
+    3 root      10  -5     0    0    0 S  0.0  0.0   0:00.02 events/0
+    4 root      10  -5     0    0    0 S  0.0  0.0   0:00.02 khelper
+    5 root      10  -5     0    0    0 S  0.0  0.0   0:00.00 kthread
+   38 root      10  -5     0    0    0 S  0.0  0.0   0:00.04 kblockd/0
+   41 root      10  -5     0    0    0 S  0.0  0.0   0:00.02 khubd
+   57 root      15   0     0    0    0 D  0.0  0.0   0:20.29 pdflush
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFHS5KscC3lWbTT17ARArb4AJ48twgmTqg3g6WJs3mp5ji0W/aU+gCg+cPZ
-cQFnzeAHCa5qtF/veIgqxDA=
-=y0y4
------END PGP SIGNATURE-----
+And the first of the oom-killer syslog messages:
 
---==_Exmh_1196135084_2838P--
+ntpd invoked oom-killer: gfp_mask=0x200d2, order=0, oomkilladj=0
+Mem-info:
+DMA per-cpu:
+CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:
+0
+sshd invoked oom-killer: gfp_mask=0x201d2, order=0, oomkilladj=0
+Active:2816 inactive:2778 dirty:0 writeback:0 unstable:0
+ free:179 slab:858 mapped:1 pagetables:93 bounce:0 
+
