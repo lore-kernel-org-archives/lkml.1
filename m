@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbXK0KhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbXK0KjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758366AbXK0KhF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 05:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbXK0Kgz
+	id S1758715AbXK0KjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 05:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbXK0KjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 05:36:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59745 "EHLO mx2.mail.elte.hu"
+	Tue, 27 Nov 2007 05:39:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38138 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753195AbXK0Kgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 05:36:54 -0500
-Date: Tue, 27 Nov 2007 11:36:42 +0100
+	id S1751869AbXK0KjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 05:39:08 -0500
+Date: Tue, 27 Nov 2007 11:38:46 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch] softlockup: do the wakeup from a hrtimer
-Message-ID: <20071127103642.GE6286@elte.hu>
-References: <20071120084611.GA18721@elte.hu> <20071126152652.8db2793a.akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 01/27] ptrace: arch_has_single_step
+Message-ID: <20071127103846.GF6286@elte.hu>
+References: <20071125215507.4B89226F8C5@magilla.localdomain> <20071127005329.9dfcf473.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071126152652.8db2793a.akpm@linux-foundation.org>
+In-Reply-To: <20071127005329.9dfcf473.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,63 +38,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Tue, 20 Nov 2007 09:46:11 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+> On Sun, 25 Nov 2007 13:55:07 -0800 (PST) Roland McGrath <roland@redhat.com> wrote:
 > 
-> > Subject: softlockup: do the wakeup from a hrtimer
-> > From: Ingo Molnar <mingo@elte.hu>
-> > 
-> > David Miller reported soft lockup false-positives that trigger on NOHZ 
-> > due to CPUs idling for more than 10 seconds.
-> > 
-> > The solution is to drive the wakeup of the watchdog threads not from the 
-> > timer tick (which has no guaranteed frequency), but from the watchdog 
-> > tasks themselves.
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9409
-> > 
-> > Reported-by: David Miller <davem@davemloft.net>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >  kernel/softlockup.c |    6 +-----
-> >  1 file changed, 1 insertion(+), 5 deletions(-)
-> > 
-> > Index: linux/kernel/softlockup.c
-> > ===================================================================
-> > --- linux.orig/kernel/softlockup.c
-> > +++ linux/kernel/softlockup.c
-> > @@ -100,10 +100,6 @@ void softlockup_tick(void)
-> >  
-> >  	now = get_timestamp(this_cpu);
-> >  
-> > -	/* Wake up the high-prio watchdog task every second: */
-> > -	if (now > (touch_timestamp + 1))
-> > -		wake_up_process(per_cpu(watchdog_task, this_cpu));
-> > -
-> >  	/* Warn about unreasonable 10+ seconds delays: */
-> >  	if (now <= (touch_timestamp + softlockup_thresh))
-> >  		return;
-> > @@ -141,7 +137,7 @@ static int watchdog(void *__bind_cpu)
-> >  	while (!kthread_should_stop()) {
-> >  		set_current_state(TASK_INTERRUPTIBLE);
-> >  		touch_softlockup_watchdog();
-> > -		schedule();
-> > +		msleep(1000);
-> >  	}
-> >  
-> >  	return 0;
+> > This defines the new macro arch_has_single_step() in linux/ptrace.h, 
+> > a default for when asm/ptrace.h does not define it.  It declares the 
+> > new user_enable_single_step and user_disable_single_step functions. 
+> > This is not used yet, but paves the way to harmonize on this 
+> > interface for the arch-specific calls on all machines.
 > 
-> I think you wanted msleep_interruptible() there to avoid contributing to
-> load average?
+> I think I'll duck this lot for now in view of the (relatively small) 
+> amount of followup.
 > 
-> The set_current_state() can go away.
+> I did do an experimental will-it-apply and got a tremendous number of 
+> rejects against the x86 git tree, almost all of which went away when 
+> `patch -l' was used.  Seems that someone has gone on a whitespace 
+> rampage through arch/x86/ia32/ptrace32.c and arch/x86/ia32/ptrace64.c.
+> 
+> That's kinda/sorta OK, but `patch -l' is a bit more inclined to 
+> misplace hunks and it's all a bit risky.
 
-these can be fixed, but:
-
-> This will introduce an up-to-one-second delay in responding to 
-> kthread_should_stop().  Is that bad?
-
-grumble, it's bad. I guess David is right that this should be fixed the 
-right way ;-) So the above patch cannot go in.
+actually, Thomas tried a tentative merge two days ago or so and the 
+result was pretty OK and functional. I'll try to do a more formal merge 
+and see what comes up.
 
 	Ingo
