@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbXK0BYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbXK0Bal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbXK0BYB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 20:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXK0BXx
+	id S1755119AbXK0Bal (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 20:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXK0Bad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 20:23:53 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40347 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbXK0BXw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 20:23:52 -0500
-Message-ID: <474B7175.3030002@zytor.com>
-Date: Mon, 26 Nov 2007 17:23:01 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 26 Nov 2007 20:30:33 -0500
+Received: from paragon.brong.net ([74.52.187.94]:45111 "EHLO paragon.brong.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752499AbXK0Bac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 20:30:32 -0500
+Date: Tue, 27 Nov 2007 12:30:28 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bron Gondwana <brong@fastmail.fm>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christian Kujau <lists@nerdbynature.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       robm@fastmail.fm
+Subject: Re: [PATCH 1/1] mm: add dirty_highmem option
+Message-ID: <20071127013028.GA31038@brong.net>
+References: <alpine.LFD.0.9999.0711142130090.2786@woody.linux-foundation.org> <alpine.LFD.0.9999.0711142148380.2786@woody.linux-foundation.org> <20071115115049.GA8297@brong.net> <alpine.LFD.0.9999.0711150818320.2786@woody.linux-foundation.org> <1195155601.22457.25.camel@lappy> <1195159457.22457.35.camel@lappy> <alpine.LFD.0.9999.0711151252340.4260@woody.linux-foundation.org> <alpine.LFD.0.9999.0711151300250.4260@woody.linux-foundation.org> <20071122034204.GA14079@brong.net> <alpine.LFD.0.9999.0711260949490.5869@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com> <474B55F5.1050706@redhat.com> <474B6179.4040508@zytor.com> <474B6810.6070703@redhat.com>
-In-Reply-To: <474B6810.6070703@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0711260949490.5869@woody.linux-foundation.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Mon, Nov 26, 2007 at 09:53:17AM -0800, Linus Torvalds wrote:
 > 
-> H. Peter Anvin wrote:
->> No.
->>
->> I already said I'm not looking at changing the calling convention for
->> existing syscalls.
 > 
-> I did not suggest or ask for that at all.
+> On Thu, 22 Nov 2007, Bron Gondwana wrote:
+> > 
+> > This patch includes some code cleanup from Linus and a toggle in
+> > /proc/sys/vm/dirty_highmem which can be set to 1 to add the highmem
+> > back to the total available memory count.
 > 
-> I was asking you to consider the real implementation details for a new
-> syscall mechanism.
+> Just to verify - can you confirm that this "just fixes it" for you?
 > 
-> We do not want to abandon the use of syscall/sysenter and go back to int
-> (on x86/x86-64).  This means that you have to come up with a mechanism
-> which hooks into the current syscall/sysenter path while preserving full
-> backward compatibility.
+> I think this is the right approach to take, and seems very safe (ie people 
+> who know that their loads are ok can just set the flag), but I do want to 
+> verify that there was nothing else going on, and that you now see the same 
+> performance as you did in 2.6.16?
 > 
-> Now it's your turn.  How do you do this without additional costs?
-> 
+> The other alternative, of course, would be to simply allow the dirty 
+> percentages to be > 100%, but that's just *odd* ;)
 
-- Add sys_new_call to the syscall table
-- Create a stub thunk:
+Yes, toggling dirty_highmem "just fixes it" in all our tests.  I hadn't
+tested it on the production machine yet - but I'm just installing it
+there now since it's been running fine on a less important machine for
+a few days now.
 
-asmlinkage long sys_old_call(long parm1, long parm2, long parm3)
-{
-	return sys_new_call(parm1, parm2, parm3, 0);
-}
+I did wonder about allowing the dirty percentage to go way up, but that
+would have cause "this one goes up to 110%" comments in the sysctl
+limits code and people would have thought I was childish.  Can't have
+that.  Much better to have "int one = 1" instead.
 
-We have 2^n examples on this in the kernel already.
-
-Or, if the new syscall requires more than 6 parameters (with the current 
-convention):
-
-asmlinkage long sys_new_call6(long parm1, long parm2, long parm3,
-			      long parm4, long parm5,
-			      long __user *additional)
-{
-	long xparm[3];	/* 8 parameters, total */
-
-	if (copy_from_user(xparm, additional, sizeof xparm)
-	    != sizeof xparm)
-		return -EFAULT;
-
-	return sys_new_call(parm1, parm2, parm3, parm4, parm5,
-			    xparm[0], xparm[1], xparm[2]);
-}
-
-This is a fixed-size copy from userspace, which obviously cannot be avoided.
-
-The C version isn't optimal, obviously, hence my mentioning the 
-possibility of doing it in the arch layer.
-
-	-hpa
+Bron.
