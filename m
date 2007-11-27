@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbXK0Qrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbXK0Qto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757757AbXK0Qrm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbXK0Qrf
+	id S1758731AbXK0Qto (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXK0Qth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:47:35 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42659 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755993AbXK0Qrf (ORCPT
+	Tue, 27 Nov 2007 11:49:37 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:57961 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756091AbXK0Qtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:47:35 -0500
-Date: Tue, 27 Nov 2007 17:47:23 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make I/O schedulers non-modular
-Message-ID: <20071127164723.GA3406@stusta.de>
-References: <20071125172237.GC6658@kernel.dk> <20071127070912.GB1735@ff.dom.local>
+	Tue, 27 Nov 2007 11:49:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=js2BPuXZvQYWweER81qZN1KGx/nKuYZfTpAgJnnoL1GKTH7Bq9HfL2QlRV7Ny4uaBFBY44Np3XYi1jcj+nQAiqntntt8UXQWb3MYtHnCUbxDVd+CcBpaFAcVvScj5McqKbLsQMi3/Vwj9aLJJbVbvKIIMRSu6zMEz0RgYqcm1ZY=
+Date: Tue, 27 Nov 2007 19:49:29 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: possible BUG: unable to handle kernel NULL pointer dereference
+	at virtual address 00000000
+Message-ID: <20071127164929.GA7279@cvg>
+References: <47481590.8090009@xs4all.nl> <200711241951.37817.rjw@sisk.pl> <474870F5.4050504@xs4all.nl> <aa79d98a0711270340q5fd6b8a0o5076052a4411e6b2@mail.gmail.com> <474C3659.600@xs4all.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071127070912.GB1735@ff.dom.local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <474C3659.600@xs4all.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 08:09:12AM +0100, Jarek Poplawski wrote:
-> On 25-11-2007 18:22, Jens Axboe wrote:
-> > On Sun, Nov 25 2007, Adrian Bunk wrote:
-> ...
-> >> Is there any technical reason why we need 4 different schedulers at all?
-> > 
-> > Until we have the perfect scheduler :-)
-> 
-> IMHO this is not enough yet. There is something called "the right
-> of choice",
+[Udo van den Heuvel - Tue, Nov 27, 2007 at 04:23:05PM +0100]
+| Cyrill Gorcunov wrote:
+| > On 11/24/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+| >> Rafael J. Wysocki wrote:
+| >>> On Saturday, 24 of November 2007, Udo van den Heuvel wrote:
+| >>>> Hello,
+| >>>>
+| >>>> What happened in the attached messages?
+| >>>> It was on a VIA Epia EN12000, while compiling.
+| >>>> Yes, the machine has been stable before and after that issue.
+| >>>> So I suspect no hardware issues.
+| >>> Which kernel is this?
+| >> Sorry for not mentioning:
+| >> 2.6.23.1
+| > Hi Udo,
+| > i'm not sure about the patch i supposing you to test but it could help
+| > to locate it ;)
+| > Could you try it and report me how it works?
+| 
+| Yes I can!
+| Thanks for the patch.
+| But how can I reproduce the (possible) bug the easiest?
+| It `just happened` during compiling.
+| So I compile some more?
+| 
+| Kind regards,
+| Udo
+| 
 
-That's a common misconception about open source software:
+Hi Udo,
 
-There is nothing like a "right of choice".
-There is a "right to change the source code".
+yes i think that is the way we could catch it (i mean compiling everything
+until bug happens ;) the patch i send you is quite stupid and based on my
+feelings that we have problem with dcache but maybe i just wrong...
+dunno...lets just try ;) and could you please send your config to me and
+LKML too.
 
-This means you cannot demand from anyone to offer any choices, but you 
-can fork the code yourself and use and distribute modified code 
-containing any choices you consider reasonable.
-
-> and, it seems, things are usually far from perfect
-> where this right is not respected.
-
-That's wrong.
-
-It's actually often much worse to have different choices with different 
-features and bugfixes than having one version that contains all features 
-and all bugfixes.
-
-> Regards,
-> Jarek P.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+		Cyrill
 
