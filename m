@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbXK0RZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbXK0R0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbXK0RZL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 12:25:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbXK0RY4
+	id S1759123AbXK0R0m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 12:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbXK0R0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 12:24:56 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36083 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757515AbXK0RYz (ORCPT
+	Tue, 27 Nov 2007 12:26:35 -0500
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:23165 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757104AbXK0R0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 12:24:55 -0500
-Date: Tue, 27 Nov 2007 18:24:44 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Tom Tucker <tom@opengridcomputing.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Roland Dreier <rdreier@cisco.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071127172444.GC3406@stusta.de>
-References: <20071122343.446909000@suse.de> <200711271549.37670.rusty@rustcorp.com.au> <1196141742.9876.49.camel@trinity.ogc.int> <200711271002.22958.ak@suse.de>
+	Tue, 27 Nov 2007 12:26:34 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PqW6qiA8IsNoh8pnpx1Qkm86N7JL+6htWc0ur6ZqWhOXKpsS/Mr94S1abbW/SYeQEHD9rsGbzttRJZka9HBuQtOvuKW1PjfMmrJ13oHNVlBqSRLSUMZnwBQyzv5BUY1jcV8E8PWORMc6uNexzOmXQKGUiDG0GvESNcpvJWii0qc=  ;
+X-YMail-OSG: xRwBNI0VM1lfE6J7DxHv11mkVhR2FxIxZiZpz9ar1VV4tYauQ4T65mpNyUDA03wb3I8Le4SGww--
+From: David Brownell <david-b@pacbell.net>
+To: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Date: Tue, 27 Nov 2007 09:26:30 -0800
+User-Agent: KMail/1.9.6
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
+       "Bill Gatliff" <bgat@billgatliff.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
+       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
+       "Ben Dooks" <ben@trinity.fluff.org>
+References: <200710291809.29936.david-b@pacbell.net> <200711261746.55235.david-b@pacbell.net> <f17812d70711270258v1e2b47aam74da33687728a78@mail.gmail.com>
+In-Reply-To: <f17812d70711270258v1e2b47aam74da33687728a78@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <200711271002.22958.ak@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200711270926.30948.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 10:02:22AM +0100, Andi Kleen wrote:
->...
-> That is EXPORT_SYMBOL already. The trouble is just that it covers
-> too much. My patchkit is trying to limit it again for a specific
-> use case -- exporting an "internal" interface to another module.
-> Or rather a set of modules. 
-> 
-> Standard example is TCP: TCP exports nearly everything and the
-> single user is the TCP code in ipv6.ko. Instead those symbols should
-> be limited to be only accessable to ipv6.ko. 
->...
+Thanks, I'll be looking at it ... the one thing I strongly dislike is
+this change:
 
-Let's forget about external modules that are anyway irrelevant for 
-upstream kernel development.
+On Tuesday 27 November 2007, eric miao wrote:
+> 4. use a loop for "gpio_desc[]" instead of a loop for "gpio_chips[]" in
+>    gpiolib_show(), change is straight forward; since it is now per gpio
+>    based, the gpio_chip.dbg_show() is removed as well
 
-Do you have past examples where this would have brought advantages 
-for the upstream kernel justifying all the work required for creating 
-and maintaining these namespaces?
+That removes the ability to display all kinds of significant
+chip-specific state ... like whether a given signal has active
+pullups or pulldowns, uses open-drain signaling, and so forth.
 
-IOW, where modules were submitted for upstream inclusion and merging 
-them was impossible or much harder only because they were developed 
-aginst the wrong API?
+It also makes access a lot slower ... e.g. rather than one
+batch of I2C or SPI operations for all N signals on a chip,
+it's got to do N batches.
 
-> -ANdi
+Plus it just needlessly breaks existing code.
 
-cu
-Adrian
+I'll put together a version without that problem.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+- Dave
