@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbXK0SyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbXK0TAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbXK0SyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 13:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbXK0Sxw
+	id S1759001AbXK0TAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 14:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbXK0TAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 13:53:52 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:47761 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758598AbXK0Sxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 13:53:51 -0500
-Subject: Re: [Patch](Resend) mm/sparse.c: Improve the error handling for
-	sparse_add_one_section()
-From: Dave Hansen <haveblue@us.ibm.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org
-In-Reply-To: <20071127022609.GA4164@hacking>
-References: <1195507022.27759.146.camel@localhost>
-	 <20071123055150.GA2488@hacking> <20071126191316.99CF.Y-GOTO@jp.fujitsu.com>
-	 <20071127022609.GA4164@hacking>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 10:53:45 -0800
-Message-Id: <1196189625.5764.36.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 14:00:06 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33991 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756834AbXK0TAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 14:00:04 -0500
+Date: Tue, 27 Nov 2007 19:59:53 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tom Tucker <tom@opengridcomputing.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Roland Dreier <rdreier@cisco.com>,
+       Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071127185952.GD3406@stusta.de>
+References: <20071122343.446909000@suse.de> <200711261228.15155.rusty@rustcorp.com.au> <adahcj9sfan.fsf@cisco.com> <200711271549.37670.rusty@rustcorp.com.au> <1196141742.9876.49.camel@trinity.ogc.int> <20071127171542.GB3406@stusta.de> <1196185537.24469.21.camel@trinity.ogc.int>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1196185537.24469.21.camel@trinity.ogc.int>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-27 at 10:26 +0800, WANG Cong wrote:
+On Tue, Nov 27, 2007 at 11:45:37AM -0600, Tom Tucker wrote:
 > 
-> @@ -414,7 +418,7 @@ int sparse_add_one_section(struct zone *
->  out:
->         pgdat_resize_unlock(pgdat, &flags);
->         if (ret <= 0)
-> -               __kfree_section_memmap(memmap, nr_pages);
-> +               kfree(usemap);
->         return ret;
->  }
->  #endif 
+> On Tue, 2007-11-27 at 18:15 +0100, Adrian Bunk wrote:
+> > On Mon, Nov 26, 2007 at 11:35:42PM -0600, Tom Tucker wrote:
+> > > On Tue, 2007-11-27 at 15:49 +1100, Rusty Russell wrote:
+> > >...
+> > > > No.  That's the wrong question.  What's the real upside?
+> > > 
+> > > Explicitly documenting what comprises the kernel API (external,
+> > > supported) and what comprises the kernel implementation (internal, not
+> > > supported).
+> > >...
+> > 
+> > There is not, never was, and never will be, any supported external API 
+> > of the kernel.
+> 
+> Philosophically I understand what you're saying, but in practical terms
+> there is the issue of managing core API like kmalloc. Although kmalloc
+> _could_ change, doing so would be extremely painful. In fact anyone who
+> proposed such a change would have to have a profoundly powerful argument
+> as to why it was necessary.
 
-Why did you get rid of the memmap free here?  A bad return from
-sparse_init_one_section() indicates that we didn't use the memmap, so it
-will leak otherwise.
+The latter should at least in theory be required for all changes no 
+matter how core they are...
 
--- Dave
+> I think this patchset is an attempt to make it easier to identify and
+> review these kinds of interfaces.
+
+As long as the submitter fixes all in-kernel users these interfaces are 
+not handled differently from interfaces with fewer users.
+
+And I remember at least one commit that changed > 1000 files because it 
+changed a frequently used driver API. [1]
+
+cu
+Adrian
+
+[1] commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
