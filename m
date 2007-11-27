@@ -1,117 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbXK0UoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbXK0Uoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758539AbXK0UoN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbXK0Un7
+	id S1759148AbXK0Uoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXK0Uof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:43:59 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43542 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756150AbXK0Un6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:43:58 -0500
-Message-Id: <1196196237.19410.1223544787@webmail.messagingengine.com>
-X-Sasl-Enc: wrYOt5/xJf+5XJFwgXUCYBQzaBHMcarLt7bVaGbCY11x 1196196237
-From: "Thomas Tuttle" <linux-kernel@ttuttle.net>
-To: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Content-Type: multipart/mixed; boundary="_----------=_1196196237194100"; charset="UTF-8"
+	Tue, 27 Nov 2007 15:44:35 -0500
+Received: from mms1.broadcom.com ([216.31.210.17]:1806 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756430AbXK0Uoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:44:34 -0500
+X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
+Subject: Re: 2.6.23-mm1 tg3 wake-on-lan oddity...
+From: "Michael Chan" <mchan@broadcom.com>
+To: Valdis.Kletnieks@vt.edu
+cc: linux-kernel@vger.kernel.org, "netdev" <netdev@vger.kernel.org>
+In-Reply-To: <24400.1196156118@turing-police.cc.vt.edu>
+References: <24400.1196156118@turing-police.cc.vt.edu>
+Date: Tue, 27 Nov 2007 13:34:57 -0800
+Message-ID: <1196199297.7323.10.camel@dell>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: Oops with 2.6.24 git when loading iwl3945
-Date: Tue, 27 Nov 2007 15:43:57 -0500
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6B525E2D1S412257467-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Tue, 2007-11-27 at 01:35 -0800, Valdis.Kletnieks@vt.edu wrote:
 
---_----------=_1196196237194100
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Date: Tue, 27 Nov 2007 20:43:57 UT
+> 
+> Issue:
+> 
+> I (for unrelated reasons) run powertop, and it suggests I conserve power
+> by doing 'ethtool -s eth0 wol d'.  I look at it, and think that it's daft,
+> because (a) the Dell factory default is WOL disabled and (b) if it wasn't
+> the default, I'd have *set* it to disabled, and (c) I even went back and
+> rebooted and checked the BIOS setting - disabled. Nonetheless:
+> 
+> # ethtool eth0 | grep Wake
+>         Supports Wake-on: g
+>         Wake-on: g
+> 
+> Is this expected behavior?
 
-Hey.
+What's happening is that there are 2 WoL settings: one in the BIOS and
+one in the NIC's NVRAM.  For WoL to work, I think both settings have to
+be enabled.  Apparently in this case, when you turn off WoL in the BIOS,
+the NVRAM's WoL setting is unchanged, and will be seen by tg3 as
+enabled.
 
-I'm using a git snapshot that gentoo distributed mere hours ago (so I'm
-fairly confident it's current), and I'm getting an Oops when I try to
-load the iwl3945 driver.  I've attached it as plain text.
+Ideally, the BIOS should modify the NVRAM's setting when it is changed.
+We will talk to Dell to get their opinion on this as this is very
+confusing to the user.
 
-Hope this helps,
-
-Thomas Tuttle
-
---_----------=_1196196237194100
-Content-Disposition: attachment; filename="oops"
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=iso-8859-1; name="oops"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Date: Tue, 27 Nov 2007 20:43:57 UT
-
-aWVlZTgwMjExX2NyeXB0OiByZWdpc3RlcmVkIGFsZ29yaXRobSAnTlVMTCcK
-aWVlZTgwMjExX2NyeXB0OiByZWdpc3RlcmVkIGFsZ29yaXRobSAnV0VQJwpp
-d2wzOTQ1OiBJbnRlbChSKSBQUk8vV2lyZWxlc3MgMzk0NUFCRy9CRyBOZXR3
-b3JrIENvbm5lY3Rpb24gZHJpdmVyIGZvciBMaW51eCwgMS4xLjE3a2RzCml3
-bDM5NDU6IENvcHlyaWdodChjKSAyMDAzLTIwMDcgSW50ZWwgQ29ycG9yYXRp
-b24KQUNQSTogUENJIEludGVycnVwdCAwMDAwOjBjOjAwLjBbQV0gLT4gR1NJ
-IDE3IChsZXZlbCwgbG93KSAtPiBJUlEgMTcKUENJOiBTZXR0aW5nIGxhdGVu
-Y3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MGM6MDAuMCB0byA2NAppd2wzOTQ1
-OiBEZXRlY3RlZCBJbnRlbCBQUk8vV2lyZWxlc3MgMzk0NUFCRyBOZXR3b3Jr
-IENvbm5lY3Rpb24KaXdsMzk0NTogVHVuYWJsZSBjaGFubmVsczogMTEgODAy
-LjExYmcsIDEzIDgwMi4xMWEgY2hhbm5lbHMKZ2VuZXJhbCBwcm90ZWN0aW9u
-IGZhdWx0OiAwMDAwIFsxXSBTTVAgCkNQVSAwIApNb2R1bGVzIGxpbmtlZCBp
-bjogaXdsMzk0NSBpZWVlODAyMTFfY3J5cHRfd2VwIGllZWU4MDIxMV9jcnlw
-dCBtYWM4MDIxMSBjZmc4MDIxMSBpOTE1IGRybSBzbmRfc2VxX29zcyBzbmRf
-c2VxX2RldmljZSBzbmRfc2VxX21pZGlfZXZlbnQgc25kX3NlcSBzbmRfcGNt
-X29zcyBzbmRfbWl4ZXJfb3NzIHNuZF9oZGFfaW50ZWwgc25kX3BjbSBzbmRf
-dGltZXIgc25kIHNvdW5kY29yZSBzbmRfcGFnZV9hbGxvYyBjb3JldGVtcCBo
-d21vbiBydGMgcmZjb21tIGwyY2FwIGhjaV91c2IgYmx1ZXRvb3RoIHVoY2lf
-aGNkIGVoY2lfaGNkIHVzYmNvcmUgZXZkZXYgYjQ0IHNzYiBwc21vdXNlClBp
-ZDogNTIzMCwgY29tbTogaXdsMzk0NS8wIE5vdCB0YWludGVkIDIuNi4yNC1y
-YzMtZ2l0MiAjMQpSSVA6IDAwMTA6WzxmZmZmZmZmZjgwMzAwYzU2Pl0gIFs8
-ZmZmZmZmZmY4MDMwMGM1Nj5dIHN0cmNtcCsweDAvMHgxYQpSU1A6IDAwMTg6
-ZmZmZjgxMDA3NGQ5M2RkOCAgRUZMQUdTOiAwMDAxMDI4NwpSQVg6IGZmZmZm
-ZmZmODgxYzJlODAgUkJYOiBmZmZmODEwMDc1MmI4NGUwIFJDWDogZmZmZjgx
-MDA3NGQ5MjAwMApSRFg6IGZmZmY4MTAwNzRkZTIwNzMgUlNJOiBmZmZmZmZm
-Zjg4MWMwODZiIFJESTogMDAwMjAwNzQwMDAwMDE2YgpSQlA6IGZmZmZmZmZm
-ODgxYzhlODAgUjA4OiBmZmZmODEwMDc0ZDkyMDAwIFIwOTogZmZmZjgxMDAw
-MmJmNzdhMApSMTA6IDAwMDAwMDAwMDAwMDAwMDAgUjExOiAwMDAwMDAwMDAw
-MDAwMDAxIFIxMjogZmZmZmZmZmY4ODE5NzU0MApSMTM6IGZmZmY4MTAwNzRk
-ZTIwNjAgUjE0OiBmZmZmODEwMDc0ZGUyMDMwIFIxNTogMDAwMDAwMDAwMDAw
-MDAzOApGUzogIDAwMDAwMDAwMDAwMDAwMDAoMDAwMCkgR1M6ZmZmZmZmZmY4
-MDU5ZDAwMCgwMDAwKSBrbmxHUzowMDAwMDAwMDAwMDAwMDAwCkNTOiAgMDAx
-MCBEUzogMDAxOCBFUzogMDAxOCBDUjA6IDAwMDAwMDAwODAwNTAwM2IKQ1Iy
-OiAwMDAwMmIzMTNlY2VmMDAwIENSMzogMDAwMDAwMDA3ZDEwMDAwMCBDUjQ6
-IDAwMDAwMDAwMDAwMDA2ZTAKRFIwOiAwMDAwMDAwMDAwMDAwMDAwIERSMTog
-MDAwMDAwMDAwMDAwMDAwMCBEUjI6IDAwMDAwMDAwMDAwMDAwMDAKRFIzOiAw
-MDAwMDAwMDAwMDAwMDAwIERSNjogMDAwMDAwMDBmZmZmMGZmMCBEUjc6IDAw
-MDAwMDAwMDAwMDA0MDAKUHJvY2VzcyBpd2wzOTQ1LzAgKHBpZDogNTIzMCwg
-dGhyZWFkaW5mbyBmZmZmODEwMDc0ZDkyMDAwLCB0YXNrIGZmZmY4MTAwN2M4
-MTIwMDApClN0YWNrOiAgZmZmZmZmZmY4ODE4M2EwZSBmZmZmODEwMDc0ZDUy
-MjIwIGZmZmY4MTAwNzRkNTE4YzAgZmZmZjgxMDA3NGRlMjAwMAogZmZmZmZm
-ZmY4ODFhODFlMiAwMDAwMDAwMDAwMDAwMDAwIDAwMDAwMDAwMDAwMDAwMDAg
-MDAwMDAwMDA3NGQ5M2UzMAogMDAwMDAwMDAwMDAwMDAwMCBmZmZmODEwMDdj
-ODEyMDAwIDAwMDAwMDAwMDAwMDAwMDAgMDAwMDAwMDAwMDAwMDAwMApDYWxs
-IFRyYWNlOgogWzxmZmZmZmZmZjg4MTgzYTBlPl0gOm1hYzgwMjExOmllZWU4
-MDIxMV9yYXRlX2NvbnRyb2xfcmVnaXN0ZXIrMHgzZC8weGRkCiBbPGZmZmZm
-ZmZmODgxYTgxZTI+XSA6aXdsMzk0NTppd2xfYmdfYWxpdmVfc3RhcnQrMHhj
-OTYvMHhlZjkKIFs8ZmZmZmZmZmY4MDQzOTk4ND5dIHRocmVhZF9yZXR1cm4r
-MHgzZC8weDgxCiBbPGZmZmZmZmZmODgxYTc1NGM+XSA6aXdsMzk0NTppd2xf
-YmdfYWxpdmVfc3RhcnQrMHgwLzB4ZWY5CiBbPGZmZmZmZmZmODAyNDI3NTU+
-XSBydW5fd29ya3F1ZXVlKzB4N2YvMHgxMGIKIFs8ZmZmZmZmZmY4MDI0MzA3
-MT5dIHdvcmtlcl90aHJlYWQrMHgwLzB4ZTQKIFs8ZmZmZmZmZmY4MDI0MzE0
-Yj5dIHdvcmtlcl90aHJlYWQrMHhkYS8weGU0CiBbPGZmZmZmZmZmODAyNDYw
-YzA+XSBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgwLzB4MmUKIFs8ZmZm
-ZmZmZmY4MDI0NWZhZT5dIGt0aHJlYWQrMHg0Ny8weDc1CiBbPGZmZmZmZmZm
-ODAyMGNjNDg+XSBjaGlsZF9yaXArMHhhLzB4MTIKIFs8ZmZmZmZmZmY4MDI0
-NWY2Nz5dIGt0aHJlYWQrMHgwLzB4NzUKIFs8ZmZmZmZmZmY4MDIwY2MzZT5d
-IGNoaWxkX3JpcCsweDAvMHgxMgoKCkNvZGU6IDhhIDE3IDg5IGQwIDJhIDA2
-IDQ4IGZmIGM2IDg0IGMwIDc1IDA5IDg0IGQyIDc0IDA1IDQ4IGZmIGM3IApS
-SVAgIFs8ZmZmZmZmZmY4MDMwMGM1Nj5dIHN0cmNtcCsweDAvMHgxYQogUlNQ
-IDxmZmZmODEwMDc0ZDkzZGQ4PgoK
-
---_----------=_1196196237194100--
+Thanks.
 
