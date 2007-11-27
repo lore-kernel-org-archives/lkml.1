@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbXK0JKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbXK0JMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbXK0JKb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 04:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbXK0JKQ
+	id S1757316AbXK0JMH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 04:12:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXK0JLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 04:10:16 -0500
-Received: from mout2.freenet.de ([195.4.92.92]:56653 "EHLO mout2.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbXK0JKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 04:10:14 -0500
-Message-ID: <474BDEDE.6060603@de.ibm.com>
-Date: Tue, 27 Nov 2007 10:09:50 +0100
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Anthony Liguori <aliguori@us.ibm.com>,
-       Eric Van Hensbergen <ericvanhensbergen@us.ibm.com>,
-       kvm-devel@lists.sourceforge.net, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org
-Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
-References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com>	<11944900163817-git-send-email-aliguori@us.ibm.com>	<4742F6B7.20503@qumranet.com>	<474300AD.4060509@us.ibm.com>	<4743076F.8000105@qumranet.com> <47435CCB.1050506@us.ibm.com>	<4743DAA4.70800@qumranet.com> <4747051C.3090903@us.ibm.com> <4747122F.1070905@qumranet.com> <474B1BF3.20901@us.ibm.com> <474BDD28.7050801@qumranet.com>
-In-Reply-To: <474BDD28.7050801@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Nov 2007 04:11:53 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:55764 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751076AbXK0JLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 04:11:52 -0500
+Date: Tue, 27 Nov 2007 10:11:25 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] mmc: Add missing sg_init_table() call
+Message-ID: <20071127101125.49770e42@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20071126212955.07f65b0d.akpm@linux-foundation.org>
+References: <1195759971-19825-1-git-send-email-hskinnemoen@atmel.com>
+	<20071126212955.07f65b0d.akpm@linux-foundation.org>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Warning: de.ibm.com is listed at abuse.rfc-ignorant.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> No, definitely not define a hypercall ABI.  The feature bit should say 
-> "this device understands a hypervisor-specific way of kicking.  consult 
-> your hypervisor manual and cpuid bits for further details.  should you 
-> not be satisfied with this method, port io is still available".
-...unless you're lucky enough to be on s390 where pio is not available.
-I don't see why we'd have two different ways to talk to a virtio 
-device. I think we should use a hypercall for interrupt injection, 
-without support for grumpy old soldered pci features other than 
-HPA-style Lguest PCI bus organization. There are no devices that we 
-want to be backward compatible with.
+On Mon, 26 Nov 2007 21:29:55 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Thu, 22 Nov 2007 20:32:51 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+> 
+> > mmc_init_queue only initializes the scatterlists with sg_init_table()
+> > when using a bounce buffer. This leads to a BUG() when CONFIG_DEBUG_SG
+> > is set.
+> >   
+> 
+> I assume that 2.6.23 is not afflicted in this way?
+
+Yes, the sg_init_table() interface and CONFIG_DEBUG_SG were both added
+after 2.6.23. Before that, there was no need to do anything special to
+initialize a scatterlist array apart from zeroing it.
+
+Haavard
