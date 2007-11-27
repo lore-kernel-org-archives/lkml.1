@@ -1,126 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbXK0UxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759399AbXK0Uz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759570AbXK0UxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbXK0UxI
+	id S1759399AbXK0Uz5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbXK0Uzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:53:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37515 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756617AbXK0UxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:53:07 -0500
-Date: Tue, 27 Nov 2007 15:52:55 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071127205255.GH14887@hmsendeavour.rdu.redhat.com>
-References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com> <20071127200011.GA3703@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127200011.GA3703@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Tue, 27 Nov 2007 15:55:49 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43500 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756793AbXK0Uzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:55:48 -0500
+Date: Tue, 27 Nov 2007 12:55:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       mbligh@mbligh.org, val.henson@intel.com
+Subject: Re: [PATCH] fix up ext2_fs.h for userspace after reservations
+ backport
+Message-Id: <20071127125509.7cda1328.akpm@linux-foundation.org>
+In-Reply-To: <474B003D.7040908@redhat.com>
+References: <474B003D.7040908@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 03:00:11PM -0500, Vivek Goyal wrote:
-> On Tue, Nov 27, 2007 at 02:42:20PM -0500, Neil Horman wrote:
-> 
-> [..]
-> > 
-> > Ben I tend to agree.  I think re-enabling the APIC early in the boot process
-> > provides a greater degree of reliability in that it more quickly restores the
-> > system to a state where booting on a cpu other than cpu0 will be more likely to
-> > work, but I have to say that overall it seems like booting a secondary kernel on
-> > cpu0, when possible offers the highest degree of reliability.
-> > 
-> > Perhaps what we need is a 'both solution'.  Re-enabling the apic to full smp
-> > functionality early in the boot process is a good solution for the problems
-> > which we are hypothesizing here, and would be a good thing to do in general, but
-> > it doesn't preclude also attmpting to switch back to cpu0 during a crash.
-> > 
-> > Perhaps it would be worthwhile to:
-> > 
-> > 1) Investigate the early enablement of the ioapic for x86[_64]
-> > 2) implement my prevoiusly proposed patch with the addition of a handshake
-> > element, such that:
-> > 	a) when the boot cpu gets the ipi from machine_crash_shutdown it flags
-> > 	   the fact that it is going to boot the kexec kernel with a global
-> > 	   variable
-> > 	b) the crashing cpu loops waiting for either:
-> > 		I) a timeout of 1 second
-> > 		II) a reduction of the halt count to zero
-> > 		III) the setting of the flag mentioned in (a)
-> > 	c) the crashing cpu, if it sees that it is not the boot cpu AND
-> > 	   that the flag in (III) is set, will halt itself, otherwise it
-> > 	   will set the flag and boot the kexec image itself.
-> > 
-> > With this modification, we can try to relocate to cpu0,  and if we fail, we fall
-> > back to booting on the crashing processor.
-> > 
-> > I'll work up a patch that implements (2), unless there are strong objections.  I
-> > see no reason why we can't implment this 'both' solution.
-> > 
-> 
-> Hi Neil,
-> 
-> If we implement first solution, we don't have to implement second. Problem
-> will automatically be solved.
-> 
-Agreed, assuming:
-1) The problems we have been hypothesising are accurate.  As you note below, Ben
-and I have dug deep to find the problem, but we could try to go deeper.
+On Mon, 26 Nov 2007 11:19:57 -0600
+Eric Sandeen <sandeen@redhat.com> wrote:
 
-2) There are no other issues with (re)booting a system on the non-boot cpu.  It
-seems to me that if its possible to reboot on cpu0, we should try.  I understand
-that we're trying to keep that code small for obvious reasons, but if we have a
-fall back method to the crashing cpu, it seems reasonable safe to me.
+> From: Tobias Poschwatta <tp@fonz.de>
+> 
+> In commit a686cd898bd999fd026a51e90fb0a3410d258ddb:
+> 
+>  "Val's cross-port of the ext3 reservations code into ext2."
+> 
+> include/linux/ext2_fs.h got a new function whose return value is only
+> defined if __KERNEL__ is defined. Putting #ifdef __KERNEL__ around the
+> function seems to help, patch below.
+> 
+> BR, Tobias
+> 
+> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+> 
+> ---
+> 
+> Index: linux-2.6.24-rc1/include/linux/ext2_fs.h
+> ===================================================================
+> --- linux-2.6.24-rc1.orig/include/linux/ext2_fs.h
+> +++ linux-2.6.24-rc1/include/linux/ext2_fs.h
+> @@ -563,11 +563,13 @@ enum {
+>  					 ~EXT2_DIR_ROUND)
+>  #define EXT2_MAX_REC_LEN		((1<<16)-1)
+>  
+> +#ifdef __KERNEL__
+>  static inline ext2_fsblk_t
+>  ext2_group_first_block_no(struct super_block *sb, unsigned long group_no)
+>  {
+>  	return group_no * (ext2_fsblk_t)EXT2_BLOCKS_PER_GROUP(sb) +
+>  		le32_to_cpu(EXT2_SB(sb)->s_es->s_first_data_block);
+>  }
+> +#endif
+>  
+>  #endif	/* _LINUX_EXT2_FS_H */
+
+I did this instead:
+
+From: Tobias Poschwatta <tp@fonz.de>
+
+In commit a686cd898bd999fd026a51e90fb0a3410d258ddb:
+
+ "Val's cross-port of the ext3 reservations code into ext2."
+
+include/linux/ext2_fs.h got a new function whose return value is only
+defined if __KERNEL__ is defined. Putting #ifdef __KERNEL__ around the
+function seems to help, patch below.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/ext2/ext2.h          |    7 +++++++
+ include/linux/ext2_fs.h |    7 -------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff -puN include/linux/ext2_fs.h~fix-up-ext2_fsh-for-userspace-after-reservations-backport include/linux/ext2_fs.h
+--- a/include/linux/ext2_fs.h~fix-up-ext2_fsh-for-userspace-after-reservations-backport
++++ a/include/linux/ext2_fs.h
+@@ -563,11 +563,4 @@ enum {
+ 					 ~EXT2_DIR_ROUND)
+ #define EXT2_MAX_REC_LEN		((1<<16)-1)
  
-> In general adding more code in crash shutdown path is not good. We are
-> trying to make that code path as small as possible.
-> 
-> OTOH, I think we have not root caused this problem yet. We don't know yet
-> why interrupts are not coming to non-boot cpu. I think we can go little
-> deeper to compare the system state in normal boot and kdump boot and see
-> what has changed. System state would include, LAPIC and IOAPIC entries
-> etc.
-> 
+-static inline ext2_fsblk_t
+-ext2_group_first_block_no(struct super_block *sb, unsigned long group_no)
+-{
+-	return group_no * (ext2_fsblk_t)EXT2_BLOCKS_PER_GROUP(sb) +
+-		le32_to_cpu(EXT2_SB(sb)->s_es->s_first_data_block);
+-}
+-
+ #endif	/* _LINUX_EXT2_FS_H */
+diff -puN fs/ext2/ext2.h~fix-up-ext2_fsh-for-userspace-after-reservations-backport fs/ext2/ext2.h
+--- a/fs/ext2/ext2.h~fix-up-ext2_fsh-for-userspace-after-reservations-backport
++++ a/fs/ext2/ext2.h
+@@ -178,3 +178,10 @@ extern const struct inode_operations ext
+ /* symlink.c */
+ extern const struct inode_operations ext2_fast_symlink_inode_operations;
+ extern const struct inode_operations ext2_symlink_inode_operations;
++
++static inline ext2_fsblk_t
++ext2_group_first_block_no(struct super_block *sb, unsigned long group_no)
++{
++	return group_no * (ext2_fsblk_t)EXT2_BLOCKS_PER_GROUP(sb) +
++		le32_to_cpu(EXT2_SB(sb)->s_es->s_first_data_block);
++}
+_
 
-> Are we putting the system back in PIC mode or virtual wire mode? I have
-> not seen systems which support PIC mode. All latest systems seems
-> to be having virtual wire mode. I think in case of PIC mode, interrupts
-> can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
-> to deliver interrupt to any of the cpus and that's what we have been
-> relying on  until and unless there is something board specific.
-> 
-
-This is actually a very interesting question.  Looking at disable_IO_APIC in the
-latest git tree, which is used to revert the APIC to a legacy mode, we do one of
-two things.  If the on board 8259 is routed through the IOAPIC, then we
-configure the APIC to be in virtual wire mode, so that the interrupt is
-delivered via the APIC to whatever processor you want to configure.  If however,
-the 8259 bypasses the IOAPIC, then we simply disable the LAPICS LVT0 interrupt,
-so that any legacy timer interrupts from the apic are ignored, ostesibly because
-the 8259 will assert the interrupt pin on the processor it is wired to directly.
-I wonder if most (almost all) modern systems use the former configuration, while
-the supermicro board in question in a rare exception, uses the latter.  If the
-8259 was routed directly to cpu0, that would explain this hang.
-
-Regards
-Neil
-> Thanks
-> Vivek
-
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
