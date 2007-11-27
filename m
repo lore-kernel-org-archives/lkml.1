@@ -1,74 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbXK0Wz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXK0W5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760077AbXK0Wz1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXK0WzN
+	id S1759859AbXK0W5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXK0W5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:55:13 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:1395 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbXK0WzL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:55:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=JE/oV3njtXcuq6CxbmTdz8GI+3+YP0tqTRd9myyXaIzcc75iCO8SGMvQdHdX4ctfVErdhyMvkLDuEWGTVjsXM00AXzQOV2wUu7PbGcU0ke7a9rjscuQcrYu3EKlGOodl5BrR6Q2AjnRxRfKBKemtZMrmLNJ57PbQdRI3Raha0mk=
-Date: Tue, 27 Nov 2007 23:55:11 +0100
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: git guidance
-Message-Id: <20071127235511.bd9557f0.Kristoffer.ericson@gmail.com>
-In-Reply-To: <474C9B31.8000408@imap.cc>
-References: <474C9B31.8000408@imap.cc>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Tue, 27 Nov 2007 17:57:31 -0500
+Received: from gw.goop.org ([64.81.55.164]:33156 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753313AbXK0W5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:57:30 -0500
+Message-ID: <474CA0DA.3010005@goop.org>
+Date: Tue, 27 Nov 2007 14:57:30 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Tobias Powalowski <t.powa@gmx.de>, Takashi Iwai <tiwai@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, Zachary Amsden <zach@vmware.com>
+Subject: [PATCH] x86/paravirt: revert exports to restore old behaviour
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+Subdividing the paravirt_ops structure caused a regression in certain
+non-GPL modules which try to use mmu_ops and cpu_ops.  This restores
+the old behaviour, and makes it consistent with the
+non-CONFIG_PARAVIRT case.
 
-Google is your friend. If you're looking for irc channels you can always try #git at irc.freenode.net
-Git howto/tutorial/... doesn't belong in the kernel mailinglist.
+Tobias Powalowski <t.powa@gmx.de> reports:
+> commit to .24 tree:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=93b1eab3d29e7ea32ee583de3362da84db06ded8
+>
+> introduces:
+> +EXPORT_SYMBOL_GPL(pv_mmu_ops);
+> +EXPORT_SYMBOL_GPL(pv_cpu_ops);
+>
+> pv_cpu_ops is for nvidia
+> pv_mmu_ops' is for amd(ati)
+>
+> which will break 32bit systems with paravirt enabled and trying to compile
+> the binary graphic drivers from amd(ati) and nvidia.
 
-Best wishes
-Kristoffer Ericson
+Takashi Iwai <tiwai@suse.de> adds:
+> I took at this problem (as I have an nvidia card on one of my
+> workstations), and found out that the following suffer from
+> EXPORT_SYMBOL_GPL changes:
+> 
+> * local_disable_irq(), local_irq_save*(), etc.
+> * MSR-related macros like rdmsr(), wrmsr(), read_cr0(), etc.
+>   wbinvd(), too.
+> * pmd_val(), pgd_val(), etc are all involved with pv_mm_ops.
+>   pmd_large() and pmd_bad() is also indirectly involved.
+>   __flush_tlb() and friends suffer, too.
 
-On Tue, 27 Nov 2007 23:33:21 +0100
-Tilman Schmidt <tilman@imap.cc> wrote:
+Christoph Hellwig objects to this patch on the grounds that modules
+shouldn't be using these operations anyway.  I don't think this is a
+particularly good reason to reject the patch, for several reasons:
 
-> So I've watched Linus' Google Tech Talk about git and let him convince
-> me that I've been stupid to use CVS, that Subversion is even worse,
-> and the only sensible approach is to use git. Went ahead and tried to
-> convert my driver development to git.
-> 
-> It didn't work too well. The first result was one of maximal
-> embarrassment: I produced a patch that didn't even compile when
-> applied to the official tree. This shouldn't happen with git, right?
-> Well, it did. So now I'm back to keeping a virgin kernel source tree
-> alongside my development area in order to produce diffs. That can't
-> be right?
-> 
-> Obviously I'm still being stupid. (Probably an aftereffect of using
-> CVS for too long.) But where do I turn for guidance? I read all the
-> docs and READMEs I could find, but I still don't understand why GIT
-> doesn't produce the results I need, and what to do differently.
-> 
-> Does somebody have a step by step tutorial for doing the standard
-> "edit - test - modify - retest - submit - edit - resubmit" sequence
-> with GIT? Is there a GIT newsgroup or mailinglist? Or should I just
-> post my silly questions to LKML?
-> 
-> TIA
-> 
-> -- 
-> Tilman Schmidt                          E-Mail: tilman@imap.cc
-> Bonn, Germany
-> Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-> Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
-> 
-> 
+1. These operations are still available to modules when not using
+   CONFIG_PARAVIRT, since they are implicitly exported as inline
+   functions via the kernel headers.  Exporting the same functionality as
+   GPL-only symbols just adds a gratuitious difference between
+   CONFIG_PARAVIRT and non-CONFIG_PARAVIRT configurations.  If we really
+   think these operations are not for module use (or non-GPL module use),
+   then we should solve the problem in a general way.
+
+2. It's a regression from previous kernels, which would work these
+   modules even with CONFIG_PARAVIRT enabled.
+
+3. The operations in question seem pretty reasonable for modules to
+   use.  The control registers/MSRs can be accessed directly anyway, so there's
+   no benefit in preventing modules from using standard interfaces.  And it seems
+   reasonable to allow a graphics driver to create its own mappings if it wants.
+
+Therefore, I think this patch should go in for 2.6.24.  If people
+really think that these operations should not be available to modules,
+then we can address that separately.
+
+Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+Cc: Tobias Powalowski <t.powa@gmx.de>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Zachary Amsden <zach@vmware.com>
+
+---
+ arch/x86/kernel/paravirt_32.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -r 0328c71b880c arch/x86/kernel/paravirt_32.c
+--- a/arch/x86/kernel/paravirt_32.c	Tue Nov 27 11:21:09 2007 -0800
++++ b/arch/x86/kernel/paravirt_32.c	Tue Nov 27 11:21:16 2007 -0800
+@@ -465,8 +465,8 @@ struct pv_mmu_ops pv_mmu_ops = {
+ };
+ 
+ EXPORT_SYMBOL_GPL(pv_time_ops);
+-EXPORT_SYMBOL_GPL(pv_cpu_ops);
+-EXPORT_SYMBOL_GPL(pv_mmu_ops);
++EXPORT_SYMBOL    (pv_cpu_ops);
++EXPORT_SYMBOL    (pv_mmu_ops);
+ EXPORT_SYMBOL_GPL(pv_apic_ops);
+ EXPORT_SYMBOL_GPL(pv_info);
+ EXPORT_SYMBOL    (pv_irq_ops);
+
