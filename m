@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbXK0N6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbXK0N7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbXK0N6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbXK0N6o
+	id S1757607AbXK0N7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbXK0N7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:58:44 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4274 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753271AbXK0N6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:58:43 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: andi@firstfloor.org (Andi Kleen)
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Cc: rusty@rustcorp.com.au, rdreier@cisco.com, ak@suse.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Organization: Core
-In-Reply-To: <20071127105016.GC24223@one.firstfloor.org>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1Ix0ws-0001Vh-00@gondolin.me.apana.org.au>
-Date: Tue, 27 Nov 2007 21:58:02 +0800
+	Tue, 27 Nov 2007 08:59:12 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:3351 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753594AbXK0N7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 08:59:11 -0500
+Date: Tue, 27 Nov 2007 08:53:56 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Neil Horman <nhorman@redhat.com>, hbabu@us.ibm.com, vgoyal@in.ibm.com,
+       kexec@lists.infradead.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071127135356.GA31376@hmsreliant.think-freely.org>
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <m1d4twmimu.fsf@ebiederm.dsl.xmission.com> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> wrote:
-> On Tue, Nov 27, 2007 at 03:26:52PM +1100, Rusty Russell wrote:
->> On Monday 26 November 2007 16:58:08 Roland Dreier wrote:
->> >  > > I agree that we shouldn't make things too hard for out-of-tree
->> >  > > modules, but I disagree with your first statement: there clearly is a
->> >  > > large class of symbols that are used by multiple modules but which are
->> >  > > not generically useful -- they are only useful by a certain small
->> >  > > class of modules.
->> >  >
->> >  > If it is so clear, you should be able to easily provide examples?
->> >
->> > Sure -- Andi's example of symbols required only by TCP congestion
->> > modules;
->> 
->> Exactly.  Why exactly should someone not write a new TCP congestion module?
+On Tue, Nov 27, 2007 at 06:28:13AM -0700, Eric W. Biederman wrote:
+> Neil Horman <nhorman@redhat.com> writes:
 > 
-> Agreed the congestion modules are a corner case. I even mentioned that in the
-> patch. I would be happy to drop that one if that is the consensus.
-> It was more done as a example anyways. That is why I made it an separate
-> namespace from "tcp"
+> > What makes you say this?  I don't see any need for interrupts prior to
+> > calibrate_delay()
 > 
-> But for many other TCP symbols it makes a lot of sense: all the functions
-> only used by tcp_ipv6.c. If someone wants to write support for a "IPv7" or
-> similar they really should do it in tree. So I think the "tcp" and  "inet"
-> namespaces make a lot of sense.
+> Yes.  calibrate_delay() is the first place we send interrupts over
+> hypertransport.  However I/O still works.  Thus hypertransport from
+> the first cpu is working, and hypertransport itself is working.
+> 
+> This is an interrupt specific problem not some generic hypertransport
+> problem.
+> 
+Is it possible that the hypertansport bus can be in a state where I/O would
+work, but not interrupt routing?  I confess my knoweldge of this system bus is
+lacking.
 
-OK, short of making IPv4 a module (which would be a worthy task :)
-do you have an example where a symbol is used by more than one module
-but needs to be put into a namespace?
+> >> I agree that there is a problem.
+> >> 
+> >> The reliable fix is to totally skip the PIC interrupt mode and go directly
+> >> to apic mode.
+> >> 
+> >> To make the code kexec on panic code path reliable we need to remove code
+> >> not add it.
+> >> 
+> >> Frankly I think switching cpus is one of the least reliable things that
+> >> we can do in general.
+> >> 
+> > I understand the sentiment here, but its not like we're adding additional
+> > functionality with this patch.  We're already sending an IPI to all the
+> > processors to halt them
+> 
+> And we don't care if they halt.  If they don't get the IPI we timeout.
+> Making the IPI mandatory is a _singificant_ change.
+> 
+But how likely is a kdump kernel to work properly if an errant cpu is running
+unhalted while we try to boot?   I understand your point regarding the
+significance of the need for reliable IPI's, but in fairness, I think that we
+rely on IPI delivery here, weather we want to or not. 
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> The only reason that code is on the kexec on panic code path is that
+> there is no other possible place we could put it.
+> 
+> > , we're just adding logic here so that we can detect the
+> > boot cpu and use it to jump to the kexec image instead of halting.  I don't
+> > think this is any less reliable that what we have currently.
+> 
+> It doesn't make things more reliable, and it adds code to a code path
+> that already has to much code to be solid reliable (thus your
+> problem). 
+> 
+> Putting the system back in PIC legacy mode on the kexec on panic path
+> was supposed to be a short term hack until we could remove the need
+> by always deliver interrupts in apic mode.
+> 
+> If you can't root cause your problem and figure out how the apics
+> are misconfigured for legacy mode let's remove the need for going into
+> to legacy PIC mode and do what we should be able to do reliably.  The
+> reward is much higher, as we kill all possibility of restoring PIC
+> mode wrong because we don't need to bother.
+> 
+I understand your suggestion, but to do that don't we need to do more than just
+not move the apic to legacy pic mode?  It was my understanding that the ioapic
+delivered timer interrupts to one cpu, who's interrupt handler then distributed
+it to the other cpu's via IPI.  That suggests to me that we will need to
+re-write the apic config so that the crashing processor is the target of the
+ioapic interrupt delivery.
+
+And if this is truly the case, I would really like to furhter understand why
+this isn't working on this specific system before I implment anything.  Any
+suggestions for how to further root cause this problem?
+
+Regards
+Neil
+
+> Eric
