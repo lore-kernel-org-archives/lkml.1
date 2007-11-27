@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXK0PAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbXK0PDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbXK0PAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 10:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXK0PAW
+	id S1757882AbXK0PDh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 10:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbXK0PDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 10:00:22 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:3172 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbXK0PAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 10:00:21 -0500
-Date: Tue, 27 Nov 2007 09:48:56 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
+	Tue, 27 Nov 2007 10:03:30 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34962 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbXK0PDa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 10:03:30 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andi Kleen <ak@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Neil Horman <nhorman@redhat.com>, hbabu@us.ibm.com, vgoyal@in.ibm.com,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
-	boot cpu
-Message-ID: <20071127144856.GC31376@hmsreliant.think-freely.org>
-References: <20071127014740.GA28622@hmsreliant.think-freely.org> <200711271445.56792.ak@suse.de> <20071127142826.GB31376@hmsreliant.think-freely.org> <200711271543.11809.ak@suse.de>
+Cc: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
+       hbabu@us.ibm.com, vgoyal@in.ibm.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071127014740.GA28622@hmsreliant.think-freely.org>
+	<20071127131355.GA14887@hmsendeavour.rdu.redhat.com>
+	<m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
+	<200711271445.56792.ak@suse.de>
+Date: Tue, 27 Nov 2007 07:56:44 -0700
+In-Reply-To: <200711271445.56792.ak@suse.de> (Andi Kleen's message of "Tue, 27
+	Nov 2007 14:45:56 +0100")
+Message-ID: <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711271543.11809.ak@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 03:43:11PM +0100, Andi Kleen wrote:
-> 
-> > 
-> > As for solution 2, that brings me to my previous question.  Is that really as
-> > simple as just not moving the apic to legacy mode?  It would seem some
-> > additional programming would be in order to route the interrupt in question to
-> > the proper cpu.
-> 
-> The Linux kernel right now relies on being in legacy mode at bootup.
-> So obviously kexec has to switch back to that.
-> 
-> Not relying on legacy mode would require moving APIC setup much earlier which
-> is difficult because that's quite fragile. Longer term it might be a good
-> idea though anyways -- at least the timer code was always fragile
-> and eliminating one failure case and only ever running it in true
-> APIC mode would be probably a good thing.
-> 
+Andi Kleen <ak@suse.de> writes:
 
-So, it sounds to me then, like unless I'm willing to really re-write the APIC
-setup code (which I don't feel qualified to do quite yet), that the immediate
-solution would be to not rely on interrupts in legacy mode, which was according
-to my understanding, what the use of the irqpoll command line option was
-supposed to enable.  Any thoughts as to why that might not be working in this
-case, or suggested tests to determine a cause there?
+> his is any less reliable that what we have currently.
+>> 
+>> It doesn't make things more reliable, and it adds code to a code path
+>> that already has to much code to be solid reliable (thus your
+>> problem). 
+>> 
+>> Putting the system back in PIC legacy mode on the kexec on panic path
+>> was supposed to be a short term hack until we could remove the need
+>> by always deliver interrupts in apic mode.
+>> 
+>> If you can't root cause your problem and figure out how the apics
+>> are misconfigured for legacy mode
+>
+> Probably legacy mode always routes to CPU #0. Makes sense and is
+> not really a misconfiguration of legacy mode.
 
-Thanks & Regards
-Neil
+Possible. So far I have not seen a hardware setup that would force
+interrupts to cpu #0 in legacy mode.  But I would not be truly
+surprised if it happened that there was hardware that only worked that
+way.
 
-> -Andi
+> But if CPU #0 has interrupts disabled no interrupts get delivered.
+>
+> So choices are:
+> - Move to CPU #0
+> - Do not use legacy mode during shutdown.
+    (Do not use legacy mode in the kdump kernel. removing it from shutdown
+     is just minor optimization)
+> - Or do not rely on interrupts after enabling legacy mode
+> - Or do not disable interrupts on the other CPUs when they're
+> halted.
+>
+> First and last option are probably unreliable for the kdump case.
+> Second or third sound best. 
+>
+> I suspect the real fix would be to enable IOAPIC mode really
+> early and never use the timers in legacy mode. Then the kdump
+> kernel wouldn't care about the legacy mode pointing to the wrong CPU.
+
+Exactly.  If we can work out the details that should be a much more reliable
+mode of operation.
+
+> IIrc Eric even had  a patch for that a long time ago, but it broke some 
+> things so it wasn't included. But perhaps it should be revisited.
+
+My real problem was the failure case was obscure (a bad interaction
+with ACPI on Linus's laptop) and I didn't have the time to track it
+down when it showed up.
+
+My patch had two parts.  Some cleanups to enable the code to be enabled
+early, and the actually early enable.  I figure if we can get the
+cleanups in one major kernel version and then in the next enable
+the apic mode before we start getting interrupts we should be in good
+shape.
+
+I expect with x86 becoming an embedded platform with multiple cpus we
+may start seeing systems that don't actually support legacy PIC mode
+for interrupt delivery.
+
+Eric
