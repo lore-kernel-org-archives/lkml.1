@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbXK0LJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbXK0LR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbXK0LJz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 06:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbXK0LJq
+	id S1756857AbXK0LR2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 06:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbXK0LRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 06:09:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33831 "EHLO mx3.mail.elte.hu"
+	Tue, 27 Nov 2007 06:17:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35050 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbXK0LJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 06:09:46 -0500
-Date: Tue, 27 Nov 2007 12:09:10 +0100
+	id S1753588AbXK0LRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 06:17:20 -0500
+Date: Tue, 27 Nov 2007 12:17:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
-       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
-       Dipankar <dipankar@in.ibm.com>
-Subject: Re: [Patch 0/5] sched: group scheduler related patches (V4)
-Message-ID: <20071127110910.GB16273@elte.hu>
-References: <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com> <20071126202836.GA17012@elte.hu> <20071127050652.GA20083@linux.vnet.ibm.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071127111707.GA18727@elte.hu>
+References: <1196155985.25646.31.camel@ymzhang>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071127050652.GA20083@linux.vnet.ibm.com>
+In-Reply-To: <1196155985.25646.31.camel@ymzhang>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: -1.1
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0357]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
 
-> On Mon, Nov 26, 2007 at 09:28:36PM +0100, Ingo Molnar wrote:
-> > the first SCHED_RR priority is 1, not 0 - so this call will always fail.
-> 
-> Thanks for spotting this bug and rest of your review comments.
-> 
-> Here's V4 of the patchset, aimed at improving fairness of cpu 
-> bandwidth allocation for task groups.
+> If echo "1">/proc/sys/kernel/sched_compat_yield before starting 
+> volanoMark testing, the result is very good with kernel 2.6.24-rc3 on 
+> my 16-core tigerton.
 
-thanks, it looks good - but the fact that we are at v4 of the patchset 
-underlines the point that this is more of a v2.6.25 patchset than a 
-v2.6.24 one. Group fairness certainly works fine enough in most setups 
-and we are late into the v2.6.24 -rc stage. We'll merge this patchset 
-(or any later versions of it) into v2.6.25 for sure, so distros that 
-happen to base things off v2.6.24 can pick up your patches just fine.
+yep, that's known and has been discussed in detail on lkml. Java should 
+use something more suitable than sched_yield for its locking. Yield will 
+always be dependent on scheduling details and _some_ category of apps 
+will always hurt. That's why we offer the sched_compat_yield flag.
 
 	Ingo
