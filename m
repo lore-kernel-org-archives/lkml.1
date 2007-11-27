@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbXK0QEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXK0QJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723AbXK0QEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbXK0QEl
+	id S1758619AbXK0QJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXK0QJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:04:41 -0500
-Received: from mms3.broadcom.com ([216.31.210.19]:4269 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754667AbXK0QEk convert rfc822-to-8bit (ORCPT
+	Tue, 27 Nov 2007 11:09:09 -0500
+Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:2913 "EHLO
+	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753594AbXK0QJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:04:40 -0500
-X-Server-Uuid: 20144BB6-FB76-4F11-80B6-E6B2900CA0D7
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 27 Nov 2007 11:09:08 -0500
+Message-ID: <474C40FA.1070501@xs4all.nl>
+Date: Tue, 27 Nov 2007 17:08:26 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Subject: Re: 2.6.23-mm1 tg3 wake-on-lan oddity...
-Date: Tue, 27 Nov 2007 08:04:28 -0800
-Message-ID: <1551EAE59135BE47B544934E30FC4FC002AABB51@nt-irva-0751.brcm.ad.broadcom.com>
-In-Reply-To: <24400.1196156118@turing-police.cc.vt.edu>
-Thread-Topic: 2.6.23-mm1 tg3 wake-on-lan oddity...
-Thread-Index: Acgw2N5hbaHfJkILTGWtOxg49szljAANehNw
-From: "Michael Chan" <mchan@broadcom.com>
-To: Valdis.Kletnieks@vt.edu
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-X-WSS-ID: 6B529F850SG11631844-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+To: Dave Jones <davej@redhat.com>, Udo van den Heuvel <udovdh@xs4all.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Michael Buesch <mb@bu3sch.de>,
+       folkert van Heusden <folkert@vanheusden.com>
+Subject: Re: enable dual rng on VIA C7
+References: <47374EA4.1060009@xs4all.nl> <20071125233949.f64b2ecd.akpm@linux-foundation.org> <474AFC2F.1040309@xs4all.nl> <20071126185843.GD15764@redhat.com>
+In-Reply-To: <20071126185843.GD15764@redhat.com>
+X-Enigmail-Version: 0.95.5
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-
-> (a) the Dell factory default is WOL disabled and (b) 
-> if it wasn't
-> the default, I'd have *set* it to disabled, and (c) I even 
-> went back and
-> rebooted and checked the BIOS setting - disabled. Nonetheless:
+Dave Jones wrote:
+> On Mon, Nov 26, 2007 at 06:02:39PM +0100, Udo van den Heuvel wrote:
 > 
-> # ethtool eth0 | grep Wake
->         Supports Wake-on: g
->         Wake-on: g
+>  > I did not know we are already that far ;-)
+>  > I mean: can this patch be aplied without hurting C3/C7 CPU's with just
+>  > one RNG? Maybe an expert needs to test/answer?
+>  > Maybe some logic needs to be applied around the extra bit?
+>  
+>>From the padlock spec..
 > 
-> Is this expected behavior?
+> "SRC Bits[9:8] Noise source select (I): These bits control the two noise
+>  sources on the processor that input bits to the accumulation buffers.
+>  On Nehemiah processors prior to stepping 8, these bits are reserved
+>  and undefined. The default RESET state is both bits = 0." 
 > 
+> Something like this perhaps ?
 
-The new tg3 is supposed to follow the WoL setting in the
-NVRAM, so this is not expected.  We'll have to look into
-this.
+Yes, I think that's a big step in the right direction!
 
+But I am no expert and cannot really judge how necessary or correct the
+implementation is w.r.t. the 'undefined' function bits for CPU's that
+lack a certain feature.
