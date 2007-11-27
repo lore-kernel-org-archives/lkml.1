@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbXK0FdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbXK0Fea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbXK0FdB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 00:33:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbXK0Fcv
+	id S1758049AbXK0Fea (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 00:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbXK0FeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 00:32:51 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:1675 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbXK0Fcu (ORCPT
+	Tue, 27 Nov 2007 00:34:22 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41662 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbXK0FeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 00:32:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YGFWve1QylrYdTj1tpx6D/5xF7nC8Yr+8H0WEMhUc2JVrMICcCtLJ/FcXzEEwPHD2nm/1roj8j3tD+BjlFKFT/hRGoPfu8FQQcu4wB/tsImxFm710+uxI53mPIf/L0rjEP2cSWalKoi0f9ZKm9jhEds6Ar9bQ6KqNcT5NqGdtaA=
-Message-ID: <b25c3fa70711262132r3f88db02mcede6d14b82d5fc0@mail.gmail.com>
-Date: Tue, 27 Nov 2007 14:32:49 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] [NET]: Fix TX bug VLAN in VLAN
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       tristan_schmelcher@alumni.uwaterloo.ca, acme@ghostprotocols.net
-In-Reply-To: <20071126112631.GA26599@gondor.apana.org.au>
+	Tue, 27 Nov 2007 00:34:22 -0500
+Date: Mon, 26 Nov 2007 21:28:47 -0800
+From: Greg KH <greg@kroah.com>
+To: Konrad Rzeszutek <konrad@darnok.org>
+Cc: Doug Maxey <dwm@enoyolf.org>, linux-kernel@vger.kernel.org,
+       pjones@redhat.com, konradr@redhat.com, konradr@linux.vnet.ibm.com,
+       randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
+       mike.anderson@us.ibm.com, dwm@austin.ibm.com
+Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
+Message-ID: <20071127052847.GA777@kroah.com>
+References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <11870.1196136773@bebe.enoyolf.org> <200711262350.13100.konrad@darnok.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <003f01c82dca$305acd40$9c94fea9@jason>
-	 <20071126112631.GA26599@gondor.apana.org.au>
+In-Reply-To: <200711262350.13100.konrad@darnok.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/11/26, Herbert Xu <herbert@gondor.apana.org.au>:
-> On Fri, Nov 23, 2007 at 12:12:52PM +0000, Joonwoo Park wrote:
-> > This patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=8766
+On Mon, Nov 26, 2007 at 11:50:10PM -0500, Konrad Rzeszutek wrote:
+> > >
+> > > sysfs files have ONE VALUE PER FILE, not a whole bunch of different
+> > > things in a single file.  Please fix this.
 > >
-> > Is it possible?
-> > BUG((veth->h_vlan_proto != htons(ETH_P_8021Q)) && !(VLAN_DEV_INFO(dev)->flags & VLAN_FLAG_REORDER_HDR))
-> > I'm afraid, queued packet before vconfig set_flag would do that.
->
-> Yes, AF_PACKET would do that.  So you should check both.
->
+> > The subparameters _are_ actually part of a single value, that value being
+> > associated with the initiator instance.
+> >
+> > Konrad is trying to implement a "work-alike" for what open firmware does.
+> > open-iscsi already has the ability to extract the same format
+> > bits from real OFW.
+> >
+> > See open-iscsi.git/utils/fwparam_ppc.
+> 
+> 
+> Greg,
+> 
+> In light of what Doug says (which is all true), should I go ahead with a new 
+> version of this module which would export one value per file? The problem 
+> that will be encountered is that a ethernetX sysfs directory would have (for 
+> example):
+> 
+> /sys/firmware/ibft/ethernet0/pci-bdf
+> 5:1:0
+> /sys/firmware/ibft/ethernet0/mac
+> 00:11:25:9d:8b:00
+> /sys/firmware/ibft/ethernet0/vlan
+> 0
+> /sys/firmware/ibft/ethernet0/gateway
+> 192.168.79.254
+> /sys/firmware/ibft/ethernet0/origin
+> 0
+> /sys/firmware/ibft/ethernet0/subnet-mask
+> 22
+> /sys/firmware/ibft/ethernet0/ip-addr
+> 192.168.77.41
+> /sys/firmware/ibft/ethernet0/flags
+> 7
 
-Thanks Herbert.
-Well.. I think patch would work propely for AF_PACKET also.
-(I did not insert BUG() macro in my patch)
-How do you think?
+Yes, that is the proper way to do this kind of thing in sysfs.
 
-Thanks
-Joonwoo
+> And the flag would contain the value "7" which would mean the user would have 
+> to parse what each bit means? (the v0.3 of the module does not export this 
+> flag but uses it to figure out which is the boot iSCSI target).
+
+Sure, as long as it means something to userspace, and is a single value,
+and is documented, that's fine.
+
+thanks,
+
+greg k-h
