@@ -1,94 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbXK0Qwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbXK0QxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbXK0Qwc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbXK0QwZ
+	id S1759348AbXK0QxV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbXK0QxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:52:25 -0500
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:39224 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756353AbXK0QwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:52:24 -0500
-Message-ID: <474C4B38.6030609@keyaccess.nl>
-Date: Tue, 27 Nov 2007 17:52:08 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 27 Nov 2007 11:53:14 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55979 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756212AbXK0QxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 11:53:12 -0500
+Date: Tue, 27 Nov 2007 10:53:05 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morgan <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Chris Wright <chrisw@sous-sol.org>, chris@friedhoff.org
+Subject: Re: [PATCH] file capabilities: don't prevent signaling setuid root
+	programs.
+Message-ID: <20071127165305.GF32362@sergelap.austin.ibm.com>
+References: <20071126180028.GA9106@sergelap.austin.ibm.com> <474B99C1.6040208@kernel.org>
 MIME-Version: 1.0
-To: trenn@suse.de
-CC: ALSA devel <alsa-devel@alsa-project.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "yakui.zhao" <yakui.zhao@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, akpm <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [alsa-devel] [PATCH 2/3] PNP cleanups - Unify the pnp macros
- to access	resources in the pnp resource table
-References: <1195552283.23700.166.camel@queen.suse.de>	 <20071120123102.03bdaa67@the-village.bc.nu>	 <1195568360.23700.202.camel@queen.suse.de> <4742EFBE.6030407@keyaccess.nl>	 <s5hejejj559.wl%tiwai@suse.de> <1196181292.23251.53.camel@queen.suse.de>
-In-Reply-To: <1196181292.23251.53.camel@queen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: 0.0 (/)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <474B99C1.6040208@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27-11-07 17:34, Thomas Renninger wrote:
-
-> On Wed, 2007-11-21 at 10:53 +0100, Takashi Iwai wrote:
->> At Tue, 20 Nov 2007 15:31:26 +0100, Rene Herman wrote:
->>> On 20-11-07 15:19, Thomas Renninger wrote:
->>> 
->>>> At the end is some example code how things could get even more
->>>> cleaned up. It shows how I think pnp layer and one example driver
->>>> would get adjusted. There are not that much drivers making use of 
->>>> pnp_resource_change...
->>> 
->>> The ALSA ISA-PnP drivers do in what I personally consider a bad
->>> layering violation. Brought up not doing that a while ago on
->>> alsa-devel, but no discussion ensued. If the PnP maintainer(s) agree
->>> with me though, I'd be more than happy to rip all of that out of
->>> ALSA.
+Quoting Andrew Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Rene: Could you do that, pls.
-
-Yes, I will do this, In fact, I've done a few already but ofcourse a few 
-other things intervened again...
-
->> I'm fine with removal of that stuff now.  It was implemented in that
->> way because there was no proper way to re-assign ISA PnP resources on
->> 2.4 kernel time.  On 2.6, it makes no longer any sense (except for
->> compatibility, but this is almost no problem for PnP boards).
+> Serge,
 > 
-> I wasted some time on thinking about how this pnp_resource_change and
-> pnp_manual_config_dev could get workarounded..., but it's impossible
-> without changing the (more a workaround than an) interface.
+> I still feel a bit uneasy about this. Looking ahead, with filesystem
+> capabilities, one can simulate this same situation with a setuid
+> 'non-root' program as follows:
 > 
-> If you worked on this already, would you mind ripping these out?
+> [morgan@computer ~]$ cat > test.c
+> main()
+> {
+>     printf("sleeping (%u)\n", getpid());
+>     sleep(100);
+>     printf("woke up\n");
+> }
+> [morgan@computer ~]$ cc -o test test.c
+> [morgan@computer ~]$ chmod u+s ./test
+> [morgan@computer ~]$ ls -ltr test
+> - -rwsrwxr-x  1 morgan morgan 7090 Nov 26 20:01 test
+> [morgan@computer ~]$ setcap cap_net_raw+ep ~/test
+> [morgan@computer ~]$ getcap ~/test
+> /home/morgan/test = cap_net_raw+ep
+> [morgan@computer ~]$ su luser
+> Password:
+> [luser@computer morgan]$ ./test
+> sleeping (5935)
 > 
-> If I understand Takashi correctly, the driver code using
-> pnp_resource_change and pnp_manual_config_dev can simply be removed and
-> devices could get resources assigned via sysfs "set" interface.
+> <In another shell run by luser>
+> [luser@computer morgan]$ kill 5935
+> bash: kill: (5935) - Operation not permitted
+> 
+> Because of the euid=0 test, the piece of code you are adding will behave
+> differently in this situation. Is the root-behavior deserving of less
+> protection than this one?
 
-Exactly. ISA-PnP is with respect to the interface it provides exactly as PCI 
-and other sane busses. You just ask the system what resources to use -- it 
-provides a method for actually changing them as well, but doing so belongs 
-isolated in the PnP layer, not anywhere else IMHYUO (*).
+I don't believe in entitlement  :)
 
-Wasn't aware of the original reason for this setup, but yes, in 2.6 it 
-certainly isn't needed for anything anymore and in fact just makes for 
-inconsistency, especially for the mixed legacy/isapnp drivers where module 
-parameters change meaning from "this is where it's at to "_put_ it there" 
-between the two card types.
+> To my eye they seem equivalent.
 
-Jaroslav Kysela will have to ack any patches as well, but sound/isa is the 
-only user of
+Not to mine.  The one case is classic setuid root,  the other exploits
+the new file capabilities - even if they don't actually add any
+privilege.
 
-- pnp_init_resource_table()
-- pnp_resource_change()
-- pnp_manual_config_dev()
+> Is there a compelling reason to include the euid==0 check?
 
-which eventually then might also want to be unexported and/or deleted.
+Yes, because only setuid root fills your capability sets.
 
-Rene.
+In fact I was wondering whether the check should be under a check
+for !SECURE_NOROOT.  I think it should, but it only matters after your
+per-process securebits patch is reposted.
 
-(*) In My Humble Yet Unwavering Opinion...
+Would you prefer if the check were under a sysctl, so that those really
+using file caps could tutn off the setuid root exception?  It also
+provies a more graceful path toward eventually getting rid of this
+legacy support.
+
+thanks,
+-serge
+
+> 
+> Thanks
+> 
+> Andrew
+> 
+> Serge E. Hallyn wrote:
+> > This patch is needed to preserve legacy behavior when
+> > CONFIG_SECURITY_FILE_CAPABILITIES=y.  Without this patch, xinit can't
+> > kill X, so manually starting X in runlevel 3 then exiting your window
+> > manager will not cause X to exit. 
+> > 
+> > thanks,
+> > -serge
+> > 
+> >>From 81a6d780ad570f9a326fc27912ec0e373f5fa14f Mon Sep 17 00:00:00 2001
+> > From: Serge E. Hallyn <serue@us.ibm.com>
+> > Date: Tue, 20 Nov 2007 08:47:35 +0000
+> > Subject: [PATCH] file capabilities: don't prevent signaling setuid root programs.
+> > 
+> > An unprivileged process must be able to kill a setuid root
+> > program started by the same user.  This is legacy behavior
+> > needed for instance for xinit to kill X when the window manager
+> > exits.
+> > 
+> > When an unprivileged user runs a setuid root program in !SECURE_NOROOT
+> > mode, fP, fI, and fE are set full on, so pP' and pE' are full on.
+> > Then cap_task_kill() prevents the user from signaling the setuid root
+> > task.  This is a change in behavior compared to when
+> > !CONFIG_SECURITY_FILE_CAPABILITIES.
+> > 
+> > This patch introduces a special check into cap_task_kill() just
+> > to check whether a non-root user is signaling a setuid root
+> > program started by the same user.  If so, then signal is allowed.
+> > 
+> > Changelog:
+> > 	Nov 26: move test up above CAP_KILL test as per Andrew
+> > 		Morgan's suggestion.
+> > 
+> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> > ---
+> >  security/commoncap.c |    9 +++++++++
+> >  1 files changed, 9 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/security/commoncap.c b/security/commoncap.c
+> > index 302e8d0..5bc1895 100644
+> > --- a/security/commoncap.c
+> > +++ b/security/commoncap.c
+> > @@ -526,6 +526,15 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
+> >  	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
+> >  		return 0;
+> >  
+> > +	/*
+> > +	 * Running a setuid root program raises your capabilities.
+> > +	 * Killing your own setuid root processes was previously
+> > +	 * allowed.
+> > +	 * We must preserve legacy signal behavior in this case.
+> > +	 */
+> > +	if (p->euid == 0 && p->uid == current->uid)
+> > +		return 0;
+> > +
+> >  	/* sigcont is permitted within same session */
+> >  	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+> >  		return 0;
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.2.6 (GNU/Linux)
+> 
+> iD8DBQFHS5m/QheEq9QabfIRAmouAJkBBB0kXH57s9mvlgdG3XZhC0pZMwCfZUW3
+> L4vJUkR4tgAh33GTqEquIqw=
+> =sKCy
+> -----END PGP SIGNATURE-----
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
