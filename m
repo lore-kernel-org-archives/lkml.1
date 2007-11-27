@@ -1,47 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXK0P3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbXK0PdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbXK0P3S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 10:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXK0P3C
+	id S1758512AbXK0PdH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 10:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXK0Pcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 10:29:02 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44456 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751821AbXK0P3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 10:29:00 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tino Keitel <tino.keitel@gmx.de>
-Subject: Re: XFS related Oops (suspend/resume related)
-Date: Tue, 27 Nov 2007 16:46:53 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>, xfs@oss.sgi.com
-References: <20071112064706.GA23595@dose.home.local> <200711262307.56742.rjw@sisk.pl> <20071127132000.GA31893@dose.home.local>
-In-Reply-To: <20071127132000.GA31893@dose.home.local>
+	Tue, 27 Nov 2007 10:32:54 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:36380 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752957AbXK0Pcx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 10:32:53 -0500
+Date: Tue, 27 Nov 2007 08:32:52 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Yang, Bo" <Bo.Yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Message-ID: <20071127153252.GC3230@parisc-linux.org>
+References: <20071120204202.GJ12494@parisc-linux.org> <9738BCBE884FDB42801FAD8A7769C26501D337D4@NAMAIL1.ad.lsil.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711271646.54331.rjw@sisk.pl>
+In-Reply-To: <9738BCBE884FDB42801FAD8A7769C26501D337D4@NAMAIL1.ad.lsil.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 27 of November 2007, Tino Keitel wrote:
-> On Mon, Nov 26, 2007 at 23:07:56 +0100, Rafael J. Wysocki wrote:
+On Tue, Nov 27, 2007 at 08:19:09AM -0700, Yang, Bo wrote:
+> Matthew,
 > 
-> [...]
+> Thanks for your review.
 > 
-> > On 2.6.23.1 you can test the freezer alone by doing
+> We have a 32 bit application(s) (megaraid utility) that is used in both
+> x86 and x86_64.
+> For ia64, the application is built in ia64 environment.
+
+Are you saying the application is built 32-bit for x86-64?
+Is it true that, if this application were built 64-bit for x86-64, you
+would have the same situation as with ia64?
+
+> The sense_ptr picked up from the ioc->frame.raw is a 32-bit value from
+> the application. When we make it "unsigned long*" it picks up a 64-bit
+> value & the copy_to_user fails. Without this fix the issue is seen in
+> x86_64 kernels. But for ia64 it is an unsigned long * value (8 bytes)
+> and so we need a compile time flag.
+>  
+> Regards,
+> 
+> Bo Yang
+> 
+> -----Original Message-----
+> From: Matthew Wilcox [mailto:matthew@wil.cx] 
+> Sent: Tuesday, November 20, 2007 3:42 PM
+> To: Yang, Bo
+> Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+> akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+> Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
+> cmds with sense info
+> 
+> On Wed, Nov 21, 2007 at 08:40:56AM +0000, bo yang wrote:
+> > Sense buffer ptr data type in the ioctl path is reverted back to u32 *
+> 
+> > for x86 and x86_64 as in previous versions of driver. For IA64 it will
+> 
+> > be unsigned long *. Compile time flag added for ia64 for this.
+> 
+> This changelog tells us what you're doing, but not why you're doing it.
+> Why is it that ia64 is different from x86 and x86_64?  What should other
+> architectures be doing?  This patch really doesn't make any sense to me
+> at all; it should be doing the exact same thing on all three
+> architectures.
+> 
+> > Signed-off-by: Bo Yang <bo.yang@lsi.com>
 > > 
-> > # echo testproc > /sys/power/disk
-> > # echo disk > /sys/power/state
+> > ---
+> > Documentation/scsi/ChangeLog.megaraid_sas |   15 +++++++++++++++
+> > drivers/scsi/megaraid/megaraid_sas.c      |   14 ++++++++++----
+> > drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+> >  3 files changed, 28 insertions(+), 7 deletions(-)
+> > 
+> > diff -rupN linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
+> linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+> > --- linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
+> 2007-11-20 17:50:13.000000000 -0500
+> > +++ linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+> 2007-11-20 21:37:16.000000000 -0500
+> > @@ -1,3 +1,18 @@
+> > +1 Release Date    : Thur. Nov. 19 16:30:43 PST 2007 -
+> > +			(emaild-id:megaraidlinux@lsi.com)
+> > +			Sumant Patro
+> > +			Bo Yang
+> > +
+> > +2 Current Version : 00.00.03.17-RC1
+> > +3 Older Version   : 00.00.03.16
+> > +
+> > +1. Fix random failure of DCDB cmds with sense info.
+> > +
+> > +Fix: 	sense buffer ptr data type in the ioctl path is reverted
+> back
+> > +	to u32 * for x86, x86_64 as in previous versions of driver.
+> > +	For IA64 it will be unsigned long *. Compile time flag added
+> > +	for ia64 for this.
+> > +
+> >  1 Release Date    : Thur. Nov. 07 16:30:43 PST 2007 -
+> >  			(emaild-id:megaraidlinux@lsi.com)
+> >  			Sumant Patro
+> > diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+> linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> > --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+> 2007-11-20 17:50:13.000000000 -0500
+> > +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> 2007-11-20 17:50:13.000000000 -0500
+> > @@ -10,7 +10,7 @@
+> >   *	   2 of the License, or (at your option) any later version.
+> >   *
+> >   * FILE		: megaraid_sas.c
+> > - * Version	: v00.00.03.16-rc1
+> > + * Version	: v00.00.03.17-rc1
+> >   *
+> >   * Authors:
+> >   *	(email-id : megaraidlinux@lsi.com)
+> > @@ -3020,10 +3020,16 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+> >  		 * sense buffer address
+> >  		 */
+> >  		sense_buff = (unsigned long *) ((unsigned
+> long)ioc->frame.raw +
+> > -
+> ioc->sense_off);
+> > -
+> > -		if (copy_to_user((void __user *)(unsigned
+> long)(*sense_buff),
+> > +					ioc->sense_off);
+> > +		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
+> > +					ioc->sense_off);
+> > +#if defined(__ia64__)
+> > +		if (copy_to_user((void __user *)((unsigned
+> long)(*sense_buff)),
+> > +				sense, ioc->sense_len)) {
+> > +#else
+> > +		if (copy_to_user((void __user *)((unsigned
+> long)(*sense_ptr)),
+> >  				sense, ioc->sense_len)) {
+> > +#endif
+> >  			printk(KERN_ERR "megasas: Failed to copy out to
+> user "
+> >  					"sense data\n");
+> >  			error = -EFAULT;
+> > diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+> linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+> > --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+> 2007-11-20 17:50:13.000000000 -0500
+> > +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+> 2007-11-20 17:50:13.000000000 -0500
+> > @@ -18,9 +18,9 @@
+> >  /*
+> >   * MegaRAID SAS Driver meta data
+> >   */
+> > -#define MEGASAS_VERSION
+> "00.00.03.16-rc1"
+> > -#define MEGASAS_RELDATE				"Nov. 07, 2007"
+> > -#define MEGASAS_EXT_VERSION			"Thu. Nov. 07 10:09:32
+> PDT 2007"
+> > +#define MEGASAS_VERSION
+> "00.00.03.17-rc1"
+> > +#define MEGASAS_RELDATE				"Nov. 19, 2007"
+> > +#define MEGASAS_EXT_VERSION			"Mon. Nov. 19 10:09:32
+> PDT 2007"
+> >  
+> >  /*
+> >   * Device IDs
+> > 
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-scsi" 
+> > in the body of a message to majordomo@vger.kernel.org More majordomo 
+> > info at  http://vger.kernel.org/majordomo-info.html
 > 
-> This is suspend to RAM, not to disk.
+> --
+> Intel are signing my paycheques ... these opinions are still mine "Bill,
+> look, we understand that you're interested in selling us this operating
+> system, but compare it to ours.  We can't possibly take such a
+> retrograde step."
 
-I know. :-)
-
-Nevertheless, this is how you can test the tasks freezer _without_ actually
-doing a suspend of any kind.
-
-Greetings,
-Rafael
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
