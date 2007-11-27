@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbXK0EuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbXK0EyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbXK0EuU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXK0EuI
+	id S1757216AbXK0EyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXK0EyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:50:08 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:17722 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbXK0EuH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:50:07 -0500
-X-IronPort-AV: i="4.23,217,1194238800"; 
-   d="scan'208"; a="57076401:sNHT27193236"
-Subject: [PATCH] [libata] Set proper ATA UDMA mode for bf548 according to
-	system clock.
-From: sonic zhang <sonic.adi@gmail.com>
-To: Linux IDE <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 12:47:39 +0800
-Message-Id: <1196138859.6974.2.camel@eight.analog.com>
+	Mon, 26 Nov 2007 23:54:06 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:35530 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753644AbXK0EyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 23:54:03 -0500
+Date: Tue, 27 Nov 2007 10:36:52 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
+       Dipankar <dipankar@in.ibm.com>
+Subject: [Patch 0/5] sched: group scheduler related patches (V4)
+Message-ID: <20071127050652.GA20083@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071119122713.GA28777@linux.vnet.ibm.com> <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com> <20071126202836.GA17012@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071126202836.GA17012@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UDMA Mode - Frequency compatibility
+On Mon, Nov 26, 2007 at 09:28:36PM +0100, Ingo Molnar wrote:
+> the first SCHED_RR priority is 1, not 0 - so this call will always fail.
 
-UDMA5 - 100 MB/s   - SCLK  = 133 MHz
-UDMA4 - 66 MB/s    - SCLK >=  80 MHz
-UDMA3 - 44.4 MB/s  - SCLK >=  50 MHz
-UDMA2 - 33 MB/s    - SCLK >=  40 MHz
+Thanks for spotting this bug and rest of your review comments.
+
+Here's V4 of the patchset, aimed at improving fairness of cpu bandwidth
+allocation for task groups.
+
+Changes since V3 (http://marc.info/?l=linux-kernel&m=119605252303359):
+
+- Fix bug in setting SCHED_RR priority for load_balance_monitor thread
+- Fix coding style related issues
+- Separate "introduction of lock_doms_cur() API" into a separate patch
+
+I have also tested this patchset against your latest git tree as of
+today morning.
+
+Please apply if there are no major concerns.
 
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
----
- drivers/ata/pata_bf54x.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
-index 81db405..088a41f 100644
---- a/drivers/ata/pata_bf54x.c
-+++ b/drivers/ata/pata_bf54x.c
-@@ -1489,6 +1489,8 @@ static int __devinit bfin_atapi_probe(st
- 	int board_idx = 0;
- 	struct resource *res;
- 	struct ata_host *host;
-+	unsigned int fsclk = get_sclk();
-+	int udma_mode = 5;
- 	const struct ata_port_info *ppi[] =
- 		{ &bfin_port_info[board_idx], NULL };
- 
-@@ -1507,6 +1509,11 @@ static int __devinit bfin_atapi_probe(st
- 	if (res == NULL)
- 		return -EINVAL;
- 
-+	while (bfin_port_info[board_idx].udma_mask>0 && udma_fsclk[udma_mode] > fsclk) {
-+		udma_mode--;
-+		bfin_port_info[board_idx].udma_mask >>= 1;
-+	}
-+
- 	/*
- 	 * Now that that's out of the way, wire up the port..
- 	 */
 -- 
-1.4.3.4
-
-
+Regards,
+vatsa
