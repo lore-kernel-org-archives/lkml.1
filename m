@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbXK0Kja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbXK0Kuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758841AbXK0Kja (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 05:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbXK0KjN
+	id S1758117AbXK0Kuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 05:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXK0KuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 05:39:13 -0500
-Received: from coyote.holtmann.net ([217.160.111.169]:43817 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755674AbXK0KjM (ORCPT
+	Tue, 27 Nov 2007 05:50:22 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33274 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbXK0KuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 05:39:12 -0500
-Subject: Re: [Bluez-devel] 2.6.23.8: kernel panic
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Marco Pracucci <development@pracucci.com>,
-       bluez-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20071127103239.GA4477@darkstar.te-china.tietoenator.com>
-References: <4746EC10.5080509@pracucci.com>
-	 <20071127103239.GA4477@darkstar.te-china.tietoenator.com>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 11:38:24 +0100
-Message-Id: <1196159904.17196.33.camel@aeonflux>
+	Tue, 27 Nov 2007 05:50:21 -0500
+Date: Tue, 27 Nov 2007 11:50:16 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071127105016.GC24223@one.firstfloor.org>
+References: <20071122343.446909000@suse.de> <200711261225.44415.rusty@rustcorp.com.au> <adalk8lsg3z.fsf@cisco.com> <200711271526.53065.rusty@rustcorp.com.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711271526.53065.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
-
-> This problem is caused by the workqueue in hci_sysfs.c, the del_conn is scheduled after the add_conn with same bluetooth address.
+On Tue, Nov 27, 2007 at 03:26:52PM +1100, Rusty Russell wrote:
+> On Monday 26 November 2007 16:58:08 Roland Dreier wrote:
+> >  > > I agree that we shouldn't make things too hard for out-of-tree
+> >  > > modules, but I disagree with your first statement: there clearly is a
+> >  > > large class of symbols that are used by multiple modules but which are
+> >  > > not generically useful -- they are only useful by a certain small
+> >  > > class of modules.
+> >  >
+> >  > If it is so clear, you should be able to easily provide examples?
+> >
+> > Sure -- Andi's example of symbols required only by TCP congestion
+> > modules;
 > 
-> Please try this patch:
-> ----------------------------
+> Exactly.  Why exactly should someone not write a new TCP congestion module?
+
+Agreed the congestion modules are a corner case. I even mentioned that in the
+patch. I would be happy to drop that one if that is the consensus.
+It was more done as a example anyways. That is why I made it an separate
+namespace from "tcp"
+
+But for many other TCP symbols it makes a lot of sense: all the functions
+only used by tcp_ipv6.c. If someone wants to write support for a "IPv7" or
+similar they really should do it in tree. So I think the "tcp" and  "inet"
+namespaces make a lot of sense.
+
+> Right.  So presumably there will only ever be two drivers using this core 
+> code, so no new users will ever be written?  Now we've found one use case, is 
+
+If there are new users they will need to get proper review and should
+be in tree.  MODULE_ALLOW() enforces that.
+
+> it worth the complexity of namespaces?  Is it worth the halfway point of 
+
+What complexity? You're always claiming it is complex. It isn't really.
+
+> export-to-module?
 > 
-> The bluetooth hci conn sysfs add/del executed in the default workqueue. If the conn del function is executed after the new conn add function with same bluetooth target address, the connection add will failed and warning about same kobject name.
-> 
-> Here add a btconn workqueue, and flush the workqueue in the add_conn function to avoid the above issue. 
 
-the patch looks good to me (except some style cleanups). Let me push it
-to one of my test machines and stress it a little bit. I give you
-feedback after my testing.
+> No, we've seen the solution and various people applying it.  I'm still trying 
+> to discover the problem it's solving.
 
-Regards
+Again for rusty @)
 
-Marcel
+Goals are:
+- Limit the interfaces available for out of tree modules to reasonably 
+stable ones that are already used by a larger set of drivers.
 
+This can also have further downstream advantages.
+For example it might be a reasonable future rule to require all unconditionally
+EXPORT_SYMBOL()s to have a complete LinuxDoc documentation entry.
 
+- Explicitely declare in source what is clearly internal and not intended to
+be a generally usable interface.
+
+e.g. for the LinuxDoc example above such internal functions don't necessarily
+need full LinuxDoc documentation.
+
+- Force review from core maintainers for use of such internal interfaces
+
+- Limit size of exported API to make stable ABIs for enterprise
+distributions easier
+[Yes I know that is not a popular topic on l-k, but it's a day-to-day
+problem for these distros and out of tree solutions do not work]
+
+-Andi
