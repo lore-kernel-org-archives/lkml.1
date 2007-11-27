@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbXK0JDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbXK0JEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757845AbXK0JDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 04:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXK0JDi
+	id S1757976AbXK0JEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 04:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbXK0JE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 04:03:38 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38688 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752387AbXK0JDh (ORCPT
+	Tue, 27 Nov 2007 04:04:26 -0500
+Received: from ro-out-1112.google.com ([72.14.202.179]:55734 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbXK0JEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 04:03:37 -0500
-Date: Tue, 27 Nov 2007 01:02:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michael Kerrisk <mtk-manpages@gmx.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2/4] Timerfd v3 - new timerfd API
-Message-Id: <20071127010254.133e222f.akpm@linux-foundation.org>
-In-Reply-To: <send-serie.davidel@xmailserver.org.18989.1196028860.2>
-References: <send-serie.davidel@xmailserver.org.18989.1196028860.2>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 04:04:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=imVZtQ/IkWPAFdrx9sg+W+5JxyKc/RMDm+XvmpSXGN4ICl4cChAndbIf4Vcwb24gq95naLqa0sVQ16rb4AL1TYVZSpC/khHWZNKyD43mkRTN+5iDvXbfPHyNpwO5liK0NiK/GLnC1ckYWVmSE8eCrb27lbYyGBfU9fAhDaOdTZg=
+Date: Tue, 27 Nov 2007 17:01:01 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [VIDEO]: Complement va_start() with va_end().
+Message-ID: <20071127090101.GA2626@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20071127065410.4293.71568.sendpatchset@thinktank.campus.ltu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127065410.4293.71568.sendpatchset@thinktank.campus.ltu.se>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Nov 2007 14:14:19 -0800 Davide Libenzi <davidel@xmailserver.org> wrote:
+On Tue, Nov 27, 2007 at 08:06:17AM +0100, Richard Knutsson wrote:
+>Complement va_start() with va_end().
+>
+>Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+>---
+>Compile-tested on i386 with allyesconfig and allmodconfig.
+>
+>
+>diff --git a/drivers/media/video/saa5246a.c b/drivers/media/video/saa5246a.c
+>index ad02329..996b494 100644
+>--- a/drivers/media/video/saa5246a.c
+>+++ b/drivers/media/video/saa5246a.c
+>@@ -187,12 +187,14 @@ static int i2c_senddata(struct saa5246a_device *t, ...)
+> {
+> 	unsigned char buf[64];
+> 	int v;
+>-	int ct=0;
+>+	int ct = 0;
+> 	va_list argp;
+>-	va_start(argp,t);
+>+	va_start(argp, t);
 
-> +static struct file *timerfd_fget(int fd)
-> +{
-> +	struct file *file;
-> +
-> +	file = fget(fd);
-> +	if (!file)
-> +		return ERR_PTR(-EBADF);
-> +	if (file->f_op != &timerfd_fops) {
-> +		fput(file);
-> +		return ERR_PTR(-EINVAL);
-> +	}
-> +
-> +	return file;
-> +}
+Hi, Richard!
 
-I suppose we could use fget_light() in here sometime.  It is significantly
-quicker in microbenchmarks.  Or it was - nobody has checked that in a few
-years afaik.
+These are style fixes, and you did't mention this above. ;)
+
+Thanks.
+
+
+ Cong
+
