@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbXK0WCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXK0WHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759479AbXK0WCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758286AbXK0WCL
+	id S1759568AbXK0WHv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbXK0WHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:02:11 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:51056 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757379AbXK0WCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:02:09 -0500
-Date: Tue, 27 Nov 2007 14:02:08 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Mosberger-Tang <dmosberger@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, tony.luck@intel.com
-Subject: Re: [patch 04/14] ia64: Remove the __SMALL_ADDR_AREA attribute for
- per cpu access
-In-Reply-To: <ed5aea430711271327l1644750dm363f846a23b1cce5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711271401350.4803@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com>  <20071127001430.083503280@sgi.com>
-  <ed5aea430711262120p45bb5b2t1b16872e74547369@mail.gmail.com> 
- <Pine.LNX.4.64.0711271014550.2310@schroedinger.engr.sgi.com> 
- <ed5aea430711271310i144c005cj25101b7dd6b0d6d9@mail.gmail.com> 
- <Pine.LNX.4.64.0711271316110.4590@schroedinger.engr.sgi.com>
- <ed5aea430711271327l1644750dm363f846a23b1cce5@mail.gmail.com>
+	Tue, 27 Nov 2007 17:07:43 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57185 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754745AbXK0WHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:07:42 -0500
+Date: Tue, 27 Nov 2007 14:12:20 -0800
+From: Greg KH <gregkh@suse.de>
+To: Michael Lothian <mike@fireburn.co.uk>
+Cc: Frank Seidel <fseidel@suse.de>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, greg@kroah.com,
+       p.hardwick@option.com, Marcel Holtmann <marcel@holtmann.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [RFC] Re: nozomi version 2.1d for review
+Message-ID: <20071127221220.GA27944@suse.de>
+References: <200711091449.24648.fseidel@suse.de> <200711111743.30348.fseidel@suse.de> <fc94aae90711251728u4861d714r4363f9a5c40a4088@mail.gmail.com> <200711261204.28311.fseidel@suse.de> <fc94aae90711271220k3684e7a1x9ec0b2e9c1db78e2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fc94aae90711271220k3684e7a1x9ec0b2e9c1db78e2@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007, David Mosberger-Tang wrote:
+On Tue, Nov 27, 2007 at 08:20:52PM +0000, Michael Lothian wrote:
+> Thanks for the info
+> 
+> Is there any news on when this is going to go upstream? I've been
+> asking for a while, each time there is a flurry of activity but then
+> it fizzles out by the time the 2 week window is open and is forgotten
+> about again
 
-> Code-size reduction?  You must be talking *source* code size
-> reduction.  Surely the small-data access-method decreases object code
-> size.
+I have it queued up in my tree to go to Linus for 2.6.25.  Is that ok?
 
-Yes source code reduction. I just added the attribute back but in such a 
-way that any arch can add attributes to per cpu definitions.
+Frank, want me to take the last version you just sent out and update my
+version?
 
+thanks,
+
+greg k-h
