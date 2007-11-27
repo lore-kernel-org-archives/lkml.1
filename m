@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbXK0AR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbXK0ARo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758964AbXK0AR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbXK0AOj
+	id S1759090AbXK0ARo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbXK0AOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:14:39 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45364 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757125AbXK0AOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 19:14:40 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49148 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757141AbXK0AOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 Nov 2007 19:14:32 -0500
-Message-Id: <20071127001431.688565525@sgi.com>
+Message-Id: <20071127001432.160399113@sgi.com>
 References: <20071127001407.859743255@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 26 Nov 2007 16:14:18 -0800
+Date: Mon, 26 Nov 2007 16:14:20 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-Subject: [patch 11/14] Powerpc: Use generic per cpu
-Content-Disposition: inline; filename=power_generic_percpu
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       tony.luck@intel.com
+Subject: [patch 13/14] ia64: Use generic percpu
+Content-Disposition: inline; filename=ia64_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Powerpc has a way to determine the address of the per cpu area of the
-currently executing processor via the paca and the array of per cpu
-offsets is avoided by looking up the per cpu area from the remote
-paca's (copying x86_64).
+ia64 has a special processor specific mapping that can be used to locate the
+offset for the current per cpu area.
 
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: linux-ia64@vger.kernel.org
+Cc: tony.luck@intel.com
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/asm-powerpc/percpu.h |   19 -------------------
- 1 file changed, 19 deletions(-)
+ include/asm-ia64/percpu.h |   24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/include/asm-powerpc/percpu.h
+Index: linux-2.6/include/asm-ia64/percpu.h
 ===================================================================
---- linux-2.6.orig/include/asm-powerpc/percpu.h	2007-11-24 10:27:31.088350556 -0800
-+++ linux-2.6/include/asm-powerpc/percpu.h	2007-11-24 10:29:20.752350757 -0800
-@@ -16,25 +16,6 @@
- #define __my_cpu_offset() get_paca()->data_offset
- #define per_cpu_offset(x) (__per_cpu_offset(x))
+--- linux-2.6.orig/include/asm-ia64/percpu.h	2007-11-24 10:27:31.088350556 -0800
++++ linux-2.6/include/asm-ia64/percpu.h	2007-11-24 10:31:54.053187674 -0800
+@@ -9,10 +9,9 @@
+ #define PERCPU_ENOUGH_ROOM PERCPU_PAGE_SIZE
  
--/* var is in discarded region: offset to particular copy we want */
--#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
--#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
--#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
+ #ifdef __ASSEMBLY__
+-# define THIS_CPU(var)	(per_cpu__##var)  /* use this to mark accesses to per-CPU variables... */
++# define THIS_CPU(var)	(PERCPU_ADDR + per_cpu__##var)  /* use this to mark accesses to per-CPU variables... */
+ #else /* !__ASSEMBLY__ */
+ 
 -
--extern void setup_per_cpu_areas(void);
+ #include <linux/threads.h>
+ 
+ #define DECLARE_PER_CPU(type, name)				\
+@@ -20,24 +19,12 @@
+ 
+ #ifdef CONFIG_SMP
+ 
+-extern unsigned long __per_cpu_offset[NR_CPUS];
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
 -
--#else /* ! SMP */
+-/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
+-DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
 -
+-#define per_cpu(var, cpu)  (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))
+-#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+-#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
++#define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
+ 
+-extern void setup_per_cpu_areas (void);
+ extern void *per_cpu_init(void);
+ 
+ #else /* ! SMP */
+ 
 -#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
 -#define __get_cpu_var(var)			per_cpu__##var
 -#define __raw_get_cpu_var(var)			per_cpu__##var
--
+ #define per_cpu_init()				(__phys_per_cpu_start)
+ 
  #endif	/* SMP */
--
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
--
--#else
- #include <asm-generic/percpu.h>
--#endif
--
- #endif /* _ASM_POWERPC_PERCPU_H_ */
+@@ -48,7 +35,12 @@ extern void *per_cpu_init(void);
+  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
+  * more efficient.
+  */
+-#define __ia64_per_cpu_var(var)	(per_cpu__##var)
++#define __ia64_per_cpu_var(var)	(*SHIFT_PTR(&per_cpu__##var, PERCPU_ADDR))
++
++#include <asm-generic/percpu.h>
++
++/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
++DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
 
 -- 
