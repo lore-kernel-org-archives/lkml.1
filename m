@@ -1,76 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbXK0AsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXK0AwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755801AbXK0AsO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXK0Ar7
+	id S1756843AbXK0AwS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXK0AwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:47:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34866 "EHLO mx1.redhat.com"
+	Mon, 26 Nov 2007 19:52:05 -0500
+Received: from mga02.intel.com ([134.134.136.20]:55321 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753188AbXK0Ar6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:47:58 -0500
-Message-ID: <474B6810.6070703@redhat.com>
-Date: Mon, 26 Nov 2007 16:42:56 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753167AbXK0AwD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 19:52:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,216,1194249600"; 
+   d="scan'208";a="280499869"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com> <474B55F5.1050706@redhat.com> <474B6179.4040508@zytor.com>
-In-Reply-To: <474B6179.4040508@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] [ACPI] utilities/: Compliment va_start() with va_end().
+Date: Mon, 26 Nov 2007 16:52:01 -0800
+Message-ID: <B28E9812BAF6E2498B7EC5C427F293A403BCBB45@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <474B61B4.9020309@student.ltu.se>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [ACPI] utilities/: Compliment va_start() with va_end().
+Thread-Index: AcgwjF1MUBLZPMCuRnuo8c6+LkonaAAAzP3g
+References: <200711250205.34299.lenb@kernel.org> <B28E9812BAF6E2498B7EC5C427F293A403BCB8FA@orsmsx415.amr.corp.intel.com> <474B61B4.9020309@student.ltu.se>
+From: "Moore, Robert" <robert.moore@intel.com>
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>
+Cc: "Len Brown" <lenb@kernel.org>, <linux-kernel@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>
+X-OriginalArrivalTime: 27 Nov 2007 00:52:02.0827 (UTC) FILETIME=[B95B15B0:01C8308F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-H. Peter Anvin wrote:
-> No.
-> 
-> I already said I'm not looking at changing the calling convention for
-> existing syscalls.
-
-I did not suggest or ask for that at all.
-
-I was asking you to consider the real implementation details for a new
-syscall mechanism.
-
-We do not want to abandon the use of syscall/sysenter and go back to int
-(on x86/x86-64).  This means that you have to come up with a mechanism
-which hooks into the current syscall/sysenter path while preserving full
-backward compatibility.
-
-Now it's your turn.  How do you do this without additional costs?
+Yes, it's official ANSI C, so I agree with the portability. I'm probably
+asking more about the history of the thing.
 
 
-> Hardly so, as evidenced by the fact that we have successfully done so
-> for 15 years already; a number of Linux architectures require this
-> information for the existing system calls.
-
-Nothing at this scale is there in the moment, as far as I can see.  And
-nothing so critical for getting right.
-
-Talk is cheap.  You still haven't shown one bit if design how you want
-to achieve your grand goal.  The time for hand-waiving is over.  Do some
-work or step out of the way.  Nothing you have said so far in the least
-convinces me and your arguments like "sys_indirect adds parameters" are
-not really contested.  Yes, that's what sys_indirect does.  So what?  It
-does this with almost no cost which outweighs the ugliness factor in my
-book.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFHS2gQ2ijCOnn/RHQRAlN5AKCWZQL97sROWBv33//Uj/MN+CNi3gCdFgCU
-uLVEOfclERpakp1kdYzy2oI=
-=stVB
------END PGP SIGNATURE-----
+>-----Original Message-----
+>From: Richard Knutsson [mailto:ricknu-0@student.ltu.se]
+>Sent: Monday, November 26, 2007 4:16 PM
+>To: Moore, Robert
+>Cc: Len Brown; linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org
+>Subject: Re: [PATCH] [ACPI] utilities/: Compliment va_start() with
+>va_end().
+>
+>Moore, Robert wrote:
+>> This is an interesting one to me.
+>>
+>> From various documentation:
+>>
+>> After all arguments have been retrieved, va_end resets the pointer to
+>> NULL.
+>>
+>> va_end
+>> Each invocation of va_start must be matched by a corresponding
+>> invocation of va_end in the same function. After the call va_end(ap)
+the
+>> variable ap is undefined. Multiple transversals of the list, each
+>> bracketed by va_start and va_end are possible. va_end may be a macro
+or
+>> a function.
+>>
+>> Now, I'm all for defensive programming, but I don't really see the
+point
+>> of va_end when the list will be only traversed once.
+>>
+>>
+>First off, I think it is a good idea to follow the documentation, which
+>stated:
+>"va_end
+>Each invocation of va_start must be matched by a corresponding
+>invocation of va_end in the same function."
+>
+>Then if it is not really needed, does it take up extra cycles?
+>"In practice, with most C compilers, calling |va_end| does nothing
+>and you do not really need to call it.  This is always true in the GNU
+C
+>compiler."[1]
+>
+>Portability:
+>"But you might as well call |va_end| just in case your
+>program is someday compiled with a peculiar compiler."[2]
+>This argument is not as likely thou, but who knows? (Since I guess
+Intel's
+>compiler is included in the 'most C compilers')
+>
+>>
+>> We don't set all local pointers to NULL at function exit, what is the
+>> point of doing it here?
+>>
+>I think it is a good thing if the code follows the documentation, both
+>for the person who tries
+>to understand the code (to see when the 'args' is no longer needed and
+>not getting confused
+>by the absent of va_end(), after all, IMHO we should write the code how
+>we want things to
+>work and let the compiler do the optimizations (it usually does a
+better
+>job at it then we do))
+>and to automated searches (that is how I found this one).
+>> I suppose some implementation could allocate memory at va_start, but
+in
+>> practice, does this happen?
+>>
+>Not sure what you mean.
+>> Bob
+>>
+>>
+>cu
+>Richard Knutsson
+>
+>[1]
+>http://www.cs.utah.edu/dept/old/texinfo/glibc-manual-0.02/library_28.ht
+ml
+>[2] The rest of [1]'s line.
