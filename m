@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXK0Lex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbXK0ME1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbXK0Lex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 06:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXK0Len
+	id S1756437AbXK0ME1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 07:04:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbXK0MET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 06:34:43 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:6558 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753656AbXK0Lem (ORCPT
+	Tue, 27 Nov 2007 07:04:19 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41318 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754571AbXK0MES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 06:34:42 -0500
-Date: Tue, 27 Nov 2007 14:39:35 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for fixed-link property
-Message-ID: <20071127113935.GA26867@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
-References: <20071126142906.19642.45540.stgit@localhost.localdomain> <20071126142915.19642.5842.stgit@localhost.localdomain> <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 27 Nov 2007 07:04:18 -0500
+Date: Tue, 27 Nov 2007 20:55:30 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Subject: Re: [Patch](Resend) mm/sparse.c: Improve the error handling for sparse_add_one_section()
+Cc: Dave Hansen <haveblue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org
+In-Reply-To: <20071127022609.GA4164@hacking>
+References: <20071126191316.99CF.Y-GOTO@jp.fujitsu.com> <20071127022609.GA4164@hacking>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071127204623.3D53.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
-> On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
-> > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
-> > not connected to the real MDIO bus.
-> > 
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > 
-> > ---
-> > 
-> >  Documentation/powerpc/booting-without-of.txt |    3 +
-> >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
-> >  2 files changed, 42 insertions(+), 17 deletions(-)
-> > 
-> > 
-> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > index e9a3cb1..cf25070 100644
-> > --- a/Documentation/powerpc/booting-without-of.txt
-> > +++ b/Documentation/powerpc/booting-without-of.txt
-> > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
-> >        services interrupts for this device.
-> >      - phy-handle : The phandle for the PHY connected to this ethernet
-> >        controller.
-> > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
-> > +      but unique to the all specified fixed-links, b is duplex - 0 half,
-> > +      1 full, c is link speed - d#10/d#100/d#1000.
+>  	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
+> @@ -414,7 +418,7 @@ int sparse_add_one_section(struct zone *
+>  out:
+>  	pgdat_resize_unlock(pgdat, &flags);
+>  	if (ret <= 0)
+> -		__kfree_section_memmap(memmap, nr_pages);
+> +		kfree(usemap);
+>  	return ret;
+>  }
+>  #endif
 > 
-> Good work!
-> May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
 
-Well, I see no reference of the "flow" neither in the include/linux/mii.h
-nor in the drivers/net/phy/*. :-/ Thus today there is no such register
-bit we can emulate?..
+I guess you think __kfree_section_memmap() is not necessary due to
+no implementation. But, it is still available when
+CONFIG_SPARSEMEM_VMEMMAP is off. So, it should not be removed.
 
-> flow control or not just popped up here today so I got a use for it.
 
-..and I looked into few drivers (gianfar, ucc), and they seem to use
-hard-coded flow control values, thus they don't speak to the PHYs
-about that.
-
-Can you give any reference to the driver that needs that parameter?
-Does it use PHY subsystem to obtain flow-control on/off information?
-
-Thanks,
+Bye.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Yasunori Goto 
+
+
