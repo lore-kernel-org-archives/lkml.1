@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXK0Nq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbXK0NzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbXK0Nq6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXK0Nqu
+	id S1755806AbXK0NzS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXK0NzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:46:50 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:2742 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbXK0Nqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:46:49 -0500
-Date: Tue, 27 Nov 2007 14:46:45 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>, Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can support for "rpm"-based package building just be dropped?
-Message-ID: <20071127134645.GB20000@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Ray Lee <ray-lk@madrabbit.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain> <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com> <Pine.LNX.4.64.0711261622060.19299@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.9999.0711261048050.24142@localhost.localdomain> <Pine.LNX.4.64.0711261704070.19299@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.9999.0711261110040.25316@localhost.localdomain> <Pine.LNX.4.64.0711261716220.22369@fbirervta.pbzchgretzou.qr>
+	Tue, 27 Nov 2007 08:55:01 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:7018 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750793AbXK0NzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 08:55:00 -0500
+Date: Tue, 27 Nov 2007 16:59:52 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for fixed-link property
+Message-ID: <20071127135952.GA1483@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
+References: <20071126142906.19642.45540.stgit@localhost.localdomain> <20071126142915.19642.5842.stgit@localhost.localdomain> <1196089448.12625.62.camel@gentoo-jocke.transmode.se> <20071127113935.GA26867@localhost.localdomain> <1196169432.9816.16.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711261716220.22369@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <1196169432.9816.16.camel@gentoo-jocke.transmode.se>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 05:17:18PM +0100, Jan Engelhardt wrote:
-> rpm -b does not work in opensuse anymore (redirects you to use rpmbuild), and I
-> bet fedora will do the same, so if you don't have rpm-build, tough luck for
-> make rpm.
+On Tue, Nov 27, 2007 at 02:17:11PM +0100, Joakim Tjernlund wrote:
+> 
+> On Tue, 2007-11-27 at 14:39 +0300, Anton Vorontsov wrote:
+> > On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
+> > > On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
+> > > > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
+> > > > not connected to the real MDIO bus.
+> > > > 
+> > > > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > > 
+> > > > ---
+> > > > 
+> > > >  Documentation/powerpc/booting-without-of.txt |    3 +
+> > > >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
+> > > >  2 files changed, 42 insertions(+), 17 deletions(-)
+> > > > 
+> > > > 
+> > > > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> > > > index e9a3cb1..cf25070 100644
+> > > > --- a/Documentation/powerpc/booting-without-of.txt
+> > > > +++ b/Documentation/powerpc/booting-without-of.txt
+> > > > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
+> > > >        services interrupts for this device.
+> > > >      - phy-handle : The phandle for the PHY connected to this ethernet
+> > > >        controller.
+> > > > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
+> > > > +      but unique to the all specified fixed-links, b is duplex - 0 half,
+> > > > +      1 full, c is link speed - d#10/d#100/d#1000.
+> > > 
+> > > Good work!
+> > > May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
+> > 
+> > Well, I see no reference of the "flow" neither in the include/linux/mii.h
+> > nor in the drivers/net/phy/*. :-/ Thus today there is no such register
+> > bit we can emulate?..
+> 
+> Well, as good as I can recall, flow control(pause) is something that the
+> PHY negotiates, just like FDX/HDX and should be dealt with in the
+> adjust_link callback but not many do currently.
+> 
+> If you seach for pause in phy_device.c you will find it.
 
-The point, if I understand it correctly, was that when rpmbuild is not
-install and rpm is not building-capable not to fall back to rpm and
-instead yell loudly that rpmbuild is missing.
+Ah, pause. Sure, we can emulate that.
 
-To which some said that right now "do not fall back, ever, just
-require rpmbuild" may just be the best.
-
-I have no opinion though.
-
-  OG.
-
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
