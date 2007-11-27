@@ -1,82 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbXK0NbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbXK0NgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbXK0NbS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXK0NbH
+	id S1755783AbXK0NgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXK0NgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:31:07 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34360 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbXK0NbG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:31:06 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Neil Horman <nhorman@redhat.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>, hbabu@us.ibm.com, vgoyal@in.ibm.com,
-       kexec@lists.infradead.org, ak@suse.de, linux-kernel@vger.kernel.org
+	Tue, 27 Nov 2007 08:36:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750765AbXK0NgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 08:36:10 -0500
+Date: Tue, 27 Nov 2007 08:28:11 -0500
+From: Neil Horman <nhorman@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, kexec@lists.infradead.org, ak@suse.de,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com, vgoyal@in.ibm.com,
+       ebiederm@xmission.com
 Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-References: <20071127014740.GA28622@hmsreliant.think-freely.org>
-	<m1d4twmimu.fsf@ebiederm.dsl.xmission.com>
-	<20071127131355.GA14887@hmsendeavour.rdu.redhat.com>
-Date: Tue, 27 Nov 2007 06:28:13 -0700
-In-Reply-To: <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> (Neil
-	Horman's message of "Tue, 27 Nov 2007 08:13:55 -0500")
-Message-ID: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Message-ID: <20071127132811.GB14887@hmsendeavour.rdu.redhat.com>
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127105503.GD24223@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127105503.GD24223@one.firstfloor.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman <nhorman@redhat.com> writes:
+On Tue, Nov 27, 2007 at 11:55:03AM +0100, Andi Kleen wrote:
+> On Mon, Nov 26, 2007 at 08:47:40PM -0500, Neil Horman wrote:
+> > Hey all-
+> > 	I've been working on an issue lately involving multi socket x86_64
+> > systems connected via hypertransport bridges.  It appears that some systems,
+> > disable the hypertransport connections during a kdump operation when all but the
+> > crashing processor gets halted in machine_crash_shutdown.  This becomes a
+> 
+> That would be hard to believe. Linux cannot shut down CPUs
+> completely (put them back to SINIT state) because there is no generic
+> interface for this and it might be impossible. They just get put 
+> into a HLT loop.
+> 
+> And even if they were in SINIT they would still need the HT connections
+> otherwise it would be impossible to ever wake them up.
+> 
+I understand that this is how its supposed to work, but my analysis nevertheless
+in my mind points to an inability to route irqs to any processor other than the
+boot cpu.  I conducted a test whereby I forced a crash on cpu0, and then again
+on cpu3.  I've found that on all the systems I have available, I'm able to boot
+to a kexec kernel without issue.  However, on this system:
+http://www.supermicro.com/Aplus/motherboard/Opteron8000/MCP55/H8QM8-2.cfm
 
-> What makes you say this?  I don't see any need for interrupts prior to
-> calibrate_delay()
+Crashing on any cpu other than the boot cpu leads to a hang in calibrate_delay
+on reboot.  I certainly make room for the notion that this could be an ioapic
+programming error, but I don't see that this system has a different ioapic that
+my other test systems.  I've also simply tried booting the system that is
+failing with noapic, to force the system to not use the ioapic, to no avail.  If
+you could suggest another test to point to another root cause, I would happily
+run it, but the evidence that I have at the moment suggests to me that the
+ioapic, while normally getting succefully programmed to deliver interrupts to
+the appropriate cpu, is unable to on this system, and removing the traversal of
+the system bus on the affected system restores functionality.  That suggests a
+system bus error to me.
 
-Yes.  calibrate_delay() is the first place we send interrupts over
-hypertransport.  However I/O still works.  Thus hypertransport from
-the first cpu is working, and hypertransport itself is working.
+> The way HT setup is normally done is that the BIOS sets it all up
+> and then it never changes (except for some error conditions that 
+> may cause SYNC flood) 
+> 
+I think thats part of the issue.  Somehow (and in fairness I don't know how this
+occurs), the crash of the kernel affects the functionality of the hypertransport
+bus in such a way that it can no longer deliver interrupts.  I'm not sur how,
+beyond the testing that I describe above, that I can further prove or disprove
+this.
 
-This is an interrupt specific problem not some generic hypertransport
-problem.
 
->> I agree that there is a problem.
->> 
->> The reliable fix is to totally skip the PIC interrupt mode and go directly
->> to apic mode.
->> 
->> To make the code kexec on panic code path reliable we need to remove code
->> not add it.
->> 
->> Frankly I think switching cpus is one of the least reliable things that
->> we can do in general.
->> 
-> I understand the sentiment here, but its not like we're adding additional
-> functionality with this patch.  We're already sending an IPI to all the
-> processors to halt them
+> 
+> > problem when the ioapic attempts to route interrupts to the only remaining
+> > processor.  Even though the active processor is targeted for interrupt
+> > reception, the fact that the hypertransport connections are inactive result in
+> > interrupts not getting delivered.  The effective result is that timer interrupts
+> > are not delivered to the running cpu, and the system hangs on reboot into the
+> > kdump kernel during calibrate_delay.  I've found that I've been able to avoid
+> > this hang, by forcing a transition to the bios defined boot cpu during the
+> > crashing kernel shutdown.  This patch accomplished that.  Tested by myself and
+> > the origional reporter with successful results.
+> 
+> While that may help I doubt your analysis of the source of the problem
+> is correct. Most likely something is broken with the IO-APIC, but not
+> related to HyperTransport.
+> 
 
-And we don't care if they halt.  If they don't get the IPI we timeout.
-Making the IPI mandatory is a _singificant_ change.
+If you could suggest a test or observation to make so that I could further
+diagnose this, I would appreciate it.  Currently the code seems to configure the
+ioapic properly on all systems available to me, except the supermicro board
+above.  Any thoughts welcome here.
 
-The only reason that code is on the kexec on panic code path is that
-there is no other possible place we could put it.
 
-> , we're just adding logic here so that we can detect the
-> boot cpu and use it to jump to the kexec image instead of halting.  I don't
-> think this is any less reliable that what we have currently.
+Thanks  & Regards
+Neil
 
-It doesn't make things more reliable, and it adds code to a code path
-that already has to much code to be solid reliable (thus your
-problem). 
+> It would be better to properly root cause before applying.
+> 
+> -Andi
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
-Putting the system back in PIC legacy mode on the kexec on panic path
-was supposed to be a short term hack until we could remove the need
-by always deliver interrupts in apic mode.
-
-If you can't root cause your problem and figure out how the apics
-are misconfigured for legacy mode let's remove the need for going into
-to legacy PIC mode and do what we should be able to do reliably.  The
-reward is much higher, as we kill all possibility of restoring PIC
-mode wrong because we don't need to bother.
-
-Eric
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
