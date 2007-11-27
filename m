@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762371AbXK2PG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbXK2PG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762371AbXK2PG3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbXK2PGU
+	id S932083AbXK2PG7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762393AbXK2PGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:06:20 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36810 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755503AbXK2PGT (ORCPT
+	Thu, 29 Nov 2007 10:06:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35470 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762400AbXK2PGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:06:19 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [patch -mm 2/4] mqueue namespace : add unshare support
-References: <20071128163728.177495768@fr.ibm.com>
-	<20071128164349.196734045@fr.ibm.com>
-Date: Thu, 29 Nov 2007 08:03:44 -0700
-In-Reply-To: <20071128164349.196734045@fr.ibm.com>> (Cedric Le Goater's
-	message of "Wed, 28 Nov 2007 17:37:30 +0100")
-Message-ID: <m1y7chccvj.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 29 Nov 2007 10:06:47 -0500
+Date: Tue, 27 Nov 2007 14:57:47 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071127145747.5f4d0aca@laptopd505.fenrus.org>
+In-Reply-To: <1196155985.25646.31.camel@ymzhang>
+References: <1196155985.25646.31.camel@ymzhang>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater <clg@fr.ibm.com> writes:
+On Tue, 27 Nov 2007 17:33:05 +0800
+"Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
 
-> From: Cedric Le Goater <clg@fr.ibm.com>
->
-> This patch includes the mqueue namespace in the nsproxy object. It  
-> also adds the support of unshare() and clone() with a new clone flag 
-> CLONE_NEWMQ (1 bit left in the clone flags !)
->
-> CLONE_NEWMQ is required to be cloned or unshared along with CLONE_NEWNS.
-> This is to make sure that no user mounts of the internal mqueue fs
-> are left behind when the last task exits. 
+> If echo "1">/proc/sys/kernel/sched_compat_yield before starting
+> volanoMark testing, the result is very good with kernel 2.6.24-rc3 on
+> my 16-core tigerton.
+> 
+> 1) If /proc/sys/kernel/sched_compat_yield=1, comparing with 2.6.22,
+> 2.6.24-rc3 has more than 70% improvement;
+> 2) If /proc/sys/kernel/sched_compat_yield=0, comparing with 2.6.22,
+> 2.6.24-rc3 has more than 80% regression;
+> 
+> On other machines, the volanoMark result also has much improvement if
+> /proc/sys/kernel/sched_compat_yield=1.
+> 
+> Would you like to change function yield_task_fair to delete codes
+> around sysctl_sched_compat_yield, or just initiate it to 1?
+> 
 
-Sounds reasonable.  It would be cool if we didn't have to do this.
-(Why isn't the mqueue fs not MS_NOUSER?)  Ah well.
+sounds like a bad idea; volanomark (well, technically the jvm behind
+it) is abusing sched_yield() by assuming it does something it really
+doesn't do, and as it happens some of the earlier 2.6 schedulers
+accidentally happened to behave in a way that was nice for this
+benchmark. 
 
-I'm not certain about requiring CLONE_NEWNS but it looks to be
-ugly if we try and work it the other way.
+Todays kernel has a different behavior somewhat (and before people
+scream "regression"; sched_yield() behavior isn't really specified and
+doesn't make any sense at all, whatever you get is what you get....
+it's pretty much an insane defacto behavior that is incredibly tied to
+which decisions the scheduler makes how, and no app can depend on that
+in any way. In fact, I've proposed to make sched_yield() just do an
+msleep(1)... that'd be closer to what sched_yield is supposed to do
+standard wise than any of the current behaviors .... ;_
 
-> It's totally harmless for the moment because the current code still 
-> uses the default mqueue namespace object 'init_mq_ns' 
 
-I don't believe the harmless part.  Creating new objects should really
-come after we have the code to really make them work.  In some sense
-the next patch which makes this work causes ABI breakage.  Closely
-packed together it doesn't matter but...
-
-Eric
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
