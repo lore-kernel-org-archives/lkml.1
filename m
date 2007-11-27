@@ -1,329 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbXK0VbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXK0VfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759295AbXK0VbD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 16:31:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759484AbXK0Va2
+	id S1759878AbXK0VfU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 16:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758761AbXK0VfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 16:30:28 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:14594 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759270AbXK0VaZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 16:30:25 -0500
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 3/3] cxgb - fix stats
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       greearb@candelatech.com
-Date: Tue, 27 Nov 2007 13:30:20 -0800
-Message-ID: <20071127213020.841.64392.stgit@speedy5>
-User-Agent: StGIT/0.12
+	Tue, 27 Nov 2007 16:35:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45820 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758757AbXK0VfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 16:35:01 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: XFS related Oops (suspend/resume related)
+Date: Tue, 27 Nov 2007 22:53:00 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       Tino Keitel <tino.keitel@gmx.de>
+References: <20071112064706.GA23595@dose.home.local> <200711271651.39180.rjw@sisk.pl> <20071127211155.GK119954183@sgi.com>
+In-Reply-To: <20071127211155.GK119954183@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711272253.01136.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Tuesday, 27 of November 2007, David Chinner wrote:
+> On Tue, Nov 27, 2007 at 04:51:38PM +0100, Rafael J. Wysocki wrote:
+> > On Monday, 26 of November 2007, Rafael J. Wysocki wrote:
+> > > On Monday, 26 of November 2007, David Chinner wrote:
+> > > > Now there's a message that I haven't seen in about 3 years.
+> > > > 
+> > > > It indicates that the linux inode connected to the xfs_inode is not
+> > > > the correct one. i.e. that the linux inode cache is out of step with
+> > > > the XFS inode cache.
+> > > > 
+> > > > Basically, that is not supposed to happen. I suspect that the way
+> > > > threads are frozen is resulting in an inode lookup racing with
+> > > > a reclaim. The reclaim thread gets stopped after any use threads,
+> > > > and so we could have the situation that a process blocked in lookup
+> > > > has the XFS inode reclaimed and reused before it gets unblocked.
+> > > > 
+> > > > The question is why is it happening now when none of that code in
+> > > > XFS has changed?
+> > > > 
+> > > > Rafael, when are threads frozen? Only when they schedule or call
+> > > > try_to_freeze()?
+> > > 
+> > > Kernel threads freeze only when they call try_to_freeze().  User space tasks
+> > > freeze while executing the signals handling code.
+> > > 
+> > > > Did the freezer mechanism change in 2.6.23 (this is on 2.6.23.1)?
+> > > 
+> > > Yes.  Kernel threads are not sent fake signals by the freezer any more.
+> > 
+> > Ah, sorry, this change has been merged after 2.6.23.  However, before 2.6.23
+> > we had another important change that caused all kernel threads to have
+> > PF_NOFREEZE set by default, unless they call set_freezable() explicitly.
+> 
+> So try_to_freeze() will never freeze a thread if it has not been
+> set_freezable()? And xfsbufd will never be frozen?
 
-Fix MAC stats accounting. 
-Fix get_stats.
+No, it won't.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
+I must have overlooked it, probably because it calls refrigerator() directly
+and not try_to_freeze() ...
+
+I think something like the appended patch will help, then.
+
+Greetings,
+Rafael
+
+
 ---
+Fix breakage caused by commit 831441862956fffa17b9801db37e6ea1650b0f69
+that did not introduce the necessary call to set_freezable() in
+xfs/linux-2.6/xfs_buf.c .
 
- drivers/net/chelsio/cxgb2.c  |   67 +++++++++++++++++++------
- drivers/net/chelsio/pm3393.c |  112 +++++++++++++++++-------------------------
- drivers/net/chelsio/sge.c    |    4 --
- drivers/net/chelsio/sge.h    |    2 -
- 4 files changed, 96 insertions(+), 89 deletions(-)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ fs/xfs/linux-2.6/xfs_buf.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/chelsio/cxgb2.c b/drivers/net/chelsio/cxgb2.c
-index 2461f91..c597504 100755
---- a/drivers/net/chelsio/cxgb2.c
-+++ b/drivers/net/chelsio/cxgb2.c
-@@ -374,7 +374,9 @@ static char stats_strings[][ETH_GSTRING_LEN] = {
- 	"TxInternalMACXmitError",
- 	"TxFramesWithExcessiveDeferral",
- 	"TxFCSErrors",
--
-+	"TxJumboFramesOk",
-+	"TxJumboOctetsOk",
-+	
- 	"RxOctetsOK",
- 	"RxOctetsBad",
- 	"RxUnicastFramesOK",
-@@ -392,11 +394,11 @@ static char stats_strings[][ETH_GSTRING_LEN] = {
- 	"RxInRangeLengthErrors",
- 	"RxOutOfRangeLengthField",
- 	"RxFrameTooLongErrors",
-+	"RxJumboFramesOk",
-+	"RxJumboOctetsOk",
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c
++++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+@@ -1750,6 +1750,8 @@ xfsbufd(
  
- 	/* Port stats */
--	"RxPackets",
- 	"RxCsumGood",
--	"TxPackets",
- 	"TxCsumOffload",
- 	"TxTso",
- 	"RxVlan",
-@@ -464,23 +466,56 @@ static void get_stats(struct net_device *dev, struct ethtool_stats *stats,
- 	const struct cmac_statistics *s;
- 	const struct sge_intr_counts *t;
- 	struct sge_port_stats ss;
--	unsigned int len;
+ 	current->flags |= PF_MEMALLOC;
  
- 	s = mac->ops->statistics_update(mac, MAC_STATS_UPDATE_FULL);
--
--	len = sizeof(u64)*(&s->TxFCSErrors + 1 - &s->TxOctetsOK);
--	memcpy(data, &s->TxOctetsOK, len);
--	data += len;
--
--	len = sizeof(u64)*(&s->RxFrameTooLongErrors + 1 - &s->RxOctetsOK);
--	memcpy(data, &s->RxOctetsOK, len);
--	data += len;
--
-+	t = t1_sge_get_intr_counts(adapter->sge);
- 	t1_sge_get_port_stats(adapter->sge, dev->if_port, &ss);
--	memcpy(data, &ss, sizeof(ss));
--	data += sizeof(ss);
- 
--	t = t1_sge_get_intr_counts(adapter->sge);
-+	*data++ = s->TxOctetsOK;
-+	*data++ = s->TxOctetsBad;
-+	*data++ = s->TxUnicastFramesOK;
-+	*data++ = s->TxMulticastFramesOK;
-+	*data++ = s->TxBroadcastFramesOK;
-+	*data++ = s->TxPauseFrames;
-+	*data++ = s->TxFramesWithDeferredXmissions;
-+	*data++ = s->TxLateCollisions;
-+	*data++ = s->TxTotalCollisions;
-+	*data++ = s->TxFramesAbortedDueToXSCollisions;
-+	*data++ = s->TxUnderrun;
-+	*data++ = s->TxLengthErrors;
-+	*data++ = s->TxInternalMACXmitError;
-+	*data++ = s->TxFramesWithExcessiveDeferral;
-+	*data++ = s->TxFCSErrors;
-+	*data++ = s->TxJumboFramesOK;
-+	*data++ = s->TxJumboOctetsOK;
++	set_freezable();
 +
-+	*data++ = s->RxOctetsOK;
-+	*data++ = s->RxOctetsBad;
-+	*data++ = s->RxUnicastFramesOK;
-+	*data++ = s->RxMulticastFramesOK;
-+	*data++ = s->RxBroadcastFramesOK;
-+	*data++ = s->RxPauseFrames;
-+	*data++ = s->RxFCSErrors;
-+	*data++ = s->RxAlignErrors;
-+	*data++ = s->RxSymbolErrors;
-+	*data++ = s->RxDataErrors;
-+	*data++ = s->RxSequenceErrors;
-+	*data++ = s->RxRuntErrors;
-+	*data++ = s->RxJabberErrors;
-+	*data++ = s->RxInternalMACRcvError;
-+	*data++ = s->RxInRangeLengthErrors;
-+	*data++ = s->RxOutOfRangeLengthField;
-+	*data++ = s->RxFrameTooLongErrors;
-+	*data++ = s->RxJumboFramesOK;
-+	*data++ = s->RxJumboOctetsOK;
-+
-+	*data++ = ss.rx_cso_good;
-+	*data++ = ss.tx_cso;
-+	*data++ = ss.tx_tso;
-+	*data++ = ss.vlan_xtract;
-+	*data++ = ss.vlan_insert;
-+	*data++ = ss.tx_need_hdrroom;
-+	
- 	*data++ = t->rx_drops;
- 	*data++ = t->pure_rsps;
- 	*data++ = t->unhandled_irqs;
-diff --git a/drivers/net/chelsio/pm3393.c b/drivers/net/chelsio/pm3393.c
-old mode 100644
-new mode 100755
-index 678778a..2117c4f
---- a/drivers/net/chelsio/pm3393.c
-+++ b/drivers/net/chelsio/pm3393.c
-@@ -45,7 +45,7 @@
- 
- #include <linux/crc32.h>
- 
--#define OFFSET(REG_ADDR)    (REG_ADDR << 2)
-+#define OFFSET(REG_ADDR)    ((REG_ADDR) << 2)
- 
- /* Max frame size PM3393 can handle. Includes Ethernet header and CRC. */
- #define MAX_FRAME_SIZE  9600
-@@ -428,69 +428,26 @@ static int pm3393_set_speed_duplex_fc(struct cmac *cmac, int speed, int duplex,
- 	return 0;
- }
- 
--static void pm3393_rmon_update(struct adapter *adapter, u32 offs, u64 *val,
--			       int over)
--{
--	u32 val0, val1, val2;
--
--	t1_tpi_read(adapter, offs, &val0);
--	t1_tpi_read(adapter, offs + 4, &val1);
--	t1_tpi_read(adapter, offs + 8, &val2);
--
--	*val &= ~0ull << 40;
--	*val |= val0 & 0xffff;
--	*val |= (val1 & 0xffff) << 16;
--	*val |= (u64)(val2 & 0xff) << 32;
--
--	if (over)
--		*val += 1ull << 40;
-+#define RMON_UPDATE(mac, name, stat_name) \
-+{ \
-+	t1_tpi_read((mac)->adapter, OFFSET(name), &val0);     \
-+	t1_tpi_read((mac)->adapter, OFFSET((name)+1), &val1); \
-+	t1_tpi_read((mac)->adapter, OFFSET((name)+2), &val2); \
-+	(mac)->stats.stat_name = (u64)(val0 & 0xffff) | \
-+				 ((u64)(val1 & 0xffff) << 16) | \
-+				 ((u64)(val2 & 0xff) << 32) | \
-+				 ((mac)->stats.stat_name & \
-+					0xffffff0000000000ULL); \
-+	if (ro & \
-+	    (1ULL << ((name - SUNI1x10GEXP_REG_MSTAT_COUNTER_0_LOW) >> 2))) \
-+		(mac)->stats.stat_name += 1ULL << 40; \
- }
- 
- static const struct cmac_statistics *pm3393_update_statistics(struct cmac *mac,
- 							      int flag)
- {
--	static struct {
--		unsigned int reg;
--		unsigned int offset;
--	} hw_stats [] = {
--
--#define HW_STAT(name, stat_name) \
--	{ name, (&((struct cmac_statistics *)NULL)->stat_name) - (u64 *)NULL }
--
--		/* Rx stats */
--		HW_STAT(RxOctetsReceivedOK, RxOctetsOK),
--		HW_STAT(RxUnicastFramesReceivedOK, RxUnicastFramesOK),
--		HW_STAT(RxMulticastFramesReceivedOK, RxMulticastFramesOK),
--		HW_STAT(RxBroadcastFramesReceivedOK, RxBroadcastFramesOK),
--		HW_STAT(RxPAUSEMACCtrlFramesReceived, RxPauseFrames),
--		HW_STAT(RxFrameCheckSequenceErrors, RxFCSErrors),
--		HW_STAT(RxFramesLostDueToInternalMACErrors,
--				RxInternalMACRcvError),
--		HW_STAT(RxSymbolErrors, RxSymbolErrors),
--		HW_STAT(RxInRangeLengthErrors, RxInRangeLengthErrors),
--		HW_STAT(RxFramesTooLongErrors , RxFrameTooLongErrors),
--		HW_STAT(RxJabbers, RxJabberErrors),
--		HW_STAT(RxFragments, RxRuntErrors),
--		HW_STAT(RxUndersizedFrames, RxRuntErrors),
--		HW_STAT(RxJumboFramesReceivedOK, RxJumboFramesOK),
--		HW_STAT(RxJumboOctetsReceivedOK, RxJumboOctetsOK),
--
--		/* Tx stats */
--		HW_STAT(TxOctetsTransmittedOK, TxOctetsOK),
--		HW_STAT(TxFramesLostDueToInternalMACTransmissionError,
--				TxInternalMACXmitError),
--		HW_STAT(TxTransmitSystemError, TxFCSErrors),
--		HW_STAT(TxUnicastFramesTransmittedOK, TxUnicastFramesOK),
--		HW_STAT(TxMulticastFramesTransmittedOK, TxMulticastFramesOK),
--		HW_STAT(TxBroadcastFramesTransmittedOK, TxBroadcastFramesOK),
--		HW_STAT(TxPAUSEMACCtrlFramesTransmitted, TxPauseFrames),
--		HW_STAT(TxJumboFramesReceivedOK, TxJumboFramesOK),
--		HW_STAT(TxJumboOctetsReceivedOK, TxJumboOctetsOK)
--	}, *p = hw_stats;
--	u64 ro;
--	u32 val0, val1, val2, val3;
--	u64 *stats = (u64 *) &mac->stats;
--	unsigned int i;
-+	u64	ro;
-+	u32	val0, val1, val2, val3;
- 
- 	/* Snap the counters */
- 	pmwrite(mac, SUNI1x10GEXP_REG_MSTAT_CONTROL,
-@@ -504,14 +461,35 @@ static const struct cmac_statistics *pm3393_update_statistics(struct cmac *mac,
- 	ro = ((u64)val0 & 0xffff) | (((u64)val1 & 0xffff) << 16) |
- 		(((u64)val2 & 0xffff) << 32) | (((u64)val3 & 0xffff) << 48);
- 
--	for (i = 0; i < ARRAY_SIZE(hw_stats); i++) {
--		unsigned reg = p->reg - SUNI1x10GEXP_REG_MSTAT_COUNTER_0_LOW;
--
--		pm3393_rmon_update((mac)->adapter, OFFSET(p->reg),
--				   stats + p->offset, ro & (reg >> 2));
--	}
--
--
-+	/* Rx stats */
-+	RMON_UPDATE(mac, RxOctetsReceivedOK, RxOctetsOK);
-+	RMON_UPDATE(mac, RxUnicastFramesReceivedOK, RxUnicastFramesOK);
-+	RMON_UPDATE(mac, RxMulticastFramesReceivedOK, RxMulticastFramesOK);
-+	RMON_UPDATE(mac, RxBroadcastFramesReceivedOK, RxBroadcastFramesOK);
-+	RMON_UPDATE(mac, RxPAUSEMACCtrlFramesReceived, RxPauseFrames);
-+	RMON_UPDATE(mac, RxFrameCheckSequenceErrors, RxFCSErrors);
-+	RMON_UPDATE(mac, RxFramesLostDueToInternalMACErrors,
-+				RxInternalMACRcvError);
-+	RMON_UPDATE(mac, RxSymbolErrors, RxSymbolErrors);
-+	RMON_UPDATE(mac, RxInRangeLengthErrors, RxInRangeLengthErrors);
-+	RMON_UPDATE(mac, RxFramesTooLongErrors , RxFrameTooLongErrors);
-+	RMON_UPDATE(mac, RxJabbers, RxJabberErrors);
-+	RMON_UPDATE(mac, RxFragments, RxRuntErrors);
-+	RMON_UPDATE(mac, RxUndersizedFrames, RxRuntErrors);
-+	RMON_UPDATE(mac, RxJumboFramesReceivedOK, RxJumboFramesOK);
-+	RMON_UPDATE(mac, RxJumboOctetsReceivedOK, RxJumboOctetsOK);
-+
-+	/* Tx stats */
-+	RMON_UPDATE(mac, TxOctetsTransmittedOK, TxOctetsOK);
-+	RMON_UPDATE(mac, TxFramesLostDueToInternalMACTransmissionError,
-+				TxInternalMACXmitError);
-+	RMON_UPDATE(mac, TxTransmitSystemError, TxFCSErrors);
-+	RMON_UPDATE(mac, TxUnicastFramesTransmittedOK, TxUnicastFramesOK);
-+	RMON_UPDATE(mac, TxMulticastFramesTransmittedOK, TxMulticastFramesOK);
-+	RMON_UPDATE(mac, TxBroadcastFramesTransmittedOK, TxBroadcastFramesOK);
-+	RMON_UPDATE(mac, TxPAUSEMACCtrlFramesTransmitted, TxPauseFrames);
-+	RMON_UPDATE(mac, TxJumboFramesReceivedOK, TxJumboFramesOK);
-+	RMON_UPDATE(mac, TxJumboOctetsReceivedOK, TxJumboOctetsOK);
- 
- 	return &mac->stats;
- }
-diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
-old mode 100644
-new mode 100755
-index 4b6258f..b301c04
---- a/drivers/net/chelsio/sge.c
-+++ b/drivers/net/chelsio/sge.c
-@@ -986,9 +986,7 @@ void t1_sge_get_port_stats(const struct sge *sge, int port,
- 	for_each_possible_cpu(cpu) {
- 		struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[port], cpu);
- 
--		ss->rx_packets += st->rx_packets;
- 		ss->rx_cso_good += st->rx_cso_good;
--		ss->tx_packets += st->tx_packets;
- 		ss->tx_cso += st->tx_cso;
- 		ss->tx_tso += st->tx_tso;
- 		ss->tx_need_hdrroom += st->tx_need_hdrroom;
-@@ -1381,7 +1379,6 @@ static void sge_rx(struct sge *sge, struct freelQ *fl, unsigned int len)
- 	__skb_pull(skb, sizeof(*p));
- 
- 	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
--	st->rx_packets++;
- 
- 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
- 	skb->dev->last_rx = jiffies;
-@@ -1946,7 +1943,6 @@ int t1_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		cpl->vlan_valid = 0;
- 
- send:
--	st->tx_packets++;
- 	dev->trans_start = jiffies;
- 	ret = t1_sge_tx(skb, adapter, 0, dev);
- 
-diff --git a/drivers/net/chelsio/sge.h b/drivers/net/chelsio/sge.h
-index 285bbb2..cced9df 100755
---- a/drivers/net/chelsio/sge.h
-+++ b/drivers/net/chelsio/sge.h
-@@ -57,9 +57,7 @@ struct sge_intr_counts {
- };
- 
- struct sge_port_stats {
--	u64 rx_packets;      /* # of Ethernet packets received */
- 	u64 rx_cso_good;     /* # of successful RX csum offloads */
--	u64 tx_packets;      /* # of TX packets */
- 	u64 tx_cso;          /* # of TX checksum offloads */
- 	u64 tx_tso;          /* # of TSO requests */
- 	u64 vlan_xtract;     /* # of VLAN tag extractions */
+ 	do {
+ 		if (unlikely(freezing(current))) {
+ 			set_bit(XBT_FORCE_SLEEP, &target->bt_flags);
