@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbXK0MjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbXK0Mng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbXK0MjH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 07:39:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXK0Miz
+	id S1756401AbXK0Mng (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 07:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXK0Mn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 07:38:55 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:52004 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742AbXK0Miy (ORCPT
+	Tue, 27 Nov 2007 07:43:29 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55483 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbXK0Mn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 07:38:54 -0500
-Date: Tue, 27 Nov 2007 05:38:52 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       linux-pm@lists.linux-foundation.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: WARNING: at kernel/resource.c:189 __release_resource
-Message-ID: <20071127123852.GB3230@parisc-linux.org>
-References: <4745F77C.7040402@gmail.com> <20071126220538.1aed9c33.akpm@linux-foundation.org>
+	Tue, 27 Nov 2007 07:43:28 -0500
+Date: Tue, 27 Nov 2007 13:44:05 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [patch] timer_list should use signed numbers for relative times
+Message-ID: <20071127124405.GA3943@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071126220538.1aed9c33.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 10:05:38PM -0800, Andrew Morton wrote:
-> On Thu, 22 Nov 2007 22:41:16 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
-> > Step aside. What's the purpose of having two similar patches for one issue,
-> > it then warns about the same thing twice:
-> > make-sure-nobodys-leaking-resources.patch
-> > releasing-resources-with-children.patch
-> 
-> Oh well.  It's better than having none.  Matthew, could you have think
-> about something for mainline please?
+Relative times are signed by nature, and timers can (briefly) have
+expires in past. Print them as negative numbers.
 
-I submitted it for mainline.  I was never quite sure why you only took
-it into -mm.  I'll take a look at what you have in -mm these days.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index 12c5f4c..7f6eaa9 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -65,7 +65,7 @@ #ifdef CONFIG_TIMER_STATS
+ 	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
+ #endif
+ 	SEQ_printf(m, "\n");
+-	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
++	SEQ_printf(m, " # expires at %Lu nsecs [in %Ld nsecs]\n",
+ 		(unsigned long long)ktime_to_ns(timer->expires),
+ 		(unsigned long long)(ktime_to_ns(timer->expires) - now));
+ }
+
+ 
+
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
