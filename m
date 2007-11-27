@@ -1,301 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbXK0XFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbXK0XGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759992AbXK0XFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759608AbXK0XFO
+	id S1760408AbXK0XGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760274AbXK0XFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:05:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40259 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758944AbXK0XFL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:05:11 -0500
-Date: Tue, 27 Nov 2007 15:04:06 -0800
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [RFC] Sample kset/ktype/kobject implementation
-Message-ID: <20071127230406.GD10038@kroah.com>
-References: <20071127230252.GB10038@kroah.com>
+	Tue, 27 Nov 2007 18:05:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54134 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760260AbXK0XF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 18:05:29 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127230252.GB10038@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 01/27] ptrace: arch_has_single_step
+In-Reply-To: Andrew Morton's message of  Tuesday, 27 November 2007 00:53:29 -0800 <20071127005329.9dfcf473.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20071125215507.4B89226F8C5@magilla.localdomain>
+	<20071127005329.9dfcf473.akpm@linux-foundation.org>
+X-Shopping-List: (1) Nosy riots
+   (2) Outrageous hands
+   (3) Photogenic salmon
+Message-Id: <20071127230521.67FF626F8C5@magilla.localdomain>
+Date: Tue, 27 Nov 2007 15:05:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/*
- * Sample kset and ktype implementation
- *
- * Copyright (C) 2004-2007 Greg Kroah-Hartman <greg@kroah.com>
- * Copyright (C) 2007 Novell Inc.
- *
- * Released under the GPL version 2 only.
- *
- */
-#include <linux/kobject.h>
-#include <linux/string.h>
-#include <linux/sysfs.h>
-#include <linux/module.h>
-#include <linux/init.h>
+> I think I'll duck this lot for now in view of the (relatively small) amount
+> of followup.
 
-/*
- * This module shows how to create a kset in sysfs called
- * /sys/kernel/kset-example
- * Then tree kobjects are created and assigned to this kset, "foo", "baz",
- * and "bar".  In those kobjects, attributes of the same name are also
- * created and if an integer is written to these files, it can be later
- * read out of it.
- */
+The debugctlmsr bits (last few patches) are meant to be taken with a grain
+of salt.  Everything else in this set is pretty well ready for prime time.
+
+> I did do an experimental will-it-apply and got a tremendous number of
+> rejects against the x86 git tree, almost all of which went away when `patch
+> -l' was used.  Seems that someone has gone on a whitespace rampage through
+> arch/x86/ia32/ptrace32.c and arch/x86/ia32/ptrace64.c.
+
+Damn, sorry about that.  I could have sworn I cranked everything through
+the whitespace inoculation machine, but I guess I missed some.
 
 
-/*
- * This is our "object" that we will create a few of and register them with
- * sysfs.
- */
-struct foo_obj {
-	struct kobject kobj;
-	int foo;
-	int baz;
-	int bar;
-};
-#define to_foo_obj(x) container_of(x, struct foo_obj, kobj)
-
-/* a custom attribute that works just for a struct foo_obj. */
-struct foo_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct foo_obj *foo, struct foo_attribute *attr, char *buf);
-	ssize_t (*store)(struct foo_obj *foo, struct foo_attribute *attr, const char *buf, size_t count);
-};
-#define to_foo_attr(x) container_of(x, struct foo_attribute, attr)
-
-/*
- * The default show function that must be passed to sysfs.  This will be
- * called by sysfs for whenever a show function is called by the user on a
- * sysfs file associated with the kobjects we have registered.  We need to
- * transpose back from a "default" kobject to our custom struct foo_obj and
- * then call the show function for that specific object.
- */
-static ssize_t foo_attr_show(struct kobject *kobj,
-			     struct attribute *attr,
-			     char *buf)
-{
-	struct foo_attribute *attribute;
-	struct foo_obj *foo;
-
-	attribute = to_foo_attr(attr);
-	foo = to_foo_obj(kobj);
-
-	if (!attribute->show)
-		return -EIO;
-
-	return attribute->show(foo, attribute, buf);
-}
-
-/*
- * Just like the default show function above, but this one is for when the
- * sysfs "store" is requested (when a value is written to a file.)
- */
-static ssize_t foo_attr_store(struct kobject *kobj,
-			      struct attribute *attr,
-			      const char *buf, size_t len)
-{
-	struct foo_attribute *attribute;
-	struct foo_obj *foo;
-
-	attribute = to_foo_attr(attr);
-	foo = to_foo_obj(kobj);
-
-	if (!attribute->store)
-		return -EIO;
-
-	return attribute->store(foo, attribute, buf, len);
-}
-
-/* Our custom sysfs_ops that we will associate with our ktype later on */
-static struct sysfs_ops foo_sysfs_ops = {
-	.show = foo_attr_show,
-	.store = foo_attr_store,
-};
-
-/*
- * The release function for our object.  This is REQUIRED by the kernel to
- * have.  We free the memory held in our object here.
- *
- * NEVER try to get away with just a "blank" release function to try to be
- * smarter than the kernel.  Turns out, no one ever is...
- */
-static void foo_release(struct kobject *kobj)
-{
-	struct foo_obj *foo;
-
-	foo = to_foo_obj(kobj);
-	kfree(foo);
-}
-
-/*
- * The "foo" file where the .foo variable is read from and written to.
- */
-static ssize_t foo_show(struct foo_obj *foo_obj, struct foo_attribute *attr,
-			char *buf)
-{
-	return sprintf(buf, "%d\n", foo_obj->foo);
-}
-
-static ssize_t foo_store(struct foo_obj *foo_obj, struct foo_attribute *attr,
-			 const char *buf, size_t count)
-{
-	sscanf(buf, "%du", &foo_obj->foo);
-	return count;
-}
-
-static struct foo_attribute foo_attribute =
-	__ATTR(foo, 0666, foo_show, foo_store);
-
-/*
- * More complex function where we determine which varible is being accessed by
- * looking at the attribute for the "baz" and "bar" files.
- */
-static ssize_t b_show(struct foo_obj *foo_obj, struct foo_attribute *attr,
-		      char *buf)
-{
-	int var;
-
-	if (strcmp(attr->attr.name, "baz") == 0)
-		var = foo_obj->baz;
-	else
-		var = foo_obj->bar;
-	return sprintf(buf, "%d\n", var);
-}
-
-static ssize_t b_store(struct foo_obj *foo_obj, struct foo_attribute *attr,
-		       const char *buf, size_t count)
-{
-	int var;
-
-	sscanf(buf, "%du", &var);
-	if (strcmp(attr->attr.name, "baz") == 0)
-		foo_obj->baz = var;
-	else
-		foo_obj->bar = var;
-	return count;
-}
-
-static struct foo_attribute baz_attribute =
-	__ATTR(baz, 0666, b_show, b_store);
-static struct foo_attribute bar_attribute =
-	__ATTR(bar, 0666, b_show, b_store);
-
-/*
- * Create a group of attributes so that we can create and destory them all
- * at once.
- */
-static struct attribute *foo_default_attrs[] = {
-	&foo_attribute.attr,
-	&baz_attribute.attr,
-	&bar_attribute.attr,
-	NULL,	/* need to NULL terminate the list of attributes */
-};
-
-/*
- * Our own ktype for our kobjects.  Here we specify our sysfs ops, the
- * release function, and the set of default attributes we want created
- * whenever a kobject of this type is registered with the kernel.
- */
-static struct kobj_type foo_ktype = {
-	.sysfs_ops = &foo_sysfs_ops,
-	.release = foo_release,
-	.default_attrs = foo_default_attrs,
-};
-
-static struct kset *example_kset;
-static struct foo_obj *foo_obj;
-static struct foo_obj *bar_obj;
-static struct foo_obj *baz_obj;
-
-static struct foo_obj *create_foo_obj(const char *name)
-{
-	struct foo_obj *foo;
-	int retval;
-
-	/* allocate the memory for the whole object */
-	foo = kzalloc(sizeof(*foo), GFP_KERNEL);
-	if (!foo)
-		return NULL;
-
-	/* initialize the kobject portion of the object properly */
-	kobject_set_name(&foo->kobj, "%s", name);
-	foo->kobj.kset = example_kset;
-	foo->kobj.ktype = &foo_ktype;
-
-	/*
-	 * Register the kobject with the kernel, all the default files will
-	 * be created here and the uevent will be sent out.  If we were to
-	 * call kobject_init() and then kobject_add() we would be
-	 * responsible for sending out the initial KOBJ_ADD uevent.
-	 */
-	retval = kobject_register(&foo->kobj);
-	if (retval) {
-		kfree(foo);
-		return NULL;
-	}
-
-	return foo;
-}
-
-static void destroy_foo_obj(struct foo_obj *foo)
-{
-	kobject_unregister(&foo->kobj);
-}
-
-static int example_init(void)
-{
-	/*
-	 * Create a kset with the name of "kset_example",
-	 * located under /sys/kernel/
-	 */
-	example_kset = kset_create_and_register("kset_example", NULL, kernel_kobj);
-	if (!example_kset)
-		return -ENOMEM;
-
-	/*
-	 * Create three objects and register them with our kset
-	 */
-	foo_obj = create_foo_obj("foo");
-	if (!foo_obj)
-		goto foo_error;
-
-	bar_obj = create_foo_obj("bar");
-	if (!bar_obj)
-		goto bar_error;
-
-	baz_obj = create_foo_obj("baz");
-	if (!baz_obj)
-		goto baz_error;
-
-	return 0;
-
-baz_error:
-	destroy_foo_obj(bar_obj);
-bar_error:
-	destroy_foo_obj(foo_obj);
-foo_error:
-	return -EINVAL;
-}
-
-static void example_exit(void)
-{
-	destroy_foo_obj(baz_obj);
-	destroy_foo_obj(bar_obj);
-	destroy_foo_obj(foo_obj);
-	kset_unregister(example_kset);
-}
-
-module_init(example_init);
-module_exit(example_exit);
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Greg Kroah-Hartman <greg@kroah.com>");
+Thanks,
+Roland
