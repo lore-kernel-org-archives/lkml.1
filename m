@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbXK0Qam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbXK0Qdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759689AbXK0Qam (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbXK0Q32
+	id S1759206AbXK0Qdh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbXK0Qd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:29:28 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:23570 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758932AbXK0Q3Y (ORCPT
+	Tue, 27 Nov 2007 11:33:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58012 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757006AbXK0QdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:29:24 -0500
-Message-Id: <20071127162920.358220309@de.ibm.com>
-References: <20071127162210.262064983@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 27 Nov 2007 17:22:14 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 4/4] Fix compile error on 31bit without preemption
-Content-Disposition: inline; filename=004-non-preempt.diff
+	Tue, 27 Nov 2007 11:33:25 -0500
+Date: Tue, 27 Nov 2007 16:33:19 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071127163319.GA20475@infradead.org>
+References: <200711271549.37670.rusty@rustcorp.com.au> <25602.1196178204@lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25602.1196178204@lwn.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+On Tue, Nov 27, 2007 at 08:43:24AM -0700, Jonathan Corbet wrote:
+> Might the recent discussion on the exporting of sys_open() and
+> sys_read() be an example here?  There would appear to be a consensus
+> that people should not have used those functions, but they are now
+> proving difficult to unexport.
 
-Commit b8e7a54cd06b0b0174029ef3a7f5a1415a2c28f2 introduced a compile
-error if CONFIG_PREEMPT is not set:
-
-arch/s390/kernel/built-in.o: In function `cleanup_io_leave_insn':
-/space/kvm/arch/s390/kernel/entry.S:(.text+0xbfce): undefined reference to `preempt_schedule_irq'
-
-This patch hides preempt_schedule_irq if CONFIG_PREEMPT is not set.
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/kernel/entry.S |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: quilt-2.6/arch/s390/kernel/entry.S
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/entry.S
-+++ quilt-2.6/arch/s390/kernel/entry.S
-@@ -1079,8 +1079,10 @@ cleanup_io_leave_insn:
- .Lexecve_tail:	.long	execve_tail
- .Ljump_table:	.long	pgm_check_table
- .Lschedule:	.long	schedule
-+#ifdef CONFIG_PREEMPT
- .Lpreempt_schedule_irq:
- 		.long	preempt_schedule_irq
-+#endif
- .Ltrace:	.long	syscall_trace
- .Lschedtail:	.long	schedule_tail
- .Lsysc_table:	.long	sys_call_table
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+They're not.  The exports aren't used anymore and could just go away
+any time.
 
