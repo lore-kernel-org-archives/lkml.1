@@ -1,115 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbXK0Mii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbXK0MjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbXK0Mii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 07:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbXK0Mi1
+	id S1756782AbXK0MjH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 07:39:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXK0Miz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 07:38:27 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40151 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753444AbXK0Mi0 (ORCPT
+	Tue, 27 Nov 2007 07:38:55 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:52004 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753742AbXK0Miy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 07:38:26 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org>
-	<m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com>
-	<474BFD83.6060500@openvz.org>
-Date: Tue, 27 Nov 2007 05:36:49 -0700
-In-Reply-To: <474BFD83.6060500@openvz.org> (Pavel Emelyanov's message of "Tue,
-	27 Nov 2007 14:20:35 +0300")
-Message-ID: <m1hcj7lva6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 27 Nov 2007 07:38:54 -0500
+Date: Tue, 27 Nov 2007 05:38:52 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, linux-usb-devel@lists.sourceforge.net,
+       linux-pm@lists.linux-foundation.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: WARNING: at kernel/resource.c:189 __release_resource
+Message-ID: <20071127123852.GB3230@parisc-linux.org>
+References: <4745F77C.7040402@gmail.com> <20071126220538.1aed9c33.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071126220538.1aed9c33.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+On Mon, Nov 26, 2007 at 10:05:38PM -0800, Andrew Morton wrote:
+> On Thu, 22 Nov 2007 22:41:16 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+> > Step aside. What's the purpose of having two similar patches for one issue,
+> > it then warns about the same thing twice:
+> > make-sure-nobodys-leaking-resources.patch
+> > releasing-resources-with-children.patch
+> 
+> Oh well.  It's better than having none.  Matthew, could you have think
+> about something for mainline please?
 
-> [snip]
->
->> 
->> Well I clearly goofed when I added the initial network namespace support
->> for /proc/net.  Currently things work but there are odd details visible
->> to user space, even when we have a single network namespace.
->> 
->> Since we do not cache proc_dir_entry dentries at the moment we can
->> just modify ->lookup to return a different directory inode depending
->> on the network namespace of the process looking at /proc/net, replacing
->> the current technique of using a magic and fragile follow_link method.
->> 
->> To accomplish that this patch:
->> - introduces a shadow_proc method to allow different dentries to
->>   be returned from proc_lookup.
->> - Removes the old /proc/net follow_link magic
->> - Fixes a weakness in our not caching of proc generic dentries.
->> 
->> As shadow_proc uses a task struct to decided which dentry to return we
->> can go back later and fix the proc generic caching without modifying any code
-> that
->> uses the shadow_proc method.
->> 
->> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->
-> Thanks, Eric. 
->
-> Much better ('find /proc' works and so does 'ls ..'), but one 
-> issue is still unsolved :(
->
-> I mentioned the program, that opens the directory and dumps the
-> content of the /proc/self/fd. Here it is (stupid but simple):
+I submitted it for mainline.  I was never quite sure why you only took
+it into -mm.  I'll take a look at what you have in -mm these days.
 
-The cause is totally different this time, and is not limited
-to /proc/net.  But this is the only side effect of the changes now.
-
-I used the one line version of your test program to confirm this:
-
- $ cd /proc/driver/
-
- $ ls -l /proc/self/fd/100 100< .
-
- lr-x------ 1 eric eric 64 Nov 27 05:06 /proc/self/fd/100 -> /proc/driver/
-
- $  ls -l /proc/self/fd/100 100< .
-
- lr-x------ 1 eric eric 64 Nov 27 05:07 /proc/self/fd/100 -> /proc/driver (deleted)
-
-What is happening is that the aggressive non-caching logic is dropping
-the dentries and thus they show up as deleted.  I.e. When something
-triggers another lookup of that dentry revalidate drops the old
-dentry.
-
-This actually fixes a race in /proc today where if you open a file,
-remove the module for it, reload the module for that file, and then
-attempt to access it, lookup will return the old dentry with the
-old fops (even if there is not a current version of that file).
-kill_proc_inodes current keeps us from using the old version of
-the file_operations for directories (because it removes them) but
-it does not prevent this DOS attack where keeping a proc file open
-always ensures everyone will see the old version.
-
-Given that the behavior seems more correct then what we have currently
-I can live with files showing up as deleted from time to time.
-
-Ultimately the fix is to correct the caching logic in
-fs/proc/generic.c to only drop dentries when necessary and then
-the deleted markers will only show up when the file or directory
-really goes away.
-
-I don't expect user space will care about the semi-legitimate
-(deleted) marks.  So I don't think this one down side will be a big
-deal for 2.6.24.
-
-Eric
-
-
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
