@@ -1,141 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbXK0AS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXK0ATa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbXK0AS7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXK0AOn
+	id S1758938AbXK0ATa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXK0AQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:14:43 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45360 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756953AbXK0AOb (ORCPT
+	Mon, 26 Nov 2007 19:16:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50757 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758661AbXK0AQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:14:31 -0500
-Message-Id: <20071127001430.771249261@sgi.com>
-References: <20071127001407.859743255@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 26 Nov 2007 16:14:14 -0800
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@suse.de>
-Subject: [patch 07/14] percpu: Make the asm-generic/percpu.h more generic
-Content-Disposition: inline; filename=genericize-percpu.h
+	Mon, 26 Nov 2007 19:16:14 -0500
+Message-ID: <474B6179.4040508@zytor.com>
+Date: Mon, 26 Nov 2007 16:14:49 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com> <474B55F5.1050706@redhat.com>
+In-Reply-To: <474B55F5.1050706@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the ability to use generic/percpu even if the arch needs to override
-several aspects of its operations. This will enable the use of generic
-percpu.h for all arches.
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> H. Peter Anvin wrote:
+>> The 6-word limit is a red herring.  There is at least two ways to deal
+>> with it (and this doesn't mean wiping the legacy stuff we already have):
+>>
+>> - Let each architecture pick a calling convention and redefine the
+>> architecture-independent bits to take an arbitrary number of arguments.
+>>  This is a one-time panarchitectural change.
+>> [...]
+> 
+> Just think beyond wishful thinking for a moment.  What does it take to
+> come up with something completely new and grand?
+> 
+> Let's start at the basic: you need to signal that the new syscall
+> calling convention is used.  Since the syscall entry code is limited (at
+> least the likes of syscall/sysenter, it would be easy enough to use int
+> $0x81 in addition to int $0x80) you would have to extend the use of the
+> syscall number while keeping binary compatibility.  This means
+> additional costs for every single syscall.
 
-An arch may define:
+No.
 
-__per_cpu_offset	Do not use the generic pointer array. Arch must
-			define per_cpu_offset(cpu) (used by x86_64, s390).
+I already said I'm not looking at changing the calling convention for 
+existing syscalls.  I don't think that makes sense.  (The only realistic 
+exception to that is that if we really want a small number (16 or less) 
+of flags fully orthogonal to the system call table, I guess it might 
+make sense to stuff those in the high bits of the system call register. 
+  However, I am a bit concerned about the auditability of that.)
 
-__my_cpu_offset		Can be defined to provide an optimized way to determine
-			the offset for variables of the currently executing
-			processor. Used by ia64, x86_64, x86_32, sparc64, s/390.
+> Once you're past that, how do you implement the expandable syscall
+> parameter count?  There are two ways:
+> 
+> - - pass to the real sys_* implementations the number of provided syscall
+> parameters and have each function figure out what this means
+> 
+> - - dynamically construct a call to the sys_* functions where the syscall
+> magic adds an appropriate number of parameters filled with zeros.  This
+> is quite complicated and, more importantly, it requires that you have
+> code/data somewhere which specifies how many parameters each of the
+> sys_* function actually requires.  The actual sys_* code and the data
+> has to be kept in sync at all times.  A maintenance nightmare.
 
-SHIFT_PTR(ptr, offset)	If an arch defines it then special handling
-			of pointer arithmentic may be implemented. Used
-			by s/390.
+Hardly so, as evidenced by the fact that we have successfully done so 
+for 15 years already; a number of Linux architectures require this 
+information for the existing system calls.
 
+> The handling of syscalls with many parameters should not at all be a
+> driver of this design at all.  Syscalls shouldn't be that complicated, I
+> completely agree with ingo.
 
-(Some of these special percpu arch implementations may be later consolidated
-so that there are less cases to deal with.)
+You *ARE* introducing additional syscall parameters, regardless if 
+you're admitting it or not.  It's exactly what you're doing, and by 
+making those parameters hidden, all we're accomplishing is:
 
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+- a penalty any time those parameters have to be invoked,
+- a good possibility that all the combinations are not audited.
 
----
- include/asm-generic/percpu.h |   64 +++++++++++++++++++++++++++++++++++--------
- 1 file changed, 53 insertions(+), 11 deletions(-)
+> I'm perfectly willing to give you the benefit of doubt, show us a design
+> for what you're proposing which is not slower than the current code,
+> doesn't impact existing code, and solves the problem in a nice and clean
+> way.  I cannot really see it now but I might miss something.  The
+> sys_indirect approach ain't pretty but it does it jobs, doesn't impact
+> performance, and is expandable in direction we *know* we will want to go
+> very soon.
 
-Index: linux-2.6/include/asm-generic/percpu.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/percpu.h	2007-11-24 19:33:55.416103196 -0800
-+++ linux-2.6/include/asm-generic/percpu.h	2007-11-24 19:36:35.016350539 -0800
-@@ -3,27 +3,69 @@
- #include <linux/compiler.h>
- #include <linux/threads.h>
- 
-+/*
-+ * Determine the real variable name from the name visible in the
-+ * kernel sources.
-+ */
-+#define per_cpu_var(var) per_cpu__##var
-+
- #ifdef CONFIG_SMP
- 
-+/*
-+ * per_cpu_offset() is the offset that has to be added to a
-+ * percpu variable to get to the instance for a certain processor.
-+ *
-+ * Most arches use the __per_cpu_offset array for those offsets but
-+ * some arches have their own ways of determining the offset (x86_64, s390).
-+ */
-+#ifndef __per_cpu_offset
- extern unsigned long __per_cpu_offset[NR_CPUS];
--
- #define per_cpu_offset(x) (__per_cpu_offset[x])
-+#endif
- 
--/* var is in discarded region: offset to particular copy we want */
--#define per_cpu(var, cpu) (*({				\
--	extern int simple_identifier_##var(void);	\
--	RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]); }))
--#define __get_cpu_var(var) per_cpu(var, smp_processor_id())
--#define __raw_get_cpu_var(var) per_cpu(var, raw_smp_processor_id())
-+/*
-+ * Determine the offset for the currently active processor.
-+ * An arch may define __my_cpu_offset to provide a more effective
-+ * means of obtaining the offset to the per cpu variables of the
-+ * current processor.
-+ */
-+#ifndef __my_cpu_offset
-+#define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
-+#define my_cpu_offset per_cpu_offset(smp_processor_id())
-+#else
-+#define my_cpu_offset __my_cpu_offset
-+#endif
-+
-+/*
-+ * Add a offset to a pointer but keep the pointer as is.
-+ *
-+ * Only S390 provides its own means of moving the pointer.
-+ */
-+#ifndef SHIFT_PTR
-+#define SHIFT_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
-+#endif
-+
-+/*
-+ * A percpu variable may point to a discarded reghions. The following are
-+ * established ways to produce a usable pointer from the percpu variable
-+ * offset.
-+ */
-+#define per_cpu(var, cpu) (*SHIFT_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
-+#define __get_cpu_var(var) (*SHIFT_PTR(&per_cpu_var(var), my_cpu_offset))
-+#define __raw_get_cpu_var(var) (*SHIFT_PTR(&per_cpu_var(var), __my_cpu_offset))
-+
-+#ifdef CONFIG_ARCH_SETS_UP_PER_CPU_AREA
-+extern void setup_per_cpu_areas(void);
-+#endif
- 
- #else /* ! SMP */
- 
--#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
--#define __get_cpu_var(var)			per_cpu__##var
--#define __raw_get_cpu_var(var)			per_cpu__##var
-+#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
-+#define __get_cpu_var(var)			per_cpu_var(var)
-+#define __raw_get_cpu_var(var)			per_cpu_var(var)
- 
- #endif	/* SMP */
- 
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
-+#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
- 
- #endif /* _ASM_GENERIC_PERCPU_H_ */
+We have a ton of examples in the kernel already for both dealing with 
+additional parameters and (somewhat fewer examples, but sys_pselect is a 
+good one) too many parameters: in all cases, we invoke a wrapper 
+function that sets up the parameters and then invokes the "true" syscall 
+function.  Right now we're generating those manually, which appears to 
+work okay simply because the amount of work it takes is small compared 
+to the amount of work it takes to write the code for a proper syscall. 
+(That doesn't mean it is the ideal model, of course.)  We *could* 
+generate them automatically if we wanted to, with either of the models I 
+mentioned -- the code I have in klibc to generate syscall stubs should 
+be relatively easily modifiable to do this, although it's probably 
+overkill for this job.
 
--- 
+In this case we do minimal thunking of parameters for the legacy 
+entrypoints, and for the current entrypoints we do the guaranteed 
+minimum amount of work.
+
+	-hpa
+
