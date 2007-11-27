@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbXK0KRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbXK0KTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbXK0KRX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 05:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbXK0KRQ
+	id S1758630AbXK0KTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 05:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbXK0KTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 05:17:16 -0500
-Received: from il.qumranet.com ([82.166.9.18]:46377 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751353AbXK0KRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 05:17:15 -0500
-Message-ID: <474BEF28.9010005@qumranet.com>
-Date: Tue, 27 Nov 2007 12:19:20 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: carsteno@de.ibm.com
-CC: Eric Van Hensbergen <ericvanhensbergen@us.ibm.com>,
-       kvm-devel@lists.sourceforge.net, lguest <lguest@ozlabs.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org
-Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
-References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com>	<11944900163817-git-send-email-aliguori@us.ibm.com>	<4742F6B7.20503@qumranet.com>	<474300AD.4060509@us.ibm.com>	<4743076F.8000105@qumranet.com>	<47435CCB.1050506@us.ibm.com>	<4743DAA4.70800@qumranet.com>	<4747051C.3090903@us.ibm.com> <4747122F.1070905@qumranet.com>	<474B1BF3.20901@us.ibm.com> <474BDD28.7050801@qumranet.com> <474BDEDE.6060603@de.ibm.com> <474BE319.502@qumranet.com> <474BEDAB.3000305@de.ibm.com>
-In-Reply-To: <474BEDAB.3000305@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Nov 2007 05:19:38 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:60579 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753475AbXK0KTi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 05:19:38 -0500
+Date: Tue, 27 Nov 2007 11:19:34 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, i2c@lm-sensors.org
+Subject: Re: [2.6 patch] the scheduled I2C RTC driver removal
+Message-ID: <20071127111934.12c76cdd@hyperion.delvare>
+In-Reply-To: <20071102231243.61c39d23@hyperion.delvare>
+References: <20071031230357.GW7227@stusta.de>
+	<20071102231243.61c39d23@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carsten Otte wrote:
->
->> [actually thinking a bit, this is specific to the virtio pci binding; 
->> s390 will never see any of it]
-> You remember that we've lost the big debate around virtio in Tucson? 
+On Fri, 2 Nov 2007 23:12:43 +0100, Jean Delvare wrote:
+> Hi Adrian,
+> 
+> On Thu, 1 Nov 2007 00:03:58 +0100, Adrian Bunk wrote:
+> > This patch contains the scheduled removal of legacy I2C RTC drivers with 
+> > replacement drivers.
+> > (...)
+> >  Documentation/feature-removal-schedule.txt |    7 
+> >  arch/powerpc/platforms/83xx/mpc832x_mds.c  |   24 -
+> >  arch/powerpc/platforms/83xx/mpc834x_mds.c  |   24 -
+> >  arch/powerpc/platforms/83xx/mpc836x_mds.c  |   24 -
+> >  arch/ppc/platforms/83xx/mpc834x_sys.c      |   20 -
+> >  arch/ppc/platforms/85xx/tqm85xx.c          |   21 -
+> >  arch/ppc/platforms/katana.c                |   21 -
+> >  drivers/i2c/chips/Kconfig                  |   38 -
+> >  drivers/i2c/chips/Makefile                 |    3 
+> >  drivers/i2c/chips/ds1337.c                 |  410 --------------------
+> >  drivers/i2c/chips/ds1374.c                 |  267 -------------
+> >  drivers/i2c/chips/m41t00.c                 |  413 ---------------------
+> >  include/linux/m41t00.h                     |   50 --
+> >  13 files changed, 1322 deletions(-)
+> 
+> Obviously we're not yet ready to remove the drivers, as some platforms
+> still use them! The remaining platforms need to be updated to use the
+> new RTC drivers first. The mapping is as follows:
+> 
+> chip       | old driver | new driver   |
+> -----------+------------+--------------+
+> DS1337     | ds1337     | rtc-ds1307   |
+> DS1339     | ds1337     | rtc-ds1307   |
+> DS1374     | ds1374     | rtc-ds1374   |
+> M41T00     | m41t00     | rtc-ds1307   |
+> M41T81     | m41t00     | rtc-m41t80   |
+> M41ST85    | m41t00     | rtc-m41t80   |
+> 
+> So, PPC people, please update your platform code to make use of the new
+> drivers now, and let me know when you're done. As soon as all platforms
+> are converted, I'll apply Adrian's patch.
 
-I was in the embedded BOF.
+As of 2.6.24-rc3-git2, I see that the references to the obsolete
+drivers have been removed from arch/powerpc/*. Great, I'll update
+Adrian's patch. This leaves only 3 platforms under arch/ppc (83xx, 85xx
+and katana) that still need updating. Kumar, Paul, what's the status?
 
-> We intend to bind our virtio devices to PCI too, so that they look the 
-> same in Linux userland across architectures.
-
-Ouch.
-
+Thanks,
 -- 
-error compiling committee.c: too many arguments to function
-
+Jean Delvare
