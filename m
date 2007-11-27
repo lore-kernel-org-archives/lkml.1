@@ -1,67 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXK0Svz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbXK0Sx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbXK0Svz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 13:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbXK0SvQ
+	id S1759232AbXK0Sx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 13:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbXK0Sxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 13:51:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33372 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758545AbXK0SvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 13:51:14 -0500
-Date: Tue, 27 Nov 2007 13:50:53 -0500
-From: Dave Jones <davej@redhat.com>
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Michael Buesch <mb@bu3sch.de>,
-       folkert van Heusden <folkert@vanheusden.com>
-Subject: Re: enable dual rng on VIA C7
-Message-ID: <20071127185053.GA30057@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Udo van den Heuvel <udovdh@xs4all.nl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-	folkert van Heusden <folkert@vanheusden.com>
-References: <47374EA4.1060009@xs4all.nl> <20071125233949.f64b2ecd.akpm@linux-foundation.org> <474AFC2F.1040309@xs4all.nl> <20071126185843.GD15764@redhat.com> <474C40FA.1070501@xs4all.nl>
-MIME-Version: 1.0
+	Tue, 27 Nov 2007 13:53:46 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:36649 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756728AbXK0Sxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 13:53:45 -0500
+Date: Tue, 27 Nov 2007 13:53:21 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: tcsetattr(fd, TCSAFLUSH) on an O_ASYNC pts device always fails
+Message-ID: <20071127185321.GA8546@c2.user-mode-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <474C40FA.1070501@xs4all.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 05:08:26PM +0100, Udo van den Heuvel wrote:
- > Dave Jones wrote:
- > > On Mon, Nov 26, 2007 at 06:02:39PM +0100, Udo van den Heuvel wrote:
- > > 
- > >  > I did not know we are already that far ;-)
- > >  > I mean: can this patch be aplied without hurting C3/C7 CPU's with just
- > >  > one RNG? Maybe an expert needs to test/answer?
- > >  > Maybe some logic needs to be applied around the extra bit?
- > >  
- > >>From the padlock spec..
- > > 
- > > "SRC Bits[9:8] Noise source select (I): These bits control the two noise
- > >  sources on the processor that input bits to the accumulation buffers.
- > >  On Nehemiah processors prior to stepping 8, these bits are reserved
- > >  and undefined. The default RESET state is both bits = 0." 
- > > 
- > > Something like this perhaps ?
- > 
- > Yes, I think that's a big step in the right direction!
- > 
- > But I am no expert and cannot really judge how necessary or correct the
- > implementation is w.r.t. the 'undefined' function bits for CPU's that
- > lack a certain feature.
+tcsetattr(fd, TCSAFLUSH) will always return -EINTR on a pts device
+when O_ASYNC has been set.  This is demonstrated by the test program
+below - just compile and follow the instructions.  You'll get an
+infinite stream of SIGIOs and -EINTRs.
 
-The checks at the end of the patch for the x86_mask/model ensure
-we only enable the 2nd noise source on CPUs documented to have it,
-so we should be safe.
+The underlying reason is that the pty driver keeps its TTY_THROTTLED
+flag set all the time:
 
-Andrew, want to throw that in the -mm pile for a while?
+static void check_unthrottle(struct tty_struct * tty)
+{
+	if (tty->count &&
+	    test_and_clear_bit(TTY_THROTTLED, &tty->flags) && 
+	    tty->driver->unthrottle)
+		tty->driver->unthrottle(tty);
+}
 
-	Dave
+tty->driver->unthrottle is pty_unthrottle in this case:
+
+static void pty_unthrottle(struct tty_struct * tty)
+{
+	...
+	tty_wakeup(o_tty);
+	set_bit(TTY_THROTTLED, &tty->flags);
+}
+
+tty_wakeup naturally wakes up any processes sleeping on the device
+and also queues a SIGIO to any processes wanting async I/O
+notifications.  However, the fact that a SIGIO is queued means that
+the ioctl underneath tcsetattr returns -EINTR.  When userspace sees
+this and retries the call, we go around the same loop:
+	make sure that output is flushed
+	call the unthrottle routine because TTY_THROTTLED is set
+	deliver another SIGIO
+	set TTY_THROTTLED
+	return -EINTR
+
+The call stack looks like this:
+
+	kill_fasync
+	tty_wakeup
+	pty_unthrottle
+	check_unthrottle
+	n_tty_flush_buffer
+	set_termios
+	n_tty_ioctl
+	tty_ioctl
+
+I'd love to get rid of the set_bit(TTY_THROTTLED, &tty->flags) in
+pty_unthrottle, but it's protected by this comment:
+
+/* For PTY's, the TTY_THROTTLED
+ * flag is always set, to force the line discipline to always call the
+ * unthrottle routine when there are fewer than TTY_THRESHOLD_UNTHROTTLE 
+ * characters in the queue.  This is necessary since each time this
+ * happens, we need to wake up any sleeping processes that could be
+ * (1) trying to send data to the pty, or (2) waiting in wait_until_sent()
+ * for the pty buffer to be drained.
+ */
+
+Failing that, there should be a relevant state change in the device
+before it will deliver a SIGIO.  I just have no idea where to put it.
+
+				Jeff
 
 -- 
-http://www.codemonkey.org.uk
+Work email - jdike at linux dot intel dot com
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#define __USE_GNU /* Needed to get F_SETSIG */
+#include <fcntl.h>
+#include <poll.h>
+#include <signal.h>
+#include <termios.h>
+
+int pts_fd;
+
+void sigio(int sig)
+{
+	struct pollfd fd;
+	int err;
+
+	printf("SIGIO\n");
+
+	fd.fd = pts_fd;
+	fd.events = POLLIN | POLLPRI | POLLOUT | POLLERR | POLLHUP | POLLNVAL;
+	fd.revents = 0;
+
+	err = poll(&fd, 1, 0);
+	if (err < 0) {
+		perror("poll");
+		exit(1);
+	}
+
+	printf("poll returns revents = 0x%x\n", fd.revents);
+}
+
+int main(int argc, char **argv)
+{
+	struct termios save;
+	int err;
+	char c;
+
+	pts_fd = open("/dev/ptmx", O_RDWR);
+	if (pts_fd < 0) {
+		perror("Opening /dev/ptmx");
+		exit(1);
+	}
+
+	err = grantpt(pts_fd);
+	if (err) {
+		perror("grantpt");
+		exit(1);
+	}
+
+	if (unlockpt(pts_fd) < 0) {
+		perror("unlockpt");
+		exit(1);
+	}
+
+	if((fcntl(pts_fd, F_SETFL, O_ASYNC | O_NONBLOCK) < 0) ||
+	   (fcntl(pts_fd, F_SETSIG, SIGIO) < 0) ||
+	   (fcntl(pts_fd, F_SETOWN, getpid()) < 0)){
+		perror("F_SETFL, F_SETSIG, or F_SETOWN");
+		exit(1);
+	}
+
+	signal(SIGIO, sigio);
+
+	err = tcgetattr(pts_fd, &save);
+	if (err) {
+		perror("tcgetattr");
+		exit(1);
+	}
+
+	printf("Attach screen to %s and hit return here\n", ptsname(pts_fd));
+
+	read(0, &c, 1);
+
+	do {
+		err = tcsetattr(pts_fd, TCSAFLUSH, &save);
+		if (!err)
+			break;
+		err = errno;
+		perror("tcsetattr");
+	} while(err == EINTR);
+}
