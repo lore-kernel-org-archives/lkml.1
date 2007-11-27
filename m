@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbXK0Uoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXK0Uq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbXK0Uoq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXK0Uof
+	id S1758845AbXK0Uq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXK0Uqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:44:35 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:1806 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756430AbXK0Uoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:44:34 -0500
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: 2.6.23-mm1 tg3 wake-on-lan oddity...
-From: "Michael Chan" <mchan@broadcom.com>
-To: Valdis.Kletnieks@vt.edu
-cc: linux-kernel@vger.kernel.org, "netdev" <netdev@vger.kernel.org>
-In-Reply-To: <24400.1196156118@turing-police.cc.vt.edu>
-References: <24400.1196156118@turing-police.cc.vt.edu>
-Date: Tue, 27 Nov 2007 13:34:57 -0800
-Message-ID: <1196199297.7323.10.camel@dell>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6B525E2D1S412257467-01-01
-Content-Type: text/plain
+	Tue, 27 Nov 2007 15:46:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49341 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752305AbXK0Uqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:46:48 -0500
+Date: Tue, 27 Nov 2007 12:46:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, mwelinder@gmail.com, rlove@rlove.org,
+       John McCutchan <ttb@tentacle.dhs.org>
+Subject: Re: [PATCH] Send IN_ATTRIB events when link count changes
+Message-Id: <20071127124640.6110ddfb.akpm@linux-foundation.org>
+In-Reply-To: <20071126162758.GA856@duck.suse.cz>
+References: <118833cc0711201911r3684937p38823649639e0a57@mail.gmail.com>
+	<118833cc0711231154i588cf7c1gb99e050999af8632@mail.gmail.com>
+	<20071126160043.GA5647@atrey.karlin.mff.cuni.cz>
+	<118833cc0711260806x69fc2bb6n572f1e1253a201ef@mail.gmail.com>
+	<20071126162758.GA856@duck.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-27 at 01:35 -0800, Valdis.Kletnieks@vt.edu wrote:
+On Mon, 26 Nov 2007 17:27:58 +0100
+Jan Kara <jack@suse.cz> wrote:
 
+>   Hi Andrew,
 > 
-> Issue:
+>   would you pick up this patch for testing in -mm? Thanks.
 > 
-> I (for unrelated reasons) run powertop, and it suggests I conserve power
-> by doing 'ethtool -s eth0 wol d'.  I look at it, and think that it's daft,
-> because (a) the Dell factory default is WOL disabled and (b) if it wasn't
-> the default, I'd have *set* it to disabled, and (c) I even went back and
-> rebooted and checked the BIOS setting - disabled. Nonetheless:
+> 								Honza
 > 
-> # ethtool eth0 | grep Wake
->         Supports Wake-on: g
->         Wake-on: g
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
 > 
-> Is this expected behavior?
+> ---
+> 
+> Send inotify events to the inode itself when its link count has changed.
 
-What's happening is that there are 2 WoL settings: one in the BIOS and
-one in the NIC's NVRAM.  For WoL to work, I think both settings have to
-be enabled.  Apparently in this case, when you turn off WoL in the BIOS,
-the NVRAM's WoL setting is unchanged, and will be seen by tg3 as
-enabled.
-
-Ideally, the BIOS should modify the NVRAM's setting when it is changed.
-We will talk to Dell to get their opinion on this as this is very
-confusing to the user.
-
-Thanks.
+Could we have a better changelog please?  What is the reason for making
+this change?  What are the before-and-after effects upon inotify clients,
+etc?
 
