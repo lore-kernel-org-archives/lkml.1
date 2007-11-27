@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbXK0RQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbXK0RSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbXK0RQH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 12:16:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbXK0RPy
+	id S1759305AbXK0RSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 12:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758025AbXK0RSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 12:15:54 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41120 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756836AbXK0RPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 12:15:53 -0500
-Date: Tue, 27 Nov 2007 18:15:42 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Roland Dreier <rdreier@cisco.com>,
-       Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071127171542.GB3406@stusta.de>
-References: <20071122343.446909000@suse.de> <200711261228.15155.rusty@rustcorp.com.au> <adahcj9sfan.fsf@cisco.com> <200711271549.37670.rusty@rustcorp.com.au> <1196141742.9876.49.camel@trinity.ogc.int>
+	Tue, 27 Nov 2007 12:18:09 -0500
+Received: from smtp.citrix.com ([66.165.176.89]:43258 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758020AbXK0RSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 12:18:08 -0500
+X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Nov 2007 12:18:08 EST
+X-SBRS: None
+X-MesageID: 32537953
+X-Ironport-Server: ftlpip01.citrite.net
+X-Remote-IP: 70.42.232.150
+X-Policy: $Relay
+X-IronPort-AV: E=Sophos;i="4.23,220,1194238800"; 
+   d="scan'208";a="32537953"
+Date: Tue, 27 Nov 2007 17:08:20 +0000
+From: Samuel Thibault <samuel.thibault@citrix.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: [PATCH] Alpha and x86_64 don't use socketcall
+Message-ID: <20071127170820.GG4197@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@citrix.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1196141742.9876.49.camel@trinity.ogc.int>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 11:35:42PM -0600, Tom Tucker wrote:
-> On Tue, 2007-11-27 at 15:49 +1100, Rusty Russell wrote:
->...
-> > No.  That's the wrong question.  What's the real upside?
-> 
-> Explicitly documenting what comprises the kernel API (external,
-> supported) and what comprises the kernel implementation (internal, not
-> supported).
->...
+Alpha and x86_64 architectures don't use socketcall and don't provide
+__NR_socketcall.
 
-There is not, never was, and never will be, any supported external API 
-of the kernel.
- 
-cu
-Adrian
+Signed-off-by: Samuel Thibault <samuel.thibault@citrix.com>
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff -r 51b2b0d0921c include/asm-alpha/unistd.h
+--- a/include/asm-alpha/unistd.h	Wed Nov 21 09:41:11 2007 +0000
++++ b/include/asm-alpha/unistd.h	Tue Nov 27 16:40:02 2007 +0000
+@@ -573,7 +573,6 @@ type name (type1 arg1,type2 arg2,type3 a
+ #define __ARCH_WANT_OLD_READDIR
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_GETHOSTNAME
+-#define __ARCH_WANT_SYS_SOCKETCALL
+ #define __ARCH_WANT_SYS_FADVISE64
+ #define __ARCH_WANT_SYS_GETPGRP
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
+diff -r 51b2b0d0921c include/asm-x86_64/unistd.h
+--- a/include/asm-x86_64/unistd.h	Wed Nov 21 09:41:11 2007 +0000
++++ b/include/asm-x86_64/unistd.h	Tue Nov 27 16:40:02 2007 +0000
+@@ -648,7 +648,6 @@ do { \
+ #define __ARCH_WANT_SYS_SIGNAL
+ #define __ARCH_WANT_SYS_UTIME
+ #define __ARCH_WANT_SYS_WAITPID
+-#define __ARCH_WANT_SYS_SOCKETCALL
+ #define __ARCH_WANT_SYS_FADVISE64
+ #define __ARCH_WANT_SYS_GETPGRP
+ #define __ARCH_WANT_SYS_LLSEEK
