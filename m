@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbXK0XCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbXK0XCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbXK0XCX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759056AbXK0XCD
+	id S1758853AbXK0XCx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756653AbXK0XCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:02:03 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59126 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752527AbXK0XCA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:02:00 -0500
-Date: Tue, 27 Nov 2007 15:00:22 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071127150022.61bdff7e@freepuppy.rosehill>
-In-Reply-To: <20071127223743.GI24223@one.firstfloor.org>
-References: <20071122343.446909000@suse.de>
-	<200711261228.15155.rusty@rustcorp.com.au>
-	<adahcj9sfan.fsf@cisco.com>
-	<200711271549.37670.rusty@rustcorp.com.au>
-	<1196202698.3415.119.camel@jcmlaptop>
-	<20071127223743.GI24223@one.firstfloor.org>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 18:02:44 -0500
+Received: from r00tworld.com ([212.85.137.21]:55251 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758956AbXK0XCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 18:02:43 -0500
+From: pageexec@freemail.hu
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       travis@sgi.com
+Date: Wed, 28 Nov 2007 00:01:57 +0200
+MIME-Version: 1.0
+Subject: Re: [PATCH 1/1] mm: Prevent dereferencing non-allocated per_cpu variables
+Reply-to: pageexec@freemail.hu
+CC: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Message-ID: <474CAFF5.8792.356C2F62@pageexec.freemail.hu>
+In-reply-to: <20071127215054.660250000@sgi.com>
+References: <20071127215052.090968000@sgi.com>, <20071127215054.660250000@sgi.com>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 28 Nov 2007 00:01:35 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007 23:37:43 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+On 27 Nov 2007 at 13:50, travis@sgi.com wrote:
 
-> > With my "Enterprise" hat on, I can see where Andi was coming from
-> > originally. 
-> 
-> For the record my original motivation was to fix the "TCP exports everything
-> for ipv6.ko" case cleanly. I later realized that it would be useful for the
-> ABI stability issues too, but it was really not my primary motivation.
-> This is why I didn't even mention that in the original patch description.
+> Change loops controlled by 'for (i = 0; i < NR_CPUS; i++)' to use
+> 'for_each_possible_cpu(i)' when there's a _remote possibility_ of
+> dereferencing a non-allocated per_cpu variable involved.
 
-Since ipv6 can never be removed because it references itself, the whole concept
-of a modular ipv6 is flawed. Sometime ago a patch was sent to remove the ipv6 module
-unload hooks but as I recall Dave rejected it believing the unload code could be
-fixed.
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+actually, it's not that remote, it happens every time
+NR_CPUS > num_possible_cpus(). i ran into this myself
+on a dual core box with NR_CPUS=4. due to my rewrite
+of the i386 per-cpu segment handling, i actually got
+a NULL deref where the vanilla kernel would be accessing
+the area of [__per_cpu_start, __per_cpu_end] for each
+non-possible CPU (which doesn't crash per se but is
+still not correct somehow i think).
+
