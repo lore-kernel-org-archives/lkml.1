@@ -1,77 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXK0I70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbXK0JAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbXK0I70 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXK0I7R
+	id S1757260AbXK0JAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 04:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbXK0JAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:59:17 -0500
-Received: from mga01.intel.com ([192.55.52.88]:21161 "EHLO mga01.intel.com"
+	Tue, 27 Nov 2007 04:00:31 -0500
+Received: from il.qumranet.com ([82.166.9.18]:57841 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751066AbXK0I7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:59:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,218,1194249600"; 
-   d="scan'208";a="404140926"
-Subject: Re: 2.6.24: Serial disabled in BIOS but serial modules still
-	loaded (probably PnP related)
-From: Shaohua Li <shaohua.li@intel.com>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <200711252301.34503.arvidjaar@mail.ru>
-References: <fa.P01QcmUf2f3DN4etI8KJYFdaLnE@ifi.uio.no>
-	 <4749C15C.6020805@shaw.ca>  <200711252301.34503.arvidjaar@mail.ru>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 16:59:06 +0800
-Message-Id: <1196153946.5385.4.camel@sli10-conroe.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	id S1751048AbXK0JAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 04:00:31 -0500
+Message-ID: <474BDD28.7050801@qumranet.com>
+Date: Tue, 27 Nov 2007 11:02:32 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: Eric Van Hensbergen <ericvanhensbergen@us.ibm.com>,
+       lguest <lguest@ozlabs.org>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org
+Subject: Re: [kvm-devel] [PATCH 3/3] virtio PCI device
+References: <11944899922822-git-send-email-aliguori@us.ibm.com>	<11944900141678-git-send-email-aliguori@us.ibm.com>	<11944900152750-git-send-email-aliguori@us.ibm.com>	<11944900163817-git-send-email-aliguori@us.ibm.com>	<4742F6B7.20503@qumranet.com>	<474300AD.4060509@us.ibm.com>	<4743076F.8000105@qumranet.com> <47435CCB.1050506@us.ibm.com>	<4743DAA4.70800@qumranet.com> <4747051C.3090903@us.ibm.com> <4747122F.1070905@qumranet.com> <474B1BF3.20901@us.ibm.com>
+In-Reply-To: <474B1BF3.20901@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-11-26 at 04:01 +0800, Andrey Borzenkov wrote:
-> On Sunday 25 November 2007, Robert Hancock wrote:
-> > Andrey Borzenkov wrote:
-> > > I have no COM port on notebook (without port replicator which I do not have)
-> > > so COM is disabled in BIOS. No ttyS* is detected during boot (and no device
-> > > created) but I just noticed that serial modules are still loaded. Well, this
-> > > partially defeats the purpose of disabling COM port - the intention was to
-> > > free resources by *not* loading unneeded modules ...
-> > > 
-> > > This may have something to do with (ACPI) PnP which apparently believes COM is alive.
-> > > Notebook is Toshiba Portege 4000.
-> > 
-> > Probably a BIOS bug. It still lists the port in PnP data even though the 
-> > hardware is disabled, so the kernel still tries to load the serial 
-> > driver for it, which finds there's no port there.
-> > 
-> 
-> Here is what we get from _STA:
-> 
-> [ 1689.988245] HID=PNP0501 flags=0d
-> 
-> If I read specs correctly, if bit 1 is cleared it means, device is not able
-> to access its hardware resources, so it makes no sense to even try to
-> load driver for it.
-> 
-> And of course it makes PnP output completely bogus:
-> 
-> 00:09 PNP0501 16550A-compatible serial port
->     state = active
->     allocated resources:
->         io 0x3f8-0x3ff
->         irq 5
->  
-> So two questions:
-> 
-> 1. why device got enabled when ACPI explicitly stated it cannot be?
-> 2. can we get information about _STA result in user space so we do not try
-> to autoload driver for device that can't work?
-0xd means present, disabled. A disabled PNP device can be enabled, ACPI
-doesn't say it can't be. When the driver is loaded, it will enabled the
-device. If BIOS wants to disable the device, it should make the device
-non-present.
+Anthony Liguori wrote:
+>> Another point is that virtio still has a lot of leading zeros in its 
+>> mileage counter. We need to keep things flexible and learn from 
+>> others as much as possible, especially when talking about the ABI.
+>
+> Yes, after thinking about it over holiday, I agree that we should at 
+> least introduce a virtio-pci feature bitmask.  I'm not inclined to 
+> attempt to define a hypercall ABI or anything like that right now but 
+> having the feature bitmask will at least make it possible to do such a 
+> thing in the future.
 
-Thanks,
-Shaohua
+No, definitely not define a hypercall ABI.  The feature bit should say 
+"this device understands a hypervisor-specific way of kicking.  consult 
+your hypervisor manual and cpuid bits for further details.  should you 
+not be satisfied with this method, port io is still available".
+
+>
+>>> I'm wary of introducing the notion of hypercalls to this device 
+>>> because it makes the device VMM specific.  Maybe we could have the 
+>>> device provide an option ROM that was treated as the device "BIOS" 
+>>> that we could use for kicking and interrupt acking?  Any idea of how 
+>>> that would map to Windows?  Are there real PCI devices that use the 
+>>> option ROM space to provide what's essentially firmware?  
+>>> Unfortunately, I don't think an option ROM BIOS would map well to 
+>>> other architectures.
+>>>
+>>>   
+>>
+>> The BIOS wouldn't work even on x86 because it isn't mapped to the 
+>> guest address space (at least not consistently), and doesn't know the 
+>> guest's programming model (16, 32, or 64-bits? segmented or flat?)
+>>
+>> Xen uses a hypercall page to abstract these details out. However, I'm 
+>> not proposing that. Simply indicate that we support hypercalls, and 
+>> use some layer below to actually send them. It is the responsibility 
+>> of this layer to detect if hypercalls are present and how to call them.
+>>
+>> Hey, I think the best place for it is in paravirt_ops. We can even 
+>> patch the hypercall instruction inline, and the driver doesn't need 
+>> to know about it.
+>
+> Yes, paravirt_ops is attractive for abstracting the hypercall calling 
+> mechanism but it's still necessary to figure out how hypercalls would 
+> be identified.  I think it would be necessary to define a virtio 
+> specific hypercall space and use the virtio device ID to claim subspaces.
+>
+> For instance, the hypercall number could be (virtio_devid << 16) | 
+> (call number).  How that translates into a hypercall would then be 
+> part of the paravirt_ops abstraction.  In KVM, we may have a single 
+> virtio hypercall where we pass the virtio hypercall number as one of 
+> the arguments or something like that.
+
+If we don't call it a hypercall, but a virtio kick operation, we don't 
+need to worry about the hypercall number or ABI.  It's just a function 
+that takes an argument that's implemented differently by every 
+hypervisor.  The default implementation can be a pio operation.
+
+>>>> Make it appear as a pci function?  (though my feeling is that 
+>>>> multiple mounts should be different devices; we can then hotplug 
+>>>> mountpoints).
+>>>>     
+>>>
+>>> We may run out of PCI slots though :-/
+>>>   
+>>
+>> Then we can start selling virtio extension chassis.
+>
+> :-)  Do you know if there is a hard limit on the number of devices on 
+> a PCI bus?  My concern was that it was limited by something stupid 
+> like an 8-bit identifier.
+
+IIRC pci slots are 8-bit, but you can have multiple buses, so 
+effectively 16 bits of device address space (discounting functions which 
+are likely not hot-pluggable).
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
