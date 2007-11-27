@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXK0QJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbXK0QKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbXK0QJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXK0QJJ
+	id S1759055AbXK0QKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbXK0QK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:09:09 -0500
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:2913 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753594AbXK0QJI (ORCPT
+	Tue, 27 Nov 2007 11:10:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48061 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755223AbXK0QK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:09:08 -0500
-Message-ID: <474C40FA.1070501@xs4all.nl>
-Date: Tue, 27 Nov 2007 17:08:26 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 27 Nov 2007 11:10:28 -0500
+Date: Mon, 26 Nov 2007 22:48:09 -0800
+From: Greg KH <greg@kroah.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] drivers/usb: Drop unnecessary continue
+Message-ID: <20071127064809.GA7571@kroah.com>
+References: <Pine.LNX.4.64.0711140914360.26019@ask.diku.dk>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Udo van den Heuvel <udovdh@xs4all.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Michael Buesch <mb@bu3sch.de>,
-       folkert van Heusden <folkert@vanheusden.com>
-Subject: Re: enable dual rng on VIA C7
-References: <47374EA4.1060009@xs4all.nl> <20071125233949.f64b2ecd.akpm@linux-foundation.org> <474AFC2F.1040309@xs4all.nl> <20071126185843.GD15764@redhat.com>
-In-Reply-To: <20071126185843.GD15764@redhat.com>
-X-Enigmail-Version: 0.95.5
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711140914360.26019@ask.diku.dk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Mon, Nov 26, 2007 at 06:02:39PM +0100, Udo van den Heuvel wrote:
-> 
->  > I did not know we are already that far ;-)
->  > I mean: can this patch be aplied without hurting C3/C7 CPU's with just
->  > one RNG? Maybe an expert needs to test/answer?
->  > Maybe some logic needs to be applied around the extra bit?
->  
->>From the padlock spec..
-> 
-> "SRC Bits[9:8] Noise source select (I): These bits control the two noise
->  sources on the processor that input bits to the accumulation buffers.
->  On Nehemiah processors prior to stepping 8, these bits are reserved
->  and undefined. The default RESET state is both bits = 0." 
-> 
-> Something like this perhaps ?
+On Wed, Nov 14, 2007 at 09:15:16AM +0100, Julia Lawall wrote:
+> diff -u -p -b -B a/drivers/usb/host/isp116x-hcd.c b/drivers/usb/host/isp116x-hcd.c
+> --- a/drivers/usb/host/isp116x-hcd.c 2007-10-22 11:25:24.000000000 +0200
+> +++ b/drivers/usb/host/isp116x-hcd.c 2007-11-13 23:14:10.000000000 +0100
+> @@ -918,7 +918,6 @@ static int isp116x_hub_status_data(struc
+>   			      | RH_PS_OCIC | RH_PS_PRSC)) {
+>   			changed = 1;
+>   			buf[0] |= 1 << (i + 1);
+> -			continue;
+>   		}
+>   	}
+>   	spin_unlock_irqrestore(&isp116x->lock, flags);
 
-Yes, I think that's a big step in the right direction!
+Your email client is eating all the tabs and converting them to spaces,
+making these patches very hard to apply.
 
-But I am no expert and cannot really judge how necessary or correct the
-implementation is w.r.t. the 'undefined' function bits for CPU's that
-lack a certain feature.
+I've fixed this one up by hand, but please, fix your email client for
+future ones.
+
+thanks,
+
+greg k-h
