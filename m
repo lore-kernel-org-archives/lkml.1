@@ -1,122 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbXK0Vz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbXK0WCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759354AbXK0Vz7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 16:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbXK0Vzu
+	id S1759479AbXK0WCT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758286AbXK0WCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 16:55:50 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:41772 "EHLO relay.sgi.com"
+	Tue, 27 Nov 2007 17:02:11 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:51056 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756739AbXK0Vzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 16:55:50 -0500
-Message-Id: <20071127215054.660250000@sgi.com>
-References: <20071127215052.090968000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 27 Nov 2007 13:50:53 -0800
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, pageexec@freemail.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] mm: Prevent dereferencing non-allocated per_cpu variables
-Content-Disposition: inline; filename=change-NR_CPUS-to-for_each_possible_cpu
+	id S1757379AbXK0WCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 17:02:09 -0500
+Date: Tue, 27 Nov 2007 14:02:08 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Mosberger-Tang <dmosberger@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, tony.luck@intel.com
+Subject: Re: [patch 04/14] ia64: Remove the __SMALL_ADDR_AREA attribute for
+ per cpu access
+In-Reply-To: <ed5aea430711271327l1644750dm363f846a23b1cce5@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0711271401350.4803@schroedinger.engr.sgi.com>
+References: <20071127001407.859743255@sgi.com>  <20071127001430.083503280@sgi.com>
+  <ed5aea430711262120p45bb5b2t1b16872e74547369@mail.gmail.com> 
+ <Pine.LNX.4.64.0711271014550.2310@schroedinger.engr.sgi.com> 
+ <ed5aea430711271310i144c005cj25101b7dd6b0d6d9@mail.gmail.com> 
+ <Pine.LNX.4.64.0711271316110.4590@schroedinger.engr.sgi.com>
+ <ed5aea430711271327l1644750dm363f846a23b1cce5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change loops controlled by 'for (i = 0; i < NR_CPUS; i++)' to use
-'for_each_possible_cpu(i)' when there's a _remote possibility_ of
-dereferencing a non-allocated per_cpu variable involved.
+On Tue, 27 Nov 2007, David Mosberger-Tang wrote:
 
-All files except mm/vmstat.c are x86 arch.
+> Code-size reduction?  You must be talking *source* code size
+> reduction.  Surely the small-data access-method decreases object code
+> size.
 
-Based on 2.6.24-rc3-mm1 .
-
-Thanks to pageexec@freemail.hu for pointing this out.
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/kernel/smp_32.c     |    4 ++--
- arch/x86/kernel/smpboot_32.c |    4 ++--
- arch/x86/xen/smp.c           |    4 ++--
- mm/vmstat.c                  |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
-
---- a/arch/x86/kernel/smp_32.c
-+++ b/arch/x86/kernel/smp_32.c
-@@ -223,7 +223,7 @@ void send_IPI_mask_sequence(cpumask_t ma
- 	 */ 
- 
- 	local_irq_save(flags);
--	for (query_cpu = 0; query_cpu < NR_CPUS; ++query_cpu) {
-+	for_each_possible_cpu(query_cpu) {
- 		if (cpu_isset(query_cpu, mask)) {
- 			__send_IPI_dest_field(cpu_to_logical_apicid(query_cpu),
- 					      vector);
-@@ -675,7 +675,7 @@ static int convert_apicid_to_cpu(int api
- {
- 	int i;
- 
--	for (i = 0; i < NR_CPUS; i++) {
-+	for_each_possible_cpu(i) {
- 		if (per_cpu(x86_cpu_to_apicid, i) == apic_id)
- 			return i;
- 	}
---- a/arch/x86/kernel/smpboot_32.c
-+++ b/arch/x86/kernel/smpboot_32.c
-@@ -1091,7 +1091,7 @@ static void __init smp_boot_cpus(unsigne
- 	 * Allow the user to impress friends.
- 	 */
- 	Dprintk("Before bogomips.\n");
--	for (cpu = 0; cpu < NR_CPUS; cpu++)
-+	for_each_possible_cpu(cpu)
- 		if (cpu_isset(cpu, cpu_callout_map))
- 			bogosum += cpu_data(cpu).loops_per_jiffy;
- 	printk(KERN_INFO
-@@ -1122,7 +1122,7 @@ static void __init smp_boot_cpus(unsigne
- 	 * construct cpu_sibling_map, so that we can tell sibling CPUs
- 	 * efficiently.
- 	 */
--	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-+	for_each_possible_cpu(cpu) {
- 		cpus_clear(per_cpu(cpu_sibling_map, cpu));
- 		cpus_clear(per_cpu(cpu_core_map, cpu));
- 	}
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -146,7 +146,7 @@ void __init xen_smp_prepare_boot_cpu(voi
- 	   old memory can be recycled */
- 	make_lowmem_page_readwrite(&per_cpu__gdt_page);
- 
--	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-+	for_each_possible_cpu(cpu) {
- 		cpus_clear(per_cpu(cpu_sibling_map, cpu));
- 		/*
- 		 * cpu_core_map lives in a per cpu area that is cleared
-@@ -163,7 +163,7 @@ void __init xen_smp_prepare_cpus(unsigne
- {
- 	unsigned cpu;
- 
--	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-+	for_each_possible_cpu(cpu) {
- 		cpus_clear(per_cpu(cpu_sibling_map, cpu));
- 		/*
- 		 * cpu_core_ map will be zeroed when the per
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -27,12 +27,12 @@ static void sum_vm_events(unsigned long 
- 	memset(ret, 0, NR_VM_EVENT_ITEMS * sizeof(unsigned long));
- 
- 	cpu = first_cpu(*cpumask);
--	while (cpu < NR_CPUS) {
-+	while (cpu < NR_CPUS && cpu_possible(cpu)) {
- 		struct vm_event_state *this = &per_cpu(vm_event_states, cpu);
- 
- 		cpu = next_cpu(cpu, *cpumask);
- 
--		if (cpu < NR_CPUS)
-+		if (cpu < NR_CPUS && cpu_possible(cpu))
- 			prefetch(&per_cpu(vm_event_states, cpu));
- 
- 
-
--- 
+Yes source code reduction. I just added the attribute back but in such a 
+way that any arch can add attributes to per cpu definitions.
 
