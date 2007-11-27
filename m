@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXK0Nj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbXK0NnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbXK0Nj6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbXK0Njv
+	id S1756718AbXK0NnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXK0NnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:39:51 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:40828 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbXK0Nju (ORCPT
+	Tue, 27 Nov 2007 08:43:08 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:49382 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbXK0NnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:39:50 -0500
-Date: Tue, 27 Nov 2007 08:37:37 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can support for "rpm"-based package building just be dropped?
-In-Reply-To: <Pine.LNX.4.64.0711261716220.22369@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.9999.0711270835380.21411@localhost.localdomain>
-References: <alpine.LFD.0.9999.0711260352060.30676@localhost.localdomain> <2c0942db0711260658j5ce017e7ucce4c373748ed7b7@mail.gmail.com> <Pine.LNX.4.64.0711261622060.19299@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.9999.0711261048050.24142@localhost.localdomain>
- <Pine.LNX.4.64.0711261704070.19299@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.9999.0711261110040.25316@localhost.localdomain> <Pine.LNX.4.64.0711261716220.22369@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 27 Nov 2007 08:43:07 -0500
+Subject: Re: time accounting problem (powerpc only?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20071127050031.GC24243@bakeyournoodle.com>
+References: <1195814816.4149.94.camel@johannes.berg>
+	 <1196094193.4149.287.camel@johannes.berg>
+	 <20071127050031.GC24243@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oTNo9IylfyH5KXYpo6Gj"
+Date: Tue, 27 Nov 2007 14:42:53 +0100
+Message-Id: <1196170973.6058.18.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, Jan Engelhardt wrote:
 
->
-> On Nov 26 2007 11:13, Robert P. J. Day wrote:
-> >> >>>Only on current machines. You'd break building kernel RPMs on older
-> >> >>>systems that don't have rpmbuild installed.
-> >> >>
-> >> >> Those old machines probably do not even run a distro-fabricated
-> >> >> gcc that would compile a git head kernel.
-> >> >
-> >> >well, in a nutshell, the problem scenario is that it's entirely
-> >> >possible to have a modern distro (say, fedora 8, like i'm using) on
-> >> >which you have the latest "rpm" package installed, but not
-> >> >"rpmbuild".
-> >>
-> >> What, modern and no rpmbuild?
-> >
-> >i didn't say it *wouldn't* have rpmbuild, i said it *might not*.
-> >at the moment, on my f8 system, the only package that requires the
-> >rpm-build package is rpmdevtools, and it's entirely possible that
-> >there's no need for *that* package.
->
-> rpm -b does not work in opensuse anymore (redirects you to use
-> rpmbuild), and I bet fedora will do the same, so if you don't have
-> rpm-build, tough luck for make rpm.
+--=-oTNo9IylfyH5KXYpo6Gj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-i know that that's the case *now*, but we're considering the
-possibility that someone is using an older system on which "rpm" is
-*still* the builder.  in the end, all i'm suggesting is that the build
-should work under all possible scenarios.
 
-rday
+On Tue, 2007-11-27 at 16:00 +1100, Tony Breeds wrote:
+> On Mon, Nov 26, 2007 at 05:23:13PM +0100, Johannes Berg wrote:
+> > Contrary to what I claimed later in the thread, my 64-bit powerpc box
+> > (quad-core G5) doesn't suffer from this problem.
+> >=20
+> > Does anybody have any idea? I don't even know how to debug it further.
+>=20
+> I'll see if I can grab an appropriate machine tomorrow and have a look at
+> it.  I think it's just an accounting bug, which is probably my fault :)
 
-p.s.  i'm not *trying* to make this issue more obfuscated or
-convoluted than it has to be -- i am merely succeeding.
+Thanks. Let me know if you need any info.
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+johannes
 
-http://crashcourse.ca
-========================================================================
+--=-oTNo9IylfyH5KXYpo6Gj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR0we26Vg1VMiehFYAQJjJw//e2gRTdWu+yTGLpwrXixH6O2zBEE6idrQ
+u1nm+7glMlJ1gJa09KJ/CejMUoH7O51lEn2Dw/lRTxJuEihrhvHIlU3nA4v67x0n
+afksy/Z40Nh86jg8Qd0s+oTjDRBmp7CNV4gA0AMEINfozlgEqEP9Dj8e5LE8j+lZ
+5T4JbWDe7C0+zpsJNwWDCQ28+ds619P1hNhueCslKaFXtRLjDja8R4wzlJHBh802
+0xOIXp61fnQRS447WOk3OnZPyTC0JWbUvNMUloDHxTh0ELBL8LShIQhNo/SsHjZp
+tKnJqhi2lxgahwRvyHDvypLukP7hWsV3SMRr09lYr8uzw8a5s81Ut/9heLmS8V9K
+DosRXlpbOJ5XixGEH4I0GHhn1oM55qebF+1VtCVechDAQ7+Vx27V/4VagUQIQ/nE
+UmTULGMZlj/bPX1XRzS2nXncWSWw+N85kff2HZif6pYrMC4q58QReTFll8rQNcF8
+TEBHUxRdNkZ32Se3z7hEzdqiqss7PIkTr49o/eI69qzAwi7+P312+RYVQa0Dp8D8
+QgKu5CcDSKlCdLRY85WQBO5TSF0BTQxUSmoV7SWGzOXlGIQmj6k9lFzCX/LemnMI
+HNOHN4RVOQkBQpwkJNnHMZXHmlJ7bnOvvt5LwgJPeeQ5aFSn4FOpHEES44T4/Wus
+XK+hdBXFLts=
+=0dtu
+-----END PGP SIGNATURE-----
+
+--=-oTNo9IylfyH5KXYpo6Gj--
+
