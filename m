@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759574AbXK0QaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbXK0Qam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759574AbXK0QaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758998AbXK0Q30
+	id S1759689AbXK0Qam (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:30:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbXK0Q32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:29:26 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:17988 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758420AbXK0Q3W (ORCPT
+	Tue, 27 Nov 2007 11:29:28 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:23570 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758932AbXK0Q3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:29:22 -0500
-Message-Id: <20071127162920.101880329@de.ibm.com>
+	Tue, 27 Nov 2007 11:29:24 -0500
+Message-Id: <20071127162920.358220309@de.ibm.com>
 References: <20071127162210.262064983@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Nov 2007 17:22:13 +0100
+Date: Tue, 27 Nov 2007 17:22:14 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 3/4] dcssblk: prevent early access without own make_request function
-Content-Disposition: inline; filename=003-dcss-ioerror.diff
+Subject: [patch 4/4] Fix compile error on 31bit without preemption
+Content-Disposition: inline; filename=004-non-preempt.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-When loading a dcss segment with the dcssblk driver, sometimes the
-following kind of message appears:
+Commit b8e7a54cd06b0b0174029ef3a7f5a1415a2c28f2 introduced a compile
+error if CONFIG_PREEMPT is not set:
 
-bio too big device dcssblk0 (8 > 0)
-Buffer I/O error on device dcssblk0, logical block 172016
-..
+arch/s390/kernel/built-in.o: In function `cleanup_io_leave_insn':
+/space/kvm/arch/s390/kernel/entry.S:(.text+0xbfce): undefined reference to `preempt_schedule_irq'
 
-The fix is to move the disk registration after setting the
-make_request function, to avoid calls into generic_make_request
-for dcssblock without having the make_request function set up
-properly.
+This patch hides preempt_schedule_irq if CONFIG_PREEMPT is not set.
 
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/block/dcssblk.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/s390/kernel/entry.S |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Index: quilt-2.6/drivers/s390/block/dcssblk.c
+Index: quilt-2.6/arch/s390/kernel/entry.S
 ===================================================================
---- quilt-2.6.orig/drivers/s390/block/dcssblk.c
-+++ quilt-2.6/drivers/s390/block/dcssblk.c
-@@ -472,11 +472,11 @@ dcssblk_add_store(struct device *dev, st
- 	if (rc)
- 		goto unregister_dev;
- 
--	add_disk(dev_info->gd);
--
- 	blk_queue_make_request(dev_info->dcssblk_queue, dcssblk_make_request);
- 	blk_queue_hardsect_size(dev_info->dcssblk_queue, 4096);
- 
-+	add_disk(dev_info->gd);
-+
- 	switch (dev_info->segment_type) {
- 		case SEG_TYPE_SR:
- 		case SEG_TYPE_ER:
+--- quilt-2.6.orig/arch/s390/kernel/entry.S
++++ quilt-2.6/arch/s390/kernel/entry.S
+@@ -1079,8 +1079,10 @@ cleanup_io_leave_insn:
+ .Lexecve_tail:	.long	execve_tail
+ .Ljump_table:	.long	pgm_check_table
+ .Lschedule:	.long	schedule
++#ifdef CONFIG_PREEMPT
+ .Lpreempt_schedule_irq:
+ 		.long	preempt_schedule_irq
++#endif
+ .Ltrace:	.long	syscall_trace
+ .Lschedtail:	.long	schedule_tail
+ .Lsysc_table:	.long	sys_call_table
 
 -- 
 blue skies,
