@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbXK0TvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbXK0T7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbXK0TvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 14:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXK0TvO
+	id S1757310AbXK0T7c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 14:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbXK0T7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 14:51:14 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52666 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754145AbXK0TvN (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 14:51:13 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Michael Chan <mchan@broadcom.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.23-mm1 tg3 wake-on-lan oddity...
-In-Reply-To: Your message of "Tue, 27 Nov 2007 08:04:28 PST."
-             <1551EAE59135BE47B544934E30FC4FC002AABB51@nt-irva-0751.brcm.ad.broadcom.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1551EAE59135BE47B544934E30FC4FC002AABB51@nt-irva-0751.brcm.ad.broadcom.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196193061_2895P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Nov 2007 14:51:01 -0500
-Message-ID: <24595.1196193061@turing-police.cc.vt.edu>
+	Tue, 27 Nov 2007 14:59:24 -0500
+Received: from qb-out-0506.google.com ([72.14.204.232]:27595 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754371AbXK0T7X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 14:59:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=bfwPBnJ3+JtjOrNvyE6xNi2dEqM0WiEVIwQnuzRhc22I3fuAeIaLD5MyVZ+Ds/a2KTydZxP+/Gv72Cn5ynIByEy6/+64s3fCHDppvqLFnL/8WNYJM/Y9T6BcdHQ17BfJF0uAKS0bqPfyJQ8qL6KtTn60r6gihyBfVMWcYdicAXI=
+Date: Wed, 28 Nov 2007 02:58:56 +0700
+From: Riki Oktarianto <rkoktarianto@gmail.com>
+To: Nicolas Boichat <nicolas@boichat.ch>
+Cc: linux-kernel@vger.kernel.org, mactel-linux-devel@lists.sourceforge.net
+Subject: [PATCH] applesmc - sensors set for MacBook2
+Message-ID: <20071127195856.GA13324@ceren>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196193061_2895P
-Content-Type: text/plain; charset=us-ascii
+On my mid-2007 MacBook2, reading Ts0P sensor always failed with this message:
+applesmc: wait status failed: 5 != 50.
 
-On Tue, 27 Nov 2007 08:04:28 PST, Michael Chan said:
-> Valdis.Kletnieks@vt.edu wrote:
-> 
-> > (a) the Dell factory default is WOL disabled and (b)
-> > if it wasn't
-> > the default, I'd have *set* it to disabled, and (c) I even
-> > went back and
-> > rebooted and checked the BIOS setting - disabled. Nonetheless:
-> >
-> > # ethtool eth0 | grep Wake
-> >         Supports Wake-on: g
-> >         Wake-on: g
-> >
-> > Is this expected behavior?
-> >
-> 
-> The new tg3 is supposed to follow the WoL setting in the
-> NVRAM, so this is not expected.  We'll have to look into
-> this.
+So I assume that there's no such Ts0p sensor in this model (please confirm,
+anyone). If there's the case, then we need a new set of sensors defined for
+MacBook2.
 
-Any info that would help?  printk's to stick in tg3.c?  Dumping the
-relevant bytes of NVRAM? etc?
+--
 
---==_Exmh_1196193061_2895P
-Content-Type: application/pgp-signature
+Signed-off-by: Riki Oktarianto <rkoktarianto@gmail.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHTHUlcC3lWbTT17ARAmoEAKDSA4qr7IIBjgcYsx8wVJmGCDUBuACeNk06
-NMMjb80hDgoMGeIJHA5X95Q=
-=DTmY
------END PGP SIGNATURE-----
-
---==_Exmh_1196193061_2895P--
+--- linux-2.6.24-rc3.orig/drivers/hwmon/applesmc.c
++++ linux-2.6.24-rc3/drivers/hwmon/applesmc.c
+@@ -84,12 +84,15 @@ static const char* temperature_sensors_s
+ /* Set 0: Macbook Pro */
+ 	{ "TA0P", "TB0T", "TC0D", "TC0P", "TG0H", "TG0P", "TG0T", "Th0H",
+ 	  "Th1H", "Tm0P", "Ts0P", "Ts1P", NULL },
+-/* Set 1: Macbook set */
++/* Set 1: Macbook2 set */
++	{ "TB0T", "TC0D", "TC0P", "TM0P", "TN0P", "TN1P", "Th0H", "Th0S",
++	  "Th1H", NULL },
++/* Set 2: Macbook set */
+ 	{ "TB0T", "TC0D", "TC0P", "TM0P", "TN0P", "TN1P", "Th0H", "Th0S",
+ 	  "Th1H", "Ts0P", NULL },
+-/* Set 2: Macmini set */
++/* Set 3: Macmini set */
+ 	{ "TC0D", "TC0P", NULL },
+-/* Set 3: Mac Pro (2 x Quad-Core) */
++/* Set 4: Mac Pro (2 x Quad-Core) */
+ 	{ "TA0P", "TCAG", "TCAH", "TCBG", "TCBH", "TC0C", "TC0D", "TC0P",
+ 	  "TC1C", "TC1D", "TC2C", "TC2D", "TC3C", "TC3D", "THTG", "TH0P",
+ 	  "TH1P", "TH2P", "TH3P", "TMAP", "TMAS", "TMBS", "TM0P", "TM0S",
+@@ -1212,12 +1215,14 @@ static void applesmc_release_acceleromet
+ static __initdata struct dmi_match_data applesmc_dmi_data[] = {
+ /* MacBook Pro: accelerometer, backlight and temperature set 0 */
+ 	{ .accelerometer = 1, .light = 1, .temperature_set = 0 },
+-/* MacBook: accelerometer and temperature set 1 */
++/* MacBook2: accelerometer and temperature set 1 */
+ 	{ .accelerometer = 1, .light = 0, .temperature_set = 1 },
+-/* MacMini: temperature set 2 */
+-	{ .accelerometer = 0, .light = 0, .temperature_set = 2 },
+-/* MacPro: temperature set 3 */
++/* MacBook: accelerometer and temperature set 2 */
++	{ .accelerometer = 1, .light = 0, .temperature_set = 2 },
++/* MacMini: temperature set 3 */
+ 	{ .accelerometer = 0, .light = 0, .temperature_set = 3 },
++/* MacPro: temperature set 4 */
++	{ .accelerometer = 0, .light = 0, .temperature_set = 4 },
+ };
+ 
+ /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
+@@ -1229,16 +1234,20 @@ static __initdata struct dmi_system_id a
+ 		(void*)&applesmc_dmi_data[0]},
+ 	{ applesmc_dmi_match, "Apple MacBook", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+-	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook") },
++	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook2") },
+ 		(void*)&applesmc_dmi_data[1]},
++	{ applesmc_dmi_match, "Apple MacBook", {
++	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
++	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBook") },
++		(void*)&applesmc_dmi_data[2]},
+ 	{ applesmc_dmi_match, "Apple Macmini", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"Macmini") },
+-		(void*)&applesmc_dmi_data[2]},
++		(void*)&applesmc_dmi_data[3]},
+ 	{ applesmc_dmi_match, "Apple MacPro2", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacPro2") },
+-		(void*)&applesmc_dmi_data[3]},
++		(void*)&applesmc_dmi_data[4]},
+ 	{ .ident = NULL }
+ };
+ 
