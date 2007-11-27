@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbXK0UBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbXK0UCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbXK0UBb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbXK0UBX
+	id S1757722AbXK0UCk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:02:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXK0UCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:01:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35854 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754301AbXK0UBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:01:23 -0500
-Date: Tue, 27 Nov 2007 15:00:11 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Neil Horman <nhorman@redhat.com>
-Cc: Ben Woodard <woodard@redhat.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
-	boot cpu
-Message-ID: <20071127200011.GA3703@redhat.com>
-References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 27 Nov 2007 15:02:30 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:48367 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754301AbXK0UC3 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:02:29 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, rusty@rustcorp.com.au,
+       rdreier@cisco.com, ak@suse.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+In-Reply-To: Your message of "Tue, 27 Nov 2007 15:12:42 +0100."
+             <20071127141242.GA26794@one.firstfloor.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20071127105016.GC24223@one.firstfloor.org> <E1Ix0ws-0001Vh-00@gondolin.me.apana.org.au>
+            <20071127141242.GA26794@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1196193722_2895P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 27 Nov 2007 15:02:02 -0500
+Message-ID: <25135.1196193722@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 02:42:20PM -0500, Neil Horman wrote:
+--==_Exmh_1196193722_2895P
+Content-Type: text/plain; charset=us-ascii
 
-[..]
+On Tue, 27 Nov 2007 15:12:42 +0100, Andi Kleen said:
+> > OK, short of making IPv4 a module (which would be a worthy task :)
 > 
-> Ben I tend to agree.  I think re-enabling the APIC early in the boot process
-> provides a greater degree of reliability in that it more quickly restores the
-> system to a state where booting on a cpu other than cpu0 will be more likely to
-> work, but I have to say that overall it seems like booting a secondary kernel on
-> cpu0, when possible offers the highest degree of reliability.
-> 
-> Perhaps what we need is a 'both solution'.  Re-enabling the apic to full smp
-> functionality early in the boot process is a good solution for the problems
-> which we are hypothesizing here, and would be a good thing to do in general, but
-> it doesn't preclude also attmpting to switch back to cpu0 during a crash.
-> 
-> Perhaps it would be worthwhile to:
-> 
-> 1) Investigate the early enablement of the ioapic for x86[_64]
-> 2) implement my prevoiusly proposed patch with the addition of a handshake
-> element, such that:
-> 	a) when the boot cpu gets the ipi from machine_crash_shutdown it flags
-> 	   the fact that it is going to boot the kexec kernel with a global
-> 	   variable
-> 	b) the crashing cpu loops waiting for either:
-> 		I) a timeout of 1 second
-> 		II) a reduction of the halt count to zero
-> 		III) the setting of the flag mentioned in (a)
-> 	c) the crashing cpu, if it sees that it is not the boot cpu AND
-> 	   that the flag in (III) is set, will halt itself, otherwise it
-> 	   will set the flag and boot the kexec image itself.
-> 
-> With this modification, we can try to relocate to cpu0,  and if we fail, we fall
-> back to booting on the crashing processor.
-> 
-> I'll work up a patch that implements (2), unless there are strong objections.  I
-> see no reason why we can't implment this 'both' solution.
-> 
+> At some point there were patches, it is probably not very difficult.
+> But DaveM resisted at some point because he didn't want people
+> to replace the network stack (although I personally don't have a problem
+> with that)
 
-Hi Neil,
+Personally, I wouldn't find replacing the ipv4 stack very interesting.
 
-If we implement first solution, we don't have to implement second. Problem
-will automatically be solved.
+However, stress-testing your system for IPv6-readiness by doing 'rmmod ipv4' :)
 
-In general adding more code in crash shutdown path is not good. We are
-trying to make that code path as small as possible.
+(Though I admit it's something I'd *try* if it was available, but certainly
+not sufficient for a reason to do it...)
 
-OTOH, I think we have not root caused this problem yet. We don't know yet
-why interrupts are not coming to non-boot cpu. I think we can go little
-deeper to compare the system state in normal boot and kdump boot and see
-what has changed. System state would include, LAPIC and IOAPIC entries
-etc.
+--==_Exmh_1196193722_2895P
+Content-Type: application/pgp-signature
 
-Are we putting the system back in PIC mode or virtual wire mode? I have
-not seen systems which support PIC mode. All latest systems seems
-to be having virtual wire mode. I think in case of PIC mode, interrupts
-can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
-to deliver interrupt to any of the cpus and that's what we have been
-relying on  until and unless there is something board specific.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Thanks
-Vivek
+iD8DBQFHTHe6cC3lWbTT17ARAqC+AKCUaFpZwEcazQf9SQoYtbqj9HkMgACfciGH
+GTMCV/7UEQ4toPTbBN10R2A=
+=+kwr
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196193722_2895P--
