@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbXK0OBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbXK0OIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132AbXK0OBn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 09:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbXK0OBd
+	id S1756920AbXK0OIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 09:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXK0OIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 09:01:33 -0500
-Received: from mail.transmode.se ([83.241.175.147]:39850 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753022AbXK0OBc (ORCPT
+	Tue, 27 Nov 2007 09:08:06 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:36354 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbXK0OIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 09:01:32 -0500
-Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for
-	fixed-link property
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Reply-To: joakim.tjernlund@transmode.se
-To: avorontsov@ru.mvista.com
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <20071127135952.GA1483@localhost.localdomain>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	 <20071126142915.19642.5842.stgit@localhost.localdomain>
-	 <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
-	 <20071127113935.GA26867@localhost.localdomain>
-	 <1196169432.9816.16.camel@gentoo-jocke.transmode.se>
-	 <20071127135952.GA1483@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Transmode AB
-Date: Tue, 27 Nov 2007 15:01:30 +0100
-Message-Id: <1196172090.9816.23.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Tue, 27 Nov 2007 09:08:05 -0500
+Date: Tue, 27 Nov 2007 15:08:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [patch] timer_list should use signed numbers for relative times
+Message-ID: <20071127140843.GA14570@elf.ucw.cz>
+References: <20071127124405.GA3943@elf.ucw.cz> <jeaboz4zfj.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <jeaboz4zfj.fsf@sykes.suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-On Tue, 2007-11-27 at 16:59 +0300, Anton Vorontsov wrote:
-> On Tue, Nov 27, 2007 at 02:17:11PM +0100, Joakim Tjernlund wrote:
-> > 
-> > On Tue, 2007-11-27 at 14:39 +0300, Anton Vorontsov wrote:
-> > > On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
-> > > > On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
-> > > > > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
-> > > > > not connected to the real MDIO bus.
-> > > > > 
-> > > > > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > > > 
-> > > > > ---
-> > > > > 
-> > > > >  Documentation/powerpc/booting-without-of.txt |    3 +
-> > > > >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
-> > > > >  2 files changed, 42 insertions(+), 17 deletions(-)
-> > > > > 
-> > > > > 
-> > > > > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > > > > index e9a3cb1..cf25070 100644
-> > > > > --- a/Documentation/powerpc/booting-without-of.txt
-> > > > > +++ b/Documentation/powerpc/booting-without-of.txt
-> > > > > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
-> > > > >        services interrupts for this device.
-> > > > >      - phy-handle : The phandle for the PHY connected to this ethernet
-> > > > >        controller.
-> > > > > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
-> > > > > +      but unique to the all specified fixed-links, b is duplex - 0 half,
-> > > > > +      1 full, c is link speed - d#10/d#100/d#1000.
-> > > > 
-> > > > Good work!
-> > > > May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
-> > > 
-> > > Well, I see no reference of the "flow" neither in the include/linux/mii.h
-> > > nor in the drivers/net/phy/*. :-/ Thus today there is no such register
-> > > bit we can emulate?..
-> > 
-> > Well, as good as I can recall, flow control(pause) is something that the
-> > PHY negotiates, just like FDX/HDX and should be dealt with in the
-> > adjust_link callback but not many do currently.
-> > 
-> > If you seach for pause in phy_device.c you will find it.
+
+> > Relative times are signed by nature, and timers can (briefly) have
+> > expires in past. Print them as negative numbers.
+> >
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> >
+> > diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+> > index 12c5f4c..7f6eaa9 100644
+> > --- a/kernel/time/timer_list.c
+> > +++ b/kernel/time/timer_list.c
+> > @@ -65,7 +65,7 @@ #ifdef CONFIG_TIMER_STATS
+> >  	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
+> >  #endif
+> >  	SEQ_printf(m, "\n");
+> > -	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
+> > +	SEQ_printf(m, " # expires at %Lu nsecs [in %Ld nsecs]\n",
+> >  		(unsigned long long)ktime_to_ns(timer->expires),
+> >  		(unsigned long long)(ktime_to_ns(timer->expires) - now));
 > 
-> Ah, pause. Sure, we can emulate that.
+> Perhaps change the cast as well.
 
-Good, looking into phy_device there seems to be 2 pauses:
-ADVERTISED_Pause and ADVERTISE_PAUSE_ASYM which
-maps to phydev->pause and phydev->asym_pause
-so "d" should reflect that or a "e" should be added
-for the asym pause.
-
- Jocke
-
- Jocke
+Well, that seems to be absolute time, so %Lu makes some sense...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
