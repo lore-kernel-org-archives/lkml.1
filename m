@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbXK0Sm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXK0Smk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758821AbXK0Sm2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 13:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXK0SmT
+	id S1759272AbXK0Smk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 13:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbXK0Sm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 13:42:19 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60970 "EHLO e6.ny.us.ibm.com"
+	Tue, 27 Nov 2007 13:42:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53380 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756948AbXK0SmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 13:42:18 -0500
-Date: Tue, 27 Nov 2007 12:42:14 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Stephen Smalley <sds@epoch.ncsc.mil>, jmorris@sergelap.austin.ibm.com,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] capabilities: introduce per-process capability
-	bounding set (v10)
-Message-ID: <20071127184214.GA4032@sergelap.austin.ibm.com>
-References: <20071126200908.GA13287@sergelap.austin.ibm.com> <474B9220.3020802@kernel.org>
+	id S1758685AbXK0Sm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 13:42:27 -0500
+Message-ID: <474C64CB.7080004@redhat.com>
+Date: Tue, 27 Nov 2007 10:41:15 -0800
+From: Ben Woodard <woodard@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474B9220.3020802@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andi Kleen <ak@suse.de>, Neil Horman <nhorman@redhat.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       hbabu@us.ibm.com, vgoyal@in.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot
+ cpu
+References: <20071127014740.GA28622@hmsreliant.think-freely.org>	<20071127131355.GA14887@hmsendeavour.rdu.redhat.com>	<m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>	<200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+Eric W. Biederman wrote:
+> Andi Kleen <ak@suse.de> writes:
 > 
-> This looks good to me.
+>> his is any less reliable that what we have currently.
+>>> It doesn't make things more reliable, and it adds code to a code path
+>>> that already has to much code to be solid reliable (thus your
+>>> problem). 
+>>>
+>>> Putting the system back in PIC legacy mode on the kexec on panic path
+>>> was supposed to be a short term hack until we could remove the need
+>>> by always deliver interrupts in apic mode.
+>>>
+>>> If you can't root cause your problem and figure out how the apics
+>>> are misconfigured for legacy mode
+>> Probably legacy mode always routes to CPU #0. Makes sense and is
+>> not really a misconfiguration of legacy mode.
 > 
-> [As you anticipated, there is a potential merge issue with Casey's
-> recent addition of MAC capabilities - which will make CAP_MAC_ADMIN the
-> highest allocated capability: ie.,
+
+The BIOS and kernel writer's guide for Opteron explicitly states that 
+the platform will boot on CPU0 kind of by definition. So this seems like 
+a fair statement. I can easily see BIOS writers or hardware designers 
+interpreting that to mean that they only have to make sure that 
+interrupts get to the CPU that the BIOS thinks of as CPU0 when the APIC 
+is in legacy mode.
+
+I have a query out to some SuperMicro engineers to find out if it is a 
+hardware limitation or if it is APIC misconfiguration. Maybe we can 
+solve this problem with a BIOS update.
+
+> Possible. So far I have not seen a hardware setup that would force
+> interrupts to cpu #0 in legacy mode.  But I would not be truly
+> surprised if it happened that there was hardware that only worked that
+> way.
 > 
-> #define CAP_LAST_CAP         CAP_MAC_ADMIN
+>> But if CPU #0 has interrupts disabled no interrupts get delivered.
+>>
+>> So choices are:
+>> - Move to CPU #0
+>> - Do not use legacy mode during shutdown.
+>     (Do not use legacy mode in the kdump kernel. removing it from shutdown
+>      is just minor optimization)
+>> - Or do not rely on interrupts after enabling legacy mode
+>> - Or do not disable interrupts on the other CPUs when they're
+>> halted.
+>>
+>> First and last option are probably unreliable for the kdump case.
+>> Second or third sound best. 
+>>
+
+I can agree with the fourth option being a very bad one but I really 
+haven't seen anything in this discussion which supports the assertion 
+that "Move to the CPU that the BIOS originally called CPU#0" is going to 
+be unreliable. Admittedly we haven't tried this on every single x86_64 
+platform that we have but on the handful that we have tried so far, it 
+hasn't been a problem. Why is everybody jumping to the assumption that 
+it will be less reliable?
+
+>> I suspect the real fix would be to enable IOAPIC mode really
+>> early and never use the timers in legacy mode. Then the kdump
+>> kernel wouldn't care about the legacy mode pointing to the wrong CPU.
 > 
-> ].
+> Exactly.  If we can work out the details that should be a much more reliable
+> mode of operation.
 > 
-> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
+>> IIrc Eric even had  a patch for that a long time ago, but it broke some 
+>> things so it wasn't included. But perhaps it should be revisited.
+> 
+> My real problem was the failure case was obscure (a bad interaction
+> with ACPI on Linus's laptop) and I didn't have the time to track it
+> down when it showed up.
+> 
+> My patch had two parts.  Some cleanups to enable the code to be enabled
+> early, and the actually early enable.  I figure if we can get the
+> cleanups in one major kernel version and then in the next enable
+> the apic mode before we start getting interrupts we should be in good
+> shape.
+> 
+> I expect with x86 becoming an embedded platform with multiple cpus we
+> may start seeing systems that don't actually support legacy PIC mode
+> for interrupt delivery.
+> 
+> Eric
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
-Thanks, Andrew.
 
-Yes, the following patch will be needed on top of the previous one:
-
--serge
-
->From 97ee046e8075a21b356fb93db0769d440437ef51 Mon Sep 17 00:00:00 2001
-From: sergeh@us.ibm.com <hallyn@kernel.(none)>
-Date: Tue, 27 Nov 2007 10:37:57 -0800
-Subject: [PATCH 1/1] capabilities: fix CAP_LAST_CAP to CAP_MAC_ADMIN
-
-A recent SMACK patch introduced two new capabilities.  The capability
-bounding set patch defined CAP_LAST_CAP erroneously relative to that
-patch.
-
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
----
- include/linux/capability.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 5fc3fea..7d50ff6 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -332,7 +332,7 @@ typedef struct kernel_cap_struct {
- 
- #define CAP_MAC_ADMIN        33
- 
--#define CAP_LAST_CAP         CAP_SETFCAP
-+#define CAP_LAST_CAP         CAP_MAC_ADMIN
- 
- #define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
- 
 -- 
-1.5.1
-
+-ben
+-=-
