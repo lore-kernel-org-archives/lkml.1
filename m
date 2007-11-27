@@ -1,117 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbXK0CPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXK0CXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbXK0CPw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 21:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbXK0CPo
+	id S1754822AbXK0CXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 21:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbXK0CXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 21:15:44 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33943 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753485AbXK0CPn (ORCPT
+	Mon, 26 Nov 2007 21:23:14 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:65239 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752252AbXK0CXN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 21:15:43 -0500
-Date: Mon, 26 Nov 2007 18:14:40 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
-In-Reply-To: <474B1C6D.6080405@zytor.com>
-Message-ID: <alpine.LFD.0.9999.0711261801390.5869@woody.linux-foundation.org>
-References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org>
- <474B1C6D.6080405@zytor.com>
+	Mon, 26 Nov 2007 21:23:13 -0500
+Message-ID: <474B7CAA.6030706@student.ltu.se>
+Date: Tue, 27 Nov 2007 03:10:50 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Moore, Robert" <robert.moore@intel.com>
+CC: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] [ACPI] utilities/: Compliment va_start() with va_end().
+References: <200711250205.34299.lenb@kernel.org> <B28E9812BAF6E2498B7EC5C427F293A403BCB8FA@orsmsx415.amr.corp.intel.com> <474B61B4.9020309@student.ltu.se> <B28E9812BAF6E2498B7EC5C427F293A403BCBB45@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A403BCBB45@orsmsx415.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Moore, Robert wrote:
+> Yes, it's official ANSI C, so I agree with the portability. I'm probably
+> asking more about the history of the thing.
+>
+>   
+"the history of the thing"? Sorry, you lost me there. I know there were 
+a pre-ANSI
+version of va_start() & co., but they seemed quite messy. When it comes 
+to va_end()
+and maintainers, they often seem positive to this. I guess the 
+occasional lack off
+va_end() is usually an oversight.
+>   
+>> -----Original Message-----
+>> From: Richard Knutsson [mailto:ricknu-0@student.ltu.se]
+>> Sent: Monday, November 26, 2007 4:16 PM
+>> To: Moore, Robert
+>> Cc: Len Brown; linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org
+>> Subject: Re: [PATCH] [ACPI] utilities/: Compliment va_start() with
+>> va_end().
+>>
+>> Moore, Robert wrote:
+>>     
+>>> This is an interesting one to me.
+>>>
+>>> From various documentation:
+>>>
+>>> After all arguments have been retrieved, va_end resets the pointer to
+>>> NULL.
+>>>
+>>> va_end
+>>> Each invocation of va_start must be matched by a corresponding
+>>> invocation of va_end in the same function. After the call va_end(ap)
+>>>       
+> the
+>   
+>>> variable ap is undefined. Multiple transversals of the list, each
+>>> bracketed by va_start and va_end are possible. va_end may be a macro
+>>>       
+> or
+>   
+>>> a function.
+>>>
+>>> Now, I'm all for defensive programming, but I don't really see the
+>>>       
+> point
+>   
+>>> of va_end when the list will be only traversed once.
+>>>
+>>>
+>>>       
+>> First off, I think it is a good idea to follow the documentation, which
+>> stated:
+>> "va_end
+>> Each invocation of va_start must be matched by a corresponding
+>> invocation of va_end in the same function."
+>>
+>> Then if it is not really needed, does it take up extra cycles?
+>> "In practice, with most C compilers, calling |va_end| does nothing
+>> and you do not really need to call it.  This is always true in the GNU
+>>     
+> C
+>   
+>> compiler."[1]
+>>
+>> Portability:
+>> "But you might as well call |va_end| just in case your
+>> program is someday compiled with a peculiar compiler."[2]
+>> This argument is not as likely thou, but who knows? (Since I guess
+>>     
+> Intel's
+>   
+>> compiler is included in the 'most C compilers')
+>>
+>>     
+>>> We don't set all local pointers to NULL at function exit, what is the
+>>> point of doing it here?
+>>>
+>>>       
+>> I think it is a good thing if the code follows the documentation, both
+>> for the person who tries
+>> to understand the code (to see when the 'args' is no longer needed and
+>> not getting confused
+>> by the absent of va_end(), after all, IMHO we should write the code how
+>> we want things to
+>> work and let the compiler do the optimizations (it usually does a
+>>     
+> better
+>   
+>> job at it then we do))
+>> and to automated searches (that is how I found this one).
+>>     
+>>> I suppose some implementation could allocate memory at va_start, but
+>>>       
+> in
+>   
+>>> practice, does this happen?
+>>>
+>>>       
+>> Not sure what you mean.
+>>     
+>>> Bob
+>>>
+>>>
+>>>       
+>> cu
+>> Richard Knutsson
+>>
+>> [1]
+>> http://www.cs.utah.edu/dept/old/texinfo/glibc-manual-0.02/library_28.ht
+>>     
+> ml
+>   
+>> [2] The rest of [1]'s line.
+>>     
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
-
-On Mon, 26 Nov 2007, H. Peter Anvin wrote:
-> 
-> I'm presuming you're not talking about some sort of syslets/fibrils/threadlets
-> here (executing an interpreted thread of execution in kernel space).  That's a
-> whole separate ball of wax.
-
-Indeed. 
-
-I'm hoping that just dies. It's too complex. But the "do this single 
-system call asynchronously" isn't, and has lots of historical 
-implementations, ranging from VMS to the braindead POSIX "aio" setup.
-
-I do think that more complex threadlets could be useful in theory, I just 
-doubt they'd be used in practice..
-
-> > So the choice is basically one of:
-> > 
-> >  - come up with a totally new interface to system calls, and effectively
-> > duplicating the whole system call table.
-> > 
-> >    I'd hate to do this. We already have duplicated system call tables due
-> > to compat stuff, it's painful.
-> 
-> This would be the right thing to do if we were to redesign the system call
-> interface from the ground up, which it doesn't exactly sound like we are
-> intending.
-
-Yeah. I'm also not sure it's the right thing even if we did redesign from 
-scratch.
-
-The current system call interface may look less than regular, but it has 
-some very solid foundation: it's fast. Passing arguments in registers is 
-by definition a lot faster *and*safer* than passing them any other way. 
-There are no subtle security issues with people playing games with the 
-argument base pointer (ie usually the stack pointer) and trying to fool 
-the kernel into accessing kernel memory etc.
-
-Immediately when you do anything but registers, it is much *much* more 
-costly. The "get_user()" and "copy_from_user()" stuff is not exactly slow, 
-but it's quite noticeable overhead for simple system calls. It gets worse 
-if this all is described by some indirect table setup.
-
-In the system call path, right now, for some system calls, the biggest two 
-overheads are
-
- - the CPU system call overhead itself. We can't do much about this, but 
-   the CPU designers do seem to be slowly getting it fixed (ie it's slower 
-   than it should need to be, but it's a hell of a lot faster than a P4 
-   used to be ;)
-
- - the cost of just the single indirect - and unpredictable - call.
-
-(The second cost is actually often totally hidden in the trivial system 
-call benchmarks people run: if the benchmark just does "getppid()" a 
-million times in a tight loop, the indirect call on the system call number 
-seems really quite fast, but outside of benchmarks it is generally totally 
-unpredictable indeed, and a real cost for real-life system call usage).
-
-Everything else in the system call path is generally as fast as we can 
-make it. Doing more indirection and conditionals would be really quite 
-nasty.
-
-Of course, for *most* of system calls, the work the kernel actually does 
-ends up being so big that it doesn't much matter, but I was literally 
-chasing down why a page fault had slowed down by ~70 cycles two weeks ago. 
-And it doesn't take more than a couple of unpredictable jumps to do things 
-like that!
-
-> The 6-word limit is a red herring.  There is at least two ways to deal with it
-> (and this doesn't mean wiping the legacy stuff we already have):
-> 
-> - Let each architecture pick a calling convention and redefine the
-> architecture-independent bits to take an arbitrary number of arguments.  This
-> is a one-time panarchitectural change.
-
-Not applicable on x86-32.
-
-The six-word limit is effectively a hardware limit there. Once it goes 
-past that limit, one of the words needs to be a pointer to extended 
-information that is fundamentally slower to access. Happily, only very 
-rare system calls do that (and none of them are of the simple variety 
-where we see a few cycles easily).
-
-On other architectures, we could more easily just use more registers. But 
-x86-32 is still a big part (bulk) of what matters for most people.
-
-			Linus
