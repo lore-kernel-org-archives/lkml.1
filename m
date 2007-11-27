@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXK0E6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbXK0E75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbXK0E6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXK0E6M
+	id S1758233AbXK0E75 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbXK0E7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:58:12 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:46693 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbXK0E6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:58:11 -0500
-Date: Tue, 27 Nov 2007 10:41:03 +0530
+	Mon, 26 Nov 2007 23:59:43 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44378 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756804AbXK0E7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 23:59:41 -0500
+Date: Tue, 27 Nov 2007 10:42:31 +0530
 From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
        dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
        skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
        Dipankar <dipankar@in.ibm.com>
-Subject: [Patch 3/5 v1] sched: change how cpu load is calculated
-Message-ID: <20071127051103.GD20083@linux.vnet.ibm.com>
+Subject: [Patch 3/5 v2] sched: change how cpu load is calculated
+Message-ID: <20071127051231.GE20083@linux.vnet.ibm.com>
 Reply-To: vatsa@linux.vnet.ibm.com
 References: <20071119123051.GC28777@linux.vnet.ibm.com> <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com> <20071126202836.GA17012@elte.hu> <20071127050652.GA20083@linux.vnet.ibm.com>
 Mime-Version: 1.0
@@ -35,36 +34,29 @@ summation of the group weights, rather than summation of task weights.
 Weight exerted by a group on a cpu is dependent on the shares allocated
 to it.
 
-This version of patch (v1 of Patch 3/5) has zero impact for
-!CONFIG_FAIR_GROUP_SCHED case.
+This version of patch (v2 of Patch 3/5) has a minor impact on code size
+(but should have no runtime/functional impact) for !CONFIG_FAIR_GROUP_SCHED
+case, but the overall code, IMHO, is neater compared to v1 of Patch 3/5
+(because of lesser #ifdefs).
+
+I prefer v2 of Patch 3/5.
 
 Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 
-
 ---
- kernel/sched.c      |   38 ++++++++++++++++++++++++++++++--------
+ kernel/sched.c      |   27 +++++++++++----------------
  kernel/sched_fair.c |   31 +++++++++++++++++++++++++++----
  kernel/sched_rt.c   |    2 ++
- 3 files changed, 59 insertions(+), 12 deletions(-)
+ 3 files changed, 40 insertions(+), 20 deletions(-)
 
 Index: current/kernel/sched.c
 ===================================================================
 --- current.orig/kernel/sched.c
 +++ current/kernel/sched.c
-@@ -870,15 +870,25 @@ iter_move_one_task(struct rq *this_rq, i
+@@ -870,6 +870,16 @@ iter_move_one_task(struct rq *this_rq, i
  		   struct rq_iterator *iterator);
  #endif
  
--#include "sched_stats.h"
--#include "sched_idletask.c"
--#include "sched_fair.c"
--#include "sched_rt.c"
--#ifdef CONFIG_SCHED_DEBUG
--# include "sched_debug.c"
--#endif
-+#ifdef CONFIG_FAIR_GROUP_SCHED
- 
--#define sched_class_highest (&rt_sched_class)
 +static inline void inc_cpu_load(struct rq *rq, unsigned long load)
 +{
 +	update_load_add(&rq->load, load);
@@ -75,35 +67,56 @@ Index: current/kernel/sched.c
 +	update_load_sub(&rq->load, load);
 +}
 +
-+static inline void inc_load(struct rq *rq, const struct task_struct *p) { }
-+static inline void dec_load(struct rq *rq, const struct task_struct *p) { }
-+
-+#else	/* CONFIG_FAIR_GROUP_SCHED */
-+
-+static inline void inc_cpu_load(struct rq *rq, unsigned long load) { }
-+static inline void dec_cpu_load(struct rq *rq, unsigned long load) { }
+ #include "sched_stats.h"
+ #include "sched_idletask.c"
+ #include "sched_fair.c"
+@@ -880,26 +890,14 @@ iter_move_one_task(struct rq *this_rq, i
  
- static inline void inc_load(struct rq *rq, const struct task_struct *p)
- {
-@@ -890,6 +900,18 @@ static inline void dec_load(struct rq *r
- 	update_load_sub(&rq->load, p->se.load.weight);
- }
+ #define sched_class_highest (&rt_sched_class)
  
-+#endif	/* CONFIG_FAIR_GROUP_SCHED */
-+
-+#include "sched_stats.h"
-+#include "sched_idletask.c"
-+#include "sched_fair.c"
-+#include "sched_rt.c"
-+#ifdef CONFIG_SCHED_DEBUG
-+# include "sched_debug.c"
-+#endif
-+
-+#define sched_class_highest (&rt_sched_class)
-+
+-static inline void inc_load(struct rq *rq, const struct task_struct *p)
+-{
+-	update_load_add(&rq->load, p->se.load.weight);
+-}
+-
+-static inline void dec_load(struct rq *rq, const struct task_struct *p)
+-{
+-	update_load_sub(&rq->load, p->se.load.weight);
+-}
+-
  static void inc_nr_running(struct task_struct *p, struct rq *rq)
  {
  	rq->nr_running++;
+-	inc_load(rq, p);
+ }
+ 
+ static void dec_nr_running(struct task_struct *p, struct rq *rq)
+ {
+ 	rq->nr_running--;
+-	dec_load(rq, p);
+ }
+ 
+ static void set_load_weight(struct task_struct *p)
+@@ -4071,10 +4069,8 @@ void set_user_nice(struct task_struct *p
+ 		goto out_unlock;
+ 	}
+ 	on_rq = p->se.on_rq;
+-	if (on_rq) {
++	if (on_rq)
+ 		dequeue_task(rq, p, 0);
+-		dec_load(rq, p);
+-	}
+ 
+ 	p->static_prio = NICE_TO_PRIO(nice);
+ 	set_load_weight(p);
+@@ -4084,7 +4080,6 @@ void set_user_nice(struct task_struct *p
+ 
+ 	if (on_rq) {
+ 		enqueue_task(rq, p, 0);
+-		inc_load(rq, p);
+ 		/*
+ 		 * If the task increased its priority or is running and
+ 		 * lowered its priority, then reschedule its CPU:
 Index: current/kernel/sched_fair.c
 ===================================================================
 --- current.orig/kernel/sched_fair.c
