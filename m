@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbXK0QBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbXK0QEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759141AbXK0QBt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbXK0QBl
+	id S1758723AbXK0QEy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbXK0QEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:01:41 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44120 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbXK0QBk (ORCPT
+	Tue, 27 Nov 2007 11:04:41 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:4269 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754667AbXK0QEk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:01:40 -0500
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling
-	can/will stall forever
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Remy Bohmer <linux@bohmer.net>
-In-Reply-To: <1196177122.23808.7.camel@imap.mvista.com>
-References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
-	 <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
-	 <1196176294.13982.58.camel@localhost.localdomain>
-	 <1196177122.23808.7.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 07:53:54 -0800
-Message-Id: <1196178834.23808.11.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 11:04:40 -0500
+X-Server-Uuid: 20144BB6-FB76-4F11-80B6-E6B2900CA0D7
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Subject: Re: 2.6.23-mm1 tg3 wake-on-lan oddity...
+Date: Tue, 27 Nov 2007 08:04:28 -0800
+Message-ID: <1551EAE59135BE47B544934E30FC4FC002AABB51@nt-irva-0751.brcm.ad.broadcom.com>
+In-Reply-To: <24400.1196156118@turing-police.cc.vt.edu>
+Thread-Topic: 2.6.23-mm1 tg3 wake-on-lan oddity...
+Thread-Index: Acgw2N5hbaHfJkILTGWtOxg49szljAANehNw
+From: "Michael Chan" <mchan@broadcom.com>
+To: Valdis.Kletnieks@vt.edu
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+X-WSS-ID: 6B529F850SG11631844-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-27 at 07:25 -0800, Daniel Walker wrote:
-> On Tue, 2007-11-27 at 10:11 -0500, Steven Rostedt wrote:
-> > Thomas,
-> > 
-> > Can you ACK or NACK this patch.  I know you play with a bunch of
-> > hardware that this patch may affect.
-> > 
+Valdis.Kletnieks@vt.edu wrote:
+
+> (a) the Dell factory default is WOL disabled and (b) 
+> if it wasn't
+> the default, I'd have *set* it to disabled, and (c) I even 
+> went back and
+> rebooted and checked the BIOS setting - disabled. Nonetheless:
 > 
-> My two cents, I think it's needed (or something like it).. It looks like
-> handle_simple_irq normally expects a custom cascade type handler to
-> unmask on return. When you switch to a threaded handler the cascade
-> handler is gone and can't unmask..
+> # ethtool eth0 | grep Wake
+>         Supports Wake-on: g
+>         Wake-on: g
+> 
+> Is this expected behavior?
+> 
 
-I take this back .. The comment at the top of handle_simple_irq() is,
-
- *      Note: The caller is expected to handle the ack, clear, mask and
- *      unmask issues if necessary.
-
-
-So we shouldn't need any flow control unless there is some other
-factors.. 
-
-Additionally, we have a patch in the real time tree called
-"irq-mask-fix.patch" which adds an "unmask" to handle_simple_irq, but as
-the note says we don't need flow control..
-
-Daniel
+The new tg3 is supposed to follow the WoL setting in the
+NVRAM, so this is not expected.  We'll have to look into
+this.
 
