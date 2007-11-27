@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXK0ET6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbXK0E1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757588AbXK0ET6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXK0ETu
+	id S1757202AbXK0E1N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbXK0E0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:19:50 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33961 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755028AbXK0ETt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:19:49 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: kexec@lists.infradead.org, ak@suse.de, vgoyal@in.ibm.com, hbabu@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-References: <20071127014740.GA28622@hmsreliant.think-freely.org>
-Date: Mon, 26 Nov 2007 21:12:25 -0700
-In-Reply-To: <20071127014740.GA28622@hmsreliant.think-freely.org> (Neil
-	Horman's message of "Mon, 26 Nov 2007 20:47:40 -0500")
-Message-ID: <m1d4twmimu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 26 Nov 2007 23:26:54 -0500
+Received: from ozlabs.org ([203.10.76.45]:43551 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754755AbXK0E0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Nov 2007 23:26:53 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Date: Tue, 27 Nov 2007 15:26:52 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <20071122343.446909000@suse.de> <200711261225.44415.rusty@rustcorp.com.au> <adalk8lsg3z.fsf@cisco.com>
+In-Reply-To: <adalk8lsg3z.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711271526.53065.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman <nhorman@tuxdriver.com> writes:
+On Monday 26 November 2007 16:58:08 Roland Dreier wrote:
+>  > > I agree that we shouldn't make things too hard for out-of-tree
+>  > > modules, but I disagree with your first statement: there clearly is a
+>  > > large class of symbols that are used by multiple modules but which are
+>  > > not generically useful -- they are only useful by a certain small
+>  > > class of modules.
+>  >
+>  > If it is so clear, you should be able to easily provide examples?
+>
+> Sure -- Andi's example of symbols required only by TCP congestion
+> modules;
 
-> Hey all-
-> 	I've been working on an issue lately involving multi socket x86_64
-> systems connected via hypertransport bridges.  It appears that some systems,
-> disable the hypertransport connections during a kdump operation when all but the
-> crashing processor gets halted in machine_crash_shutdown.  This becomes a
-> problem when the ioapic attempts to route interrupts to the only remaining
-> processor.  Even though the active processor is targeted for interrupt
-> reception, the fact that the hypertransport connections are inactive result in
-> interrupts not getting delivered.  The effective result is that timer interrupts
-> are not delivered to the running cpu, and the system hangs on reboot into the
-> kdump kernel during calibrate_delay.  I've found that I've been able to avoid
-> this hang, by forcing a transition to the bios defined boot cpu during the
-> crashing kernel shutdown.  This patch accomplished that.  Tested by myself and
-> the origional reporter with successful results.
+Exactly.  Why exactly should someone not write a new TCP congestion module?
 
-If you can get to calibrate_delay hypertransport is still routing traffic.
-Your diagnosis of the problem is wrong.  Most likely it is just an ioapic
-programming error in restoring the system to PIC mode.
+> the SCSI internals that Christoph wants to mark
 
-I agree that there is a problem.
+He didn't justify those though, either.
 
-The reliable fix is to totally skip the PIC interrupt mode and go directly
-to apic mode.
+> ; the symbols  exported by my mlx4_core driver (which I admit are
+> currently only used 
+> by the mlx4_ib driver, but which will also be used by at least the
+> ethernet NIC driver for the same hardware).
 
-To make the code kexec on panic code path reliable we need to remove code
-not add it.
+Right.  So presumably there will only ever be two drivers using this core 
+code, so no new users will ever be written?  Now we've found one use case, is 
+it worth the complexity of namespaces?  Is it worth the halfway point of 
+export-to-module?
 
-Frankly I think switching cpus is one of the least reliable things that
-we can do in general.
+What problem will it solve?
 
-Eric
+> I thought this was 
+> already covered repeatedly in the thread and indeed in Andi's code so
+> there was no need to repeat it...
+
+No, we've seen the solution and various people applying it.  I'm still trying 
+to discover the problem it's solving.
+
+Hope that helps,
+Rusty.
