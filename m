@@ -1,38 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbXK0XKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbXK0XNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760126AbXK0XKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXK0XKo
+	id S1759353AbXK0XNP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXK0XM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:10:44 -0500
-Received: from there.is.no.cabal.ca ([134.117.69.58]:56005 "EHLO
-	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752464AbXK0XKo (ORCPT
+	Tue, 27 Nov 2007 18:12:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60030 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752588AbXK0XM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:10:44 -0500
-Date: Tue, 27 Nov 2007 18:10:42 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071127231042.GA31670@fattire.cabal.ca>
-References: <20071127230252.GB10038@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127230252.GB10038@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 27 Nov 2007 18:12:58 -0500
+Date: Tue, 27 Nov 2007 15:12:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: travis@sgi.com, ak@suse.de, clameter@sgi.com, pageexec@freemail.hu,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm: Prevent dereferencing non-allocated per_cpu
+ variables
+Message-Id: <20071127151241.038c146d.akpm@linux-foundation.org>
+In-Reply-To: <20071127221628.GG24223@one.firstfloor.org>
+References: <20071127215052.090968000@sgi.com>
+	<20071127215054.660250000@sgi.com>
+	<20071127221628.GG24223@one.firstfloor.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 03:02:52PM -0800, Greg KH wrote:
-> Last updated November 27, 2008
+On Tue, 27 Nov 2007 23:16:28 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> On Tue, Nov 27, 2007 at 01:50:53PM -0800, travis@sgi.com wrote:
+> > Change loops controlled by 'for (i = 0; i < NR_CPUS; i++)' to use
+> > 'for_each_possible_cpu(i)' when there's a _remote possibility_ of
+> > dereferencing a non-allocated per_cpu variable involved.
+> > 
+> > All files except mm/vmstat.c are x86 arch.
+> > 
+> > Based on 2.6.24-rc3-mm1 .
+> > 
+> > Thanks to pageexec@freemail.hu for pointing this out.
 > 
+> Looks good to me. 2.6.24 candidate.
 
-The future is now! ;-)
+hm.  Has anyone any evidence that we're actually touching
+not-possible-cpu's memory here?
 
-cheers,
-	Kyle
+Also, the sum_vm_events() change looks buggy - it assumes that
+cpu_possible_map has no gaps in it.  But that change is unneeded because
+sum_vm_events() is only ever passed cpu_online_map and I'm hoping that we
+don't usually online not-possible CPUs.
+
+--- a/mm/vmstat.c~mm-prevent-dereferencing-non-allocated-per_cpu-variables-fix
++++ a/mm/vmstat.c
+@@ -27,12 +27,12 @@ static void sum_vm_events(unsigned long 
+ 	memset(ret, 0, NR_VM_EVENT_ITEMS * sizeof(unsigned long));
+ 
+ 	cpu = first_cpu(*cpumask);
+-	while (cpu < NR_CPUS && cpu_possible(cpu)) {
++	while (cpu < NR_CPUS) {
+ 		struct vm_event_state *this = &per_cpu(vm_event_states, cpu);
+ 
+ 		cpu = next_cpu(cpu, *cpumask);
+ 
+-		if (cpu < NR_CPUS && cpu_possible(cpu))
++		if (cpu < NR_CPUS)
+ 			prefetch(&per_cpu(vm_event_states, cpu));
+ 
+ 
+_
+
