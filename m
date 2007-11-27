@@ -1,94 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbXK0PDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbXK0PGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757882AbXK0PDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 10:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbXK0PDa
+	id S1757871AbXK0PGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 10:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXK0PGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 10:03:30 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34962 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbXK0PDa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 10:03:30 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       hbabu@us.ibm.com, vgoyal@in.ibm.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-References: <20071127014740.GA28622@hmsreliant.think-freely.org>
-	<20071127131355.GA14887@hmsendeavour.rdu.redhat.com>
-	<m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-	<200711271445.56792.ak@suse.de>
-Date: Tue, 27 Nov 2007 07:56:44 -0700
-In-Reply-To: <200711271445.56792.ak@suse.de> (Andi Kleen's message of "Tue, 27
-	Nov 2007 14:45:56 +0100")
-Message-ID: <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 27 Nov 2007 10:06:11 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:41246 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbXK0PGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 10:06:10 -0500
+Date: Tue, 27 Nov 2007 16:05:57 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: ACPI related Warning in 2.6.24-rc3-git2
+Message-ID: <20071127150557.GA4365@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 27 Nov 2007 16:06:07 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+Hello,
 
-> his is any less reliable that what we have currently.
->> 
->> It doesn't make things more reliable, and it adds code to a code path
->> that already has to much code to be solid reliable (thus your
->> problem). 
->> 
->> Putting the system back in PIC legacy mode on the kexec on panic path
->> was supposed to be a short term hack until we could remove the need
->> by always deliver interrupts in apic mode.
->> 
->> If you can't root cause your problem and figure out how the apics
->> are misconfigured for legacy mode
->
-> Probably legacy mode always routes to CPU #0. Makes sense and is
-> not really a misconfiguration of legacy mode.
+in recent kernel, I got the following warnings while booting. It's ACPI
+related. Does anybode care? Lenovo ThinkPad T61 (6465CTO).
 
-Possible. So far I have not seen a hardware setup that would force
-interrupts to cpu #0 in legacy mode.  But I would not be truly
-surprised if it happened that there was hardware that only worked that
-way.
+[   13.114814] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
+[   13.114885] 
+[   13.114885] Call Trace:
+[   13.115020]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
+[   13.115095]  [<ffffffff8021e7ad>] smp_call_function_single+0xbd/0xd0
+[   13.115169]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
+[   13.115241]  [<ffffffff803631c7>]
+acpi_processor_get_throttling_ptc+0xf3/0x158
+[   13.115323]  [<ffffffff80362f04>]
+acpi_processor_get_throttling_info+0x460/0x4af
+[   13.115406]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
+[   13.115478]  [<ffffffff802abc38>] ifind+0x48/0xd0
+[   13.115550]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
+[   13.115622]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
+[   13.115694]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
+[   13.115766]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
+[   13.115840]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
+[   13.115924]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
+[   13.115994]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
+[   13.116080]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
+[   13.116153]  [<ffffffff806386f4>] kernel_init+0x154/0x330
+[   13.116225]  [<ffffffff8020d178>] child_rip+0xa/0x12
+[   13.116295]  [<ffffffff806385a0>] kernel_init+0x0/0x330
+[   13.116365]  [<ffffffff8020d16e>] child_rip+0x0/0x12
+[   13.116435] 
+[   13.116504] WARNING: at arch/x86/kernel/smp_64.c:397
+smp_call_function_mask()
+[   13.116577] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
+[   13.116648] 
+[   13.116648] Call Trace:
+[   13.116779]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
+[   13.116851]  [<ffffffff8021e4af>] smp_call_function_mask+0x8f/0xa0
+[   13.116923]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
+[   13.116994]  [<ffffffff803631c7>]
+acpi_processor_get_throttling_ptc+0xf3/0x158
+[   13.117077]  [<ffffffff80362f04>]
+acpi_processor_get_throttling_info+0x460/0x4af
+[   13.117169]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
+[   13.117248]  [<ffffffff802abc38>] ifind+0x48/0xd0
+[   13.117330]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
+[   13.117402]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
+[   13.117488]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
+[   13.117559]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
+[   13.117631]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
+[   13.117715]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
+[   13.117786]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
+[   13.117856]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
+[   13.117941]  [<ffffffff806386f4>] kernel_init+0x154/0x330
+[   13.118018]  [<ffffffff8020d178>] child_rip+0xa/0x12
+[   13.118088]  [<ffffffff806385a0>] kernel_init+0x0/0x330
+[   13.118158]  [<ffffffff8020d16e>] child_rip+0x0/0x12
+[   13.118227] 
+[...]
+[   13.124714] WARNING: at arch/x86/kernel/smp_64.c:427
+smp_call_function_single()
+[   13.124798] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
+[   13.125460] 
+[   13.125461] Call Trace:
+[   13.125592]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
+[   13.125665]  [<ffffffff8021e7ad>] smp_call_function_single+0xbd/0xd0
+[   13.125737]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
+[   13.125807]  [<ffffffff803631c7>]
+acpi_processor_get_throttling_ptc+0xf3/0x158
+[   13.125903]  [<ffffffff80362f04>]
+acpi_processor_get_throttling_info+0x460/0x4af
+[   13.125999]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
+[   13.126071]  [<ffffffff803625ed>] acpi_processor_add+0x24/0x6b
+[   13.126142]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
+[   13.126214]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
+[   13.126285]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
+[   13.126357]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
+[   13.126441]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
+[   13.126518]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
+[   13.126600]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
+[   13.126670]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
+[   13.126755]  [<ffffffff806386f4>] kernel_init+0x154/0x330
+[   13.126832]  [<ffffffff8020d178>] child_rip+0xa/0x12
+[   13.126916]  [<ffffffff806385a0>] kernel_init+0x0/0x330
+[   13.126986]  [<ffffffff8020d16e>] child_rip+0x0/0x12
+[   13.127059] 
+[   13.127124] WARNING: at arch/x86/kernel/smp_64.c:397
+smp_call_function_mask()
+[   13.127197] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
+[   13.127267] 
+[   13.127268] Call Trace:
+[   13.127398]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
+[   13.127473]  [<ffffffff8021e4af>] smp_call_function_mask+0x8f/0xa0
+[   13.127545]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
+[   13.127616]  [<ffffffff803631c7>]
+acpi_processor_get_throttling_ptc+0xf3/0x158
+[   13.127699]  [<ffffffff80362f04>]
+acpi_processor_get_throttling_info+0x460/0x4af
+[   13.127782]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
+[   13.127861]  [<ffffffff803625ed>] acpi_processor_add+0x24/0x6b
+[   13.127933]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
+[   13.128005]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
+[   13.128076]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
+[   13.128147]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
+[   13.128226]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
+[   13.128310]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
+[   13.128381]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
+[   13.128452]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
+[   13.128523]  [<ffffffff806386f4>] kernel_init+0x154/0x330
+[   13.128594]  [<ffffffff8020d178>] child_rip+0xa/0x12
+[   13.128664]  [<ffffffff806385a0>] kernel_init+0x0/0x330
+[   13.128734]  [<ffffffff8020d16e>] child_rip+0x0/0x12
 
-> But if CPU #0 has interrupts disabled no interrupts get delivered.
->
-> So choices are:
-> - Move to CPU #0
-> - Do not use legacy mode during shutdown.
-    (Do not use legacy mode in the kdump kernel. removing it from shutdown
-     is just minor optimization)
-> - Or do not rely on interrupts after enabling legacy mode
-> - Or do not disable interrupts on the other CPUs when they're
-> halted.
->
-> First and last option are probably unreliable for the kdump case.
-> Second or third sound best. 
->
-> I suspect the real fix would be to enable IOAPIC mode really
-> early and never use the timers in legacy mode. Then the kdump
-> kernel wouldn't care about the legacy mode pointing to the wrong CPU.
 
-Exactly.  If we can work out the details that should be a much more reliable
-mode of operation.
-
-> IIrc Eric even had  a patch for that a long time ago, but it broke some 
-> things so it wasn't included. But perhaps it should be revisited.
-
-My real problem was the failure case was obscure (a bad interaction
-with ACPI on Linus's laptop) and I didn't have the time to track it
-down when it showed up.
-
-My patch had two parts.  Some cleanups to enable the code to be enabled
-early, and the actually early enable.  I figure if we can get the
-cleanups in one major kernel version and then in the next enable
-the apic mode before we start getting interrupts we should be in good
-shape.
-
-I expect with x86 becoming an embedded platform with multiple cpus we
-may start seeing systems that don't actually support legacy PIC mode
-for interrupt delivery.
-
-Eric
+-- 
+Luká¹ Hejtmánek
