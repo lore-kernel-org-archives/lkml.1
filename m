@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbXK0R75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXK0SLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbXK0R75 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 12:59:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbXK0R7q
+	id S1756654AbXK0SLY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 13:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXK0SLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 12:59:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46291 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756654AbXK0R7p convert rfc822-to-8bit (ORCPT
+	Tue, 27 Nov 2007 13:11:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33890 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756005AbXK0SLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 12:59:45 -0500
-Date: Tue, 27 Nov 2007 12:50:07 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, mingo@elte.hu,
-       kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       apw@shadowen.org, balbir@linux.vnet.ibm.com, linux-acpi@vger.kernel.org,
-       tglx@linutronix.de, clameter@sgi.com
-Subject: Re: 2.6.24-rc3-mm1 - Kernel Panic on IO-APIC
-Message-ID: <20071127125007.4e1eddff@bree.surriel.com>
-In-Reply-To: <20071126152832.f6c808f3.akpm@linux-foundation.org>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	<4743CC0B.9000508@linux.vnet.ibm.com>
-	<20071120221839.faab108e.akpm@linux-foundation.org>
-	<20071126143943.0a01665b@cuia.boston.redhat.com>
-	<20071126123319.7483e57f.akpm@linux-foundation.org>
-	<20071126204540.GA19874@elte.hu>
-	<474B43E1.9080407@gmail.com>
-	<20071126141713.3dcd492b.akpm@linux-foundation.org>
-	<474B5349.2070500@gmail.com>
-	<20071126152832.f6c808f3.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Nov 2007 13:11:15 -0500
+Date: Tue, 27 Nov 2007 10:07:42 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Kobjects: drop child->parent ref at unregistration
+Message-ID: <20071127180742.GA2768@kroah.com>
+References: <20071127170147.GB29109@kroah.com> <Pine.LNX.4.44L0.0711271235430.3037-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0711271235430.3037-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 15:28:32 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 27 Nov 2007 00:14:17 +0100
-> Jiri Slaby <jirislaby@gmail.com> wrote:
+On Tue, Nov 27, 2007 at 12:41:23PM -0500, Alan Stern wrote:
+> On Tue, 27 Nov 2007, Greg KH wrote:
 > 
-> > On 11/26/2007 11:17 PM, Andrew Morton wrote:
-> > >> Maybe if you can emit a broken-out with the fresh pull to test?
-> > > 
-> > > http://userweb.kernel.org/~akpm/mmotm/ is current.  But it probably won't
-> > > compile. 
-> > 
-> > Yes it did :). And it worked. Both in qemu and on my desktop...
+> > For now, I'd recommend dropping it from your tree Andrew, as it might
+> > cause odd issues on device removal (not quite sure though...)
 > 
-> boggle.  Let's slap 2.6.25 on it and take the rest of the year off.
+> But then there's the counter-argument: If the patch does cause any odd 
+> issues to shake loose, learning about them in advance by exposing the 
+> patch in the -mm tree would be worthwhile.
+> 
+> Sounds like it's time for an executive decision...  :-)
 
-No worries, the mmotm compiling issue seems to have been fixed:
+Heh.  I'm not ignoring the patch, and will apply it if I test it out and
+see that it doesn't break anything.  Then I will let it bake in -mm for
+a while.
 
-  CC [M]  drivers/scsi/libsas/sas_ata.o
-drivers/scsi/libsas/sas_ata.c:39: error: field ‘rphy’ has incomplete type
-drivers/scsi/libsas/sas_ata.c: In function ‘sas_discover_sata’:
-drivers/scsi/libsas/sas_ata.c:773: error: implicit declaration of function ‘ata_sas_rphy_alloc’
-drivers/scsi/libsas/sas_ata.c:775: error: dereferencing pointer to incomplete type
-drivers/scsi/libsas/sas_ata.c:775: warning: assignment makes pointer from integer without a cast
-drivers/scsi/libsas/sas_ata.c:781: error: dereferencing pointer to incomplete type
-drivers/scsi/libsas/sas_ata.c:782: error: dereferencing pointer to incomplete type
-drivers/scsi/libsas/sas_ata.c:784: warning: type defaults to ‘int’ in declaration of ‘__mptr’
-drivers/scsi/libsas/sas_ata.c:784: warning: initialization from incompatible pointer type
-drivers/scsi/libsas/sas_ata.c:791: error: implicit declaration of function ‘ata_sas_rphy_add’
-drivers/scsi/libsas/sas_ata.c:807: error: implicit declaration of function ‘ata_sas_rphy_delete’
-drivers/scsi/libsas/sas_ata.c:809: error: implicit declaration of function ‘ata_sas_rphy_free’
-make[3]: *** [drivers/scsi/libsas/sas_ata.o] Error 1
-make[2]: *** [drivers/scsi/libsas] Error 2
-make[1]: *** [drivers/scsi] Error 2
-make: *** [drivers] Error 2
+I just don't want to rush it as this area of the kobject core is nasty
+and full of tricks that I always forget.
 
-So much for continuing the bisect with that tree, to find the
-cause of the second bug :)
+Let me finish writing up this documentation on what I do remember and
+then I'll attack the block device patch and this one.
 
-Guess I'll extract an x86 tree changeset first, to place into
-the 2.6.23-rc3-mm1 broken out tree and work from there...
+thanks,
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+greg k-h
