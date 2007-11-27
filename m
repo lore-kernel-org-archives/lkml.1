@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXK0XXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXK0XYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbXK0XXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbXK0XW6
+	id S1760635AbXK0XYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757032AbXK0XY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:22:58 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36665 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757130AbXK0XW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:22:57 -0500
-Date: Tue, 27 Nov 2007 15:22:56 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: andi@firstfloor.org, travis@sgi.com, ak@suse.de, pageexec@freemail.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm: Prevent dereferencing non-allocated per_cpu
- variables
-In-Reply-To: <20071127152122.1d5fbce3.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0711271522050.6713@schroedinger.engr.sgi.com>
-References: <20071127215052.090968000@sgi.com> <20071127215054.660250000@sgi.com>
- <20071127221628.GG24223@one.firstfloor.org> <20071127151241.038c146d.akpm@linux-foundation.org>
- <20071127152122.1d5fbce3.akpm@linux-foundation.org>
+	Tue, 27 Nov 2007 18:24:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54642 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755922AbXK0XY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 18:24:27 -0500
+Message-ID: <474CA733.9050908@redhat.com>
+Date: Tue, 27 Nov 2007 15:24:35 -0800
+From: Ben Woodard <woodard@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot
+ cpu
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com> <20071127200011.GA3703@redhat.com> <20071127222408.GH24223@one.firstfloor.org>
+In-Reply-To: <20071127222408.GH24223@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007, Andrew Morton wrote:
-
-> The prefetch however might still need some work - we can indeed do
-> prefetch() against a not-possible CPU's memory here.  And I do recall that
-> 4-5 years ago we did have a CPU (one of mine, iirc) which would oops when
-> prefetching from a bad address.  I forget what the conclusion was on that
-> matter.
+Andi Kleen wrote:
+>> Are we putting the system back in PIC mode or virtual wire mode? I have
+>> not seen systems which support PIC mode. All latest systems seems
+>> to be having virtual wire mode. I think in case of PIC mode, interrupts
 > 
-> If we do want to fix the prefetch-from-outer-space then we should be using
-> cpu_isset(cpu, *cpumask) here rather than cpu_possible().
+> Yes it's probably virtual wire. For real PIC mode we would need really
+> old systems without APIC.
+> 
+>> can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
+>> to deliver interrupt to any of the cpus and that's what we have been
+> 
+> The code doesn't try to program anything specific, it just restores the state
+> that was left over originally by the BIOS.
+> 
 
-Generally the prefetch things have turned out to be not that useful. How 
-about dropping the prefetch? I kept it because it was there.
+So if the BIOS originally left the IOAPIC in a state where the timer 
+interrupts were only going to CPU0 then by restoring that state we could 
+be bringing this problem upon ourselves when we restore that state.
 
+Would anyone have any problems with code that simply verified that the 
+state which we are restoring allowed interrupts to get to the processor 
+that we are currently crashing on and if not, poked in a reasonable value.
+
+Yes this would add some complexity to the code paths where we were 
+crashing but it could prevent the problem that we are seeing. It seems 
+like a small fairly safe change rather than a big disruptive change like 
+moving the initialization of the IOAPIC earlier in the boot process.
+
+> -Andi
+
+
+-- 
+-ben
+-=-
