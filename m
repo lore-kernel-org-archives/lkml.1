@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbXK0C3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbXK0Cj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbXK0C3x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 21:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbXK0C3j
+	id S1754214AbXK0Cj2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 21:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXK0CjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 21:29:39 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2769 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754118AbXK0C3i (ORCPT
+	Mon, 26 Nov 2007 21:39:20 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46298 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbXK0CjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 21:29:38 -0500
-Date: Mon, 26 Nov 2007 21:29:36 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: greg@kroah.com, <kay.sievers@vrfy.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kobjects: drop child->parent ref at unregistration
-In-Reply-To: <20071126145810.eb848f23.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0711262124090.22315-100000@netrider.rowland.org>
+	Mon, 26 Nov 2007 21:39:19 -0500
+Message-ID: <474B8319.8000606@zytor.com>
+Date: Mon, 26 Nov 2007 18:38:17 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ulrich Drepper <drepper@redhat.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [PATCHv4 5/6] Allow setting O_NONBLOCK flag for new sockets
+References: <200711200653.lAK6rE6B025891@devserv.devel.redhat.com> <20071119.235944.82120402.davem@davemloft.net> <474305A5.7070100@redhat.com> <474323CA.9030306@zytor.com> <alpine.LFD.0.9999.0711261003290.5869@woody.linux-foundation.org> <474B1C6D.6080405@zytor.com> <alpine.LFD.0.9999.0711261801390.5869@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0711261801390.5869@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, Andrew Morton wrote:
-
-> On Mon, 19 Nov 2007 10:53:40 -0500 (EST)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
+Linus Torvalds wrote:
 > 
-> > This patch (as1015) reverts changes that were made to the driver core
-> > about four years ago.  The intent back then was to avoid certain kinds
-> > of invalid memory accesses by leaving kernel objects allocated as long
-> > as any of their children were still allocated.  The original and
-> > correct approach was to wait only as long as any children were still
-> > _registered_; that's what this patch reinstates.
+>> The 6-word limit is a red herring.  There is at least two ways to deal with it
+>> (and this doesn't mean wiping the legacy stuff we already have):
+>>
+>> - Let each architecture pick a calling convention and redefine the
+>> architecture-independent bits to take an arbitrary number of arguments.  This
+>> is a one-time panarchitectural change.
 > 
-> What happened with this?
-
-As far as I know, it's on Greg's queue.
-
-> > This fixes a problem in the SCSI core made visible by the class_device
-> > to regular device conversion: A reference loop (scsi_device holds
-> > reference to request_queue, which is the child of a gendisk, which is
-> > the child of the scsi_device) prevents the data structures from being
-> > released, even though they are deregistered okay.
-> > 
-> > It's possible that this change will cause a few bugs to surface,
-> > things that have been hidden for several years.  They can be fixed
-> > easily enough by having the child device take an explicit reference to
-> > the parent whenever needed.
-> > 
+> Not applicable on x86-32.
 > 
-> How will such bugs manifest?  Ideally via a nice printk and a stack trace
-> followed by damage avoidance.
+> The six-word limit is effectively a hardware limit there. Once it goes 
+> past that limit, one of the words needs to be a pointer to extended 
+> information that is fundamentally slower to access. Happily, only very 
+> rare system calls do that (and none of them are of the simple variety 
+> where we see a few cycles easily).
+> 
+> On other architectures, we could more easily just use more registers. But 
+> x86-32 is still a big part (bulk) of what matters for most people.
+> 
 
-They will manifest in the same way as any other use-after-free bug: an 
-oops message and either death of the current process or a system hang.
+Well, x86-32 and x86-64 are surprisingly similar here, for very 
+different reasons (x86-64 is because there are only seven clobbered 
+registers that aren't destroyed by the syscall instruction itself.)
 
-Obviously I'm not aware of any such bugs -- if I were, I'd fix them.  
-Greg has expressed concern that some USB serial drivers might have this 
-problem.  I'll do what testing I can (not much because I don't have any 
-USB serial devices).
+However, on both of these we could make the user-space side cheaper, by 
+making sure that we don't have to do additional copies in user space. 
+For both these architectures, anything more than 3 parameters (i386) or 
+6 parameters (x86-64) will be already in memory on the stack, so if we 
+can use that image as-is then we at least save the intra-user-space copy 
+that goes along with it.
 
-> If it's via a mysterious crash or something similarly obscure then can we
-> improve that?
+x86-64 requires some minor thought, since the obvious way of doing it 
+(using arg register 6 to push in a pointer) would end up with a 
+discontiguous frame.  One can do it with something like this, although 
+it's not clear to me it is a win at all (the more obvious sequence using 
+XCHG isn't usable since XCHG locks unconditionally):
 
-I can't think of anything offhand.  Maybe someone else can.
+	pop	%r10			# Return address
+	push	%r9			# Argument 6
+	movq	%rsp, %r11
+	push	%r10
+	movq	%rcx, %r10
+	syscall
+	cmpq	$-4095, %rax
+	jae	...
+	pop	%r10
+	pop	%r9
+	push	%r10
+	retq
 
-Alan Stern
+The number of registers do vary, obviously, with s390 being the smallest 
+number (5).
 
+> Immediately when you do anything but registers, it is much *much* more 
+> costly. The "get_user()" and "copy_from_user()" stuff is not exactly slow, 
+> but it's quite noticeable overhead for simple system calls. It gets worse 
+> if this all is described by some indirect table setup.
+
+True, of course, although we're talking here about different ways to 
+pull arguments out of userspace memory; *definitely* agreed with that we 
+don't want to have any additional indirection necessary.
+
+	-hpa
