@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbXK0ViT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbXK0VjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbXK0ViT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 16:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbXK0ViF
+	id S1759964AbXK0VjA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 16:39:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXK0Vit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 16:38:05 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:37926 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758588AbXK0ViD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 16:38:03 -0500
-Date: Tue, 27 Nov 2007 13:38:02 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andreas Schwab <schwab@suse.de>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, tony.luck@intel.com
-Subject: Re: [patch 04/14] ia64: Remove the __SMALL_ADDR_AREA attribute for
- per cpu access
-In-Reply-To: <jeabozs7ou.fsf@sykes.suse.de>
-Message-ID: <Pine.LNX.4.64.0711271331240.4803@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com> <20071127001430.083503280@sgi.com>
- <jehcj83uir.fsf@sykes.suse.de> <Pine.LNX.4.64.0711271016500.2310@schroedinger.engr.sgi.com>
- <jeabozs7ou.fsf@sykes.suse.de>
+	Tue, 27 Nov 2007 16:38:49 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33849 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757495AbXK0Vis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 16:38:48 -0500
+Date: Tue, 27 Nov 2007 22:38:37 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Rick Jones <rick.jones2@hp.com>
+Cc: Dave Jones <davej@redhat.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Message-ID: <20071127213837.GG3406@stusta.de>
+References: <20071122343.446909000@suse.de> <adatznarrzc.fsf@cisco.com> <200711261228.15155.rusty@rustcorp.com.au> <20071126102533.1c774870@freepuppy.rosehill.pdx.hemminger.net> <20071127190037.GB30057@redhat.com> <20071127210942.GF3406@stusta.de> <474C88EB.9040300@hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <474C88EB.9040300@hp.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007, Andreas Schwab wrote:
+On Tue, Nov 27, 2007 at 01:15:23PM -0800, Rick Jones wrote:
+>> The real problem is that these drivers are not in the upstream kernel.
+>>
+>> Are there common reasons why these drivers are not upstream?
+>
+> One might be that upstream has not accepted them.  Anything doing or 
+> smelling of TOE comes to mind right away.
 
-> Strange.  Works fine here.
-> 
-> $ arch/ia64/scripts/toolchain-flags gcc objdump readelf
-> -DHAVE_WORKING_TEXT_ALIGN -DHAVE_MODEL_SMALL_ATTRIBUTE -DHAVE_SERIALIZE_DIRECTIVE
-> $ gcc --version | head -n 1
-> gcc (GCC) 4.2.1 (SUSE Linux)
-> $ grep ia64_handle_model_attribute config/ia64/*.c
-> config/ia64/ia64.c:static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
-> config/ia64/ia64.c:  { "model",	       1, 1, true, false, false, ia64_handle_model_attribute },
-> config/ia64/ia64.c:ia64_handle_model_attribute (tree *node, tree name, tree args,
-> $ grep small_addr_symbolic_operand config/ia64/*.md
-> config/ia64/constraints.md:  (match_operand 0 "small_addr_symbolic_operand"))
-> config/ia64/predicates.md:(define_predicate "small_addr_symbolic_operand" 
+Which modules doing or smelling of TOE do work with unmodified vendor 
+kernels?
 
-Hmmm...
+AFAIR TOE was both not a module and required some hooks in the network 
+stack, so it's completely outside the scope of this thread.
 
-http://www.ohse.de/uwe/articles/gcc-attributes.html
+> rick jones
 
-says:
+cu
+Adrian
 
-model (MODEL-NAME)
-    Found in versions: 2.8-3.4
+-- 
 
-But true my compiler still takes it. Ok, I am going to add an option to 
-add attributes to percpu definitions.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
