@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbXK0Ih1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbXK0IpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbXK0Ih1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbXK0IhR
+	id S1755903AbXK0IpS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 03:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXK0Io7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:37:17 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55477 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751461AbXK0IhQ (ORCPT
+	Tue, 27 Nov 2007 03:44:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46701 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751705AbXK0Io6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:37:16 -0500
-Date: Tue, 27 Nov 2007 08:36:41 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Pavel Emelyanov <xemul@openvz.org>, Linux MM <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH][SHMEM] Factor out sbi->free_inodes manipulations
-In-Reply-To: <20071126212311.88818502.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0711270835170.19731@blonde.wat.veritas.com>
-References: <4745B4F2.3060308@openvz.org> <Pine.LNX.4.64.0711231325510.18348@blonde.wat.veritas.com>
- <20071126212311.88818502.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 27 Nov 2007 03:44:58 -0500
+Date: Tue, 27 Nov 2007 00:44:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wagner Ferenc <wferi@niif.hu>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: bonding sysfs output
+Message-Id: <20071127004445.a046f791.akpm@linux-foundation.org>
+In-Reply-To: <87lk8lflzf.fsf@szonett.ki.iif.hu>
+References: <87tznafjeu.fsf@szonett.ki.iif.hu>
+	<20071125205150.4e49915f.akpm@linux-foundation.org>
+	<87lk8lflzf.fsf@szonett.ki.iif.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007, Andrew Morton wrote:
+On Mon, 26 Nov 2007 09:29:40 +0100 Wagner Ferenc <wferi@niif.hu> wrote:
+
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> It is peculair to (wrongly) return -ENOMEM
+> > On Sun, 25 Nov 2007 16:12:57 +0100 Wagner Ferenc <wferi@niif.hu> wrote:
+> >
+> >> I propose it as a fix for trailing NULs and spaces like eg.
+> >> 
+> >> $ od -c /sys/class/net/bond0/bonding/slaves 
+> >> 0000000   e   t   h   -   l   e   f   t       e   t   h   -   r   i   g
+> >> 0000020   h   t      \n  \0
+> >> 0000025
+> >> 
+> >> I'm afraid there're other problems with "++more++" handling, but let's
+> >> not consider those just yet.  Find the patch attached.  The first
+> >> hunks also renames buffer to buf, for consistency's shake.
+> >> 
+> >> The original version had varying behaviour for Not Applicable cases.
+> >> This patch also settles for empty files (not even a line feed) in
+> >> those cases, but I'm not sure about the general policy on this matter.
+> >
+> > hm, there are a lot of changes there.  Were they all actually needed to fix
+> > the one bug which you have described?
 > 
-> > +	if (shmem_reserve_inode(inode->i_sb))
-> > +		return -ENOSPC;
+> Trailing NULs are present in each file under /sys/class/net/*/bonding
+> and also in /sys/class/net/bonding_masters.  That is, in every file
+> provided by drivers/net/bonding/bond_sysfs.c.  Most of the patch is
+> concerned with this.
 > 
-> and to then correct it in the caller..
+> Closely related is the presence of trailing spaces in multivalue
+> files.  There are three such files, one of them has the trailing space
+> removed.  This patch removes it from the other two.  During this it
+> also renames one function argument 'buffer' to 'buf', for consistency.
+> 
+> On the policy side: some files are not applicable to some types of
+> bonds, and return a single linefeed in that case.  Except for one
+> single case, which returns 'NA\n'.  The patch changes these cases into
+> emtpy files.
+> 
+> If these are worthy changes, I'm absolutely willing to split up the
+> patch into three parts as the above.
 
-Oops, I missed that completely.
+Well that would be good if poss, thanks.
 
-> Something boringly conventional such as the below, perhaps?
+But fixing bugs is way more important than niceties of patch presentation
+however I wasn't prepared to fix the rejects which that patch is hitting in
+the considerably-changed bonding_show_ad_partner_mac().  Please:
 
-Much better, thanks.
+- raise patches against the latest Linus tree
+(ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/)
 
-Hugh
+- cc netdev@vger.kernel.org on networking-related matters
+
+- Include a Signed-off-by: as per Documentation/SubmittingPatches
+
+- Try to ensure that the full explanation (such as you have above) is
+covered in the changelog text.
+
+Thanks.
