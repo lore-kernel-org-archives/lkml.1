@@ -1,63 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbXK0UiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbXK0UoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbXK0UiS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbXK0UiI
+	id S1758539AbXK0UoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbXK0Un7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:38:08 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:25430 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756617AbXK0UiG (ORCPT
+	Tue, 27 Nov 2007 15:43:59 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43542 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756150AbXK0Un6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:38:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=PLmsOmZLB4iVNLlZkDcn3WnbpKUycl5UvQBvvRPb4/2eSAa3CiycOADmMMPCckizzZbc0BuQSBmkYgein7WsnwLSVAWJzl9jUeth6mHKfPKPFfiuBVn4eQmo0GpUVOLJH5qlHALKsusfDSeD1rKdBHsaHY7HHyUSz4wtBvQwNQI=
-Message-ID: <d15adc960711271238g73fcf3bdv8f67cbcd54382991@mail.gmail.com>
-Date: Tue, 27 Nov 2007 12:38:04 -0800
-From: "Saswat Praharaj" <saswat@gmail.com>
+	Tue, 27 Nov 2007 15:43:58 -0500
+Message-Id: <1196196237.19410.1223544787@webmail.messagingengine.com>
+X-Sasl-Enc: wrYOt5/xJf+5XJFwgXUCYBQzaBHMcarLt7bVaGbCY11x 1196196237
+From: "Thomas Tuttle" <linux-kernel@ttuttle.net>
 To: linux-kernel@vger.kernel.org
-Subject: Question on splice
-Cc: saswat@gmail.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; boundary="_----------=_1196196237194100"; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: Oops with 2.6.24 git when loading iwl3945
+Date: Tue, 27 Nov 2007 15:43:57 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All,
+This is a multi-part message in MIME format.
 
-I am a linux application programmer and kernel newbie.
+--_----------=_1196196237194100
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Date: Tue, 27 Nov 2007 20:43:57 UT
 
-I would like to use splice() / tee() to do some packet forwarding.
-I think these two systems calls are there in 2.6.18 kernel.
+Hey.
 
-My company is deciding to use either 2.6.21 or 2.6.22 kernel in our product.
+I'm using a git snapshot that gentoo distributed mere hours ago (so I'm
+fairly confident it's current), and I'm getting an Oops when I try to
+load the iwl3945 driver.  I've attached it as plain text.
 
-My question is : Is splice() stable in 2.6.21 / 2.6.22 ?
+Hope this helps,
 
-I found this link where it says
+Thomas Tuttle
 
- http://lwn.net/Articles/251707/ (search splice)
+--_----------=_1196196237194100
+Content-Disposition: attachment; filename="oops"
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=iso-8859-1; name="oops"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Date: Tue, 27 Nov 2007 20:43:57 UT
 
-Jens Axboe (2):
- splice: fix direct splice error handling
- Fix race with shared tag queue maps
+aWVlZTgwMjExX2NyeXB0OiByZWdpc3RlcmVkIGFsZ29yaXRobSAnTlVMTCcK
+aWVlZTgwMjExX2NyeXB0OiByZWdpc3RlcmVkIGFsZ29yaXRobSAnV0VQJwpp
+d2wzOTQ1OiBJbnRlbChSKSBQUk8vV2lyZWxlc3MgMzk0NUFCRy9CRyBOZXR3
+b3JrIENvbm5lY3Rpb24gZHJpdmVyIGZvciBMaW51eCwgMS4xLjE3a2RzCml3
+bDM5NDU6IENvcHlyaWdodChjKSAyMDAzLTIwMDcgSW50ZWwgQ29ycG9yYXRp
+b24KQUNQSTogUENJIEludGVycnVwdCAwMDAwOjBjOjAwLjBbQV0gLT4gR1NJ
+IDE3IChsZXZlbCwgbG93KSAtPiBJUlEgMTcKUENJOiBTZXR0aW5nIGxhdGVu
+Y3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MGM6MDAuMCB0byA2NAppd2wzOTQ1
+OiBEZXRlY3RlZCBJbnRlbCBQUk8vV2lyZWxlc3MgMzk0NUFCRyBOZXR3b3Jr
+IENvbm5lY3Rpb24KaXdsMzk0NTogVHVuYWJsZSBjaGFubmVsczogMTEgODAy
+LjExYmcsIDEzIDgwMi4xMWEgY2hhbm5lbHMKZ2VuZXJhbCBwcm90ZWN0aW9u
+IGZhdWx0OiAwMDAwIFsxXSBTTVAgCkNQVSAwIApNb2R1bGVzIGxpbmtlZCBp
+bjogaXdsMzk0NSBpZWVlODAyMTFfY3J5cHRfd2VwIGllZWU4MDIxMV9jcnlw
+dCBtYWM4MDIxMSBjZmc4MDIxMSBpOTE1IGRybSBzbmRfc2VxX29zcyBzbmRf
+c2VxX2RldmljZSBzbmRfc2VxX21pZGlfZXZlbnQgc25kX3NlcSBzbmRfcGNt
+X29zcyBzbmRfbWl4ZXJfb3NzIHNuZF9oZGFfaW50ZWwgc25kX3BjbSBzbmRf
+dGltZXIgc25kIHNvdW5kY29yZSBzbmRfcGFnZV9hbGxvYyBjb3JldGVtcCBo
+d21vbiBydGMgcmZjb21tIGwyY2FwIGhjaV91c2IgYmx1ZXRvb3RoIHVoY2lf
+aGNkIGVoY2lfaGNkIHVzYmNvcmUgZXZkZXYgYjQ0IHNzYiBwc21vdXNlClBp
+ZDogNTIzMCwgY29tbTogaXdsMzk0NS8wIE5vdCB0YWludGVkIDIuNi4yNC1y
+YzMtZ2l0MiAjMQpSSVA6IDAwMTA6WzxmZmZmZmZmZjgwMzAwYzU2Pl0gIFs8
+ZmZmZmZmZmY4MDMwMGM1Nj5dIHN0cmNtcCsweDAvMHgxYQpSU1A6IDAwMTg6
+ZmZmZjgxMDA3NGQ5M2RkOCAgRUZMQUdTOiAwMDAxMDI4NwpSQVg6IGZmZmZm
+ZmZmODgxYzJlODAgUkJYOiBmZmZmODEwMDc1MmI4NGUwIFJDWDogZmZmZjgx
+MDA3NGQ5MjAwMApSRFg6IGZmZmY4MTAwNzRkZTIwNzMgUlNJOiBmZmZmZmZm
+Zjg4MWMwODZiIFJESTogMDAwMjAwNzQwMDAwMDE2YgpSQlA6IGZmZmZmZmZm
+ODgxYzhlODAgUjA4OiBmZmZmODEwMDc0ZDkyMDAwIFIwOTogZmZmZjgxMDAw
+MmJmNzdhMApSMTA6IDAwMDAwMDAwMDAwMDAwMDAgUjExOiAwMDAwMDAwMDAw
+MDAwMDAxIFIxMjogZmZmZmZmZmY4ODE5NzU0MApSMTM6IGZmZmY4MTAwNzRk
+ZTIwNjAgUjE0OiBmZmZmODEwMDc0ZGUyMDMwIFIxNTogMDAwMDAwMDAwMDAw
+MDAzOApGUzogIDAwMDAwMDAwMDAwMDAwMDAoMDAwMCkgR1M6ZmZmZmZmZmY4
+MDU5ZDAwMCgwMDAwKSBrbmxHUzowMDAwMDAwMDAwMDAwMDAwCkNTOiAgMDAx
+MCBEUzogMDAxOCBFUzogMDAxOCBDUjA6IDAwMDAwMDAwODAwNTAwM2IKQ1Iy
+OiAwMDAwMmIzMTNlY2VmMDAwIENSMzogMDAwMDAwMDA3ZDEwMDAwMCBDUjQ6
+IDAwMDAwMDAwMDAwMDA2ZTAKRFIwOiAwMDAwMDAwMDAwMDAwMDAwIERSMTog
+MDAwMDAwMDAwMDAwMDAwMCBEUjI6IDAwMDAwMDAwMDAwMDAwMDAKRFIzOiAw
+MDAwMDAwMDAwMDAwMDAwIERSNjogMDAwMDAwMDBmZmZmMGZmMCBEUjc6IDAw
+MDAwMDAwMDAwMDA0MDAKUHJvY2VzcyBpd2wzOTQ1LzAgKHBpZDogNTIzMCwg
+dGhyZWFkaW5mbyBmZmZmODEwMDc0ZDkyMDAwLCB0YXNrIGZmZmY4MTAwN2M4
+MTIwMDApClN0YWNrOiAgZmZmZmZmZmY4ODE4M2EwZSBmZmZmODEwMDc0ZDUy
+MjIwIGZmZmY4MTAwNzRkNTE4YzAgZmZmZjgxMDA3NGRlMjAwMAogZmZmZmZm
+ZmY4ODFhODFlMiAwMDAwMDAwMDAwMDAwMDAwIDAwMDAwMDAwMDAwMDAwMDAg
+MDAwMDAwMDA3NGQ5M2UzMAogMDAwMDAwMDAwMDAwMDAwMCBmZmZmODEwMDdj
+ODEyMDAwIDAwMDAwMDAwMDAwMDAwMDAgMDAwMDAwMDAwMDAwMDAwMApDYWxs
+IFRyYWNlOgogWzxmZmZmZmZmZjg4MTgzYTBlPl0gOm1hYzgwMjExOmllZWU4
+MDIxMV9yYXRlX2NvbnRyb2xfcmVnaXN0ZXIrMHgzZC8weGRkCiBbPGZmZmZm
+ZmZmODgxYTgxZTI+XSA6aXdsMzk0NTppd2xfYmdfYWxpdmVfc3RhcnQrMHhj
+OTYvMHhlZjkKIFs8ZmZmZmZmZmY4MDQzOTk4ND5dIHRocmVhZF9yZXR1cm4r
+MHgzZC8weDgxCiBbPGZmZmZmZmZmODgxYTc1NGM+XSA6aXdsMzk0NTppd2xf
+YmdfYWxpdmVfc3RhcnQrMHgwLzB4ZWY5CiBbPGZmZmZmZmZmODAyNDI3NTU+
+XSBydW5fd29ya3F1ZXVlKzB4N2YvMHgxMGIKIFs8ZmZmZmZmZmY4MDI0MzA3
+MT5dIHdvcmtlcl90aHJlYWQrMHgwLzB4ZTQKIFs8ZmZmZmZmZmY4MDI0MzE0
+Yj5dIHdvcmtlcl90aHJlYWQrMHhkYS8weGU0CiBbPGZmZmZmZmZmODAyNDYw
+YzA+XSBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgwLzB4MmUKIFs8ZmZm
+ZmZmZmY4MDI0NWZhZT5dIGt0aHJlYWQrMHg0Ny8weDc1CiBbPGZmZmZmZmZm
+ODAyMGNjNDg+XSBjaGlsZF9yaXArMHhhLzB4MTIKIFs8ZmZmZmZmZmY4MDI0
+NWY2Nz5dIGt0aHJlYWQrMHgwLzB4NzUKIFs8ZmZmZmZmZmY4MDIwY2MzZT5d
+IGNoaWxkX3JpcCsweDAvMHgxMgoKCkNvZGU6IDhhIDE3IDg5IGQwIDJhIDA2
+IDQ4IGZmIGM2IDg0IGMwIDc1IDA5IDg0IGQyIDc0IDA1IDQ4IGZmIGM3IApS
+SVAgIFs8ZmZmZmZmZmY4MDMwMGM1Nj5dIHN0cmNtcCsweDAvMHgxYQogUlNQ
+IDxmZmZmODEwMDc0ZDkzZGQ4PgoK
 
+--_----------=_1196196237194100--
 
-Looks like there were some issues with splice that has been fixed in
-2.6.22.9 kernel.
-
-I am not sure how critical is that problem . Can I still use the
-2.6.21/2.6.22 kernel for splice without any major issues ?
-If not, which kernel version would give me a stable splice() .
-
-Please note that I am not subscribed to this list , so please CC me (a
-reply-all would do) in your reply.
-
-
-Thanks in advance.
-
--Saswat
