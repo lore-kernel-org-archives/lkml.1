@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbXK0Ege@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbXK0EuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbXK0Ege (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 23:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbXK0Eg1
+	id S1756062AbXK0EuU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 23:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXK0EuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 23:36:27 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:56936 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754237AbXK0Eg0 (ORCPT
+	Mon, 26 Nov 2007 23:50:08 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:17722 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753432AbXK0EuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 23:36:26 -0500
-Date: Mon, 26 Nov 2007 22:36:17 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Dynticks Causing High Context Switch Rate in ksoftirqd
-In-reply-to: <fa.c70Wy8WHP3DOaDydQ2D94+Xxx/8@ifi.uio.no>
-To: bdupree@techfinesse.com
-Cc: linux-kernel@vger.kernel.org
-Message-id: <474B9EC1.5020304@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.c70Wy8WHP3DOaDydQ2D94+Xxx/8@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 26 Nov 2007 23:50:07 -0500
+X-IronPort-AV: i="4.23,217,1194238800"; 
+   d="scan'208"; a="57076401:sNHT27193236"
+Subject: [PATCH] [libata] Set proper ATA UDMA mode for bf548 according to
+	system clock.
+From: sonic zhang <sonic.adi@gmail.com>
+To: Linux IDE <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain
+Date: Tue, 27 Nov 2007 12:47:39 +0800
+Message-Id: <1196138859.6974.2.camel@eight.analog.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bdupree@techfinesse.com wrote:
-> Question: Why is ksoftirqd eating about 5 to 10 percent of my CPU on an idle
-> system? The problem occurs if I config the kernel with tickless
-> support (i.e. CONFIG_TICK_ONESHOT=y).  (Thanks to "oprofile" for putting me
-> onto this.)
-> 
-> I have noted this same problem on kernel versions: 2.6.23.1, 2.6.23.8 and
-> 2.6.23.9
-> 
-> **************************************************************************
-> *** Output from "vmstat -n 1 10" -- Note very high context switch rate ***
-> *** This is on a idle machine!                                         ***
-> **************************************************************************
-> 
-> procs -----------memory---------- ---swap-- -----io---- --system--
-> ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy
-> id wa
->  0  0      0 1925556   4768 116104    0    0   124     2    6  7538  1  2
-> 96  1
->  0  0      0 1925556   4768 116104    0    0     0     0    2 147329  0  1
-> 99  0
+UDMA Mode - Frequency compatibility
 
-What did oprofile show? It should be able to narrow down what 
-function(s) are responsible for the CPU usage..
+UDMA5 - 100 MB/s   - SCLK  = 133 MHz
+UDMA4 - 66 MB/s    - SCLK >=  80 MHz
+UDMA3 - 44.4 MB/s  - SCLK >=  50 MHz
+UDMA2 - 33 MB/s    - SCLK >=  40 MHz
 
+
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+---
+ drivers/ata/pata_bf54x.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
+index 81db405..088a41f 100644
+--- a/drivers/ata/pata_bf54x.c
++++ b/drivers/ata/pata_bf54x.c
+@@ -1489,6 +1489,8 @@ static int __devinit bfin_atapi_probe(st
+ 	int board_idx = 0;
+ 	struct resource *res;
+ 	struct ata_host *host;
++	unsigned int fsclk = get_sclk();
++	int udma_mode = 5;
+ 	const struct ata_port_info *ppi[] =
+ 		{ &bfin_port_info[board_idx], NULL };
+ 
+@@ -1507,6 +1509,11 @@ static int __devinit bfin_atapi_probe(st
+ 	if (res == NULL)
+ 		return -EINVAL;
+ 
++	while (bfin_port_info[board_idx].udma_mask>0 && udma_fsclk[udma_mode] > fsclk) {
++		udma_mode--;
++		bfin_port_info[board_idx].udma_mask >>= 1;
++	}
++
+ 	/*
+ 	 * Now that that's out of the way, wire up the port..
+ 	 */
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+1.4.3.4
+
 
