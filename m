@@ -1,42 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXK0BjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbXK0BrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbXK0BjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 20:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXK0BjP
+	id S1754134AbXK0BrJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 20:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXK0Bq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 20:39:15 -0500
-Received: from stinky.trash.net ([213.144.137.162]:40841 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756520AbXK0BjP (ORCPT
+	Mon, 26 Nov 2007 20:46:58 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:26304 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752193AbXK0Bq5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 20:39:15 -0500
-Message-ID: <474B753C.7060303@trash.net>
-Date: Tue, 27 Nov 2007 02:39:08 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Mon, 26 Nov 2007 20:46:57 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tVN//5lAGtyaJ6MvnaSSjByw9v5jPMJKV97x7HN9T6ELzrU76+A9rT2bQkmpXM7iJSqVBXmT0yO5Du5kbqM2dopWAcp7wk9+EyQIba4hJ5SZSRbyGBeLxF00XxFHkasrrYhm0z1iy7aqdtewNY99s9QzgkEPvExOibcA/nB/P34=  ;
+X-YMail-OSG: tflseegVM1mW7OJtTtyqatWM_3pV4KCs2wYMNOTbAdVYDTQezLqt42UM6FnQIbsFOwbjgQXR_A--
+From: David Brownell <david-b@pacbell.net>
+To: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [patch/rfc 1/4] GPIO implementation framework
+Date: Mon, 26 Nov 2007 17:46:54 -0800
+User-Agent: KMail/1.9.6
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Felipe Balbi" <felipebalbi@users.sourceforge.net>,
+       "Bill Gatliff" <bgat@billgatliff.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Tony Lindgren" <tony@atomide.com>, "Jean Delvare" <khali@linux-fr.org>,
+       "Kevin Hilman" <khilman@mvista.com>, "Paul Mundt" <lethal@linux-sh.org>,
+       "Ben Dooks" <ben@trinity.fluff.org>
+References: <200710291809.29936.david-b@pacbell.net> <f17812d70711132240m359fcd5doac56ab06bfe76f69@mail.gmail.com> <200711132308.48779.david-b@pacbell.net>
+In-Reply-To: <200711132308.48779.david-b@pacbell.net>
 MIME-Version: 1.0
-To: kloczek@rudy.mif.pg.gda.pl
-CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.9
-References: <20071126180132.GA25230@kroah.com> <Pine.BSO.4.63.0711270211090.18832@rudy.mif.pg.gda.pl>
-In-Reply-To: <Pine.BSO.4.63.0711270211090.18832@rudy.mif.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200711261746.55235.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz K wrote:
-> On Mon, 26 Nov 2007, Greg Kroah-Hartman wrote:
-> [..]
->
-> Still there is no aroud officialy released iptables tarball with 
-> support for rules for new xt_{connlimit,time,u32} modules.
-> Anyone know where are patches for manage connlimit, time, u32 rules 
-> which will be included in next release ?
+On Tuesday 13 November 2007, David Brownell wrote:
+> So the point of these is to make it easier for platforms
+> (or even just boards) to make sure the GPIO number space
+> is densely packed, rather than loosely so?  Paying about
+> 2KBytes for that privilege.  (Assuming a 32 bit system
+> with 256 GPIOs.)
+> 
+> I could see that being a reasonable tradeoff.  I wouldn't
+> have started there myself, but you know how that goes!
+> 
+> Does anyone else have any comments on that issue?
 
-A well chosen thread to ask this question. xt_time is not even
-included in 2.6.23.
+Nobody else seems to have any comments on Eric's series
+of patches to add a gpio_desc layer ... whereas, I was
+looking at updating one platform, and got annoyed at some
+stuff that would have been non-issues with them in place!
 
-http://netfilter.org/news.html#2007-10-15
+
+Eric, would you feel like rolling an all-in-one patch against
+the gpiolib support from 2.6.24-rc3-mm?  Including updated
+versions of your patches:
+
+ - [PATCH 2/5] define gpio_chip.requested_str
+	(renaming it as "label" to match its usage)
+ - [PATCH 3/5] use a per GPIO "struct gpio_desc"
+	(but without that needless list; for debug,
+	just scan the gpio_desc list for the next
+	non-null chip)
+ - [PATCH] move per GPIO "is_out" to "struct gpio_desc"
+	(i.e. patch 4/5)
+ - [PATCH 5/5] move per GPIO "requested" to "struct gpio_desc"
+	(and "label" too)
+
+along with removing the ARCH_GPIOS_PER_CHIP symbol, and
+reducing ARCH_NR_GPIOS to a value which will waste less
+space by default?  (Like maybe 256.)
+
+I think an all-in-one patch will be easier to review
+and agree on including (or not).
+
+- Dave
