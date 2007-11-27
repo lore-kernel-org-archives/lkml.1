@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXK0OTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXK0OU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbXK0OTh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 09:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXK0OTa
+	id S1758008AbXK0OU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 09:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbXK0OUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 09:19:30 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:45394 "EHLO mx2.suse.de"
+	Tue, 27 Nov 2007 09:20:18 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50654 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754562AbXK0OT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 09:19:29 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [patch] timer_list should use signed numbers for relative times
-References: <20071127124405.GA3943@elf.ucw.cz> <jeaboz4zfj.fsf@sykes.suse.de>
-	<20071127140843.GA14570@elf.ucw.cz>
-X-Yow: I am covered with pure vegetable oil and I am writing a best seller!
-Date: Tue, 27 Nov 2007 15:19:27 +0100
-In-Reply-To: <20071127140843.GA14570@elf.ucw.cz> (Pavel Machek's message of
-	"Tue\, 27 Nov 2007 15\:08\:44 +0100")
-Message-ID: <je3aur4vps.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1757294AbXK0OUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 09:20:17 -0500
+Date: Tue, 27 Nov 2007 20:02:57 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
+       Dipankar <dipankar@in.ibm.com>
+Subject: Re: [Patch 0/5] sched: group scheduler related patches (V4)
+Message-ID: <20071127143257.GC22197@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com> <20071126202836.GA17012@elte.hu> <20071127050652.GA20083@linux.vnet.ibm.com> <20071127110910.GB16273@elte.hu> <20071127114246.GB22197@linux.vnet.ibm.com> <20071127125312.GA28019@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127125312.GA28019@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+On Tue, Nov 27, 2007 at 01:53:12PM +0100, Ingo Molnar wrote:
+> > Fine. I will resubmit this patchset then once we are into 2.6.25 
+> > cycle.
+> 
+> no need (unless you have bugfixes) i'm carrying this around in the 
+> scheduler git tree. (it will show up in sched-devel.git)
 
-> Hi!
->
->
->> > Relative times are signed by nature, and timers can (briefly) have
->> > expires in past. Print them as negative numbers.
->> >
->> > Signed-off-by: Pavel Machek <pavel@suse.cz>
->> >
->> > diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
->> > index 12c5f4c..7f6eaa9 100644
->> > --- a/kernel/time/timer_list.c
->> > +++ b/kernel/time/timer_list.c
->> > @@ -65,7 +65,7 @@ #ifdef CONFIG_TIMER_STATS
->> >  	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
->> >  #endif
->> >  	SEQ_printf(m, "\n");
->> > -	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
->> > +	SEQ_printf(m, " # expires at %Lu nsecs [in %Ld nsecs]\n",
->> >  		(unsigned long long)ktime_to_ns(timer->expires),
->> >  		(unsigned long long)(ktime_to_ns(timer->expires) - now));
->> 
->> Perhaps change the cast as well.
->
-> Well, that seems to be absolute time, so %Lu makes some sense...
-
-I don't understand what this has to do with the cast.
-
-Andreas.
+Cool .. Thx! It will get me some testing results (from those who test
+sched-devel tree) and also will save me some maintenance trouble :)
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Regards,
+vatsa
