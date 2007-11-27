@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759685AbXK0V0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbXK0V1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759685AbXK0V0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 16:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbXK0V02
+	id S1759622AbXK0V1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 16:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXK0V1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 16:26:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56002 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757428AbXK0V01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 16:26:27 -0500
-Date: Tue, 27 Nov 2007 16:25:58 -0500
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Message-ID: <20071127212558.GA27481@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@kernel.org>,
-	Stephen Hemminger <shemminger@linux-foundation.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <adatznarrzc.fsf@cisco.com> <200711261228.15155.rusty@rustcorp.com.au> <20071126102533.1c774870@freepuppy.rosehill.pdx.hemminger.net> <20071127190037.GB30057@redhat.com> <20071127210942.GF3406@stusta.de>
+	Tue, 27 Nov 2007 16:27:15 -0500
+Received: from wr-out-0506.google.com ([64.233.184.234]:44641 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758288AbXK0V1P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 16:27:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=w1NsmIsfJxWMPfb59A90MC78Y+woeq6kfLW3Hbr7F2QFG3eHvhhTJs1C6Os4JQW/kAvVsjveo2S4dF8VZJGZHkDcmk4VaBk4OAJDrObh9YUcZayWtn+rxYnfM4Qc5z3aaQdG6nLfKUfBfeJhzjpQtG5OcDgvmlOT9Rgphe4PK4I=
+Message-ID: <ed5aea430711271327l1644750dm363f846a23b1cce5@mail.gmail.com>
+Date: Tue, 27 Nov 2007 14:27:02 -0700
+From: "David Mosberger-Tang" <dmosberger@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [patch 04/14] ia64: Remove the __SMALL_ADDR_AREA attribute for per cpu access
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, tony.luck@intel.com
+In-Reply-To: <Pine.LNX.4.64.0711271316110.4590@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071127210942.GF3406@stusta.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20071127001407.859743255@sgi.com>
+	 <20071127001430.083503280@sgi.com>
+	 <ed5aea430711262120p45bb5b2t1b16872e74547369@mail.gmail.com>
+	 <Pine.LNX.4.64.0711271014550.2310@schroedinger.engr.sgi.com>
+	 <ed5aea430711271310i144c005cj25101b7dd6b0d6d9@mail.gmail.com>
+	 <Pine.LNX.4.64.0711271316110.4590@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 10:09:42PM +0100, Adrian Bunk wrote:
- > On Tue, Nov 27, 2007 at 02:00:37PM -0500, Dave Jones wrote:
- > > On Mon, Nov 26, 2007 at 10:25:33AM -0800, Stephen Hemminger wrote:
- > >  
- > >  > 1) Why is everyone so concerned that export symbol space is large?
- > >  > 	- does it cost cpu or running memory?
- > >  > 	- does it cause bugs?
- > >  > 	- or are you just worried about "evil modules"?
- > > 
- > > To clarify something here, by "evil", don't necessarily think "binary only". 
- > > 
- > > Out of tree modules are frequently using symbols that they shouldn't be.
- > > Because they get no peer-review here, they 'get away with it' for the most part.
- > > Until distro vendors push rebased kernel updates that removed exports that
- > > should never have been exported, and suddenly people like me get bombed
- > > with "Fedora broke my xyz driver" mails.
- > >...
- > 
- > The real problem is that these drivers are not in the upstream kernel.
+On 11/27/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Tue, 27 Nov 2007, David Mosberger-Tang wrote:
+>
+> > Uniformity for the sake of uniformity?  The small data addressing is
+> > really elegant and I don't think it should be dropped just for the
+> > sake of uniformity.
+>
+> Uniformity for the sake of code size reduction and easier maintenance.
 
-You're preaching to the choir.
+Code-size reduction?  You must be talking *source* code size
+reduction.  Surely the small-data access-method decreases object code
+size.
 
- > Are there common reasons why these drivers are not upstream?
-
-It varies case by case.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+  --david
