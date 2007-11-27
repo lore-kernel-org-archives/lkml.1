@@ -1,109 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXK0GOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXK0GPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbXK0GOF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 01:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXK0GNz
+	id S1756684AbXK0GPb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 01:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbXK0GPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 01:13:55 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57251 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbXK0GNy (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 01:13:54 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Dave Jones <davej@redhat.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-In-Reply-To: Your message of "Mon, 26 Nov 2007 23:34:11 EST."
-             <20071127043411.GF15764@redhat.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20071125161631.GA21947@stusta.de> <20071126122706.GA5167@ucw.cz> <20547.1196135084@turing-police.cc.vt.edu>
-            <20071127043411.GF15764@redhat.com>
+	Tue, 27 Nov 2007 01:15:20 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51686 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750899AbXK0GPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 01:15:18 -0500
+Date: Mon, 26 Nov 2007 22:15:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: 2.6.24-rc3-mm1
+Message-Id: <20071126221509.8f437b61.akpm@linux-foundation.org>
+In-Reply-To: <47466B5D.90607@googlemail.com>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	<47462F3C.3040700@googlemail.com>
+	<20071122201250.f957e280.akpm@linux-foundation.org>
+	<47466B5D.90607@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196144008_2838P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Nov 2007 01:13:28 -0500
-Message-ID: <11497.1196144008@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196144008_2838P
-Content-Type: text/plain; charset=us-ascii
+On Fri, 23 Nov 2007 06:55:41 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
 
-On Mon, 26 Nov 2007 23:34:11 EST, Dave Jones said:
-> On Mon, Nov 26, 2007 at 10:44:44PM -0500, Valdis.Kletnieks@vt.edu wrote:
->  
->  > I suspect that given the "once it escapes, it's cast in stone" view we take
->  > towards user-visible API/etc, there isn't much *real* room for an
->  > 'EXPERIMENTAL' flag anymore.  Most of the usage should probably be confined to
->  > individual drivers, where all we should need is a 'default n' and suitable
->  > warning verbiage in the Kconfig file warning about the driver eating your
->  > filesystems and small animals for breakfast.
+> Andrew Morton wrote:
+> > On Fri, 23 Nov 2007 02:39:08 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
+> > 
+> >> I have some warnings on each SCSI disc:
+> >>
+> >>
+> >> ...
+> >>
+> >> [   30.724410] scsi 0:0:0:0: Direct-Access     SEAGATE  ST318406LW       0109 PQ: 0 ANSI: 3
+> >> [   30.724419] scsi0:A:0:0: Tagged Queuing enabled.  Depth 32
+> >> [   30.724435]  target0:0:0: Beginning Domain Validation
+> >> [   30.724446]  target0:0:0: Domain Validation Initial Inquiry Failed <--
+> >> [   30.724572]  target0:0:0: Ending Domain Validation
+> >> [   30.729747] scsi 0:0:1:0: Direct-Access     FUJITSU  MAH3182MP        0114 PQ: 0 ANSI: 4
+> >> [   30.729754] scsi0:A:1:0: Tagged Queuing enabled.  Depth 32
+> >> [   30.729771]  target0:0:1: Beginning Domain Validation
+> >> [   30.729780]  target0:0:1: Domain Validation Initial Inquiry Failed <--
+> >> [   30.729908]  target0:0:1: Ending Domain Validation
+> >>
+> > 
+> > Don't know what would have caused that.  But yes, something is wrong in
+> > scsi land.
 > 
-> Potential corruptors are usually flagged with (DANGEROUS) in the text,
-
-Right, and given that, an additional EXPERIMENTAL flag seems superfluous.
-
-> (One may argue that they shouldn't have escaped -mm)
+> Actually I'm lucky the author didn't fix that FIXME in scsi_transport_spi.c and I still can boot ;)
 > 
->  >  We certainly shouldn't have
->  > one big flag for *all* in-progress drivers - I don't need to accidentally
->  > enable a busticated ethernet driver because I want a USB widget.
+> > 
+> >> no idea whatever this is related but buffered disk reads are 2.XX MB/sec and the box is somewhat laggy.
+> >>
+> >> hdparm -t on sda and sdb reports :
+> >>
+> >> /dev/sda:
+> >>  Timing buffered disk reads:    8 MB in  3.26 seconds =   2.46 MB/sec
+> >>
+> >> /dev/sdb:
+> >>  Timing buffered disk reads:    8 MB in  3.56 seconds =   2.25 MB/sec
+> >>
+> >> My IDE discs are fine.
+> >>
+> >> Please let me know if you need my config or any other informations.
+> >>
+> > 
+> > And you're the second to report very slow scsi throughput in 2.6.24-rc3-mm1.
+> > 
 > 
-> So no ethernet driver at all is better than a broken but mostly working one?
-> Again if it isn't mostly working, it shouldn't have escaped -mm
+> I found the commit which cause these problems , it is in git-scsi-misc patch and reverting it fixes both problems for me.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff_plain;h=8655a546c83fc43f0a73416bbd126d02de7ad6c0;hp=5bc717b6bdaaf52edf365eb7d9d8c89fec79df5d
+> 
 
-No.
+OK, thanks.  I'll assume that James and Hannes have this in hand (or will
+have, by mid-week) and I won't do anything here.
 
-The point is that using the *same* flag to control whether I can select
-a mostly-working USB widget and a mostly-working Ethernet driver is Just Wrong.
-
-Those of us who live in the US may have seen the insurance commercial where
-Joe Sixpack is asking "Honey, what does this switch do?" "I don't know" flip,
-flip, flip with no obvious impact.  Meanwhile, 3 houses down, somebody's car
-is being beat up by a garage door opener going open/close/open/close...
-
-I enable EXPERIMENTAL to enable my USB widget. When the next release comes out,
-I then go and do something like a 'make [foo]config'.  What indication do I
-get that now-selectable device drivers are 'depends on EXPERIMENTAL' and *not*
-safe for selection? (Yes, in menuconfig, you can ask it to show the 'depends
-on' list, *if* you suspect that it might be an issue.  But why would I suspect
-that?)
-
-In no case should we be creating a situation where users are thinking "Damn,
-every driver may or may not be bodgy, I have to *check* if it's experimental
-before I enable it, just because there was one that I *asked* for".
-Particularly fun if you're migrating to new hardware and you don't *know* yet
-which drivers you need, and you're getting prompted for possibly-dodgy ALSA
-modules because you asked for a USB module....
-
-(And yes, trying to wade through all the ALSA/Intel HDA/AC97/Sigmatel *was*
-painful enough when I moved from a Dell Latitude C840 to a D820 - fortunately
-enough, I didn't have to deal with EXPERIMENTAL ALSA drivers adding to the
-mix.. )
-
-EXPERIMENTAL in a mainline kernel as a *single* switch for a *lot* of totally
-unreleated code is even more broken than EMBEDDED (which at least had a common
-rationale). And over in the -mm kernel where it *should* be, it's superfluous
-at best, because a -mm kernel might as well just add -DCONFIG_EXPERIMENTAL=y to
-CFLAGS and save you the effort. ;)
-
-
-
-
-
---==_Exmh_1196144008_2838P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHS7WIcC3lWbTT17ARAuoiAKDWkhtgcHsjDiuFm9/TAJmIemgurACfeWsT
-DVGkkLTfoodYtK4cQVyB1Tk=
-=WEXV
------END PGP SIGNATURE-----
-
---==_Exmh_1196144008_2838P--
