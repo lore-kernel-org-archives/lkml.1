@@ -1,74 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbXK0Ue3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbXK0UgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758258AbXK0Ue3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbXK0UeV
+	id S1758677AbXK0UgK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 15:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbXK0Ufx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:34:21 -0500
-Received: from smtpoutm.mac.com ([17.148.16.69]:58649 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755982AbXK0UeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:34:20 -0500
-In-Reply-To: <200711271840.24825.rjw@sisk.pl>
-References: <4744FD87.7010301@goop.org> <200711262253.35420.rjw@sisk.pl> <20071127053846.GA28884@srcf.ucam.org> <200711271840.24825.rjw@sisk.pl>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Tue, 27 Nov 2007 15:35:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:53020 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755398AbXK0Ufv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 15:35:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=ON9BggZJo0I6VFjkmac9rOewYsNlT1g1ouzbk/a/YZPoy5JosdDiaq+X5KrWIysRd7axJiYJ+CRJMjCe7UiSJVoI00waFB7Ru8xli9Zk6yUY1P04XoF+0tYDtcmCP/Yte4CmqHXL7RcLWamJVxIqh4yE34JWpCpzvThFv2w9ovU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] ide-scsi: use print_hex_dump from <linux/kernel.h>
+Date: Tue, 27 Nov 2007 21:34:18 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Denis Cheng <crquan@gmail.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+References: <1196061373-6394-1-git-send-email-crquan@gmail.com> <20071127013119.d12b7791.akpm@linux-foundation.org>
+In-Reply-To: <20071127013119.d12b7791.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200711272134.18527.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: freeze vs freezer
-Date: Tue, 27 Nov 2007 15:33:48 -0500
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 27, 2007, at 12:40:24, Rafael J. Wysocki wrote:
-> On Tuesday, 27 of November 2007, Matthew Garrett wrote:
->> On Mon, Nov 26, 2007 at 10:53:34PM +0100, Rafael J. Wysocki wrote:
->>> On Monday, 26 of November 2007, David Chinner wrote:
->>>> So how do you handle threads that are blocked on I/O or a lock  
->>>> during the system freeze process, then?
->>>
->>> We wait until they can continue.
->>
->> So if I have a process blocked on an unavilable NFS mount, I can't
->> suspend?
->
-> That's correct, you can't.
->
-> [And I know what you're going to say. ;-)]
+On Tuesday 27 November 2007, Andrew Morton wrote:
+> On Mon, 26 Nov 2007 15:16:13 +0800 Denis Cheng <crquan@gmail.com> wrote:
+> 
+> > these utilities implemented in lib/hexdump.c are more handy, please use this.
+> > 
+> > ...
+> >
+> > --- a/drivers/scsi/ide-scsi.c
+> > +++ b/drivers/scsi/ide-scsi.c
+> > @@ -242,16 +242,6 @@ static void idescsi_output_buffers (ide_drive_t *drive, idescsi_pc_t *pc, unsign
+> >  	}
+> >  }
+> >  
+> > -static void hexdump(u8 *x, int len)
+> > -{
+> > -	int i;
+> > -
+> > -	printk("[ ");
+> > -	for (i = 0; i < len; i++)
+> > -		printk("%x ", x[i]);
+> > -	printk("]\n");
+> > -}
+> > -
+> >  static int idescsi_check_condition(ide_drive_t *drive, struct request *failed_command)
+> >  {
+> >  	idescsi_scsi_t *scsi = drive_to_idescsi(drive);
+> > @@ -282,7 +272,7 @@ static int idescsi_check_condition(ide_drive_t *drive, struct request *failed_co
+> >  	pc->scsi_cmd = ((idescsi_pc_t *) failed_command->special)->scsi_cmd;
+> >  	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
+> >  		printk ("ide-scsi: %s: queue cmd = ", drive->name);
+> > -		hexdump(pc->c, 6);
+> > +		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->c, 6, 1);
+> >  	}
+> >  	rq->rq_disk = scsi->disk;
+> >  	return ide_do_drive_cmd(drive, rq, ide_preempt);
+> > @@ -337,7 +327,7 @@ static int idescsi_end_request (ide_drive_t *drive, int uptodate, int nrsecs)
+> >  		idescsi_pc_t *opc = (idescsi_pc_t *) rq->buffer;
+> >  		if (log) {
+> >  			printk ("ide-scsi: %s: wrap up check %lu, rst = ", drive->name, 
+opc->scsi_cmd->serial_number);
+> > -			hexdump(pc->buffer,16);
+> > +			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->buffer, 16, 1);
+> >  		}
+> >  		memcpy((void *) opc->scsi_cmd->sense_buffer, pc->buffer, SCSI_SENSE_BUFFERSIZE);
+> >  		kfree(pc->buffer);
+> > @@ -816,10 +806,10 @@ static int idescsi_queue (struct scsi_cmnd *cmd,
+> >  
+> >  	if (test_bit(IDESCSI_LOG_CMD, &scsi->log)) {
+> >  		printk ("ide-scsi: %s: que %lu, cmd = ", drive->name, cmd->serial_number);
+> > -		hexdump(cmd->cmnd, cmd->cmd_len);
+> > +		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, cmd->cmnd, cmd->cmd_len, 1);
+> >  		if (memcmp(pc->c, cmd->cmnd, cmd->cmd_len)) {
+> >  			printk ("ide-scsi: %s: que %lu, tsl = ", drive->name, cmd->serial_number);
+> > -			hexdump(pc->c, 12);
+> > +			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, pc->c, 12, 1);
+> >  		}
+> >  	}
+> >  
 
-Why exactly does suspend/hibernation depend on "TASK_INTERRUPTIBLE"  
-instead of a zero preempt_count()?  Really what we should do is just  
-iterate over all of the actual physical devices and tell each one  
-"Block new IO requests preemptably, finish pending DMA, put the  
-hardware in low-power mode, and prepare for suspend/hibernate".  As  
-long as each driver knows how to do those simple things we can have  
-an entirely consistent kernel image for both suspend and for  
-hibernation.
+I applied the patch with a couple of fixes:
+- s/KERN_DEBUG/KERN_CONT/ as pointed out by Randy
+- s/DUMP_PREFIX_OFFSET/DUMP_PREFIX_NONE/
+- don't include ASCII dump
+- respect 80-columns limit
 
-When all tasks are preemptable we can very trivially rely on the  
-drivers to enforce the "Stop new IO submission" with a dirt-simple  
-semaphore or waitqueue.  The sleep itself will be  
-TASK_UNINTERRUPTIBLE, but it will be done from a preemptible context.
+> Would you believe that this patch (which removes code) actually increases
+> drivers/scsi/ide-scsi.o .text by 75 bytes?
 
-That way the system suspend time is the sum of the suspend times of  
-the devices on the system, and the suspend time of any given device  
-is the sum of its maximum non-preemptible critical section and the  
-time to flush all of its remaining pending DMA/etc.  This is almost  
-completely independent of the load-level of the machine, and it does  
-not depend on things like NFS filesystems.  The one gotcha is that it  
-does not flush dirty filesystem pages to disk first, although that  
-could be fixed with a few VFS and blockdev hooks which hierarchically  
-flush and "freeze" block devices and filesystems before actually  
-disabling devices much the way that device-mapper can pause a device  
-to take a snapshot and end up with a clean journal on the filesystem  
-afterwards.
+Yeah, it somehow shrank down to +58 bytes after fixes but this is still bad.
 
-Cheers,
-Kyle Moffett
+> I didn't look to see why - probably that huge arg count is hurting,
+> possibly some additional strings being emitted?
 
+Probably.
+
+> Either way, perhaps a simple little front-end to print_hex_dump() is called
+> for.
+
+Alternatively: it seems that we can easily replace 'prefix_type', 'rowsize',
+'groupsize' and 'ascii' args by a single 'flags' arg.
+
+Thanks,
+Bart
