@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbXK0A6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXK0BAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757733AbXK0A6R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXK0A6H
+	id S1757938AbXK0BAB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 20:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXK0A7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:58:07 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:48778 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753238AbXK0A6G (ORCPT
+	Mon, 26 Nov 2007 19:59:53 -0500
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:36550 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbXK0A7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:58:06 -0500
-Date: Mon, 26 Nov 2007 16:57:09 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: rusty@rustcorp.com.au, akpm <akpm@linux-foundation.org>
-Subject: [PATCH] lguest: prevent VISWS or VOYAGER randconfigs
-Message-Id: <20071126165709.721bec4f.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 26 Nov 2007 19:59:52 -0500
+Date: Tue, 27 Nov 2007 11:59:50 +1100
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mick@madwifi.org, netdev@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-11-20-01-45 Build Fail - net/wireless driver
+Message-ID: <20071127005950.GZ24243@bakeyournoodle.com>
+References: <200711200953.lAK9qxjO030444@imap1.linux-foundation.org> <4742DFC3.80305@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4742DFC3.80305@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, Nov 20, 2007 at 06:53:15PM +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The kernel build fails, with following message
+> 
+>   LD      drivers/net/wireless/built-in.o
+> drivers/net/wireless/rtl8187.o: In function `rtl8225z2_rf_init':
+> (.opd+0x180): multiple definition of `rtl8225z2_rf_init'
+> drivers/net/wireless/rtl8180.o:(.opd+0x1b0): first defined here
+> drivers/net/wireless/rtl8187.o: In function `rtl8225z2_rf_init':
+> /root/linux-2.6.24-rc3/drivers/net/wireless/rtl8187_rtl8225.c:571: multiple definition of `.rtl8225z2_rf_init'
+> drivers/net/wireless/rtl8180.o:/root/linux-2.6.24-rc3/drivers/net/wireless/rtl8180_rtl8225.c:561: first defined here
+> ld: Warning: size of symbol `.rtl8225z2_rf_init' changed from 3836 in drivers/net/wireless/rtl8180.o to 3544 in drivers/net/wireless/rtl8187.o
 
-Keep lguest from being enabled on VISWS or VOYAGER configs, just as is
-already done for VMI and XEN.  Otherwise randconfigs with VISWS and
-LGUEST have this problem:
+<snip>
 
-In file included from arch/x86/kernel/setup_32.c:61:
-include/asm-x86/mach-visws/setup_arch.h:8:1: warning: "ARCH_SETUP" redefined
-In file included from include/asm/msr.h:80,
-                 from include/asm/processor_32.h:17,
-                 from include/asm/processor.h:2,
-                 from include/asm/thread_info_32.h:16,
-                 from include/asm/thread_info.h:2,
-                 from include/linux/thread_info.h:21,
-                 from include/linux/preempt.h:9,
-                 from include/linux/spinlock.h:49,
-                 from include/linux/seqlock.h:29,
-                 from include/linux/time.h:8,
-                 from include/linux/timex.h:57,
-                 from include/linux/sched.h:53,
-                 from arch/x86/kernel/setup_32.c:24:
-include/asm/paravirt.h:458:1: warning: this is the location of the previous definition
+The patch below is a little ugly but will allow allyesconfig to work.  I
+don't know enough about the Realtek devices to make intellegent
+suggestions on how to fix this particular problem.  Clearly the 2
+drivers share a lot of common code so perhaps they can be merged?
 
-(and of course, this happens because kconfig does not follow dependencies
-when [evil] select is used...)
+I assumed that the RTL8180, is still somewhat WiP based on the commit
+message for a2645795713c4374ff2efda960251cdc30b63430 (wireless-2.6.git).
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Appologies for the uber long CC line, wasn't sure who can be pruned.
+
+From: Tony Breeds <tony@bakeyournoodle.com>
+
+Temporarily ensure that Realtek 8185 and 8187 aren't compiled together.
+
+These two drivers share a number of common (global) functions.  While RTL8180
+is still being worked on ensure that it's not built together with the RTL8187
+(ie allyseconfig).
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+
 ---
- arch/x86/lguest/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
 
---- linux-2.6.24-rc3-git1.orig/arch/x86/lguest/Kconfig
-+++ linux-2.6.24-rc3-git1/arch/x86/lguest/Kconfig
-@@ -2,6 +2,7 @@ config LGUEST_GUEST
- 	bool "Lguest guest support"
- 	select PARAVIRT
- 	depends on !X86_PAE
-+	depends on !(X86_VISWS || X86_VOYAGER)
- 	select VIRTIO
- 	select VIRTIO_RING
- 	select VIRTIO_CONSOLE
+ drivers/net/wireless/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+index 82e5de7..ab2eac0 100644
+--- a/drivers/net/wireless/Kconfig
++++ b/drivers/net/wireless/Kconfig
+@@ -555,6 +555,7 @@ config USB_ZD1201
+ config RTL8180
+ 	tristate "Realtek 8185 PCI support"
+ 	depends on MAC80211 && PCI && WLAN_80211 && EXPERIMENTAL
++	depends on !RTL8187
+ 	select EEPROM_93CX6
+ 
+ config RTL8187
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
