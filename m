@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbXK0Fep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbXK0Fe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758328AbXK0Fep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 00:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbXK0FeZ
+	id S1755090AbXK0Fe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 00:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbXK0Feg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 00:34:25 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41666 "EHLO
+	Tue, 27 Nov 2007 00:34:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41675 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbXK0FeY (ORCPT
+	with ESMTP id S1751539AbXK0Fef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 00:34:24 -0500
-Date: Mon, 26 Nov 2007 21:29:55 -0800
+	Tue, 27 Nov 2007 00:34:35 -0500
+Date: Mon, 26 Nov 2007 21:33:21 -0800
 From: Greg KH <greg@kroah.com>
-To: Konrad Rzeszutek <konrad@darnok.org>
-Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
-       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com
-Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
-Message-ID: <20071127052955.GB777@kroah.com>
-References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <200711262323.35416.konrad@darnok.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <teheo@suse.de>
+Cc: andrew.patterson@hp.com, linux-kernel@vger.kernel.org,
+       linux-hotplug@vger.kernel.org
+Subject: Re: Error returns not handled correctly by
+	sysfs.c:subsys_attr_store()
+Message-ID: <20071127053321.GA975@kroah.com>
+References: <1195683419.16019.225.camel@grinch> <20071126203116.0c93cdb9.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200711262323.35416.konrad@darnok.org>
+In-Reply-To: <20071126203116.0c93cdb9.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 11:23:31PM -0500, Konrad Rzeszutek wrote:
-> On Monday 26 November 2007 22:31:38 Greg KH wrote:
-> > > +#if defined(CONFIG_ISCSI_IBFT) || defined(CONFIG_ISCSI_IBFT_MODULE)
-> ..snip..
-> > > +static ssize_t find_ibft(void)
-> > > +{
-> ..snip..
-> > > +}
-> >
-> > What is a function (not even an inline one) doing in a .h file?
+On Mon, Nov 26, 2007 at 08:31:16PM -0800, Andrew Morton wrote:
+> On Wed, 21 Nov 2007 15:16:59 -0700 Andrew Patterson <andrew.patterson@hp.com> wrote:
 > 
-> I was not sure where to put it. This function (find_ibft) is used by the 
-> setup_[32|64].c and the iscsi_ibft.c code. Randy suggested I put in .c file, 
-> but I am not sure exactly where? Should I make a new file in called 
-> libs/iscsi_ibft_helper.c ?
+> > The buf in fs/sysfs.c:subsys_attr_store() does not seem to be updated
+> > correctly when returning a negative value (indicating that an error
+> > condition has occurred) is returned.  If a negative value is returned,
+> > the next subsequent call to subsys_attr_store will have the contents of
+> > buf appended to the previous call.
+> 
+> subsys_attr_store() gets deleted by
+> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/kset-kill-subsys-attr.patch
+> 
+> So maybe we will soon accidentally fix whatever-this-is?  Or maybe we will
+> faithfully maintain it.
 
-Put it in your .c file and make it a global function to be called by
-someone else if they need it.
+Yes, subsys attributes go away, but this is showing a bug in the sysfs
+core with attributes, not in the "middle" layers of attributes.
+
+I bounced the original bug report to Tejun, who has been changing the
+logic around this area to see if he sees anything that might be
+different now.
+
+Tejun?
 
 thanks,
 
