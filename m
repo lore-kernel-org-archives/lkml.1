@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXK0TKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbXK0TNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbXK0TKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 14:10:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbXK0TK1
+	id S1758738AbXK0TNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 14:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbXK0TN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 14:10:27 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44897 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbXK0TK1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 14:10:27 -0500
-Date: Tue, 27 Nov 2007 11:09:19 -0800
-From: Greg KH <greg@kroah.com>
-To: darnok@68k.org
-Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
-       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com
-Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
-Message-ID: <20071127190919.GA10686@kroah.com>
-References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <200711262323.35416.konrad@darnok.org> <20071127052955.GB777@kroah.com> <20071127180950.GA6736@andromeda.dapyr.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127180950.GA6736@andromeda.dapyr.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 27 Nov 2007 14:13:29 -0500
+Received: from mga02.intel.com ([134.134.136.20]:3539 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752103AbXK0TN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 14:13:28 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,220,1194249600"; 
+   d="scan'208";a="236054806"
+Date: Tue, 27 Nov 2007 11:11:36 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Alex Chiang <achiang@hp.com>, Gary Hade <garyhade@us.ibm.com>,
+       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de, lenb@kernel.org,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
+Message-ID: <20071127111136.77cb61fc@appleyard>
+In-Reply-To: <20071127030454.GC23277@us.ibm.com>
+References: <20071117182954.GA25003@ldl.fc.hp.com>
+	<20071119233225.GA6931@us.ibm.com>
+	<20071126222253.GA31708@ldl.fc.hp.com>
+	<20071127030454.GC23277@us.ibm.com>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 02:09:50PM -0400, darnok@68k.org wrote:
-> On Mon, Nov 26, 2007 at 09:29:55PM -0800, Greg KH wrote:
-> > On Mon, Nov 26, 2007 at 11:23:31PM -0500, Konrad Rzeszutek wrote:
-> > > On Monday 26 November 2007 22:31:38 Greg KH wrote:
-> > > > > +#if defined(CONFIG_ISCSI_IBFT) || defined(CONFIG_ISCSI_IBFT_MODULE)
-> > > ..snip..
-> > > > > +static ssize_t find_ibft(void)
-> > > > > +{
-> > > ..snip..
-> > > > > +}
-> > > >
-> > > > What is a function (not even an inline one) doing in a .h file?
-> > > 
-> > > I was not sure where to put it. This function (find_ibft) is used by the 
-> > > setup_[32|64].c and the iscsi_ibft.c code. Randy suggested I put in .c file, 
-> > > but I am not sure exactly where? Should I make a new file in called 
-> > > libs/iscsi_ibft_helper.c ?
-> > 
-> > Put it in your .c file and make it a global function to be called by
-> > someone else if they need it.
+On Mon, 26 Nov 2007 19:04:54 -0800
+Gary Hade <garyhade@us.ibm.com> wrote:
+
+> > Is this patchset appropriate for the -mm tree yet?  
 > 
-> If the kernel is built with CONFIG_ISCSI_IBFT=m, the
-> setup_[32|64],c code would depend on the 'find_ibft' symbol which is
-> in a module (in the iscsi_ibft.c), which is not available during
-> the bootup phase and not linked to vmlinuz.
-
-Ah, then don't allow that :)
-
-> This isn't an issue if the module is built with CONFIG_ISCSI_IBFT=y of
-> course.
+> I would defer to our illustrious maintainers on this one. :)
 > 
-> Or did by 'your .c file' mean a new file in arch/x86/kernel directory?
+> > Or do you think it still needs more work?  
+> 
+> I am now much more comfortable with your changes with respect
+> to acpiphp on the systems I worry about but others may have
+> concerns with respect to the other hotplug drivers, or even
+> acpiphp, on other systems.
 
-I didn't realize an external file, outside of your changes, needed this
-function.  If it does, then perhaps you need to just place it elsewhere.
-
-thanks,
-
-greg k-h
+I'm ok with adding it to my quilt tree (and into -mm) after Gary gets
+back to us later this week.
