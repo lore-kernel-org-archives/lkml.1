@@ -1,150 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXK0CXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbXK0C3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbXK0CXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 21:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbXK0CXO
+	id S1754353AbXK0C3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 21:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXK0C3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 21:23:14 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:65239 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbXK0CXN (ORCPT
+	Mon, 26 Nov 2007 21:29:32 -0500
+Received: from ro-out-1112.google.com ([72.14.202.181]:44179 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752252AbXK0C3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 21:23:13 -0500
-Message-ID: <474B7CAA.6030706@student.ltu.se>
-Date: Tue, 27 Nov 2007 03:10:50 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 26 Nov 2007 21:29:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=a/A113r6KJFoIWZpTLBa/bajJr8R4V9DwYb96FgTa1XolMbbNYyQKrkgO69+aZWMPa4OmIntkxuoyRFyWqd8jgUih//yFYUQpbWjmQ/GGTeTGuoP73IoVIq1Xk6SclhYlopoqGOMFekHF2ntz2DpWjEC+Eihq8Tl4cbPlB2Zlg0=
+Date: Tue, 27 Nov 2007 10:26:10 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Dave Hansen <haveblue@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
+       linux-mm@kvack.org
+Subject: [Patch](Resend) mm/sparse.c: Improve the error handling for
+	sparse_add_one_section()
+Message-ID: <20071127022609.GA4164@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <1195507022.27759.146.camel@localhost> <20071123055150.GA2488@hacking> <20071126191316.99CF.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "Moore, Robert" <robert.moore@intel.com>
-CC: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] [ACPI] utilities/: Compliment va_start() with va_end().
-References: <200711250205.34299.lenb@kernel.org> <B28E9812BAF6E2498B7EC5C427F293A403BCB8FA@orsmsx415.amr.corp.intel.com> <474B61B4.9020309@student.ltu.se> <B28E9812BAF6E2498B7EC5C427F293A403BCBB45@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A403BCBB45@orsmsx415.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071126191316.99CF.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moore, Robert wrote:
-> Yes, it's official ANSI C, so I agree with the portability. I'm probably
-> asking more about the history of the thing.
+On Mon, Nov 26, 2007 at 07:19:49PM +0900, Yasunori Goto wrote:
+>Hi, Cong-san.
 >
->   
-"the history of the thing"? Sorry, you lost me there. I know there were 
-a pre-ANSI
-version of va_start() & co., but they seemed quite messy. When it comes 
-to va_end()
-and maintainers, they often seem positive to this. I guess the 
-occasional lack off
-va_end() is usually an oversight.
->   
->> -----Original Message-----
->> From: Richard Knutsson [mailto:ricknu-0@student.ltu.se]
->> Sent: Monday, November 26, 2007 4:16 PM
->> To: Moore, Robert
->> Cc: Len Brown; linux-kernel@vger.kernel.org; linux-acpi@vger.kernel.org
->> Subject: Re: [PATCH] [ACPI] utilities/: Compliment va_start() with
->> va_end().
->>
->> Moore, Robert wrote:
->>     
->>> This is an interesting one to me.
->>>
->>> From various documentation:
->>>
->>> After all arguments have been retrieved, va_end resets the pointer to
->>> NULL.
->>>
->>> va_end
->>> Each invocation of va_start must be matched by a corresponding
->>> invocation of va_end in the same function. After the call va_end(ap)
->>>       
-> the
->   
->>> variable ap is undefined. Multiple transversals of the list, each
->>> bracketed by va_start and va_end are possible. va_end may be a macro
->>>       
-> or
->   
->>> a function.
->>>
->>> Now, I'm all for defensive programming, but I don't really see the
->>>       
-> point
->   
->>> of va_end when the list will be only traversed once.
->>>
->>>
->>>       
->> First off, I think it is a good idea to follow the documentation, which
->> stated:
->> "va_end
->> Each invocation of va_start must be matched by a corresponding
->> invocation of va_end in the same function."
->>
->> Then if it is not really needed, does it take up extra cycles?
->> "In practice, with most C compilers, calling |va_end| does nothing
->> and you do not really need to call it.  This is always true in the GNU
->>     
-> C
->   
->> compiler."[1]
->>
->> Portability:
->> "But you might as well call |va_end| just in case your
->> program is someday compiled with a peculiar compiler."[2]
->> This argument is not as likely thou, but who knows? (Since I guess
->>     
-> Intel's
->   
->> compiler is included in the 'most C compilers')
->>
->>     
->>> We don't set all local pointers to NULL at function exit, what is the
->>> point of doing it here?
->>>
->>>       
->> I think it is a good thing if the code follows the documentation, both
->> for the person who tries
->> to understand the code (to see when the 'args' is no longer needed and
->> not getting confused
->> by the absent of va_end(), after all, IMHO we should write the code how
->> we want things to
->> work and let the compiler do the optimizations (it usually does a
->>     
-> better
->   
->> job at it then we do))
->> and to automated searches (that is how I found this one).
->>     
->>> I suppose some implementation could allocate memory at va_start, but
->>>       
-> in
->   
->>> practice, does this happen?
->>>
->>>       
->> Not sure what you mean.
->>     
->>> Bob
->>>
->>>
->>>       
->> cu
->> Richard Knutsson
->>
->> [1]
->> http://www.cs.utah.edu/dept/old/texinfo/glibc-manual-0.02/library_28.ht
->>     
-> ml
->   
->> [2] The rest of [1]'s line.
->>     
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+>>  	ms->section_mem_map |= SECTION_MARKED_PRESENT;
+>>  
+>>  	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
+>>  
+>>  out:
+>>  	pgdat_resize_unlock(pgdat, &flags);
+>> -	if (ret <= 0)
+>> -		__kfree_section_memmap(memmap, nr_pages);
+>> +
+>>  	return ret;
+>>  }
+>>  #endif
+>
+>Hmm. When sparse_init_one_section() returns error, memmap and 
+>usemap should be free.
+
+Hi, Yasunori.
+
+Thanks for your comments. Is the following one fine for you?
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+---
+
+Index: linux-2.6/mm/sparse.c
+===================================================================
+--- linux-2.6.orig/mm/sparse.c
++++ linux-2.6/mm/sparse.c
+@@ -391,9 +391,17 @@ int sparse_add_one_section(struct zone *
+ 	 * no locking for this, because it does its own
+ 	 * plus, it does a kmalloc
+ 	 */
+-	sparse_index_init(section_nr, pgdat->node_id);
++	ret = sparse_index_init(section_nr, pgdat->node_id);
++	if (ret < 0)
++		return ret;
+ 	memmap = kmalloc_section_memmap(section_nr, pgdat->node_id, nr_pages);
++	if (!memmap)
++		return -ENOMEM;
+ 	usemap = __kmalloc_section_usemap();
++	if (!usemap) {
++		__kfree_section_memmap(memmap, nr_pages);
++		return -ENOMEM;
++	}
+ 
+ 	pgdat_resize_lock(pgdat, &flags);
+ 
+@@ -403,10 +411,6 @@ int sparse_add_one_section(struct zone *
+ 		goto out;
+ 	}
+ 
+-	if (!usemap) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+ 	ms->section_mem_map |= SECTION_MARKED_PRESENT;
+ 
+ 	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
+@@ -414,7 +418,7 @@ int sparse_add_one_section(struct zone *
+ out:
+ 	pgdat_resize_unlock(pgdat, &flags);
+ 	if (ret <= 0)
+-		__kfree_section_memmap(memmap, nr_pages);
++		kfree(usemap);
+ 	return ret;
+ }
+ #endif
 
