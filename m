@@ -1,73 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbXK0QfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbXK0Qph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759316AbXK0QfH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 11:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbXK0Qe5
+	id S1758055AbXK0Qph (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 11:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbXK0Qp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 11:34:57 -0500
-Received: from mx2.suse.de ([195.135.220.15]:37294 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754206AbXK0Qe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 11:34:56 -0500
-Subject: Re: [alsa-devel] [PATCH 2/3] PNP cleanups - Unify the pnp macros
-	to access	resources in the pnp resource table
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: ALSA devel <alsa-devel@alsa-project.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "yakui.zhao" <yakui.zhao@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, akpm <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5hejejj559.wl%tiwai@suse.de>
-References: <1195552283.23700.166.camel@queen.suse.de>
-	 <20071120123102.03bdaa67@the-village.bc.nu>
-	 <1195568360.23700.202.camel@queen.suse.de> <4742EFBE.6030407@keyaccess.nl>
-	 <s5hejejj559.wl%tiwai@suse.de>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Tue, 27 Nov 2007 17:34:51 +0100
-Message-Id: <1196181292.23251.53.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 11:45:29 -0500
+Received: from there.is.no.cabal.ca ([134.117.69.58]:49362 "EHLO
+	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756091AbXK0Qp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 11:45:29 -0500
+Date: Tue, 27 Nov 2007 11:45:27 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Frans Pop <elendil@planet.nl>
+Cc: parisc-linux@lists.parisc-linux.org, linux-kernel@vger.kernel.org
+Subject: Re: [parisc] 2.6.24-rc3 (64-bit, smp) fails to boot on 9000/785/J5600
+Message-ID: <20071127164527.GA28891@fattire.cabal.ca>
+References: <200711271026.34863.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711271026.34863.elendil@planet.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-21 at 10:53 +0100, Takashi Iwai wrote:
-> At Tue, 20 Nov 2007 15:31:26 +0100,
-> Rene Herman wrote:
-> > 
-> > On 20-11-07 15:19, Thomas Renninger wrote:
-> > 
-> > > At the end is some example code how things could get even more cleaned
-> > > up. It shows how I think pnp layer and one example driver would get
-> > > adjusted. There are not that much drivers making use of
-> > > pnp_resource_change...
-> > 
-> > The ALSA ISA-PnP drivers do in what I personally consider a bad layering 
-> > violation. Brought up not doing that a while ago on alsa-devel, but no 
-> > discussion ensued. If the PnP maintainer(s) agree with me though, I'd be 
-> > more than happy to rip all of that out of ALSA.
-Rene: Could you do that, pls.
+On Tue, Nov 27, 2007 at 10:26:34AM +0100, Frans Pop wrote:
+> v2.6.24-rc3-19-g2ffbb83 fails very early in the boot procedure.
+> 2.6.23 compiled with similar config boots fine.
 > 
-> I'm fine with removal of that stuff now.  It was implemented in that
-> way because there was no proper way to re-assign ISA PnP resources on
-> 2.4 kernel time.  On 2.6, it makes no longer any sense (except for
-> compatibility, but this is almost no problem for PnP boards).
+> System is running Debian unstable; kernel was compiled using gcc 4.1.2.
+> 
 
-I wasted some time on thinking about how this pnp_resource_change and
-pnp_manual_config_dev could get workarounded..., but it's impossible
-without changing the (more a workaround than an) interface.
-
-If you worked on this already, would you mind ripping these out?
-
-If I understand Takashi correctly, the driver code using
-pnp_resource_change and pnp_manual_config_dev can simply be removed and
-devices could get resources assigned via sysfs "set" interface.
-
-Thanks,
-
-   Thomas
-
+Ah, I diagnosed this last week. Will post the patch in a bit.
