@@ -1,42 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXK0ANl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbXK0AOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbXK0ANl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Nov 2007 19:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbXK0ANd
+	id S1758148AbXK0AOn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Nov 2007 19:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbXK0AOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Nov 2007 19:13:33 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41608 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754916AbXK0ANd (ORCPT
+	Mon, 26 Nov 2007 19:14:30 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45340 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756652AbXK0AO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Nov 2007 19:13:33 -0500
-Date: Tue, 27 Nov 2007 01:14:06 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/6] Suspend: Fix comment in main.c
-Message-ID: <20071127001406.GB9759@elf.ucw.cz>
-References: <200711270025.08128.rjw@sisk.pl> <200711270031.22305.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711270031.22305.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 26 Nov 2007 19:14:29 -0500
+Message-Id: <20071127001407.859743255@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 26 Nov 2007 16:14:07 -0800
+From: Christoph Lameter <clameter@sgi.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 00/14] Per cpu code simplification
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-11-27 00:31:21, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Fix a comment in kernel/power/main.c so that it doesn't contain lines
-> longer that 80 characters.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+This patchset simplifies the code that arches need to maintain to support
+per cpu functionality. Most of the code is moved into arch independent
+code. Only a set of minimal definitions is kept for each arch.
 
-ACK.
+The patch also unifies the x86 arch so that there is only a single
+asm-x86/percpu.h
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
