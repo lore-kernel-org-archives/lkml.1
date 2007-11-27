@@ -1,154 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbXK0PTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbXK0PUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758750AbXK0PTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 10:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbXK0PTE
+	id S1758918AbXK0PUP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 10:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756876AbXK0PT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 10:19:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44415 "EHLO ogre.sisk.pl"
+	Tue, 27 Nov 2007 10:19:59 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:63110 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbXK0PTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 10:19:02 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: Re: ACPI related Warning in 2.6.24-rc3-git2
-Date: Tue, 27 Nov 2007 16:37:12 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-References: <20071127150557.GA4365@ics.muni.cz>
-In-Reply-To: <20071127150557.GA4365@ics.muni.cz>
+	id S1755769AbXK0PT6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 10:19:58 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711271637.13036.rjw@sisk.pl>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Date: Tue, 27 Nov 2007 08:19:09 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501D337D4@NAMAIL1.ad.lsil.com>
+In-Reply-To: <20071120204202.GJ12494@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Thread-Index: AcgrtdHx/PMzjiRVTZGijF4UnPM9mAFUqMOQ
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Cc: <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
+       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+X-OriginalArrivalTime: 27 Nov 2007 15:19:11.0833 (UTC) FILETIME=[DD0F5C90:01C83108]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 27 of November 2007, Lukas Hejtmanek wrote:
-> Hello,
+Matthew,
+
+Thanks for your review.
+
+We have a 32 bit application(s) (megaraid utility) that is used in both
+x86 and x86_64.
+For ia64, the application is built in ia64 environment.
+
+The sense_ptr picked up from the ioc->frame.raw is a 32-bit value from
+the application. When we make it "unsigned long*" it picks up a 64-bit
+value & the copy_to_user fails. Without this fix the issue is seen in
+x86_64 kernels. But for ia64 it is an unsigned long * value (8 bytes)
+and so we need a compile time flag.
+ 
+Regards,
+
+Bo Yang
+
+-----Original Message-----
+From: Matthew Wilcox [mailto:matthew@wil.cx] 
+Sent: Tuesday, November 20, 2007 3:42 PM
+To: Yang, Bo
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
+cmds with sense info
+
+On Wed, Nov 21, 2007 at 08:40:56AM +0000, bo yang wrote:
+> Sense buffer ptr data type in the ioctl path is reverted back to u32 *
+
+> for x86 and x86_64 as in previous versions of driver. For IA64 it will
+
+> be unsigned long *. Compile time flag added for ia64 for this.
+
+This changelog tells us what you're doing, but not why you're doing it.
+Why is it that ia64 is different from x86 and x86_64?  What should other
+architectures be doing?  This patch really doesn't make any sense to me
+at all; it should be doing the exact same thing on all three
+architectures.
+
+> Signed-off-by: Bo Yang <bo.yang@lsi.com>
 > 
-> in recent kernel, I got the following warnings while booting. It's ACPI
-> related. Does anybode care? Lenovo ThinkPad T61 (6465CTO).
-
-Appropriate Ccs added.
-
-Did it happen before?
-
-> [   13.114814] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
-> [   13.114885] 
-> [   13.114885] Call Trace:
-> [   13.115020]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
-> [   13.115095]  [<ffffffff8021e7ad>] smp_call_function_single+0xbd/0xd0
-> [   13.115169]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
-> [   13.115241]  [<ffffffff803631c7>]
-> acpi_processor_get_throttling_ptc+0xf3/0x158
-> [   13.115323]  [<ffffffff80362f04>]
-> acpi_processor_get_throttling_info+0x460/0x4af
-> [   13.115406]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
-> [   13.115478]  [<ffffffff802abc38>] ifind+0x48/0xd0
-> [   13.115550]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
-> [   13.115622]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
-> [   13.115694]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
-> [   13.115766]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
-> [   13.115840]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
-> [   13.115924]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
-> [   13.115994]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
-> [   13.116080]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
-> [   13.116153]  [<ffffffff806386f4>] kernel_init+0x154/0x330
-> [   13.116225]  [<ffffffff8020d178>] child_rip+0xa/0x12
-> [   13.116295]  [<ffffffff806385a0>] kernel_init+0x0/0x330
-> [   13.116365]  [<ffffffff8020d16e>] child_rip+0x0/0x12
-> [   13.116435] 
-> [   13.116504] WARNING: at arch/x86/kernel/smp_64.c:397
-> smp_call_function_mask()
-> [   13.116577] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
-> [   13.116648] 
-> [   13.116648] Call Trace:
-> [   13.116779]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
-> [   13.116851]  [<ffffffff8021e4af>] smp_call_function_mask+0x8f/0xa0
-> [   13.116923]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
-> [   13.116994]  [<ffffffff803631c7>]
-> acpi_processor_get_throttling_ptc+0xf3/0x158
-> [   13.117077]  [<ffffffff80362f04>]
-> acpi_processor_get_throttling_info+0x460/0x4af
-> [   13.117169]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
-> [   13.117248]  [<ffffffff802abc38>] ifind+0x48/0xd0
-> [   13.117330]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
-> [   13.117402]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
-> [   13.117488]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
-> [   13.117559]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
-> [   13.117631]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
-> [   13.117715]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
-> [   13.117786]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
-> [   13.117856]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
-> [   13.117941]  [<ffffffff806386f4>] kernel_init+0x154/0x330
-> [   13.118018]  [<ffffffff8020d178>] child_rip+0xa/0x12
-> [   13.118088]  [<ffffffff806385a0>] kernel_init+0x0/0x330
-> [   13.118158]  [<ffffffff8020d16e>] child_rip+0x0/0x12
-> [   13.118227] 
-> [...]
-> [   13.124714] WARNING: at arch/x86/kernel/smp_64.c:427
-> smp_call_function_single()
-> [   13.124798] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
-> [   13.125460] 
-> [   13.125461] Call Trace:
-> [   13.125592]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
-> [   13.125665]  [<ffffffff8021e7ad>] smp_call_function_single+0xbd/0xd0
-> [   13.125737]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
-> [   13.125807]  [<ffffffff803631c7>]
-> acpi_processor_get_throttling_ptc+0xf3/0x158
-> [   13.125903]  [<ffffffff80362f04>]
-> acpi_processor_get_throttling_info+0x460/0x4af
-> [   13.125999]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
-> [   13.126071]  [<ffffffff803625ed>] acpi_processor_add+0x24/0x6b
-> [   13.126142]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
-> [   13.126214]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
-> [   13.126285]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
-> [   13.126357]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
-> [   13.126441]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
-> [   13.126518]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
-> [   13.126600]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
-> [   13.126670]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
-> [   13.126755]  [<ffffffff806386f4>] kernel_init+0x154/0x330
-> [   13.126832]  [<ffffffff8020d178>] child_rip+0xa/0x12
-> [   13.126916]  [<ffffffff806385a0>] kernel_init+0x0/0x330
-> [   13.126986]  [<ffffffff8020d16e>] child_rip+0x0/0x12
-> [   13.127059] 
-> [   13.127124] WARNING: at arch/x86/kernel/smp_64.c:397
-> smp_call_function_mask()
-> [   13.127197] Pid: 1, comm: swapper Not tainted 2.6.24-rc3-git2 #3
-> [   13.127267] 
-> [   13.127268] Call Trace:
-> [   13.127398]  [<ffffffff80357ab6>] acpi_ut_update_ref_count+0x50/0x9d
-> [   13.127473]  [<ffffffff8021e4af>] smp_call_function_mask+0x8f/0xa0
-> [   13.127545]  [<ffffffff80331dbc>] _rdmsr_on_cpu+0x5c/0x60
-> [   13.127616]  [<ffffffff803631c7>]
-> acpi_processor_get_throttling_ptc+0xf3/0x158
-> [   13.127699]  [<ffffffff80362f04>]
-> acpi_processor_get_throttling_info+0x460/0x4af
-> [   13.127782]  [<ffffffff80362264>] acpi_processor_start+0x54a/0x606
-> [   13.127861]  [<ffffffff803625ed>] acpi_processor_add+0x24/0x6b
-> [   13.127933]  [<ffffffff8035a31e>] acpi_start_single_object+0x24/0x46
-> [   13.128005]  [<ffffffff8035b716>] acpi_device_probe+0x7d/0x91
-> [   13.128076]  [<ffffffff8038effc>] driver_probe_device+0x9c/0x1b0
-> [   13.128147]  [<ffffffff8038f2c9>] __driver_attach+0xc9/0xd0
-> [   13.128226]  [<ffffffff8038f200>] __driver_attach+0x0/0xd0
-> [   13.128310]  [<ffffffff8038e1dd>] bus_for_each_dev+0x4d/0x80
-> [   13.128381]  [<ffffffff8038e64c>] bus_add_driver+0xac/0x220
-> [   13.128452]  [<ffffffff8064dd7c>] acpi_processor_init+0x8f/0xfc
-> [   13.128523]  [<ffffffff806386f4>] kernel_init+0x154/0x330
-> [   13.128594]  [<ffffffff8020d178>] child_rip+0xa/0x12
-> [   13.128664]  [<ffffffff806385a0>] kernel_init+0x0/0x330
-> [   13.128734]  [<ffffffff8020d16e>] child_rip+0x0/0x12
+> ---
+> Documentation/scsi/ChangeLog.megaraid_sas |   15 +++++++++++++++
+> drivers/scsi/megaraid/megaraid_sas.c      |   14 ++++++++++----
+> drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+>  3 files changed, 28 insertions(+), 7 deletions(-)
 > 
+> diff -rupN linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
+linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+> --- linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
+2007-11-20 17:50:13.000000000 -0500
+> +++ linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+2007-11-20 21:37:16.000000000 -0500
+> @@ -1,3 +1,18 @@
+> +1 Release Date    : Thur. Nov. 19 16:30:43 PST 2007 -
+> +			(emaild-id:megaraidlinux@lsi.com)
+> +			Sumant Patro
+> +			Bo Yang
+> +
+> +2 Current Version : 00.00.03.17-RC1
+> +3 Older Version   : 00.00.03.16
+> +
+> +1. Fix random failure of DCDB cmds with sense info.
+> +
+> +Fix: 	sense buffer ptr data type in the ioctl path is reverted
+back
+> +	to u32 * for x86, x86_64 as in previous versions of driver.
+> +	For IA64 it will be unsigned long *. Compile time flag added
+> +	for ia64 for this.
+> +
+>  1 Release Date    : Thur. Nov. 07 16:30:43 PST 2007 -
+>  			(emaild-id:megaraidlinux@lsi.com)
+>  			Sumant Patro
+> diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+2007-11-20 17:50:13.000000000 -0500
+> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+2007-11-20 17:50:13.000000000 -0500
+> @@ -10,7 +10,7 @@
+>   *	   2 of the License, or (at your option) any later version.
+>   *
+>   * FILE		: megaraid_sas.c
+> - * Version	: v00.00.03.16-rc1
+> + * Version	: v00.00.03.17-rc1
+>   *
+>   * Authors:
+>   *	(email-id : megaraidlinux@lsi.com)
+> @@ -3020,10 +3020,16 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+>  		 * sense buffer address
+>  		 */
+>  		sense_buff = (unsigned long *) ((unsigned
+long)ioc->frame.raw +
+> -
+ioc->sense_off);
+> -
+> -		if (copy_to_user((void __user *)(unsigned
+long)(*sense_buff),
+> +					ioc->sense_off);
+> +		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
+> +					ioc->sense_off);
+> +#if defined(__ia64__)
+> +		if (copy_to_user((void __user *)((unsigned
+long)(*sense_buff)),
+> +				sense, ioc->sense_len)) {
+> +#else
+> +		if (copy_to_user((void __user *)((unsigned
+long)(*sense_ptr)),
+>  				sense, ioc->sense_len)) {
+> +#endif
+>  			printk(KERN_ERR "megasas: Failed to copy out to
+user "
+>  					"sense data\n");
+>  			error = -EFAULT;
+> diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+2007-11-20 17:50:13.000000000 -0500
+> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+2007-11-20 17:50:13.000000000 -0500
+> @@ -18,9 +18,9 @@
+>  /*
+>   * MegaRAID SAS Driver meta data
+>   */
+> -#define MEGASAS_VERSION
+"00.00.03.16-rc1"
+> -#define MEGASAS_RELDATE				"Nov. 07, 2007"
+> -#define MEGASAS_EXT_VERSION			"Thu. Nov. 07 10:09:32
+PDT 2007"
+> +#define MEGASAS_VERSION
+"00.00.03.17-rc1"
+> +#define MEGASAS_RELDATE				"Nov. 19, 2007"
+> +#define MEGASAS_EXT_VERSION			"Mon. Nov. 19 10:09:32
+PDT 2007"
+>  
+>  /*
+>   * Device IDs
 > 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" 
+> in the body of a message to majordomo@vger.kernel.org More majordomo 
+> info at  http://vger.kernel.org/majordomo-info.html
 
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--
+Intel are signing my paycheques ... these opinions are still mine "Bill,
+look, we understand that you're interested in selling us this operating
+system, but compare it to ours.  We can't possibly take such a
+retrograde step."
