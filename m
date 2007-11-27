@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXK0U6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbXK0VFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbXK0U6l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 15:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbXK0U6c
+	id S1758902AbXK0VFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 16:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXK0VF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 15:58:32 -0500
-Received: from ozlabs.org ([203.10.76.45]:36917 "EHLO ozlabs.org"
+	Tue, 27 Nov 2007 16:05:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44243 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758092AbXK0U6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 15:58:31 -0500
+	id S1754516AbXK0VF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 16:05:26 -0500
+Message-ID: <474C8691.6020405@redhat.com>
+Date: Tue, 27 Nov 2007 15:05:21 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       mbligh@mbligh.org, val.henson@intel.com
+Subject: Re: [PATCH] fix up ext2_fs.h for userspace after reservations backport
+References: <474B003D.7040908@redhat.com> <20071127125509.7cda1328.akpm@linux-foundation.org>
+In-Reply-To: <20071127125509.7cda1328.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18252.34032.207280.742887@cargo.ozlabs.ibm.com>
-Date: Wed, 28 Nov 2007 07:58:24 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 11/14] Powerpc: Use generic per cpu
-In-Reply-To: <Pine.LNX.4.64.0711271016260.2310@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com>
-	<20071127001431.688565525@sgi.com>
-	<F81BD9A7-9D76-4C2C-AF80-AAA3F70F061E@kernel.crashing.org>
-	<Pine.LNX.4.64.0711271016260.2310@schroedinger.engr.sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter writes:
-> On Tue, 27 Nov 2007, Kumar Gala wrote:
-> 
-> > > Index: linux-2.6/include/asm-powerpc/percpu.h
-> > > ===================================================================
-> > > --- linux-2.6.orig/include/asm-powerpc/percpu.h	2007-11-24
-> > > 10:27:31.088350556 -0800
-> > > +++ linux-2.6/include/asm-powerpc/percpu.h	2007-11-24 10:29:20.752350757
-> > > -0800
-> > > @@ -16,25 +16,6 @@
-> > > #define __my_cpu_offset() get_paca()->data_offset
-> > > #define per_cpu_offset(x) (__per_cpu_offset(x))
-> > 
-> > This concerns me.  paca doesn't exist on all PPC platforms.
-> 
-> I wonder why the current code is working then.
+Andrew Morton wrote:
 
-Did you try both 32-bit (CONFIG_64BIT=n) and 64-bit (CONFIG_64BIT=y)
-configurations?  The paca only exists in 64-bit kernels.
+> I did this instead:
 
-Paul.
+(moved offending function from ext2_fs.h to ext2.h)
+
+Look like a better plan, thanks.
+
+-Eric
+
