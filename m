@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbXK0RGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbXK0RJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbXK0RGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 12:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758783AbXK0RGj
+	id S1759354AbXK0RJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 12:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757583AbXK0RJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 12:06:39 -0500
-Received: from gw.goop.org ([64.81.55.164]:59305 "EHLO mail.goop.org"
+	Tue, 27 Nov 2007 12:09:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44884 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756091AbXK0RGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 12:06:39 -0500
-Message-ID: <474C4EA0.6090407@goop.org>
-Date: Tue, 27 Nov 2007 09:06:40 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1757475AbXK0RJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 12:09:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] mmc: Add missing sg_init_table() call
+Date: Tue, 27 Nov 2007 18:27:03 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1195759971-19825-1-git-send-email-hskinnemoen@atmel.com> <20071127065703.63fea228@poseidon.drzeus.cx> <20071127085456.GC5029@kernel.dk>
+In-Reply-To: <20071127085456.GC5029@kernel.dk>
 MIME-Version: 1.0
-To: Miles Lane <miles.lane@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       xen-devel@lists.xensource.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: =?ISO-8859-1?Q?Re=3A_2=2E6=2E24-rc3-mm1_--_arch/x86/xen/en?=
- =?ISO-8859-1?Q?lighten=2Ec=3A591=3A_error=3A_=27TLB=5FFLUSH=5FALL=27?=
- =?ISO-8859-1?Q?_undeclared_=28first_use_in_this_function=29?=
-References: <a44ae5cd0711261006o3bf83210pd176bc93f710e9f5@mail.gmail.com>
-In-Reply-To: <a44ae5cd0711261006o3bf83210pd176bc93f710e9f5@mail.gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711271827.04319.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miles Lane wrote:
-> arch/x86/xen/enlighten.c: In function 'xen_flush_tlb_others':
-> arch/x86/xen/enlighten.c:591: error: 'TLB_FLUSH_ALL' undeclared (first
-> use in this function)
-> arch/x86/xen/enlighten.c:591: error: (Each undeclared identifier is
-> reported only once
-> arch/x86/xen/enlighten.c:591: error: for each function it appears in.)
-> make[1]: *** [arch/x86/xen/enlighten.o] Error 1
->   
+On Tuesday, 27 of November 2007, Jens Axboe wrote:
+> On Tue, Nov 27 2007, Pierre Ossman wrote:
+> > On Mon, 26 Nov 2007 21:29:55 -0800
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > Pierre, I can queue this up but if you merge it into your tree I shall drop
+> > > it and shall lose track of it.  So it's then all down to you to remember to
+> > > get the fix into 2.6.24.
+> > > 
+> > > (Except this particular bug looks like a post-2.6.23 regression, so I can cc
+> > > the Rafael which never forgets, so it will then get tracked all the way into
+> > > Linus's tree)
+> > > 
+> > 
+> > Jens said he applied it, so I figured the issue was handled. Jens,
+> > what happened to it?
+> 
+> It's in my for-linus branch, it was applied when I wrote that reply. So
+> it's going upstream, the pull request has been sent to Linus.
+> 
+> My error here was not updating the for-akpm branch that Andrew pulls, so
+> he doesn't notice the patch. That is also updated now.
 
-Hm, I can't reproduce this in current git with your .config.  Is there
-something in -mm which touches the tlb headers?
+OK, so I'm not going to list it.
 
-I do have a stack of tglx's x86 unification patches applied as well. 
-Perhaps they help.
-
-    J
+Thanks,
+Rafael
