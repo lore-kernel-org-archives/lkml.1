@@ -1,82 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbXK0Pdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbXK0PeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759142AbXK0Pdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 10:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758847AbXK0PdT
+	id S1757353AbXK0PeP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 10:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbXK0Pd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 10:33:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44475 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756814AbXK0PdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 10:33:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: XFS related Oops (suspend/resume related)
-Date: Tue, 27 Nov 2007 16:51:38 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <20071112064706.GA23595@dose.home.local> <20071126210844.GB119954183@sgi.com> <200711262307.56742.rjw@sisk.pl>
-In-Reply-To: <200711262307.56742.rjw@sisk.pl>
+	Tue, 27 Nov 2007 10:33:58 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46569 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757608AbXK0Pd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 10:33:57 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Andi Kleen <ak@suse.de>, Neil Horman <nhorman@redhat.com>,
+       hbabu@us.ibm.com, vgoyal@in.ibm.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071127014740.GA28622@hmsreliant.think-freely.org>
+	<200711271445.56792.ak@suse.de>
+	<20071127142826.GB31376@hmsreliant.think-freely.org>
+	<200711271543.11809.ak@suse.de>
+	<20071127144856.GC31376@hmsreliant.think-freely.org>
+Date: Tue, 27 Nov 2007 08:30:47 -0700
+In-Reply-To: <20071127144856.GC31376@hmsreliant.think-freely.org> (Neil
+	Horman's message of "Tue, 27 Nov 2007 09:48:56 -0500")
+Message-ID: <m14pf7k8ns.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711271651.39180.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 26 of November 2007, Rafael J. Wysocki wrote:
-> On Monday, 26 of November 2007, David Chinner wrote:
-> > On Mon, Nov 26, 2007 at 02:12:10PM +0100, Tino Keitel wrote:
-> > > On Wed, Nov 14, 2007 at 10:04:45 +1100, David Chinner wrote:
-> > > > On Tue, Nov 13, 2007 at 11:51:19AM +0100, Tino Keitel wrote:
-> > > > > On Tue, Nov 13, 2007 at 09:27:20 +1100, David Chinner wrote:
-> > > > > 
-> > > > > [...]
-> > > > > 
-> > > > > > No. I'd say something got screwed up during suspend/resume. Is it
-> > > > > > reproducable?
-> > > > > 
-> > > > > No. I often use suspend to RAM, and usually it works without such
-> > > > > failures. I restart squid during the resume prosecure, and the above
-> > > > > Oops lead to a squid in D state.
-> > > > 
-> > > > Ok. Sounds like there's not much we can debug at this point. Thanks
-> > > > for the report, though.
-> > > 
-> > > I got a similar Oops again:
-> > > 
-> > > xfs_iget_core: ambiguous vns: vp/0xc00700c0, invp/0xcb5a1680
-> > 
-> > Now there's a message that I haven't seen in about 3 years.
-> > 
-> > It indicates that the linux inode connected to the xfs_inode is not
-> > the correct one. i.e. that the linux inode cache is out of step with
-> > the XFS inode cache.
-> > 
-> > Basically, that is not supposed to happen. I suspect that the way
-> > threads are frozen is resulting in an inode lookup racing with
-> > a reclaim. The reclaim thread gets stopped after any use threads,
-> > and so we could have the situation that a process blocked in lookup
-> > has the XFS inode reclaimed and reused before it gets unblocked.
-> > 
-> > The question is why is it happening now when none of that code in
-> > XFS has changed?
-> > 
-> > Rafael, when are threads frozen? Only when they schedule or call
-> > try_to_freeze()?
-> 
-> Kernel threads freeze only when they call try_to_freeze().  User space tasks
-> freeze while executing the signals handling code.
-> 
-> > Did the freezer mechanism change in 2.6.23 (this is on 2.6.23.1)?
-> 
-> Yes.  Kernel threads are not sent fake signals by the freezer any more.
+Neil Horman <nhorman@tuxdriver.com> writes:
 
-Ah, sorry, this change has been merged after 2.6.23.  However, before 2.6.23
-we had another important change that caused all kernel threads to have
-PF_NOFREEZE set by default, unless they call set_freezable() explicitly.
+> So, it sounds to me then, like unless I'm willing to really re-write the APIC
+> setup code (which I don't feel qualified to do quite yet), that the immediate
+> solution would be to not rely on interrupts in legacy mode, which was according
+> to my understanding, what the use of the irqpoll command line option was
+> supposed to enable.  Any thoughts as to why that might not be working in this
+> case, or suggested tests to determine a cause there?
 
-Greetings,
-Rafael
+Hmm.  It looks like irqpoll expects to have at least one irq working.
+I wonder if we can fix that.
+
+Looking at it from the other direction what does this line
+from check_timer() look like when you boot a normal kernel?
+
+	apic_printk(APIC_VERBOSE,KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
+		cfg->vector, apic1, pin1, apic2, pin2);
+
+I'm curious what values we see at boot for the legacy mode the first
+time it is setup, and possibly what chipset you are on.
+I know we have had a few times where we have failed to reprogram
+the ioapic properly at shutdown.  So it can't hurt to look at
+that possibility one last time.
+
+
+For whatever it is worth my original attempt at using only the
+apic mode was commit: f2b36db692b7ff6972320ad9839ae656a3b0ee3e
+Looks like I didn't have an x86_64 version.
+
+It looks like about half the cleanups I needed was to decouple
+smp cpu startup and apic initialization.  I think the hotplug cpu
+case has done a more thorough version of that now.
+
+There was a bit of reshuffling needed to get the everything initialized
+in the right order when we started apic mode sooner.
+
+Anyway I might just take another look at this if I can find enough
+moments to string together.
+
+Eric
