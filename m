@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbXK0XWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXK0XXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbXK0XWQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 18:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760704AbXK0XVv
+	id S1753859AbXK0XXO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 18:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbXK0XW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 18:21:51 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35026 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760631AbXK0XVu (ORCPT
+	Tue, 27 Nov 2007 18:22:58 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36665 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757130AbXK0XW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 18:21:50 -0500
-Date: Wed, 28 Nov 2007 00:21:39 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make I/O schedulers non-modular
-Message-ID: <20071127232139.GJ3406@stusta.de>
-References: <20071125172237.GC6658@kernel.dk> <20071127070912.GB1735@ff.dom.local> <20071127164723.GA3406@stusta.de> <474C9714.1080308@o2.pl> <474CA1F0.3090504@o2.pl>
+	Tue, 27 Nov 2007 18:22:57 -0500
+Date: Tue, 27 Nov 2007 15:22:56 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: andi@firstfloor.org, travis@sgi.com, ak@suse.de, pageexec@freemail.hu,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm: Prevent dereferencing non-allocated per_cpu
+ variables
+In-Reply-To: <20071127152122.1d5fbce3.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711271522050.6713@schroedinger.engr.sgi.com>
+References: <20071127215052.090968000@sgi.com> <20071127215054.660250000@sgi.com>
+ <20071127221628.GG24223@one.firstfloor.org> <20071127151241.038c146d.akpm@linux-foundation.org>
+ <20071127152122.1d5fbce3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <474CA1F0.3090504@o2.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 12:02:08AM +0100, Jarek Poplawski wrote:
-> Jarek Poplawski wrote, On 11/27/2007 11:15 PM:
-> ...
+On Tue, 27 Nov 2007, Andrew Morton wrote:
+
+> The prefetch however might still need some work - we can indeed do
+> prefetch() against a not-possible CPU's memory here.  And I do recall that
+> 4-5 years ago we did have a CPU (one of mine, iirc) which would oops when
+> prefetching from a bad address.  I forget what the conclusion was on that
+> matter.
 > 
-> > Otherwise it's not so hard to overlook some stagnation.
-> 
-> Btw., after this 'forking' thing etc. it seems I might have lost the point
-> a little: which removed choices should justify such a fork.
+> If we do want to fix the prefetch-from-outer-space then we should be using
+> cpu_isset(cpu, *cpumask) here rather than cpu_possible().
 
-Let me try to rephrase it:
-
-If you think an open source project does something wrong you have the 
-right to fork it and offer an (in your opinion) better version.
-
-This is the right you have.
-
-But if you think open source gives you any legal or moral right to 
-demand any featurs or choices or whatever from developers you are 
-completely mistaken.
-
-> But, I hope,
-> you didn't mean your patch only, because then e.g. this stagnation threat
-> looks like a bit exaggerated...
-
-The question how many I/O schedulers we need is anyway in no direction 
-related to my patch.
-
-> Jarek P.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Generally the prefetch things have turned out to be not that useful. How 
+about dropping the prefetch? I kept it because it was there.
 
