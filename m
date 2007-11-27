@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbXK0Mng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXK0Mx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbXK0Mng (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 07:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXK0Mn3
+	id S1756312AbXK0Mx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 07:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXK0Mxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 07:43:29 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55483 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbXK0Mn2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 07:43:28 -0500
-Date: Tue, 27 Nov 2007 13:44:05 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>
-Subject: [patch] timer_list should use signed numbers for relative times
-Message-ID: <20071127124405.GA3943@elf.ucw.cz>
+	Tue, 27 Nov 2007 07:53:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52007 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbXK0Mxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 07:53:49 -0500
+Date: Tue, 27 Nov 2007 13:53:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
+       Dipankar <dipankar@in.ibm.com>
+Subject: Re: [Patch 0/5] sched: group scheduler related patches (V4)
+Message-ID: <20071127125312.GA28019@elte.hu>
+References: <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com> <20071126202836.GA17012@elte.hu> <20071127050652.GA20083@linux.vnet.ibm.com> <20071127110910.GB16273@elte.hu> <20071127114246.GB22197@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071127114246.GB22197@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Relative times are signed by nature, and timers can (briefly) have
-expires in past. Print them as negative numbers.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
-index 12c5f4c..7f6eaa9 100644
---- a/kernel/time/timer_list.c
-+++ b/kernel/time/timer_list.c
-@@ -65,7 +65,7 @@ #ifdef CONFIG_TIMER_STATS
- 	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
- #endif
- 	SEQ_printf(m, "\n");
--	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
-+	SEQ_printf(m, " # expires at %Lu nsecs [in %Ld nsecs]\n",
- 		(unsigned long long)ktime_to_ns(timer->expires),
- 		(unsigned long long)(ktime_to_ns(timer->expires) - now));
- }
+> On Tue, Nov 27, 2007 at 12:09:10PM +0100, Ingo Molnar wrote:
+> > thanks, it looks good - but the fact that we are at v4 of the patchset 
+> > underlines the point that this is more of a v2.6.25 patchset than a 
+> > v2.6.24 one.
+> 
+> Fine. I will resubmit this patchset then once we are into 2.6.25 
+> cycle.
 
- 
+no need (unless you have bugfixes) i'm carrying this around in the 
+scheduler git tree. (it will show up in sched-devel.git)
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
