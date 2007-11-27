@@ -1,92 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbXK0NRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbXK0NUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbXK0NRZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 08:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXK0NRP
+	id S1757969AbXK0NUQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 08:20:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbXK0NUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 08:17:15 -0500
-Received: from mail.transmode.se ([83.241.175.147]:37610 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754278AbXK0NRO (ORCPT
+	Tue, 27 Nov 2007 08:20:04 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:38145 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbXK0NUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 08:17:14 -0500
-Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for
-	fixed-link property
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Reply-To: joakim.tjernlund@transmode.se
-To: avorontsov@ru.mvista.com
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <20071127113935.GA26867@localhost.localdomain>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	 <20071126142915.19642.5842.stgit@localhost.localdomain>
-	 <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
-	 <20071127113935.GA26867@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Transmode AB
-Date: Tue, 27 Nov 2007 14:17:11 +0100
-Message-Id: <1196169432.9816.16.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Tue, 27 Nov 2007 08:20:03 -0500
+Date: Tue, 27 Nov 2007 14:20:00 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: XFS related Oops (suspend/resume related)
+Message-ID: <20071127132000.GA31893@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20071112064706.GA23595@dose.home.local> <20071126131210.GA4430@eazy.amigager.de> <20071126210844.GB119954183@sgi.com> <200711262307.56742.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711262307.56742.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 26, 2007 at 23:07:56 +0100, Rafael J. Wysocki wrote:
 
-On Tue, 2007-11-27 at 14:39 +0300, Anton Vorontsov wrote:
-> On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
-> > On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
-> > > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
-> > > not connected to the real MDIO bus.
-> > > 
-> > > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > 
-> > > ---
-> > > 
-> > >  Documentation/powerpc/booting-without-of.txt |    3 +
-> > >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
-> > >  2 files changed, 42 insertions(+), 17 deletions(-)
-> > > 
-> > > 
-> > > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > > index e9a3cb1..cf25070 100644
-> > > --- a/Documentation/powerpc/booting-without-of.txt
-> > > +++ b/Documentation/powerpc/booting-without-of.txt
-> > > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
-> > >        services interrupts for this device.
-> > >      - phy-handle : The phandle for the PHY connected to this ethernet
-> > >        controller.
-> > > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
-> > > +      but unique to the all specified fixed-links, b is duplex - 0 half,
-> > > +      1 full, c is link speed - d#10/d#100/d#1000.
-> > 
-> > Good work!
-> > May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
-> 
-> Well, I see no reference of the "flow" neither in the include/linux/mii.h
-> nor in the drivers/net/phy/*. :-/ Thus today there is no such register
-> bit we can emulate?..
+[...]
 
-Well, as good as I can recall, flow control(pause) is something that the
-PHY negotiates, just like FDX/HDX and should be dealt with in the
-adjust_link callback but not many do currently.
+> On 2.6.23.1 you can test the freezer alone by doing
+> 
+> # echo testproc > /sys/power/disk
+> # echo disk > /sys/power/state
 
-If you seach for pause in phy_device.c you will find it.
+This is suspend to RAM, not to disk.
 
-> 
-> > flow control or not just popped up here today so I got a use for it.
-> 
-> ..and I looked into few drivers (gianfar, ucc), and they seem to use
-> hard-coded flow control values, thus they don't speak to the PHYs
-> about that.
-
-Yes, but they should.
-
-> 
-> Can you give any reference to the driver that needs that parameter?
-> Does it use PHY subsystem to obtain flow-control on/off information?
-> 
-> Thanks,
-> 
+Regards,
+Tino
