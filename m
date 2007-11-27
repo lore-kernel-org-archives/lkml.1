@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbXK0LaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXK0Lex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757580AbXK0LaS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 06:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXK0LaG
+	id S1756856AbXK0Lex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 06:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXK0Len
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 06:30:06 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58678 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbXK0LaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 06:30:05 -0500
-Date: Tue, 27 Nov 2007 17:12:46 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
-       skumar@linux.vnet.ibm.com, Balbir Singh <balbir@in.ibm.com>,
-       Dipankar <dipankar@in.ibm.com>
-Subject: Re: [Patch 0/5] sched: group scheduler related patches (V4)
-Message-ID: <20071127114246.GB22197@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20071119131201.GB31491@elte.hu> <20071119150312.GA2365@linux.vnet.ibm.com> <20071119152258.GB31426@elte.hu> <20071119160647.GV3359@linux.vnet.ibm.com> <20071119190057.GA12650@elte.hu> <20071126050044.GA5304@linux.vnet.ibm.com> <20071126050905.GF5304@linux.vnet.ibm.com> <20071126202836.GA17012@elte.hu> <20071127050652.GA20083@linux.vnet.ibm.com> <20071127110910.GB16273@elte.hu>
+	Tue, 27 Nov 2007 06:34:43 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:6558 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753656AbXK0Lem (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 06:34:42 -0500
+Date: Tue, 27 Nov 2007 14:39:35 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for fixed-link property
+Message-ID: <20071127113935.GA26867@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
+References: <20071126142906.19642.45540.stgit@localhost.localdomain> <20071126142915.19642.5842.stgit@localhost.localdomain> <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20071127110910.GB16273@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1196089448.12625.62.camel@gentoo-jocke.transmode.se>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 12:09:10PM +0100, Ingo Molnar wrote:
-> thanks, it looks good - but the fact that we are at v4 of the patchset 
-> underlines the point that this is more of a v2.6.25 patchset than a 
-> v2.6.24 one.
+On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
+> On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
+> > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
+> > not connected to the real MDIO bus.
+> > 
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > 
+> > ---
+> > 
+> >  Documentation/powerpc/booting-without-of.txt |    3 +
+> >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
+> >  2 files changed, 42 insertions(+), 17 deletions(-)
+> > 
+> > 
+> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> > index e9a3cb1..cf25070 100644
+> > --- a/Documentation/powerpc/booting-without-of.txt
+> > +++ b/Documentation/powerpc/booting-without-of.txt
+> > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
+> >        services interrupts for this device.
+> >      - phy-handle : The phandle for the PHY connected to this ethernet
+> >        controller.
+> > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
+> > +      but unique to the all specified fixed-links, b is duplex - 0 half,
+> > +      1 full, c is link speed - d#10/d#100/d#1000.
+> 
+> Good work!
+> May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
 
-Fine. I will resubmit this patchset then once we are into 2.6.25 cycle.
+Well, I see no reference of the "flow" neither in the include/linux/mii.h
+nor in the drivers/net/phy/*. :-/ Thus today there is no such register
+bit we can emulate?..
 
-> Group fairness certainly works fine enough in most setups 
-> and we are late into the v2.6.24 -rc stage. We'll merge this patchset 
-> (or any later versions of it) into v2.6.25 for sure,
+> flow control or not just popped up here today so I got a use for it.
 
-Ok ..thx.
+..and I looked into few drivers (gianfar, ucc), and they seem to use
+hard-coded flow control values, thus they don't speak to the PHYs
+about that.
 
-> so distros that 
-> happen to base things off v2.6.24 can pick up your patches just fine.
+Can you give any reference to the driver that needs that parameter?
+Does it use PHY subsystem to obtain flow-control on/off information?
+
+Thanks,
 
 -- 
-Regards,
-vatsa
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
