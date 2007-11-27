@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbXK0WQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbXK0WUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759790AbXK0WQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 17:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXK0WQd
+	id S1752863AbXK0WUi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 17:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbXK0WU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 17:16:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:46681 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbXK0WQc (ORCPT
+	Tue, 27 Nov 2007 17:20:28 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:37528 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbXK0WU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 17:16:32 -0500
-Date: Tue, 27 Nov 2007 23:16:28 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: travis@sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, pageexec@freemail.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm: Prevent dereferencing non-allocated per_cpu variables
-Message-ID: <20071127221628.GG24223@one.firstfloor.org>
-References: <20071127215052.090968000@sgi.com> <20071127215054.660250000@sgi.com>
+	Tue, 27 Nov 2007 17:20:27 -0500
+Date: Tue, 27 Nov 2007 17:20:20 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.neta
+Subject: Re: [uml-devel] leak in do_ubd_request
+Message-ID: <20071127222020.GA10096@c2.user-mode-linux.org>
+References: <E1Ix3Du-0002aL-Ac@dorka.pomaz.szeredi.hu> <E1Ix58o-0004J5-Mz@dorka.pomaz.szeredi.hu> <20071127201105.GA9332@c2.user-mode-linux.org> <E1Ix73b-0004aI-Px@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071127215054.660250000@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <E1Ix73b-0004aI-Px@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 01:50:53PM -0800, travis@sgi.com wrote:
-> Change loops controlled by 'for (i = 0; i < NR_CPUS; i++)' to use
-> 'for_each_possible_cpu(i)' when there's a _remote possibility_ of
-> dereferencing a non-allocated per_cpu variable involved.
-> 
-> All files except mm/vmstat.c are x86 arch.
-> 
-> Based on 2.6.24-rc3-mm1 .
-> 
-> Thanks to pageexec@freemail.hu for pointing this out.
+On Tue, Nov 27, 2007 at 09:29:23PM +0100, Miklos Szeredi wrote:
+> Sure.  The patch works for me, but please check that it also makes
+> sense.
 
-Looks good to me. 2.6.24 candidate.
+I did - it's a straight-forward leak and fix.
 
--Andi
+				Jeff
 
+-- 
+Work email - jdike at linux dot intel dot com
