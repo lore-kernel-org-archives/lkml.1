@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXK0G4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbXK0HCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbXK0G4K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 01:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbXK0Gz5
+	id S1754099AbXK0HCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 02:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbXK0HCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 01:55:57 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51326 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751066AbXK0Gz4 (ORCPT
+	Tue, 27 Nov 2007 02:02:39 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:1469 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbXK0HCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 01:55:56 -0500
-Date: Mon, 26 Nov 2007 22:55:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utsns: Restore proper namespace handling.
-Message-Id: <20071126225517.0245a86d.akpm@linux-foundation.org>
-In-Reply-To: <20071126151917.GF547@sergelap.austin.ibm.com>
-References: <m11wagpxw6.fsf@ebiederm.dsl.xmission.com>
-	<20071126151917.GF547@sergelap.austin.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 Nov 2007 02:02:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:references:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:in-reply-to:thread-index;
+        b=ZhZnJpeUrFm2rP76bhVM/jxY0TRuWl1OVvQkeNx4MVxZWNUZ8KSpK5l3uI/u8t0jZIIluoczjfbXWBJ2apYKhlAGhD44S8hiI41DvZFNZiNYL6Dku4y/LdQNwjmqHVTMSHnZfs4Ds9rA2wj5NCJ8/KraUZDCf1ACcwWqa8k26IM=
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: "'Herbert Xu'" <herbert@gondor.apana.org.au>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <davem@davemloft.net>, <tristan_schmelcher@alumni.uwaterloo.ca>,
+       <acme@ghostprotocols.net>
+References: <003f01c82dca$305acd40$9c94fea9@jason> <20071126112631.GA26599@gondor.apana.org.au> <b25c3fa70711262132r3f88db02mcede6d14b82d5fc0@mail.gmail.com> <20071127063859.GB2942@gondor.apana.org.au>
+Subject: RE: [PATCH] [NET]: Fix TX bug VLAN in VLAN
+Date: Tue, 27 Nov 2007 16:02:19 +0900
+Message-ID: <002801c830c3$783319f0$9c94fea9@jason>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+In-Reply-To: <20071127063859.GB2942@gondor.apana.org.au>
+Thread-Index: AcgwwEr8xBbY/1fUQ1mAa7CdG5OnYgAAqDLw
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 09:19:17 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-
-> Quoting Eric W. Biederman (ebiederm@xmission.com):
-> > 
-> > When CONFIG_UTS_NS was removed it seems that we also deleted
-> > the code for handling sysctls in the other then the initial
-> > uts namespace.   This patch restores that code.
-> > 
-> > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+2007/11/27, Herbert Xu <herbert@gondor.apana.org.au>:
+> On Tue, Nov 27, 2007 at 02:32:49PM +0900, Joonwoo Park wrote:
+> >
+> > Thanks Herbert.
+> > Well.. I think patch would work propely for AF_PACKET also.
+> > (I did not insert BUG() macro in my patch)
+> > How do you think?
 > 
-> Thanks, Eric.
+> Are you sure? I thought you need to check both in the xmit function.
+> That is,
 > 
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
+>        if (veth->h_vlan_proto != htons(ETH_P_8021Q) ||
+>            VLAN_DEV_INFO(dev)->flags & VLAN_FLAG_REORDER_HDR) {
 > 
-> > ---
-> >  kernel/utsname_sysctl.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/utsname_sysctl.c b/kernel/utsname_sysctl.c
-> > index c76c064..71f58c3 100644
-> > --- a/kernel/utsname_sysctl.c
-> > +++ b/kernel/utsname_sysctl.c
-> > @@ -18,6 +18,8 @@
-> >  static void *get_uts(ctl_table *table, int write)
-> >  {
-> >  	char *which = table->data;
-> > +	struct uts_namespace *uts_ns = current->nsproxy->uts_ns;
-> > +	which = (which - (char *)&init_uts_ns) + (char *)uts_ns;
-> > 
-> >  	if (!write)
-> >  		down_read(&uts_sem);
+> Otherwise you'll miss AF_PACKET packets when REORDER is off.
 
-I already have a (more codingstylely attractive) version of this from
-Pavel, for which I shall steal your ack.
+Thanks Herbert!
+I agree with you.
 
---- a/kernel/utsname_sysctl.c~isolate-the-uts-namespaces-domainname-and-hostname-back
-+++ a/kernel/utsname_sysctl.c
-@@ -18,6 +18,10 @@
- static void *get_uts(ctl_table *table, int write)
- {
- 	char *which = table->data;
-+	struct uts_namespace *uts_ns;
-+
-+	uts_ns = current->nsproxy->uts_ns;
-+	which = (which - (char *)&init_uts_ns) + (char *)uts_ns;
+Thanks.
+Joonwoo
+
+[NET]: Fix TX bug VLAN in VLAN
+Fix misbehavior of vlan_dev_hard_start_xmit() for recursive encapsulations.
+
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+
+---
+diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
+index 7a36878..4f99bb8 100644
+--- a/net/8021q/vlan_dev.c
++++ b/net/8021q/vlan_dev.c
+@@ -462,7 +462,8 @@ int vlan_dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	 * OTHER THINGS LIKE FDDI/TokenRing/802.3 SNAPs...
+ 	 */
  
- 	if (!write)
- 		down_read(&uts_sem);
-_
+-	if (veth->h_vlan_proto != htons(ETH_P_8021Q)) {
++	if (veth->h_vlan_proto != htons(ETH_P_8021Q) ||
++		VLAN_DEV_INFO(dev)->flags & VLAN_FLAG_REORDER_HDR) {
+ 		int orig_headroom = skb_headroom(skb);
+ 		unsigned short veth_TCI;
+ 
+---
 
-
-Those pointer tricksies are revolting.  What's going on in there?
