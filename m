@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbXK0HmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbXK0HwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbXK0HmY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 02:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXK0HmR
+	id S1754163AbXK0HwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 02:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXK0HwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 02:42:17 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36400 "EHLO gate.crashing.org"
+	Tue, 27 Nov 2007 02:52:11 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40956 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbXK0HmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 02:42:16 -0500
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>
-Message-Id: <F81BD9A7-9D76-4C2C-AF80-AAA3F70F061E@kernel.crashing.org>
+	id S1750760AbXK0HwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 02:52:10 -0500
+Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, kune@deine-taler.de, johannes@sipsolutions.net
+Message-Id: <D55ECED4-D826-4F65-AAE0-87C0798024B0@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20071127001431.688565525@sgi.com>
+To: Heikki Orsila <shdl@zakalwe.fi>
+In-Reply-To: <20071123114329.GG7681@zakalwe.fi>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [patch 11/14] Powerpc: Use generic per cpu
-Date: Tue, 27 Nov 2007 01:41:55 -0600
-References: <20071127001407.859743255@sgi.com> <20071127001431.688565525@sgi.com>
+Subject: Re: [RFC] Documentation about unaligned memory access
+Date: Tue, 27 Nov 2007 01:51:38 -0600
+References: <20071123001554.12F8B9D4A1F@zog.reactivated.net> <20071123114329.GG7681@zakalwe.fi>
 X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Nov 26, 2007, at 6:14 PM, Christoph Lameter wrote:
+On Nov 23, 2007, at 5:43 AM, Heikki Orsila wrote:
 
-> Powerpc has a way to determine the address of the per cpu area of the
-> currently executing processor via the paca and the array of per cpu
-> offsets is avoided by looking up the per cpu area from the remote
-> paca's (copying x86_64).
+> On Fri, Nov 23, 2007 at 12:15:53AM +0000, Daniel Drake wrote:
+>> Why unaligned access is bad
+>> ===========================
+>>
+>> Most architectures are unable to perform unaligned memory accesses.  
+>> Any
+>> unaligned access causes a processor exception.
 >
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> "Some architectures are unable to perform unaligned memory accesses,
+> either an exception is generated, or the data
+> access is silently invalid. In architectures that allow unaligned
+> access, natural aligned accesses are usually faster than non-aligned."
 >
-> ---
-> include/asm-powerpc/percpu.h |   19 -------------------
-> 1 file changed, 19 deletions(-)
+>> In summary: if your code causes unaligned memory accesses to  
+>> happen, your code
+>> will not work on some platforms, and will perform *very* badly on  
+>> others.
 >
-> Index: linux-2.6/include/asm-powerpc/percpu.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-powerpc/percpu.h	2007-11-24  
-> 10:27:31.088350556 -0800
-> +++ linux-2.6/include/asm-powerpc/percpu.h	2007-11-24  
-> 10:29:20.752350757 -0800
-> @@ -16,25 +16,6 @@
-> #define __my_cpu_offset() get_paca()->data_offset
-> #define per_cpu_offset(x) (__per_cpu_offset(x))
+> *very* -> *slower*
+>
+>> Natural alignment
+>> =================
+>
+> Please move this definition before "Why unaligned access is bad".
+>
+> Also, it would be nice to have a table of ISAs:
+>
+> ISA		Need		Need
+> 		natural		alignment
+> 		alignment	by x
+> --------------------------------------------
+> m68k		No		2
+> powerpc/ppc	Yes		Word size
 
-This concerns me.  paca doesn't exist on all PPC platforms.
+on ppc it varies from processor to processor if misaligned data is  
+fixed up or causes an exception.  However its highly recommend to be  
+naturally aligned.  I'm not sure I follow what is meant by the second  
+column (need alignment by x).
 
 - k
