@@ -1,37 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbXK0IuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbXK0Iyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756478AbXK0IuO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 03:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXK0IuB
+	id S1756202AbXK0Iyg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 03:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXK0Iy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 03:50:01 -0500
-Received: from mx12.go2.pl ([193.17.41.142]:55205 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751559AbXK0IuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 03:50:00 -0500
-Date: Tue, 27 Nov 2007 09:54:35 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Rafael J\. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [RFC][PATCH] Update REPORTING-BUGS (rev. 2)
-Message-ID: <20071127085435.GB1919@ff.dom.local>
-References: <200711262202.24984.rjw@sisk.pl> <20071127085038.GA1919@ff.dom.local>
+	Tue, 27 Nov 2007 03:54:29 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40786 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751082AbXK0Iy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 03:54:28 -0500
+Date: Tue, 27 Nov 2007 00:53:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 01/27] ptrace: arch_has_single_step
+Message-Id: <20071127005329.9dfcf473.akpm@linux-foundation.org>
+In-Reply-To: <20071125215507.4B89226F8C5@magilla.localdomain>
+References: <20071125215507.4B89226F8C5@magilla.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127085038.GA1919@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 09:50:38AM +0100, Jarek Poplawski wrote:
-...
-> with any "you should" if possible.
+On Sun, 25 Nov 2007 13:55:07 -0800 (PST) Roland McGrath <roland@redhat.com> wrote:
 
-without any "you should" if possible.
+> This defines the new macro arch_has_single_step() in linux/ptrace.h, a
+> default for when asm/ptrace.h does not define it.  It declares the new
+> user_enable_single_step and user_disable_single_step functions.
+> This is not used yet, but paves the way to harmonize on this interface
+> for the arch-specific calls on all machines.
 
-Jarek P.
+I think I'll duck this lot for now in view of the (relatively small) amount
+of followup.
+
+I did do an experimental will-it-apply and got a tremendous number of
+rejects against the x86 git tree, almost all of which went away when `patch
+-l' was used.  Seems that someone has gone on a whitespace rampage through
+arch/x86/ia32/ptrace32.c and arch/x86/ia32/ptrace64.c.
+
+That's kinda/sorta OK, but `patch -l' is a bit more inclined to misplace
+hunks and it's all a bit risky.
