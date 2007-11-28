@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761064AbXK1QFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbXK1QFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761064AbXK1QFL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:05:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbXK1QE5
+	id S1761585AbXK1QFg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760997AbXK1QFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:04:57 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:64477 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754986AbXK1QE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:04:57 -0500
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20071128165205.30ef426f@gondolin.boeblingen.de.ibm.com>
-References: <20071127230252.GB10038@kroah.com>
-	 <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
-	 <1196253354.3242.40.camel@lov.site>
-	 <20071128165205.30ef426f@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 17:03:07 +0100
-Message-Id: <1196265787.3242.65.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19Kws3L4JUd2yM3rCelaIF2u8SoUbfZRUvoG33
- y93lkpHHmWn4lYRdhjIQnCGPVP2+P38im5A4Fy8JCcPj1LqPHP
- HATPMmPnJdo5JdeiSxSAOLooUavBceb
+	Wed, 28 Nov 2007 11:05:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58545 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758424AbXK1QFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:05:19 -0500
+Date: Wed, 28 Nov 2007 17:05:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: -rt doesn't compile for UML
+Message-ID: <20071128160501.GA7986@elte.hu>
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu> <20071128154152.GA742@elte.hu> <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 16:52 +0100, Cornelia Huck wrote:
-> On Wed, 28 Nov 2007 13:35:54 +0100,
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > it doesnt need it - turn IRQOFF_TRACING off.
 > 
-> > On Wed, 2007-11-28 at 10:01 +0100, Cornelia Huck wrote:
-> > > On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
-> > 
-> > > > Among other things, kobject_init() sets the kobject's reference count to
-> > > > one.  Calling kobject_init() is not sufficient, however. Kobject users
-> > > > must, at a minimum, set the name of the kobject; this is the name that will
-> > > > be used in sysfs entries. 
-> > > 
-> > > Unless they don't register their kobject. (But they should always set a
-> > > name anyway to avoid funny debug messages, so it is probably a good
-> > > idea to call this a "must").
-> > 
-> > Yeah, we should require it. And kobject_cleanup() needs to be called to
-> > free the allocated name, if the object is not already added and needs to
-> > be deleted (common in rewinding on error).
+> # CONFIG_CRITICAL_IRQSOFF_TIMING is not set
 > 
-> Always using kobject_put() should take care of that.
-
-Ok, so we can always require a kobject_put() after a kobject_init(), to
-cleanup what happened after _init() and before _add()?
-
-> > Btw, do you have a good example for unregistered/unnamed kobjects?
+> This seems to be off.
 > 
-> Unfortunately not (I can only think of devices that might never be
-> registered).
+> But latency_trace.c uses irqs_disabled_flags(), which is defined in 
+> <linux/irqflags.h> only if CONFIG_TRACE_IRQFLAGS_SUPPORT is set.
+> 
+> So perhaps latency_trace.c should be using raw_irqs_disabled_flags() 
+> instead.  But UML doesn't define that either and I have no idea how to 
+> do that, so this is still not solved yet.
 
-This is good, we should just get rid of that use case, it seems it
-doesn't make any sense to use kobjects which will never be registered.
+irqs_disabled_flags() gives us a nonessential bit of the trace output:
 
-Thanks,
-Kay
+                 _------=> CPU#
+                / _-----=> irqs-off
+               | / _----=> need-resched
+               || / _---=> hardirq/softirq
+               ||| / _--=> preempt-depth
+               |||| /
+               |||||     delay
+   cmd     pid ||||| time  |   caller
+      \   /    |||||   \   |   /
+ privoxy-12926 1.Ns1    0us : ktime_get_ts (ktime_get)
+ privoxy-12926 1.Ns1    0us : getnstimeofday (ktime_get_ts)
+ privoxy-12926 1.Ns1    1us : set_normalized_timespec (ktime_get_ts)
+ privoxy-12926 1.Ns1    1us : rb_first (htb_dequeue)
 
+it's the 'irqs-off' flag, which is 'd', 'D' or '.'.
+
+so you can define irqs_off_flags to always-0 and you should be able to 
+get pretty good traces still. It should have no functional impact.
+
+	Ingo
