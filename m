@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbXK1OoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbXK1Oq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbXK1OoD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 09:44:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXK1Onw
+	id S1761377AbXK1Oq6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 09:46:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXK1Oqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 09:43:52 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:63608 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbXK1Onv (ORCPT
+	Wed, 28 Nov 2007 09:46:51 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:53291 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750842AbXK1Oqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 09:43:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=jS57mxPxiq7TnXhVkUOJ5nIsXMgZuhBSWA67h44acCWqXefKZlVNOJCTxrIq1uAdx2hymm9y8C3sD5wDCqTLYmF7MAVDrzKdDmrecNyS8QkBFWUmMWIynKR5vuN6HEAwiMxPIzi8TFkTUc7+P0mbTvuxMb1Yb8C/jBTSaOhL5bU=
-Message-ID: <3efb10970711280643q50a91aeeoee2a28455e80cb8e@mail.gmail.com>
-Date: Wed, 28 Nov 2007 15:43:49 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Kevin Hilman" <khilman@mvista.com>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
-Cc: "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <87bq9fqpoi.fsf@vence.hilman.org>
+	Wed, 28 Nov 2007 09:46:51 -0500
+Message-ID: <474D7F5B.9090008@lwfinger.net>
+Date: Wed, 28 Nov 2007 08:46:51 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Question regarding mutex locking
+References: <474CF06C.8020208@lwfinger.net> <20071128081031.GF20238@traven>
+In-Reply-To: <20071128081031.GF20238@traven>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
-	 <87bq9fqpoi.fsf@vence.hilman.org>
-X-Google-Sender-Auth: d611fa325b6b2f54
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Kevin,
+Matthias Kaehlcke wrote:
+> El Tue, Nov 27, 2007 at 10:37:00PM -0600 Larry Finger ha dit:
+> 
+>> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
+>> would the following code be SMP safe?
+>>
+>> hold_lock = mutex_trylock()
+>>
+>> ...
+>>
+>> if (hold_lock)
+>> 	mutex_unlock()
+> 
+> this is wont work, a mutex must not be released from another
+> context than the one that acquired it.
 
-Just copied your mail to the list, maybe your solution is also worth looking at.
+I thought that mutex_trylock() returned 1 if it got the lock and 0 if not. If that is true, wouldn't
+the if statement only unlock if the lock was obtained in this routine?
 
-Remy
-
-> I had a similar issue when using the chained GPIO interrupts on OMAP
-> under PREEMPT_RT.
->
-> I believe the chained handler itself is supposed to be doing the
-> ack/unmask instead of the simple_handler.
->
-> However, currently there is no way for the chained handler to know
-> when the threaded handler has acutally run.  So the way I fixed this
-> was to have the simple handler call the chip->end hook so that the
-> chained handler could do the ack/unmask after the threaded handler has
-> actually run.
->
-> I've been using this against the -rt patch since 2.6.21, and submitted
-> and RFC a while back, but got no comments.
->
-> This patch is against 2.6.24-rc2-rt1.
->
-> Signed-off-by: Kevin Hilman <khilman@mvista.com>
->
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index b35d209..2f9e09e 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -661,6 +661,8 @@ static void thread_simple_irq(irq_desc_t *desc)
->                         note_interrupt(irq, desc, action_ret);
->         }
->         desc->status &= ~IRQ_INPROGRESS;
-> +       if (desc->chip->end)
-> +               desc->chip->end(irq);
->  }
->
->  /*
->
->
->
->
