@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXK1X56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbXK1X7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbXK1X56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 18:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbXK1X5u
+	id S1761473AbXK1X7Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 18:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbXK1X7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 18:57:50 -0500
-Received: from gw.goop.org ([64.81.55.164]:35889 "EHLO mail.goop.org"
+	Wed, 28 Nov 2007 18:59:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34511 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755243AbXK1X5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 18:57:49 -0500
-Message-ID: <474E007B.1020405@goop.org>
-Date: Wed, 28 Nov 2007 15:57:47 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1758116AbXK1X7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 18:59:11 -0500
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tobias Powalowski <t.powa@gmx.de>, Takashi Iwai <tiwai@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, Zachary Amsden <zach@vmware.com>
-Subject: Re: [PATCH] x86/paravirt: revert exports to restore old behaviour
-References: <474CA0DA.3010005@goop.org> <20071128204050.GA29463@stusta.de> <474DDA7B.9090802@goop.org> <20071128223909.GE29463@stusta.de>
-In-Reply-To: <20071128223909.GE29463@stusta.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: David Wilder <dwilder@us.ibm.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 20/27] ptrace: arch_has_block_step
+In-Reply-To: David Wilder's message of  Wednesday, 28 November 2007 15:39:55 -0800 <474DFC4B.5060006@us.ibm.com>
+References: <20071125215507.4B89226F8C5@magilla.localdomain>
+	<20071125220552.C8D5126F8C5@magilla.localdomain>
+	<474DFC4B.5060006@us.ibm.com>
+X-Shopping-List: (1) Impotent socks
+   (2) Clairvoyant mountains
+   (3) Infectious socks
+   (4) Big bacon
+Message-Id: <20071128235834.A34AB26F8E7@magilla.localdomain>
+Date: Wed, 28 Nov 2007 15:58:34 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> This does not apply since we do not have a stable in-kernel API, and 
-> therefore changes to the in-kernel API can by definition not be 
-> regressions.
->
-> 2.6.24 most likely contains hundreds of changes and removals of 
-> in-kernel APIs that existed in 2.6.23.
->
-> Are you seriously suggesting that e.g. every single change to any struct 
-> under include/ [1] would require an announcement x kernel releases 
-> before it can be implemented?
+> Roland McGrath wrote:
+> <snip>
+> > 
+> > +#ifndef arch_has_block_step
+> > +/**
+> > + * arch_has_block_step - does this CPU support user-mode block-step?
+> > + *
+> > + * If this is defined, then there must be a function declaration or inline
+> > + * for user_enable_block_step(), and arch_has_single_step() must be defined
+> > + * too.  arch_has_block_step() should evaluate to nonzero iff the machine
+> > + * supports step-until-branch for user mode.  It can be a constant or it
+> > + * can test a CPU feature bit.
+> > + */
+> > +#define arch_has_single_step()		(0)
+> 
+> should this be #define arch_has_block_step()		(0)
 
-Well, no, but that's not the point.
+Oops, yes it should.
 
-You're not addressing the substance of this specific issue, which is
-simply whether rdmsr/wrmsr and pmd_val/make_pmd are actually internal
-interfaces that drivers have no business in using, or are they
-legitimate interfaces?  If not, then what interface *should* drivers be
-using to do these things?  They seem like perfectly reasonable things
-for a driver to want to do, and I don't see any inherent problem with
-these interfaces.
 
-It's not like we need to curtail these interfaces for any technical
-reason.  It's pretty much the arbitrary result of me choosing to type
-"_GPL" rather than leaving it off.  Refusing to correct what amounts to
-a typo seems petty.
-
-    J
+Thanks,
+Roland
