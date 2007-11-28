@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbXK1FEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbXK1FId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbXK1FEf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 00:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbXK1FE2
+	id S1754207AbXK1FId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 00:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbXK1FIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 00:04:28 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54523 "EHLO mx2.suse.de"
+	Wed, 28 Nov 2007 00:08:24 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56645 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbXK1FE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 00:04:27 -0500
-From: Frank Seidel <fseidel@suse.de>
-Organization: SUSE LINUX Products GmbH
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [RFC] Re: nozomi version 2.1d for review
-Date: Wed, 28 Nov 2007 06:04:20 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Michael Lothian <mike@fireburn.co.uk>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, greg@kroah.com,
-       p.hardwick@option.com, Marcel Holtmann <marcel@holtmann.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-References: <200711091449.24648.fseidel@suse.de> <fc94aae90711271220k3684e7a1x9ec0b2e9c1db78e2@mail.gmail.com> <20071127221220.GA27944@suse.de>
-In-Reply-To: <20071127221220.GA27944@suse.de>
+	id S1750774AbXK1FIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 00:08:23 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711280604.22668.fseidel@suse.de>
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 1/2] x86: setup64 eflags constants
+Emacs: the definitive fritterware.
+Message-Id: <20071128050745.357E826F8E7@magilla.localdomain>
+Date: Tue, 27 Nov 2007 21:07:45 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag 27 November 2007 23:12:20, you (Greg KH) wrote:
-> Frank, want me to take the last version you just sent out and update my
-> version?
 
-Yes, that would be great.
+This cleans up arch/x86/kernel/setup64.c to use the X86_EFLAGS_* constants
+from <asm/processor-flags.h> instead of the EF_* enum in <asm/ptrace.h>.
 
-Thanks a lot,
-Frank
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/kernel/setup64.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/setup64.c b/arch/x86/kernel/setup64.c
+index 3558ac7..51297cc 100644
+--- a/arch/x86/kernel/setup64.c
++++ b/arch/x86/kernel/setup64.c
+@@ -169,7 +169,8 @@ void syscall_init(void)
+ #endif
+ 
+ 	/* Flags to clear on syscall */
+-	wrmsrl(MSR_SYSCALL_MASK, EF_TF|EF_DF|EF_IE|0x3000); 
++	wrmsrl(MSR_SYSCALL_MASK,
++	       X86_EFLAGS_TF|X86_EFLAGS_DF|X86_EFLAGS_IF|X86_EFLAGS_IOPL);
+ }
+ 
+ void __cpuinit check_efer(void)
