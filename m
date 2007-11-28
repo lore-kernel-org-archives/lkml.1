@@ -1,68 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbXK1ItR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbXK1Itt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbXK1ItR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 03:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXK1ItI
+	id S1758920AbXK1Itt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 03:49:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbXK1Itl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 03:49:08 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:59538 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752369AbXK1ItH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 03:49:07 -0500
-Date: Wed, 28 Nov 2007 09:48:56 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
+	Wed, 28 Nov 2007 03:49:41 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:22430 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754371AbXK1Itk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 03:49:40 -0500
+Date: Wed, 28 Nov 2007 17:49:14 +0900
+From: Paul Mundt <lethal@linux-sh.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org
-Subject: Re: m68k build failure
-Message-ID: <20071128094856.056c0a3f@poseidon.drzeus.cx>
-In-Reply-To: <20071127220723.e2e3d0b4.akpm@linux-foundation.org>
-References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-27223-1196239743-0001-2"
+Cc: David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
+       David McCullough <david_mccullough@au.securecomputing.com>,
+       linux-kernel@vger.kernel.org
+Subject: nommu: Add new vmalloc_user() and remap_vmalloc_range() interfaces.
+Message-ID: <20071128084914.GA28486@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Howells <dhowells@redhat.com>,
+	Greg Ungerer <gerg@snapgear.com>,
+	David McCullough <david_mccullough@au.securecomputing.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+This builds on top of the earlier vmalloc_32_user() work introduced by
+b50731732f926d6c49fd0724616a7344c31cd5cf, as we now have places in the
+nommu allmodconfig that hit up against these missing APIs.
 
---=_hera.drzeus.cx-27223-1196239743-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+As vmalloc_32_user() is already implemented, this is moved over to
+vmalloc_user() and simply made a wrapper. As all current nommu platforms
+are 32-bit addressable, there's no special casing we have to do for
+ZONE_DMA and things of that nature as per GFP_VMALLOC32.
 
-On Tue, 27 Nov 2007 22:07:23 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+remap_vmalloc_range() needs to check VM_USERMAP in order to figure out
+whether we permit the remap or not, which means that we also have to
+rework the vmalloc_user() code to grovel for the VMA and set the flag.
 
->=20
-> Current Linus tree give me this, with m68k allmodconfig:
->=20
-> FATAL: drivers/bluetooth/btsdio: sizeof(struct sdio_device_id)=3D12 is no=
-t a modulo of the size of section __mod_sdio_device_table=3D30.
-> Fix definition of struct sdio_device_id in mod_devicetable.h
->=20
-> which I haven't seen before.  Any ideas?
->=20
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-No the slightest. 12 seems like the correct, padded size. A size of 10 is j=
-ust weird as the unpadded size is 9 bytes. Could you dump the __mod_sdio_de=
-vice_table section so we can determine if it is cropped or just oddly padde=
-d.
+---
 
-Rgds
-Pierre
+ mm/nommu.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 44 insertions(+), 1 deletion(-)
 
---=_hera.drzeus.cx-27223-1196239743-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHTSt57b8eESbyJLgRArQNAKDRzHm0nyYuyDW/EnLNr8I01WEKJACg+Lov
-dN7rFZy/a0lB4vFUQThroaI=
-=+PB9
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-27223-1196239743-0001-2--
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 35622c5..c4768d0 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -10,6 +10,7 @@
+  *  Copyright (c) 2000-2003 David McCullough <davidm@snapgear.com>
+  *  Copyright (c) 2000-2001 D Jeff Dionne <jeff@uClinux.org>
+  *  Copyright (c) 2002      Greg Ungerer <gerg@snapgear.com>
++ *  Copyright (c) 2007      Paul Mundt <lethal@linux-sh.org>
+  */
+ 
+ #include <linux/module.h>
+@@ -183,6 +184,26 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
+ }
+ EXPORT_SYMBOL(__vmalloc);
+ 
++void *vmalloc_user(unsigned long size)
++{
++	void *ret;
++
++	ret = __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
++			PAGE_KERNEL);
++	if (ret) {
++		struct vm_area_struct *vma;
++
++		down_write(&current->mm->mmap_sem);
++		vma = find_vma(current->mm, (unsigned long)ret);
++		if (vma)
++			vma->vm_flags |= VM_USERMAP;
++		up_write(&current->mm->mmap_sem);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL(vmalloc_user);
++
+ struct page * vmalloc_to_page(void *addr)
+ {
+ 	return virt_to_page(addr);
+@@ -253,10 +274,17 @@ EXPORT_SYMBOL(vmalloc_32);
+  *
+  * The resulting memory area is 32bit addressable and zeroed so it can be
+  * mapped to userspace without leaking data.
++ *
++ * VM_USERMAP is set on the corresponding VMA so that subsequent calls to
++ * remap_vmalloc_range() are permissible.
+  */
+ void *vmalloc_32_user(unsigned long size)
+ {
+-	return __vmalloc(size, GFP_KERNEL | __GFP_ZERO, PAGE_KERNEL);
++	/*
++	 * We'll have to sort out the ZONE_DMA bits for 64-bit,
++	 * but for now this can simply use vmalloc_user() directly.
++	 */
++	return vmalloc_user(size);
+ }
+ EXPORT_SYMBOL(vmalloc_32_user);
+ 
+@@ -1213,6 +1241,21 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long from,
+ }
+ EXPORT_SYMBOL(remap_pfn_range);
+ 
++int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
++			unsigned long pgoff)
++{
++	unsigned int size = vma->vm_end - vma->vm_start;
++
++	if (!(vma->vm_flags & VM_USERMAP))
++		return -EINVAL;
++
++	vma->vm_start = (unsigned long)(addr + (pgoff << PAGE_SHIFT));
++	vma->vm_end = vma->vm_start + size;
++
++	return 0;
++}
++EXPORT_SYMBOL(remap_vmalloc_range);
++
+ void swap_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+ {
+ }
