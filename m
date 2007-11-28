@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXK1Wkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXK1WmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760951AbXK1Wkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbXK1WkY
+	id S1760811AbXK1WmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbXK1WmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:40:24 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:43941 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756579AbXK1WkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:40:22 -0500
-Date: Thu, 29 Nov 2007 09:40:20 +1100
-To: Frederik Himpe <fhimpe@telenet.be>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.24-rc3-git3: usb hardware interrupts using 25% of CPU time
-Message-ID: <20071128224020.GE24243@bakeyournoodle.com>
-References: <pan.2007.11.28.22.33.18@telenet.be>
+	Wed, 28 Nov 2007 17:42:00 -0500
+Received: from mx2.go2.pl ([193.17.41.42]:52730 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756579AbXK1Wl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 17:41:59 -0500
+Message-ID: <474DEF79.1080900@o2.pl>
+Date: Wed, 28 Nov 2007 23:45:13 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <pan.2007.11.28.22.33.18@telenet.be>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+Newsgroups: gmane.linux.kernel
+To: Larry Finger <larry.finger@lwfinger.net>
+CC: Andreas Schwab <schwab@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Question regarding mutex locking
+References: <474CF06C.8020208@lwfinger.net> <jemysy2y3y.fsf@sykes.suse.de> <474D8C22.7010902@lwfinger.net>
+In-Reply-To: <474D8C22.7010902@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 10:33:18PM +0000, Frederik Himpe wrote:
+Larry Finger wrote, On 11/28/2007 04:41 PM:
 
-> I installed Linux 2.6.24-rc3-git3 on a PPC based Apple Powerbook G4 
-> system. Now with top I see that over 20% of CPU time is used by hardware 
-> interrupts. Looking at /proc/interrupts, the number in the row 
-> ohci_hcd:usb1 is rising very quickly:
+> Andreas Schwab wrote:
+>> Larry Finger <Larry.Finger@lwfinger.net> writes:
+>>
+>>> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
+>>> would the following code be SMP safe?
+>>>
+>>> hold_lock = mutex_trylock()
+>>>
+>>> ...
+>>>
+>>> if (hold_lock)
+>>> 	mutex_unlock()
+>> When two CPUs may enter the critical region at the same time, what is
+>> the point of the mutex?  Also, the first CPU may unlock the mutex while
+>> the second one is still inside the critical region.
+> 
+> Thank you for that answer. I think that I'm finally beginning to understand.
 
-Hi Frederik,
-	Thanks for the report.  We suspect that this is an accounting
-problem introduced when powerpc enabled NO_HZ and highres timers.
-Fortunatley from the testing we've done it doens't actually look like
-the time is being spent in hardware interupts, just accounted for there.
- 
-Yours Tony
+Probably it would be faster without these "...", which look like
+no man's land...
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+hold_lock = mutex_trylock()
+if (hold_lock) {
+	/* SMP safe */
+	...
+ 	mutex_unlock()
+} else {
+	/* SMP unsafe */
+	...
+	/* maybe try again after some break or check */
+}
 
+Regards,
+Jarek P.
