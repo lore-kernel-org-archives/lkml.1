@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760304AbXK1Uam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbXK1UfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760304AbXK1Uam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 15:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbXK1Uae
+	id S1758786AbXK1UfU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 15:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXK1UfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 15:30:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:16022 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbXK1Uad (ORCPT
+	Wed, 28 Nov 2007 15:35:08 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42947 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbXK1UfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 15:30:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=TMDt8CsQ76gQtaFm2puSrA/4hKQGAKWQN3Qh7dicBJaRu6CeEpa7qVKKLGixTdmSvLO82GtP3VAsEFxRTQsLnQqKqo1N94nk/DCx3xiaYK58lA2zALr26vDVoraluwuGKKpCTQ/XQ0wLTneuCNfsRuX2bWyWlJjsDB1Ve+PN5Ok=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.24-rc3-mm2 (build failure on arm)
-Date: Wed, 28 Nov 2007 21:33:44 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20071128034140.648383f0.akpm@linux-foundation.org> <Pine.LNX.4.64.0711281152220.12651@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711281152220.12651@schroedinger.engr.sgi.com>
+	Wed, 28 Nov 2007 15:35:07 -0500
+Date: Wed, 28 Nov 2007 12:33:21 -0800
+From: Greg KH <greg@kroah.com>
+To: darnok@68k.org
+Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
+       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
+       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com
+Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
+Message-ID: <20071128203321.GA24547@kroah.com>
+References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <200711262323.35416.konrad@darnok.org> <20071127052955.GB777@kroah.com> <20071127180950.GA6736@andromeda.dapyr.net> <20071127190919.GA10686@kroah.com> <20071128192140.GB6736@andromeda.dapyr.net> <20071128194543.GA2469@kroah.com> <20071128202432.GC6736@andromeda.dapyr.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711282133.44643.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071128202432.GC6736@andromeda.dapyr.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 November 2007, Christoph Lameter wrote:
-> Crossbuild on arm with shark_deconfig fails:
+On Wed, Nov 28, 2007 at 04:24:32PM -0400, darnok@68k.org wrote:
+> > But, why not just put it in a separate file, that is built in if the
+> > user wants iscsi support?  That way the setup code can call it properly
+> > if needed.
 > 
->   CC [M]  sound/oss/uart401.o
->   CC      net/sched/sch_generic.o
->   CC      net/core/dst.o
->   AS      arch/arm/lib/getuser.o
-> drivers/ide/arm/ide_arm.c: In function 'ide_arm_init':
-> drivers/ide/arm/ide_arm.c:42: error: implicit declaration of function 
-> 'ide_device_idx'
-> make[2]: *** [drivers/ide/arm/ide_arm.o] Error 1
-> make[1]: *** [drivers/ide] Error 2
-> make[1]: *** Waiting for unfinished jobs....
+> In what directory should I put that file? It can't be in the arch/*
+> directories b/c the iscsi_ibft.c wouldn't build on all platforms.
+> Should I put it in drivers/firmware ?
 
-Thanks for spotting this!
+Put it in the same directory your other iscsi files are.  Or wherever
+you feel it is best suited.
 
-Andrew: I fixed it in IDE tree (s/ide_device_idx/ide_device_add/),
+thanks,
 
-ide-fix-host-drivers-depending-on-ide_generic-to-probe-for-interfaces-take-2.patch
-
-replaced
-
-ide-fix-host-drivers-depending-on-ide_generic-to-probe-for-interfaces.patch
-
-Bart
+greg k-h
