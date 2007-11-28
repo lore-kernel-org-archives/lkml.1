@@ -1,79 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbXK1XbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761795AbXK1Xc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761652AbXK1XbU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 18:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756681AbXK1XbG
+	id S1761795AbXK1Xc0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 18:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757674AbXK1XcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 18:31:06 -0500
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:44926 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756233AbXK1XbF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 18:31:05 -0500
-X-YMail-OSG: IUmvqzEVM1kOkbBSk6ojeKSB2GRkzt2qYO3CW139dwLedrsz1GNBeN0dt6Iy5MmOwkLEIukec0vFlCpR0c0yLQHUQfvZ.go.SnmwRDqZYQIG_etapVQ0Hg8xgr2O7w--
-X-RocketYMMF: rancidfat
-Date: Wed, 28 Nov 2007 15:31:03 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: named + capset = EPERM [Was: 2.6.24-rc3-mm2]
-To: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>
-In-Reply-To: <474DF493.3010903@gmail.com>
+	Wed, 28 Nov 2007 18:32:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51002 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757164AbXK1XcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 18:32:17 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Thomas Tuttle" <linux-kernel@ttuttle.net>
+Subject: Re: Oops with 2.6.24 git when loading iwl3945
+Date: Thu, 29 Nov 2007 00:50:45 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <1196196237.19410.1223544787@webmail.messagingengine.com>
+In-Reply-To: <1196196237.19410.1223544787@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <830198.27330.qm@web36612.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711290050.45549.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 11/28/2007 12:41 PM, Andrew Morton wrote:
-> >
->
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm2/
-> [...]
-> > +capabilities-introduce-per-process-capability-bounding-set.patch
+On Tuesday, 27 of November 2007, Thomas Tuttle wrote:
+> Hey.
 > 
-> A regression against -mm1. This patch breaks bind (9.5.0-18.a7.fc8):
-> capset(0x19980330, 0,
->
-{CAP_DAC_READ_SEARCH|CAP_SETGID|CAP_SETUID|CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SYS_RESOURCE,
->
-CAP_DAC_READ_SEARCH|CAP_SETGID|CAP_SETUID|CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SYS_RESOURCE,
-> 0}) = -1 EPERM (Operation not permitted)
-> 
-> $ grep SEC .config
-> CONFIG_SECCOMP=y
-> # CONFIG_NETWORK_SECMARK is not set
-> CONFIG_RPCSEC_GSS_KRB5=m
-> # CONFIG_RPCSEC_GSS_SPKM3 is not set
-> # CONFIG_SECURITY is not set
-> # CONFIG_SECURITY_FILE_CAPABILITIES is not set
-> 
-> probably this hunk?:
-> @@ -133,6 +119,12 @@ int cap_capset_check (struct task_struct
->                 /* incapable of using this inheritable set */
->                 return -EPERM;
->         }
-> +       if (!!cap_issubset(*inheritable,
-> +                          cap_combine(target->cap_inheritable,
-> +                                      current->cap_bset))) {
-> +               /* no new pI capabilities outside bounding set */
-> +               return -EPERM;
-> +       }
-> 
->         /* verify restrictions on target's new Permitted set */
->         if (!cap_issubset (*permitted,
+> I'm using a git snapshot that gentoo distributed mere hours ago (so I'm
+> fairly confident it's current), and I'm getting an Oops when I try to
+> load the iwl3945 driver.  I've attached it as plain text.
 
-I can see that the value for CAP_LAST_CAP is not right in
-include/linux/capability.h, but I don't know if that is the
-only problem. I should have a patch (unless someone beats me to it)
-later today.
+Can you also attach it to the Bugzilla entry at
+http://bugzilla.kernel.org/show_bug.cgi?id=9470 , please?
 
-
-Casey Schaufler
-casey@schaufler-ca.com
+Thanks,
+Rafael
