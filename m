@@ -1,115 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbXK1OeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbXK1Ofd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760649AbXK1OeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 09:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbXK1OeO
+	id S1760880AbXK1Ofd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 09:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbXK1OfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 09:34:14 -0500
-Received: from styx.suse.cz ([82.119.242.94]:43698 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759199AbXK1OeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 09:34:12 -0500
-Date: Wed, 28 Nov 2007 15:34:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH] Fix assertion failure in fs/jbd/checkpoint.c
-Message-ID: <20071128143410.GD11350@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 28 Nov 2007 09:35:23 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:62238 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755978AbXK1OfW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 09:35:22 -0500
+Message-Id: <20071128143142.580732000@pademelon.sonytel.be>
+User-Agent: quilt/0.46-1
+Date: Wed, 28 Nov 2007 15:31:42 +0100
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: [patch 0/7] PS3 notification device patches for 2.6.25
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+	Hi all,
 
-  the patch below should fix an assertion failure in JBD checkpointing
-code. The patch survived some fsstress and similar runs on my test machine
-so it shouldn't be obviously wrong ;).
+Here are my PS3 notification device patches for 2.6.25:
+  [1] ps3: Make bus_id and dev_id u64
+  [2] ps3: Add ps3_repository_find_device_by_id()
+  [3] ps3: Use the HV's storage device notification mechanism properly
+  [4] ps3: Add repository polling loop to work around hypervisor bug
+  [5] ps3: Kill unused ps3_repository_bump_device()
+  [6] ps3: Refactor ps3_repository_find_device()
+  [7] ps3: denoise arch/powerpc/platforms/ps3/repository.c
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
+These patches correct the use of the PS3 notification device mechanism, which
+allows to wait until a storage device is ready.
 
-Before we start committing a transaction, we call
-__journal_clean_checkpoint_list() to cleanup transaction's written-back
-buffers. If this call happens to remove all of them (and there were already
-some buffers), __journal_remove_checkpoint() will decide to free the
-transaction because it isn't (yet) a committing transaction and soon we fail
-some assertion - the transaction really isn't ready to be freed :).
-We change the check in __journal_remove_checkpoint() to free only a transaction
-in T_FINISHED state. The locking there is subtle though (as everywhere in
-JBD ;(). We use j_list_lock to protect the check and a subsequent call to
-__journal_drop_transaction() and do the same in the end of
-journal_commit_transaction() which is the only place where a transaction can
-get to T_FINISHED state. Probably I'm too paranoid here and such locking is
-not really necessary - checkpoint lists are processed only from
-log_do_checkpoint() where a transaction must be already committed to be
-processed or from __journal_clean_checkpoint_list() where kjournald itself
-calls it and thus transaction cannot change state either. Better be safe if
-something changes in future...
+Please review, thanks!
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff --git a/fs/jbd/checkpoint.c b/fs/jbd/checkpoint.c
-index 47552d4..0f69c41 100644
---- a/fs/jbd/checkpoint.c
-+++ b/fs/jbd/checkpoint.c
-@@ -602,15 +602,15 @@ int __journal_remove_checkpoint(struct journal_head *jh)
+With kind regards,
  
- 	/*
- 	 * There is one special case to worry about: if we have just pulled the
--	 * buffer off a committing transaction's forget list, then even if the
--	 * checkpoint list is empty, the transaction obviously cannot be
--	 * dropped!
-+	 * buffer off a running or committing transaction's checkpoing list,
-+	 * then even if the checkpoint list is empty, the transaction obviously
-+	 * cannot be dropped!
- 	 *
--	 * The locking here around j_committing_transaction is a bit sleazy.
-+	 * The locking here around t_state is a bit sleazy.
- 	 * See the comment at the end of journal_commit_transaction().
- 	 */
--	if (transaction == journal->j_committing_transaction) {
--		JBUFFER_TRACE(jh, "belongs to committing transaction");
-+	if (transaction->t_state != T_FINISHED) {
-+		JBUFFER_TRACE(jh, "belongs to running/committing transaction");
- 		goto out;
- 	}
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
  
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index 8f1f2aa..610264b 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -858,10 +858,10 @@ restart_loop:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 	/*
--	 * This is a bit sleazy.  We borrow j_list_lock to protect
--	 * journal->j_committing_transaction in __journal_remove_checkpoint.
--	 * Really, __journal_remove_checkpoint should be using j_state_lock but
--	 * it's a bit hassle to hold that across __journal_remove_checkpoint
-+	 * This is a bit sleazy.  We use j_list_lock to protect transition
-+	 * of a transaction into T_FINISHED state and calling
-+	 * __journal_drop_transaction(). Otherwise we could race with
-+	 * other checkpointing code processing the transaction...
- 	 */
- 	spin_lock(&journal->j_state_lock);
- 	spin_lock(&journal->j_list_lock);
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index 16e7ed8..d9ecd13 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -439,6 +439,8 @@ struct transaction_s
- 	/*
- 	 * Transaction's current state
- 	 * [no locking - only kjournald alters this]
-+	 * [j_list_lock] guards transition of a transaction into T_FINISHED
-+	 * state and subsequent call of __journal_drop_transaction()
- 	 * FIXME: needs barriers
- 	 * KLUDGE: [use j_state_lock]
- 	 */
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+
