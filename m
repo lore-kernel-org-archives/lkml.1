@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbXK1Uwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbXK1UxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbXK1Uwq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 15:52:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756681AbXK1Uwh
+	id S1760482AbXK1UxR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 15:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbXK1Uw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 15:52:37 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:60392 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754364AbXK1Uwg (ORCPT
+	Wed, 28 Nov 2007 15:52:58 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:10639 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757202AbXK1Uw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 15:52:36 -0500
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
-	kobject_init
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0711281532150.2729-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0711281532150.2729-100000@iolanthe.rowland.org>
+	Wed, 28 Nov 2007 15:52:57 -0500
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling
+	can/will stall forever
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Remy Bohmer <linux@bohmer.net>, RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
+References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
+	 <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
+	 <1196176294.13982.58.camel@localhost.localdomain>
+	 <1196177122.23808.7.camel@imap.mvista.com>
+	 <1196178834.23808.11.camel@imap.mvista.com>
+	 <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
+	 <20071128172509.GA30173@flint.arm.linux.org.uk>
+	 <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
+	 <20071128200550.GA3494@flint.arm.linux.org.uk>
+	 <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
 Content-Type: text/plain
-Date: Wed, 28 Nov 2007 21:52:30 +0100
-Message-Id: <1196283150.3242.131.camel@lov.site>
+Date: Wed, 28 Nov 2007 12:44:31 -0800
+Message-Id: <1196282672.27964.32.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/exzpuLid7/WMS3aO2f8n4Ke5deaPOAJwCYkg
- Y13XlQ3cI7YQ/WeI6oMbnTjXRI4ZPFXXbWBNjD4pvYi/Gwq05Y
- jSSOBxRHeazbcb9FQI0tbH4Knr1Ac7l
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 15:42 -0500, Alan Stern wrote:
-> This patch (as1020) adds a check to kobject_init() to insure that the
-> ktype field is not NULL.
+On Wed, 2007-11-28 at 15:16 -0500, Steven Rostedt wrote:
 
-That's good.
-
-> This is just for safety's sake; as far as I
-> know there are no remaining places where the field is left unset.  But
-> ironically, kset_init() did fail to set it!
-
-Nice to have that fixed.
-
-> The patch fixes that and
-> removes some redundant initialization in kset_createa().
 > 
-> The patch also fixes up elevator_init(), where ktype was set after
-> calling kobject_init() instead of before.
-
-It should not harm, only the kset was needed before _init(), but even
-that should be history with Greg's latest patch:
-http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=driver/kobject-grab-the-kset-reference-in-kobject_add-not-kobject_init.patch;hb=HEAD
-
-> Here is the check we discussed.  I'm a little behind on Kay's most 
-> recent updates; I hope this doesn't clash with them.
+> This could also simply be unique to the interrupt threads (only in RT). So
+> perhaps the patch is OK.
 > 
-> There may be some other places where ktype gets set after 
-> kobject_init() rather than before.  My testing can't be termendously 
-> thorough.  But they should all be easy to fix (like elevator.c was)
+> Remy, sorry about this round-a-bout. But I don't have any of the hardware
+> that this affects, and I'm just being cautious.
 
-I think it's fine and elevator does not need to be changed, and we can
-remove the requirement now from the documentation, as _init() now does
-not depend on any pre-assigned values, right?
+Ignoring the ARM side of things for a sec, handle_simple_irq() will
+mask() the interrupt in the special case that an interrupt is already in
+the processes of being handled.. handle_simple_irq() also unmasks when
+it finishes handling an interrupt (something real time adds for some
+reason) ..
 
-Kay
+In terms of threading the irq everything is the same except there is no
+unmask() call when the thread finishes .. 
+
+Daniel
 
