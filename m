@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbXK1T0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbXK1T1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbXK1T0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbXK1T0L
+	id S1760997AbXK1T1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbXK1T1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:26:11 -0500
-Received: from excu-mxob-1.symantec.com ([198.6.49.12]:41110 "EHLO
-	excu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755216AbXK1T0K (ORCPT
+	Wed, 28 Nov 2007 14:27:09 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:51443 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754815AbXK1T1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:26:10 -0500
-Date: Wed, 28 Nov 2007 19:02:10 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] printk trivial optimizations fix
-Message-ID: <Pine.LNX.4.64.0711281900010.25292@blonde.wat.veritas.com>
+	Wed, 28 Nov 2007 14:27:07 -0500
+Date: Wed, 28 Nov 2007 12:27:03 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Yang, Bo" <Bo.Yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Message-ID: <20071128192703.GA2584@parisc-linux.org>
+References: <20071127153252.GC3230@parisc-linux.org> <9738BCBE884FDB42801FAD8A7769C26501D33B5B@NAMAIL1.ad.lsil.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9738BCBE884FDB42801FAD8A7769C26501D33B5B@NAMAIL1.ad.lsil.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mm's printk has been showing "%p" in abominable upper case recently:
-its trivial optimizations have changed the default from lower to upper,
-so the 'p' case needs to enforce lower explicitly.
+On Wed, Nov 28, 2007 at 12:08:37PM -0700, Yang, Bo wrote:
+> Matthew,
+> 
+> Yes, as I mentioned, our applications are built in 32-bit environment
+> (except for ia64).
+> We may see a different behavior if we build it in 64-bit for x86-64. 
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+Then this patch isn't acceptable.  You need to find a way which works
+for both 32-bit and 64-bit applications.
 
- lib/vsprintf.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- 2.6.24-rc3-mm2/lib/vsprintf.c	2007-11-28 12:42:26.000000000 +0000
-+++ linux/lib/vsprintf.c	2007-11-28 17:01:20.000000000 +0000
-@@ -525,6 +525,7 @@ int vsnprintf(char *buf, size_t size, co
- 				continue;
- 
- 			case 'p':
-+				flags |= SMALL;
- 				if (field_width == -1) {
- 					field_width = 2*sizeof(void *);
- 					flags |= ZEROPAD;
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
