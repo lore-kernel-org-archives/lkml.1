@@ -1,94 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760542AbXK1Klk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXK1Klx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760542AbXK1Klk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 05:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758898AbXK1KlX
+	id S1760878AbXK1Klx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 05:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760698AbXK1Kl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 05:41:23 -0500
-Received: from ro-out-1112.google.com ([72.14.202.181]:5977 "EHLO
+	Wed, 28 Nov 2007 05:41:27 -0500
+Received: from ro-out-1112.google.com ([72.14.202.183]:1665 "EHLO
 	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760664AbXK1KlU (ORCPT
+	with ESMTP id S1760686AbXK1KlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 05:41:20 -0500
+	Wed, 28 Nov 2007 05:41:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=received:from:to:cc:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:thread-index;
-        b=MBth5rY66UpHkc4Rp28Pw9bUJJwMBygiT3ALHXcua7bRsXru201/0lQnIIia+u9JZAQKCl3GBBV6Ik54/HVarbFYxKwQchVhJCq6Yh9rTH0oT4hvckRFhI4m6AJ95/P3eyHbsjAeJlOlb5XpNBHkkSIVExww+19pOMIy1jD3aos=
+        b=tRV4zpnCmJ8X/4KtS3TyPIoHUOepnialB+bbONyaAOD4lCQob35TXI0nv1Z2RkY+uhunRJnFjamLs+PxynUc9cdYinahy9flpNp7jPE5R49mISomY7yVdGlqWel0ea2xxDmFrHl/D1JbRb2k9uzDQIBgfHw+6JvBgSJCWCXYh6M=
 From: "Joonwoo Park" <joonwpark81@gmail.com>
 To: <yi.zhu@intel.com>, <ipw3945-devel@lists.sourceforge.net>,
        <linux-wireless@vger.kernel.org>
 Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: [PATCH 1/2] [net/wireless/iwlwifi] : iwlwifi 3945 Fix race conditional panic.
-Date: Wed, 28 Nov 2007 19:41:04 +0900
-Message-ID: <00e501c831ab$2e78daa0$9c94fea9@jason>
+Subject: [PATCH 2/2] [net/wireless/iwlwifi] : iwlwifi 4965 Fix race conditional panic.
+Date: Wed, 28 Nov 2007 19:41:08 +0900
+Message-ID: <00e601c831ab$30475910$9c94fea9@jason>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Microsoft Office Outlook 11
 X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: Acgxqy0EJDpGTCkPRRCzX8sQ9v+pBA==
+Thread-Index: Acgxqy3b0Wax4D2cS2K2KiJh0hzjUQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iwl_pci_remove can be called before delayed work queue is completed or not called at init module, so delayed init_alive_start can
-have 'image' as NULL.
-It can be happened while putting module down right next it up.
-I was able to make panic by :
-#while [ 1 ]; modprobe -r iwlx945; modprobe iwlx945; done
-
-
-iwl3945: Detected Intel PRO/Wireless 3945ABG Network Connection
-iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.1.17ks
-iwl3945: Copyright(c) 2003-2007 Intel Corporation
-ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 22
-PCI: Setting latency timer of device 0000:03:00.0 to 64
-iwl3945: Detected Intel PRO/Wireless 3945ABG Network Connection
-BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
-printing eip: f885ff61 *pdpt = 0000000037785001 *pde = 0000000000000000 
-Oops: 0000 [#1] PREEMPT SMP 
-Modules linked in: iwl3945 e1000
-
-Pid: 11501, comm: iwl3945/0 Not tainted (2.6.24-rc3 #109)
-EIP: 0060:[<f885ff61>] EFLAGS: 00010246 CPU: 0
-EIP is at iwl_verify_inst_sparse+0x101/0x140 [iwl3945]
-EAX: 0f802020 EBX: 00000000 ECX: 00000000 EDX: f8878000
-ESI: 00000000 EDI: dfce8e40 EBP: dfef5f1c ESP: dfef5f00
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process iwl3945/0 (pid: 11501, ti=dfef4000 task=f7cc6c90 task.ti=dfef4000)
-Stack: f7cc6c90 00000000 00000384 00000000 dfcecdf0 dfce8e40 dfcecdf0 dfef5f4c 
-       f885ffbc 22222222 22222222 22222222 22222222 dfce9384 dfce8e40 dfcecdf0 
-       dfcecdf0 dfce8e40 dfcecdf0 dfef5f78 f8862fe9 00003b84 f7cc6dd0 c1b0eb00 
-Call Trace:
- [<c400542a>] show_trace_log_lvl+0x1a/0x30
- [<c40054e9>] show_stack_log_lvl+0xa9/0xd0
- [<c40055da>] show_registers+0xca/0x250
- [<c4005880>] die+0x120/0x230
- [<c401e21c>] do_page_fault+0x47c/0x790
- [<c43ac38a>] error_code+0x72/0x78
- [<f885ffbc>] iwl_verify_ucode+0x1c/0x1d0 [iwl3945]
- [<f8862fe9>] iwl_bg_init_alive_start+0x69/0x210 [iwl3945]
- [<c403abaf>] run_workqueue+0x7f/0x110
- [<c403b76d>] worker_thread+0x9d/0x100
- [<c403e922>] kthread+0x42/0x70
- [<c4004fef>] kernel_thread_helper+0x7/0x18
- =======================
-Code: 45 e8 00 00 00 00 85 c9 89 f6 74 38 31 db 31 c9 eb 04 83 45 f0 64 89 8a 0c 04 00 00 8b 97 74 05 00 00 8b 75 f0 8b 82 1c 04 00
-00 <3b> 06 74 0d 43 83 fb 02 77 23 c7 45 e8 fb ff ff ff 83 c1 64 39 
-EIP: [<f885ff61>] iwl_verify_inst_sparse+0x101/0x140 [iwl3945] SS:ESP 0068:dfef5f00
+I think 4965 may suffer it too, but I could not test.
 
 Thanks
 Joonwoo
 
-[net/wireless/iwlwifi] : iwlwifi 3945 Fix race conditional panic.
+[net/wireless/iwlwifi] : iwlwifi 4965 Fix race conditional panic.
 
 Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
 ---
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 465da4f..ac6c4a9 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -8570,6 +8570,7 @@ static void iwl_pci_remove(struct pci_dev *pdev)
+diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+index 9918780..a71a572 100644
+--- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+@@ -9165,6 +9165,7 @@ static void iwl_pci_remove(struct pci_dev *pdev)
  	IWL_DEBUG_INFO("*** UNLOAD DRIVER ***\n");
  
  	mutex_lock(&priv->mutex);
