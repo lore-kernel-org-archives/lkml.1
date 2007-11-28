@@ -1,107 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbXK1MXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXK1MYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760530AbXK1MXX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 07:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbXK1MXQ
+	id S1760908AbXK1MYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 07:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbXK1MYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 07:23:16 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:58034 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbXK1MXP (ORCPT
+	Wed, 28 Nov 2007 07:24:08 -0500
+Received: from hpsmtp-eml12.kpnxchange.com ([213.75.38.112]:37039 "EHLO
+	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753313AbXK1MYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 07:23:15 -0500
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
-References: <20071127230252.GB10038@kroah.com>
-	 <20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 13:23:02 +0100
-Message-Id: <1196252582.3242.28.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 28 Nov 2007 07:24:07 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-s390@vger.kernel.org
+Subject: [s390] networking related oops during boot on Hercules (was: build failure)
+Date: Wed, 28 Nov 2007 13:24:02 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200711281127.30051.elendil@planet.nl> <200711281151.58236.borntraeger@de.ibm.com>
+In-Reply-To: <200711281151.58236.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18l53RJHMkNDpDHrCiiOfcU7wpLM+PsKQWujX2
- C6l8RAG1EXcJkAyIh0CYwYIlSsuF+q8IbAeFRAfz6rR6r+0QJb
- iFa8gjNby6T53fOn0TPDkYrQzmc2oXH
+Content-Disposition: inline
+Message-Id: <200711281324.02748.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Nov 2007 12:24:03.0274 (UTC) FILETIME=[8FE242A0:01C831B9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 12:45 +0100, Cornelia Huck wrote:
-> On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
+On Wednesday 28 November 2007, Christian Borntraeger wrote:
+> > arch/s390/kernel/built-in.o: In function `cleanup_io_leave_insn':
+> > diag.c:(.text+0xc29a): undefined reference to `preempt_schedule_irq'
+> > make[2]: *** [.tmp_vmlinux1] Error 1
+>
+> We have a patch for that in our repository.
 
-> > A kset serves these functions:
-> > 
-> >  - It serves as a bag containing a group of objects. A kset can be used by
-> >    the kernel to track "all block devices" or "all PCI device drivers."
-> > 
-> >  - A kset is also a subdirectory in sysfs, where the associated kobjects
-> >    with the kset can show up.  
-> 
-> Perhaps better wording:
-> 
-> A kset is also represented via a subdirectory in sysfs, under which the
-> kobjects associated with the kset can show up.
+That fixed it. Next issue ;-)
 
-This draws a misleading picture. A member of a kset shows up where the
-"parent" pointer points to. Like /sys/block is a kset, the kset contains
-disks and partitions, but partitions do not live at the kset, and tons
-of other kset directories where this is the case.
+During boot I get the following oops in the Hercules emulator.
+2.6.22 runs fine on Hercules; I've not tried .23 on it.
 
-"If the kobject belonging to a kset has no parent kobject set, it will
-be added to the kset's directory. Not all members of a kset do
-necessarily live in the kset directory. If an explicit parent kobject is
-assigned before the kobject is added, the kobject is registered with the
-kset, but added below the parent kobject."
+[...]
+Synthesizing the initial hotplug events...
+done.
+Waiting for /dev to be fully populated...
+dasd(eckd): 0.0.0121: 3390/02(CU:3990/01) Cyl:1113 Head:15 Sec:224
+dasd(eckd): 0.0.0121: (4kB blks): 801360kB at 48kB/trk compatible disk layout
+ dasdb:VOL1/  0X0121: dasdb1 dasdb2
+TAPE_CHAR: tape gets major 254 for character devices
+TAPE_BLOCK: tape gets major 253 for block device
+TAPE_CORE: tape device 0.0.0581 found
+HHCCP014I CPU0001: Operation exception CODE=0001 ILC=2
+CPU0001:  PSW=070C0000 8019D0DA INST=0001         ????? ,                      ?
+CPU0001: GR00=00132700  GR01=00000000  GR02=0F398800  GR03=0F398800
+CPU0001: GR04=00000000  GR05=80132796  GR06=0F305D7A  GR07=00000002
+CPU0001: GR08=0F1ADA00  GR09=0F3C1F08  GR10=0F3C1F00  GR11=0F398800
+CPU0001: GR12=0F398800  GR13=8019D0C2  GR14=0F305CA0  GR15=0F305C30
+CPU0001: CR00=14B54E12  CR01=0031907F  CR02=00011180  CR03=00000000
+CPU0001: CR04=000003DE  CR05=00011180  CR06=10000000  CR07=8FB301FF
+CPU0001: CR08=00000000  CR09=00000000  CR10=00000000  CR11=00000000
+CPU0001: CR12=00000000  CR13=8FB301FF  CR14=FB000000  CR15=00000000
+CTC driver initialized
+------------  cut here !------------
+kernel BUG at net/core/dev.c:852                                                               +
+illegal operation: 0001  #1!
+Modules linked in: ctc fsm tape_34xx cu3088 tape ccwgroup tape_class dm_mirror d
+m_snapshot dm_mod dasd_eckd_mod dasd_mod
+CPU:    1    Not tainted
+Process hwup (pid: 990, task: 0f034c00, ksp: 0f305be0)
+Krnl PSW : 070c0000 8019d0da (dev_alloc_name+0x1e/0x58)
+           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0
+Krnl GPRS: 00132700 00000000 0f398800 0f398800
+           00000000 80132796 0f305d7a 00000002
+           0f1ada00 0f3c1f08 0f3c1f00 0f398800
+           0f398800 8019d0c2 0f305ca0 0f305c30
+Krnl Code: 8019d0cc: f000bf1f2460       srp     3871(1,%r11),1120(%r2),0
+           8019d0d2: a7740004           brc     7,8019d0da
+           8019d0d6: a7f40001           brc     15,8019d0d8
+          >8019d0da: 5810d04e           l       %r1,78(%r13)
+           8019d0de: 41a0f060           la      %r10,96(%r15)
+           8019d0e2: 5820c460           l       %r2,1120(%r12)
+           8019d0e6: 184a               lr      %r4,%r10
+           8019d0e8: 0de1               basr    %r14,%r1
+Call Trace:
+( <0000000000000000>! _ehead+0xfffee000/0x80)
+  <000000000019d710>! register_netdev+0x34/0x6c
+  <00000000108a561e>! ctc_new_device+0x3ee/0x590  ctc!
+  <0000000010861398>! ccwgroup_online_store+0xb0/0x13c  ccwgroup!
+  <00000000000c962a>! sysfs_write_file+0xca/0x130
+  <00000000000840e6>! vfs_write+0x92/0x128                                                     +
+  <00000000000847e8>! sys_write+0x40/0x70
+  <000000000002098a>! sysc_do_restart+0x12/0x16
+  <0000000077f0abaa>! 0x77f0abaa
 
-> > Every kset contains a kobject which can be
-> >    set up to be the parent of other kobjects; in this way the device model
-> >    hierarchy is constructed.
-> > 
-> >  - Ksets can support the "hotplugging" of kobjects and influence how
-> >    uevent events are reported to user space.
-> > 
-> >  - A kset can provide a set of default attributes that all kobjects that
-> >    belong to it automatically inherit and have created whenever a kobject
-> >    is registered belonging to the kset.
-> 
-> Hm, the default attributes are provided by the ktype?
 
-Yeah, it's the type, not the set.
-
-> > In object-oriented terms, "kset" is the top-level container class; ksets
-> > contain their own kobject, but that kobject is managed by the kset code and
-> > should not be manipulated by any other user.
-> > 
-> > A kset keeps its children in a standard kernel linked list.  Kobjects point
-> > back to their containing kset via their kset field. In almost all cases,
-> > the contained kobjects also have a pointer to the kset (or, strictly, its
-> > embedded kobject) in their parent field.
-
-It's by far not "almost all cases". Can we please drop that? It's very
-common that kobjects are a member of a kset but have a different parent.
-
-> > The uevent function will be called when the uevent is about to be sent to
-> > userspace to allow more environment variables to be added to the uevent.
-> 
-> It may be helpful to mention which uevents are by default created by
-> the kobject core (KOBJ_ADD, KOBJ_DEL, KOBJ_MOVE).
-
-I think, we should remove all these default events from the kobject
-core. We will not be able to manage the timing issues and "raw" kobject
-users should request the events on their own, when they are finished
-adding stuff to the kobject. I see currently no way to solve the
-"attributes created after the event" problem. The new
-*_create_and_register functions do not allow default attributes to be
-created, which will just lead to serious trouble when someone wants to
-use udev to set defaults and such things. We may just want to require an
-explicit call to send the event?
-
-Thanks,
-Kay
-
+udevd-event 949!: run_program: '/sbin/hwup' abnormal exit
+done.
+[...]
+Setting up networking...
+.
+Configuring network interfaces...
+<loops endlessly>
