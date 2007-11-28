@@ -1,108 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbXK1Syn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbXK1SzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757517AbXK1Syn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 13:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbXK1Syc
+	id S1758355AbXK1SzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 13:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757940AbXK1Sys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 13:54:32 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56001 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754603AbXK1Sya (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 13:54:30 -0500
-Date: Wed, 28 Nov 2007 10:43:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: 2.6.24-rc3-mm2 - Build Failure on powerpc timerfd() undeclared
-Message-Id: <20071128104345.9474025e.akpm@linux-foundation.org>
-In-Reply-To: <200711281432.09178.arnd@arndb.de>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<474D61CF.6080400@linux.vnet.ibm.com>
-	<200711281432.09178.arnd@arndb.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 28 Nov 2007 13:54:48 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:52029 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757875AbXK1Syq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 13:54:46 -0500
+Date: Wed, 28 Nov 2007 10:54:45 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Mackerras <paulus@samba.org>
+cc: Kumar Gala <galak@kernel.crashing.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 11/14] Powerpc: Use generic per cpu
+In-Reply-To: <18252.54275.429917.929763@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0711281051540.11968@schroedinger.engr.sgi.com>
+References: <20071127001407.859743255@sgi.com> <20071127001431.688565525@sgi.com>
+ <F81BD9A7-9D76-4C2C-AF80-AAA3F70F061E@kernel.crashing.org>
+ <Pine.LNX.4.64.0711271016260.2310@schroedinger.engr.sgi.com>
+ <18252.34032.207280.742887@cargo.ozlabs.ibm.com>
+ <Pine.LNX.4.64.0711271311370.4590@schroedinger.engr.sgi.com>
+ <18252.54275.429917.929763@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 14:32:07 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
+On Wed, 28 Nov 2007, Paul Mackerras wrote:
 
-> On Wednesday 28 November 2007, Kamalesh Babulal wrote:
-> > Kernel build fails, with build error
+> Christoph Lameter writes:
+> 
+> > On Wed, 28 Nov 2007, Paul Mackerras wrote:
 > > 
-> >   CC      arch/powerpc/platforms/cell/spu_callbacks.o
-> > In file included from arch/powerpc/platforms/cell/spu_callbacks.c:49:
-> > include/asm/systbl.h:312: error: ‘sys_timerfd’ undeclared here (not in a function)
-> > make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
-> > make[1]: *** [arch/powerpc/platforms/cell] Error 2
-> > make: *** [arch/powerpc/platforms] Error 2
+> > > Did you try both 32-bit (CONFIG_64BIT=n) and 64-bit (CONFIG_64BIT=y)
+> > > configurations?  The paca only exists in 64-bit kernels.
 > > 
+> > I build both and there is no dependency on 32bit or 64 bit in 
+> > include/asm-powerpc/percpu.h. Both access the paca (whatever that is).
 > 
-> I guess all architectures except x86 are currently broken because they
-> reference the old sys_timerfd function.
-
-None of them were broken in my testing and I'm unsure why powerpc broke
-here.
-
-> This patch should add the missing
-> bits to powerpc.
+> Look at line 3 of include/asm-powerpc/percpu.h:
 > 
-
-Because the patches in -mm left the stubs in place in sys_ni.c and powerpc
-_should_ have (incorrectly) picked those up.
-
-Odd.
-
+> #ifdef __powerpc64__
 > 
-> ---
-> 
-> Disclaimer: Not tested at all, just applied common sense.
-> Disclaimer2: conflicts with the sys_indirect kernel implementation
-> sent by paulus last week.
-> 
-> diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
-> index 11d5383..b029368 100644
-> --- a/include/asm-powerpc/systbl.h
-> +++ b/include/asm-powerpc/systbl.h
-> @@ -309,7 +309,9 @@ SYSCALL_SPU(getcpu)
->  COMPAT_SYS(epoll_pwait)
->  COMPAT_SYS_SPU(utimensat)
->  COMPAT_SYS_SPU(signalfd)
-> -COMPAT_SYS_SPU(timerfd)
-> +COMPAT_SYS_SPU(timerfd_create)
->  SYSCALL_SPU(eventfd)
->  COMPAT_SYS_SPU(sync_file_range2)
->  COMPAT_SYS(fallocate)
-> +COMPAT_SYS_SPU(sys_timerfd_settime)
-> +COMPAT_SYS_SPU(sys_timerfd_gettime)
-> diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
-> index 97d82b6..4ba2d20 100644
-> --- a/include/asm-powerpc/unistd.h
-> +++ b/include/asm-powerpc/unistd.h
-> @@ -328,14 +328,16 @@
->  #define __NR_epoll_pwait	303
->  #define __NR_utimensat		304
->  #define __NR_signalfd		305
-> -#define __NR_timerfd		306
-> +#define __NR_timerfd_create	306
->  #define __NR_eventfd		307
->  #define __NR_sync_file_range2	308
->  #define __NR_fallocate		309
-> +#define __NR_sys_timerfd_settime 310
-> +#define __NR_sys_timerfd_gettime 311
->  
->  #ifdef __KERNEL__
->  
-> -#define __NR_syscalls		310
-> +#define __NR_syscalls		312
->  
->  #define __NR__exit __NR_exit
->  #define NR_syscalls	__NR_syscalls
+> As far as I can see, after applying your series of patches, I end up
+> with an unbalanced #ifdef in include/asm-powerpc/percpu.h.  I see 3
+> #ifdef/#ifndef, but only two #endifs.  It needs another #endif after
+> the #endif /* SMP */ to match the #ifdef __powerpc64__.  With that
+> change it looks OK, since 32-bit uses asm-generic/percpu.h for both
+> SMP and UP.
 
+Ahhh.. Ok. Fixed.
 
+Do you know where to get a ppc64 crosscompiler? I 
+tried to build gcc for ppc64 but the build failed on x86_64.
