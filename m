@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbXK1WBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXK1WFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbXK1WBL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:01:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbXK1WA6
+	id S1759935AbXK1WFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbXK1WFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:00:58 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41381 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755672AbXK1WA5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:00:57 -0500
-Date: Wed, 28 Nov 2007 17:00:57 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
-In-Reply-To: <20071128214502.GA3255@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0711281654560.2729-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Nov 2007 17:05:44 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40938 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771AbXK1WFn (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 17:05:43 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm2 - *not* an insta-brick on my Latitude...
+In-Reply-To: Your message of "Wed, 28 Nov 2007 03:41:40 PST."
+             <20071128034140.648383f0.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1196287538_3874P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 28 Nov 2007 17:05:38 -0500
+Message-ID: <5903.1196287538@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007, Greg KH wrote:
+--==_Exmh_1196287538_3874P
+Content-Type: text/plain; charset=us-ascii
 
-> On Wed, Nov 28, 2007 at 03:42:00PM -0500, Alan Stern wrote:
-> > This patch (as1020) adds a check to kobject_init() to insure that the
-> > ktype field is not NULL.  This is just for safety's sake; as far as I
-> > know there are no remaining places where the field is left unset.  But
-> > ironically, kset_init() did fail to set it!  The patch fixes that and
-> > removes some redundant initialization in kset_createa().
-> > 
-> > The patch also fixes up elevator_init(), where ktype was set after
-> > calling kobject_init() instead of before.
-> 
-> No, it's safe to set ktype after kobject_init, it was just not safe to
-> set the kset.  As Kay pointed out, I just added a patch to my tree to
-> resolve this issue, and I'll go back and update the documentation now.
-> 
-> I do like the "check for a ktype" warning, I'll go add that to my local
-> tree and see what breaks.  Odds are, all the static kobjects will :(
+On Wed, 28 Nov 2007 03:41:40 PST, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm2/
 
-You have to be careful.  The ktype check I wrote lives in
-kobject_init() -- that's why I had to make elevator_init() assign the
-ktype before calling kobject_init().  If you put the check into
-kobject_add() instead then you won't end up checking objects that get
-initialized but not added.
+This one built and booted cleanly on the first try.  Whatever was in the -mm1
+version of git-x86.patch that gave it indigestion is gone....
 
-Yes, nobody would deliberately use a kobject without adding it, but it 
-could happen as the result of an failure between the _init and _add 
-calls.
 
-In any case, the change to kset_init() in my patch fixes a real bug.  
-It never did set the ktype at all.
+--==_Exmh_1196287538_3874P
+Content-Type: application/pgp-signature
 
-Alan Stern
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFHTeYycC3lWbTT17ARAinbAJ9kgOe9Ac6P3YbjZDtW6bYOKmkPCACgsTk4
+3i8kxQNViAznc7GOy9Uj8gI=
+=/fA6
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196287538_3874P--
