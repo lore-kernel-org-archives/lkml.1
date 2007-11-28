@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXK1S4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbXK1S6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbXK1S4y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 13:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbXK1S4e
+	id S1758186AbXK1S6G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 13:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbXK1S5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 13:56:34 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59636 "EHLO
+	Wed, 28 Nov 2007 13:57:55 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59765 "EHLO
 	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754646AbXK1S4b (ORCPT
+	with ESMTP id S1755490AbXK1S5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 13:56:31 -0500
-Date: Wed, 28 Nov 2007 18:55:10 +0000 (GMT)
+	Wed, 28 Nov 2007 13:57:54 -0500
+Date: Wed, 28 Nov 2007 18:57:12 +0000 (GMT)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.wat.veritas.com
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Willy Tarreau <wtarreau@hera.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] tmpfs: restore missing clear_highpage
-Message-ID: <Pine.LNX.4.64.0711281844370.25292@blonde.wat.veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] prep_zero_page: remove bogus BUG_ON
+Message-ID: <Pine.LNX.4.64.0711281855230.25292@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tmpfs was misconverted to __GFP_ZERO in 2.6.11.  There's an unusual case in
-which shmem_getpage receives the page from its caller instead of allocating.
-We must cover this case by clear_highpage before SetPageUptodate, as before.
+2.6.11 gave __GFP_ZERO's prep_zero_page a bogus "highmem may have to wait"
+assertion.  Presumably added under the misconception that clear_highpage
+uses nonatomic kmap; but then and now it uses kmap_atomic, so no problem.
 
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
-Desirable in 2.6.23-stable and 2.6.22-stable and 2.6.16-stable
-(and any other 2.6-stable if not already at end of life).
+No need for this one in -stable: nobody hit it but me in making other changes.
 
- mm/shmem.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- 2.6.24-rc3-git/mm/shmem.c	2007-10-31 06:18:05.000000000 +0000
-+++ linux/mm/shmem.c	2007-11-28 17:01:20.000000000 +0000
-@@ -1072,7 +1072,7 @@ shmem_alloc_page(gfp_t gfp, struct shmem
- 	pvma.vm_policy = mpol_shared_policy_lookup(&info->policy, idx);
- 	pvma.vm_pgoff = idx;
- 	pvma.vm_end = PAGE_SIZE;
--	page = alloc_page_vma(gfp | __GFP_ZERO, &pvma, 0);
-+	page = alloc_page_vma(gfp, &pvma, 0);
- 	mpol_free(pvma.vm_policy);
- 	return page;
- }
-@@ -1093,7 +1093,7 @@ shmem_swapin(struct shmem_inode_info *in
- static inline struct page *
- shmem_alloc_page(gfp_t gfp,struct shmem_inode_info *info, unsigned long idx)
+--- 2.6.24-rc3-git/mm/page_alloc.c	2007-11-17 18:45:00.000000000 +0000
++++ linux/mm/page_alloc.c	2007-11-28 17:01:20.000000000 +0000
+@@ -305,7 +305,6 @@ static inline void prep_zero_page(struct
  {
--	return alloc_page(gfp | __GFP_ZERO);
-+	return alloc_page(gfp);
- }
- #endif
+ 	int i;
  
-@@ -1306,6 +1306,7 @@ repeat:
- 
- 		info->alloced++;
- 		spin_unlock(&info->lock);
-+		clear_highpage(filepage);
- 		flush_dcache_page(filepage);
- 		SetPageUptodate(filepage);
- 	}
+-	VM_BUG_ON((gfp_flags & (__GFP_WAIT | __GFP_HIGHMEM)) == __GFP_HIGHMEM);
+ 	/*
+ 	 * clear_highpage() will use KM_USER0, so it's a bug to use __GFP_ZERO
+ 	 * and __GFP_HIGHMEM from hard or soft interrupt context.
