@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbXK1SP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXK1SPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbXK1SP2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 13:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbXK1SPM
+	id S1758102AbXK1SPk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 13:15:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbXK1SP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 13:15:12 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46586 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753919AbXK1SPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 13:15:10 -0500
-X-Authenticated: #1490710
-X-Provags-ID: V01U2FsdGVkX19Qpz9ARkpQo3EcPXigJNuAOXLE6TqWotqqC0+E3x
-	wuYhv9CQHvJXyX
-Date: Wed, 28 Nov 2007 18:14:59 +0000 (GMT)
-From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-X-X-Sender: gene099@racer.site
-To: Al Boldi <a1426z@gawab.com>
-cc: Rogan Dawes <lists@dawes.za.net>, git@vger.kernel.org,
+	Wed, 28 Nov 2007 13:15:28 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33110 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757490AbXK1SP1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 13:15:27 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: git guidance
-In-Reply-To: <200711282014.27299.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.64.0711281811500.27959@racer.site>
-References: <20071127235237.GF15227@1wt.eu> <474D70DD.4020601@dawes.za.net>
- <Pine.LNX.4.64.0711281545170.27959@racer.site> <200711282014.27299.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Subject: Re: Out of tree module using LSM
+In-Reply-To: Your message of "Wed, 28 Nov 2007 16:46:13 GMT."
+             <20071128164613.GA21815@infradead.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20071128144156.GA14106@infradead.org> <416908.77038.qm@web36613.mail.mud.yahoo.com>
+            <20071128164613.GA21815@infradead.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1196273705_3040P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 28 Nov 2007 13:15:05 -0500
+Message-ID: <25290.1196273705@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--==_Exmh_1196273705_3040P
+Content-Type: text/plain; charset=us-ascii
 
-On Wed, 28 Nov 2007, Al Boldi wrote:
-
-> git@vger sometimes bounces, so let's leave lkml as backup.
-
-Fair enough.
-
-> Johannes Schindelin wrote:
-> > On Wed, 28 Nov 2007, Rogan Dawes wrote:
-> > > Al Boldi wrote:
-> > > > Willy Tarreau wrote:
-> > > > > It should not turn into an endless thread led by people who want 
-> > > > > to redefine GIT's roadmap, but experience sharing helps a lot 
-> > > > > with GIT.
-> > > >
-> > > > Well, now that you mentioned it, if there is one thing I dislike, 
-> > > > it's for version control to start mutilating your sources.  
-> > > > Version Control should be completely transparent.  GIT isn't.
-> > >
-> > > Care to explain? Git is quite happy handling arbitrary binary 
-> > > content, so I find it difficult to believe that it is changing your 
-> > > source code in strange ways.
-> >
-> > It is nice of you to ask him to explain: Unless this handwaving claim 
-> > is substantiated, it is quite hard to argue with.
+On Wed, 28 Nov 2007 16:46:13 GMT, Christoph Hellwig said:
+> On Wed, Nov 28, 2007 at 08:38:43AM -0800, Casey Schaufler wrote:
+> > Would you like to expound on that, or do you feel your claws
+> > are sharp enough already?
 > 
-> Sure, the problem with GIT is that it stores the sources inside a 
-> backend container that is only accessible via GIT; iow, you can't 
-> retrieve your sources directly / transparently.
+> Just take a look at code.
 
-That is a very funny way to define a "transparent SCM".  Are you 
-complaining about SQL servers being "not transparent"?
+Just to clarify - you're OK with the *concept* (a security model that determines
+whether you can do an I/O based on the content), it's just their code that's
+ugly?
 
-By that definition, no SCM, not even CVS, is transparent.  Nothing short 
-of unpacked directories of all versions (wasting a lot of disk space) 
-would.
+(Note that the concept has interesting implications in the other direction as
+well - rather than stopping you from reading a file that has malware, you could
+in theory write an anti-export package that would let you write onto external
+memory or outbound e-mail, but prevent the write if it was corporate-sensitive
+data, or whatever.  Yes, I *know* a smart attacker can bypass it by simply
+crypting/compressing it first - but the vast majority of attackers aren't
+smart, and will just use 'cp' or the GUI equivalent to move the secret design
+documents onto the USB key... )
 
-IOW the issue you raised is a non-issue.
+--==_Exmh_1196273705_3040P
+Content-Type: application/pgp-signature
 
-Ciao,
-Dscho
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFHTbApcC3lWbTT17ARAjFvAKCsgmrCBJ9r2j+OHSb1V4XaTpe6awCdE2xs
+TFGo8yF4+MazfV/epARRDKM=
+=yHDR
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196273705_3040P--
