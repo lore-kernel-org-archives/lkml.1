@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbXK1Umo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbXK1Uwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbXK1Umo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 15:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbXK1Umg
+	id S1758857AbXK1Uwq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 15:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756681AbXK1Uwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 15:42:36 -0500
-Received: from cg-p07-fb.rzone.de ([81.169.146.215]:65492 "EHLO
-	cg-p07-fb.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754839AbXK1Ume (ORCPT
+	Wed, 28 Nov 2007 15:52:37 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:60392 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754364AbXK1Uwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 15:42:34 -0500
-X-RZG-CLASS-ID: mo07
-X-RZG-AUTH: iaL9KxG65sFyH/NRHEm13ZpWIsASIz2sPdozvvmj4KLNZA==
-Message-ID: <474DD274.5060909@tragetaschen.dyndns.org>
-Date: Wed, 28 Nov 2007 21:41:24 +0100
-From: Kai Ruhnau <kai@tragetaschen.dyndns.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071122)
-MIME-Version: 1.0
-To: Kyle McMartin <kyle@mcmartin.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: Bogus PCI vendor ID
-References: <473F0FE0.3010501@tragetaschen.dyndns.org> <20071117184030.GA5541@electric-eye.fr.zoreil.com> <53552.simon.1195474940@5ec7c279.invalid> <20071119092736.7cb21231@freepuppy.rosehill> <20071124202815.fed44890.akpm@linux-foundation.org> <47496C43.4090109@tragetaschen.dyndns.org> <20071126165353.GA24825@fattire.cabal.ca>
-In-Reply-To: <20071126165353.GA24825@fattire.cabal.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 Nov 2007 15:52:36 -0500
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
+	kobject_init
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711281532150.2729-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0711281532150.2729-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 21:52:30 +0100
+Message-Id: <1196283150.3242.131.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/exzpuLid7/WMS3aO2f8n4Ke5deaPOAJwCYkg
+ Y13XlQ3cI7YQ/WeI6oMbnTjXRI4ZPFXXbWBNjD4pvYi/Gwq05Y
+ jSSOBxRHeazbcb9FQI0tbH4Knr1Ac7l
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle McMartin wrote:
-> On Sun, Nov 25, 2007 at 01:36:19PM +0100, Kai Ruhnau wrote:
->   
->> If this is the same like the kernel option 'pci=conf1', that fixes the
->> vendor IDs.
->>     
->
-> Same effect. Ubuntu and many other distros are shipping kernels with
-> MMCONFIG off by default for reasons like this. Check to see if you have
-> an updated BIOS from your motherboard manufacturer?
->   
+On Wed, 2007-11-28 at 15:42 -0500, Alan Stern wrote:
+> This patch (as1020) adds a check to kobject_init() to insure that the
+> ktype field is not NULL.
 
-No, nothing available there. (OEM board, running fine under Vista, I
-don't expect to get support there...)
+That's good.
 
-Kai
+> This is just for safety's sake; as far as I
+> know there are no remaining places where the field is left unset.  But
+> ironically, kset_init() did fail to set it!
 
--- 
-This signature is left as an exercise for the reader.
+Nice to have that fixed.
+
+> The patch fixes that and
+> removes some redundant initialization in kset_createa().
+> 
+> The patch also fixes up elevator_init(), where ktype was set after
+> calling kobject_init() instead of before.
+
+It should not harm, only the kset was needed before _init(), but even
+that should be history with Greg's latest patch:
+http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=driver/kobject-grab-the-kset-reference-in-kobject_add-not-kobject_init.patch;hb=HEAD
+
+> Here is the check we discussed.  I'm a little behind on Kay's most 
+> recent updates; I hope this doesn't clash with them.
+> 
+> There may be some other places where ktype gets set after 
+> kobject_init() rather than before.  My testing can't be termendously 
+> thorough.  But they should all be easy to fix (like elevator.c was)
+
+I think it's fine and elevator does not need to be changed, and we can
+remove the requirement now from the documentation, as _init() now does
+not depend on any pre-assigned values, right?
+
+Kay
 
