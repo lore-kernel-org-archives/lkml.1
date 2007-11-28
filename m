@@ -1,219 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbXK1VVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbXK1Vch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbXK1VVD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 16:21:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbXK1VUw
+	id S1758368AbXK1Vch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 16:32:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbXK1Vc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 16:20:52 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:24371 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758326AbXK1VUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 16:20:50 -0500
-Subject: Re: [PATCH][for -mm] per-zone and reclaim enhancements for memory
-	controller take 3 [3/10] per-zone active inactive counter
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 28 Nov 2007 16:19:59 -0500
-Message-Id: <1196284799.5318.34.camel@localhost>
+	Wed, 28 Nov 2007 16:32:27 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:36931 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754656AbXK1VcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 16:32:25 -0500
+Date: Wed, 28 Nov 2007 13:31:47 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, Alex Chiang <achiang@hp.com>,
+       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de, lenb@kernel.org,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
+Message-ID: <20071128213147.GA6199@us.ibm.com>
+References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com> <20071126222253.GA31708@ldl.fc.hp.com> <20071127030454.GC23277@us.ibm.com> <20071127111136.77cb61fc@appleyard>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127111136.77cb61fc@appleyard>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a "heads up":  This patch is the apparent cause of a boot time
-panic--null pointer deref--on my numa platform.  See below.
+On Tue, Nov 27, 2007 at 11:11:36AM -0800, Kristen Carlson Accardi wrote:
+> On Mon, 26 Nov 2007 19:04:54 -0800
+> Gary Hade <garyhade@us.ibm.com> wrote:
+> 
+> > > Is this patchset appropriate for the -mm tree yet?  
+> > 
+> > I would defer to our illustrious maintainers on this one. :)
+> > 
+> > > Or do you think it still needs more work?  
+> > 
+> > I am now much more comfortable with your changes with respect
+> > to acpiphp on the systems I worry about but others may have
+> > concerns with respect to the other hotplug drivers, or even
+> > acpiphp, on other systems.
+> 
+> I'm ok with adding it to my quilt tree (and into -mm) after Gary gets
+> back to us later this week.
 
-On Tue, 2007-11-27 at 12:00 +0900, KAMEZAWA Hiroyuki wrote:
-> Counting active/inactive per-zone in memory controller.
-> 
-> This patch adds per-zone status in memory cgroup.
-> These values are often read (as per-zone value) by page reclaiming.
-> 
-> In current design, per-zone stat is just a unsigned long value and 
-> not an atomic value because they are modified only under lru_lock.
-> (So, atomic_ops is not necessary.)
-> 
-> This patch adds ACTIVE and INACTIVE per-zone status values.
-> 
-> For handling per-zone status, this patch adds
->   struct mem_cgroup_per_zone {
-> 		...
->   }
-> and some helper functions. This will be useful to add per-zone objects
-> in mem_cgroup.
-> 
-> This patch turns memory controller's early_init to be 0 for calling 
-> kmalloc() in initialization.
-> 
-> Changelog V2 -> V3
->   - fixed comments.
-> 
-> Changelog V1 -> V2
->   - added mem_cgroup_per_zone struct.
->       This will help following patches to implement per-zone objects and
->       pack them into a struct.
->   - added __mem_cgroup_add_list() and __mem_cgroup_remove_list()
->   - fixed page migration handling.
->   - renamed zstat to info (per-zone-info)
->     This will be place for per-zone information(lru, lock, ..)
->   - use page_cgroup_nid()/zid() funcs.
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> 
->  mm/memcontrol.c |  164 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 157 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6.24-rc3-mm1/mm/memcontrol.c
-> ===================================================================
-> --- linux-2.6.24-rc3-mm1.orig/mm/memcontrol.c	2007-11-26 16:39:00.000000000 +0900
-> +++ linux-2.6.24-rc3-mm1/mm/memcontrol.c	2007-11-26 16:39:02.000000000 +0900
-> @@ -78,6 +78,31 @@
-<snip>
->  
-> +static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-> +{
-> +	struct mem_cgroup_per_node *pn;
-> +
-> +	pn = kmalloc_node(sizeof(*pn), GFP_KERNEL, node);
-> +	if (!pn)
-> +		return 1;
-> +	mem->info.nodeinfo[node] = pn;
-> +	memset(pn, 0, sizeof(*pn));
-> +	return 0;
-> +}
-> +
->  static struct mem_cgroup init_mem_cgroup;
->  
->  static struct cgroup_subsys_state *
->  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  {
->  	struct mem_cgroup *mem;
-> +	int node;
->  
->  	if (unlikely((cont->parent) == NULL)) {
->  		mem = &init_mem_cgroup;
-> @@ -907,7 +1039,19 @@
->  	INIT_LIST_HEAD(&mem->inactive_list);
->  	spin_lock_init(&mem->lru_lock);
->  	mem->control_type = MEM_CGROUP_TYPE_ALL;
-> +	memset(&mem->info, 0, sizeof(mem->info));
-> +
-> +	for_each_node_state(node, N_POSSIBLE)
-> +		if (alloc_mem_cgroup_per_zone_info(mem, node))
-> +			goto free_out;
-> +
+I'm getting back to you but unfortunately with not so good
+news.  Sorry Alex.
 
-As soon as this loop hits the first non-existent node on my platform, I
-get a NULL pointer deref down in __alloc_pages.  Stack trace below.
+On the x3950 (configured single node) I encountered the below
+problem when attempting to hotplug a PCIe adapter when 'pci_slot'
+was loaded prior to 'acpiphp'.  I did not see the problem when
+the drivers were loaded in the opposite order.
 
-Perhaps N_POSSIBLE should be N_HIGH_MEMORY?  That would require handling
-of memory/node hotplug for each memory control group, right?  But, I'm
-going to try N_HIGH_MEMORY as a work around.
+After the messages appeared, the hotplug operation did not 
+complete and I was unable to recover hotplug functionality
+without a reboot.  I attempted recovery by unloading both
+drivers and then reloading only 'acpiphp' but even though
+an LED for the slot that had received the problem triggering
+adapter indicated that the slot was receiving power, the
+sysfs slot power file indicated otherwise (contained 0).
+So, I was unable to power off the slot to allow the removal
+and reinsertion of the adapter.
 
-Lee
->  	return &mem->css;
-> +free_out:
-> +	for_each_node_state(node, N_POSSIBLE)
-> +		kfree(mem->info.nodeinfo[node]);
-> +	if (cont->parent != NULL)
-> +		kfree(mem);
-> +	return NULL;
->  }
->  
->  static void mem_cgroup_pre_destroy(struct cgroup_subsys *ss,
-> @@ -920,6 +1064,12 @@
->  static void mem_cgroup_destroy(struct cgroup_subsys *ss,
->  				struct cgroup *cont)
->  {
-> +	int node;
-> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> +
-> +	for_each_node_state(node, N_POSSIBLE)
-> +		kfree(mem->info.nodeinfo[node]);
-> +
->  	kfree(mem_cgroup_from_cont(cont));
->  }
->  
-> @@ -972,5 +1122,5 @@
->  	.destroy = mem_cgroup_destroy,
->  	.populate = mem_cgroup_populate,
->  	.attach = mem_cgroup_move_task,
-> -	.early_init = 1,
-> +	.early_init = 0,
->  };
+FYI, the node contains 2 hotpluggable PCIe slots and 5
+non-hotpluggable PCIe slots but 'pci_slot' only exposed
+the 2 hotpluggable slots.  This does not appear to be due
+to a 'pci_slot' driver problem since I looked at the DSDT
+and SSDT and found that there are currently no _SUN methods
+for the non-hotpluggable slots.
 
-Initializing cgroup subsys memory
-Unable to handle kernel NULL pointer dereference (address 0000000000003c80)
-swapper[0]: Oops 11012296146944 [1]
-Modules linked in:
+Gary
 
-Pid: 0, CPU 0, comm:              swapper
-psr : 00001210084a6010 ifs : 8000000000000b1a ip  : [<a000000100132e11>]    Not tainted
-ip is at __alloc_pages+0x31/0x6e0
-unat: 0000000000000000 pfs : 000000000000060f rsc : 0000000000000003
-rnat: a0000001009db3b8 bsps: a0000001009e0490 pr  : 656960155aa65659
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a000000100187370 b6  : a000000100194440 b7  : a00000010086d560
-f6  : 1003e0000000000000000 f7  : 1003e0000000000000055
-f8  : 1003e00000000000000c0 f9  : 1003e0000000000003fc0
-f10 : 1003e00000000000000c0 f11 : 1003e0000000000000055
-r1  : a000000100bc0f10 r2  : ffffffffffe00006 r3  : 0000000000020000
-r8  : 0000000000071ef0 r9  : 0000000000000005 r10 : e00007002034d588
-r11 : e00007002034d580 r12 : a0000001008e3df0 r13 : a0000001008dc000
-r14 : 0000000000000001 r15 : e00007002034d5b0 r16 : 0000000000001e78
-r17 : ffffffffffff04e0 r18 : 0000000000100002 r19 : 0000000000000000
-r20 : 0000000000100002 r21 : 00000000000003cf r22 : 000000000000000f
-r23 : 00000000000003c0 r24 : 0000000000000010 r25 : 0000000000000001
-r26 : a0000001008e3e20 r27 : 0000000000000000 r28 : e0000701813dc088
-r29 : e0000701813dc080 r30 : 0000000000000000 r31 : a000000100918ea8
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
+invalid opcode: 0000 [1] SMP 
+CPU 1 
+Modules linked in: acpiphp pci_slot e1000 aic79xx scsi_transport_spi shpchp dock pci_hotplug ipt_LOG xt_limit xt_pkttype button battery ac power_supply ip6t_REJECT xt_tcpudp ipt_REJECT iptable_mangle iptable_filter ip6table_mangle ip_tables ip6table_filter ip6_tables x_tables ipv6 usbhid ff_memless ext3 jbd loop dm_mod ehci_hcd uhci_hcd usbcore ide_cd bnx2 cdrom rng_core reiserfs ata_piix ahci libata thermal processor piix sg megaraid_sas fan edd sd_mod scsi_mod ide_disk ide_core
+Pid: 121, comm: kacpi_notify Not tainted 2.6.24-rc3-gh-smp #1
+RIP: 0010:[<ffffffff882c2344>]  [<ffffffff882c2344>] :pci_slot:__this_module+0x21c4/0xfffffffffffff204
+RSP: 0018:ffff81103fa43ea8  EFLAGS: 00010216
+RAX: ffff81103f944a18 RBX: ffff81103d4fe910 RCX: 000000000000000f
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff8110400d13d0
+RBP: ffffffff8032d97b R08: ffff8110400fc7e0 R09: 0000000000000002
+R10: 0000000000000000 R11: ffffffff8021d193 R12: ffff811040105cf0
+R13: ffffffffffffffff R14: ffffffff80635820 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffff8110400ed8c0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 00002b266d876471 CR3: 000000103c825000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process kacpi_notify (pid: 121, threadinfo ffff81103fa42000, task ffff81103f9f8040)
+Stack:  ffffffff8033339c ffff81103d119a00 ffffffff8032d99e ffff81103f9fc540
+ ffffffff8024618d ffff81103f9fc540 ffff81103f9fc540 ffffffff8024696c
+ ffffffff80246a46 0000000000000000 ffff81103f9f8040 ffffffff80249ada
 Call Trace:
- [<a000000100014de0>] show_stack+0x80/0xa0
-                                sp=a0000001008e39c0 bsp=a0000001008dd1b0
- [<a000000100015a70>] show_regs+0x870/0x8a0
-                                sp=a0000001008e3b90 bsp=a0000001008dd158
- [<a00000010003d130>] die+0x190/0x300
-                                sp=a0000001008e3b90 bsp=a0000001008dd110
- [<a000000100071b80>] ia64_do_page_fault+0x8e0/0xa20
-                                sp=a0000001008e3b90 bsp=a0000001008dd0b8
- [<a00000010000b5c0>] ia64_leave_kernel+0x0/0x270
-                                sp=a0000001008e3c20 bsp=a0000001008dd0b8
- [<a000000100132e10>] __alloc_pages+0x30/0x6e0
-                                sp=a0000001008e3df0 bsp=a0000001008dcfe0
- [<a000000100187370>] new_slab+0x610/0x6c0
-                                sp=a0000001008e3e00 bsp=a0000001008dcf80
- [<a000000100187470>] get_new_slab+0x50/0x200
-                                sp=a0000001008e3e00 bsp=a0000001008dcf48
- [<a000000100187900>] __slab_alloc+0x2e0/0x4e0
-                                sp=a0000001008e3e00 bsp=a0000001008dcf00
- [<a000000100187c80>] kmem_cache_alloc_node+0x180/0x200
-                                sp=a0000001008e3e10 bsp=a0000001008dcec0
- [<a0000001001945a0>] mem_cgroup_create+0x160/0x400
-                                sp=a0000001008e3e10 bsp=a0000001008dce78
- [<a0000001000f0940>] cgroup_init_subsys+0xa0/0x400
-                                sp=a0000001008e3e20 bsp=a0000001008dce28
- [<a0000001008521f0>] cgroup_init+0x90/0x160
-                                sp=a0000001008e3e20 bsp=a0000001008dce00
- [<a000000100831960>] start_kernel+0x700/0x820
-                                sp=a0000001008e3e20 bsp=a0000001008dcd80
+ [<ffffffff8033339c>] acpi_ev_notify_dispatch+0x57/0x60
+ [<ffffffff8032d99e>] acpi_os_execute_notify+0x23/0x2c
+ [<ffffffff8024618d>] run_workqueue+0x7f/0x10b
+ [<ffffffff8024696c>] worker_thread+0x0/0xe4
+ [<ffffffff80246a46>] worker_thread+0xda/0xe4
+ [<ffffffff80249ada>] autoremove_wake_function+0x0/0x2e
+ [<ffffffff802499bc>] kthread+0x47/0x73
+ [<ffffffff8020cc98>] child_rip+0xa/0x12
+ [<ffffffff80249975>] kthread+0x0/0x73
+ [<ffffffff8020cc8e>] child_rip+0x0/0x12
 
 
+Code: ff ff ff ff 40 23 2c 88 ff ff ff ff 00 c8 c6 3b 10 81 ff ff 
+RIP  [<ffffffff882c2344>] :pci_slot:__this_module+0x21c4/0xfffffffffffff204
+ RSP <ffff81103fa43ea8>
 
