@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbXK1Tqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbXK1Tq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510AbXK1Tqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbXK1TqY
+	id S1758608AbXK1Tq7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:46:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbXK1Tqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:46:24 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45507 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755007AbXK1TqX (ORCPT
+	Wed, 28 Nov 2007 14:46:51 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:53431 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755544AbXK1Tqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:46:23 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-References: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
-	<200711271445.56792.ak@suse.de>
-	<m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
-	<474C64CB.7080004@redhat.com>
-	<20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
-	<20071127200011.GA3703@redhat.com>
-	<20071127222408.GH24223@one.firstfloor.org>
-	<474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com>
-	<20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
-	<20071128190525.GD3192@redhat.com>
-Date: Wed, 28 Nov 2007 12:42:22 -0700
-In-Reply-To: <20071128190525.GD3192@redhat.com> (Vivek Goyal's message of
-	"Wed, 28 Nov 2007 14:05:25 -0500")
-Message-ID: <m1d4tudun5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Nov 2007 14:46:50 -0500
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711281432290.5566-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0711281432290.5566-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 20:46:12 +0100
+Message-Id: <1196279172.3242.119.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/K4XnuLKUpNANnXyEelTBRQsALMLbRSfSm+DB
+ nQWkxnsTNZMZhlvOEYqFdPkZWrXyzW/OVMeBWt7cFxekgdf5Y4
+ d+7GD8kCsiDV1rEGyiSJO/aPMh2mG7M
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+On Wed, 2007-11-28 at 14:36 -0500, Alan Stern wrote:
+> On Wed, 28 Nov 2007, Kay Sievers wrote:
+> 
+> > > Actually the current code doesn't seem to check whether kobj->ktype is
+> > > NULL or to use the value of kobj->kset->kobj.ktype.  Is this an oversight?
+> > 
+> > We just require the ktype.
+> 
+> No -- we should but we don't.  Look at the code for kobject_init() and
+> kobject_add() in Greg's tree and you'll see.  Neither of them checks
+> that kobj->ktype is set.
 
-> Ok. Got it. So in this case we route the interrupts directly through LAPIC
-> and put LVT0 in ExtInt mode and IOAPIC is bypassed.
->
-> I am looking at Intel Multiprocessor specification v1.4 and as per figure
-> 3-3 on page 3-9, 8259 is connected to LINTIN0 line, which in turn is 
-> connected to LINTIN0 pin on all processors. If that is the case, even in
-> this mode, all the CPU should see the timer interrupts (which is coming
-> from 8259)?
+Yeah, it was another "magic" that was built into the core, the code even
+tried to find sysfs_ops for completely untyped kobjects. That is gone
+now, and we should just require a ktype, I think.
 
-However things are implemented completely differently now.  I don't think
-the coherent hypertransport domain of AMD processors actually routes
-ExtINT interrupts to all cpus but instead one (the default route?) is
-picked.
+> > > If there is no containing kset, the parent remains NULL.  What happens
+> > > then?  Does the kobject show up in the sysfs top-level directory?
+> > 
+> > "If the kobject belonging to a kset has no parent kobject set, it will
+> > be added to the kset's directory. Not all members of a kset do
+> > necessarily live in the kset directory. If an explicit parent kobject is
+> > assigned before the kobject is added, the kobject is registered with the
+> > kset, but added below the parent kobject."
+> 
+> Yes, but what if neither kobj->parent nor kobj->kset is set?
 
-So I think for the kdump case we pretty much need to use an IOAPIC
-in virtual wire mode for recent AMD systems.
+It will show up in the root of sysfs, yes.
 
-For current Intel systems I believe either scenario still works.
+Kay
 
-> Can you print the LAPIC registers (print_local_APIC) during normal boot
-> and during kdump boot and paste here?
-
-It's worth a look.
-
-I still think we need to just use apic mode at kernel startup, and
-be done with it.
-
-Eric
