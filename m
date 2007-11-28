@@ -1,37 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXK1EhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbXK1Emq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbXK1EhU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 23:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXK1EhE
+	id S1756055AbXK1Emq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 23:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbXK1Emh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 23:37:04 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:51051 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753195AbXK1EhB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 23:37:01 -0500
-Message-ID: <474CF06C.8020208@lwfinger.net>
-Date: Tue, 27 Nov 2007 22:37:00 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Question regarding mutex locking
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Nov 2007 23:42:37 -0500
+Received: from mail.es335.com ([67.65.19.105]:21163 "EHLO mail.es335.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753436AbXK1Emf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 23:42:35 -0500
+X-Greylist: delayed 1777 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Nov 2007 23:42:35 EST
+User-Agent: Microsoft-Entourage/11.3.6.070618
+Date: Tue, 27 Nov 2007 22:12:39 -0600
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and
+ intro.
+From: Tom Tucker <tom@opengridcomputing.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
+       netdev <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <sam@ravnborg.org>
+Message-ID: <C37246D7.1F282%tom@opengridcomputing.com>
+Thread-Topic: [PATCH RFC] [1/9] Core module symbol namespaces code and
+ intro.
+Thread-Index: AcgxdOnjKFbDDJ1oEdysxAAX8gjrzA==
+In-Reply-To: <200711281227.50136.rusty@rustcorp.com.au>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
-would the following code be SMP safe?
 
-hold_lock = mutex_trylock()
 
-...
+On 11/27/07 7:27 PM, "Rusty Russell" <rusty@rustcorp.com.au> wrote:
 
-if (hold_lock)
-	mutex_unlock()
+> On Tuesday 27 November 2007 16:35:42 Tom Tucker wrote:
+>> On Tue, 2007-11-27 at 15:49 +1100, Rusty Russell wrote:
+>> Explicitly documenting what comprises the kernel API (external,
+>> supported) and what comprises the kernel implementation (internal, not
+>> supported).
+> 
+> But the former is currently an empty set.
+> 
 
-Thanks,
+Yes, I overstated this.
 
-Larry
+>> - making it obvious to developers when they are binding their
+>> implementation to a particular kernel release
+> 
+> See, there's your problem.  All interfaces can, and will, change.  You're
+> always binding yourself to a particular release.
+> 
+
+Absolutely in the limit. But there are many bits of code that work quite
+nicely from release to release because they use services that live in the
+smooth water in the wake of the Linux head.
+
+I think defining that smooth water has merit. I also think that it would be
+nice to limit the scope of module externs to avoid polluting the global
+namespace. I'm not sure that this particular patch reaches these goals, but
+it prompted me to comment.
+
+> So you're not proposing we mark what's not stable, you're arguing that we
+> create a subset which is stable.
+> 
+
+Well, this is an interesting question. The answer is I think both are
+important. It would be nice (and arguably necessary long term) to limit the
+scope of externs. This can be accomplished with name spaces "I want bob's
+implementation of read."
+
+I think it also has value to define interfaces that are considered stable
+(but not inviolate) to allow developers to make better informed decisions
+when choosing interfaces. Having this info explicit in the code seems
+logical to me.
+
+> That's an argument we're not (yet) having.
+> 
+
+Yeah, maybe I'm off in the weeds on this one...
+
+Tom
+
+> Cheers,
+> Rusty.
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
