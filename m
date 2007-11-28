@@ -1,116 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbXK2AjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbXK2Ajk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761509AbXK2AjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXK2AjD
+	id S1762063AbXK2Ajk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758682AbXK2Ajc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:39:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46972 "EHLO mx1.redhat.com"
+	Wed, 28 Nov 2007 19:39:32 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53498 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbXK2AjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:39:01 -0500
+	id S1753168AbXK2Ajb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:39:31 -0500
+Date: Wed, 28 Nov 2007 15:24:15 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] Oops in USB / dev code plugging/unplugging multi flash
+	reader
+Message-ID: <20071128232415.GA11926@suse.de>
+References: <474DC95B.7000201@rtr.ca> <20071128202708.GA3809@suse.de> <474DF713.5070102@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH x86/mm 1/6] x86-64 ia32 ptrace pt_regs cleanup
-X-Zippy-Says: I'll clean your ROOM!!  I know some GOOD stories, too!!  All about
-    ROAD Island's, HUSH Puppies, and how LUKE finds GOLD on his LAND!!
-Message-Id: <20071129003849.428E026F8E7@magilla.localdomain>
-Date: Wed, 28 Nov 2007 16:38:49 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <474DF713.5070102@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 28, 2007 at 06:17:39PM -0500, Mark Lord wrote:
+> Greg KH wrote:
+>> On Wed, Nov 28, 2007 at 03:02:35PM -0500, Mark Lord wrote:
+>>> While testing a new USB reader/cable today,
+>>> I was plugging/unplugging the USB multi-flash reader (22 in 1),
+>>> and produced this weird oops.
+>>>
+>>> There's a locking problem in there somewhere, Greg.
+>>>
+>>> 2.6.23.8
+>> Can you duplicate this without the closed source ATI graphics driver 
+>> loaded?
+> ..
+>
+> I don't know if I can reproduce it easily regardless.
+> But that fglrx module has ZERO users, so it was completely benign here
+> (I've now deleted it from my system).
+>
+> The tracebacks clearly show USB/dev error.
 
-This cleans up the getreg32/putreg32 functions to use struct pt_regs in a
-straightforward fashion, instead of equivalent ugly pointer arithmetic.
+I'm not disagreeing, but I've seen some very strange crap over the years
+come from those closed source video drivers so I do not trust them at
+all.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/ia32/ptrace32.c |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+If you can reproduce this without it loaded, please send the new oops
+message to the linux-usb mailing list and the developers there will be
+glad to work with you to track this down.
 
-diff --git a/arch/x86/ia32/ptrace32.c b/arch/x86/ia32/ptrace32.c
-index 1e382e3..c52d066 100644
---- a/arch/x86/ia32/ptrace32.c
-+++ b/arch/x86/ia32/ptrace32.c
-@@ -37,11 +37,11 @@
- 
- #define R32(l,q)							\
- 	case offsetof(struct user32, regs.l):				\
--		stack[offsetof(struct pt_regs, q) / 8] = val; break
-+		regs->q = val; break;
- 
- static int putreg32(struct task_struct *child, unsigned regno, u32 val)
- {
--	__u64 *stack = (__u64 *)task_pt_regs(child);
-+	struct pt_regs *regs = task_pt_regs(child);
- 
- 	switch (regno) {
- 	case offsetof(struct user32, regs.fs):
-@@ -65,12 +65,12 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
- 	case offsetof(struct user32, regs.ss):
- 		if ((val & 3) != 3)
- 			return -EIO;
--		stack[offsetof(struct pt_regs, ss)/8] = val & 0xffff;
-+		regs->ss = val & 0xffff;
- 		break;
- 	case offsetof(struct user32, regs.cs):
- 		if ((val & 3) != 3)
- 			return -EIO;
--		stack[offsetof(struct pt_regs, cs)/8] = val & 0xffff;
-+		regs->cs = val & 0xffff;
- 		break;
- 
- 	R32(ebx, bx);
-@@ -84,9 +84,7 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
- 	R32(eip, ip);
- 	R32(esp, sp);
- 
--	case offsetof(struct user32, regs.eflags): {
--		__u64 *flags = &stack[offsetof(struct pt_regs, flags)/8];
--
-+	case offsetof(struct user32, regs.eflags):
- 		val &= FLAG_MASK;
- 		/*
- 		 * If the user value contains TF, mark that
-@@ -97,9 +95,8 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
- 			clear_tsk_thread_flag(child, TIF_FORCED_TF);
- 		else if (test_tsk_thread_flag(child, TIF_FORCED_TF))
- 			val |= X86_EFLAGS_TF;
--		*flags = val | (*flags & ~FLAG_MASK);
-+		regs->flags = val | (regs->flags & ~FLAG_MASK);
- 		break;
--	}
- 
- 	case offsetof(struct user32, u_debugreg[0]) ...
- 		offsetof(struct user32, u_debugreg[7]):
-@@ -123,11 +120,11 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
- 
- #define R32(l,q)							\
- 	case offsetof(struct user32, regs.l):				\
--		*val = stack[offsetof(struct pt_regs, q)/8]; break
-+		*val = regs->q; break
- 
- static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
- {
--	__u64 *stack = (__u64 *)task_pt_regs(child);
-+	struct pt_regs *regs = task_pt_regs(child);
- 
- 	switch (regno) {
- 	case offsetof(struct user32, regs.fs):
-@@ -160,7 +157,7 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
- 		/*
- 		 * If the debugger set TF, hide it from the readout.
- 		 */
--		*val = stack[offsetof(struct pt_regs, flags)/8];
-+		*val = regs->flags;
- 		if (test_tsk_thread_flag(child, TIF_FORCED_TF))
- 			*val &= ~X86_EFLAGS_TF;
- 		break;
+Oh, can you also reproduce it with 2.6.24-rc3?
+
+thanks,
+
+greg k-h
