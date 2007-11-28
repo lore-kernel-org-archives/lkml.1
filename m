@@ -1,53 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbXK1Tgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbXK1ThJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758487AbXK1Tgg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXK1Tg2
+	id S1759749AbXK1ThJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:37:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXK1Tg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:36:28 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37112 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754188AbXK1Tg1 (ORCPT
+	Wed, 28 Nov 2007 14:36:56 -0500
+Received: from cas-mta4-fe.casema.nl ([83.80.1.32]:60976 "EHLO
+	mta-fe.casema.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756562AbXK1Tgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:36:27 -0500
-Date: Wed, 28 Nov 2007 14:36:26 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-In-Reply-To: <1196278120.3242.115.camel@lov.site>
-Message-ID: <Pine.LNX.4.44L0.0711281432290.5566-100000@iolanthe.rowland.org>
+	Wed, 28 Nov 2007 14:36:55 -0500
+X-Greylist: delayed 1559 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 14:36:55 EST
+Message-ID: <474DBD3C.8040602@casema.nl>
+Date: Wed, 28 Nov 2007 20:10:52 +0100
+From: willem <wli222@casema.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dave Quigley <dpquigl@tycho.nsa.gov>
+CC: Tilman Schmidt <tilman@imap.cc>, Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: git guidance
+References: <474C9B31.8000408@imap.cc> <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr> <1196262922.19921.20.camel@moss-terrapins.epoch.ncsc.mil> <474D8FD2.4010009@imap.cc> <1196267837.19921.41.camel@moss-terrapins.epoch.ncsc.mil>
+In-Reply-To: <1196267837.19921.41.camel@moss-terrapins.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007, Kay Sievers wrote:
+Dave Quigley wrote:
+> On Wed, 2007-11-28 at 16:57 +0100, Tilman Schmidt wrote:
+>   
+>> Dave Quigley schrieb:
+>>     
+>>> There is a project listed on the kernel.org git page called guilt. I
+>>> find it very useful. It is much more responsive than stgit and it
+>>> actually has a git backend which quilt does not.
+>>>
+>>> On Wed, 2007-11-28 at 00:20 +0100, Jan Engelhardt wrote:
+>>>       
+>>>> On Nov 27 2007 23:33, Tilman Schmidt wrote:
+>>>>         
+>>>>> Well, it did. So now I'm back to keeping a virgin kernel source tree
+>>>>> alongside my development area in order to produce diffs. That can't
+>>>>> be right?
+>>>>>
+>>>>>           
+>>>> No, it can't. Use stgit/quilt ;p
+>>>>         
+>> In which respect would stgit/quilt/guilt help me? At first glance
+>> they just seem to add another level of complexity.
+>>
+>> Thanks,
+>> Tilman
+>>
+>>     
+>
+> These tools allow you to maintain a set of patches with very little
+> effort. More importantly it removes a lot of the git specifics from your
+> development process. For example this is how I use guilt for a new patch
+> set.
+>
+> I take my fresh tree and do a guilt-init in the base. This will create a
+> new patch series. I then need to create a patch to modify something LSM
+> related (guilt-new <patch_name>). Things like stgit/quilt/git use the
+> idea of a stack of patches. At this point if you were to type
+> guilt-series you would only see the one patch we just created. This
+> patch is going to be one logical set of changes (it should also produce
+> a compilable and working kernel). You can make whatever modifications
+> you need to make to your files and at this point you need to do one of
+> two things. If they were already in the tree you just type guilt-refresh
+> and under your .git/patches/<branch_name> directory you will see a file
+> named <patch_name> which contains your patch. Otherwise you need to do a
+> guilt-add <file_name> and then a guilt-refresh. The idea here is that
+> you have a moved your workflow from managing a series of commits and
+> then breaking out patches from a final version to one where you think in
+> terms of the patches and make modifications to them instead. In my
+> example I said I was doing something LSM related. Lets say the first
+> patch added a new hook and its implementation in the various modules. We
+> can now add a second patch using the guilt-new command and this one will
+> add uses of that new hook. At this point we have a stack that looks like
+> this.
+>
+> <patch that adds users>
+> <patch that adds hook>
+>
+> I can pop and push patches onto this stack to have a version of my
+> kernel tree at any state within the patch set. At this point lets say we
+> have posted the patch set and have feedback. I need to apply this
+> feedback to the patch that adds the LSM hook. Since my top patch
+> (guilt-top) is currently at the one that adds the users of the hook I
+> need to pop off that patch and get to the one that creates the hook
+> (guilt-pop). After doing this I'm at a kernel tree state which just has
+> the changes which add the hook. I make my modifications, type
+> guilt-refresh to create a new patch and then guilt-push my second patch
+> on and make sure everything is still working.
+>
+> As you can see there is almost no git knowledge required to use this
+> system and it allows you to focus on development instead of the
+> versioning system. One useful feature is that when Linus adds new
+> patches and I want to rebase my set against the current tree It only
+> takes 3 commands to rebase the patch set (Assuming all goes well).
+>
+> guilt-push -a #push all patches onto the stack
+> git-fetch #pull down the index
+> guilt-rebase FETCH_HEAD #Rebase our patches should do a merge and
+> #reapply all patches
+>
+> These are just some basics about guilt. Jeff has written a better
+> tutorial with a sample repository for you to work with if your
+> interested. I don't know if this will help your development process but
+> I can tell you from experience breaking patches by hand was a pain in
+> the ass and a huge waste of time and I'm glad to have a tool like this
+>   
+Where can I find that tutorial ?
 
-> > Actually the current code doesn't seem to check whether kobj->ktype is
-> > NULL or to use the value of kobj->kset->kobj.ktype.  Is this an oversight?
-> 
-> We just require the ktype.
-
-No -- we should but we don't.  Look at the code for kobject_init() and
-kobject_add() in Greg's tree and you'll see.  Neither of them checks
-that kobj->ktype is set.
-
-> > If there is no containing kset, the parent remains NULL.  What happens
-> > then?  Does the kobject show up in the sysfs top-level directory?
-> 
-> "If the kobject belonging to a kset has no parent kobject set, it will
-> be added to the kset's directory. Not all members of a kset do
-> necessarily live in the kset directory. If an explicit parent kobject is
-> assigned before the kobject is added, the kobject is registered with the
-> kset, but added below the parent kobject."
-
-Yes, but what if neither kobj->parent nor kobj->kset is set?
-
-Alan Stern
+regards
+> now.
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>   
 
