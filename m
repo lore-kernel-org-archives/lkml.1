@@ -1,60 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbXK1PEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760361AbXK1PGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbXK1PEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 10:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXK1PEd
+	id S1760361AbXK1PGP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 10:06:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbXK1PGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 10:04:33 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:41513 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbXK1PEc (ORCPT
+	Wed, 28 Nov 2007 10:06:01 -0500
+Received: from ccerelrim04.cce.hp.com ([161.114.21.25]:10140 "EHLO
+	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756153AbXK1PGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 10:04:32 -0500
-Date: Wed, 28 Nov 2007 10:03:38 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] leak in do_ubd_request
-Message-ID: <20071128150338.GA5501@c2.user-mode-linux.org>
-References: <E1Ix3Du-0002aL-Ac@dorka.pomaz.szeredi.hu> <E1Ix58o-0004J5-Mz@dorka.pomaz.szeredi.hu> <20071127201105.GA9332@c2.user-mode-linux.org> <E1Ix73b-0004aI-Px@dorka.pomaz.szeredi.hu> <20071127222020.GA10096@c2.user-mode-linux.org> <20071127213801.4def3c23.akpm@linux-foundation.org> <E1IxJMf-00067v-2r@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IxJMf-00067v-2r@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 28 Nov 2007 10:06:00 -0500
+Message-ID: <474D91DD.7000908@hp.com>
+Date: Wed, 28 Nov 2007 11:05:49 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [build bug] SCTP, net/sctp/auth.c, ./net/rxrpc/ar-key.c fails
+ to build
+References: <20071122153359.GA7268@elte.hu> <20071128124433.GA18378@elte.hu> <20071128124730.GA19498@elte.hu> <474D8820.5000000@hp.com> <20071128145804.GA23823@elte.hu>
+In-Reply-To: <20071128145804.GA23823@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------070308090007000609040102"
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.11.28.65125
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 10:37:53AM +0100, Miklos Szeredi wrote:
-> > Do we have any idea which patch this patch fixes?
+This is a multi-part message in MIME format.
+--------------070308090007000609040102
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Ingo Molnar wrote:
+> * Vlad Yasevich <vladislav.yasevich@hp.com> wrote:
 > 
-> I seems like a mainline bug, and has been present for some time
-> (forever?).
+>>>> this is a build regression over v2.6.23. config attached.
+>>> the patch below fix it (or rather, works it around).
+>>>
+>> The patch is an OK workaround, but may not yield a working SCTP.
+>>
+>> Let me see if I can do better..
 > 
-> I have no idea why this wasn't noticed earlier.
+> i'd be glad to test any patch. Note, the config was generated via 'make 
+> randconfig', for automated build and boot QA, and "working SCTP" is not 
+> something that is necessary for such a kernel to boot. So the workaround 
+> might be fine as well - not all config space combinations that are 
+> reachable via 'make randconfig' make "sense", but they should still 
+> build and boot fine.
+> 
+> 	Ingo
+> 
 
-Not forever, but it's been there for a while - it was introduced here:
+I am testing with this patch right now...
 
-commit 2adcec2197897365e0a0f657f1098cbfdb44bc8b
-Author: Jeff Dike <jdike@addtoit.com>
-Date:   Sun May 6 14:51:37 2007 -0700
+-vlad
 
-    uml: send pointers instead of structures to I/O thread
-    
-    Instead of writing entire structures between UML and the I/O thread, we send
-    pointers.  This cuts down on the amount of data being copied and possibly
-    allows more requests to be pending between the two.
-    
-    This requires that the requests be kmalloced and freed instead of living on
-    the stack.
-    
-    Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-    Cc: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+--------------070308090007000609040102
+Content-Type: text/plain;
+ name="foo"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="foo"
 
-				Jeff
+diff --git a/include/net/sctp/constants.h b/include/net/sctp/constants.h
+index da8354e..e71b5f1 100644
+--- a/include/net/sctp/constants.h
++++ b/include/net/sctp/constants.h
+@@ -438,11 +438,14 @@ enum {
+ 	SCTP_AUTH_HMAC_ID_RESERVED_0,
+ 	SCTP_AUTH_HMAC_ID_SHA1,
+ 	SCTP_AUTH_HMAC_ID_RESERVED_2,
+-	SCTP_AUTH_HMAC_ID_SHA256
++#if defined (CONFIG_CRYPTO_SHA256) || defined (CONFIG_CRYPTO_SHA256_MODULE)
++	SCTP_AUTH_HMAC_ID_SHA256,
++#endif
++	__SCTP_AUTH_HMAC_MAX
+ };
+ 
+-#define SCTP_AUTH_HMAC_ID_MAX	SCTP_AUTH_HMAC_ID_SHA256
+-#define SCTP_AUTH_NUM_HMACS (SCTP_AUTH_HMAC_ID_SHA256 + 1)
++#define SCTP_AUTH_HMAC_ID_MAX	__SCTP_AUTH_HMAC_MAX - 1
++#define SCTP_AUTH_NUM_HMACS 	__SCTP_AUTH_HMAC_MAX
+ #define SCTP_SHA1_SIG_SIZE 20
+ #define SCTP_SHA256_SIG_SIZE 32
+ 
+diff --git a/net/sctp/Kconfig b/net/sctp/Kconfig
+index 8210f54..5390bc7 100644
+--- a/net/sctp/Kconfig
++++ b/net/sctp/Kconfig
+@@ -6,9 +6,9 @@ menuconfig IP_SCTP
+ 	tristate "The SCTP Protocol (EXPERIMENTAL)"
+ 	depends on INET && EXPERIMENTAL
+ 	depends on IPV6 || IPV6=n
+-	select CRYPTO if SCTP_HMAC_SHA1 || SCTP_HMAC_MD5
+-	select CRYPTO_HMAC if SCTP_HMAC_SHA1 || SCTP_HMAC_MD5
+-	select CRYPTO_SHA1 if SCTP_HMAC_SHA1
++	select CRYPTO
++	select CRYPTO_HMAC
++	select CRYPTO_SHA1
+ 	select CRYPTO_MD5 if SCTP_HMAC_MD5
+ 	---help---
+ 	  Stream Control Transmission Protocol
+diff --git a/net/sctp/auth.c b/net/sctp/auth.c
+index 6d5fa6b..64b5c7a 100644
+--- a/net/sctp/auth.c
++++ b/net/sctp/auth.c
+@@ -54,11 +54,13 @@ static struct sctp_hmac sctp_hmac_list[SCTP_AUTH_NUM_HMACS] = {
+ 		/* id 2 is reserved as well */
+ 		.hmac_id = SCTP_AUTH_HMAC_ID_RESERVED_2,
+ 	},
++#if defined (CONFIG_CRYPTO_SHA256) || defined (CONFIG_CRYPTO_SHA256_MODULE)
+ 	{
+ 		.hmac_id = SCTP_AUTH_HMAC_ID_SHA256,
+ 		.hmac_name="hmac(sha256)",
+ 		.hmac_len = SCTP_SHA256_SIG_SIZE,
+ 	}
++#endif
+ };
+ 
+ 
 
--- 
-Work email - jdike at linux dot intel dot com
+--------------070308090007000609040102--
