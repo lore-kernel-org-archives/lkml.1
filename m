@@ -1,91 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbXK1Bp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbXK1Bt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759940AbXK1Bp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 20:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXK1BpP
+	id S1760282AbXK1Bt3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 20:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbXK1BtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 20:45:15 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42155 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752132AbXK1BpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 20:45:13 -0500
-Date: Wed, 28 Nov 2007 02:45:09 +0100
-From: Andrea Arcangeli <andrea@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, jack@suse.cz, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: /proc dcache deadlock in do_exit
-Message-ID: <20071128014509.GE6840@v2.random>
-References: <20071127132022.GW6840@v2.random> <20071127143852.601509ac.akpm@linux-foundation.org> <20071128012129.GD6840@v2.random>
+	Tue, 27 Nov 2007 20:49:18 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51602 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757048AbXK1BtR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 20:49:17 -0500
+Date: Tue, 27 Nov 2007 17:49:15 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Huang <James.Huang@watchguard.com>
+Cc: linux-kernel@vger.kernel.org, Manfred Spraul <manfred@colorfullife.com>,
+       jamesclhuang@yahoo.com, ego@in.ibm.com
+Subject: Re: __rcu_process_callbacks() in Linux 2.6
+Message-ID: <20071128014915.GA28908@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <590353.52909.qm@web83819.mail.sp1.yahoo.com> <F474D80A8B96F34D8D70C85A98D6FC178D8BE7@VS02SE.wgti.net> <20071127023958.GF9136@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071128012129.GD6840@v2.random>
+In-Reply-To: <20071127023958.GF9136@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 02:21:29AM +0100, Andrea Arcangeli wrote:
-> On Tue, Nov 27, 2007 at 02:38:52PM -0800, Andrew Morton wrote:
-> > I don't see why the schedule() will not return?  Because the task has
-> > PF_EXITING set?  Doesn't TASK_DEAD do that?
+On Mon, Nov 26, 2007 at 06:39:58PM -0800, Paul E. McKenney wrote:
+> On Mon, Nov 26, 2007 at 02:48:08PM -0800, James Huang wrote:
+> > 
+> > > -----Original Message-----
+> > > From: James Huang [mailto:jamesclhuang@yahoo.com]
+> > > Sent: Monday, November 26, 2007 2:21 PM
+> > > To: James Huang
+> > > Subject: Fw: __rcu_process_callbacks() in Linux 2.6
+> > > 
+> > > ----- Forwarded Message ----
+> > > From: Manfred Spraul <manfred@colorfullife.com>
+> > > To: James Huang <jamesclhuang@yahoo.com>
+> > > Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>; linux-
+> > > kernel@vger.kernel.org
+> > > Sent: Monday, November 26, 2007 10:28:37 AM
+> > > Subject: __rcu_process_callbacks() in Linux 2.6
+> > > 
+> > > Hi James,
+> > > 
+> > > If I understand the issue correctly, then the race is:
+> > > 
+> > > step 1: cpu 1: starts a new rcu batch (i.e. rcp->cur++, smb_mb)
+> > > 
+> > > step 2: cpu 2: completes the quiet state
+> > > step 3: cpu 2: reads pointer 0x123 (ptr to a rcu protected struct)
+> > > 
+> > > step 4: cpu 3: call_rcu(0x123): rcu protected struct added to
+> > rdp->nxtlist
+> > > step 5: cpu 3: moves a new batch into rdp->curlist, rdp->batch = rcp-
+> > > >cur+1.
+> > > xxxxxxxxxxxxxxx Problem: where is the smp_rmb() that guarantees that
+> > > xxxxxxxxxxxxxxx  update to rcp->cur from step 1 is seen by cpu 3?
+> > > step 6: cpu 3: completes quiet state
+> > > step 7: cpu 3: struct 0x123 destroyed
+> > > 
+> > > step 8: cpu 2: accesses pointer 0x123, but the struct is already
+> > destroyed
+> > > 
+> > > James: Is that the race?
+> > 
+> > 
+> > [James Huang] 
+> > 
+> > Yes, this is the race condition that I am concerned about.
+> > 
+> > 
+> > > 
+> > > I agree with Paul, there are smb_rmb's on cpu 3 between Step 1 and
+> > Step 5:
+> > > Either the test_and_set_bit in tasklet_action for rcu_process_callback
+> > > if step 4 happens before the tasklet or somewhere in the irq handler
+> > > path if step 4 happens in an irq handler that interrupted
+> > > rcu_process_callback.
+> > > 
+> > > Thus theoretically no additional smb_rmb() should be necessary.
+> > > What is missing is proper documentation.
+> > > 
+> > 
+> > 
+> > [James Huang] 
+> > 
+> > Is it true that a smb_rmb() before a read operation (say from variable
+> > X) will guarantee that the read will always retrieve the most "current"
+> > value of X?   I can not find such a guarantee in atomic_ops.txt or
+> > memory-barriers.txt under Linux's documentation directory.  What is
+> > described in both documents is relative ordering, e.g.
+> > 
+> >             CPU1                       CPU2
+> >            ------                     ------
+> >           write X = x1
+> >           smp_wmb()  
+> >           write Y = y1 
+> > 
+> >                                       read Y
+> >                                       smp_rmb()
+> >                                       read X
+> > 
+> > Then CPU2 will read X with a value of x1 if it reads Y with a value of
+> > y1.
+> > 
+> > Please point me to the right section in the document if smp_rmb() does
+> > provide such a guarantee.
 > 
-> Ouch, I assumed you couldn't sleep safely anymore in release_task
-> given it's the function that will free the task structure itself and
-> there was no preempt related action anywhere close to it!
-> delayed_put_task_struct can be called if a quiescent point is reached
-> and any scheduling would exactly allow it to run (it requires quite a
-> bit of a race, with local irq triggering a reschedule and the timer
-> irq invoking the tasklet to run to free the task struct before do_exit
-> finishes and all other cpus in quiescent state too).
+> You are correct, smp_rmb() is about ordering rather than about any sort
+> of immediacy.  For one thing, it can be quite difficult to say exactly what
+> the most "current" version of X might be at a given point in time from
+> the viewpoint of a given CPU -- the different CPUs might well disagree as
+> to what the "current" version is for awhile (though they are guaranteed
+> to come to agreement).
 > 
-> So a corollary question is how can it be safe to call
-> preempt_disable() after call_rcu(delayed_put_task_struct)?
+> > Thanks,
+> > -- James Huang
+> > 
+> > > I'm analyzing the code right now:
+> > > Is it really true that typically a cpu only completes data in every
+> > other
+> > > rcu
+> > > cycle? I.e. that most structures are stored in the rcu callback list
+> > until
+> > > two
+> > > quiet states happened?
 > 
-> Back in sles9 preempt_disable was implemented as
-> _raw_write_unlock(&tasklist_lock) and it happened _before_
-> release_task, and scheduling there wouldn't return because PF_DEAD was
-> already set. If mainline can come back, it will crash for a different
-> reason because the task struct is long gone by the time
-> release_task+schedule() runs. Either ways, still a kernel crashing bug
-> there is. Or is there some magic that prevents call_rcu + schedule to
-> invoke the rcu callback?
+> That is correct.  This does mean that we should be able to leverage
+> locking primitives and memory barriers executed from the scheduling
+> clock interrupt.
+
+And I managed to get some time on a 64-CPU POWER5+ system.  Been running
+rcutorture for about 2.5 hours without a failure (128 reader processes)
+running through not quite 1.5M RCU updates.  Of course, this is not
+proof that the Classic RCU implementation works, but is should provide
+some reassurance.
+
+I will keep it running until I get kicked off (probably rather soon).
+
+						Thanx, Paul
+
+> > > I've tried to track the values of rcp->cur and rdp->batch.
+> > > If next_pending is set, then cpu_quiet() immetiately starts
+> > > the next rcu cycle and a cpu cannot both complete the currently
+> > > pending rcu callbacks and add new callbacks to the next cycle,
+> > > thus a cpu only takes part in every other rcu cycle.
+> > > 
+> > > The oocalc file is at
+> > > http://www.colorfullife.com/~manfred/rcu.ods
+> > > http://www.colorfullife.com/~manfred/rcu.pdf
+> > > 
+> > > Is that analysis correct? Perhaps the whole code should be rewritten?
 > 
-> So you may need to apply this one too (this one is needed to fix the
-> second bug, my previous patch is needed after applying this one):
-
-thinking what happened once already, I think this would be more
-debuggable but maybe not... dunno.
-
-Signed-off-by: Andrea Arcangeli <andrea@suse.de>
-
-diff --git a/kernel/exit.c b/kernel/exit.c
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -841,6 +841,14 @@ static void exit_notify(struct task_stru
- 
- 	write_unlock_irq(&tasklist_lock);
- 
-+	/*
-+	 * Task struct can go away at the first schedule if this was a
-+	 * self reaping task after calling release_task. Scheduling is
-+	 * forbidden until do_exit finishes.
-+	 */
-+	preempt_disable();
-+	tsk->state = TASK_DEAD;
-+
- 	/* If the process is dead, release it - nobody will wait for it */
- 	if (state == EXIT_DEAD)
- 		release_task(tsk);
-@@ -1042,10 +1050,7 @@ fastcall NORET_TYPE void do_exit(long co
- 	if (tsk->splice_pipe)
- 		__free_pipe_info(tsk->splice_pipe);
- 
--	preempt_disable();
- 	/* causes final put_task_struct in finish_task_switch(). */
--	tsk->state = TASK_DEAD;
--
- 	schedule();
- 	BUG();
- 	/* Avoid "noreturn function does return".  */
-
+> I believe that the sequencing in spreadsheet is correct (and thank
+> you very much for going through it!!!), but it seems to be silent on
+> memory-barrier issues.
+> 
+> I also believe that Gautham's new CPU-hotplug setup will make
+> it possible to simplify the code quite a bit.  And given that the
+> grace-period-detection code is not on any sort of hot code path, it should
+> be possible to use a less-aggressive design, perhaps one using straight
+> locking to guard the shared structures.  Also, we are working in the
+> -rt implementation on a scheme that allows CPUs to stay asleep through
+> a grace period without the heavy overhead that is otherwise required to
+> interact with them.  The trick is to maintain a per-CPU counter that is
+> incremented on each entry and exit to low-power state.  But I would like
+> to get this right in -rt before trying it in Classic RCU.  ;-)
+> 
+> 						Thanx, Paul
