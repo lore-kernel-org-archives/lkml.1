@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbXK1M3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbXK1Mbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759928AbXK1M3f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 07:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbXK1M31
+	id S1760793AbXK1Mbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 07:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbXK1Mbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 07:29:27 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:37250 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbXK1M30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 07:29:26 -0500
-Date: Wed, 28 Nov 2007 13:29:16 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Marcel Holtmann <marcel@holtmann.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: m68k build failure
-Message-ID: <20071128132916.125e72ec@poseidon.drzeus.cx>
-In-Reply-To: <20071128092856.GV8181@ftp.linux.org.uk>
-References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org>
-	<20071128094856.056c0a3f@poseidon.drzeus.cx>
-	<20071128010056.85703a34.akpm@linux-foundation.org>
-	<20071128092856.GV8181@ftp.linux.org.uk>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Wed, 28 Nov 2007 07:31:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:29805 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbXK1Mbc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 07:31:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=ikQSEp4mEcLqNU2hHL7pYDKtSVsM2K7BDFPLIXTOPxklaO5UKmCLulqcHSeiAB016eNYXIgKGOV7GuBvoR7SjtliTsIhQbjK29m6VrLOLgcLnn64yqMPhqUxNmYrfhSQjn4E04M8kgmZNPbvqze6BmR7g5kI3qA+tipwYKlY4bg=
+Date: Wed, 28 Nov 2007 13:31:32 +0100
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: git guidance
+Message-Id: <20071128133132.012a112a.Kristoffer.ericson@gmail.com>
+In-Reply-To: <474D4FC4.6050700@imap.cc>
+References: <474C9B31.8000408@imap.cc>
+	<20071127235511.bd9557f0.Kristoffer.ericson@gmail.com>
+	<474D4FC4.6050700@imap.cc>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-29526-1196252964-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wed, 28 Nov 2007 12:23:48 +0100
+Tilman Schmidt <tilman@imap.cc> wrote:
 
---=_hera.drzeus.cx-29526-1196252964-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> Kristoffer Ericson schrieb:
+> > Google is your friend.
+> 
+> Sigh.
+> 
+> In case you didn't guess, I *have* of course searched Google,
+> and not just that. I thought the wording of my request would
+> have made that sufficiently clear. Do I really have to add the
+> phrase "Yes, I have searched Google!" to my sig?
+> 
+A visit to #git on freenode.net would clear up any problems you might have, thats all Im saying.
 
-On Wed, 28 Nov 2007 09:28:56 +0000
-Al Viro <viro@ftp.linux.org.uk> wrote:
-
->=20
-> Eh...  m68k has 16bit alignment for unsigned long. =20
->=20
-> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_deviceta=
-ble.h
-> --- a/include/linux/mod_devicetable.h
-> +++ b/include/linux/mod_devicetable.h
-> @@ -343,7 +343,8 @@ struct sdio_device_id {
->  	__u8	class;			/* Standard interface or SDIO_ANY_ID */
->  	__u16	vendor;			/* Vendor or SDIO_ANY_ID */
->  	__u16	device;			/* Device ID or SDIO_ANY_ID */
-> -	kernel_ulong_t driver_data;	/* Data private to the driver */
-> +	kernel_ulong_t driver_data	/* Data private to the driver */
-> +		__attribute__((aligned(sizeof(kernel_ulong_t))));
->  };
-> =20
->  /* SSB core, see drivers/ssb/ */
-
-Unfortunately, that just papers over the symptom and doesn't solve the unde=
-rlying issue. If you cross-compile on/for an arch with byte alignment, then=
- the issue is back. Or one that uses 4-byte alignment even for u16.
-
-Is there no directive we can stick in there that forces a reasonable alignm=
-ent (e.g. alignment =3D=3D sizeof(type)) independently of arch?
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-29526-1196252964-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHTV8c7b8eESbyJLgRAsTfAKCZUNtZStWBTsusyN7cWBlghP/v8QCg6NZH
-g9xsS7bKyJJn4Bc3HKVF7aQ=
-=VON8
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-29526-1196252964-0001-2--
+> -- 
+> Tilman Schmidt                    E-Mail: tilman@imap.cc
+> Bonn, Germany
+> Yes, I have searched Google!
+> 
+> 
