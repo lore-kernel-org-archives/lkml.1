@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbXK1COl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbXK1C3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbXK1COl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 21:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759586AbXK1COb
+	id S1760637AbXK1C3y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 21:29:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759867AbXK1C3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 21:14:31 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:16219 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759581AbXK1COa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 21:14:30 -0500
-X-Greylist: delayed 727 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Nov 2007 21:14:30 EST
-Message-ID: <474CCBF0.5060809@hp.com>
-Date: Tue, 27 Nov 2007 18:01:20 -0800
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Tue, 27 Nov 2007 21:29:40 -0500
+Received: from ozlabs.org ([203.10.76.45]:41088 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759808AbXK1C3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 21:29:39 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch specific percpu setup
+Date: Wed, 28 Nov 2007 12:36:01 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, Ben Elliston <bje@air.net.au>
+References: <20071127001407.859743255@sgi.com> <200711271530.47696.rusty@rustcorp.com.au> <Pine.LNX.4.64.0711271013130.2310@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711271013130.2310@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Dave Jones <davej@redhat.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-References: <20071122343.446909000@suse.de> <adatznarrzc.fsf@cisco.com>	<200711261228.15155.rusty@rustcorp.com.au>	<20071126102533.1c774870@freepuppy.rosehill.pdx.hemminger.net>	<20071127190037.GB30057@redhat.com>	<20071127210942.GF3406@stusta.de> <474C88EB.9040300@hp.com> <20071127213837.GG3406@stusta.de>
-In-Reply-To: <20071127213837.GG3406@stusta.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711281236.02014.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Nov 27, 2007 at 01:15:23PM -0800, Rick Jones wrote:
-> 
->>>The real problem is that these drivers are not in the upstream kernel.
->>>
->>>Are there common reasons why these drivers are not upstream?
->>
->>One might be that upstream has not accepted them.  Anything doing or 
->>smelling of TOE comes to mind right away.
-> 
-> 
-> Which modules doing or smelling of TOE do work with unmodified vendor 
-> kernels?
+On Wednesday 28 November 2007 05:14:47 Christoph Lameter wrote:
+> On Tue, 27 Nov 2007, Rusty Russell wrote:
+> > Have you considered moving x86-64's setup_per_cpu_areas into generic
+> > code? It's a bit messier because some archs might not have set up NUMA
+> > stuff yet, but it's logically generic...
+>
+> Yes that will happen later. This is just the early cleanup work. I
+> plan to generally bring the two x86 arches in line. The pda will be
+> folded into the per cpu area and after that its easy to do.
 
-At the very real risk of further demonstrating my Linux vocabulary 
-limitations, I believe there is a "Linux Sockets Acceleration" 
-module/whatnot for NetXen and related 10G NICs, and a cxgb3_toe (?) 
-module for Chelsio 10G NICs.
+Unfortunately, we tried to get rid of the x86-64 pda (like i386) but you lose 
+the ability to use the stack protection config option.  That's because it 
+assumes that gs:0x68 (or something) is the stack canary; we need a YA gcc 
+change to make this gs:__builtin_stack_canary_off (where gcc can emit 
+__builtin_stack_canary_off as a weak absolute symbol, so we can override it 
+for the kernel.
 
-rick jones
+Cheers,
+Rusty.
