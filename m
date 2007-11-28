@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbXK1WQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbXK1WRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760301AbXK1WQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbXK1WQK
+	id S1760756AbXK1WRJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbXK1WQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:16:10 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60143 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757621AbXK1WQI (ORCPT
+	Wed, 28 Nov 2007 17:16:56 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:11448 "EHLO
+	mail14-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756949AbXK1WQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:16:08 -0500
-Date: Wed, 28 Nov 2007 22:12:38 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm2: Result: hostbyte=0x01
- driverbyte=0x00\nend_request: I/O error
-Message-ID: <20071128221238.4a5ee8bb@the-village.bc.nu>
-In-Reply-To: <20071128134036.417b3def.akpm@linux-foundation.org>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<20071128200130.GA13361@martell.zuzino.mipt.ru>
-	<20071128134036.417b3def.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Nov 2007 17:16:55 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <474DE8CF.80305@am.sony.com>
+Date: Wed, 28 Nov 2007 14:16:47 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/7] ps3: Make bus_id and dev_id u64
+References: <20071128143142.580732000@pademelon.sonytel.be> <20071128143438.096659000@pademelon.sonytel.be>
+In-Reply-To: <20071128143438.096659000@pademelon.sonytel.be>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Nov 2007 22:16:49.0224 (UTC) FILETIME=[5ED78C80:01C8320C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > [  225.378426] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.378659] end_request: I/O error, dev sdb, sector 141295703
-> > [  225.390133] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.391988] end_request: I/O error, dev sdb, sector 141295703
-> > [  225.392463] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.392625] end_request: I/O error, dev sdb, sector 141295703
-> > [  225.392999] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.393161] end_request: I/O error, dev sdb, sector 141295703
-> > [  225.393571] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.393731] end_request: I/O error, dev sdb, sector 141295703
-> > [  225.394382] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.394544] end_request: I/O error, dev sdb, sector 141295703
-> > [  225.395247] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-> > [  225.395412] end_request: I/O error, dev sdb, sector 141295703
+Geert Uytterhoeven wrote:
+> ps3: Make bus_id and dev_id u64.
 > 
-> I don't know whether this failure was a scsi thing or an ata thing?
+> These IDs are 64-bit in the repository, and the special storage notification
+> device has a device ID of ULONG_MAX.
+> 
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> ---
+>  arch/powerpc/platforms/ps3/device-init.c |    4 ++--
+>  arch/powerpc/platforms/ps3/mm.c          |    8 ++++----
+>  arch/powerpc/platforms/ps3/platform.h    |   12 ++++++------
+>  arch/powerpc/platforms/ps3/repository.c  |   21 ++++++++-------------
+>  arch/powerpc/platforms/ps3/system-bus.c  |   14 +++++++-------
+>  drivers/net/ps3_gelic_net.c              |    4 ++--
+>  include/asm-powerpc/ps3.h                |    4 ++--
+>  7 files changed, 31 insertions(+), 36 deletions(-)
+> 
 
-The ATA layer would print diagnostics if it failed the command so I'm a
-bit baffled by the report. It looks like the SCSI mid layer rejected it
-before we even got it ?
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
+I saw where 0 passed as a pointer was changed to NULL in your
+patch [7] ps3: denoise arch/powerpc/platforms/ps3/repository.c,
+so this looks good.
+
+-Geoff
+
+
