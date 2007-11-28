@@ -1,127 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXK1R7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbXK1SAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbXK1R7g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 12:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXK1R7Z
+	id S1755524AbXK1SAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 13:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXK1SA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 12:59:25 -0500
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:23401 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbXK1R7W (ORCPT
+	Wed, 28 Nov 2007 13:00:26 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41978 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbXK1SAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 12:59:22 -0500
-Date: Wed, 28 Nov 2007 18:30:36 +0100
-From: Ursula Braun <ubraun@linux.vnet.ibm.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Frans Pop <elendil@planet.nl>
-cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ursula Braun <braunu@de.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Peter Tiedemann <ptiedem@de.ibm.com>
-Subject: Re: [s390] networking related oops during boot on Hercules (was:
- build failure)
-Message-ID: <AD9E4C189DF557AADA3F9A70@USCHI.boeblingen.de.ibm.com>
-In-Reply-To: <200711281718.48661.borntraeger@de.ibm.com>
-References: <200711281127.30051.elendil@planet.nl>
- <200711281151.58236.borntraeger@de.ibm.com>
- <200711281324.02748.elendil@planet.nl>
- <200711281718.48661.borntraeger@de.ibm.com>
-X-Mailer: Mulberry/4.0.8 (Win32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 13:00:25 -0500
+Date: Wed, 28 Nov 2007 17:54:37 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Jean Delvare <khali@linux-fr.org>, Adrian Bunk <bunk@kernel.org>,
+       i2c@lm-sensors.org, Lennert Buytenhek <buytenh@wantstofly.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [2.6 patch] some overdue I2C driver removal
+Message-ID: <20071128175437.GA1774@flint.arm.linux.org.uk>
+References: <20071024162528.GX30533@stusta.de> <20071024164347.GN4003@csclub.uwaterloo.ca> <20071128112357.3828d469@hyperion.delvare> <20071128173022.GD2308@csclub.uwaterloo.ca> <9e4733910711280943t75564912m805cfdb2fe099528@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <9e4733910711280943t75564912m805cfdb2fe099528@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans,
+On Wed, Nov 28, 2007 at 12:43:00PM -0500, Jon Smirl wrote:
+> Hasn't their been a one year notice that these drivers were going to
+> be removed? How about removing them and putting them into a tarball on
+> the i2c web site with a note explaining about how they need to be
+> updated to use the gpio driver? Then if someone really wants to use
+> the old drivers they can use them out of tree.
 
-yes, we are aware of this problem. Our plan is to introduce alloc_netdev() 
-for ctc-devices as described in Documentation/networking/netdevices.txt.
-Thanks, Christian, for your interim solution.
+It hasn't been a year - they were added to feature-removal on May 1st.
 
---On Mittwoch, 28. November 2007 17:18 +0100 Christian Borntraeger 
-<borntraeger@de.ibm.com> wrote:
+However, not all the relevant people were made aware of that fact.
+Yes, Deepak was copied on that message, but I think he's moved on to
+other things.  On the other hand, Lennert (who is listed as IXP2000
+maintainer) is completely unaware of these drivers being marked
+obsolete.
 
-> Am Mittwoch, 28. November 2007 schrieb Frans Pop:
-> [...]
->> During boot I get the following oops in the Hercules emulator.
->> 2.6.22 runs fine on Hercules; I've not tried .23 on it.
-> [...]
->> ------------  cut here !------------
->> kernel BUG at net/core/dev.c:852
->> + illegal operation: 0001  #1!
->> Modules linked in: ctc fsm tape_34xx cu3088 tape ccwgroup tape_class
->> dm_mirror d m_snapshot dm_mod dasd_eckd_mod dasd_mod
->> CPU:    1    Not tainted
->> Process hwup (pid: 990, task: 0f034c00, ksp: 0f305be0)
->> Krnl PSW : 070c0000 8019d0da (dev_alloc_name+0x1e/0x58)
->>            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0
->> Krnl GPRS: 00132700 00000000 0f398800 0f398800
->>            00000000 80132796 0f305d7a 00000002
->>            0f1ada00 0f3c1f08 0f3c1f00 0f398800
->>            0f398800 8019d0c2 0f305ca0 0f305c30
->> Krnl Code: 8019d0cc: f000bf1f2460       srp     3871(1,%r11),1120(%r2),0
->>            8019d0d2: a7740004           brc     7,8019d0da
->>            8019d0d6: a7f40001           brc     15,8019d0d8
->>           > 8019d0da: 5810d04e           l       %r1,78(%r13)
->>            8019d0de: 41a0f060           la      %r10,96(%r15)
->>            8019d0e2: 5820c460           l       %r2,1120(%r12)
->>            8019d0e6: 184a               lr      %r4,%r10
->>            8019d0e8: 0de1               basr    %r14,%r1
->> Call Trace:
->> ( <0000000000000000>! _ehead+0xfffee000/0x80)
->>   <000000000019d710>! register_netdev+0x34/0x6c
->>   <00000000108a561e>! ctc_new_device+0x3ee/0x590  ctc!
->>   <0000000010861398>! ccwgroup_online_store+0xb0/0x13c  ccwgroup!
->>   <00000000000c962a>! sysfs_write_file+0xca/0x130
->>   <00000000000840e6>! vfs_write+0x92/0x128
->>   + <00000000000847e8>! sys_write+0x40/0x70
->>   <000000000002098a>! sysc_do_restart+0x12/0x16
->>   <0000000077f0abaa>! 0x77f0abaa
->
->
-> This seems to be related to the new network namespace code by Eric
-> Biederman (CCed). Can you try the following (untested) patch? I also
-> CCed Ursula and Peter as they know the ctc code better than me.
->
->
-> CC: Eric W. Biederman <ebiederm@xmission.com>
-> CC: Ursula Braun <braunu@de.ibm.com>
-> CC: Peter Tiedemann <ptiedem@de.ibm.com>
-> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
->
-> ---
->  drivers/s390/net/ctcmain.c |    2 ++
->  1 file changed, 2 insertions(+)
->
-> Index: linux-2.6/drivers/s390/net/ctcmain.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/s390/net/ctcmain.c
-> +++ linux-2.6/drivers/s390/net/ctcmain.c
-> @@ -56,6 +56,7 @@
->  #include <linux/skbuff.h>
->  #include <linux/ctype.h>
->  #include <net/dst.h>
-> +#include <net/net_namespace.h>
->
->  #include <asm/io.h>
->  #include <asm/ccwdev.h>
-> @@ -2823,6 +2824,7 @@ ctc_init_netdevice(struct net_device * d
->  	dev->type = ARPHRD_SLIP;
->  	dev->tx_queue_len = 100;
->  	dev->flags = IFF_POINTOPOINT | IFF_NOARP;
-> +	dev->nd_net = &init_net;
->  	return dev;
->  }
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
