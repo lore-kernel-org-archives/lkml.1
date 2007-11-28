@@ -1,174 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbXK1Qya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbXK1Q6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761438AbXK1Qya (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbXK1QyX
+	id S1761450AbXK1Q6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbXK1Q6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:54:23 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43557 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbXK1QyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:54:22 -0500
-Subject: Re: [RFC PATCH] LTTng instrumentation mm (using page_to_pfn)
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-In-Reply-To: <20071128140953.GA8018@Krystal>
-References: <20071113193349.214098508@polymtl.ca>
-	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
-	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
-	 <20071116143019.GA16082@Krystal> <1195495485.27759.115.camel@localhost>
-	 <20071128140953.GA8018@Krystal>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 08:54:16 -0800
-Message-Id: <1196268856.18851.20.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 11:58:09 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44656 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759573AbXK1Q6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:58:07 -0500
+To: mingo@elte.hu
+CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20071128160501.GA7986@elte.hu> (message from Ingo Molnar on Wed,
+	28 Nov 2007 17:05:01 +0100)
+Subject: Re: -rt doesn't compile for UML
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu> <20071128154152.GA742@elte.hu> <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu> <20071128160501.GA7986@elte.hu>
+Message-Id: <E1IxQEX-0007Ji-TV@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 28 Nov 2007 17:57:57 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 09:09 -0500, Mathieu Desnoyers wrote:
-> ===================================================================
-> --- linux-2.6-lttng.orig/mm/filemap.c	2007-11-28 08:38:46.000000000 -0500
-> +++ linux-2.6-lttng/mm/filemap.c	2007-11-28 08:59:05.000000000 -0500
-> @@ -514,9 +514,13 @@ void fastcall wait_on_page_bit(struct pa
->  {
->  	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
-> 
-> +	trace_mark(mm_filemap_wait_start, "pfn %lu", page_to_pfn(page));
-> +
->  	if (test_bit(bit_nr, &page->flags))
->  		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
->  							TASK_UNINTERRUPTIBLE);
-> +
-> +	trace_mark(mm_filemap_wait_end, "pfn %lu", page_to_pfn(page));
->  }
->  EXPORT_SYMBOL(wait_on_page_bit);
+> so you can define irqs_off_flags to always-0 and you should be able to 
+> get pretty good traces still. It should have no functional impact.
 
-I've got some small nits with this.  I guess I just wish that if we're
-going to sprinkle hooks all over that we'd have those hooks be as useful
-as possible for people who have to look at them on a daily basis.
+OK, managed to make it compile, but then something goes wrong in
+tracer_alloc_bootmem().
 
-Do you also want to put in the page bit which is being waited on?
+Jeff?
 
-> 
-> Index: linux-2.6-lttng/mm/memory.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/mm/memory.c	2007-11-28 08:42:09.000000000 -0500
-> +++ linux-2.6-lttng/mm/memory.c	2007-11-28 09:02:57.000000000 -0500
-> @@ -2072,6 +2072,7 @@ static int do_swap_page(struct mm_struct
->  	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
->  	page = lookup_swap_cache(entry);
->  	if (!page) {
-> +		trace_mark(mm_swap_in, "pfn %lu", page_to_pfn(page));
->  		grab_swap_token(); /* Contend for token _before_ read-in */
->   		swapin_readahead(entry, address, vma);
->   		page = read_swap_cache_async(entry, vma, address);
+(attaching patch, which goes on top of
+latency-tracer-v2.6.24-rc2-git5-combo.patch, which goes on top of
+2.6.24-rc3)
 
-How about putting the swap file number and the offset as well?
+Miklos
 
-> @@ -2526,30 +2527,45 @@ unlock:
->  int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
->  		unsigned long address, int write_access)
->  {
-> +	int res;
->  	pgd_t *pgd;
->  	pud_t *pud;
->  	pmd_t *pmd;
->  	pte_t *pte;
-> 
-> +	trace_mark(mm_handle_fault_entry, "address %lu ip #p%ld",
-> +		address, KSTK_EIP(current));
 
-For knowing this one, the write access can be pretty important.  It can
-help you find copy-on-write situations as well as some common bugs that
-creep in here. 
 
->  	__set_current_state(TASK_RUNNING);
-> 
->  	count_vm_event(PGFAULT);
-> 
-> -	if (unlikely(is_vm_hugetlb_page(vma)))
-> -		return hugetlb_fault(mm, vma, address, write_access);
-> +	if (unlikely(is_vm_hugetlb_page(vma))) {
-> +		res = hugetlb_fault(mm, vma, address, write_access);
-> +		goto end;
-> +	}
+#0  0xffffe410 in __kernel_vsyscall ()
+#1  0xf7e498f5 in raise () from /lib/libc.so.6
+#2  0xf7e4b1e1 in abort () from /lib/libc.so.6
+#3  0x0806ba54 in os_dump_core () at arch/um/os-Linux/util.c:147
+#4  0x0805d009 in panic_exit (self=0x8239594, unused1=0, unused2=0x8250360)
+    at arch/um/kernel/um_arch.c:370
+#5  0x080927d7 in notifier_call_chain (nl=0x824032c, val=0, v=0x8250360, nr_to_call=-1,
+    nr_calls=0x0) at kernel/notifier.c:69
+#6  0x080928b8 in __atomic_notifier_call_chain (nh=0x824031c, val=0, v=0x8250360,
+    nr_to_call=-1, nr_calls=0x0) at kernel/notifier.c:158
+#7  0x080928ee in atomic_notifier_call_chain (nh=0x824031c, val=0, v=0x8250360)
+    at kernel/notifier.c:167
+#8  0x08077e17 in panic (fmt=0x81f82b6 "Out of memory") at kernel/panic.c:101
+#9  0x0804f6d0 in __alloc_bootmem (size=33554432, align=128, goal=4294967295)
+    at mm/bootmem.c:442
+#10 0x0804ea0d in tracer_alloc_bootmem (size=33554432) at kernel/latency_trace.c:2690
+#11 0x0804ea78 in init_tracer () at kernel/latency_trace.c:2718
+#12 0x08049668 in start_kernel () at init/main.c:590
+#13 0x0804b00b in start_kernel_proc (unused=0x0) at arch/um/kernel/skas/process.c:40
+#14 0x08069672 in run_kernel_thread (fn=0x804afda <start_kernel_proc>, arg=0x0,
+    jmp_ptr=0x823922c) at arch/um/os-Linux/process.c:264
+#15 0x0805a22d in new_thread_handler () at arch/um/kernel/process.c:153
+#16 0x00000000 in ?? ()
 
-I think you should also add tracing to the hugetlb code while you're at
-it.  Those poor fellows seem to be always getting left out these
-days. :)
 
->  	pgd = pgd_offset(mm, address);
->  	pud = pud_alloc(mm, pgd, address);
-> -	if (!pud)
-> -		return VM_FAULT_OOM;
-> +	if (!pud) {
-> +		res = VM_FAULT_OOM;
-> +		goto end;
-> +	}
->  	pmd = pmd_alloc(mm, pud, address);
-> -	if (!pmd)
-> -		return VM_FAULT_OOM;
-> +	if (!pmd) {
-> +		res = VM_FAULT_OOM;
-> +		goto end;
-> +	}
->  	pte = pte_alloc_map(mm, pmd, address);
-> -	if (!pte)
-> -		return VM_FAULT_OOM;
-> +	if (!pte) {
-> +		res = VM_FAULT_OOM;
-> +		goto end;
-> +	}
-> 
-> -	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-> +	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-> +end:
-> +	trace_mark(mm_handle_fault_exit, MARK_NOARGS);
-> +	return res;
->  }
-> 
->  #ifndef __PAGETABLE_PUD_FOLDED
-> Index: linux-2.6-lttng/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/mm/page_alloc.c	2007-11-28 08:38:46.000000000 -0500
-> +++ linux-2.6-lttng/mm/page_alloc.c	2007-11-28 09:05:36.000000000 -0500
-> @@ -519,6 +519,9 @@ static void __free_pages_ok(struct page 
->  	int i;
->  	int reserved = 0;
-> 
-> +	trace_mark(mm_page_free, "order %u pfn %lu",
-> +		order, page_to_pfn(page));
-> +
->  	for (i = 0 ; i < (1 << order) ; ++i)
->  		reserved += free_pages_check(page + i);
->  	if (reserved)
-> @@ -1639,6 +1642,8 @@ fastcall unsigned long __get_free_pages(
->  	page = alloc_pages(gfp_mask, order);
->  	if (!page)
->  		return 0;
-> +	trace_mark(mm_page_alloc, "order %u pfn %lu",
-> +		order, page_to_pfn(page));
->  	return (unsigned long) page_address(page);
->  }
-> 
-> Index: linux-2.6-lttng/mm/page_io.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/mm/page_io.c	2007-11-28 08:38:47.000000000 -0500
-> +++ linux-2.6-lttng/mm/page_io.c	2007-11-28 08:52:14.000000000 -0500
-> @@ -114,6 +114,7 @@ int swap_writepage(struct page *page, st
->  		rw |= (1 << BIO_RW_SYNC);
->  	count_vm_event(PSWPOUT);
->  	set_page_writeback(page);
-> +	trace_mark(mm_swap_out, "pfn %lu", page_to_pfn(page));
->  	unlock_page(page);
->  	submit_bio(rw, bio);
 
-I'd also like to see the swap file number and the location in swap for
-this one.  
-
--- Dave
-
+----------------
+Index: linux/include/asm-um/rtc.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/asm-um/rtc.h	2007-11-28 17:41:42.000000000 +0100
+@@ -0,0 +1 @@
++/* stub for the latency tracer */
+Index: linux/include/asm-um/irqflags.h
+===================================================================
+--- linux.orig/include/asm-um/irqflags.h	2007-11-28 17:36:21.000000000 +0100
++++ linux/include/asm-um/irqflags.h	2007-11-28 17:41:42.000000000 +0100
+@@ -1,6 +1,9 @@
+ #ifndef __UM_IRQFLAGS_H
+ #define __UM_IRQFLAGS_H
+ 
+-/* Empty for now */
++static inline int raw_irqs_disabled_flags(unsigned long flags)
++{
++	return 0;
++}
+ 
+ #endif
+Index: linux/kernel/latency_trace.c
+===================================================================
+--- linux.orig/kernel/latency_trace.c	2007-11-28 17:41:35.000000000 +0100
++++ linux/kernel/latency_trace.c	2007-11-28 17:55:20.000000000 +0100
+@@ -26,6 +26,7 @@
+ #include <asm/unistd.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/rtc.h>
++#include <asm/irqflags.h>
+ #include <linux/stacktrace.h>
+ 
+ #ifndef DEFINE_RAW_SPINLOCK
+@@ -59,6 +60,8 @@ static unsigned long notrace cycles_to_u
+ 	delta = mulhwu(tb_to_us, delta);
+ #elif defined(CONFIG_ARM)
+ 	delta = mach_cycles_to_usecs(delta);
++#elif defined(CONFIG_UML)
++	/* Dunno */
+ #else
+ 	#error Implement cycles_to_usecs.
+ #endif
+@@ -655,7 +658,7 @@ again:
+ 	entry->cpu = cpu;
+ #endif
+ 	entry->flags = (irqs_off() ? TRACE_FLAG_IRQS_OFF : 0) |
+-		(irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_HARD_OFF : 0)|
++		(raw_irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_HARD_OFF : 0)|
+ 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
+ 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
+ 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0) |
+@@ -786,6 +789,7 @@ void notrace trace_special_sym(void)
+ 	if (!trace_enabled || !stackframe_tracing)
+ 		return;
+ 
++#ifndef CONFIG_UML
+ 	trace.entries = entries;
+ 	trace.skip = 3;
+ 	trace.max_entries = STACK_ENTRIES;
+@@ -802,6 +806,7 @@ void notrace trace_special_sym(void)
+ 					entries[1], entries[2], entries[3]);
+ 	___trace(TRACE_SPECIAL_SYM, entries[4], 0,
+ 					entries[5], entries[6], entries[7]);
++#endif
+ }
+ 
+ EXPORT_SYMBOL(trace_special_sym);
