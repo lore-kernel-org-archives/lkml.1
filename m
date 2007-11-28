@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbXK1KyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbXK1K5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760711AbXK1KyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 05:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbXK1Kxx
+	id S1760569AbXK1K5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 05:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbXK1K5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 05:53:53 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:13852 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756404AbXK1Kxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 05:53:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YoIRWzHh/DtZbFQLKDUJhRYYCQQr0EVgOnZz1wcnP/h3b+TNijON5kbDgVuC7c7G+9RSSTioHZTax7G3L3h5dfpKMzzIEbkker8ybnQyGwfrvcem69hDOBldxgn/k9LCX7rHN40wjRH7Yu71VuiphuyR7s9TlWFbNMvg4wiMBvc=
-Message-ID: <aa79d98a0711280253x3d1d28d6qa0cee0b731e807fe@mail.gmail.com>
-Date: Wed, 28 Nov 2007 13:53:46 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
-Cc: PPCML <linuxppc-dev@ozlabs.org>, "Olof Johansson" <olof@lixom.net>,
-       "Paul Mackerras" <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Ishizaki Kou" <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <1196243333.2109.2.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 05:57:15 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49754 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757607AbXK1K5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 05:57:14 -0500
+Date: Wed, 28 Nov 2007 11:59:00 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: murtuja bharmal <murtuja_bharmal@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: Linux 2.6 kernel module compilation without using KBUILD
+Message-ID: <20071128105900.GA16537@uranus.ravnborg.org>
+References: <20071128090046.GA15067@uranus.ravnborg.org> <180651.51647.qm@web36715.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
-	 <1196243333.2109.2.camel@concordia>
+In-Reply-To: <180651.51647.qm@web36715.mail.mud.yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/28/07, Michael Ellerman <michael@ellerman.id.au> wrote:
-> On Mon, 2007-11-26 at 10:46 +0300, Cyrill Gorcunov wrote:
-> > This patch adds checking for NULL value returned to prevent possible
-> > NULL pointer dereference.
-> > Also two unneeded 'return' are removed.
-> >
-> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> > ---
-> > Any comments are welcome.
->
-> I guess it's good to be paranoid, but this is a little verbose:
->
->        wi0 = of_get_property(node, "device-id", NULL);
-> +       if (unlikely((!wi0))) {
-> +               printk(KERN_ERR "PCI: device-id not found.\n");
-> +               goto error;
-> +       }
->        wi1 = of_get_property(node, "vendor-id", NULL);
-> +       if (unlikely((!wi1))) {
-> +               printk(KERN_ERR "PCI: vendor-id not found.\n");
-> +               goto error;
-> +       }
->        wi2 = of_get_property(node, "class-code", NULL);
-> +       if (unlikely((!wi2))) {
-> +               printk(KERN_ERR "PCI: class-code not found.\n");
-> +               goto error;
-> +       }
->        wi3 = of_get_property(node, "revision-id", NULL);
-> +       if (unlikely((!wi3))) {
-> +               printk(KERN_ERR "PCI: revision-id not found.\n");
-> +               goto error;
-> +       }
->
-> Perhaps instead:
->
->        wi0 = of_get_property(node, "device-id", NULL);
->        wi1 = of_get_property(node, "vendor-id", NULL);
->        wi2 = of_get_property(node, "class-code", NULL);
->        wi3 = of_get_property(node, "revision-id", NULL);
->
->       if (!wi0 || !wi1 || !wi2 || !wi3) {
->               printk(KERN_ERR "PCI: Missing device tree properties.\n");
->               goto error;
->       }
+> 
+> My intention is  to just understand whole  
+> process of making kernel module.
 
-Hi Michael, yes that is much better (actually I was doubt about what form of
-which the checking style to use - your form is much compact but mine does
-show where *exactly* the problem appeared). So 'case that is the fake driver
-your form is preferred ;) Ishizaki, could you use Michael's part then?
+The short story....
+kbuild knows that .o files listed with obj-m are modules.
+So if you have:
+   obj-m := foo.o
 
->
->
-> cheers
->
-> --
-> Michael Ellerman
-> OzLabs, IBM Australia Development Lab
->
-> wwweb: http://michael.ellerman.id.au
-> phone: +61 2 6212 1183 (tie line 70 21183)
->
-> We do not inherit the earth from our ancestors,
-> we borrow it from our children. - S.M.A.R.T Person
->
->
+the kbuild will know that it has to build a module named foo.o.
+If foo.o consist of composite objects then kbuild
+is told so using:
+    foo-y := bar.o baz.o
 
-Cyrill
+So in this case kbuild will build bar.o and baz.o and
+use these for the resulting module named foo.
+
+When building baz.o kbuild uses make to search for the source file.
+First it look for baz.c - if it fails it look for baz.s
+Does both fail kbuild give up (there are some corner cases but ignore that).
+
+When foo.o is ready is uses some linker magic to link in version information
+and the end result is foo.ko.
+
+foo.ko has a number of unresolved symbols that are:
+1) during build time checked if kernel or other modules define them
+2) during load time they are resolved
+
+The above is general stuff - if you need more details please be specific.
+
+	Sam
