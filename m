@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXK1WFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbXK1WPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759935AbXK1WFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbXK1WFo
+	id S1759295AbXK1WPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXK1WOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:05:44 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:40938 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbXK1WFn (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:05:43 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm2 - *not* an insta-brick on my Latitude...
-In-Reply-To: Your message of "Wed, 28 Nov 2007 03:41:40 PST."
-             <20071128034140.648383f0.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196287538_3874P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 28 Nov 2007 17:05:38 -0500
-Message-ID: <5903.1196287538@turing-police.cc.vt.edu>
+	Wed, 28 Nov 2007 17:14:52 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:41988 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754391AbXK1WOw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 17:14:52 -0500
+Date: Wed, 28 Nov 2007 17:14:51 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Raymano Garibaldi <raymano@faunos.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+In-Reply-To: <1618816c0711272202ydd8f1aeib98672d91356368a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0711281711210.3641-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196287538_3874P
-Content-Type: text/plain; charset=us-ascii
+On Tue, 27 Nov 2007, Raymano Garibaldi wrote:
 
-On Wed, 28 Nov 2007 03:41:40 PST, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm2/
+> Hi Alan,
+> 
+> Here's what I got after compiling kernel with CONFIG_USB_PERSIST and
+> CONFIG_USB_DEBUG both enabled. The attached files are:
+> 
+> config - shows the .config file used when compiling kernel 2.6.23.9
+> 
+> sysandmount.txt - shows mounts and the state of persist for all usb
+> devices right before suspending.
+> 
+> dmesg_attached.txt - dmesg right after resuming when the USB device
+> remained attached while machine was suspend
+> 
+> dmesg_detachedandreattached.txt - dmesg right after resuming when the
+> USB device was detached while suspended and then reattached before
+> resuming.
 
-This one built and booted cleanly on the first try.  Whatever was in the -mm1
-version of git-x86.patch that gave it indigestion is gone....
+This all looks okay.  Earlier you wrote:
 
+> I have tried this. Simply turning off CONFIG_USB_PERSIST doesn't work.
+> In this case the USB drive file system is unmounted on resume, even if
+> the drive remained plugged in during suspend.
 
---==_Exmh_1196287538_3874P
-Content-Type: application/pgp-signature
+But the logs you just posted show that the filesystem _does_ remain 
+mounted after resume, provided you don't unplug the drive.  At least 
+that's what it looked like -- it was hard to tell for sure because each 
+logfile contained multiple suspend/resume cycles with varying outcomes.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Alan Stern
 
-iD8DBQFHTeYycC3lWbTT17ARAinbAJ9kgOe9Ac6P3YbjZDtW6bYOKmkPCACgsTk4
-3i8kxQNViAznc7GOy9Uj8gI=
-=/fA6
------END PGP SIGNATURE-----
-
---==_Exmh_1196287538_3874P--
