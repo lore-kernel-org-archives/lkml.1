@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbXK1IKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbXK1IQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbXK1IKe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 03:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXK1IKY
+	id S1756492AbXK1IQl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 03:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXK1IQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 03:10:24 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:34634 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751726AbXK1IKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 03:10:24 -0500
-Date: Wed, 28 Nov 2007 09:10:31 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Question regarding mutex locking
-Message-ID: <20071128081031.GF20238@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Larry Finger <Larry.Finger@lwfinger.net>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <474CF06C.8020208@lwfinger.net>
+	Wed, 28 Nov 2007 03:16:33 -0500
+Received: from web36708.mail.mud.yahoo.com ([209.191.85.42]:47213 "HELO
+	web36708.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752096AbXK1IQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 03:16:33 -0500
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 03:16:33 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=B15zHbACT55sSKPJrOenBwf6vfRGh4yYOcfHiEDJ/HOqbn7SRIO/qU6NiCc/Te6ka9yqtXf7OKv4uxXkAuooDvOmebDPR3WXQmqOWrMggea1zrIJmX2yhmlFDlIWnkVcRf5aEaYKNFbvMo85JugCITAzqW7lLt8jyIFuVylqpv4=;
+X-YMail-OSG: BnFrQ98VM1mFlQNXk26HiItFwExthxUqgd9L24I36Pclg6n5qDro0s58byon3ud.tcnNJf.kbXZyHXDQKBf.odh7SaUVrJLQH5orBhBfsB2e9XuxvFg-
+Date: Wed, 28 Nov 2007 00:09:51 -0800 (PST)
+From: murtuja bharmal <murtuja_bharmal@yahoo.com>
+Subject: Linux 2.6 kernel module compilation without using KBUILD
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474CF06C.8020208@lwfinger.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <299272.92165.qm@web36708.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, Nov 27, 2007 at 10:37:00PM -0600 Larry Finger ha dit:
+Hello All,
+   
+I want to compile external linux kernel module without
+using KBUILD.
+I tried to find out whole process of kernel module
+compilation using KBUILD after enabling flag 
+KBUILD_VERBOSE=1.
+   
+If we look at 2.6 kernel module building process.
+   
+1. gcc is making ".hello.o.d" and ".tmp_hello.o"
+   from "hello.c" file.
+2. Creating "hello.o" file using ".hello.o.d"
+   and ".tmp_hello.o". 
+3. Running Script "scripts/mod/modpost" to
+   create "hello.mod.c" using “hello.o”.
+4. gcc is making "hello.mod.o" after compiling 
+   "hello-mod.c" file.
+5. finally "ld" is linking "hello.o"
+   and "hello.mod.o" and making "hello.ko". 
+   
+Step 2 of above process is not very much cleared, how
+it is making hello-2.o from ".hello.o.d" and
+".tmp_hello.o".
 
-> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
-> would the following code be SMP safe?
-> 
-> hold_lock = mutex_trylock()
-> 
-> ...
-> 
-> if (hold_lock)
-> 	mutex_unlock()
+What is ".tmp_hello.o”.
+   
+Do we have any document which describe how to make
+kernel module without using KBUILD.
+   
+Any pointer of information is very helpful for me.
+   
+Thanks 
+Murtuja Bharmal
 
-this is wont work, a mutex must not be released from another
-context than the one that acquired it.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
 
-                Don't walk behind me, I may not lead
-             Don't walk in front of me, I may not follow
-                Just walk beside me and be my friend
-                          (Albert Camus)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+      ____________________________________________________________________________________
+Never miss a thing.  Make Yahoo your home page. 
+http://www.yahoo.com/r/hs
