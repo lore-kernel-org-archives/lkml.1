@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbXK1Aye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbXK1BEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbXK1Aye (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 19:54:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758588AbXK1AyX
+	id S1760153AbXK1BEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 20:04:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbXK1BDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 19:54:23 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:45417 "EHLO tac.ki.iif.hu"
+	Tue, 27 Nov 2007 20:03:50 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:52677 "EHLO tac.ki.iif.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759385AbXK1AyW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 19:54:22 -0500
-From: =?us-ascii?Q?=3D=3Futf-8=3Fq=3FFerenc=5FW=3DC3=3DA1gner=3F=3D?= 
-	<wferi@niif.hu>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, wferi@niif.hu
-Subject: [PATCH 3/3] net/bonding: Purely cosmetic: rename a local variable.
-Date: Wed, 28 Nov 2007 01:54:21 +0100
-Message-ID: <87sl2rjiki.fsf@szonett.ki.iif.hu>
+	id S1750860AbXK1BDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 20:03:49 -0500
+From: Wagner Ferenc <wferi@niif.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: bonding sysfs output
+References: <87tznafjeu.fsf@szonett.ki.iif.hu>
+	<20071125205150.4e49915f.akpm@linux-foundation.org>
+	<87lk8lflzf.fsf@szonett.ki.iif.hu>
+	<20071127004445.a046f791.akpm@linux-foundation.org>
+	<87prxwnh9g.fsf@tac.ki.iif.hu>
+	<20071127021418.8a05d225.akpm@linux-foundation.org>
+Date: Wed, 28 Nov 2007 02:03:44 +0100
+In-Reply-To: <20071127021418.8a05d225.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 27 Nov 2007 02:14:18 -0800")
+Message-ID: <87oddfji4v.fsf@szonett.ki.iif.hu>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Code for rendering multivalue sysfs files occurs three times
-in this module.  Rename 'buffer' to 'buf' in the first, for
-the sake of consistency.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Signed-off-by: Ferenc Wágner <wferi@niif.hu>
----
- drivers/net/bonding/bond_sysfs.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+> On Tue, 27 Nov 2007 10:56:43 +0100 Ferenc Wagner <wferi@niif.hu> wrote:
+>
+>>> - raise patches against the latest Linus tree
+>>> (ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/)
+>> 
+>> I thought it was better to change to git.  Isn't it so?
+>> SubmittingPatches has nothing to say about that...
+>> Can I find collected best practices somewhere?  Which tree, which
+>> branch, how/when to rebase, format-patch, etc...
+>
+> gosh.  Documentation/Submit*,
+> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt,
+> http://linux.yyz.us/patch-format.html, other places.  Probably people have
+> written books about it by now.  But don't sweat it - you're close enough ;)
 
-diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
-index 6bb91e2..5c31f5c 100644
---- a/drivers/net/bonding/bond_sysfs.c
-+++ b/drivers/net/bonding/bond_sysfs.c
-@@ -74,7 +74,7 @@ struct rw_semaphore bonding_rwsem;
-  * "show" function for the bond_masters attribute.
-  * The class parameter is ignored.
-  */
--static ssize_t bonding_show_bonds(struct class *cls, char *buffer)
-+static ssize_t bonding_show_bonds(struct class *cls, char *buf)
- {
- 	int res = 0;
- 	struct bonding *bond;
-@@ -86,13 +86,12 @@ static ssize_t bonding_show_bonds(struct class *cls, char *buffer)
- 			/* not enough space for another interface name */
- 			if ((PAGE_SIZE - res) > 10)
- 				res = PAGE_SIZE - 10;
--			res += sprintf(buffer + res, "++more++ ");
-+			res += sprintf(buf + res, "++more++ ");
- 			break;
- 		}
--		res += sprintf(buffer + res, "%s ",
--			       bond->dev->name);
-+		res += sprintf(buf + res, "%s ", bond->dev->name);
- 	}
--	if (res) buffer[res-1] = '\n'; /* eat the leftover space */
-+	if (res) buf[res-1] = '\n'; /* eat the leftover space */
- 	up_read(&(bonding_rwsem));
- 	return res;
- }
+I wonder where the information got lost...  I miss docs on submitting
+patches from git ONLY.  The general documentation is pretty good and
+helpful, just doesn't treat git (not using git in general, but using
+it for submitting patches to the Linux kernel).  On the other hand
+there's a multitude of repositories to clone times a zillion branches
+to follow.  Which should be the basis of the patches?  That's not very
+clear.
+
+Anyway, find them in my previous mails.  Too bad I realised just after
+the fact that cosmetic changes should go first.  Hope it's mostly OK.
 -- 
-1.4.4.4
-
+Regards,
+Feri.
