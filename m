@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbXK1PwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbXK1P52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761483AbXK1PwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 10:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbXK1PwJ
+	id S1760810AbXK1P52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 10:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbXK1P5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 10:52:09 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:2782 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761175AbXK1PwI (ORCPT
+	Wed, 28 Nov 2007 10:57:20 -0500
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:2479 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757410AbXK1P5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 10:52:08 -0500
-Date: Wed, 28 Nov 2007 16:52:05 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071128165205.30ef426f@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1196253354.3242.40.camel@lov.site>
-References: <20071127230252.GB10038@kroah.com>
-	<20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
-	<1196253354.3242.40.camel@lov.site>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 10:57:19 -0500
+Message-ID: <474D8FD2.4010009@imap.cc>
+Date: Wed, 28 Nov 2007 16:57:06 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Dave Quigley <dpquigl@tycho.nsa.gov>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: git guidance
+References: <474C9B31.8000408@imap.cc>	 <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr> <1196262922.19921.20.camel@moss-terrapins.epoch.ncsc.mil>
+In-Reply-To: <1196262922.19921.20.camel@moss-terrapins.epoch.ncsc.mil>
+X-Enigmail-Version: 0.95.3
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD9593CDFC690E82B2CB89CCA"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 13:35:54 +0100,
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD9593CDFC690E82B2CB89CCA
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, 2007-11-28 at 10:01 +0100, Cornelia Huck wrote:
-> > On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
-> 
-> > > Among other things, kobject_init() sets the kobject's reference count to
-> > > one.  Calling kobject_init() is not sufficient, however. Kobject users
-> > > must, at a minimum, set the name of the kobject; this is the name that will
-> > > be used in sysfs entries. 
-> > 
-> > Unless they don't register their kobject. (But they should always set a
-> > name anyway to avoid funny debug messages, so it is probably a good
-> > idea to call this a "must").
-> 
-> Yeah, we should require it. And kobject_cleanup() needs to be called to
-> free the allocated name, if the object is not already added and needs to
-> be deleted (common in rewinding on error).
+Dave Quigley schrieb:
+> There is a project listed on the kernel.org git page called guilt. I
+> find it very useful. It is much more responsive than stgit and it
+> actually has a git backend which quilt does not.
+>=20
+> On Wed, 2007-11-28 at 00:20 +0100, Jan Engelhardt wrote:
+>> On Nov 27 2007 23:33, Tilman Schmidt wrote:
+>> >
+>> >Well, it did. So now I'm back to keeping a virgin kernel source tree
+>> >alongside my development area in order to produce diffs. That can't
+>> >be right?
+>> >
+>> No, it can't. Use stgit/quilt ;p
 
-Always using kobject_put() should take care of that.
+In which respect would stgit/quilt/guilt help me? At first glance
+they just seem to add another level of complexity.
 
-> 
-> Btw, do you have a good example for unregistered/unnamed kobjects?
+Thanks,
+Tilman
 
-Unfortunately not (I can only think of devices that might never be
-registered).
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Yes, I have searched Google!
+
+
+--------------enigD9593CDFC690E82B2CB89CCA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHTY/YQ3+did9BuFsRAq3WAKCHZ8RuB93Nnc8Mez/060YyK2zkCQCfcxcC
+NqiKG9jUpQykPlXo3bOMmDU=
+=AHNa
+-----END PGP SIGNATURE-----
+
+--------------enigD9593CDFC690E82B2CB89CCA--
