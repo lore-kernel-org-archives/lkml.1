@@ -1,33 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXK1Mix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbXK1MlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760868AbXK1Mix (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 07:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbXK1Mid
+	id S1760250AbXK1MlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 07:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXK1MlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 07:38:33 -0500
-Received: from khc.piap.pl ([195.187.100.11]:35641 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbXK1Mic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 07:38:32 -0500
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-References: <20071125161631.GA21947@stusta.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 28 Nov 2007 13:38:30 +0100
-In-Reply-To: <20071125161631.GA21947@stusta.de> (Adrian Bunk's message of "Sun, 25 Nov 2007 17:16:31 +0100")
-Message-ID: <m3aboy4kah.fsf@maximus.localdomain>
+	Wed, 28 Nov 2007 07:41:09 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:44195 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752069AbXK1MlH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 07:41:07 -0500
+Message-ID: <474D61CF.6080400@linux.vnet.ibm.com>
+Date: Wed, 28 Nov 2007 18:10:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc3-mm2 - Build Failure on powerpc timerfd() undeclared
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+In-Reply-To: <20071128034140.648383f0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@kernel.org> writes:
+Hi Andrew,
 
-> This patch removes the EXPERIMENTAL option and all dependencies on 
-> EXPERIMENTAL because they are pointless.
+Kernel build fails, with build error
 
-Unfortunately I have to agree. The only think it does is confusing
-users, when they forget to enable it.
+  CC      arch/powerpc/platforms/cell/spu_callbacks.o
+In file included from arch/powerpc/platforms/cell/spu_callbacks.c:49:
+include/asm/systbl.h:312: error: ‘sys_timerfd’ undeclared here (not in a function)
+make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
+make[1]: *** [arch/powerpc/platforms/cell] Error 2
+make: *** [arch/powerpc/platforms] Error 2
+
 -- 
-Krzysztof Halasa
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
