@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbXK1P2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbXK1Pfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760199AbXK1P2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 10:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbXK1P2Q
+	id S1759213AbXK1Pfj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 10:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXK1Pfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 10:28:16 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:7201 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbXK1P2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 10:28:14 -0500
-Date: Wed, 28 Nov 2007 16:27:00 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paul Erkkila <pee@erkkila.org>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: ACPI related Warning in 2.6.24-rc3-git2
-Message-ID: <20071128152700.GO4985@kernel.dk>
-References: <20071127150557.GA4365@ics.muni.cz> <200711271637.13036.rjw@sisk.pl> <20071128041155.GB18131@khazad-dum.debian.net> <20071128083153.GL4365@ics.muni.cz> <474D7336.4000102@erkkila.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474D7336.4000102@erkkila.org>
+	Wed, 28 Nov 2007 10:35:31 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44800 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751719AbXK1Pf3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 10:35:29 -0500
+To: jdike@addtoit.com
+CC: mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20071128150637.GA5518@c2.user-mode-linux.org> (message from Jeff
+	Dike on Wed, 28 Nov 2007 10:06:37 -0500)
+Subject: Re: -rt doesn't compile for UML
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128150637.GA5518@c2.user-mode-linux.org>
+Message-Id: <E1IxOwS-000752-HF@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 28 Nov 2007 16:35:12 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28 2007, Paul Erkkila wrote:
-> Lukas Hejtmanek wrote:
-> > On Wed, Nov 28, 2007 at 02:11:55AM -0200, Henrique de Moraes Holschuh wrote:
-> >> On Tue, 27 Nov 2007, Rafael J. Wysocki wrote:
-> >>>> in recent kernel, I got the following warnings while booting. It's ACPI
-> >>>> related. Does anybode care? Lenovo ThinkPad T61 (6465CTO).
-> >> Could we know the BIOS version, please?
-> > 
-> > 7LET56WW (1.26 ) (according to hal, 1.26 is definitely correct, can be seen in
-> > BIOS as well)
-> > 
+> > When writing a big file to a ubd disk, everything in uml slows down to
+> > a crawl, even though CPU usage is minimal.
 > 
-> I'm seeing the same thing here, on a similar machine ( 6459CTO ). I
-> pulled the source from kernel git last night to test it.
-> 
-> 
-> Bios:
-> thinkpad_acpi: ThinkPad BIOS 7LET56WW (1.26 ), EC 7KHT22WW-1.06
+> What exactly is your test case?
 
-I reported the same thing yesterday:
+Something like:
 
-http://lkml.org/lkml/2007/11/27/228
+  dd if=/host/tmp/bigfile of=/tmp/bigfile bs=1048576 count=100
 
-x60 here, latest BIOS.
+and run 'top' or 'watch something' in another terminal, which
+sometimes completely stops updating during the write.
 
--- 
-Jens Axboe
+> I have some patches which theoretically should help I/O performance
+> which I've been sitting on because I can't find a case where they
+> help.
 
+It's not I/O performance I'm worried about, but scheduling latencies.
+CPU use inside and outside the UML is minimal, so I can't see where
+this slowdown comes from.
+
+Miklos
