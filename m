@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbXK1KXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760372AbXK1KYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759519AbXK1KXo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 05:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXK1KXd
+	id S1760372AbXK1KYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 05:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757073AbXK1KYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 05:23:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58889 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756089AbXK1KXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 05:23:32 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Marcel Holtmann <marcel@holtmann.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>
-Subject: Re: m68k build failure
-References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org>
-	<20071128094856.056c0a3f@poseidon.drzeus.cx>
-	<Pine.LNX.4.64.0711281020350.29243@anakin>
-	<Pine.LNX.4.64.0711281024351.29243@anakin>
-	<20071128110111.0c11fbfc@poseidon.drzeus.cx>
-	<20071128100759.4091399e@the-village.bc.nu>
-X-Yow: ..Are we having FUN yet...?
-Date: Wed, 28 Nov 2007 11:23:29 +0100
-In-Reply-To: <20071128100759.4091399e@the-village.bc.nu> (Alan Cox's message
-	of "Wed\, 28 Nov 2007 10\:07\:59 +0000")
-Message-ID: <jer6ia3bz2.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 28 Nov 2007 05:24:03 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2041 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757071AbXK1KYB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 05:24:01 -0500
+Date: Wed, 28 Nov 2007 11:23:57 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Adrian Bunk <bunk@kernel.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [2.6 patch] some overdue I2C driver removal
+Message-ID: <20071128112357.3828d469@hyperion.delvare>
+In-Reply-To: <20071024164347.GN4003@csclub.uwaterloo.ca>
+References: <20071024162528.GX30533@stusta.de>
+	<20071024164347.GN4003@csclub.uwaterloo.ca>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Wed, 24 Oct 2007 12:43:47 -0400, Lennart Sorensen wrote:
+> On Wed, Oct 24, 2007 at 06:25:28PM +0200, Adrian Bunk wrote:
+> > This patch contains the overdue removal of three I2C drivers.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > ---
+> > 
+> >  Documentation/feature-removal-schedule.txt |    8 
+> >  drivers/i2c/busses/Kconfig                 |   59 ------
+> >  drivers/i2c/busses/Makefile                |    3 
+> >  drivers/i2c/busses/i2c-ixp2000.c           |  167 -------------------
+> >  drivers/i2c/busses/i2c-ixp4xx.c            |  178 ---------------------
+> >  drivers/i2c/busses/scx200_i2c.c            |  131 ---------------
+> >  6 files changed, 546 deletions(-)
+> > 
+> > 6a8e0e37019c0ffeb0071fae30210baf2c3bdd75 
+> > diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> > index 2af3835..9114379 100644
+> > --- a/Documentation/feature-removal-schedule.txt
+> > +++ b/Documentation/feature-removal-schedule.txt
+> > @@ -218,14 +218,6 @@ Who:	Len Brown <len.brown@intel.com>
+> >  
+> >  ---------------------------
+> >  
+> > -What:	i2c-ixp2000, i2c-ixp4xx and scx200_i2c drivers
+> > -When:	September 2007
+> > -Why:	Obsolete. The new i2c-gpio driver replaces all hardware-specific
+> > -	I2C-over-GPIO drivers.
+> > -Who:	Jean Delvare <khali@linux-fr.org>
+> > -
+> > ----------------------------
+> 
+> Did anyone ever write a driver that does i2c on the scx200 using the new
+> i2c-gpio method?  I sure haven't seen it, although I am still running
+> 2.6.18 (since that is what debian stable uses) on my scx200 systems.  I
+> certainly haven't found any useful instructions on how to use the new
+> i2c-gpio driver on an scx200.
 
->> Delightful. So what are the options here? Start packing the device table structs is the obvious quick fix. Declaring cross-compilation unsupported isn't really viable, and I guess determining padding differences is far from easy.
->
-> There are some ugly options:
->
-> Cross compile a test object containing nothing but
->
-> 	struct whatever fred;
->
-> then dump it with the relevant cross nm
+There's no driver to write (i2c-gpio is the driver). Instead, the
+scx200 platform needs to implement the standard GPIO API. I don't think
+that it has happened yet, and last time this was discussed, someone
+(can't remember who, sorry), complained that the GPIO API "sucked" and
+that the scx200 platform would not be updated to use it. I didn't buy
+the claim due to a lack of argumentation and the fact that the GPIO
+infrastructure seems to work well enough for many other platforms.
 
-Everything would be much easier if all those driver_data members of the
-device table structs would not be there.
+As far as I can see, the ixp2000 platform also doesn't implement the
+standard GPIO API yet, so of the 3 drivers that are about to be
+removed, only i2c-ixp4xx can be removed without functionality loss at
+the moment. Lennert, Russell, are there any plans to convert the
+ixp2000 platform to use the generic GPIO layer?
 
-Andreas.
+Maybe I shouldn't have added this entry in feature-removal-schedule.txt
+in the first place: these drivers should ideally be dropped in favor of
+i2c-gpio, but it can only happen for platforms that implement the
+standard GPIO API. As I am not the one who will convert these
+platforms, and some of them might as well never be converted (I don't
+know how active they are nowadays), there's not much I can do.
 
+Thanks,
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Jean Delvare
