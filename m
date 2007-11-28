@@ -1,229 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXK1TJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbXK1TMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759547AbXK1TJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:09:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbXK1TJF
+	id S1760240AbXK1TMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXK1TMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:09:05 -0500
-Received: from mail0.lsil.com ([147.145.40.20]:54476 "EHLO mail0.lsil.com"
+	Wed, 28 Nov 2007 14:12:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39676 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755075AbXK1TJD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:09:03 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1754712AbXK1TML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 14:12:11 -0500
+Date: Wed, 28 Nov 2007 14:05:25 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Ben Woodard <woodard@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071128190525.GD3192@redhat.com>
+References: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com> <20071127200011.GA3703@redhat.com> <20071127222408.GH24223@one.firstfloor.org> <474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com> <20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
-Date: Wed, 28 Nov 2007 12:08:37 -0700
-Message-ID: <9738BCBE884FDB42801FAD8A7769C26501D33B5B@NAMAIL1.ad.lsil.com>
-In-Reply-To: <20071127153252.GC3230@parisc-linux.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
-Thread-Index: AcgxCshQ/OeAV3hHSAWQoAH5gpnKCgA5yEaQ
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Cc: <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
-       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>,
-       "Kolli, Neela" <Neela.Kolli@lsi.com>
-X-OriginalArrivalTime: 28 Nov 2007 19:08:40.0227 (UTC) FILETIME=[16134F30:01C831F2]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew,
-
-Yes, as I mentioned, our applications are built in 32-bit environment
-(except for ia64).
-We may see a different behavior if we build it in 64-bit for x86-64. 
-
-Regards.
-
-Bo Yang
-
------Original Message-----
-From: Matthew Wilcox [mailto:matthew@wil.cx] 
-Sent: Tuesday, November 27, 2007 10:33 AM
-To: Yang, Bo
-Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
-akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
-Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
-cmds with sense info
-
-On Tue, Nov 27, 2007 at 08:19:09AM -0700, Yang, Bo wrote:
-> Matthew,
-> 
-> Thanks for your review.
-> 
-> We have a 32 bit application(s) (megaraid utility) that is used in 
-> both
-> x86 and x86_64.
-> For ia64, the application is built in ia64 environment.
-
-Are you saying the application is built 32-bit for x86-64?
-Is it true that, if this application were built 64-bit for x86-64, you
-would have the same situation as with ia64?
-
-> The sense_ptr picked up from the ioc->frame.raw is a 32-bit value from
-
-> the application. When we make it "unsigned long*" it picks up a 64-bit
-
-> value & the copy_to_user fails. Without this fix the issue is seen in
-> x86_64 kernels. But for ia64 it is an unsigned long * value (8 bytes) 
-> and so we need a compile time flag.
->  
-> Regards,
-> 
-> Bo Yang
-> 
-> -----Original Message-----
-> From: Matthew Wilcox [mailto:matthew@wil.cx]
-> Sent: Tuesday, November 20, 2007 3:42 PM
-> To: Yang, Bo
-> Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com; 
-> akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, 
-> Neela
-> Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of 
-> DCDB cmds with sense info
-> 
-> On Wed, Nov 21, 2007 at 08:40:56AM +0000, bo yang wrote:
-> > Sense buffer ptr data type in the ioctl path is reverted back to u32
-
-> > *
-> 
-> > for x86 and x86_64 as in previous versions of driver. For IA64 it 
-> > will
-> 
-> > be unsigned long *. Compile time flag added for ia64 for this.
-> 
-> This changelog tells us what you're doing, but not why you're doing
-it.
-> Why is it that ia64 is different from x86 and x86_64?  What should 
-> other architectures be doing?  This patch really doesn't make any 
-> sense to me at all; it should be doing the exact same thing on all 
-> three architectures.
-> 
-> > Signed-off-by: Bo Yang <bo.yang@lsi.com>
+On Wed, Nov 28, 2007 at 11:02:06AM -0500, Neil Horman wrote:
+> On Wed, Nov 28, 2007 at 10:36:49AM -0500, Vivek Goyal wrote:
+> > On Tue, Nov 27, 2007 at 03:24:35PM -0800, Ben Woodard wrote:
+> > > Andi Kleen wrote:
+> > >>> Are we putting the system back in PIC mode or virtual wire mode? I have
+> > >>> not seen systems which support PIC mode. All latest systems seems
+> > >>> to be having virtual wire mode. I think in case of PIC mode, interrupts
+> > >>
+> > >> Yes it's probably virtual wire. For real PIC mode we would need really
+> > >> old systems without APIC.
+> > >>
+> > >>> can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
+> > >>> to deliver interrupt to any of the cpus and that's what we have been
+> > >>
+> > >> The code doesn't try to program anything specific, it just restores the state
+> > >> that was left over originally by the BIOS.
+> > >>
+> > >
+> > > So if the BIOS originally left the IOAPIC in a state where the timer 
+> > > interrupts were only going to CPU0 then by restoring that state we could be 
+> > > bringing this problem upon ourselves when we restore that state.
+> > >
 > > 
-> > ---
-> > Documentation/scsi/ChangeLog.megaraid_sas |   15 +++++++++++++++
-> > drivers/scsi/megaraid/megaraid_sas.c      |   14 ++++++++++----
-> > drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
-> >  3 files changed, 28 insertions(+), 7 deletions(-)
+> > Hi Ben,
 > > 
-> > diff -rupN 
-> > linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
-> linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
-> > --- linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
-> 2007-11-20 17:50:13.000000000 -0500
-> > +++ linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
-> 2007-11-20 21:37:16.000000000 -0500
-> > @@ -1,3 +1,18 @@
-> > +1 Release Date    : Thur. Nov. 19 16:30:43 PST 2007 -
-> > +			(emaild-id:megaraidlinux@lsi.com)
-> > +			Sumant Patro
-> > +			Bo Yang
-> > +
-> > +2 Current Version : 00.00.03.17-RC1
-> > +3 Older Version   : 00.00.03.16
-> > +
-> > +1. Fix random failure of DCDB cmds with sense info.
-> > +
-> > +Fix: 	sense buffer ptr data type in the ioctl path is reverted
-> back
-> > +	to u32 * for x86, x86_64 as in previous versions of driver.
-> > +	For IA64 it will be unsigned long *. Compile time flag added
-> > +	for ia64 for this.
-> > +
-> >  1 Release Date    : Thur. Nov. 07 16:30:43 PST 2007 -
-> >  			(emaild-id:megaraidlinux@lsi.com)
-> >  			Sumant Patro
-> > diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
-> linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
-> > --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
-> 2007-11-20 17:50:13.000000000 -0500
-> > +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
-> 2007-11-20 17:50:13.000000000 -0500
-> > @@ -10,7 +10,7 @@
-> >   *	   2 of the License, or (at your option) any later version.
-> >   *
-> >   * FILE		: megaraid_sas.c
-> > - * Version	: v00.00.03.16-rc1
-> > + * Version	: v00.00.03.17-rc1
-> >   *
-> >   * Authors:
-> >   *	(email-id : megaraidlinux@lsi.com)
-> > @@ -3020,10 +3020,16 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
-> >  		 * sense buffer address
-> >  		 */
-> >  		sense_buff = (unsigned long *) ((unsigned
-> long)ioc->frame.raw +
-> > -
-> ioc->sense_off);
-> > -
-> > -		if (copy_to_user((void __user *)(unsigned
-> long)(*sense_buff),
-> > +					ioc->sense_off);
-> > +		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
-> > +					ioc->sense_off);
-> > +#if defined(__ia64__)
-> > +		if (copy_to_user((void __user *)((unsigned
-> long)(*sense_buff)),
-> > +				sense, ioc->sense_len)) {
-> > +#else
-> > +		if (copy_to_user((void __user *)((unsigned
-> long)(*sense_ptr)),
-> >  				sense, ioc->sense_len)) {
-> > +#endif
-> >  			printk(KERN_ERR "megasas: Failed to copy out to
-> user "
-> >  					"sense data\n");
-> >  			error = -EFAULT;
-> > diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
-> linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
-> > --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
-> 2007-11-20 17:50:13.000000000 -0500
-> > +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
-> 2007-11-20 17:50:13.000000000 -0500
-> > @@ -18,9 +18,9 @@
-> >  /*
-> >   * MegaRAID SAS Driver meta data
-> >   */
-> > -#define MEGASAS_VERSION
-> "00.00.03.16-rc1"
-> > -#define MEGASAS_RELDATE				"Nov. 07, 2007"
-> > -#define MEGASAS_EXT_VERSION			"Thu. Nov. 07
-10:09:32
-> PDT 2007"
-> > +#define MEGASAS_VERSION
-> "00.00.03.17-rc1"
-> > +#define MEGASAS_RELDATE				"Nov. 19, 2007"
-> > +#define MEGASAS_EXT_VERSION			"Mon. Nov. 19
-10:09:32
-> PDT 2007"
-> >  
-> >  /*
-> >   * Device IDs
+> > Apart from restoring the original state (Bring APICS back to virtual wire
+> > mode), we also reprogram IOAPIC so that timer interrupt can go to crashing
+> > cpu (and not necessarily cpu0). Look at following code in disable_IO_APIC.
 > > 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe
-linux-scsi" 
-> > in the body of a message to majordomo@vger.kernel.org More majordomo
-
-> > info at  http://vger.kernel.org/majordomo-info.html
+> >                 entry.dest.physical.physical_dest =
+> >                                         GET_APIC_ID(apic_read(APIC_ID));
+> > 
+> > Here we read the apic id of crashing cpu and program IOAPIC accordingly.
+> > This will make sure that even in virtual wire mode, timer interrupts
+> > will be delivered to crashing cpu APIC.
+> > 
+> Yes, but according to Bens last debug effort, the APIC printout regarding the
+> timer setup, indicates that ioapic_i8259.pin == -1, meaning that the 8259 is not
+> routed through the ioapic.  In those cases, disable_IO_APIC does not take us
+> through the path you reference above, and does not revert to virtual wire mode.
+> Instead, it simply disables legacy vector 0, which if I understand this
+> correctly, simply tells the ioapic to not handle timer interrupts, trusting that
+> the 8259 in the system will deliver that interrupt where it needs to be.  If the
+> 8259 is wired to deliver timer interrupts to cpu0 only, then you get the problem
+> that we have, do you?
 > 
-> --
-> Intel are signing my paycheques ... these opinions are still mine 
-> "Bill, look, we understand that you're interested in selling us this 
-> operating system, but compare it to ours.  We can't possibly take such
 
-> a retrograde step."
+Ok. Got it. So in this case we route the interrupts directly through LAPIC
+and put LVT0 in ExtInt mode and IOAPIC is bypassed.
 
---
-Intel are signing my paycheques ... these opinions are still mine "Bill,
-look, we understand that you're interested in selling us this operating
-system, but compare it to ours.  We can't possibly take such a
-retrograde step."
+I am looking at Intel Multiprocessor specification v1.4 and as per figure
+3-3 on page 3-9, 8259 is connected to LINTIN0 line, which in turn is 
+connected to LINTIN0 pin on all processors. If that is the case, even in
+this mode, all the CPU should see the timer interrupts (which is coming
+from 8259)?
+
+Can you print the LAPIC registers (print_local_APIC) during normal boot
+and during kdump boot and paste here?
+ 
+Thanks
+Vivek
