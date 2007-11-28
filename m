@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbXK1SBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbXK1SF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbXK1SBM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 13:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbXK1SAf
+	id S1755733AbXK1SF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 13:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbXK1SFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 13:00:35 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41978 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754864AbXK1SAd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 13:00:33 -0500
-Date: Wed, 28 Nov 2007 17:25:09 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Daniel Walker <dwalker@mvista.com>, RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
-Message-ID: <20071128172509.GA30173@flint.arm.linux.org.uk>
-References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com> <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com> <1196176294.13982.58.camel@localhost.localdomain> <1196177122.23808.7.camel@imap.mvista.com> <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 28 Nov 2007 13:05:49 -0500
+Received: from mga03.intel.com ([143.182.124.21]:9390 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbXK1SFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 13:05:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,225,1194249600"; 
+   d="scan'208";a="327979914"
+Message-ID: <474DAB30.20703@intel.com>
+Date: Wed, 28 Nov 2007 09:53:52 -0800
+From: Chris Leech <christopher.leech@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: "Love, Robert W" <robert.w.love@intel.com>, linux-scsi@vger.kernel.org,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       devel@open-fcoe.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Rob Love <robert.w.love@linux.intel.com>,
+       "Zou, Yi" <yi.zou@intel.com>, "Dev, Vasu" <vasu.dev@intel.com>,
+       james.bottomley@hansenpartnership.com, davem@davemloft.net,
+       jeff@garzik.org, "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: [ANNOUNCE] Open-FCoE - Fibre Channel over Ethernet Project
+References: <10A7D0016239E24092DEF05CCC582E43028A636B@fmsmsx411.amr.corp.intel.com> <20071128074426.GA30468@infradead.org>
+In-Reply-To: <20071128074426.GA30468@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 03:38:11PM +0100, Remy Bohmer wrote:
-> Hello Daniel,
-> 
-> >  *      Note: The caller is expected to handle the ack, clear, mask and
-> >  *      unmask issues if necessary.
-> > So we shouldn't need any flow control unless there is some other
-> > factors..
-> 
-> This comment can be misinterpreted, I think. Who is assumed to be the
-> caller in this context? The 2 other routines in the driver that
-> actually do the unmasking stuff besides only calling this routine? Is
-> it allowed to call it directly or should it always be done through a
-> wrapper that does all these special things?
+Christoph Hellwig wrote:
+> I just did a very quick glance over the tree.  Some extremly highlevel
+> comments to start with before actually starting the source review:
 
-The whole point of this simple handler is to accomodate interrupts such
-as those found on the Neponset board.
+Thanks for taking a look Christoph
 
-There, you have a status register in a CPLD but no enable/disable
-registers.  The status register tells you whether the SA1111, ethernet
-or 'USAR' chip asserted its interrupt.
+>  - why do you need your own libcrc?  lib/crc32.c has a crc32_le
 
-However, as there is no way to disable the sources, this situation has
-to be handled carefully - the function decoding the interrupt source
-needs to mask and unmask the _parent_ interrupt itself, and it's
-exactly that which the comment is directed towards.
+We shouldn't, but we may want to add a CRC and copy routine.
 
-See neponset_irq_handler().
+>  - libsa should go.  Much of it is just wrappers of kernel functions
+>    that should be used directly.  Other like that hash, even or state
+>    helpers might either be opencoded in the caller or made completely
+>    generic in lib/.  Probably the former but we'll have to see.
 
-The simple IRQ handler is not meant for anything other than that really
-simple implementation.  If people have been using it with interrupts
-which can be individually masked and unmasked, that's where the bug is.
-They should be using one of the other handlers.
+Yes, and along with it the last use of the BSD TAILQ macros.  Just 
+before Rob set up the open repos I finished converting most of those to 
+list_head, the only one left is in the sa_event mechanism.  Rather than 
+convert it I'd like to replace the use of sa_event with notifier call 
+chains.  I just need to finish auditing the use to make sure the 
+differences won't cause unexpected problems.
+
+After than and unwrapping kernel functions, I think the only thing left 
+before completly removing libsa is to open code the state machines.
+
+Similarly I think net_types.h need to go.
+
+- Chris
