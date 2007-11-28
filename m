@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759216AbXK1JBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbXK1JCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759216AbXK1JBi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 04:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbXK1JBZ
+	id S1757652AbXK1JCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 04:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXK1JCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 04:01:25 -0500
-Received: from imx9.toshiba.co.jp ([202.33.96.51]:38523 "EHLO
-	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756704AbXK1JBY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 04:01:24 -0500
-Date: Wed, 28 Nov 2007 17:52:38 +0900 (JST)
-Message-Id: <20071128.175238.-1300543742.kouish@swc.toshiba.co.jp>
-To: gorcunov@gmail.com
-Cc: linuxppc-dev@ozlabs.org, olof@lixom.net, paulus@samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
-In-Reply-To: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+	Wed, 28 Nov 2007 04:02:18 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44180 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752679AbXK1JCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 04:02:16 -0500
+Date: Wed, 28 Nov 2007 10:00:46 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: murtuja bharmal <murtuja_bharmal@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: Linux 2.6 kernel module compilation without using KBUILD
+Message-ID: <20071128090046.GA15067@uranus.ravnborg.org>
+References: <299272.92165.qm@web36708.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <299272.92165.qm@web36708.mail.mud.yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch adds checking for NULL value returned to prevent possible
-> NULL pointer dereference.
-> Also two unneeded 'return' are removed.
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+On Wed, Nov 28, 2007 at 12:09:51AM -0800, murtuja bharmal wrote:
+> Hello All,
+>    
+> I want to compile external linux kernel module without
+> using KBUILD.
+...
+> Do we have any document which describe how to make
+> kernel module without using KBUILD.
 
-Thanks, I tested your patch and it works.
+No.
+Becasue building kernel modules without using kbuild is highly 
+discouraged and vulnerable for all sort of config related issues.
+As a simple example the module may become unuseable if just one
+change is made to the configuration because this changes
+the parameters passed to gcc which again affects the code
+being built.
 
-My original code supposes that the device-tree is provided correctly,
-so I omited such checks. (Sorry, it should have been commented.)
+Can you try to enlighting why you want to avoid kbuild.
+If you have a specific problem then maybe kbuild already can
+do what you need.
 
-Should we check more strictly like your patch?
-
-Best regards,
-Kou Ishizaki
+	Sam
