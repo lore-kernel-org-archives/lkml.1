@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbXK1WeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbXK1Wja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759681AbXK1WeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXK1WeG
+	id S1759564AbXK1Wja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbXK1WjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:34:06 -0500
-Received: from main.gmane.org ([80.91.229.2]:33691 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbXK1WeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:34:04 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frederik Himpe <fhimpe@telenet.be>
-Subject: 2.6.24-rc3-git3: usb hardware interrupts using 25% of CPU time
-Date: Wed, 28 Nov 2007 22:33:18 +0000 (UTC)
-Message-ID: <pan.2007.11.28.22.33.18@telenet.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: d54c1e7e8.access.telenet.be
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-usb-devel@lists.sourceforge.net
+	Wed, 28 Nov 2007 17:39:22 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53991 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755427AbXK1WjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 17:39:21 -0500
+Date: Wed, 28 Nov 2007 23:39:09 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tobias Powalowski <t.powa@gmx.de>, Takashi Iwai <tiwai@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH] x86/paravirt: revert exports to restore old behaviour
+Message-ID: <20071128223909.GE29463@stusta.de>
+References: <474CA0DA.3010005@goop.org> <20071128204050.GA29463@stusta.de> <474DDA7B.9090802@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <474DDA7B.9090802@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I installed Linux 2.6.24-rc3-git3 on a PPC based Apple Powerbook G4 
-system. Now with top I see that over 20% of CPU time is used by hardware 
-interrupts. Looking at /proc/interrupts, the number in the row 
-ohci_hcd:usb1 is rising very quickly:
+On Wed, Nov 28, 2007 at 01:15:39PM -0800, Jeremy Fitzhardinge wrote:
+> Adrian Bunk wrote:
+> > On Tue, Nov 27, 2007 at 02:57:30PM -0800, Jeremy Fitzhardinge wrote:
+>...
+> >> 2. It's a regression from previous kernels, which would work these
+> >>    modules even with CONFIG_PARAVIRT enabled.
+> >> ...
+> >>     
+> >
+> > It cannot be a regression since the kernel does not have a stable API 
+> > for modules.
+> >   
+> 
+> Anything that once worked but now does not is a regression.  Generally
+> when we intend a regression like this, we call it a deprecation of an
+> interface and have a procedure for that.  It was not my intention to
+> cause a regression with this change, and an unintended regression is a bug.
 
-$ cat /proc/interrupts 
-           CPU0       
- 21:          1   MPIC 1    Edge      i2sbus: i2s-a (tx)
- 24:      11008   MPIC 1    Level     ide1
- 25:      33608   MPIC 1    Level     VIA-PMU
- 26:         56   MPIC 1    Level     keywest i2c
- 27:          1   MPIC 1    Edge      i2sbus: i2s-a (rx)
- 29:     281578   MPIC 1    Level     ohci_hcd:usb1
- 30:          0   MPIC 1    Level     i2sbus: i2s-a (control)
- 31:          0   MPIC 1    Level     i2sbus: i2s-b (control)
- 33:          1   MPIC 1    Edge      i2sbus: i2s-b (tx)
- 34:          1   MPIC 1    Edge      i2sbus: i2s-b (rx)
- 39:      41611   MPIC 1    Level     ide0
- 40:          2   MPIC 1    Level     ohci1394
- 41:          0   MPIC 1    Level     eth0
- 42:          0   MPIC 1    Level     keywest i2c
- 47:       2826   MPIC 1    Level     GPIO1 ADB
- 48:      58633   MPIC 1    Level     radeon@pci:0000:00:10.0
- 52:      18961   MPIC 1    Level     b43
- 53:          1   MPIC 1    Level     yenta
- 61:          1   MPIC 1    Edge      headphone-detect
- 63:          0   MPIC 1    Level     ohci_hcd:usb2, ohci_hcd:usb3, 
-ehci_hcd:usb4
-BAD:     187917
+The standard procdure for changing the in-kernel API is to simply break 
+the API without any deprecation or advance notice.
 
-$ lspci -nn
-0000:00:0b.0 Host bridge [0600]: Apple Computer Inc. UniNorth 2 AGP 
-[106b:0034]
-0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 
-[Mobility Radeon 9600 M10] [1002:4e50]
-0001:10:0b.0 Host bridge [0600]: Apple Computer Inc. UniNorth 2 PCI 
-[106b:0035]
-0001:10:12.0 Network controller [0280]: Broadcom Corporation BCM4306 
-802.11b/g Wireless LAN Controller [14e4:4320] (rev 03)
-0001:10:13.0 CardBus bridge [0607]: Texas Instruments PCI1510 PC card 
-Cardbus Controller [104c:ac56]
-0001:10:17.0 Unknown class [ff00]: Apple Computer Inc. KeyLargo/Intrepid 
-Mac I/O [106b:003e]
-0001:10:19.0 USB Controller [0c03]: Apple Computer Inc. KeyLargo/Intrepid 
-USB [106b:003f]
-0001:10:1a.0 USB Controller [0c03]: Apple Computer Inc. KeyLargo/Intrepid 
-USB [106b:003f]
-0001:10:1b.0 USB Controller [0c03]: NEC Corporation USB [1033:0035] (rev 
-43)
-0001:10:1b.1 USB Controller [0c03]: NEC Corporation USB [1033:0035] (rev 
-43)
-0001:10:1b.2 USB Controller [0c03]: NEC Corporation USB 2.0 [1033:00e0] 
-(rev 04)
-0002:24:0b.0 Host bridge [0600]: Apple Computer Inc. UniNorth 2 Internal 
-PCI [106b:0036]
-0002:24:0d.0 Unknown class [ff00]: Apple Computer Inc. UniNorth/Intrepid 
-ATA/100 [106b:003b]
-0002:24:0e.0 FireWire (IEEE 1394) [0c00]: Apple Computer Inc. UniNorth 2 
-FireWire [106b:0031] (rev 81)
-0002:24:0f.0 Ethernet controller [0200]: Apple Computer Inc. UniNorth 2 
-GMAC (Sun GEM) [106b:0032] (rev 80)
+Andrew has some strange views that big changes can be done immediately 
+while smaller changes should require deprecation periods, but everyone 
+else seems to have less strange views.
 
+> >> Therefore, I think this patch should go in for 2.6.24.  If people
+> >> really think that these operations should not be available to modules,
+> >> then we can address that separately.
+> >> ...
+> >>     
+> >
+> > Why should we start with one step back for getting two steps ahead?
+> 
+> Why is it a step back?  What are the steps ahead?  There's been no
+> discussion on this point, so I don't think you can assume there's a
+> clear way forward.
+> 
+> I think Linus and Andrew have been pretty clear on the policy for these
+> kinds of things: regressions are always bad, even if fixing the
+> regression means some other bugfix needs to be put off.
 
-Full dmesg, .config and lsmod output can be found on 
-http://artipc10.vub.ac.be/linux-2.6.24-rc3-git3/
+This does not apply since we do not have a stable in-kernel API, and 
+therefore changes to the in-kernel API can by definition not be 
+regressions.
+
+2.6.24 most likely contains hundreds of changes and removals of 
+in-kernel APIs that existed in 2.6.23.
+
+Are you seriously suggesting that e.g. every single change to any struct 
+under include/ [1] would require an announcement x kernel releases 
+before it can be implemented?
+
+And yes, things like that would be required if we offered any kind of 
+API stability.
+
+>     J
+
+cu
+Adrian
+
+[1] even additions would be problematic since buggy external modules 
+    might have hardcoded the struct size somewhere...
 
 -- 
-Frederik Himpe
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
