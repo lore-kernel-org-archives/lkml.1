@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbXK1Wuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbXK1Wv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761527AbXK1Wuw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbXK1Wun
+	id S1761925AbXK1Wv3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbXK1WvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:50:43 -0500
-Received: from main.gmane.org ([80.91.229.2]:56268 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758174AbXK1Wum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:50:42 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frederik Himpe <fhimpe@telenet.be>
-Subject: Re: 2.6.24-rc3-git3: usb hardware interrupts using 25% of CPU time
-Date: Wed, 28 Nov 2007 22:50:26 +0000 (UTC)
-Message-ID: <pan.2007.11.28.22.50.25@telenet.be>
-References: <pan.2007.11.28.22.33.18@telenet.be>
-	<200711290002.01850.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: d54c1e7e8.access.telenet.be
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-usb-devel@lists.sourceforge.net
+	Wed, 28 Nov 2007 17:51:17 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:60447 "EHLO
+	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761504AbXK1WvQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 17:51:16 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <474DF057.2060906@am.sony.com>
+Date: Wed, 28 Nov 2007 14:48:55 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 6/7] ps3: Refactor ps3_repository_find_device()
+References: <20071128143142.580732000@pademelon.sonytel.be> <20071128143438.613525000@pademelon.sonytel.be>
+In-Reply-To: <20071128143438.613525000@pademelon.sonytel.be>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Nov 2007 22:48:57.0021 (UTC) FILETIME=[DBE606D0:01C83210]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 00:02:01 +0100, Rafael J. Wysocki wrote:
+Geert Uytterhoeven wrote:
 
-> On Wednesday, 28 of November 2007, Frederik Himpe wrote:
->> I installed Linux 2.6.24-rc3-git3 on a PPC based Apple Powerbook G4
->> system. Now with top I see that over 20% of CPU time is used by
->> hardware interrupts. Looking at /proc/interrupts, the number in the row
->> ohci_hcd:usb1 is rising very quickly:
+> ps3: Refactor ps3_repository_find_device() to use the existing
+> ps3_repository_read_bus_id()
 > 
-> What's the last kernel that worked correctly?
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> ---
+>  arch/powerpc/platforms/ps3/repository.c |   60 +++++++++++---------------------
+>  1 files changed, 22 insertions(+), 38 deletions(-)
 
-Actually I'm not sure: the kernel I was running before was Debian's 2.6.22 
-kernel package
+Looks good.
 
--- 
-Frederik
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
