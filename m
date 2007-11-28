@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbXK1PjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760921AbXK1Plc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761166AbXK1PjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 10:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbXK1PjK
+	id S1760921AbXK1Plc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 10:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbXK1PlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 10:39:10 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:63432 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757502AbXK1PjJ (ORCPT
+	Wed, 28 Nov 2007 10:41:24 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:37531 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754717AbXK1PlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 10:39:09 -0500
-Message-ID: <474D8B83.9050609@oracle.com>
-Date: Wed, 28 Nov 2007 07:38:43 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 28 Nov 2007 10:41:24 -0500
+Message-ID: <474D8C22.7010902@lwfinger.net>
+Date: Wed, 28 Nov 2007 09:41:22 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Wagner Ferenc <wferi@niif.hu>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/3] Remove trailing NULs from network bonding sysfs interface.
-References: <871wabkxcd.fsf@szonett.ki.iif.hu>	<20071127194929.757e4ebe.randy.dunlap@oracle.com> <87bq9ekb8m.fsf@szonett.ki.iif.hu>
-In-Reply-To: <87bq9ekb8m.fsf@szonett.ki.iif.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andreas Schwab <schwab@suse.de>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Question regarding mutex locking
+References: <474CF06C.8020208@lwfinger.net> <jemysy2y3y.fsf@sykes.suse.de>
+In-Reply-To: <jemysy2y3y.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wagner Ferenc wrote:
-> Randy Dunlap <randy.dunlap@oracle.com> writes:
+Andreas Schwab wrote:
+> Larry Finger <Larry.Finger@lwfinger.net> writes:
 > 
->> On Wed, 28 Nov 2007 01:49:54 +0100 =?utf-8?q?Ferenc_W=C3=A1gner?= wrote:
+>> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
+>> would the following code be SMP safe?
 >>
->> Patches 1 & 3 use
+>> hold_lock = mutex_trylock()
 >>
->> 	if (res) statement;
+>> ...
 >>
->> but the preferred form is
->>
->> 	if (res)
->> 		statement;
->>
->> Even if this style was already used in the source file, it should
->> be cleaned up.
+>> if (hold_lock)
+>> 	mutex_unlock()
 > 
-> No principal problem.  So that I learn something useful: how should I
-> go about this?  I created the patches with git-format-patch, and they
-> depend on each other, so I'd rather not git-reset, if possible...
-> 
-> Can I just create a follow-up patch which fixes this stylistic issue?
+> When two CPUs may enter the critical region at the same time, what is
+> the point of the mutex?  Also, the first CPU may unlock the mutex while
+> the second one is still inside the critical region.
 
-That's OK with me.  I can't say how it might be done with git.
+Thank you for that answer. I think that I'm finally beginning to understand.
 
-Thanks,
--- 
-~Randy
+Larry
