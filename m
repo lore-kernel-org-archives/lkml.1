@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbXK1ATR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXK1Ace@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760511AbXK1ATR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 19:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbXK1ATF
+	id S1760090AbXK1Ace (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 19:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbXK1Ac0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 19:19:05 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:15551 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754505AbXK1ATE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 19:19:04 -0500
-Date: Tue, 27 Nov 2007 18:18:58 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Dynticks Causing High Context Switch Rate in ksoftirqd
-In-reply-to: <1887.192.128.167.68.1196188273.squirrel@www.techfinesse.net>
-To: bdupree@techfinesse.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <474CB3F2.9020901@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.c70Wy8WHP3DOaDydQ2D94+Xxx/8@ifi.uio.no>
- <474B9EC1.5020304@shaw.ca>
- <1887.192.128.167.68.1196188273.squirrel@www.techfinesse.net>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 27 Nov 2007 19:32:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42100 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754505AbXK1Ac0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 19:32:26 -0500
+Date: Wed, 28 Nov 2007 01:32:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] x86: partial unification of asm-x86/bitops.h
+Message-ID: <20071128003211.GA29513@elte.hu>
+References: <20071127230124.271668615@goop.org> <20071127230130.428453871@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127230130.428453871@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bdupree@techfinesse.com wrote:
-> Hello Robert,
-> 
-> I've attached additional detail on the config of the misbehaving system
-> including output from oprofile and PowerTop. PowerTop output leads me to
-> believe that maybe this is an interaction between my bridged ethernet
-> setup and dynticks? Hmmm...
 
-Don't know about that, your top wakeups are from br_stp_enable_bridge, 
-but that is only 26 a second - that doesn't explain a context switch 
-rate of 150,000 a second..
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> This unifies the set/clear/test bit functions of asm/bitops.h.
 
+great! I've added your 3 patches to x86.git. It built and booted fine.
+
+	Ingo
