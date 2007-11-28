@@ -1,387 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760182AbXK1RjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbXK1RmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760182AbXK1RjP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 12:39:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbXK1RjA
+	id S1756635AbXK1RmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 12:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbXK1RmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 12:39:00 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:42323 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754025AbXK1Ri7 (ORCPT
+	Wed, 28 Nov 2007 12:42:00 -0500
+Received: from mxintern.schlund.de ([212.227.126.205]:64818 "EHLO
+	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754425AbXK1Rl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 12:38:59 -0500
-Date: Wed, 28 Nov 2007 12:38:37 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: -rt doesn't compile for UML
-Message-ID: <20071128173837.GA7174@c2.user-mode-linux.org>
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
+	Wed, 28 Nov 2007 12:41:58 -0500
+X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 12:41:58 EST
+Date: Wed, 28 Nov 2007 18:21:32 +0100
+From: Anders Henke <anders.henke@1und1.de>
+To: linux-kernel@vger.kernel.org
+Subject: broken dpt_i2o (was: ext2_check_page: bad entry in directory)
+Message-ID: <20071128172132.GA30202@schlund.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+Organization: 1&1 Internet AG
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-UI-Msg-Verification: fd341ea385740a610583962ada388a5e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 04:38:39PM +0100, Miklos Szeredi wrote:
-> It doesn't help in this case.  I've gotten as far as realizing that
-> the latency tracer needs the irqflags tracing
-> (Documentation/irqflags-tracing.tx) and that UML doesn't yet support
-> that.
+Hi,
 
-Try the patch below - no guarantees, however, it boots here and
-printks stuff.
+I've been bitten by the problem noted in the lkml message of rougly the same
+subject, dated back on Oct/24/2007. 
+My boxes were running 2.6.19 and have been upgraded to 2.6.23.1, but their
+bootup failed when trying to mount the root (ext2) filesystem:
 
+---cut
+serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+Loading Adaptec I2O RAID: Version 2.4 Build 5go
+Detecting Adaptec I2O RAID controllers...
+ACPI: PCI Interrupt 0000:04:08.0[A] -> GSI 48 (level, low) -> IRQ 16
+Adaptec I2O RAID controller 0 irq=16
+     BAR0 f8880000 - size= 100000
+     BAR1 f8a00000 - size= 1000000
+dpti: If you have a lot of devices this could take a few minutes.
+dpti0: Reading the hardware resource table.
+TID 008  Vendor: ADAPTEC      Device: AIC-7902     Rev: 00000001    
+TID 009  Vendor: ADAPTEC      Device: AIC-7902     Rev: 00000001    
+TID 515  Vendor: ESG-SHV S    Device: SCA HSBP M21 Rev: 0.080       
+TID 518  Vendor: ADAPTEC R    Device: RAID-1       Rev: 3B0AD       
+scsi0 : Vendor: Adaptec  Model: 2010S            FW:3B0A
+scsi 0:1:0:0: Direct-Access     ADAPTEC  RAID-1           3B0A PQ: 0
+ANSI: 2
+scsi 0:1:6:0: Processor         ESG-SHV  SCA HSBP M21     0.08 PQ: 0
+ANSI: 2
+Adaptec aacraid driver 1.1-5[2449]-ms
+GDT-HA: Storage RAID Controller Driver. Version: 3.05
+GDT-HA: Found 0 PCI Storage RAID Controllers
+3ware Storage Controller device driver for Linux v1.26.02.002.
+3ware 9000 Storage Controller device driver for Linux v2.26.02.010.
+sd 0:1:0:0: [sda] 143374336 512-byte hardware sectors (73408 MB)
+sd 0:1:0:0: [sda] Write Protect is off
+sd 0:1:0:0: [sda] Write cache: enabled, read cache: enabled, supports
+DPO and FUA
+sd 0:1:0:0: [sda] 143374336 512-byte hardware sectors (73408 MB)
+sd 0:1:0:0: [sda] Write Protect is off
+sd 0:1:0:0: [sda] Write cache: enabled, read cache: enabled, supports
+DPO and FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+sd 0:1:0:0: [sda] Attached SCSI disk
+PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
+PNP: PS/2 appears to have AUX port disabled, if this is incorrect please
+boot with i8042.nopnp
+serio: i8042 KBD port at 0x60,0x64 irq 1
+mice: PS/2 mouse device common for all mice
+md: raid1 personality registered for level 1
+EDAC MC: Ver: 2.1.0 Oct 23 2007
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+Starting balanced_irq
+Using IPI Shortcut mode
+md: Autodetecting RAID arrays.
+md: autorun ...
+md: ... autorun DONE.
+VFS: Mounted root (ext2 filesystem) readonly.
+Freeing unused kernel memory: 264k freed
+EXT2-fs error (device sda1): ext2_check_page: bad entry in directory #2:
+rec_len is smaller than minimal - offset=0, inode=0, rec_len=0,
+name_len=0
+Warning: unable to open an initial console.
+Kernel panic - not syncing: No init found.  Try passing init= option to
+kernel.
+Rebooting in 30 seconds..
+---cut
+
+Rebooting the box into 2.6.19 works without any problems.
+
+I've checked the changelogs for 2.6.24-rc*, but haven't come across a
+solution for this issue; but maybe I've also overseen the point.
+
+http://lkml.org/lkml/2007/10/24/224, this bug has been reported earlier.
+
+I've contacted Jan Kara off-list; as booting into 2.6.19 works and e2fsck 
+on an e2image file doesn't show any errors, we assumed that the Ext2 itself
+is fine.
+
+As "everything is reported as being zero" is quite odd an Jan took a
+guess that it might be block-layer or driver-related, I've assumed
+that the driver is responsible for this; just out of the curiousity, 
+I've manually replaced the dpt_i2o driver by the 2.6.19 one by copying 
+driver/scsi/dpt_i2o.c driver/scsi/dpti.h and driver/scsi/dpt/ into a 
+vanilla 2.6.23.1. kernel; using this kernel fixed the issue for me.
+
+I haven't yet fine-tested from which kernel release on the dpt_i2o driver 
+behaves like this and spews out zeroed blocks when trying to mount
+the rootfs. Maybe this is just some timing issue.
+
+
+For some strange reason, this doesn't affect all boxes running the
+dpt_i2o driver.
+
+Affected (verified on 6 out of 6 tested boxes so far):
+
+Intel SE7501WV2S using an Adaptec 2010S with the following "lspci -vn"-section:
+
+0000:04:08.0 0104: 1044:a511 (rev 01)
+        Subsystem: 1044:c035
+        Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 16
+        BIST result: 00
+        Memory at fe900000 (32-bit, non-prefetchable) [size=1M]
+        Memory at fb000000 (32-bit, prefetchable) [size=16M]
+        Memory at f8000000 (32-bit, prefetchable) [size=32M]
+        Expansion ROM at f6200000 [disabled] [size=32K]
+        Capabilities: [44] Power Management version 2
+
+Not affected are e.g. a box with a Supermicro X5DPR using an Adaptec 2015S
+and the following "lspci -vn"-section:
+
+0000:03:03.0 0104: 1044:a511 (rev 01)
+        Subsystem: 1044:c034
+        Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 16
+        BIST result: 00
+        Memory at f8300000 (32-bit, non-prefetchable) [size=1M]
+        Memory at fb000000 (32-bit, prefetchable) [size=16M]
+        Memory at fc000000 (32-bit, prefetchable) [size=32M]
+        Capabilities: [44] Power Management version 2
+
+... and of course boxes not using an dpt_i2o-driven Controller.
+
+The Adaptec 2010S-boxes are currently running the Adaptec firmware 3B05,
+while the Adaptec 2015S box is running firmware 3B0A. As those
+controllers are capable of running the same firmware image, maybe
+a firmware update might resolve this issue as well (well, unlikely
+according to the changelog); the above bootup log is from an updated
+box, so the firmware update didn't help. What really helps is the older
+driver.
+
+
+
+
+Anders
 -- 
-Work email - jdike at linux dot intel dot com
+1&1 Internet AG              System Design
+Brauerstrasse 48             v://49.721.91374.50
+D-76135 Karlsruhe            f://49.721.91374.225
 
-
-Index: linux-2.6.22/arch/um/Kconfig
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig	2007-11-28 10:57:24.000000000 -0500
-+++ linux-2.6.22/arch/um/Kconfig	2007-11-28 12:36:39.000000000 -0500
-@@ -33,18 +33,13 @@ config PCI
- config PCMCIA
- 	bool
- 
--# Yet to do!
--config TRACE_IRQFLAGS_SUPPORT
--	bool
--	default n
--
- config LOCKDEP_SUPPORT
- 	bool
- 	default y
- 
- config STACKTRACE_SUPPORT
- 	bool
--	default n
-+	default y
- 
- config GENERIC_CALIBRATE_DELAY
- 	bool
-Index: linux-2.6.22/arch/um/Kconfig.debug
-===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig.debug	2007-11-28 10:57:22.000000000 -0500
-+++ linux-2.6.22/arch/um/Kconfig.debug	2007-11-28 11:34:19.000000000 -0500
-@@ -2,6 +2,10 @@ menu "Kernel hacking"
- 
- source "lib/Kconfig.debug"
- 
-+config TRACE_IRQFLAGS_SUPPORT
-+	bool
-+	default y
-+
- config GPROF
- 	bool "Enable gprof support"
- 	depends on DEBUG_INFO && FRAME_POINTER
-Index: linux-2.6.22/arch/um/include/sysdep-i386/tls.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-i386/tls.h	2007-11-28 12:36:28.000000000 -0500
-+++ linux-2.6.22/arch/um/include/sysdep-i386/tls.h	2007-11-28 12:36:39.000000000 -0500
-@@ -1,8 +1,6 @@
- #ifndef _SYSDEP_TLS_H
- #define _SYSDEP_TLS_H
- 
--# ifndef __KERNEL__
--
- /* Change name to avoid conflicts with the original one from <asm/ldt.h>, which
-  * may be named user_desc (but in 2.4 and in header matching its API was named
-  * modify_ldt_ldt_s). */
-@@ -19,13 +17,6 @@ typedef struct um_dup_user_desc {
- 	unsigned int  useable:1;
- } user_desc_t;
- 
--# else /* __KERNEL__ */
--
--#  include <asm/ldt.h>
--typedef struct user_desc user_desc_t;
--
--# endif /* __KERNEL__ */
--
- #define GDT_ENTRY_TLS_MIN_I386 6
- #define GDT_ENTRY_TLS_MIN_X86_64 12
- 
-Index: linux-2.6.22/arch/um/include/sysdep-x86_64/tls.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/sysdep-x86_64/tls.h	2007-11-28 12:36:28.000000000 -0500
-+++ linux-2.6.22/arch/um/include/sysdep-x86_64/tls.h	2007-11-28 12:36:39.000000000 -0500
-@@ -1,8 +1,6 @@
- #ifndef _SYSDEP_TLS_H
- #define _SYSDEP_TLS_H
- 
--# ifndef __KERNEL__
--
- /* Change name to avoid conflicts with the original one from <asm/ldt.h>, which
-  * may be named user_desc (but in 2.4 and in header matching its API was named
-  * modify_ldt_ldt_s). */
-@@ -20,10 +18,4 @@ typedef struct um_dup_user_desc {
- 	unsigned int  lm:1;
- } user_desc_t;
- 
--# else /* __KERNEL__ */
--
--#  include <asm/ldt.h>
--typedef struct user_desc user_desc_t;
--
--# endif /* __KERNEL__ */
- #endif /* _SYSDEP_TLS_H */
-Index: linux-2.6.22/arch/um/kernel/sysrq.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/sysrq.c	2007-11-28 10:57:22.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/sysrq.c	2007-11-28 12:36:39.000000000 -0500
-@@ -7,6 +7,7 @@
- #include "linux/kernel.h"
- #include "linux/module.h"
- #include "linux/kallsyms.h"
-+#include "linux/stacktrace.h"
- #include "asm/page.h"
- #include "asm/processor.h"
- #include "sysrq.h"
-@@ -78,3 +79,4 @@ void show_stack(struct task_struct *task
- 	printk("Call Trace: \n");
- 	show_trace(task, esp);
- }
-+
-Index: linux-2.6.22/arch/um/sys-i386/tls.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/tls.c	2007-11-28 12:36:28.000000000 -0500
-+++ linux-2.6.22/arch/um/sys-i386/tls.c	2007-11-28 12:36:39.000000000 -0500
-@@ -24,7 +24,8 @@ int do_set_thread_area(struct user_desc 
- 	u32 cpu;
- 
- 	cpu = get_cpu();
--	ret = os_set_thread_area(info, userspace_pid[cpu]);
-+	ret = os_set_thread_area((struct um_dup_user_desc *) info,
-+				 userspace_pid[cpu]);
- 	put_cpu();
- 
- 	if (ret)
-@@ -40,7 +41,8 @@ int do_get_thread_area(struct user_desc 
- 	u32 cpu;
- 
- 	cpu = get_cpu();
--	ret = os_get_thread_area(info, userspace_pid[cpu]);
-+	ret = os_get_thread_area((struct um_dup_user_desc *) info,
-+				 userspace_pid[cpu]);
- 	put_cpu();
- 
- 	if (ret)
-Index: linux-2.6.22/include/asm-um/irqflags.h
-===================================================================
---- linux-2.6.22.orig/include/asm-um/irqflags.h	2007-11-28 10:57:22.000000000 -0500
-+++ linux-2.6.22/include/asm-um/irqflags.h	2007-11-28 11:34:19.000000000 -0500
-@@ -1,6 +1,31 @@
- #ifndef __UM_IRQFLAGS_H
- #define __UM_IRQFLAGS_H
- 
--/* Empty for now */
-+#include "os.h"
-+
-+static inline int raw_irqs_disabled_flags(unsigned long flags)
-+{
-+	return flags == 0;
-+}
-+
-+static inline void raw_local_irq_disable(void)
-+{
-+	block_signals();
-+}
-+
-+static inline void raw_local_irq_enable(void)
-+{
-+	unblock_signals();
-+}
-+
-+static inline void raw_local_irq_restore(unsigned long flags)
-+{
-+	set_signals(flags);
-+}
-+
-+#define raw_local_irq_save(flags) do { typecheck(unsigned long, flags); \
-+				       (flags) = get_signals();		\
-+				       block_signals(); } while(0)
-+
- 
- #endif
-Index: linux-2.6.22/arch/um/include/os.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/os.h	2007-11-28 12:36:28.000000000 -0500
-+++ linux-2.6.22/arch/um/include/os.h	2007-11-28 12:36:39.000000000 -0500
-@@ -213,8 +213,8 @@ extern int helper_wait(int pid);
- 
- 
- /* tls.c */
--extern int os_set_thread_area(user_desc_t *info, int pid);
--extern int os_get_thread_area(user_desc_t *info, int pid);
-+extern int os_set_thread_area(struct um_dup_user_desc *info, int pid);
-+extern int os_get_thread_area(struct um_dup_user_desc *info, int pid);
- 
- /* umid.c */
- extern int umid_file_name(char *name, char *buf, int len);
-Index: linux-2.6.22/arch/um/kernel/Makefile
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/Makefile	2007-11-28 12:36:28.000000000 -0500
-+++ linux-2.6.22/arch/um/kernel/Makefile	2007-11-28 12:36:39.000000000 -0500
-@@ -15,6 +15,8 @@ obj-$(CONFIG_BLK_DEV_INITRD) += initrd.o
- obj-$(CONFIG_GPROF)	+= gprof_syms.o
- obj-$(CONFIG_GCOV)	+= gmon_syms.o
- 
-+subarch-obj-$(CONFIG_STACKTRACE) += kernel/stacktrace.o
-+
- USER_OBJS := config.o
- 
- include arch/um/scripts/Makefile.rules
-Index: linux-2.6.22/arch/um/sys-i386/sysrq.c
-===================================================================
---- linux-2.6.22.orig/arch/um/sys-i386/sysrq.c	2007-11-28 12:36:28.000000000 -0500
-+++ linux-2.6.22/arch/um/sys-i386/sysrq.c	2007-11-28 12:36:39.000000000 -0500
-@@ -7,6 +7,7 @@
- #include "linux/smp.h"
- #include "linux/sched.h"
- #include "linux/kallsyms.h"
-+#include <asm/stacktrace.h>
- #include "asm/ptrace.h"
- #include "sysrq.h"
- 
-@@ -44,33 +45,97 @@ static inline int valid_stack_ptr(struct
- }
- 
- /* Adapted from i386 (we also print the address we read from). */
--static inline unsigned long print_context_stack(struct thread_info *tinfo,
--				unsigned long *stack, unsigned long ebp)
-+static unsigned long print_context_stack(struct thread_info *tinfo,
-+					 unsigned long *stack, unsigned long ebp,
-+					 const struct stacktrace_ops *ops,
-+					 void *data)
- {
- 	unsigned long addr;
- 
- #ifdef CONFIG_FRAME_POINTER
- 	while (valid_stack_ptr(tinfo, (void *)ebp)) {
- 		addr = *(unsigned long *)(ebp + 4);
--		printk("%08lx:  [<%08lx>]", ebp + 4, addr);
--		print_symbol(" %s", addr);
--		printk("\n");
-+		ops->address(data, addr);
- 		ebp = *(unsigned long *)ebp;
- 	}
- #else
- 	while (valid_stack_ptr(tinfo, stack)) {
- 		addr = *stack;
--		if (__kernel_text_address(addr)) {
--			printk("%08lx:  [<%08lx>]", (unsigned long) stack, addr);
--			print_symbol(" %s", addr);
--			printk("\n");
--		}
-+		if (__kernel_text_address(addr))
-+			ops->address(data, addr);
- 		stack++;
- 	}
- #endif
- 	return ebp;
- }
- 
-+void dump_trace(struct task_struct *task, struct pt_regs *regs,
-+	        unsigned long *stack, const struct stacktrace_ops *ops,
-+		void *data)
-+{
-+	struct thread_info *context;
-+	unsigned long ebp = 0;
-+
-+	if (!task)
-+		task = current;
-+
-+	if (!stack) {
-+		unsigned long dummy;
-+		stack = &dummy;
-+		if (task != current)
-+			stack = (unsigned long *) KSTK_ESP(task);
-+	}
-+
-+#ifdef CONFIG_FRAME_POINTER
-+	if (!ebp) {
-+		if (task == current) {
-+			/* Grab ebp right from our regs */
-+			asm ("movl %%ebp, %0" : "=r" (ebp) : );
-+		} else {
-+			ebp = KSTK_EBP(task);
-+		}
-+	}
-+#endif
-+
-+	context = (struct thread_info *)
-+		((unsigned long)stack & (~(THREAD_SIZE - 1)));
-+	ebp = print_context_stack(context, stack, ebp, ops, data);
-+}
-+
-+static void show_trace_warning_symbol(void *data, char *msg,
-+				      unsigned long symbol)
-+{
-+	printk(data);
-+	print_symbol(msg, symbol);
-+	printk("\n");
-+}
-+
-+static void show_trace_warning(void *data, char *msg)
-+{
-+	printk("%s%s\n", (char *) data, msg);
-+}
-+
-+static int show_trace_stack(void *data, char *name)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * Print one address/symbol entries per line.
-+ */
-+static void show_trace_address(void *data, unsigned long addr)
-+{
-+	printk("%s [<%08lx>] ", (char *) data, addr);
-+	print_symbol("%s\n", addr);
-+}
-+
-+static const struct stacktrace_ops show_trace_ops = {
-+	.warning = show_trace_warning,
-+	.warning_symbol = show_trace_warning_symbol,
-+	.stack = show_trace_stack,
-+	.address = show_trace_address,
-+};
-+
- void show_trace(struct task_struct* task, unsigned long * stack)
- {
- 	unsigned long ebp;
-@@ -79,7 +144,8 @@ void show_trace(struct task_struct* task
- 	/* Turn this into BUG_ON if possible. */
- 	if (!stack) {
- 		stack = (unsigned long*) &stack;
--		printk("show_trace: got NULL stack, implicit assumption task == current");
-+		printk("show_trace: got NULL stack, implicit assumption "
-+		       "task == current");
- 		WARN_ON(1);
- 	}
- 
-@@ -94,7 +160,7 @@ void show_trace(struct task_struct* task
- 
- 	context = (struct thread_info *)
- 		((unsigned long)stack & (~(THREAD_SIZE - 1)));
--	print_context_stack(context, stack, ebp);
-+	print_context_stack(context, stack, ebp, &show_trace_ops, "");
- 
- 	printk("\n");
- }
-Index: linux-2.6.22/include/asm-um/stacktrace.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22/include/asm-um/stacktrace.h	2007-11-28 12:36:39.000000000 -0500
-@@ -0,0 +1,6 @@
-+#ifndef __UM_STACKTRACE_H
-+#define __UM_STACKTRACE_H
-+
-+#include "asm/arch/stacktrace.h"
-+
-+#endif
+Amtsgericht Montabaur HRB 6484
+Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
+Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Norbert Lang, Achim Weiss
+Aufsichtsratsvorsitzender: Michael Scheeren
