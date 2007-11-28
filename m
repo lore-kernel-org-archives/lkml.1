@@ -1,82 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbXK1AoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760314AbXK1Aq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbXK1AoS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 19:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXK1AoF
+	id S1760314AbXK1Aq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 19:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbXK1AqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 19:44:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:34236 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758668AbXK1AoC (ORCPT
+	Tue, 27 Nov 2007 19:46:19 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35194 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755682AbXK1AqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 19:44:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=BW2WKEaeuExlxYS7qrRWw0QBMMykVFgZWf9Tp9ztFKxdMQUGSbTpQyEGbONJKR7LmT18VBGsHfddQOHFd6HjgleKcDMkNRcVbRPuXezUkPaCd9vIjsKOMipuD1PdhJ8Y6U72b2J3NofXc/NsK2uOg2vmDIXOaltEP/Yki9Qao5o=
-Date: Wed, 28 Nov 2007 01:43:53 +0100
-To: Willy Tarreau <w@1wt.eu>
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: git guidance
-Message-Id: <20071128014353.4294e664.Kristoffer.ericson@gmail.com>
-In-Reply-To: <20071127235237.GF15227@1wt.eu>
-References: <474C9B31.8000408@imap.cc>
-	<20071127235511.bd9557f0.Kristoffer.ericson@gmail.com>
-	<20071127235237.GF15227@1wt.eu>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Tue, 27 Nov 2007 19:46:18 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Neil Horman <nhorman@redhat.com>
+Cc: Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
+       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com, vgoyal@in.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071127014740.GA28622@hmsreliant.think-freely.org>
+	<200711271445.56792.ak@suse.de>
+	<20071127142826.GB31376@hmsreliant.think-freely.org>
+	<200711271543.11809.ak@suse.de>
+	<20071127144856.GC31376@hmsreliant.think-freely.org>
+	<m14pf7k8ns.fsf@ebiederm.dsl.xmission.com>
+	<474C832C.1060903@redhat.com>
+	<20071127210558.GI14887@hmsendeavour.rdu.redhat.com>
+	<m1r6ibia9v.fsf@ebiederm.dsl.xmission.com>
+	<20071127234037.GA16756@hmsendeavour.rdu.redhat.com>
+Date: Tue, 27 Nov 2007 17:43:15 -0700
+In-Reply-To: <20071127234037.GA16756@hmsendeavour.rdu.redhat.com> (Neil
+	Horman's message of "Tue, 27 Nov 2007 18:40:37 -0500")
+Message-ID: <m14pf7i4ik.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 00:52:38 +0100
-Willy Tarreau <w@1wt.eu> wrote:
+Neil Horman <nhorman@redhat.com> writes:
 
-> On Tue, Nov 27, 2007 at 11:55:11PM +0100, Kristoffer Ericson wrote:
-> > Greetings,
-> > 
-> > Google is your friend. If you're looking for irc channels you can always try #git at irc.freenode.net
-> > Git howto/tutorial/... doesn't belong in the kernel mailinglist.
-> 
-> Well, I don't agree with you. His question is about how to use GIT to
-> develop his driver.
->    1) linux-kernel is a development ML.
->    2) he needs help from people how already encountered such beginner's
->       issues and who might git very good advices.
-Agreed, my main concern was turning list into a "git-support" list and since I used the tutorials myself to get started, I felt
-they are quite satisfactory. However as you pointed out, needing help to develope his driver is a kernel matter. Point taken. :)
+>> Close.  There are two options with virtual wire mode.  
+>> - Either the local apic is in virtual wire mode, and somehow the
+>>   legacy interrupts make it to the local cpu.
 
-> 
-> It should not turn into an endless thread led by people who want to
-> redefine GIT's roadmap, but experience sharing helps a lot with GIT.
-> 
-> Tilman, there was a howto by Jeff Garzik I believe. It helped me
-> a lot when I didn't understand a damn command, even if it was in
-> the very old ages (version 0.5 or something like this). The tutorials
-> on the GIT site are quite good too. You must read them entirely and
-> proceed with the examples as you read them. Believe me, it helps you
-> understand a lot of things, specially about the split in 3 parts
-> (objects, cache, and working dir).
-> 
-> I really think that if your patches do not apply, it's because you
-> have lost some changes due to a wrong initial use possibly caused
-> by a mis-understanding of the tool. It happened to me too, but in
-> this case you can almost certainly find your old changes in older
-> commits.
-> 
-> I really hope that soon someone will come up with a big 400-pages
-> book called "GIT" with a lot of good advices. It would be awesome.
-I second that :)
+> I assume this is the case if the ioapic is also in virtual wire
+> mode.
 
-> 
-> Anyway, don't get demotivated about the tool or the workflow. If
-> you find it inconvenient to use, you're doing something wrong and
-> you don't know it.
-> 
-> Regards,
-> Willy
-> 
+No.  The ioapic is completely disabled in this case.
+
+> and the
+> destination field for the appropriate interrupt(s) (the timer interrupt in this
+> case) is set to either physical mode with a destination id of the lapic for the
+> running cpu, or if it is set to logical mode and the destination id has the
+> corresponding bit for the running cpu set.  Is that right?
+
+No.  All of the ioapic routing entries are disabled.
+
+>> - Or an ioapic is in virtual wire mode and the legacy interrupt
+>>   controller is connected to it.
+>> 
+> I thought we only had one ioapic in this system (Ben correct me if I'm wrong on
+> that please).  I thought the above printk told us that, because apic2 and pin2
+> are both -1, that means that the 8259 isn't physically connected to any cpu, and
+> instead is routed through apic 0, and asserts on pin 2 of that ioapic. 
+>
+>> So I guess fundamentally for any SMP system that only supports the
+>> cpu being in local apic mode and only routes interrupts to the boot
+>> strap processor we could be in trouble.  That is what our current
+>> information about your system suggests.
+>> 
+> If that were the case, then we would need to support moving kexec boot to cpu0,
+> at least in some limited cases.  I've got a patch together that enables the
+> handshaking I was brainstorming earlier, which should allow an attempted jump to
+> cpu0 on a crash, with a fallback to booting on the crashing processor.  If we
+> wind up confirming the above case, then I'll post it.
+>
+>> However most systems actually connect the i8254 PIC interrupt
+> Sorry, to split hairs here, but you mean the 8259 right? 
+
+Grr. Yes. The i8259.  Got the timer and the PIC numbers confused Oops.
+The legacy configuration is the timer to the PIC to either the local
+or the ioapic.
+
+> Just want to be sure I'm clear on whats going on.  I thought the
+> 8254 was the external timer. 
+
+Yep.  You have it straight.
+
+>> controller to the ioapic in virtual wire mode.  As I recall the
+>> standard mapping is to ioapic 0, pin 0.  With ioapic 0, pin 2 being
+>> the timer interrupt (Possibly it is the other way around).
+>> 
+>> So as a test we could feed those values into ioapic_8259 and see
+>> if the kdump case works.  I believe we prefer putting the ioapic
+>> into virtual wire mode over putting the cpu into virtual wire
+>> mode.  We can only control which cpu receives the legacy interrupts if
+>> we are putting the ioapic in virtual wire mode.
+>> 
+> I'm sorry, I can't find ioapic_8259 defined anywhere.  Where is that supposed to
+> be?  Show me where its defined and I'll happily write the patch.
+
+Grr.  That should have been ioapic_i8259.  The second value we print out
+in the ..Timer printk.
+
+>> It may also be an interesting test to just enable the timer for the
+>> ioapic in early boot, as you have suggested.  I don't have a clue what
+>> that will do.
+>> 
+> Unfortunately nothing.  We've tried using the local apic timer in a previous
+> test, and it resulted in no change, as did transitioning the cpu to the apic
+> timer via a call to switch_ipi_to_APIC_timer.  Its possible I did something
+> wrong however.
+
+Well if you didn't have the local apic enabled beyond virtual wire
+mode that could have cause problems.
+
+Sure.  I suspect the probably is that you were still in a legacy irq
+mode.
+
+> Currently I'm writing a patch that calls setup_ioapic_dest after we call
+> disable_IO_APIC.  Looking at the implementation, it appears that calling this
+> function should rewrite the irq routing table in the ioapic to deliver
+> interrupts to the set of online cpus, as defined by the TARGET_CPUS macro.  I
+> asusme that if the ioapic is in virtual wire mode from the call to
+> disablie_IO_APIC, then calling setup_ioapic_dest will force interrupts to be
+> delivered to the crashing cpu, as it should be the only bit set in the online
+> cpu mask.  Please feel free to poke holes in this idea.
+
+Just try and make certain: ioapic_i8259.pin != -1
+Which should cause disable_IO_APIC to put the ioapic and not the local
+apic in virtual wire mode.
+
+Anything else is likely to do strange things.
+
+Eric
