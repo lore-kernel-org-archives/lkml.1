@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbXK1Loa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbXK1LpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbXK1Loa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 06:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759415AbXK1LoW
+	id S1760965AbXK1LpQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 06:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759750AbXK1LpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 06:44:22 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46767 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759226AbXK1LoV (ORCPT
+	Wed, 28 Nov 2007 06:45:01 -0500
+Received: from el-out-1112.google.com ([209.85.162.179]:29477 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759653AbXK1LpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 06:44:21 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, oleg@tv-sign.ru, rjw@sisk.pl,
-       roland@redhat.com, xemul@openvz.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: + proc-fix-the-threaded-proc-self.patch added to -mm tree
-References: <200711262339.lAQNdNrw029057@imap1.linux-foundation.org>
-	<20071128014901.4b303954@inria.fr>
-	<787b0d920711280141v463759efod86395c50c1b47c5@mail.gmail.com>
-	<20071128104622.GB19694@elte.hu>
-	<m1ve7mehcm.fsf@ebiederm.dsl.xmission.com>
-Date: Wed, 28 Nov 2007 04:42:22 -0700
-In-Reply-To: <m1ve7mehcm.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Wed, 28 Nov 2007 04:31:53 -0700")
-Message-ID: <m1r6iaegv5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 28 Nov 2007 06:45:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VKPWcgtDKtEVZSekWtdvQF5sXzHzNg2ZCAq1kYvj77ATBHpKo2AgHc4/fLCYDxvcr3ZAilQ2FmgmDOoQnAcReZhXuU58fHKEsK0EIQ5j0x/R9UA5CAuRYrxtFdK67AN2rl3kvHlaIAUuBY6fqIuhQm41wYoKWdG7LtildlVEs2Y=
+Message-ID: <e85b9d30711280344p816ef2araef7532c00821112@mail.gmail.com>
+Date: Wed, 28 Nov 2007 12:44:58 +0100
+From: Matthew <jackdachef@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: CFS scheduler, -v24, for v2.6.24-rc3-git3 / current git state
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071128112438.GA321@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e85b9d30711280217j104f3117oac4a0fe5bedb5cf1@mail.gmail.com>
+	 <20071128112438.GA321@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+> cool. Which scheduler are you comparing this to - v2.6.23-ish? Or
+> CFS-v22?
+>
 
-> I am not certain the two components make sense as we have a possible
-> permission problem where it is remotely possible that a task will
-> have permission to access /proc/<tid> but not /proc/<tgid>.
+compared to v22 & that of 2.6.23
+cfs of v2.6.23 was quite "nice" with some great stuttering - dunno why
+the best besides current was v19.1 or v19.2 (sound stuttering was a
+little stronger I think but desktop "feeling" was definitely better
+than v22 and that of 2.6.23)  if I recall right 2.6.21 + cfs backport
+/ cfs patch
 
-Got it.  I can totally avoid in permission issues by having a
-follow_link method that just goes to the target directory without
-checking permissions as we go.
 
-So in the worst case with weird selinux permission rules you
-might be able to access /proc/task but not /proc/self or
-/proc/task/..
+>
+> which patches does "ck-patchset" carry at the moment? One would be
+> swap-prefetch i guess, right?
+>
+the swap prefetch patch at least I think, I need to ask waninkoko,
+he's maintaining the zen-sources git-repository
 
-At least for what I care about, weird cases with unshare where the
-mounts and the other namespaces may be different between threads in
-someones home rolled thread package that uses CLONE_THREAD
-we should be ok.
+> thanks :)
 
-Eric
+Your welcome, linux needs improvement wherever it can get - until it's
+the "best" OS out there  :)
 
+Mat
