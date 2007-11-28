@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbXK1RDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbXK1RFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761793AbXK1RDQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 12:03:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbXK1RDB
+	id S1761543AbXK1RFr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 12:05:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXK1RFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 12:03:01 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49818 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758856AbXK1RDA (ORCPT
+	Wed, 28 Nov 2007 12:05:38 -0500
+Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:11542 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758465AbXK1RFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 12:03:00 -0500
-To: jdike@addtoit.com
-CC: mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <E1IxQEX-0007Ji-TV@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Wed, 28 Nov 2007 17:57:57 +0100)
-Subject: Re: -rt doesn't compile for UML
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu> <20071128154152.GA742@elte.hu> <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu> <20071128160501.GA7986@elte.hu> <E1IxQEX-0007Ji-TV@dorka.pomaz.szeredi.hu>
-Message-Id: <E1IxQJM-0007LZ-1w@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 28 Nov 2007 18:02:56 +0100
+	Wed, 28 Nov 2007 12:05:37 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [s390] networking related oops during boot on Hercules (was: build failure)
+Date: Wed, 28 Nov 2007 18:05:33 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ursula Braun <braunu@de.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Peter Tiedemann <ptiedem@de.ibm.com>
+References: <200711281127.30051.elendil@planet.nl> <200711281324.02748.elendil@planet.nl> <200711281718.48661.borntraeger@de.ibm.com>
+In-Reply-To: <200711281718.48661.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711281805.34959.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Nov 2007 17:05:35.0388 (UTC) FILETIME=[E45E4DC0:01C831E0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, managed to make it compile, but then something goes wrong in
-> tracer_alloc_bootmem().
+On Wednesday 28 November 2007, Christian Borntraeger wrote:
+> This seems to be related to the new network namespace code by Eric
+> Biederman (CCed). Can you try the following (untested) patch? I also
+> CCed Ursula and Peter as they know the ctc code better than me.
 
-It needs 32M, and uml has that much by default.  Doh.
+Yes, that fixes it. Boots fine now and I can ssh into the system. Not tested 
+any further than that.
 
-But something is still wrong:
+Thanks Christian.
 
-> /store/quilt/linux/linux mem=64
-Core dump limits :
-        soft - 0
-        hard - NONE
-Checking that ptrace can change system call numbers...OK
-Checking syscall emulation patch for ptrace...missing
-Checking for tmpfs mount on /dev/shm...nothing mounted on /dev/shm
-Checking PROT_EXEC mmap in /tmp/...OK
-Checking for the skas3 patch in the host:
-  - /proc/mm...not found: No such file or directory
-  - PTRACE_FAULTINFO...not found: Invalid argument
-  - PTRACE_LDT...not found: Invalid argument
-UML running in SKAS0 mode
-setup_physmem - mapping -8093632 bytes of memory at 0x0x8800000 failed - errno = -12
+> CC: Eric W. Biederman <ebiederm@xmission.com>
+> CC: Ursula Braun <braunu@de.ibm.com>
+> CC: Peter Tiedemann <ptiedem@de.ibm.com>
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+>
+> ---
+>  drivers/s390/net/ctcmain.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> Index: linux-2.6/drivers/s390/net/ctcmain.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/s390/net/ctcmain.c
+> +++ linux-2.6/drivers/s390/net/ctcmain.c
+> @@ -56,6 +56,7 @@
+>  #include <linux/skbuff.h>
+>  #include <linux/ctype.h>
+>  #include <net/dst.h>
+> +#include <net/net_namespace.h>
+>
+>  #include <asm/io.h>
+>  #include <asm/ccwdev.h>
+> @@ -2823,6 +2824,7 @@ ctc_init_netdevice(struct net_device * d
+>  	dev->type = ARPHRD_SLIP;
+>  	dev->tx_queue_len = 100;
+>  	dev->flags = IFF_POINTOPOINT | IFF_NOARP;
+> +	dev->nd_net = &init_net;
+>  	return dev;
+>  }
 
-Miklos
