@@ -1,120 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbXK1Vch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbXK1Vi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbXK1Vch (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 16:32:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbXK1Vc1
+	id S1758238AbXK1Vi4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 16:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbXK1Vip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 16:32:27 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36931 "EHLO e5.ny.us.ibm.com"
+	Wed, 28 Nov 2007 16:38:45 -0500
+Received: from smtp2-g19.free.fr ([212.27.42.28]:54532 "EHLO smtp2-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754656AbXK1VcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 16:32:25 -0500
-Date: Wed, 28 Nov 2007 13:31:47 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, Alex Chiang <achiang@hp.com>,
-       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de, lenb@kernel.org,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
-       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
-Message-ID: <20071128213147.GA6199@us.ibm.com>
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com> <20071126222253.GA31708@ldl.fc.hp.com> <20071127030454.GC23277@us.ibm.com> <20071127111136.77cb61fc@appleyard>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127111136.77cb61fc@appleyard>
-User-Agent: Mutt/1.4.1i
+	id S1754188AbXK1Vio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 16:38:44 -0500
+Message-ID: <474DDFDE.7010204@free.fr>
+Date: Wed, 28 Nov 2007 22:38:38 +0100
+From: Laurent Riffard <laurent.riffard@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1: I/O error, system hangs
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <4744A6F2.4030302@free.fr>	 <20071121144116.c932727b.akpm@linux-foundation.org>	 <4746814F.80502@free.fr> <4746866B.5070207@suse.de>	 <4746BB9D.2030508@suse.de>  <4747135C.60205@free.fr>	 <1195886569.3195.2.camel@localhost.localdomain> <47481FA6.9050506@free.fr>	 <1195910809.3195.5.camel@localhost.localdomain> <4748ACC7.4010509@free.fr> <1195976275.3427.6.camel@localhost.localdomain> <4749DD87.5020206@free.fr>
+In-Reply-To: <4749DD87.5020206@free.fr>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 11:11:36AM -0800, Kristen Carlson Accardi wrote:
-> On Mon, 26 Nov 2007 19:04:54 -0800
-> Gary Hade <garyhade@us.ibm.com> wrote:
+Le 25.11.2007 21:39, Laurent Riffard a écrit :
+> Le 25.11.2007 08:37, James Bottomley a écrit :
+>> On Sat, 2007-11-24 at 23:59 +0100, Laurent Riffard wrote:
+>>> Le 24.11.2007 14:26, James Bottomley a écrit :
+>>>> OK, could you post dmesgs again, please.  I actually tested this
+>>> with an
+>>>> aic79xx card, and for me it does cause Domain Validation to succeed
+>>>> again.
+>>> James, 
+>>>
+>>> Here is a dmesg produced by 2.6.24-rc3-mm1 + your patch "separates
+>>> the 
+>>> BLOCK and QUIESCE states
+>>> correctly" (http://lkml.org/lkml/2007/11/24/8).
+>>>
+[...]
+>>> [   25.521256] scsi0 : pata_via
+>>> [   25.521711] scsi1 : pata_via
+>>> [   25.524089] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xb800 irq 14
+>>> [   25.524176] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xb808 irq 15
+>>> [   25.683141] ata1.00: ATA-5: ST340016A, 3.75, max UDMA/100
+>>> [   25.683208] ata1.00: 78165360 sectors, multi 16: LBA 
+>>> [   25.683475] ata1.01: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
+>>> [   25.684116] ata1.01: 160086528 sectors, multi 16: LBA 
+>>> [   25.691127] ata1.00: configured for UDMA/100
+>>> [   25.699142] ata1.01: configured for UDMA/100
+>>> [   26.170860] ata2.00: ATAPI: HL-DT-ST DVDRAM GSA-4165B, DL05, max UDMA/33
+>>> [   26.171562] ata2.01: ATAPI: CD-950E/AKU, A4Q, max MWDMA2, CDB intr
+>>> [   26.330839] ata2.00: configured for UDMA/33
+>>> [   26.490828] ata2.01: configured for MWDMA2
+>>> [   26.503014] scsi 0:0:0:0: Direct-Access     ATA      ST340016A 3.75 PQ: 0 ANSI: 5
+>>> [   26.504670] scsi 0:0:1:0: Direct-Access     ATA      Maxtor 6Y080L0 YAR4 PQ: 0 ANSI: 5
+>>> [   26.509842] scsi 1:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4165B DL05 PQ: 0 ANSI: 5
+>>> [   26.511673] scsi 1:0:1:0: CD-ROM            E-IDE    CD-950E/AKU A4Q  PQ: 0 ANSI: 5
+>> [...]
+>>> [   60.216113] sd 0:0:0:0: [sda] Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+>>> [   60.216124] end_request: I/O error, dev sda, sector 16460
+>> I think this one's quite easy:  PATA devices in libata are queue depth 1
+>> (since they don't do NCQ).  Thus, they're peculiarly sensitive to the
+>> bug where we fail over queue depth requests.
+>>
+>> On the other hand, I don't see how a filesystem request is getting
+>> REQ_FAILFAST ... unless there's a bio or readahead issue involved.
+>> Anyway, could you try this patch:
+>>
+>> http://marc.info/?l=linux-scsi&m=119592627425498
+>>
+>> Which should fix the queue depth issue, and see if the errors go away?
 > 
-> > > Is this patchset appropriate for the -mm tree yet?  
-> > 
-> > I would defer to our illustrious maintainers on this one. :)
-> > 
-> > > Or do you think it still needs more work?  
-> > 
-> > I am now much more comfortable with your changes with respect
-> > to acpiphp on the systems I worry about but others may have
-> > concerns with respect to the other hotplug drivers, or even
-> > acpiphp, on other systems.
-> 
-> I'm ok with adding it to my quilt tree (and into -mm) after Gary gets
-> back to us later this week.
-
-I'm getting back to you but unfortunately with not so good
-news.  Sorry Alex.
-
-On the x3950 (configured single node) I encountered the below
-problem when attempting to hotplug a PCIe adapter when 'pci_slot'
-was loaded prior to 'acpiphp'.  I did not see the problem when
-the drivers were loaded in the opposite order.
-
-After the messages appeared, the hotplug operation did not 
-complete and I was unable to recover hotplug functionality
-without a reboot.  I attempted recovery by unloading both
-drivers and then reloading only 'acpiphp' but even though
-an LED for the slot that had received the problem triggering
-adapter indicated that the slot was receiving power, the
-sysfs slot power file indicated otherwise (contained 0).
-So, I was unable to power off the slot to allow the removal
-and reinsertion of the adapter.
-
-FYI, the node contains 2 hotpluggable PCIe slots and 5
-non-hotpluggable PCIe slots but 'pci_slot' only exposed
-the 2 hotpluggable slots.  This does not appear to be due
-to a 'pci_slot' driver problem since I looked at the DSDT
-and SSDT and found that there are currently no _SUN methods
-for the non-hotpluggable slots.
-
-Gary
-
+> No, this one doesn't help...
+ 
+still happens with 2.6.24-rc3-mm2...
 -- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
-invalid opcode: 0000 [1] SMP 
-CPU 1 
-Modules linked in: acpiphp pci_slot e1000 aic79xx scsi_transport_spi shpchp dock pci_hotplug ipt_LOG xt_limit xt_pkttype button battery ac power_supply ip6t_REJECT xt_tcpudp ipt_REJECT iptable_mangle iptable_filter ip6table_mangle ip_tables ip6table_filter ip6_tables x_tables ipv6 usbhid ff_memless ext3 jbd loop dm_mod ehci_hcd uhci_hcd usbcore ide_cd bnx2 cdrom rng_core reiserfs ata_piix ahci libata thermal processor piix sg megaraid_sas fan edd sd_mod scsi_mod ide_disk ide_core
-Pid: 121, comm: kacpi_notify Not tainted 2.6.24-rc3-gh-smp #1
-RIP: 0010:[<ffffffff882c2344>]  [<ffffffff882c2344>] :pci_slot:__this_module+0x21c4/0xfffffffffffff204
-RSP: 0018:ffff81103fa43ea8  EFLAGS: 00010216
-RAX: ffff81103f944a18 RBX: ffff81103d4fe910 RCX: 000000000000000f
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff8110400d13d0
-RBP: ffffffff8032d97b R08: ffff8110400fc7e0 R09: 0000000000000002
-R10: 0000000000000000 R11: ffffffff8021d193 R12: ffff811040105cf0
-R13: ffffffffffffffff R14: ffffffff80635820 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff8110400ed8c0(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 00002b266d876471 CR3: 000000103c825000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process kacpi_notify (pid: 121, threadinfo ffff81103fa42000, task ffff81103f9f8040)
-Stack:  ffffffff8033339c ffff81103d119a00 ffffffff8032d99e ffff81103f9fc540
- ffffffff8024618d ffff81103f9fc540 ffff81103f9fc540 ffffffff8024696c
- ffffffff80246a46 0000000000000000 ffff81103f9f8040 ffffffff80249ada
-Call Trace:
- [<ffffffff8033339c>] acpi_ev_notify_dispatch+0x57/0x60
- [<ffffffff8032d99e>] acpi_os_execute_notify+0x23/0x2c
- [<ffffffff8024618d>] run_workqueue+0x7f/0x10b
- [<ffffffff8024696c>] worker_thread+0x0/0xe4
- [<ffffffff80246a46>] worker_thread+0xda/0xe4
- [<ffffffff80249ada>] autoremove_wake_function+0x0/0x2e
- [<ffffffff802499bc>] kthread+0x47/0x73
- [<ffffffff8020cc98>] child_rip+0xa/0x12
- [<ffffffff80249975>] kthread+0x0/0x73
- [<ffffffff8020cc8e>] child_rip+0x0/0x12
-
-
-Code: ff ff ff ff 40 23 2c 88 ff ff ff ff 00 c8 c6 3b 10 81 ff ff 
-RIP  [<ffffffff882c2344>] :pci_slot:__this_module+0x21c4/0xfffffffffffff204
- RSP <ffff81103fa43ea8>
-
+laurent
