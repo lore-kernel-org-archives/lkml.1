@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbXK1J3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbXK1JiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758962AbXK1J3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 04:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXK1J3J
+	id S1758401AbXK1JiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 04:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbXK1JiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 04:29:09 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35583 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755102AbXK1J3I (ORCPT
+	Wed, 28 Nov 2007 04:38:12 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47476 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755179AbXK1JiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 04:29:08 -0500
-Date: Wed, 28 Nov 2007 09:28:56 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Marcel Holtmann <marcel@holtmann.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: m68k build failure
-Message-ID: <20071128092856.GV8181@ftp.linux.org.uk>
-References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org> <20071128094856.056c0a3f@poseidon.drzeus.cx> <20071128010056.85703a34.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128010056.85703a34.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Wed, 28 Nov 2007 04:38:11 -0500
+To: akpm@linux-foundation.org
+CC: jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+In-reply-to: <20071127213801.4def3c23.akpm@linux-foundation.org> (message from
+	Andrew Morton on Tue, 27 Nov 2007 21:38:01 -0800)
+Subject: Re: [uml-devel] leak in do_ubd_request
+References: <E1Ix3Du-0002aL-Ac@dorka.pomaz.szeredi.hu>
+	<E1Ix58o-0004J5-Mz@dorka.pomaz.szeredi.hu>
+	<20071127201105.GA9332@c2.user-mode-linux.org>
+	<E1Ix73b-0004aI-Px@dorka.pomaz.szeredi.hu>
+	<20071127222020.GA10096@c2.user-mode-linux.org> <20071127213801.4def3c23.akpm@linux-foundation.org>
+Message-Id: <E1IxJMf-00067v-2r@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 28 Nov 2007 10:37:53 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 01:00:56AM -0800, Andrew Morton wrote:
-> > No the slightest. 12 seems like the correct, padded size. A size of 10 is just weird as the unpadded size is 9 bytes. Could you dump the __mod_sdio_device_table section so we can determine if it is cropped or just oddly padded.
+> On Tue, 27 Nov 2007 17:20:20 -0500 Jeff Dike <jdike@addtoit.com> wrote:
+> 
+> > On Tue, Nov 27, 2007 at 09:29:23PM +0100, Miklos Szeredi wrote:
+> > > Sure.  The patch works for me, but please check that it also makes
+> > > sense.
+> > 
+> > I did - it's a straight-forward leak and fix.
 > > 
 > 
-> err, I'd rather not.  I have no shortage of bugs to be going on with here.
-> 
-> http://userweb.kernel.org/~akpm/cross-compilers/ has the i386->m68k
-> cross-compiler which I use.
+> Do we have any idea which patch this patch fixes?
 
-Eh...  m68k has 16bit alignment for unsigned long.  
+I seems like a mainline bug, and has been present for some time
+(forever?).
 
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -343,7 +343,8 @@ struct sdio_device_id {
- 	__u8	class;			/* Standard interface or SDIO_ANY_ID */
- 	__u16	vendor;			/* Vendor or SDIO_ANY_ID */
- 	__u16	device;			/* Device ID or SDIO_ANY_ID */
--	kernel_ulong_t driver_data;	/* Data private to the driver */
-+	kernel_ulong_t driver_data	/* Data private to the driver */
-+		__attribute__((aligned(sizeof(kernel_ulong_t))));
- };
- 
- /* SSB core, see drivers/ssb/ */
+I have no idea why this wasn't noticed earlier.
+
+Miklos
