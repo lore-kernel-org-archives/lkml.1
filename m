@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbXK1SbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbXK1Sbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbXK1SbR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 13:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbXK1Sat
+	id S1757558AbXK1Sbp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 13:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXK1Sbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 13:30:49 -0500
-Received: from [212.12.190.40] ([212.12.190.40]:49464 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751758AbXK1Sas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 13:30:48 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-Subject: Re: git guidance
-Date: Wed, 28 Nov 2007 21:30:12 +0300
-User-Agent: KMail/1.5
-Cc: Rogan Dawes <lists@dawes.za.net>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20071127235237.GF15227@1wt.eu> <200711282014.27299.a1426z@gawab.com> <Pine.LNX.4.64.0711281811500.27959@racer.site>
-In-Reply-To: <Pine.LNX.4.64.0711281811500.27959@racer.site>
+	Wed, 28 Nov 2007 13:31:37 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:8157 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515AbXK1Sbg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 13:31:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HW8GiQm3OxHcMLqXuUh9is+vj5fGTb8Ah9bzC75HjrSPLmag2PM9zz6TWHBakItp5oMuNGNXcSvRrVuZzDFhWZZ7wCAyJ92+2U2/aKEI8u2IgYFqEu0Qdao344slOmX1Y3oGTQ4QVf3McW3KU+KUw6urWtOvXrbzr+05rtbPho0=
+Message-ID: <19f34abd0711281031r3d9ac97bw800aaeec87e86816@mail.gmail.com>
+Date: Wed, 28 Nov 2007 19:31:35 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>
+Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <474D100E.1000101@student.ltu.se>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200711282130.12864.a1426z@gawab.com>
+Content-Disposition: inline
+References: <474C34CC.6060509@gmail.com> <474D100E.1000101@student.ltu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Schindelin wrote:
-> By that definition, no SCM, not even CVS, is transparent.  Nothing short
-> of unpacked directories of all versions (wasting a lot of disk space)
-> would.
+Hi,
 
-Who said anything about unpacking?
+On Nov 28, 2007 7:51 AM, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
+> Vegard Nossum wrote:
+> > +static int
+> Not 'static bool'?
+> > +page_is_tracked(struct page *page)
+> Why not returning 'false' and 'true'?
 
-I'm talking about GIT transparently serving a Virtual Version Control dir to 
-be mounted on the client.
+Sorry, I am not used to using bool in C :-) I will change this if bool
+is preferred in kernel code.
 
+> > +static unsigned int
+> > +opcode_get_size(const uint8_t *opcode)
+> Are we not using 'u8' in the kernel?
 
-Thanks!
+Actually, I don't see any reason to use u8 when uint8_t is already
+standard and used in other places in the kernel.
 
---
-Al
+Thanks for the other comments! I will make the necessary changes for
+the next version.
 
+> cu
+> Richard Knutsson
+
+Vegard
