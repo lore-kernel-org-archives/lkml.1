@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbXK1Mrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbXK1MsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760685AbXK1Mrf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 07:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXK1Mr0
+	id S1761213AbXK1MsB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 07:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760656AbXK1Mrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 07:47:26 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48297 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751864AbXK1MrZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 07:47:25 -0500
-To: mingo@elte.hu
-CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: -rt doesn't compile for UML
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 28 Nov 2007 13:47:20 +0100
+	Wed, 28 Nov 2007 07:47:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59478 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754170AbXK1Mrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 07:47:51 -0500
+Date: Wed, 28 Nov 2007 13:47:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: David Howells <dhowells@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [build bug] SCTP, net/sctp/auth.c, ./net/rxrpc/ar-key.c fails
+	to build
+Message-ID: <20071128124730.GA19498@elte.hu>
+References: <20071122153359.GA7268@elte.hu> <20071128124433.GA18378@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128124433.GA18378@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When writing a big file to a ubd disk, everything in uml slows down to
-a crawl, even though CPU usage is minimal.
 
-So I wanted to try the latency tracer from -rt, but it doesn't compile
-with UML:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-  CC      arch/um/kernel/asm-offsets.s
-In file included from arch/um/include/sysdep/kernel-offsets.h:2,
-                 from arch/um/kernel/asm-offsets.c:1:
-include/linux/sched.h: In function ‘set_tsk_need_resched_delayed’:
-include/linux/sched.h:2105: error: ‘TIF_NEED_RESCHED_DELAYED’ undeclared (first use in this function)
-include/linux/sched.h:2105: error: (Each undeclared identifier is reported only once
-include/linux/sched.h:2105: error: for each function it appears in.)
-include/linux/sched.h: In function ‘clear_tsk_need_resched_delayed’:
-include/linux/sched.h:2110: error: ‘TIF_NEED_RESCHED_DELAYED’ undeclared (first use in this function)
-include/linux/sched.h: In function ‘need_resched_delayed’:
-include/linux/sched.h:2115: error: ‘TIF_NEED_RESCHED_DELAYED’ undeclared (first use in this function)
-make[1]: *** [arch/um/kernel/asm-offsets.s] Error 1
-make: *** [prepare0] Error 2
+> a similar build bug happens with latest -git as well, with SCTP:
+> 
+>  net/built-in.o: In function `rxrpc_destroy_s':
+>  ar-key.c:(.text+0xc5a2b): undefined reference to `crypto_free_tfm'
+>  net/built-in.o: In function `rxrpc_instantiate_s':
+>  ar-key.c:(.text+0xc5ed9): undefined reference to `crypto_alloc_base'
+>  net/built-in.o: In function `sctp_endpoint_put':
+>  : undefined reference to `crypto_free_tfm'
+>  net/built-in.o: In function `sctp_inet_listen':
+>  : undefined reference to `crypto_free_tfm'
+>  net/built-in.o: In function `sctp_auth_destroy_hmacs':
+>  : undefined reference to `crypto_free_tfm'
+>  net/built-in.o: In function `sctp_auth_init_hmacs':
+>  : undefined reference to `crypto_alloc_base'
+> 
+> this is a build regression over v2.6.23. config attached.
 
-Ingo, do you think this route is worthwhile pursuing, or is it too
-difficult to make -rt work for UML?
+the patch below fix it (or rather, works it around).
 
-Thanks,
-Miklos
+	Ingo
+
+------------->
+Subject: SCTP: fix build bug
+From: Ingo Molnar <mingo@elte.hu>
+
+fix build bug:
+
+ net/built-in.o: In function `rxrpc_destroy_s':
+ ar-key.c:(.text+0xc5a2b): undefined reference to `crypto_free_tfm'
+ net/built-in.o: In function `rxrpc_instantiate_s':
+ ar-key.c:(.text+0xc5ed9): undefined reference to `crypto_alloc_base'
+ net/built-in.o: In function `sctp_endpoint_put':
+ : undefined reference to `crypto_free_tfm'
+ net/built-in.o: In function `sctp_inet_listen':
+ : undefined reference to `crypto_free_tfm'
+ net/built-in.o: In function `sctp_auth_destroy_hmacs':
+ : undefined reference to `crypto_free_tfm'
+ net/built-in.o: In function `sctp_auth_init_hmacs':
+ : undefined reference to `crypto_alloc_base'
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ net/sctp/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/net/sctp/Kconfig
+===================================================================
+--- linux.orig/net/sctp/Kconfig
++++ linux/net/sctp/Kconfig
+@@ -6,7 +6,7 @@ menuconfig IP_SCTP
+ 	tristate "The SCTP Protocol (EXPERIMENTAL)"
+ 	depends on INET && EXPERIMENTAL
+ 	depends on IPV6 || IPV6=n
+-	select CRYPTO if SCTP_HMAC_SHA1 || SCTP_HMAC_MD5
++	select CRYPTO
+ 	select CRYPTO_HMAC if SCTP_HMAC_SHA1 || SCTP_HMAC_MD5
+ 	select CRYPTO_SHA1 if SCTP_HMAC_SHA1
+ 	select CRYPTO_MD5 if SCTP_HMAC_MD5
