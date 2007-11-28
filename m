@@ -1,74 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbXK1G7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbXK1HEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbXK1G7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 01:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbXK1G7h
+	id S1754763AbXK1HEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 02:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbXK1HEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 01:59:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34502 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750805AbXK1G7g (ORCPT
+	Wed, 28 Nov 2007 02:04:25 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:34835 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbXK1HEY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 01:59:36 -0500
-Date: Tue, 27 Nov 2007 22:53:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
-Message-Id: <20071127225328.9e3f3827.akpm@linux-foundation.org>
-In-Reply-To: <474D0AAC.5010005@linux.vnet.ibm.com>
-References: <474D0AAC.5010005@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Nov 2007 02:04:24 -0500
+Message-ID: <474D100E.1000101@student.ltu.se>
+Date: Wed, 28 Nov 2007 07:51:58 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
+References: <474C34CC.6060509@gmail.com>
+In-Reply-To: <474C34CC.6060509@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 11:59:00 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Vegard Nossum wrote:
+> General description: kmemcheck will trap every read and write to 
+> memory that was
+> allocated dynamically (ie. with kmalloc()). If a memory address is 
+> read that has
+> not previously been written to, a message is printed to the kernel log.
+>
+<snip>
+> diff --git a/arch/x86/kernel/kmemcheck_32.c 
+> b/arch/x86/kernel/kmemcheck_32.c
+> new file mode 100644
+> index 0000000..9d065b9
+> --- /dev/null
+> +++ b/arch/x86/kernel/kmemcheck_32.c
+> @@ -0,0 +1,290 @@
+> +#include <linux/kernel.h>
+> +#include <linux/kallsyms.h>
+> +#include <linux/mm.h>
+> +#include <asm/cacheflush.h>
+> +#include <asm/kmemcheck.h>
+> +#include <asm/tlbflush.h>
+> +
+> +static int
+Not 'static bool'?
+> +page_is_tracked(struct page *page)
+> +{
+> +    struct page *head;
+> +
+> +    if (!page)
+> +        return 0;
+> +    head = compound_head(page);
+> +    if (!head)
+> +        return 0;
+> +    if (!(head->flags & (1 << PG_slab)))
+> +        return 0;
+> +    if (!head->slab)
+> +        return 0;
+> +    if (head->slab->flags & __GFP_NOTRACK)
+> +        return 0;
+> +    return 1;
+Why not returning 'false' and 'true'?
+> +}
+> +
+> +static void
+> +show_addr(uint32_t addr)
+> +{
+> +    struct page *page;
+> +    pte_t *pte;
+> +
+> +    if (!addr)
+> +        return;
+> +    page = virt_to_page(addr);
+> +    if (!page_is_tracked(page))
+> +        return;
+> +
+> +    pte = lookup_address(addr);
+> +    change_page_attr(page, 1, __pgprot(pte->pte_low | _PAGE_VISIBLE));
+> +    __flush_tlb_one(addr);
+> +}
+> +
+> +static void
+> +hide_addr(uint32_t addr)
+> +{
+> +    struct page *page;
+> +    pte_t *pte;
+> +
+> +    if (!addr)
+> +        return;
+> +    page = virt_to_page(addr);
+> +    if (!page_is_tracked(page))
+> +        return;
+> +    pte = lookup_address(addr);
+> +    change_page_attr(page, 1, __pgprot(pte->pte_low & ~_PAGE_VISIBLE));
+> +    __flush_tlb_one(addr);
+> +}
+> +
+> +DEFINE_PER_CPU(uint32_t, kmemcheck_read_addr);
+> +DEFINE_PER_CPU(uint32_t, kmemcheck_write_addr);
+> +
+> +void
+> +kmemcheck_show(struct pt_regs *regs)
+> +{
+> +    show_addr(__get_cpu_var(kmemcheck_read_addr));
+> +    show_addr(__get_cpu_var(kmemcheck_write_addr));
+> +    regs->eflags |= TF_MASK;
+> +}
+> +
+> +void
+> +kmemcheck_hide(struct pt_regs *regs)
+> +{
+> +    hide_addr(__get_cpu_var(kmemcheck_read_addr));
+> +    hide_addr(__get_cpu_var(kmemcheck_write_addr));
+> +    regs->eflags &= ~TF_MASK;
+> +}
+> +
+> +void
+> +kmemcheck_hide_pages(struct page *p, unsigned int n)
+> +{
+> +    unsigned int i;
+> +
+> +    for(i = 0; i < n; ++i) {
+> +        unsigned long address = (unsigned long) page_address(&p[i]);
+> +        pte_t *pte = lookup_address(address);
+> +
+> +        change_page_attr(&p[i], 1,
+> +            __pgprot(pte->pte_low & ~_PAGE_VISIBLE));
+> +        __flush_tlb_one(address);
+> +    }
+> +}
+> +
+> +static int
+'static bool'?
+> +opcode_is_prefix(uint8_t b)
+> +{
+> +    return
+> +        /* Group 1 */
+> +        b == 0xf0 || b == 0xf2 || b == 0xf3
+> +        /* Group 2 */
+> +        || b == 0x2e || b == 0x36 || b == 0x3e || b == 0x26
+> +        || b == 0x64 || b == 0x65 || b == 0x2e || b == 0x3e
+> +        /* Group 3 */
+> +        || b == 0x66
+> +        /* Group 4 */
+> +        || b == 0x67;
+> +}
+> +
+> +/* This is a VERY crude opcode decoder. We only need to find the size 
+> of the
+> + * load/store that caused our #PF and this should work for all the 
+> opcodes
+> + * that we care about. Moreover, the ones who invented this 
+> instruction set
+> + * should be shot. */
+> +static unsigned int
+> +opcode_get_size(const uint8_t *opcode)
+Are we not using 'u8' in the kernel?
+> +{
+> +    const uint8_t *i;
+and here. Also, I find the name 'i' a bit confusing in this context, 
+since it is not really a counter. What about 'cur', 'prefix_op' or 
+something of the sort?
+> +
+> +    /* Default operand size */
+> +    int operand_size_override = 32;
+> +
+> +    /* prefixes */
+> +    for (i = opcode; opcode_is_prefix(*i); ++i) {
+> +        if (*i == 0x66)
+> +            operand_size_override = 16;
+> +    }
+> +
+> +    /* escape opcode */
+> +    if (*i == 0x0f) {
+> +        ++i;
+> +
+> +        if(*i == 0xb6)
+Please do, as the previous, 'if ()'. A good checker for these kind of 
+things is the 'scripts/checkpatch.pl'...
+> +            return operand_size_override >> 1;
+> +        if(*i == 0xb7)
+> +            return 16;
+> +    }
+> +
+> +    return (*i & 1) ? operand_size_override : 8;
+> +}
+> +
+> +static uint8_t
+and here...
+> +opcode_get_primary(const uint8_t *opcode)
+and here..
+> +{
+> +    const uint8_t *i;
+and here. Also, I find the name 'i' a bit confusing in this context, 
+since it is not really a counter. What about 'cur', 'prim_op', 
+'prefix_op' or something of the sort?
+> +
+> +    /* skip prefixes */
+> +    for (i = opcode; opcode_is_prefix(*i); ++i);
+> +    return *i;
+> +}
+> +
+> +static void *address_get_shadow_slab(unsigned long address,
+> +    struct page *head)
+> +{
+> +    if (!head->slab)
+> +        return NULL;
+> +
+> +    if (head->slab->flags & __GFP_NOTRACK)
+> +        return NULL;
+> +
+> +    return (void *) address + (PAGE_SIZE << head->slab->order);
+> +}
+> +
+> +static void *address_get_shadow(unsigned long address)
+> +{
+> +    struct page *page = virt_to_page(address);
+> +    struct page *head = compound_head(page);
+> +
+> +    if (!head)
+> +        return NULL;
+> +
+> +    if (head->flags & (1 << PG_slab))
+> +        return address_get_shadow_slab(address, head);
+> +
+> +    return NULL;
+> +}
+> +
+> +static int
+'static bool'?
+> +test(void *shadow, unsigned int size)
+> +{
+> +    switch (size) {
+> +    case 8:
+> +        return *(uint8_t *) shadow == 0xff;
+> +    case 16:
+> +        return *(uint16_t *) shadow == 0xffff;
+> +    case 32:
+> +        return *(uint32_t *) shadow == 0xffffffff;
+> +    }
+> +
+> +    BUG();
+> +    return 0;
+'return false;'?
+> +}
+> +
+<snip>
 
-> Hi,
-
-(cc linux-scsi, for sym53c8xx)
-
-> Soft lockup is detected while bootup with 2.6.24-rc3-git2 on powerbox
-
-I assume this is a post-2.6.23 regression?
-
-> BUG: soft lockup - CPU#1 stuck for 11s! [insmod:375]
-> NIP: c00000000002f02c LR: d0000000001414fc CTR: c00000000002f018
-> REGS: c00000077cbef0b0 TRAP: 0901   Not tainted  (2.6.24-rc3-git2-autotest)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24022088  XER: 00000000
-> TASK = c00000077cbd8000[375] 'insmod' THREAD: c00000077cbec000 CPU: 1
-> GPR00: d0000000001414fc c00000077cbef330 c00000000052b930 d000080080002014 
-> GPR04: d00008008000202c 0000000000000000 c00000077ca1cb00 d00000000014ce54 
-> GPR08: c00000077ca1c63c 0000000000000000 000000000000002a c00000000002f018 
-> GPR12: d000000000143610 c000000000473d00 
-> NIP [c00000000002f02c] .ioread8+0x14/0x60
-> LR [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
-> Call Trace:
-> [c00000077cbef330] [c00000077cbef3c0] 0xc00000077cbef3c0 (unreliable)
-> [c00000077cbef3a0] [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
-> [c00000077cbef470] [d0000000001395f8] .sym2_probe+0x700/0x99c [sym53c8xx]
-> [c00000077cbef710] [c0000000001bc118] .pci_device_probe+0x124/0x1b0
-> [c00000077cbef7b0] [c000000000221138] .driver_probe_device+0x144/0x20c
-> [c00000077cbef850] [c000000000221450] .__driver_attach+0xcc/0x154
-> [c00000077cbef8e0] [c00000000021ff94] .bus_for_each_dev+0x7c/0xd4
-> [c00000077cbef9a0] [c000000000220e9c] .driver_attach+0x28/0x40
-> [c00000077cbefa20] [c0000000002204d8] .bus_add_driver+0x90/0x228
-> [c00000077cbefac0] [c000000000221858] .driver_register+0x94/0xb0
-> [c00000077cbefb40] [c0000000001bc430] .__pci_register_driver+0x6c/0xcc
-> [c00000077cbefbe0] [d000000000143428] .sym2_init+0x108/0x15b0 [sym53c8xx]
-> [c00000077cbefc80] [c00000000008ce80] .sys_init_module+0x17c4/0x1958
-> [c00000077cbefe30] [c00000000000872c] syscall_exit+0x0/0x40
-> Instruction dump:
-> 60000000 786b0420 38210070 7d635b78 e8010010 7c0803a6 4e800020 7c0802a6 
-> f8010010 f821ff91 7c0004ac 89230000 <0c090000> 4c00012c 79290620 2f8900ff 
-
-I see no obvious lockup sites near the end of sym_hcb_attach().  Maybe it's
-being called lots of times from a higher level..  Do the traces all look
-the same?
+cu
+Richard Knutsson
 
