@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbXK1NQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbXK1NVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760813AbXK1NQI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 08:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759835AbXK1NPz
+	id S1760400AbXK1NVt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 08:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbXK1NVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 08:15:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56044 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759776AbXK1NPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 08:15:54 -0500
-Date: Wed, 28 Nov 2007 14:15:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: -rt doesn't compile for UML
-Message-ID: <20071128131541.GA4467@elte.hu>
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128131518.GA3193@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128131518.GA3193@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 28 Nov 2007 08:21:41 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47721 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757202AbXK1NVl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 08:21:41 -0500
+Date: Wed, 28 Nov 2007 13:18:16 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Julia Lawall <julia@diku.dk>
+Cc: ambx1@neo.rr.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/5] drivers/pnp/resource.c: Add missing pci_dev_put
+Message-ID: <20071128131816.49e92fde@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0711190905100.19198@ask.diku.dk>
+References: <Pine.LNX.4.64.0711190905100.19198@ask.diku.dk>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 Nov 2007 09:07:22 +0100 (CET)
+Julia Lawall <julia@diku.dk> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> >   CC      kernel/latency_trace.o
-> > kernel/latency_trace.c:28:21: error: asm/rtc.h: No such file or directory
-> > kernel/latency_trace.c:63:3: error: #error Implement cycles_to_usecs.
-> > kernel/latency_trace.c: In function ???____trace???:
-> > kernel/latency_trace.c:658: error: implicit declaration of function ???irqs_disabled_flags???
-> > make[1]: *** [kernel/latency_trace.o] Error 1
+> From: Julia Lawall <julia@diku.dk>
 > 
-> hm, just fill those functions in - should be fairly trivial and we can 
-> carry those patches in -rt. (I'd suggest to create an empty 
-> asm-um/rtc.h stub as well, for consistency.)
+> There should be a pci_dev_put when breaking out of a loop that iterates
+> over calls to pci_get_device and similar functions.
 
-trivial == 'far easier than porting -rt to UML' :-)
 
-	Ingo
+Entire series:
+
+Acked-by: Alan Cox <alan@redhat.com>
