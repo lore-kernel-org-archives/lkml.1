@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbXK1S6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbXK1TBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbXK1S6G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 13:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbXK1S5z
+	id S1758180AbXK1TBF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:01:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXK1TAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 13:57:55 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59765 "EHLO
+	Wed, 28 Nov 2007 14:00:54 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60037 "EHLO
 	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755490AbXK1S5y (ORCPT
+	with ESMTP id S1751334AbXK1TAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 13:57:54 -0500
-Date: Wed, 28 Nov 2007 18:57:12 +0000 (GMT)
+	Wed, 28 Nov 2007 14:00:54 -0500
+Date: Wed, 28 Nov 2007 18:59:57 +0000 (GMT)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.wat.veritas.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] prep_zero_page: remove bogus BUG_ON
-Message-ID: <Pine.LNX.4.64.0711281855230.25292@blonde.wat.veritas.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ethan Solomita <solo@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] don't waste swap on locked pages
+Message-ID: <Pine.LNX.4.64.0711281857180.25292@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.11 gave __GFP_ZERO's prep_zero_page a bogus "highmem may have to wait"
-assertion.  Presumably added under the misconception that clear_highpage
-uses nonatomic kmap; but then and now it uses kmap_atomic, so no problem.
+try_to_unmap always fails on a page found in a VM_LOCKED vma (unless
+migrating), and recycles it back to the active list.  But if it's an
+anonymous page, we've already allocated swap to it: just wasting swap.
+Spot locked pages in page_referenced_one and treat them as referenced.
 
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Tested-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
-No need for this one in -stable: nobody hit it but me in making other changes.
 
- mm/page_alloc.c |    1 -
- 1 file changed, 1 deletion(-)
+ mm/rmap.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- 2.6.24-rc3-git/mm/page_alloc.c	2007-11-17 18:45:00.000000000 +0000
-+++ linux/mm/page_alloc.c	2007-11-28 17:01:20.000000000 +0000
-@@ -305,7 +305,6 @@ static inline void prep_zero_page(struct
- {
- 	int i;
+--- 2.6.24-rc3-git/mm/rmap.c	2007-11-27 05:00:22.000000000 +0000
++++ linux/mm/rmap.c	2007-11-28 17:01:20.000000000 +0000
+@@ -284,7 +284,10 @@ static int page_referenced_one(struct pa
+ 	if (!pte)
+ 		goto out;
  
--	VM_BUG_ON((gfp_flags & (__GFP_WAIT | __GFP_HIGHMEM)) == __GFP_HIGHMEM);
- 	/*
- 	 * clear_highpage() will use KM_USER0, so it's a bug to use __GFP_ZERO
- 	 * and __GFP_HIGHMEM from hard or soft interrupt context.
+-	if (ptep_clear_flush_young(vma, address, pte))
++	if (vma->vm_flags & VM_LOCKED) {
++		referenced++;
++		*mapcount = 1;	/* break early from loop */
++	} else if (ptep_clear_flush_young(vma, address, pte))
+ 		referenced++;
+ 
+ 	/* Pretend the page is referenced if the task has the
