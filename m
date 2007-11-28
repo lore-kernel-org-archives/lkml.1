@@ -1,91 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbXK1Dun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbXK1EMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753632AbXK1Dun (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 22:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXK1DuV
+	id S1755195AbXK1EMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 23:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXK1EMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 22:50:21 -0500
-Received: from vena.lwn.net ([206.168.112.25]:45931 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751467AbXK1DuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 22:50:15 -0500
-To: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Tue, 27 Nov 2007 15:02:52 PST."
-             <20071127230252.GB10038@kroah.com> 
-Date: Tue, 27 Nov 2007 20:50:14 -0700
-Message-ID: <2532.1196221814@lwn.net>
+	Tue, 27 Nov 2007 23:12:01 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58062 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751834AbXK1EL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 23:11:59 -0500
+X-Sasl-enc: fgWrlTlZOT/f/mJhe9kA7a6L0kQ8gQ3OyNNhxZazF2wr 1196223119
+Date: Wed, 28 Nov 2007 02:11:55 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: ACPI related Warning in 2.6.24-rc3-git2
+Message-ID: <20071128041155.GB18131@khazad-dum.debian.net>
+References: <20071127150557.GA4365@ics.muni.cz> <200711271637.13036.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711271637.13036.rjw@sisk.pl>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> wrote:
+On Tue, 27 Nov 2007, Rafael J. Wysocki wrote:
+> > in recent kernel, I got the following warnings while booting. It's ACPI
+> > related. Does anybode care? Lenovo ThinkPad T61 (6465CTO).
 
-> Jonathan, I used your old lwn.net article about kobjects as the basis
-> for this document, I hope you don't mind
+Could we know the BIOS version, please?
 
-Certainly I have no objections, I'm glad it was useful.
-
-A few little things...
-
-> It is rare (even unknown) for kernel code to create a standalone kobject;
-> with one major exception explained below.
-
-You don't keep this promise - bet you thought we wouldn't notice...
-Actually I guess you do, in the "creating simple kobjects" section.
-When you get to that point, you should mention that this is a situation
-where standalone kobjects make sense.
-
-Given that there are quite a few standalone kobjects created by this
-patch set (kernel_kobj, security_kobj, s390_kobj, etc.), the "(even
-unknown)" should probably come out.
-
-> So, for example, UIO code has a structure that defines the memory region
-> associated with a uio device:
-
-*The* UIO code, presumably.
-
-> the given type. So, for example, a pointer to a struct kobject embedded
-> within a struct cdev called "kp" could be converted to a pointer to the
-> containing structure with:
-
-That should be "struct uio_mem", I think.
-
-> one.  Calling kobject_init() is not sufficient, however. Kobject users
-> must, at a minimum, set the name of the kobject; this is the name that will
-> be used in sysfs entries.
-
-Is setting the name mandatory now, or are there still places where
-kobjects (which do not appear in sysfs) do have - and do not need - a
-name?
-
-> Because kobjects are dynamic, they must not be declared statically or on
-> the stack, but instead, always from the heap.  Future versions of the
-
-"always be allocated from the heap"?
-
-> "empty" release function, you will be mocked merciously by the kobject
-> maintainer if you attempt this.
-
-So just how should severely should we mock kobject maintainers who can't
-spell "mercilessly"?  :)
-
->  - A kset can provide a set of default attributes that all kobjects that
->    belong to it automatically inherit and have created whenever a kobject
->    is registered belonging to the kset.
-
-Can we try that one again?
-
- - A kset can provide a set of default attributes for all kobjects which
-   belong to it.
-
-> There is currently
-> no other way to add a kobject to a kset without directly messing with the
-> list pointers.
-
-Presumably the latter way is not recommended; I would either say so or
-not mention this possibility at all.
-
-jon
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
