@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbXK1WqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbXK1WtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbXK1WqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbXK1WqO
+	id S1760949AbXK1WtK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:49:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757726AbXK1Ws4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:46:14 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:13802 "EHLO
-	mail112-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357AbXK1WqM (ORCPT
+	Wed, 28 Nov 2007 17:48:56 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55018 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757715AbXK1Ws4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:46:12 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <474DEFAB.6040000@am.sony.com>
-Date: Wed, 28 Nov 2007 14:46:03 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 28 Nov 2007 17:48:56 -0500
+Date: Wed, 28 Nov 2007 14:47:46 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] driver core fixes for 2.6.24-rc3
+Message-ID: <20071128224746.GA28410@kroah.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 5/7] ps3: Kill unused ps3_repository_bump_device()
-References: <20071128143142.580732000@pademelon.sonytel.be> <20071128143438.547001000@pademelon.sonytel.be>
-In-Reply-To: <20071128143438.547001000@pademelon.sonytel.be>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Nov 2007 22:46:07.0912 (UTC) FILETIME=[771A0A80:01C83210]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
+Here are some driver core bugfixes and documentation updates for
+2.6.24-rc3.  It fixes a regression with CONFIG_PM being set and not set
+that people have reported.
 
-> ps3: Kill unused ps3_repository_bump_device()
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  arch/powerpc/platforms/ps3/platform.h |    6 ------
->  1 files changed, 6 deletions(-)
+There's some other minor fixes, and an update for the UIO documentation.
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+All of these have been in the -mm tree for a while.
+
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
+
+thanks,
+
+greg k-h
+
+
+ Documentation/DocBook/Makefile       |    2 +-
+ Documentation/DocBook/uio-howto.tmpl |   90 ++++++++++++----------------------
+ drivers/base/core.c                  |    4 +-
+ drivers/base/power/Makefile          |    3 +-
+ drivers/base/power/main.c            |    8 +---
+ drivers/base/power/power.h           |   28 ++++++++---
+ drivers/char/Kconfig                 |    2 +-
+ fs/sysfs/file.c                      |    6 ++-
+ lib/kobject.c                        |    4 +-
+ 9 files changed, 68 insertions(+), 79 deletions(-)
+
+---------------
+
+Daniel Drake (1):
+      create /sys/.../power when CONFIG_PM is set
+
+Hans J Koch (2):
+      UIO: fix up the UIO documentation
+      UIO: add UIO documentation target to DocBook Makefile
+
+Johannes Berg (1):
+      kobject: two typo fixes
+
+Kay Sievers (1):
+      allow LEGACY_PTYS to be set to 0
+
+Miao Xie (1):
+      sysfs: fix off-by-one error in fill_read_buffer()
 
