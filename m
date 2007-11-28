@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbXK1J7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbXK1KBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbXK1J7P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 04:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758052AbXK1J6t
+	id S1759898AbXK1KBd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 05:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXK1KBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 04:58:49 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38899 "EHLO mx1.suse.de"
+	Wed, 28 Nov 2007 05:01:22 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:37813 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757554AbXK1J6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 04:58:48 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Marcel Holtmann <marcel@holtmann.org>,
-       linux-kernel@vger.kernel.org
+	id S1756542AbXK1KBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 05:01:21 -0500
+Date: Wed, 28 Nov 2007 11:01:11 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>
 Subject: Re: m68k build failure
+Message-ID: <20071128110111.0c11fbfc@poseidon.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.64.0711281024351.29243@anakin>
 References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org>
 	<20071128094856.056c0a3f@poseidon.drzeus.cx>
-X-Yow: YOW!  I can see 1987!!  PRESIDENT FORD is doing the REMAKE of "PAGAN
- LOVE SONG"...he's playing ESTHER WILLIAMS!!
-Date: Wed, 28 Nov 2007 10:58:45 +0100
-In-Reply-To: <20071128094856.056c0a3f@poseidon.drzeus.cx> (Pierre Ossman's
-	message of "Wed\, 28 Nov 2007 09\:48\:56 +0100")
-Message-ID: <jeve7m3d4a.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	<Pine.LNX.4.64.0711281020350.29243@anakin>
+	<Pine.LNX.4.64.0711281024351.29243@anakin>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-27994-1196244079-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman <drzeus@drzeus.cx> writes:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> On Tue, 27 Nov 2007 22:07:23 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> 
->> Current Linus tree give me this, with m68k allmodconfig:
->> 
->> FATAL: drivers/bluetooth/btsdio: sizeof(struct sdio_device_id)=12 is not a modulo of the size of section __mod_sdio_device_table=30.
->> Fix definition of struct sdio_device_id in mod_devicetable.h
->> 
->> which I haven't seen before.  Any ideas?
->> 
->
-> No the slightest. 12 seems like the correct, padded size. A size of 10 is just weird as the unpadded size is 9 bytes. Could you dump the __mod_sdio_device_table section so we can determine if it is cropped or just oddly padded.
+--=_hera.drzeus.cx-27994-1196244079-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-A size of 10 is correct.  On m68k no type is aligned to more than 2
-bytes.
+On Wed, 28 Nov 2007 10:27:18 +0100 (CET)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Andreas.
+>=20
+> So the problem is in scripts/mod/file2alias.c, which gives a different
+> sizeof(struct sdio_device_id) on the cross-compile host:
+>   - sizeof(struct sdio_device_id) =3D 12 on ia32
+>   - sizeof(struct sdio_device_id) =3D 10 on m68k
+>=20
+> While file2alias.c has code to handle 32 vs. 64 bit correctly when
+> cross-compiling, it doesn't handle alignment differences between host
+> and target.
+>=20
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Delightful. So what are the options here? Start packing the device table st=
+ructs is the obvious quick fix. Declaring cross-compilation unsupported isn=
+'t really viable, and I guess determining padding differences is far from e=
+asy.
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-27994-1196244079-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHTTxn7b8eESbyJLgRAoNsAKDM5d2H84EjaaJ7lfVPWO9azApryACgpxiQ
+356AdEHOLH4xWt7QpaqbkAE=
+=7LgA
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-27994-1196244079-0001-2--
