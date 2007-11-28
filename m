@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbXK1VoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbXK1Vo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbXK1VoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 16:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbXK1VoG
+	id S1759945AbXK1Vo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 16:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbXK1Vou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 16:44:06 -0500
-Received: from gw.goop.org ([64.81.55.164]:34659 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754725AbXK1VoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 16:44:03 -0500
-Message-ID: <474DE11F.1020706@goop.org>
-Date: Wed, 28 Nov 2007 13:43:59 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 28 Nov 2007 16:44:50 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54601 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755672AbXK1Vot (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 16:44:49 -0500
+Date: Wed, 28 Nov 2007 22:45:21 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [patch] Fix hpet wrong values
+Message-ID: <20071128214521.GA6918@elf.ucw.cz>
+References: <20071127122308.GA2640@elf.ucw.cz> <20071128103851.GA19701@elte.hu> <20071128104040.GA20113@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Thomas Tuttle <linux-kernel@ttuttle.net>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Oops with 2.6.24 git when loading iwl3945
-References: <1196196237.19410.1223544787@webmail.messagingengine.com> <20071127214820.0251bc66.akpm@linux-foundation.org>
-In-Reply-To: <20071127214820.0251bc66.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128104040.GA20113@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I have a shiny new t61p which uses iwl3945.  It barely runs carefully
-> selected bits of the fc8 2.6.23-based kernel and heaven knows what 2.6.24
-> will do to it.  It will join my Vaio as a
-> tool-of-kernel-developer-tormenting.  This means that your wireless should
-> keep working ;)
+Hi!
 
-My X60 is boringly stable with currentish kernels, and the recent
-changes to the wireless driver have made it feel actually solid.  Unless
-you want blinky lights.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> >  ---------------->
+> >  e09e9089131ca0227a716aee143f49d084977e32 is first bad commit
+> >  commit e09e9089131ca0227a716aee143f49d084977e32
+> >  Author: Pavel Machek <pavel@ucw.cz>
+> >  Date:   Wed Nov 28 03:06:03 2007 +0100
+> > 
+> >       x86: fix wrong hpet values
+> >  <----------------
+> 
+> it's the hpet_enable() returning non-0 that is causing the crash. The 
+> current patch that is in x86.git is below.
 
-    J
+Sorry about that. Andrew already dropped the patch, you probably want
+to drop it from x86 tree, too...
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
