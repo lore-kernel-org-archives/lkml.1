@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbXK1UUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbXK1UYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbXK1UUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 15:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXK1UU3
+	id S1759308AbXK1UYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 15:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbXK1UYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 15:20:29 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:53667 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755699AbXK1UU2 (ORCPT
+	Wed, 28 Nov 2007 15:24:12 -0500
+Received: from nuova-ex1.nuovasystems.com ([67.91.200.196]:12637 "EHLO
+	nuova-ex1.nuovasystems.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751010AbXK1UYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 15:20:28 -0500
-Date: Wed, 28 Nov 2007 15:16:58 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: Remy Bohmer <linux@bohmer.net>, Daniel Walker <dwalker@mvista.com>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will
- stall forever
-In-Reply-To: <20071128200550.GA3494@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
-References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
- <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
- <1196176294.13982.58.camel@localhost.localdomain> <1196177122.23808.7.camel@imap.mvista.com>
- <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
- <20071128172509.GA30173@flint.arm.linux.org.uk>
- <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
- <20071128200550.GA3494@flint.arm.linux.org.uk>
+	Wed, 28 Nov 2007 15:24:10 -0500
+X-Greylist: delayed 973 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 15:24:10 EST
+Message-ID: <474DCAA5.3020108@nuovasystems.com>
+Date: Wed, 28 Nov 2007 12:08:05 -0800
+From: Joe Eykholt <joe@nuovasystems.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chris Leech <christopher.leech@intel.com>
+CC: Christoph Hellwig <hch@infradead.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Dev, Vasu" <vasu.dev@intel.com>, jeff@garzik.org,
+       linux-scsi@vger.kernel.org, "Zou, Yi" <yi.zou@intel.com>,
+       netdev@vger.kernel.org,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       linux-kernel@vger.kernel.org, james.bottomley@hansenpartnership.com,
+       "Ronciak, John" <john.ronciak@intel.com>, devel@open-fcoe.org,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, davem@davemloft.net
+Subject: Re: [Open-FCoE] [ANNOUNCE] Open-FCoE - Fibre Channel over Ethernet
+ Project
+References: <10A7D0016239E24092DEF05CCC582E43028A636B@fmsmsx411.amr.corp.intel.com>	<20071128074426.GA30468@infradead.org> <474DAB30.20703@intel.com>
+In-Reply-To: <474DAB30.20703@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Nov 2007 20:07:54.0532 (UTC) FILETIME=[5C9B3640:01C831FA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 28 Nov 2007, Russell King - ARM Linux wrote:
-
-> On Wed, Nov 28, 2007 at 02:04:41PM -0500, Steven Rostedt wrote:
-> > Thanks for the reply and this nice explanation.
-> >
-> > I'm taking this as a NACK.
-> >
-> > Daniel or Remy, could you find the offending users and make send patches
-> > to fix them.
+Chris Leech wrote:
+> Christoph Hellwig wrote:
+>   
+>> I just did a very quick glance over the tree.  Some extremly highlevel
+>> comments to start with before actually starting the source review:
+>>     
 >
-> Note that I'm not acking nor nacking the patch; I'm not involved with
-> the RT stuff and I've never looked at the code, so I don't know what
-> the implications of the patch itself are.
-
-Understood. But I didn't know to pull it in or not. So I used your
-explanation to NACK it myself. I don't understand all the intricacies of
-the arm architecture. So while Thomas is out, I'm not pulling this in.
-
-If he comes back and gives his ACK, I'll simply NACK my NACK ;-)
-
+> Thanks for taking a look Christoph
 >
-> I've merely explained the point of the simple irq handler.
+>   
+>>  - why do you need your own libcrc?  lib/crc32.c has a crc32_le
+>>     
 >
-> Maybe the simple irq handler should never have been something that got
-> sucked into the generic IRQ stuff, but kept as something specific to
-> Neponset.
+> We shouldn't, but we may want to add a CRC and copy routine.
 >
+>   
+>>  - libsa should go.  Much of it is just wrappers of kernel functions
+>>    that should be used directly.  Other like that hash, even or state
+>>    helpers might either be opencoded in the caller or made completely
+>>    generic in lib/.  Probably the former but we'll have to see.
+>>     
+>
+> Yes, and along with it the last use of the BSD TAILQ macros.  Just 
+> before Rob set up the open repos I finished converting most of those to 
+> list_head, the only one left is in the sa_event mechanism.  Rather than 
+> convert it I'd like to replace the use of sa_event with notifier call 
+> chains.  I just need to finish auditing the use to make sure the 
+> differences won't cause unexpected problems.
+>
+> After than and unwrapping kernel functions, I think the only thing left 
+> before completly removing libsa is to open code the state machines.
+>
+> Similarly I think net_types.h need to go.
+>
+>   
+Hi All,
 
-This could also simply be unique to the interrupt threads (only in RT). So
-perhaps the patch is OK.
+[resending as plain text -sorry].
 
-Remy, sorry about this round-a-bout. But I don't have any of the hardware
-that this affects, and I'm just being cautious.
+I've had a start at getting rid of sa_state, but I haven't tested it
+yet.  It's a pretty straightforward change to just call the new state
+routine directly instead of going through the table.  I'll submit that
+in the next week or so, or if desired, someone else can take over the
+work from the code I have.
 
-Thanks,
-
--- Steve
-
+           Joe
