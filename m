@@ -1,50 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbXK1Avj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760770AbXK1Aw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760672AbXK1Avj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 19:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759266AbXK1Avb
+	id S1760770AbXK1Aw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 19:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbXK1Awu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 19:51:31 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:44581 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757643AbXK1Avb (ORCPT
+	Tue, 27 Nov 2007 19:52:50 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:45416 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759011AbXK1Aws convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 19:51:31 -0500
-Date: Tue, 27 Nov 2007 16:49:58 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: git guidance
-Message-Id: <20071127164958.f7a1234f.randy.dunlap@oracle.com>
-In-Reply-To: <20071127235237.GF15227@1wt.eu>
-References: <474C9B31.8000408@imap.cc>
-	<20071127235511.bd9557f0.Kristoffer.ericson@gmail.com>
-	<20071127235237.GF15227@1wt.eu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 27 Nov 2007 19:52:48 -0500
+From: =?us-ascii?Q?=3D=3Futf-8=3Fq=3FFerenc=5FW=3DC3=3DA1gner=3F=3D?= 
+	<wferi@niif.hu>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, wferi@niif.hu
+Subject: [PATCH 2/3] net/bonding: Return nothing for not applicable values
+Date: Wed, 28 Nov 2007 01:52:46 +0100
+Message-ID: <87wss3jin5.fsf@szonett.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 00:52:38 +0100 Willy Tarreau wrote:
+The previous code returned '\n' (that is, a single empty line)
+from most files, with one exception (xmit_hash_policy), where
+it returned 'NA\n'.  This patch consolidates each file to return
+nothing at all if not applicable, not even a '\n'.
 
-> Tilman, there was a howto by Jeff Garzik I believe. It helped me
-> a lot when I didn't understand a damn command, even if it was in
-> the very old ages (version 0.5 or something like this). The tutorials
-> on the GIT site are quite good too. You must read them entirely and
-> proceed with the examples as you read them. Believe me, it helps you
-> understand a lot of things, specially about the split in 3 parts
-> (objects, cache, and working dir).
+I find this behaviour more usual, more useful, more efficient
+and shorter to code from both sides.
 
-FYI, Jeff's git info is at
-  http://linux.yyz.us/git-howto.html
-
+Signed-off-by: Ferenc Wágner <wferi@niif.hu>
 ---
-~Randy
+ drivers/net/bonding/bond_sysfs.c |   25 ++++---------------------
+ 1 files changed, 4 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
+index a3f1b4a..6bb91e2 100644
+--- a/drivers/net/bonding/bond_sysfs.c
++++ b/drivers/net/bonding/bond_sysfs.c
+@@ -455,14 +455,11 @@ static ssize_t bonding_show_xmit_hash(struct device *d,
+ 				      struct device_attribute *attr,
+ 				      char *buf)
+ {
+-	int count;
++	int count = 0;
+ 	struct bonding *bond = to_bond(d);
+ 
+-	if ((bond->params.mode != BOND_MODE_XOR) &&
+-	    (bond->params.mode != BOND_MODE_8023AD)) {
+-		// Not Applicable
+-		count = sprintf(buf, "NA\n");
+-	} else {
++	if ((bond->params.mode == BOND_MODE_XOR) ||
++	    (bond->params.mode == BOND_MODE_8023AD)) {
+ 		count = sprintf(buf, "%s %d\n",
+ 			xmit_hashtype_tbl[bond->params.xmit_policy].modename,
+ 			bond->params.xmit_policy);
+@@ -1079,8 +1076,6 @@ static ssize_t bonding_show_primary(struct device *d,
+ 
+ 	if (bond->primary_slave)
+ 		count = sprintf(buf, "%s\n", bond->primary_slave->dev->name);
+-	else
+-		count = sprintf(buf, "\n");
+ 
+ 	return count;
+ }
+@@ -1186,7 +1181,7 @@ static ssize_t bonding_show_active_slave(struct device *d,
+ {
+ 	struct slave *curr;
+ 	struct bonding *bond = to_bond(d);
+-	int count;
++	int count = 0;
+ 
+ 	read_lock(&bond->curr_slave_lock);
+ 	curr = bond->curr_active_slave;
+@@ -1194,8 +1189,6 @@ static ssize_t bonding_show_active_slave(struct device *d,
+ 
+ 	if (USES_PRIMARY(bond->params.mode) && curr)
+ 		count = sprintf(buf, "%s\n", curr->dev->name);
+-	else
+-		count = sprintf(buf, "\n");
+ 	return count;
+ }
+ 
+@@ -1309,8 +1302,6 @@ static ssize_t bonding_show_ad_aggregator(struct device *d,
+ 		struct ad_info ad_info;
+ 		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.aggregator_id);
+ 	}
+-	else
+-		count = sprintf(buf, "\n");
+ 
+ 	return count;
+ }
+@@ -1331,8 +1322,6 @@ static ssize_t bonding_show_ad_num_ports(struct device *d,
+ 		struct ad_info ad_info;
+ 		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0: ad_info.ports);
+ 	}
+-	else
+-		count = sprintf(buf, "\n");
+ 
+ 	return count;
+ }
+@@ -1353,8 +1342,6 @@ static ssize_t bonding_show_ad_actor_key(struct device *d,
+ 		struct ad_info ad_info;
+ 		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.actor_key);
+ 	}
+-	else
+-		count = sprintf(buf, "\n");
+ 
+ 	return count;
+ }
+@@ -1375,8 +1362,6 @@ static ssize_t bonding_show_ad_partner_key(struct device *d,
+ 		struct ad_info ad_info;
+ 		count = sprintf(buf, "%d\n", (bond_3ad_get_active_agg_info(bond, &ad_info)) ?  0 : ad_info.partner_key);
+ 	}
+-	else
+-		count = sprintf(buf, "\n");
+ 
+ 	return count;
+ }
+@@ -1401,8 +1386,6 @@ static ssize_t bonding_show_ad_partner_mac(struct device *d,
+ 					print_mac(mac, ad_info.partner_system));
+ 		}
+ 	}
+-	else
+-		count = sprintf(buf, "\n");
+ 
+ 	return count;
+ }
+-- 
+1.4.4.4
+
