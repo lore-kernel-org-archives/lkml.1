@@ -1,85 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbXK1Nf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbXK1NiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760669AbXK1Nf6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 08:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXK1Nfq
+	id S1760859AbXK1NiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 08:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbXK1NiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 08:35:46 -0500
-Received: from ro-out-1112.google.com ([72.14.202.177]:29788 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756567AbXK1Nfp (ORCPT
+	Wed, 28 Nov 2007 08:38:11 -0500
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:3243 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907AbXK1NiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 08:35:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=llPNEaA8CX1zuvUGjkA0MRvWdZWPwTneREfxq+TKbVpjZtTXkf/vlUqe1H/FOIppomEdf2+4dWVm5BhJ88nOJRJJBM/eKiWDVRWVX91KycoE3U0DZ5dnnMfltgv3drz1wtnsoX1RXMkU37kfg25dl3npBAAaGYWLBCeFdS422Xk=
-Message-ID: <474D6EA7.2000506@gmail.com>
-Date: Wed, 28 Nov 2007 22:35:35 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 28 Nov 2007 08:38:10 -0500
+Message-ID: <474D6F3A.6020906@imap.cc>
+Date: Wed, 28 Nov 2007 14:38:02 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Kjartan Maraas <kmaraas@broadpark.no>
-CC: Tomas Carnecky <tom@dbservice.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: laptop reboots right after hibernation
-References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz> <4740692E.7010801@dbservice.com> <47409DA3.7070909@dbservice.com> <1195551141.2792.3.camel@localhost.localdomain> <474CBFB6.4020105@gmail.com> <1196253340.2884.1.camel@localhost.localdomain>
-In-Reply-To: <1196253340.2884.1.camel@localhost.localdomain>
+To: Willy Tarreau <w@1wt.eu>
+CC: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: git guidance
+References: <474C9B31.8000408@imap.cc> <20071127235511.bd9557f0.Kristoffer.ericson@gmail.com> <20071127235237.GF15227@1wt.eu>
+In-Reply-To: <20071127235237.GF15227@1wt.eu>
 X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig34050CF4EEDDAFC97865DF20"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing libata people]
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig34050CF4EEDDAFC97865DF20
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Willy,
 
-Kjartan Maraas wrote:
-> Here you go. It shows the error two times and then it gets it right and
-> continues to boot. No other problems arise from this that I can see.
+thanks for your kind answer.
 
-Cool, it proves even my code works from time to time if the moon and
-stars are perfectly aligned.
+Am Mi 28 Nov 2007 00:52:38 +0100, Willy Tarreau schrieb:
+> Tilman, there was a howto by Jeff Garzik I believe.
 
-> ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 failed (Emask=0x1 Stat=0x51 Err=0x04)
+Yes, I started from that and it's fine as far as it goes. The
+"Everyday GIT With 20 Commands Or So" document was quite helpful
+too, especially the section "Individual Developer (Participant)".
+But they don't quite cover my workflow yet.
 
-Your BIOS wants to issue DEVICE CONFIGURATION FREEZE LOCK but the device
-NACKs it probably because the drive doesn't support DCO feature set.
+> The tutorials
+> on the GIT site are quite good too. You must read them entirely and
+> proceed with the examples as you read them. Believe me, it helps you
+> understand a lot of things, specially about the split in 3 parts
+> (objects, cache, and working dir).
 
-> ata1: failed to recover some devices, retrying in 5 secs
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 failed (Emask=0x1 Stat=0x51 Err=0x04)
-> ata1.00: ACPI on devcfg failed the second time, disabling (errno=-5)
+I think I got that part. My questions concern practical things
+like when to make a new branch, how to resubmit a patch following
+post-commit changes, what to do when "git format-patch" doesn't
+produce the desired result or when "git pull" obstinately declares
+"Already up-to-date" even though I know that isn't true, how to
+track a patch after submission to LKML to see when or whether it
+appears in the main tree, or how to scrub the history to stop
+"git log origin..HEAD" from listing (and "git format-patch" from
+formatting) long-merged changes as new. Well, I'll take that up on
+the git@vger.kernel.org list then, as proposed by J. Bruce Fields,
+in order not to annoy LKML readers any longer.
 
-libata EH gives ACPI one more chance but it fails again, so ACPI is
-turned off.
+> Anyway, don't get demotivated about the tool or the workflow. If
+> you find it inconvenient to use, you're doing something wrong and
+> you don't know it.
 
-> ata1.00: revalidation failed (errno=1)
-> ata1: failed to recover some devices, retrying in 5 secs
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: configured for UDMA/100
+That's what I'm thinking. What I'm trying to do can't be that
+different from what all those happy git users are doing. I guess
+if I could just watch an experienced git user at work for a day
+most of my problems would vanish.
 
-Device is now configured properly.
+Thanks,
+Tilman
 
-Your BIOS is probably trying to issue DCO freeze lock to all drives.  I
-don't have the faintest idea why it does but it does.  I think there are
-several choices here.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Yes, I have searched Google!
 
-1. Ignore device errors for _GTF commands.  Report the failure with
-KERN_DEBUG priority and just keep processing.  ISTR there was a patch to
-do this.  Anyone knows what happened to it.
 
-2. Filter out certain commands from ACPI.  I definitely don't like BIOS
-locking up random features via _GTF commands.  It makes debugging difficult.
+--------------enig34050CF4EEDDAFC97865DF20
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-3. Look at opcode on failure and ignore error for certain operations.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-My favorite is #2 but #1 should be fine too.  Any thoughts?
+iD8DBQFHTW87Q3+did9BuFsRAvvsAJ92q7WATHVT7TD/PY4axnVHzQGoyACdFpP0
+lzxyuiAVsCovN7iiQZvlMWU=
+=MG2B
+-----END PGP SIGNATURE-----
 
-Thanks.
-
--- 
-tejun
+--------------enig34050CF4EEDDAFC97865DF20--
