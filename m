@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXK1Qbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbXK1Qf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760727AbXK1Qbm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbXK1Qbf
+	id S1760904AbXK1Qf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbXK1Qft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:31:35 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:38700 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758934AbXK1Qbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:31:34 -0500
-Date: Wed, 28 Nov 2007 19:30:34 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <andrea@suse.de>, linux-kernel@vger.kernel.org,
-       jack@suse.cz, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: /proc dcache deadlock in do_exit
-Message-ID: <20071128163034.GA144@tv-sign.ru>
-References: <20071127132022.GW6840@v2.random> <20071127143852.601509ac.akpm@linux-foundation.org> <m1zlwzgn6h.fsf@ebiederm.dsl.xmission.com>
+	Wed, 28 Nov 2007 11:35:49 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:61667 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756704AbXK1Qfs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:35:48 -0500
+Date: Wed, 28 Nov 2007 17:35:32 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] Sample kset/ktype/kobject implementation
+Message-ID: <20071128173532.00bc72af@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20071127230406.GD10038@kroah.com>
+References: <20071127230252.GB10038@kroah.com>
+	<20071127230406.GD10038@kroah.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1zlwzgn6h.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/27, Eric W. Biederman wrote:
->
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On Tue, 27 Nov 2007 15:04:06 -0800,
+Greg KH <greg@kroah.com> wrote:
+
+> static struct foo_obj *create_foo_obj(const char *name)
+> {
+> 	struct foo_obj *foo;
+> 	int retval;
 > 
-> > On Tue, 27 Nov 2007 14:20:22 +0100
-> > Andrea Arcangeli <andrea@suse.de> wrote:
-> >
-> >> do_exit->release_task->mark_inode_dirty_sync->schedule() (will never
-> >> come back to run journal_stop)
-> >
-> > I don't see why the schedule() will not return?  Because the task has
-> > PF_EXITING set?  Doesn't TASK_DEAD do that?
+> 	/* allocate the memory for the whole object */
+> 	foo = kzalloc(sizeof(*foo), GFP_KERNEL);
+> 	if (!foo)
+> 		return NULL;
 > 
-> Yes, why do we not come back from schedule?
+> 	/* initialize the kobject portion of the object properly */
+> 	kobject_set_name(&foo->kobj, "%s", name);
+
+Returncode not checked :)
+
+> 	foo->kobj.kset = example_kset;
+> 	foo->kobj.ktype = &foo_ktype;
 > 
-> If we are not allowed to schedule after setting PF_EXITING before
-> we set TASK_DEAD that entire code path sounds brittle and
-> error prone.
+> 	/*
+> 	 * Register the kobject with the kernel, all the default files will
+> 	 * be created here and the uevent will be sent out.  If we were to
+> 	 * call kobject_init() and then kobject_add() we would be
+> 	 * responsible for sending out the initial KOBJ_ADD uevent.
+> 	 */
+> 	retval = kobject_register(&foo->kobj);
+> 	if (retval) {
+> 		kfree(foo);
 
-Yes, it is fine to schedule after release_task(). As Eric pointed out, we
-don't race with call_rcu(delayed_put_task_struct), scheduler has another
-reference
+kobject_put(foo) is needed since it gets you through kobject_cleanup()
+where the name can be freed.
 
-	dup_task_struct:
-		/* One for us, one for whoever does the "release_task()" (usually parent) */
-		atomic_set(&tsk->usage,2);
-
-
-
-However, with CONFIG_HOTPLUG_CPU we do have the problem here, but this is
-off-topic. Preemption is fine, but deactivate_task() is not. We can't migrate
-the deactivated released task from the dead CPU.
-
-	migrate_live_tasks() can't find the task after __unhash_process()
-
-	migrate_dead_tasks() doesn't see it after deactivate_task().
-
-And afaics try_to_wake_up() doesn't necessary change task_cpu() if it is
-offline.
-
-No? But again, this is offtopic even if I am right.
-
-Oleg.
-
+> 		return NULL;
+> 	}
+> 
+> 	return foo;
+> }
