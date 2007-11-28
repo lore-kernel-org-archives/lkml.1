@@ -1,547 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbXK1QA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761556AbXK1QAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbXK1QA2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbXK1QAV
+	id S1761556AbXK1QAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760991AbXK1QAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:00:21 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57576 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754763AbXK1QAU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:00:20 -0500
-To: mingo@elte.hu
-CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20071128154152.GA742@elte.hu> (message from Ingo Molnar on Wed,
-	28 Nov 2007 16:41:52 +0100)
-Subject: Re: -rt doesn't compile for UML
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu> <20071128154152.GA742@elte.hu>
-Message-Id: <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 28 Nov 2007 17:00:02 +0100
+	Wed, 28 Nov 2007 11:00:39 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2682 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752069AbXK1QAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:00:38 -0500
+Date: Wed, 28 Nov 2007 10:54:35 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Ben Woodard <woodard@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, kexec@lists.infradead.org,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       vgoyal@in.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+Message-ID: <20071128155435.GA21165@hmsendeavour.rdu.redhat.com>
+References: <20071127014740.GA28622@hmsreliant.think-freely.org> <200711271445.56792.ak@suse.de> <20071127142826.GB31376@hmsreliant.think-freely.org> <200711271543.11809.ak@suse.de> <20071127144856.GC31376@hmsreliant.think-freely.org> <m14pf7k8ns.fsf@ebiederm.dsl.xmission.com> <474C832C.1060903@redhat.com> <20071127210558.GI14887@hmsendeavour.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071127210558.GI14887@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > On Wed, Nov 28, 2007 at 02:09:45PM +0100, Miklos Szeredi wrote:
-> > > > kernel/latency_trace.c:28:21: error: asm/rtc.h: No such file or directory
-> > > 
-> > > For things like this, look at the host's asm/foo.h and see if it's
-> > > usable in UML (and contains things that you need).  If it is, just
-> > > make a asm-um/foo.h which just includes "asm/arch/foo.h".
+On Tue, Nov 27, 2007 at 04:05:58PM -0500, Neil Horman wrote:
+> On Tue, Nov 27, 2007 at 12:50:52PM -0800, Ben Woodard wrote:
+> > Eric W. Biederman wrote:
+> > >Neil Horman <nhorman@tuxdriver.com> writes:
+> > >
+> > >>So, it sounds to me then, like unless I'm willing to really re-write the 
+> > >>APIC
+> > >>setup code (which I don't feel qualified to do quite yet), that the 
+> > >>immediate
+> > >>solution would be to not rely on interrupts in legacy mode, which was 
+> > >>according
+> > >>to my understanding, what the use of the irqpoll command line option was
+> > >>supposed to enable.  Any thoughts as to why that might not be working in 
+> > >>this
+> > >>case, or suggested tests to determine a cause there?
+> > >
+> > >Hmm.  It looks like irqpoll expects to have at least one irq working.
+> > >I wonder if we can fix that.
+> > >
+> > >Looking at it from the other direction what does this line
+> > >from check_timer() look like when you boot a normal kernel?
+> > >
+> > >	apic_printk(APIC_VERBOSE,KERN_INFO "..TIMER: vector=0x%02X apic1=%d 
+> > >	pin1=%d apic2=%d pin2=%d\n",
+> > >		cfg->vector, apic1, pin1, apic2, pin2);
+> > >
 > > 
-> > Yeah, I know that trick :)
+> > Here is what I get on a normal boot of the problem motherboard:
 > > 
-> > It doesn't help in this case.  I've gotten as far as realizing that 
-> > the latency tracer needs the irqflags tracing 
-> > (Documentation/irqflags-tracing.tx) and that UML doesn't yet support 
-> > that.
+> > ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+> > 
 > 
-> it doesnt need it - turn IRQOFF_TRACING off.
+> Ok, I think from what I understand of what we're reading here, the apic2 = -1
+> and pin2 = -1 indicate that the 8259 has no direct connection to any cpu, which
+> means that on shutdown disable_IO_APIC should take us into virtual wire mode.
+> As such enabling the APIC early in boot should fix us, but more consisely,
+> rewriting the entry in the IOAPIC to deliver int0 to the only running cpu should
+> accomplish the same goal for this problem.  Does that sound reasonable (at least
+> as a test to ensure we understand the problem) to everyone?
+> 
+> Neil
+> 
 
-# CONFIG_CRITICAL_IRQSOFF_TIMING is not set
+I'm sorry to reply to myself, but I think I actually had this backwards.  The
+fact that the 8259 does not get reported as being routed through the ioapic,
+means that in disable_IO_APIC during a crash shutdown, we do _not_ go into
+virtual wire mode.  Instead we simply disable the LVT0 on the ioapic (which as I
+understand it from above is the  timer interrupt), and we trust the 8259 to
+route the interrupt to the appropriate cpu.  If the 8259 is hardwired to deliver
+interrupts to cpu0 only, then we do in fact need to switch processors during
+shutdown.  Perhaps what we need to do is detect if the 8259 is not routed
+through the ioapic on shutdown, and if it is, only them implement my patch to
+jump to the bsp.
 
-This seems to be off.
+Thoughts?
 
-But latency_trace.c uses irqs_disabled_flags(), which is defined in
-<linux/irqflags.h> only if CONFIG_TRACE_IRQFLAGS_SUPPORT is set.
+Neil
 
-So perhaps latency_trace.c should be using raw_irqs_disabled_flags()
-instead.  But UML doesn't define that either and I have no idea how to
-do that, so this is still not solved yet.
+> 
+> > 
+> > >I'm curious what values we see at boot for the legacy mode the first
+> > >time it is setup, and possibly what chipset you are on.
+> > >I know we have had a few times where we have failed to reprogram
+> > >the ioapic properly at shutdown.  So it can't hurt to look at
+> > >that possibility one last time.
+> > >
+> > >
+> > >For whatever it is worth my original attempt at using only the
+> > >apic mode was commit: f2b36db692b7ff6972320ad9839ae656a3b0ee3e
+> > >Looks like I didn't have an x86_64 version.
+> > >
+> > >It looks like about half the cleanups I needed was to decouple
+> > >smp cpu startup and apic initialization.  I think the hotplug cpu
+> > >case has done a more thorough version of that now.
+> > >
+> > >There was a bit of reshuffling needed to get the everything initialized
+> > >in the right order when we started apic mode sooner.
+> > >
+> > >Anyway I might just take another look at this if I can find enough
+> > >moments to string together.
+> > >
+> > >Eric
+> > >
+> > >_______________________________________________
+> > >kexec mailing list
+> > >kexec@lists.infradead.org
+> > >http://lists.infradead.org/mailman/listinfo/kexec
+> > 
+> > 
+> > -- 
+> > -ben
+> > -=-
+> 
+> -- 
+> /***************************************************
+>  *Neil Horman
+>  *Software Engineer
+>  *Red Hat, Inc.
+>  *nhorman@redhat.com
+>  *gpg keyid: 1024D / 0x92A74FA1
+>  *http://pgp.mit.edu
+>  ***************************************************/
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Miklos
-
-
-
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.24-rc3
-# Wed Nov 28 16:43:30 2007
-#
-CONFIG_DEFCONFIG_LIST="arch/$ARCH/defconfig"
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_UML=y
-CONFIG_MMU=y
-CONFIG_NO_IOMEM=y
-# CONFIG_TRACE_IRQFLAGS_SUPPORT is not set
-CONFIG_LOCKDEP_SUPPORT=y
-# CONFIG_STACKTRACE_SUPPORT is not set
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_IRQ_RELEASE_METHOD=y
-
-#
-# UML-specific options
-#
-# CONFIG_STATIC_LINK is not set
-
-#
-# Host processor type and features
-#
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-# CONFIG_MPENTIUMIII is not set
-# CONFIG_MPENTIUMM is not set
-CONFIG_MPENTIUM4=y
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_MPSC is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_GENERIC_CPU is not set
-# CONFIG_X86_GENERIC is not set
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=7
-CONFIG_X86_XADD=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_UML_X86=y
-CONFIG_X86_32=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-# CONFIG_64BIT is not set
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_HOST_VMSPLIT_3G=y
-# CONFIG_HOST_VMSPLIT_3G_OPT is not set
-# CONFIG_HOST_VMSPLIT_2G is not set
-# CONFIG_HOST_VMSPLIT_1G is not set
-CONFIG_TOP_ADDR=0xC0000000
-# CONFIG_3_LEVEL_PGTABLES is not set
-CONFIG_ARCH_HAS_SC_SIGNALS=y
-CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-# CONFIG_SPARSEMEM_STATIC is not set
-# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=0
-CONFIG_VIRT_TO_BUS=y
-# CONFIG_TICK_ONESHOT is not set
-# CONFIG_NO_HZ is not set
-# CONFIG_HIGH_RES_TIMERS is not set
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_LD_SCRIPT_DYN=y
-CONFIG_NET=y
-CONFIG_BINFMT_ELF=y
-# CONFIG_BINFMT_AOUT is not set
-# CONFIG_BINFMT_MISC is not set
-CONFIG_HOSTFS=y
-# CONFIG_HPPFS is not set
-CONFIG_MCONSOLE=y
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_SMP is not set
-CONFIG_NEST_LEVEL=0
-# CONFIG_HIGHMEM is not set
-CONFIG_KERNEL_STACK_ORDER=3
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=128
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-CONFIG_SWAP=y
-# CONFIG_SYSVIPC is not set
-# CONFIG_POSIX_MQUEUE is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_USER_NS is not set
-# CONFIG_PID_NS is not set
-# CONFIG_AUDIT is not set
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=14
-# CONFIG_CGROUPS is not set
-CONFIG_FAIR_GROUP_SCHED=y
-CONFIG_FAIR_USER_SCHED=y
-# CONFIG_FAIR_CGROUP_SCHED is not set
-CONFIG_SYSFS_DEPRECATED=y
-# CONFIG_RELAY is not set
-# CONFIG_BLK_DEV_INITRD is not set
-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-CONFIG_SYSCTL=y
-# CONFIG_EMBEDDED is not set
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-# CONFIG_KALLSYMS_ALL is not set
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLAB=y
-# CONFIG_SLUB is not set
-# CONFIG_SLOB is not set
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-# CONFIG_KMOD is not set
-CONFIG_BLOCK=y
-# CONFIG_LBD is not set
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-# CONFIG_BLK_DEV_BSG is not set
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-# CONFIG_IOSCHED_AS is not set
-# CONFIG_IOSCHED_DEADLINE is not set
-# CONFIG_IOSCHED_CFQ is not set
-# CONFIG_DEFAULT_AS is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-CONFIG_DEFAULT_NOOP=y
-CONFIG_DEFAULT_IOSCHED="noop"
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_UBD=y
-# CONFIG_BLK_DEV_UBD_SYNC is not set
-CONFIG_BLK_DEV_COW_COMMON=y
-CONFIG_BLK_DEV_LOOP=y
-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_RAM is not set
-# CONFIG_ATA_OVER_ETH is not set
-
-#
-# Character Devices
-#
-CONFIG_STDERR_CONSOLE=y
-CONFIG_STDIO_CONSOLE=y
-# CONFIG_SSL is not set
-# CONFIG_NULL_CHAN is not set
-# CONFIG_PORT_CHAN is not set
-# CONFIG_PTY_CHAN is not set
-# CONFIG_TTY_CHAN is not set
-CONFIG_XTERM_CHAN=y
-CONFIG_NOCONFIG_CHAN=y
-CONFIG_CON_ZERO_CHAN="fd:0,fd:1"
-CONFIG_CON_CHAN="xterm"
-CONFIG_SSL_CHAN="pty"
-CONFIG_UNIX98_PTYS=y
-# CONFIG_LEGACY_PTYS is not set
-# CONFIG_RAW_DRIVER is not set
-# CONFIG_WATCHDOG is not set
-# CONFIG_UML_SOUND is not set
-# CONFIG_SOUND is not set
-# CONFIG_HOSTAUDIO is not set
-# CONFIG_HW_RANDOM is not set
-# CONFIG_UML_RANDOM is not set
-# CONFIG_MMAPPER is not set
-
-#
-# Generic Driver Options
-#
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-# CONFIG_FW_LOADER is not set
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-
-#
-# Networking
-#
-
-#
-# Networking options
-#
-# CONFIG_PACKET is not set
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-# CONFIG_XFRM_USER is not set
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_XFRM_MIGRATE is not set
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-# CONFIG_IP_MULTICAST is not set
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-# CONFIG_INET_LRO is not set
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_NET_SCHED is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_AF_RXRPC is not set
-
-#
-# Wireless
-#
-# CONFIG_CFG80211 is not set
-# CONFIG_WIRELESS_EXT is not set
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# UML Network Devices
-#
-CONFIG_UML_NET=y
-# CONFIG_UML_NET_ETHERTAP is not set
-CONFIG_UML_NET_TUNTAP=y
-# CONFIG_UML_NET_SLIP is not set
-# CONFIG_UML_NET_DAEMON is not set
-# CONFIG_UML_NET_VDE is not set
-# CONFIG_UML_NET_MCAST is not set
-# CONFIG_UML_NET_PCAP is not set
-# CONFIG_UML_NET_SLIRP is not set
-# CONFIG_NETDEVICES is not set
-# CONFIG_CONNECTOR is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-CONFIG_EXT2_FS_SECURITY=y
-CONFIG_EXT2_FS_XIP=y
-CONFIG_FS_XIP=y
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-CONFIG_EXT3_FS_SECURITY=y
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=y
-CONFIG_FS_MBCACHE=y
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-CONFIG_FUSE_FS=y
-
-#
-# CD-ROM/DVD Filesystems
-#
-# CONFIG_ISO9660_FS is not set
-# CONFIG_UDF_FS is not set
-
-#
-# DOS/FAT/NT Filesystems
-#
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-# CONFIG_TMPFS_POSIX_ACL is not set
-# CONFIG_HUGETLB_PAGE is not set
-# CONFIG_CONFIGFS_FS is not set
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-CONFIG_NETWORK_FILESYSTEMS=y
-# CONFIG_NFS_FS is not set
-# CONFIG_NFSD is not set
-# CONFIG_SMB_FS is not set
-# CONFIG_CIFS is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-# CONFIG_AFS_FS is not set
-
-#
-# Partition Types
-#
-# CONFIG_PARTITION_ADVANCED is not set
-CONFIG_MSDOS_PARTITION=y
-# CONFIG_NLS is not set
-# CONFIG_DLM is not set
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-# CONFIG_CRYPTO is not set
-
-#
-# Library routines
-#
-# CONFIG_CRC_CCITT is not set
-# CONFIG_CRC16 is not set
-# CONFIG_CRC_ITU_T is not set
-# CONFIG_CRC32 is not set
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_PLIST=y
-CONFIG_HAS_DMA=y
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-# CONFIG_SCSI is not set
-# CONFIG_SCSI_DMA is not set
-# CONFIG_SCSI_NETLINK is not set
-# CONFIG_MD is not set
-# CONFIG_INPUT is not set
-CONFIG_INSTRUMENTATION=y
-# CONFIG_PROFILING is not set
-# CONFIG_MARKERS is not set
-
-#
-# Kernel hacking
-#
-CONFIG_PRINTK_TIME=y
-# CONFIG_ENABLE_WARN_DEPRECATED is not set
-# CONFIG_ENABLE_MUST_CHECK is not set
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-CONFIG_DEBUG_KERNEL=y
-# CONFIG_DEBUG_SHIRQ is not set
-# CONFIG_DETECT_SOFTLOCKUP is not set
-# CONFIG_SCHED_DEBUG is not set
-# CONFIG_SCHEDSTATS is not set
-# CONFIG_TIMER_STATS is not set
-# CONFIG_DEBUG_SLAB is not set
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_STACKTRACE=y
-CONFIG_EVENT_TRACE=y
-CONFIG_FUNCTION_TRACE=y
-# CONFIG_WAKEUP_TIMING is not set
-# CONFIG_CRITICAL_IRQSOFF_TIMING is not set
-CONFIG_MCOUNT=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-# CONFIG_DEBUG_VM is not set
-CONFIG_DEBUG_LIST=y
-# CONFIG_DEBUG_SG is not set
-CONFIG_FRAME_POINTER=y
-CONFIG_FORCED_INLINING=y
-# CONFIG_BOOT_PRINTK_DELAY is not set
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_SAMPLES is not set
-# CONFIG_GPROF is not set
-# CONFIG_GCOV is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
+-- 
+/***************************************************
+ *Neil Horman
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
