@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbXK1UfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbXK1UlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbXK1UfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 15:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXK1UfI
+	id S1759324AbXK1UlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 15:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbXK1UlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 15:35:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42947 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbXK1UfH (ORCPT
+	Wed, 28 Nov 2007 15:41:06 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45465 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756881AbXK1UlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 15:35:07 -0500
-Date: Wed, 28 Nov 2007 12:33:21 -0800
-From: Greg KH <greg@kroah.com>
-To: darnok@68k.org
-Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
-       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com
-Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
-Message-ID: <20071128203321.GA24547@kroah.com>
-References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <200711262323.35416.konrad@darnok.org> <20071127052955.GB777@kroah.com> <20071127180950.GA6736@andromeda.dapyr.net> <20071127190919.GA10686@kroah.com> <20071128192140.GB6736@andromeda.dapyr.net> <20071128194543.GA2469@kroah.com> <20071128202432.GC6736@andromeda.dapyr.net>
+	Wed, 28 Nov 2007 15:41:04 -0500
+Date: Wed, 28 Nov 2007 21:40:50 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tobias Powalowski <t.powa@gmx.de>, Takashi Iwai <tiwai@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH] x86/paravirt: revert exports to restore old behaviour
+Message-ID: <20071128204050.GA29463@stusta.de>
+References: <474CA0DA.3010005@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071128202432.GC6736@andromeda.dapyr.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <474CA0DA.3010005@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 04:24:32PM -0400, darnok@68k.org wrote:
-> > But, why not just put it in a separate file, that is built in if the
-> > user wants iscsi support?  That way the setup code can call it properly
-> > if needed.
+On Tue, Nov 27, 2007 at 02:57:30PM -0800, Jeremy Fitzhardinge wrote:
+>...
+> Christoph Hellwig objects to this patch on the grounds that modules
+> shouldn't be using these operations anyway.  I don't think this is a
+> particularly good reason to reject the patch, for several reasons:
 > 
-> In what directory should I put that file? It can't be in the arch/*
-> directories b/c the iscsi_ibft.c wouldn't build on all platforms.
-> Should I put it in drivers/firmware ?
+> 1. These operations are still available to modules when not using
+>    CONFIG_PARAVIRT, since they are implicitly exported as inline
+>    functions via the kernel headers.  Exporting the same functionality as
+>    GPL-only symbols just adds a gratuitious difference between
+>    CONFIG_PARAVIRT and non-CONFIG_PARAVIRT configurations.  If we really
+>    think these operations are not for module use (or non-GPL module use),
+>    then we should solve the problem in a general way.
 
-Put it in the same directory your other iscsi files are.  Or wherever
-you feel it is best suited.
+Current practice in the kernel is that when something that should not be 
+done works by chance with some kernel versions and/or configurations 
+that's simply an unfortunate fact that should be fixed but doesn't 
+result in any guarantee that it works with all kernel versions and/or 
+configurations.
 
-thanks,
+> 2. It's a regression from previous kernels, which would work these
+>    modules even with CONFIG_PARAVIRT enabled.
+>...
 
-greg k-h
+It cannot be a regression since the kernel does not have a stable API 
+for modules.
+
+> Therefore, I think this patch should go in for 2.6.24.  If people
+> really think that these operations should not be available to modules,
+> then we can address that separately.
+>...
+
+Why should we start with one step back for getting two steps ahead?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
