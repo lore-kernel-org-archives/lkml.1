@@ -1,110 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbXK1TbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbXK1Tgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761286AbXK1TbV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbXK1TbH
+	id S1758487AbXK1Tgg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXK1Tg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:31:07 -0500
-Received: from smtp.cce.hp.com ([161.114.21.22]:13277 "EHLO
-	ccerelrim01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756102AbXK1TbF (ORCPT
+	Wed, 28 Nov 2007 14:36:28 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:37112 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754188AbXK1Tg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:31:05 -0500
-Subject: Re: Error returns not handled correctly
-	by	sysfs.c:subsys_attr_store()
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
-In-Reply-To: <474D1BD4.2050805@suse.de>
-References: <1195683419.16019.225.camel@grinch>
-	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
-	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 12:31:40 -0700
-Message-Id: <1196278300.5431.9.camel@grinch>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.11.28.111335
+	Wed, 28 Nov 2007 14:36:27 -0500
+Date: Wed, 28 Nov 2007 14:36:26 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+In-Reply-To: <1196278120.3242.115.camel@lov.site>
+Message-ID: <Pine.LNX.4.44L0.0711281432290.5566-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 16:42 +0900, Tejun Heo wrote:
-> Greg KH wrote:
-> > On Mon, Nov 26, 2007 at 08:31:16PM -0800, Andrew Morton wrote:
-> >> On Wed, 21 Nov 2007 15:16:59 -0700 Andrew Patterson <andrew.patterson@hp.com> wrote:
-> >>
-> >>> The buf in fs/sysfs.c:subsys_attr_store() does not seem to be updated
-> >>> correctly when returning a negative value (indicating that an error
-> >>> condition has occurred) is returned.  If a negative value is returned,
-> >>> the next subsequent call to subsys_attr_store will have the contents of
-> >>> buf appended to the previous call.
-> >> subsys_attr_store() gets deleted by
-> >> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/kset-kill-subsys-attr.patch
-> >>
-> >> So maybe we will soon accidentally fix whatever-this-is?  Or maybe we will
-> >> faithfully maintain it.
-> > 
-> > Yes, subsys attributes go away, but this is showing a bug in the sysfs
-> > core with attributes, not in the "middle" layers of attributes.
-> > 
-> > I bounced the original bug report to Tejun, who has been changing the
-> > logic around this area to see if he sees anything that might be
-> > different now.
-> > 
-> > Tejun?
-> 
-> Weird, the problem is not reproducible here.
-> 
-> # echo a > allow_restart
-> -bash: echo: write error: Invalid argument
-> [  437.518024] buf_ptr = 0xffff810005e20000, buf = x
-> [  437.518027] , count = 2
-> # echo b > allow_restart
-> -bash: echo: write error: Invalid argument
-> [  438.972973] buf_ptr = 0xffff81001be6f000, buf = y
-> [  438.972976] , count = 2
-> # echo c > allow_restart
-> -bash: echo: write error: Invalid argument
-> [  440.539747] buf_ptr = 0xffff81001d4ba000, buf = z
-> [  440.539750] , count = 2
-> 
-> Which is expected.  On each open, sysfs_buffer is allocated with kzalloc
-> and the buffer is freed on close, so I don't see how it can happen.
-> Behavior for multiple write can be considered peculiar in that ppos is
-> essentially ignored and each write is passed just like brand new write
-> to ->store method but this too is the expected behavior.
-> 
-> # (echo a; echo b; echo c) > allow_restart
-> [  765.257132] buf_ptr = 0xffff81001be4f000, buf = a
-> [  765.257135] , count = 2
-> [  765.285474] buf_ptr = 0xffff81001be4f000, buf = b
-> [  765.285484] , count = 2
-> [  765.314002] buf_ptr = 0xffff81001be4f000, buf = c
-> [  765.314004] , count = 2
-> -bash: echo: write error: Invalid argument
-> -bash: echo: write error: Invalid argument
-> -bash: echo: write error: Invalid argument
-> 
-> Andrew Petterson, can you please build 2.6.24-rc3 from clean source tree
-> and retry?
-> 
+On Wed, 28 Nov 2007, Kay Sievers wrote:
 
-I tried with clean 2.6.24-rc3 and get the same bad behavior.  This is on
-an ia64 box, so maybe that is an issue. I can try on an x86 box as well.
-Oh, one other thing.  I tried a "uname -r" to make sure I had the
-correct kernel booted and got:
+> > Actually the current code doesn't seem to check whether kobj->ktype is
+> > NULL or to use the value of kobj->kset->kobj.ktype.  Is this an oversight?
+> 
+> We just require the ktype.
 
-# uname -r
-2.6.24-rc3
-x
-y
-z
-#
+No -- we should but we don't.  Look at the code for kobject_init() and
+kobject_add() in Greg's tree and you'll see.  Neither of them checks
+that kobj->ktype is set.
 
-Andrew
--- 
-Andrew Patterson
-Hewlett-Packard
+> > If there is no containing kset, the parent remains NULL.  What happens
+> > then?  Does the kobject show up in the sysfs top-level directory?
+> 
+> "If the kobject belonging to a kset has no parent kobject set, it will
+> be added to the kset's directory. Not all members of a kset do
+> necessarily live in the kset directory. If an explicit parent kobject is
+> assigned before the kobject is added, the kobject is registered with the
+> kset, but added below the parent kobject."
+
+Yes, but what if neither kobj->parent nor kobj->kset is set?
+
+Alan Stern
 
