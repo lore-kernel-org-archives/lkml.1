@@ -1,257 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbXK1HEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbXK1HLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbXK1HEf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 02:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbXK1HEZ
+	id S1755608AbXK1HLZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 02:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbXK1HLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 02:04:25 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:34835 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbXK1HEY (ORCPT
+	Wed, 28 Nov 2007 02:11:15 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35930 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbXK1HLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 02:04:24 -0500
-Message-ID: <474D100E.1000101@student.ltu.se>
-Date: Wed, 28 Nov 2007 07:51:58 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 28 Nov 2007 02:11:14 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Len Brown <lenb@kernel.org>
+Cc: "Natalie Protasevich" <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
+References: <200711280121.18376.lenb@kernel.org>
+Date: Wed, 28 Nov 2007 00:09:15 -0700
+In-Reply-To: <200711280121.18376.lenb@kernel.org> (Len Brown's message of
+	"Wed, 28 Nov 2007 01:21:18 -0500")
+Message-ID: <m1mysyg82s.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
-References: <474C34CC.6060509@gmail.com>
-In-Reply-To: <474C34CC.6060509@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> General description: kmemcheck will trap every read and write to 
-> memory that was
-> allocated dynamically (ie. with kmalloc()). If a memory address is 
-> read that has
-> not previously been written to, a message is printed to the kernel log.
->
-<snip>
-> diff --git a/arch/x86/kernel/kmemcheck_32.c 
-> b/arch/x86/kernel/kmemcheck_32.c
-> new file mode 100644
-> index 0000000..9d065b9
-> --- /dev/null
-> +++ b/arch/x86/kernel/kmemcheck_32.c
-> @@ -0,0 +1,290 @@
-> +#include <linux/kernel.h>
-> +#include <linux/kallsyms.h>
-> +#include <linux/mm.h>
-> +#include <asm/cacheflush.h>
-> +#include <asm/kmemcheck.h>
-> +#include <asm/tlbflush.h>
-> +
-> +static int
-Not 'static bool'?
-> +page_is_tracked(struct page *page)
-> +{
-> +    struct page *head;
-> +
-> +    if (!page)
-> +        return 0;
-> +    head = compound_head(page);
-> +    if (!head)
-> +        return 0;
-> +    if (!(head->flags & (1 << PG_slab)))
-> +        return 0;
-> +    if (!head->slab)
-> +        return 0;
-> +    if (head->slab->flags & __GFP_NOTRACK)
-> +        return 0;
-> +    return 1;
-Why not returning 'false' and 'true'?
-> +}
-> +
-> +static void
-> +show_addr(uint32_t addr)
-> +{
-> +    struct page *page;
-> +    pte_t *pte;
-> +
-> +    if (!addr)
-> +        return;
-> +    page = virt_to_page(addr);
-> +    if (!page_is_tracked(page))
-> +        return;
-> +
-> +    pte = lookup_address(addr);
-> +    change_page_attr(page, 1, __pgprot(pte->pte_low | _PAGE_VISIBLE));
-> +    __flush_tlb_one(addr);
-> +}
-> +
-> +static void
-> +hide_addr(uint32_t addr)
-> +{
-> +    struct page *page;
-> +    pte_t *pte;
-> +
-> +    if (!addr)
-> +        return;
-> +    page = virt_to_page(addr);
-> +    if (!page_is_tracked(page))
-> +        return;
-> +    pte = lookup_address(addr);
-> +    change_page_attr(page, 1, __pgprot(pte->pte_low & ~_PAGE_VISIBLE));
-> +    __flush_tlb_one(addr);
-> +}
-> +
-> +DEFINE_PER_CPU(uint32_t, kmemcheck_read_addr);
-> +DEFINE_PER_CPU(uint32_t, kmemcheck_write_addr);
-> +
-> +void
-> +kmemcheck_show(struct pt_regs *regs)
-> +{
-> +    show_addr(__get_cpu_var(kmemcheck_read_addr));
-> +    show_addr(__get_cpu_var(kmemcheck_write_addr));
-> +    regs->eflags |= TF_MASK;
-> +}
-> +
-> +void
-> +kmemcheck_hide(struct pt_regs *regs)
-> +{
-> +    hide_addr(__get_cpu_var(kmemcheck_read_addr));
-> +    hide_addr(__get_cpu_var(kmemcheck_write_addr));
-> +    regs->eflags &= ~TF_MASK;
-> +}
-> +
-> +void
-> +kmemcheck_hide_pages(struct page *p, unsigned int n)
-> +{
-> +    unsigned int i;
-> +
-> +    for(i = 0; i < n; ++i) {
-> +        unsigned long address = (unsigned long) page_address(&p[i]);
-> +        pte_t *pte = lookup_address(address);
-> +
-> +        change_page_attr(&p[i], 1,
-> +            __pgprot(pte->pte_low & ~_PAGE_VISIBLE));
-> +        __flush_tlb_one(address);
-> +    }
-> +}
-> +
-> +static int
-'static bool'?
-> +opcode_is_prefix(uint8_t b)
-> +{
-> +    return
-> +        /* Group 1 */
-> +        b == 0xf0 || b == 0xf2 || b == 0xf3
-> +        /* Group 2 */
-> +        || b == 0x2e || b == 0x36 || b == 0x3e || b == 0x26
-> +        || b == 0x64 || b == 0x65 || b == 0x2e || b == 0x3e
-> +        /* Group 3 */
-> +        || b == 0x66
-> +        /* Group 4 */
-> +        || b == 0x67;
-> +}
-> +
-> +/* This is a VERY crude opcode decoder. We only need to find the size 
-> of the
-> + * load/store that caused our #PF and this should work for all the 
-> opcodes
-> + * that we care about. Moreover, the ones who invented this 
-> instruction set
-> + * should be shot. */
-> +static unsigned int
-> +opcode_get_size(const uint8_t *opcode)
-Are we not using 'u8' in the kernel?
-> +{
-> +    const uint8_t *i;
-and here. Also, I find the name 'i' a bit confusing in this context, 
-since it is not really a counter. What about 'cur', 'prefix_op' or 
-something of the sort?
-> +
-> +    /* Default operand size */
-> +    int operand_size_override = 32;
-> +
-> +    /* prefixes */
-> +    for (i = opcode; opcode_is_prefix(*i); ++i) {
-> +        if (*i == 0x66)
-> +            operand_size_override = 16;
-> +    }
-> +
-> +    /* escape opcode */
-> +    if (*i == 0x0f) {
-> +        ++i;
-> +
-> +        if(*i == 0xb6)
-Please do, as the previous, 'if ()'. A good checker for these kind of 
-things is the 'scripts/checkpatch.pl'...
-> +            return operand_size_override >> 1;
-> +        if(*i == 0xb7)
-> +            return 16;
-> +    }
-> +
-> +    return (*i & 1) ? operand_size_override : 8;
-> +}
-> +
-> +static uint8_t
-and here...
-> +opcode_get_primary(const uint8_t *opcode)
-and here..
-> +{
-> +    const uint8_t *i;
-and here. Also, I find the name 'i' a bit confusing in this context, 
-since it is not really a counter. What about 'cur', 'prim_op', 
-'prefix_op' or something of the sort?
-> +
-> +    /* skip prefixes */
-> +    for (i = opcode; opcode_is_prefix(*i); ++i);
-> +    return *i;
-> +}
-> +
-> +static void *address_get_shadow_slab(unsigned long address,
-> +    struct page *head)
-> +{
-> +    if (!head->slab)
-> +        return NULL;
-> +
-> +    if (head->slab->flags & __GFP_NOTRACK)
-> +        return NULL;
-> +
-> +    return (void *) address + (PAGE_SIZE << head->slab->order);
-> +}
-> +
-> +static void *address_get_shadow(unsigned long address)
-> +{
-> +    struct page *page = virt_to_page(address);
-> +    struct page *head = compound_head(page);
-> +
-> +    if (!head)
-> +        return NULL;
-> +
-> +    if (head->flags & (1 << PG_slab))
-> +        return address_get_shadow_slab(address, head);
-> +
-> +    return NULL;
-> +}
-> +
-> +static int
-'static bool'?
-> +test(void *shadow, unsigned int size)
-> +{
-> +    switch (size) {
-> +    case 8:
-> +        return *(uint8_t *) shadow == 0xff;
-> +    case 16:
-> +        return *(uint16_t *) shadow == 0xffff;
-> +    case 32:
-> +        return *(uint32_t *) shadow == 0xffffffff;
-> +    }
-> +
-> +    BUG();
-> +    return 0;
-'return false;'?
-> +}
-> +
-<snip>
+Len Brown <lenb@kernel.org> writes:
 
-cu
-Richard Knutsson
+>     commit c434b7a6aedfe428ad17cd61b21b125a7b7a29ce
+>     (x86: avoid wasting IRQs for PCI devices)
+>     created a concept of "IRQ compression" on i386
+>     to conserve IRQ numbers on systems with many
+>     sparsely populated IO APICs.
+>     
+>     The same scheme was also added to x86_64,
+>     but later removed when x86_64 recieved an IRQ over-haul
+>     that made it unnecessary -- including per-CPU
+>     IRQ vectors that greatly increased the IRQ capacity
+>     on the machine.
+>     
+>     i386 has not received the analogous over-haul,
+>     and thus a previous attempt to delete IRQ compression
+>     from i386 was rejected on the theory that there may
+>     exist machines that actually need it.  The fact is
+>     that the author of IRQ compression patch was unable
+>     to confirm the actual existence of such a system.
+>     
+>     As a result, all i386 kernels with IOAPIC support
+>     pay the following:
+>     
+>     1. confusion
+>     
+>     IRQ compression re-names the traditional IOAPIC
+>     pin numbers (aka ACPI GSI's) into sequential IRQ #s:
+>     
+>     ACPI: PCI Interrupt 0000:00:1c.0[A] -> GSI 20 (level, low) -> IRQ 16
+>     ACPI: PCI Interrupt 0000:00:1c.1[B] -> GSI 21 (level, low) -> IRQ 17
+>     ACPI: PCI Interrupt 0000:00:1c.2[C] -> GSI 22 (level, low) -> IRQ 18
+>     ACPI: PCI Interrupt 0000:00:1c.3[D] -> GSI 23 (level, low) -> IRQ 19
+>     ACPI: PCI Interrupt 0000:00:1c.4[A] -> GSI 20 (level, low) -> IRQ 16
+>     
+>     This makes /proc/interrupts look different
+>     depending on system configuration and device probe order.
+>     It is also different than the x86_64 kernel running
+>     on the exact same system.  As a result, programmers
+>     get confused when comparing systems.
+>     
+>     2. complexity
+>     
+>     The IRQ code in Linux is already overly complex,
+>     and IRQ compression makes it worse.  There have
+>     already been two bug workarounds related to IRQ
+>     compression -- the IRQ0 timer workaround and
+>     the VIA PCI IRQ workaround.
+>     
+>     3. size
+>     
+>     All i386 kernels with IOAPIC support contain an int[4096] --
+>     a 4 page array to contain the renamed IRQs.
+>     
+>     So while the irq compression code on i386 should really
+>     be deleted -- even before merging the x86_64 irq-overhaul,
+>     this patch simply disables it on all high volume systems
+>     to avoid problems #1 and #2 on most all i386 systems.
+>     
+>     A large system with pin numbers >=64 will still have compression
+>     to conserve limited IRQ numbers for sparse IOAPICS.  However,
+>     the vast majority of the planet, those with only pin numbers < 64
+>     will use an identity GSI -> IRQ mapping.
+>     
+>     Signed-off-by: Len Brown <len.brown@intel.com>
 
+Looks reasonable.  As a further cleanup it might be worth yanking the
+Via workaround because we simply can not hit it with your change of
+disabling irq compression for the first 64 gsis.
+
+I honestly don't understand the "(gsi == 0 && !timer_uses_ioapic_pin_0)"
+test but I do know killing irq compression was safe and worked on
+x86_64 so I don't expect any problems there.
+
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+
+
+
+
+> diff --git a/arch/x86/kernel/mpparse_32.c b/arch/x86/kernel/mpparse_32.c
+> index 7a05a7f..468d6ed 100644
+> --- a/arch/x86/kernel/mpparse_32.c
+> +++ b/arch/x86/kernel/mpparse_32.c
+> @@ -1041,13 +1041,14 @@ void __init mp_config_acpi_legacy_irqs (void)
+>  }
+>  
+>  #define MAX_GSI_NUM	4096
+> +#define IRQ_COMPRESSION_START	64
+>  
+>  int mp_register_gsi(u32 gsi, int triggering, int polarity)
+>  {
+>  	int ioapic = -1;
+>  	int ioapic_pin = 0;
+>  	int idx, bit = 0;
+> -	static int pci_irq = 16;
+> +	static int pci_irq = IRQ_COMPRESSION_START;
+>  	/*
+>  	 * Mapping between Global System Interrups, which
+>  	 * represent all possible interrupts, and IRQs
+> @@ -1086,12 +1087,16 @@ int mp_register_gsi(u32 gsi, int triggering, int
+> polarity)
+>  	if ((1<<bit) & mp_ioapic_routing[ioapic].pin_programmed[idx]) {
+>  		Dprintk(KERN_DEBUG "Pin %d-%d already programmed\n",
+>  			mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
+> -		return gsi_to_irq[gsi];
+> +		return (gsi < IRQ_COMPRESSION_START ? gsi : gsi_to_irq[gsi]);
+>  	}
+>  
+>  	mp_ioapic_routing[ioapic].pin_programmed[idx] |= (1<<bit);
+>  
+> -	if (triggering == ACPI_LEVEL_SENSITIVE) {
+> +	/*
+> +	 * For GSI >= 64, use IRQ compression
+> +	 */
+> +	if ((gsi >= IRQ_COMPRESSION_START)
+> +		&& (triggering == ACPI_LEVEL_SENSITIVE)) {
+>  		/*
+>  		 * For PCI devices assign IRQs in order, avoiding gaps
+>  		 * due to unused I/O APIC pins.
