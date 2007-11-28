@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761440AbXK1QHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbXK1QKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761440AbXK1QHw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbXK1QHp
+	id S1761479AbXK1QKB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:10:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbXK1QJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:07:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37256 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757413AbXK1QHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:07:44 -0500
-Date: Wed, 28 Nov 2007 11:02:06 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ben Woodard <woodard@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
-References: <20071127131355.GA14887@hmsendeavour.rdu.redhat.com> <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com> <200711271445.56792.ak@suse.de> <m1lk8jka8j.fsf@ebiederm.dsl.xmission.com> <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com> <20071127200011.GA3703@redhat.com> <20071127222408.GH24223@one.firstfloor.org> <474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128153649.GC3192@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 28 Nov 2007 11:09:53 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:32367 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759192AbXK1QJw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:09:52 -0500
+Date: Wed, 28 Nov 2007 17:09:50 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+Message-ID: <20071128170950.29c8c7e7@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1196265787.3242.65.camel@lov.site>
+References: <20071127230252.GB10038@kroah.com>
+	<20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
+	<1196253354.3242.40.camel@lov.site>
+	<20071128165205.30ef426f@gondolin.boeblingen.de.ibm.com>
+	<1196265787.3242.65.camel@lov.site>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 10:36:49AM -0500, Vivek Goyal wrote:
-> On Tue, Nov 27, 2007 at 03:24:35PM -0800, Ben Woodard wrote:
-> > Andi Kleen wrote:
-> >>> Are we putting the system back in PIC mode or virtual wire mode? I have
-> >>> not seen systems which support PIC mode. All latest systems seems
-> >>> to be having virtual wire mode. I think in case of PIC mode, interrupts
-> >>
-> >> Yes it's probably virtual wire. For real PIC mode we would need really
-> >> old systems without APIC.
-> >>
-> >>> can be delivered to cpu0 only. In virt wire mode, one can program IOAPIC
-> >>> to deliver interrupt to any of the cpus and that's what we have been
-> >>
-> >> The code doesn't try to program anything specific, it just restores the state
-> >> that was left over originally by the BIOS.
-> >>
-> >
-> > So if the BIOS originally left the IOAPIC in a state where the timer 
-> > interrupts were only going to CPU0 then by restoring that state we could be 
-> > bringing this problem upon ourselves when we restore that state.
-> >
-> 
-> Hi Ben,
-> 
-> Apart from restoring the original state (Bring APICS back to virtual wire
-> mode), we also reprogram IOAPIC so that timer interrupt can go to crashing
-> cpu (and not necessarily cpu0). Look at following code in disable_IO_APIC.
-> 
->                 entry.dest.physical.physical_dest =
->                                         GET_APIC_ID(apic_read(APIC_ID));
-> 
-> Here we read the apic id of crashing cpu and program IOAPIC accordingly.
-> This will make sure that even in virtual wire mode, timer interrupts
-> will be delivered to crashing cpu APIC.
-> 
-Yes, but according to Bens last debug effort, the APIC printout regarding the
-timer setup, indicates that ioapic_i8259.pin == -1, meaning that the 8259 is not
-routed through the ioapic.  In those cases, disable_IO_APIC does not take us
-through the path you reference above, and does not revert to virtual wire mode.
-Instead, it simply disables legacy vector 0, which if I understand this
-correctly, simply tells the ioapic to not handle timer interrupts, trusting that
-the 8259 in the system will deliver that interrupt where it needs to be.  If the
-8259 is wired to deliver timer interrupts to cpu0 only, then you get the problem
-that we have, do you?
+On Wed, 28 Nov 2007 17:03:07 +0100,
+Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-Regards
-Neil
-
-> I think we need to go deeper and compare the state of system (APICS,
-> timer etc) during normal boot and kdump boot and see where is the
-> difference. This is how I solved some of the timer interrupt related
-> issues in the past.
+> On Wed, 2007-11-28 at 16:52 +0100, Cornelia Huck wrote:
+> > On Wed, 28 Nov 2007 13:35:54 +0100,
+> > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > 
+> > > On Wed, 2007-11-28 at 10:01 +0100, Cornelia Huck wrote:
+> > > > On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
+> > > 
+> > > > > Among other things, kobject_init() sets the kobject's reference count to
+> > > > > one.  Calling kobject_init() is not sufficient, however. Kobject users
+> > > > > must, at a minimum, set the name of the kobject; this is the name that will
+> > > > > be used in sysfs entries. 
+> > > > 
+> > > > Unless they don't register their kobject. (But they should always set a
+> > > > name anyway to avoid funny debug messages, so it is probably a good
+> > > > idea to call this a "must").
+> > > 
+> > > Yeah, we should require it. And kobject_cleanup() needs to be called to
+> > > free the allocated name, if the object is not already added and needs to
+> > > be deleted (common in rewinding on error).
+> > 
+> > Always using kobject_put() should take care of that.
 > 
-> Thanks
-> Vivek
+> Ok, so we can always require a kobject_put() after a kobject_init(), to
+> cleanup what happened after _init() and before _add()?
 
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+That's a sensible requirement, I think.
