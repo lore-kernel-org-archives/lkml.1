@@ -1,95 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbXK1MUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbXK1MXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760148AbXK1MUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 07:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXK1MUa
+	id S1760530AbXK1MXX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 07:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbXK1MXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 07:20:30 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:19357 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753313AbXK1MUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 07:20:30 -0500
-Date: Wed, 28 Nov 2007 21:20:11 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Sam Ravnborg <sam@ravnborg.org>, zippel@linux-m68k.org,
-       Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] kconfig: Make KCONFIG_ALLCONFIG work with randconfig.
-Message-ID: <20071128122011.GB29552@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Sam Ravnborg <sam@ravnborg.org>, zippel@linux-m68k.org,
-	Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 28 Nov 2007 07:23:16 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:58034 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbXK1MXP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 07:23:15 -0500
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
+References: <20071127230252.GB10038@kroah.com>
+	 <20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 13:23:02 +0100
+Message-Id: <1196252582.3242.28.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18l53RJHMkNDpDHrCiiOfcU7wpLM+PsKQWujX2
+ C6l8RAG1EXcJkAyIh0CYwYIlSsuF+q8IbAeFRAfz6rR6r+0QJb
+ iFa8gjNby6T53fOn0TPDkYrQzmc2oXH
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian mentioned a few weeks ago that KCONFIG_ALLCONFIG is the way to
-go to ensure that things like allyes/allmod/allnoconfig work with a
-constrained set of symbols, with the implication that this holds
-true for randconfig as well.
+On Wed, 2007-11-28 at 12:45 +0100, Cornelia Huck wrote:
+> On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
 
-While allyes/mod/noconfigs do seem to work fine with KCONFIG_ALLCONFIG
-provisions, randconfig tramples all over the provided values at perhaps
-not surprisingly, random.
+> > A kset serves these functions:
+> > 
+> >  - It serves as a bag containing a group of objects. A kset can be used by
+> >    the kernel to track "all block devices" or "all PCI device drivers."
+> > 
+> >  - A kset is also a subdirectory in sysfs, where the associated kobjects
+> >    with the kset can show up.  
+> 
+> Perhaps better wording:
+> 
+> A kset is also represented via a subdirectory in sysfs, under which the
+> kobjects associated with the kset can show up.
 
-Debugging this a bit, there seemed to be two issues:
+This draws a misleading picture. A member of a kset shows up where the
+"parent" pointer points to. Like /sys/block is a kset, the kset contains
+disks and partitions, but partitions do not live at the kset, and tons
+of other kset directories where this is the case.
 
-	- SYMBOL_DEF and SYMBOL_DEF_USER overlap, which made
-	  def_sym->flags the same regardless of whether we came from an
-	  KCONFIG_ALLCONFIG path or not.
+"If the kobject belonging to a kset has no parent kobject set, it will
+be added to the kset's directory. Not all members of a kset do
+necessarily live in the kset directory. If an explicit parent kobject is
+assigned before the kobject is added, the kobject is registered with the
+kset, but added below the parent kobject."
 
-	- clobbering of the fixed value in conf_choice() by way of
-	  random() def assignment.
+> > Every kset contains a kobject which can be
+> >    set up to be the parent of other kobjects; in this way the device model
+> >    hierarchy is constructed.
+> > 
+> >  - Ksets can support the "hotplugging" of kobjects and influence how
+> >    uevent events are reported to user space.
+> > 
+> >  - A kset can provide a set of default attributes that all kobjects that
+> >    belong to it automatically inherit and have created whenever a kobject
+> >    is registered belonging to the kset.
+> 
+> Hm, the default attributes are provided by the ktype?
 
-While I don't pretend to have any idea what I'm doing in Kconfig,
-changing SYMBOL_DEF_USER to reuse the SYMBOL_DEF3 bit (and thereby
-separating it from SYMBOL_DEF) in addition to checking the def_sym flag
-before randomly assigning a new value ended up fixing things up.
+Yeah, it's the type, not the set.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> > In object-oriented terms, "kset" is the top-level container class; ksets
+> > contain their own kobject, but that kobject is managed by the kset code and
+> > should not be manipulated by any other user.
+> > 
+> > A kset keeps its children in a standard kernel linked list.  Kobjects point
+> > back to their containing kset via their kset field. In almost all cases,
+> > the contained kobjects also have a pointer to the kset (or, strictly, its
+> > embedded kobject) in their parent field.
 
----
+It's by far not "almost all cases". Can we please drop that? It's very
+common that kobjects are a member of a kset but have a different parent.
 
- scripts/kconfig/conf.c |    9 ++++++++-
- scripts/kconfig/expr.h |    3 +--
- 2 files changed, 9 insertions(+), 3 deletions(-)
+> > The uevent function will be called when the uevent is about to be sent to
+> > userspace to allow more environment variables to be added to the uevent.
+> 
+> It may be helpful to mention which uevents are by default created by
+> the kobject core (KOBJ_ADD, KOBJ_DEL, KOBJ_MOVE).
 
-diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-index a38787a..61a61df 100644
---- a/scripts/kconfig/conf.c
-+++ b/scripts/kconfig/conf.c
-@@ -374,7 +374,14 @@ static int conf_choice(struct menu *menu)
- 				continue;
- 			break;
- 		case set_random:
--			def = (random() % cnt) + 1;
-+			/*
-+			 * Defined symbols need to be honoured even in
-+			 * the randomization case, or else symbols set
-+			 * via the KCONFIG_ALLCONFIG path are clobbered.
-+			 *				- PFM.
-+			 */
-+			if (!(def_sym->flags & SYMBOL_DEF))
-+				def = (random() % cnt) + 1;
- 		case set_default:
- 		case set_yes:
- 		case set_mod:
-diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
-index a195986..f5b4873 100644
---- a/scripts/kconfig/expr.h
-+++ b/scripts/kconfig/expr.h
-@@ -95,9 +95,8 @@ struct symbol {
- #define SYMBOL_CHECKED		0x2000
- #define SYMBOL_WARNED		0x8000
- #define SYMBOL_DEF		0x10000
--#define SYMBOL_DEF_USER		0x10000
- #define SYMBOL_DEF_AUTO		0x20000
--#define SYMBOL_DEF3		0x40000
-+#define SYMBOL_DEF_USER		0x40000
- #define SYMBOL_DEF4		0x80000
- 
- #define SYMBOL_MAXLENGTH	256
+I think, we should remove all these default events from the kobject
+core. We will not be able to manage the timing issues and "raw" kobject
+users should request the events on their own, when they are finished
+adding stuff to the kobject. I see currently no way to solve the
+"attributes created after the event" problem. The new
+*_create_and_register functions do not allow default attributes to be
+created, which will just lead to serious trouble when someone wants to
+use udev to set defaults and such things. We may just want to require an
+explicit call to send the event?
+
+Thanks,
+Kay
+
