@@ -1,132 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761243AbXK1Qvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbXK1Qya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761243AbXK1Qvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759835AbXK1Qvr
+	id S1761438AbXK1Qya (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbXK1QyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:51:47 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:62479 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757607AbXK1Qvp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:51:45 -0500
-Date: Wed, 28 Nov 2007 17:51:08 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071128175108.5a370684@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1196267789.3242.87.camel@lov.site>
-References: <20071127230252.GB10038@kroah.com>
-	<20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
-	<1196252582.3242.28.camel@lov.site>
-	<20071128164842.70caa396@gondolin.boeblingen.de.ibm.com>
-	<1196265468.3242.60.camel@lov.site>
-	<20071128171238.1ef5d076@gondolin.boeblingen.de.ibm.com>
-	<1196267789.3242.87.camel@lov.site>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	Wed, 28 Nov 2007 11:54:23 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43557 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbXK1QyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:54:22 -0500
+Subject: Re: [RFC PATCH] LTTng instrumentation mm (using page_to_pfn)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071128140953.GA8018@Krystal>
+References: <20071113193349.214098508@polymtl.ca>
+	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
+	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
+	 <20071116143019.GA16082@Krystal> <1195495485.27759.115.camel@localhost>
+	 <20071128140953.GA8018@Krystal>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 08:54:16 -0800
+Message-Id: <1196268856.18851.20.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 17:36:29 +0100,
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+On Wed, 2007-11-28 at 09:09 -0500, Mathieu Desnoyers wrote:
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/filemap.c	2007-11-28 08:38:46.000000000 -0500
+> +++ linux-2.6-lttng/mm/filemap.c	2007-11-28 08:59:05.000000000 -0500
+> @@ -514,9 +514,13 @@ void fastcall wait_on_page_bit(struct pa
+>  {
+>  	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
+> 
+> +	trace_mark(mm_filemap_wait_start, "pfn %lu", page_to_pfn(page));
+> +
+>  	if (test_bit(bit_nr, &page->flags))
+>  		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
+>  							TASK_UNINTERRUPTIBLE);
+> +
+> +	trace_mark(mm_filemap_wait_end, "pfn %lu", page_to_pfn(page));
+>  }
+>  EXPORT_SYMBOL(wait_on_page_bit);
+
+I've got some small nits with this.  I guess I just wish that if we're
+going to sprinkle hooks all over that we'd have those hooks be as useful
+as possible for people who have to look at them on a daily basis.
+
+Do you also want to put in the page bit which is being waited on?
 
 > 
-> On Wed, 2007-11-28 at 17:12 +0100, Cornelia Huck wrote:
-> > On Wed, 28 Nov 2007 16:57:48 +0100,
-> > Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > 
-> > > On Wed, 2007-11-28 at 16:48 +0100, Cornelia Huck wrote:
-> > > > On Wed, 28 Nov 2007 13:23:02 +0100,
-> > > > Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > > > > On Wed, 2007-11-28 at 12:45 +0100, Cornelia Huck wrote:
-> > > > > > On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
-> > > 
-> > > > > > > The uevent function will be called when the uevent is about to be sent to
-> > > > > > > userspace to allow more environment variables to be added to the uevent.
-> > > > > > 
-> > > > > > It may be helpful to mention which uevents are by default created by
-> > > > > > the kobject core (KOBJ_ADD, KOBJ_DEL, KOBJ_MOVE).
-> > > > > 
-> > > > > I think, we should remove all these default events from the kobject
-> > > > > core. We will not be able to manage the timing issues and "raw" kobject
-> > > > > users should request the events on their own, when they are finished
-> > > > > adding stuff to the kobject. I see currently no way to solve the
-> > > > > "attributes created after the event" problem. The new
-> > > > > *_create_and_register functions do not allow default attributes to be
-> > > > > created, which will just lead to serious trouble when someone wants to
-> > > > > use udev to set defaults and such things. We may just want to require an
-> > > > > explicit call to send the event?
-> > > > 
-> > > > There will always be attributes that will show up later (for example,
-> > > > after a device is activated). Probably the best approach is to keep the
-> > > > default uevents, but have the attribute-adder send another uevent when
-> > > > they are done?
-> > > 
-> > > Uh, that's more an exception where we can't give guarantees because of
-> > > very specific hardware setups, and it would be an additional "change"
-> > > event. There are valid cases for this, but only a _very_ few.
-> > > 
-> > > There is absolutely no reason not to do it right with the "add" event,
-> > > just because we are too lazy to solve it proper the current code. It's
-> > > just so broken by design, what we are doing today. :)
-> > 
-> > I'm worrying a bit about changes that impact the whole code tree in
-> > lots of places. I'd be fine with the device layer doing its uevent
-> > manually in device_add() at the very end, though. (This would allow
-> > drivers to add attributes in their probe function before the uevent,
-> > for example.)
+> Index: linux-2.6-lttng/mm/memory.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/memory.c	2007-11-28 08:42:09.000000000 -0500
+> +++ linux-2.6-lttng/mm/memory.c	2007-11-28 09:02:57.000000000 -0500
+> @@ -2072,6 +2072,7 @@ static int do_swap_page(struct mm_struct
+>  	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+>  	page = lookup_swap_cache(entry);
+>  	if (!page) {
+> +		trace_mark(mm_swap_in, "pfn %lu", page_to_pfn(page));
+>  		grab_swap_token(); /* Contend for token _before_ read-in */
+>   		swapin_readahead(entry, address, vma);
+>   		page = read_swap_cache_async(entry, vma, address);
 
-<Looks at device_add() again: It already throws the uevent manually...>
+How about putting the swap file number and the offset as well?
 
+> @@ -2526,30 +2527,45 @@ unlock:
+>  int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+>  		unsigned long address, int write_access)
+>  {
+> +	int res;
+>  	pgd_t *pgd;
+>  	pud_t *pud;
+>  	pmd_t *pmd;
+>  	pte_t *pte;
 > 
-> The driver core does use the split already in most places, I did that
-> long ago. There are not too many (~20) users of kobject_register(), and
-> it's a pretty straight-forward change to change that to _init, _add,
-> _uevent, and get rid of that totally useless "convenience api".
-> 
-> I think there is no longer any excuse to keep that broken code around,
-> and even require to document that it's broken. The whole purpose of the
-> uevent is userspace consumption, which just doesn't work correctly with
-> the code we offer. The fix is trivial, and should be done now, and we no
-> longer need to fiddle around timing issues, just because we are too
-> lazy.
-> 
-> I propose the removal of _all_ funtions that have *register* in their
-> name, and always require the following sequence:
->   _init()
->   _add()
->   _uevent(_ADD)
-> 
->   _uevent(_REMOVE)
->   _del()
->   _put()
-> 
-> The _create_and_register() functions would become  _create_ and_add()
-> and will need an additional _uevent() call after they populated the
-> object.
+> +	trace_mark(mm_handle_fault_entry, "address %lu ip #p%ld",
+> +		address, KSTK_EIP(current));
 
-I'm absolutely fine with doing that at the kobject level (after all,
-it's a quite contained change, and the uevent function explicitely
-works on a kobject).
+For knowing this one, the write access can be pretty important.  It can
+help you find copy-on-write situations as well as some common bugs that
+creep in here. 
 
-For the other _register()/_unregister() functions, it's a different
-piece of cake. They are:
-- distributed through lot of different code
-- at a higher level than kobjects, and kobject_uevent() acts on the
-kobject
-- usually encapsulating a sequence that wants to be used by almost all
-callers, and that includes a uevent
+>  	__set_current_state(TASK_RUNNING);
+> 
+>  	count_vm_event(PGFAULT);
+> 
+> -	if (unlikely(is_vm_hugetlb_page(vma)))
+> -		return hugetlb_fault(mm, vma, address, write_access);
+> +	if (unlikely(is_vm_hugetlb_page(vma))) {
+> +		res = hugetlb_fault(mm, vma, address, write_access);
+> +		goto end;
+> +	}
 
-I don't think we want people registering a higher level object and then
-wondering why udev doesn't seem to take notice of it.
+I think you should also add tracing to the hugetlb code while you're at
+it.  Those poor fellows seem to be always getting left out these
+days. :)
+
+>  	pgd = pgd_offset(mm, address);
+>  	pud = pud_alloc(mm, pgd, address);
+> -	if (!pud)
+> -		return VM_FAULT_OOM;
+> +	if (!pud) {
+> +		res = VM_FAULT_OOM;
+> +		goto end;
+> +	}
+>  	pmd = pmd_alloc(mm, pud, address);
+> -	if (!pmd)
+> -		return VM_FAULT_OOM;
+> +	if (!pmd) {
+> +		res = VM_FAULT_OOM;
+> +		goto end;
+> +	}
+>  	pte = pte_alloc_map(mm, pmd, address);
+> -	if (!pte)
+> -		return VM_FAULT_OOM;
+> +	if (!pte) {
+> +		res = VM_FAULT_OOM;
+> +		goto end;
+> +	}
+> 
+> -	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
+> +	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
+> +end:
+> +	trace_mark(mm_handle_fault_exit, MARK_NOARGS);
+> +	return res;
+>  }
+> 
+>  #ifndef __PAGETABLE_PUD_FOLDED
+> Index: linux-2.6-lttng/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/page_alloc.c	2007-11-28 08:38:46.000000000 -0500
+> +++ linux-2.6-lttng/mm/page_alloc.c	2007-11-28 09:05:36.000000000 -0500
+> @@ -519,6 +519,9 @@ static void __free_pages_ok(struct page 
+>  	int i;
+>  	int reserved = 0;
+> 
+> +	trace_mark(mm_page_free, "order %u pfn %lu",
+> +		order, page_to_pfn(page));
+> +
+>  	for (i = 0 ; i < (1 << order) ; ++i)
+>  		reserved += free_pages_check(page + i);
+>  	if (reserved)
+> @@ -1639,6 +1642,8 @@ fastcall unsigned long __get_free_pages(
+>  	page = alloc_pages(gfp_mask, order);
+>  	if (!page)
+>  		return 0;
+> +	trace_mark(mm_page_alloc, "order %u pfn %lu",
+> +		order, page_to_pfn(page));
+>  	return (unsigned long) page_address(page);
+>  }
+> 
+> Index: linux-2.6-lttng/mm/page_io.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/page_io.c	2007-11-28 08:38:47.000000000 -0500
+> +++ linux-2.6-lttng/mm/page_io.c	2007-11-28 08:52:14.000000000 -0500
+> @@ -114,6 +114,7 @@ int swap_writepage(struct page *page, st
+>  		rw |= (1 << BIO_RW_SYNC);
+>  	count_vm_event(PSWPOUT);
+>  	set_page_writeback(page);
+> +	trace_mark(mm_swap_out, "pfn %lu", page_to_pfn(page));
+>  	unlock_page(page);
+>  	submit_bio(rw, bio);
+
+I'd also like to see the swap file number and the location in swap for
+this one.  
+
+-- Dave
+
