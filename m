@@ -1,94 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbXK1VSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932116AbXK1VTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760814AbXK1VSz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 16:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbXK1VPp
+	id S932116AbXK1VTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 16:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761544AbXK1VSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 16:15:45 -0500
-Received: from gw.goop.org ([64.81.55.164]:57076 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758629AbXK1VPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 16:15:43 -0500
-Message-ID: <474DDA7B.9090802@goop.org>
-Date: Wed, 28 Nov 2007 13:15:39 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 28 Nov 2007 16:18:00 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:56254 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758947AbXK1VR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 16:17:58 -0500
+Date: Wed, 28 Nov 2007 16:13:07 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Remy Bohmer <linux@bohmer.net>, RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will
+ stall forever
+In-Reply-To: <1196282672.27964.32.camel@imap.mvista.com>
+Message-ID: <Pine.LNX.4.58.0711281608490.26365@gandalf.stny.rr.com>
+References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com> 
+ <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com> 
+ <1196176294.13982.58.camel@localhost.localdomain>  <1196177122.23808.7.camel@imap.mvista.com>
+  <1196178834.23808.11.camel@imap.mvista.com> 
+ <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com> 
+ <20071128172509.GA30173@flint.arm.linux.org.uk> 
+ <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com> 
+ <20071128200550.GA3494@flint.arm.linux.org.uk> 
+ <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
+ <1196282672.27964.32.camel@imap.mvista.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tobias Powalowski <t.powa@gmx.de>, Takashi Iwai <tiwai@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, Zachary Amsden <zach@vmware.com>
-Subject: Re: [PATCH] x86/paravirt: revert exports to restore old behaviour
-References: <474CA0DA.3010005@goop.org> <20071128204050.GA29463@stusta.de>
-In-Reply-To: <20071128204050.GA29463@stusta.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Nov 27, 2007 at 02:57:30PM -0800, Jeremy Fitzhardinge wrote:
->   
->> ...
->> Christoph Hellwig objects to this patch on the grounds that modules
->> shouldn't be using these operations anyway.  I don't think this is a
->> particularly good reason to reject the patch, for several reasons:
->>
->> 1. These operations are still available to modules when not using
->>    CONFIG_PARAVIRT, since they are implicitly exported as inline
->>    functions via the kernel headers.  Exporting the same functionality as
->>    GPL-only symbols just adds a gratuitious difference between
->>    CONFIG_PARAVIRT and non-CONFIG_PARAVIRT configurations.  If we really
->>    think these operations are not for module use (or non-GPL module use),
->>    then we should solve the problem in a general way.
->>     
+
+
+On Wed, 28 Nov 2007, Daniel Walker wrote:
+
 >
-> Current practice in the kernel is that when something that should not be 
-> done works by chance with some kernel versions and/or configurations 
-> that's simply an unfortunate fact that should be fixed but doesn't 
-> result in any guarantee that it works with all kernel versions and/or 
-> configurations.
->   
-
-Well, I suppose, but there's nothing particularly "internal" about the
-functions that these modules want to get access to.  They are the proper
-API functions for doing what the modules want to do.
-
-And we have enough weird little config-dependent corners of the kernel
-API that complicate testing; I don't think we need to knowingly
-introduce more.
-
->> 2. It's a regression from previous kernels, which would work these
->>    modules even with CONFIG_PARAVIRT enabled.
->> ...
->>     
+> Ignoring the ARM side of things for a sec, handle_simple_irq() will
+> mask() the interrupt in the special case that an interrupt is already in
+> the processes of being handled.. handle_simple_irq() also unmasks when
+> it finishes handling an interrupt (something real time adds for some
+> reason) ..
 >
-> It cannot be a regression since the kernel does not have a stable API 
-> for modules.
->   
-
-Anything that once worked but now does not is a regression.  Generally
-when we intend a regression like this, we call it a deprecation of an
-interface and have a procedure for that.  It was not my intention to
-cause a regression with this change, and an unintended regression is a bug.
-
->> Therefore, I think this patch should go in for 2.6.24.  If people
->> really think that these operations should not be available to modules,
->> then we can address that separately.
->> ...
->>     
+> In terms of threading the irq everything is the same except there is no
+> unmask() call when the thread finishes ..
 >
-> Why should we start with one step back for getting two steps ahead?
->   
 
-Why is it a step back?  What are the steps ahead?  There's been no
-discussion on this point, so I don't think you can assume there's a
-clear way forward.
+OK, to be honest, I never fully understood the concept of this
+"simple_irq". I figured it was because of the ARM architecture.
 
-I think Linus and Andrew have been pretty clear on the policy for these
-kinds of things: regressions are always bad, even if fixing the
-regression means some other bugfix needs to be put off.
+Your arguments seem reasonable and you are probably correct. But I didn't
+write this code, nor do I understand it, and before I go ahead and change
+it, I'll wait to hear input from Thomas. Hopefully, he'll be back soon.
 
-    J
+Perhaps my confusion about the simple_irq part is from the bug you are
+trying to fix. I've been confused by why it was different ;-)
+
+-- Steve
+
