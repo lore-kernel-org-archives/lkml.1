@@ -1,135 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbXK1Q6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbXK1RB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761450AbXK1Q6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbXK1Q6J
+	id S1761595AbXK1RB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 12:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbXK1RBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:58:09 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44656 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759573AbXK1Q6H (ORCPT
+	Wed, 28 Nov 2007 12:01:21 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:63612 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757148AbXK1RBU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:58:07 -0500
-To: mingo@elte.hu
-CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20071128160501.GA7986@elte.hu> (message from Ingo Molnar on Wed,
-	28 Nov 2007 17:05:01 +0100)
-Subject: Re: -rt doesn't compile for UML
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu> <20071128154152.GA742@elte.hu> <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu> <20071128160501.GA7986@elte.hu>
-Message-Id: <E1IxQEX-0007Ji-TV@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 28 Nov 2007 17:57:57 +0100
+	Wed, 28 Nov 2007 12:01:20 -0500
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <20071128175108.5a370684@gondolin.boeblingen.de.ibm.com>
+References: <20071127230252.GB10038@kroah.com>
+	 <20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
+	 <1196252582.3242.28.camel@lov.site>
+	 <20071128164842.70caa396@gondolin.boeblingen.de.ibm.com>
+	 <1196265468.3242.60.camel@lov.site>
+	 <20071128171238.1ef5d076@gondolin.boeblingen.de.ibm.com>
+	 <1196267789.3242.87.camel@lov.site>
+	 <20071128175108.5a370684@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 18:00:27 +0100
+Message-Id: <1196269227.3242.93.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18hCEM5E/MCpKdHyh4czTgFPISS5djHKBYaaz3
+ 5P+jDAoBroOiptP2Kd7stfn/eFN4JWwbUiZJ74pYk+kbGZGtOX
+ dhLewveEyea6dvblA56M+p2/UJhojis
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> so you can define irqs_off_flags to always-0 and you should be able to 
-> get pretty good traces still. It should have no functional impact.
+On Wed, 2007-11-28 at 17:51 +0100, Cornelia Huck wrote:
+> On Wed, 28 Nov 2007 17:36:29 +0100,
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+> 
+> > 
+> > On Wed, 2007-11-28 at 17:12 +0100, Cornelia Huck wrote:
+> > > On Wed, 28 Nov 2007 16:57:48 +0100,
+> > > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > > 
+> > > > On Wed, 2007-11-28 at 16:48 +0100, Cornelia Huck wrote:
+> > > > > On Wed, 28 Nov 2007 13:23:02 +0100,
+> > > > > Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > > > > > On Wed, 2007-11-28 at 12:45 +0100, Cornelia Huck wrote:
+> > > > > > > On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
+> > > > 
+> > > > > > > > The uevent function will be called when the uevent is about to be sent to
+> > > > > > > > userspace to allow more environment variables to be added to the uevent.
+> > > > > > > 
+> > > > > > > It may be helpful to mention which uevents are by default created by
+> > > > > > > the kobject core (KOBJ_ADD, KOBJ_DEL, KOBJ_MOVE).
+> > > > > > 
+> > > > > > I think, we should remove all these default events from the kobject
+> > > > > > core. We will not be able to manage the timing issues and "raw" kobject
+> > > > > > users should request the events on their own, when they are finished
+> > > > > > adding stuff to the kobject. I see currently no way to solve the
+> > > > > > "attributes created after the event" problem. The new
+> > > > > > *_create_and_register functions do not allow default attributes to be
+> > > > > > created, which will just lead to serious trouble when someone wants to
+> > > > > > use udev to set defaults and such things. We may just want to require an
+> > > > > > explicit call to send the event?
+> > > > > 
+> > > > > There will always be attributes that will show up later (for example,
+> > > > > after a device is activated). Probably the best approach is to keep the
+> > > > > default uevents, but have the attribute-adder send another uevent when
+> > > > > they are done?
+> > > > 
+> > > > Uh, that's more an exception where we can't give guarantees because of
+> > > > very specific hardware setups, and it would be an additional "change"
+> > > > event. There are valid cases for this, but only a _very_ few.
+> > > > 
+> > > > There is absolutely no reason not to do it right with the "add" event,
+> > > > just because we are too lazy to solve it proper the current code. It's
+> > > > just so broken by design, what we are doing today. :)
+> > > 
+> > > I'm worrying a bit about changes that impact the whole code tree in
+> > > lots of places. I'd be fine with the device layer doing its uevent
+> > > manually in device_add() at the very end, though. (This would allow
+> > > drivers to add attributes in their probe function before the uevent,
+> > > for example.)
+> 
+> <Looks at device_add() again: It already throws the uevent manually...>
 
-OK, managed to make it compile, but then something goes wrong in
-tracer_alloc_bootmem().
+I think I still remember what I did 2.5 years ago :)
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e57cd73e2e844a3da25cc6b420674c81bbe1b387
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=18c3d5271b472c096adfc856e107c79f6fd30d7d
 
-Jeff?
-
-(attaching patch, which goes on top of
-latency-tracer-v2.6.24-rc2-git5-combo.patch, which goes on top of
-2.6.24-rc3)
-
-Miklos
-
-
-
-#0  0xffffe410 in __kernel_vsyscall ()
-#1  0xf7e498f5 in raise () from /lib/libc.so.6
-#2  0xf7e4b1e1 in abort () from /lib/libc.so.6
-#3  0x0806ba54 in os_dump_core () at arch/um/os-Linux/util.c:147
-#4  0x0805d009 in panic_exit (self=0x8239594, unused1=0, unused2=0x8250360)
-    at arch/um/kernel/um_arch.c:370
-#5  0x080927d7 in notifier_call_chain (nl=0x824032c, val=0, v=0x8250360, nr_to_call=-1,
-    nr_calls=0x0) at kernel/notifier.c:69
-#6  0x080928b8 in __atomic_notifier_call_chain (nh=0x824031c, val=0, v=0x8250360,
-    nr_to_call=-1, nr_calls=0x0) at kernel/notifier.c:158
-#7  0x080928ee in atomic_notifier_call_chain (nh=0x824031c, val=0, v=0x8250360)
-    at kernel/notifier.c:167
-#8  0x08077e17 in panic (fmt=0x81f82b6 "Out of memory") at kernel/panic.c:101
-#9  0x0804f6d0 in __alloc_bootmem (size=33554432, align=128, goal=4294967295)
-    at mm/bootmem.c:442
-#10 0x0804ea0d in tracer_alloc_bootmem (size=33554432) at kernel/latency_trace.c:2690
-#11 0x0804ea78 in init_tracer () at kernel/latency_trace.c:2718
-#12 0x08049668 in start_kernel () at init/main.c:590
-#13 0x0804b00b in start_kernel_proc (unused=0x0) at arch/um/kernel/skas/process.c:40
-#14 0x08069672 in run_kernel_thread (fn=0x804afda <start_kernel_proc>, arg=0x0,
-    jmp_ptr=0x823922c) at arch/um/os-Linux/process.c:264
-#15 0x0805a22d in new_thread_handler () at arch/um/kernel/process.c:153
-#16 0x00000000 in ?? ()
-
-
-
-----------------
-Index: linux/include/asm-um/rtc.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/include/asm-um/rtc.h	2007-11-28 17:41:42.000000000 +0100
-@@ -0,0 +1 @@
-+/* stub for the latency tracer */
-Index: linux/include/asm-um/irqflags.h
-===================================================================
---- linux.orig/include/asm-um/irqflags.h	2007-11-28 17:36:21.000000000 +0100
-+++ linux/include/asm-um/irqflags.h	2007-11-28 17:41:42.000000000 +0100
-@@ -1,6 +1,9 @@
- #ifndef __UM_IRQFLAGS_H
- #define __UM_IRQFLAGS_H
  
--/* Empty for now */
-+static inline int raw_irqs_disabled_flags(unsigned long flags)
-+{
-+	return 0;
-+}
- 
- #endif
-Index: linux/kernel/latency_trace.c
-===================================================================
---- linux.orig/kernel/latency_trace.c	2007-11-28 17:41:35.000000000 +0100
-+++ linux/kernel/latency_trace.c	2007-11-28 17:55:20.000000000 +0100
-@@ -26,6 +26,7 @@
- #include <asm/unistd.h>
- #include <asm/asm-offsets.h>
- #include <asm/rtc.h>
-+#include <asm/irqflags.h>
- #include <linux/stacktrace.h>
- 
- #ifndef DEFINE_RAW_SPINLOCK
-@@ -59,6 +60,8 @@ static unsigned long notrace cycles_to_u
- 	delta = mulhwu(tb_to_us, delta);
- #elif defined(CONFIG_ARM)
- 	delta = mach_cycles_to_usecs(delta);
-+#elif defined(CONFIG_UML)
-+	/* Dunno */
- #else
- 	#error Implement cycles_to_usecs.
- #endif
-@@ -655,7 +658,7 @@ again:
- 	entry->cpu = cpu;
- #endif
- 	entry->flags = (irqs_off() ? TRACE_FLAG_IRQS_OFF : 0) |
--		(irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_HARD_OFF : 0)|
-+		(raw_irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_HARD_OFF : 0)|
- 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
- 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
- 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0) |
-@@ -786,6 +789,7 @@ void notrace trace_special_sym(void)
- 	if (!trace_enabled || !stackframe_tracing)
- 		return;
- 
-+#ifndef CONFIG_UML
- 	trace.entries = entries;
- 	trace.skip = 3;
- 	trace.max_entries = STACK_ENTRIES;
-@@ -802,6 +806,7 @@ void notrace trace_special_sym(void)
- 					entries[1], entries[2], entries[3]);
- 	___trace(TRACE_SPECIAL_SYM, entries[4], 0,
- 					entries[5], entries[6], entries[7]);
-+#endif
- }
- 
- EXPORT_SYMBOL(trace_special_sym);
+> > The driver core does use the split already in most places, I did that
+> > long ago. There are not too many (~20) users of kobject_register(), and
+> > it's a pretty straight-forward change to change that to _init, _add,
+> > _uevent, and get rid of that totally useless "convenience api".
+> > 
+> > I think there is no longer any excuse to keep that broken code around,
+> > and even require to document that it's broken. The whole purpose of the
+> > uevent is userspace consumption, which just doesn't work correctly with
+> > the code we offer. The fix is trivial, and should be done now, and we no
+> > longer need to fiddle around timing issues, just because we are too
+> > lazy.
+> > 
+> > I propose the removal of _all_ funtions that have *register* in their
+> > name, and always require the following sequence:
+> >   _init()
+> >   _add()
+> >   _uevent(_ADD)
+> > 
+> >   _uevent(_REMOVE)
+> >   _del()
+> >   _put()
+> > 
+> > The _create_and_register() functions would become  _create_ and_add()
+> > and will need an additional _uevent() call after they populated the
+> > object.
+> 
+> I'm absolutely fine with doing that at the kobject level (after all,
+> it's a quite contained change, and the uevent function explicitely
+> works on a kobject).
+> 
+> For the other _register()/_unregister() functions, it's a different
+> piece of cake. They are:
+> - distributed through lot of different code
+> - at a higher level than kobjects, and kobject_uevent() acts on the
+> kobject
+> - usually encapsulating a sequence that wants to be used by almost all
+> callers, and that includes a uevent
+> 
+> I don't think we want people registering a higher level object and then
+> wondering why udev doesn't seem to take notice of it.
+
+Oh, I'm just talking about lib/kobject.c. And the new kobj/kset stuff we
+added which is currently in the -mm tree.
+
+It suffers from the same old problem, and even gets documentend as
+"broken" now. I really think that should be fixed proper instead, and
+it's the right time to do it now.
+
+Thanks,
+Kay
+
+
