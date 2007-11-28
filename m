@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbXK1Caj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760750AbXK1CgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760972AbXK1Caj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 21:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760144AbXK1C3o
+	id S1760750AbXK1CgH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 21:36:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759935AbXK1Cfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 21:29:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:41086 "EHLO ozlabs.org"
+	Tue, 27 Nov 2007 21:35:54 -0500
+Received: from ozlabs.org ([203.10.76.45]:37863 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759596AbXK1C3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 21:29:39 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Wed, 28 Nov 2007 12:34:02 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Roland Dreier <rdreier@cisco.com>, Andi Kleen <ak@suse.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20071122343.446909000@suse.de> <200711271526.53065.rusty@rustcorp.com.au> <20071127105016.GC24223@one.firstfloor.org>
-In-Reply-To: <20071127105016.GC24223@one.firstfloor.org>
+	id S1759915AbXK1Cfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Nov 2007 21:35:53 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711281234.03381.rusty@rustcorp.com.au>
+Message-ID: <18252.54275.429917.929763@cargo.ozlabs.ibm.com>
+Date: Wed, 28 Nov 2007 13:35:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 11/14] Powerpc: Use generic per cpu
+In-Reply-To: <Pine.LNX.4.64.0711271311370.4590@schroedinger.engr.sgi.com>
+References: <20071127001407.859743255@sgi.com>
+	<20071127001431.688565525@sgi.com>
+	<F81BD9A7-9D76-4C2C-AF80-AAA3F70F061E@kernel.crashing.org>
+	<Pine.LNX.4.64.0711271016260.2310@schroedinger.engr.sgi.com>
+	<18252.34032.207280.742887@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0711271311370.4590@schroedinger.engr.sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 November 2007 21:50:16 Andi Kleen wrote:
-> Goals are:
-> - Limit the interfaces available for out of tree modules to reasonably
-> stable ones that are already used by a larger set of drivers.
+Christoph Lameter writes:
 
-Not the goals.  I haven't seen the *problem* yet.
+> On Wed, 28 Nov 2007, Paul Mackerras wrote:
+> 
+> > Did you try both 32-bit (CONFIG_64BIT=n) and 64-bit (CONFIG_64BIT=y)
+> > configurations?  The paca only exists in 64-bit kernels.
+> 
+> I build both and there is no dependency on 32bit or 64 bit in 
+> include/asm-powerpc/percpu.h. Both access the paca (whatever that is).
 
-> - Limit size of exported API to make stable ABIs for enterprise
-> distributions easier
-> [Yes I know that is not a popular topic on l-k, but it's a day-to-day
-> problem for these distros and out of tree solutions do not work]
+Look at line 3 of include/asm-powerpc/percpu.h:
 
-That's a real problem, and I sympathise with the idea of marking symbols as 
-externally useful (or, practically, mark internal).
+#ifdef __powerpc64__
 
-But we now need to decide what's "externally useful".  The currently line for 
-exports is simple: someone in-tree needs it.  You dislike the suggestion to 
-extend this to "if more than one in-tree needs it it's open".
+As far as I can see, after applying your series of patches, I end up
+with an unbalanced #ifdef in include/asm-powerpc/percpu.h.  I see 3
+#ifdef/#ifndef, but only two #endifs.  It needs another #endif after
+the #endif /* SMP */ to match the #ifdef __powerpc64__.  With that
+change it looks OK, since 32-bit uses asm-generic/percpu.h for both
+SMP and UP.
 
-Currently your criterion seems to be "does the maintainer hate external 
-modules?" which I don't think will be what you want...
-
-Cheers,
-Rusty.
+Paul.
