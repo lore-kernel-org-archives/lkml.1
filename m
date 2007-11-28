@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbXK1UYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbXK1UZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759308AbXK1UYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 15:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbXK1UYM
+	id S1760036AbXK1UZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 15:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbXK1UZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 15:24:12 -0500
-Received: from nuova-ex1.nuovasystems.com ([67.91.200.196]:12637 "EHLO
-	nuova-ex1.nuovasystems.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751010AbXK1UYK (ORCPT
+	Wed, 28 Nov 2007 15:25:12 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:40161 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbXK1UZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 15:24:10 -0500
-X-Greylist: delayed 973 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 15:24:10 EST
-Message-ID: <474DCAA5.3020108@nuovasystems.com>
-Date: Wed, 28 Nov 2007 12:08:05 -0800
-From: Joe Eykholt <joe@nuovasystems.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Chris Leech <christopher.leech@intel.com>
-CC: Christoph Hellwig <hch@infradead.org>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Dev, Vasu" <vasu.dev@intel.com>, jeff@garzik.org,
-       linux-scsi@vger.kernel.org, "Zou, Yi" <yi.zou@intel.com>,
-       netdev@vger.kernel.org,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       linux-kernel@vger.kernel.org, james.bottomley@hansenpartnership.com,
-       "Ronciak, John" <john.ronciak@intel.com>, devel@open-fcoe.org,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, davem@davemloft.net
-Subject: Re: [Open-FCoE] [ANNOUNCE] Open-FCoE - Fibre Channel over Ethernet
- Project
-References: <10A7D0016239E24092DEF05CCC582E43028A636B@fmsmsx411.amr.corp.intel.com>	<20071128074426.GA30468@infradead.org> <474DAB30.20703@intel.com>
-In-Reply-To: <474DAB30.20703@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 Nov 2007 15:25:11 -0500
+Subject: PATCH 2.6.24-rc3-mm2 - build breakage - bnx2x depends on
+	ZLIB_INFLATE
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 28 Nov 2007 15:25:24 -0500
+Message-Id: <1196281524.5318.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Nov 2007 20:07:54.0532 (UTC) FILETIME=[5C9B3640:01C831FA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Leech wrote:
-> Christoph Hellwig wrote:
->   
->> I just did a very quick glance over the tree.  Some extremly highlevel
->> comments to start with before actually starting the source review:
->>     
->
-> Thanks for taking a look Christoph
->
->   
->>  - why do you need your own libcrc?  lib/crc32.c has a crc32_le
->>     
->
-> We shouldn't, but we may want to add a CRC and copy routine.
->
->   
->>  - libsa should go.  Much of it is just wrappers of kernel functions
->>    that should be used directly.  Other like that hash, even or state
->>    helpers might either be opencoded in the caller or made completely
->>    generic in lib/.  Probably the former but we'll have to see.
->>     
->
-> Yes, and along with it the last use of the BSD TAILQ macros.  Just 
-> before Rob set up the open repos I finished converting most of those to 
-> list_head, the only one left is in the sa_event mechanism.  Rather than 
-> convert it I'd like to replace the use of sa_event with notifier call 
-> chains.  I just need to finish auditing the use to make sure the 
-> differences won't cause unexpected problems.
->
-> After than and unwrapping kernel functions, I think the only thing left 
-> before completly removing libsa is to open code the state machines.
->
-> Similarly I think net_types.h need to go.
->
->   
-Hi All,
+Couldn't find one of these on the lists...
 
-[resending as plain text -sorry].
+PATCH 2.6.24-rc3-mm1:  bnx2x depends on ZLIB_INFLATE
 
-I've had a start at getting rid of sa_state, but I haven't tested it
-yet.  It's a pretty straightforward change to just call the new state
-routine directly instead of going through the table.  I'll submit that
-in the next week or so, or if desired, someone else can take over the
-work from the code I have.
+The bnx2x module depends on the zlib_inflate functions.  The
+build will fail if ZLIB_INFLATE has not been selected manually
+or by building another module that automatically selects it.
 
-           Joe
+Modify BNX2X config option to 'select ZLIB_INFLATE' like BNX2
+and others.  This seems to fix it.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ drivers/net/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: Linux/drivers/net/Kconfig
+===================================================================
+--- Linux.orig/drivers/net/Kconfig	2007-11-28 10:41:23.000000000 -0500
++++ Linux/drivers/net/Kconfig	2007-11-28 12:40:16.000000000 -0500
+@@ -2606,6 +2606,7 @@ config TEHUTI
+ config BNX2X
+ 	tristate "Broadcom NetXtremeII 10Gb support"
+ 	depends on PCI
++	select ZLIB_INFLATE
+ 	help
+ 	  This driver supports Broadcom NetXtremeII 10 gigabit Ethernet cards.
+ 	  To compile this driver as a module, choose M here: the module
+
+
