@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761686AbXK1RZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXK1Rc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761686AbXK1RZG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 12:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761656AbXK1RYw
+	id S1762113AbXK1Rc3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 12:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762035AbXK1RcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 12:24:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57833 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Nov 2007 12:32:17 -0500
+Received: from mx1.suse.de ([195.135.220.2]:42056 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761646AbXK1RYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 12:24:51 -0500
-Date: Wed, 28 Nov 2007 18:24:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: -rt doesn't compile for UML
-Message-ID: <20071128172433.GA10840@elte.hu>
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128125030.GB21791@elte.hu> <E1IxMfh-0006fN-HQ@dorka.pomaz.szeredi.hu> <20071128150840.GB5518@c2.user-mode-linux.org> <E1IxOzn-00075w-Gq@dorka.pomaz.szeredi.hu> <20071128154152.GA742@elte.hu> <E1IxPKU-00079S-UH@dorka.pomaz.szeredi.hu> <20071128160501.GA7986@elte.hu> <E1IxQEX-0007Ji-TV@dorka.pomaz.szeredi.hu> <E1IxQJM-0007LZ-1w@dorka.pomaz.szeredi.hu>
+	id S1762034AbXK1RcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 12:32:16 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
+Date: Wed, 28 Nov 2007 18:31:27 +0100
+User-Agent: KMail/1.9.6
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Roland Dreier <rdreier@cisco.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <20071122343.446909000@suse.de> <20071127230645.GB31491@one.firstfloor.org> <20071128164817.GK3406@stusta.de>
+In-Reply-To: <20071128164817.GK3406@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1IxQJM-0007LZ-1w@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0006]
+Message-Id: <200711281831.27379.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> > OK, managed to make it compile, but then something goes wrong in
-> > tracer_alloc_bootmem().
+On Wednesday 28 November 2007 17:48:17 Adrian Bunk wrote:
+> On Wed, Nov 28, 2007 at 12:06:45AM +0100, Andi Kleen wrote:
+> > On Tue, Nov 27, 2007 at 03:00:22PM -0800, Stephen Hemminger wrote:
+> >...
+> > > of a modular ipv6 is flawed. 
+> > 
+> > Modules that cannot be unloaded are still useful. Standard case: Distributions
+> > like to offer an option to not use ipv6 because that is popular workaround
+> > for the common "DNS server eats AAAA queries and causes delays" issue.
+> > Forcing the user to rebuild the kernel for this wouldn't be practical.
+> > If ipv6 wasn't modular that would be hard to do.
 > 
-> It needs 32M, and uml has that much by default.  Doh.
+> It should be trivial doing it similar to the selinux=0 boot option.
 
-reduce MAX_TRACE to something like 1024 to make sure allocation is not 
-an issue. Do you still see problems?
+They safe also a few hundred KB of memory this way.
+I know it is not en vogue anymore to care about memory bloat, but
+I personally like that.
 
-	Ingo
+-Andi 
+
