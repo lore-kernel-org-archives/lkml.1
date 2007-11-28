@@ -1,127 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbXK1ThJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbXK1Tqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759749AbXK1ThJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXK1Tg4
+	id S1757510AbXK1Tqc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbXK1TqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:36:56 -0500
-Received: from cas-mta4-fe.casema.nl ([83.80.1.32]:60976 "EHLO
-	mta-fe.casema.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756562AbXK1Tgz (ORCPT
+	Wed, 28 Nov 2007 14:46:24 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45507 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755007AbXK1TqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:36:55 -0500
-X-Greylist: delayed 1559 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 14:36:55 EST
-Message-ID: <474DBD3C.8040602@casema.nl>
-Date: Wed, 28 Nov 2007 20:10:52 +0100
-From: willem <wli222@casema.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 28 Nov 2007 14:46:23 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
+	<200711271445.56792.ak@suse.de>
+	<m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
+	<474C64CB.7080004@redhat.com>
+	<20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
+	<20071127200011.GA3703@redhat.com>
+	<20071127222408.GH24223@one.firstfloor.org>
+	<474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com>
+	<20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
+	<20071128190525.GD3192@redhat.com>
+Date: Wed, 28 Nov 2007 12:42:22 -0700
+In-Reply-To: <20071128190525.GD3192@redhat.com> (Vivek Goyal's message of
+	"Wed, 28 Nov 2007 14:05:25 -0500")
+Message-ID: <m1d4tudun5.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Dave Quigley <dpquigl@tycho.nsa.gov>
-CC: Tilman Schmidt <tilman@imap.cc>, Jan Engelhardt <jengelh@computergmbh.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: git guidance
-References: <474C9B31.8000408@imap.cc> <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr> <1196262922.19921.20.camel@moss-terrapins.epoch.ncsc.mil> <474D8FD2.4010009@imap.cc> <1196267837.19921.41.camel@moss-terrapins.epoch.ncsc.mil>
-In-Reply-To: <1196267837.19921.41.camel@moss-terrapins.epoch.ncsc.mil>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Quigley wrote:
-> On Wed, 2007-11-28 at 16:57 +0100, Tilman Schmidt wrote:
->   
->> Dave Quigley schrieb:
->>     
->>> There is a project listed on the kernel.org git page called guilt. I
->>> find it very useful. It is much more responsive than stgit and it
->>> actually has a git backend which quilt does not.
->>>
->>> On Wed, 2007-11-28 at 00:20 +0100, Jan Engelhardt wrote:
->>>       
->>>> On Nov 27 2007 23:33, Tilman Schmidt wrote:
->>>>         
->>>>> Well, it did. So now I'm back to keeping a virgin kernel source tree
->>>>> alongside my development area in order to produce diffs. That can't
->>>>> be right?
->>>>>
->>>>>           
->>>> No, it can't. Use stgit/quilt ;p
->>>>         
->> In which respect would stgit/quilt/guilt help me? At first glance
->> they just seem to add another level of complexity.
->>
->> Thanks,
->> Tilman
->>
->>     
->
-> These tools allow you to maintain a set of patches with very little
-> effort. More importantly it removes a lot of the git specifics from your
-> development process. For example this is how I use guilt for a new patch
-> set.
->
-> I take my fresh tree and do a guilt-init in the base. This will create a
-> new patch series. I then need to create a patch to modify something LSM
-> related (guilt-new <patch_name>). Things like stgit/quilt/git use the
-> idea of a stack of patches. At this point if you were to type
-> guilt-series you would only see the one patch we just created. This
-> patch is going to be one logical set of changes (it should also produce
-> a compilable and working kernel). You can make whatever modifications
-> you need to make to your files and at this point you need to do one of
-> two things. If they were already in the tree you just type guilt-refresh
-> and under your .git/patches/<branch_name> directory you will see a file
-> named <patch_name> which contains your patch. Otherwise you need to do a
-> guilt-add <file_name> and then a guilt-refresh. The idea here is that
-> you have a moved your workflow from managing a series of commits and
-> then breaking out patches from a final version to one where you think in
-> terms of the patches and make modifications to them instead. In my
-> example I said I was doing something LSM related. Lets say the first
-> patch added a new hook and its implementation in the various modules. We
-> can now add a second patch using the guilt-new command and this one will
-> add uses of that new hook. At this point we have a stack that looks like
-> this.
->
-> <patch that adds users>
-> <patch that adds hook>
->
-> I can pop and push patches onto this stack to have a version of my
-> kernel tree at any state within the patch set. At this point lets say we
-> have posted the patch set and have feedback. I need to apply this
-> feedback to the patch that adds the LSM hook. Since my top patch
-> (guilt-top) is currently at the one that adds the users of the hook I
-> need to pop off that patch and get to the one that creates the hook
-> (guilt-pop). After doing this I'm at a kernel tree state which just has
-> the changes which add the hook. I make my modifications, type
-> guilt-refresh to create a new patch and then guilt-push my second patch
-> on and make sure everything is still working.
->
-> As you can see there is almost no git knowledge required to use this
-> system and it allows you to focus on development instead of the
-> versioning system. One useful feature is that when Linus adds new
-> patches and I want to rebase my set against the current tree It only
-> takes 3 commands to rebase the patch set (Assuming all goes well).
->
-> guilt-push -a #push all patches onto the stack
-> git-fetch #pull down the index
-> guilt-rebase FETCH_HEAD #Rebase our patches should do a merge and
-> #reapply all patches
->
-> These are just some basics about guilt. Jeff has written a better
-> tutorial with a sample repository for you to work with if your
-> interested. I don't know if this will help your development process but
-> I can tell you from experience breaking patches by hand was a pain in
-> the ass and a huge waste of time and I'm glad to have a tool like this
->   
-Where can I find that tutorial ?
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-regards
-> now.
+> Ok. Got it. So in this case we route the interrupts directly through LAPIC
+> and put LVT0 in ExtInt mode and IOAPIC is bypassed.
 >
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->   
+> I am looking at Intel Multiprocessor specification v1.4 and as per figure
+> 3-3 on page 3-9, 8259 is connected to LINTIN0 line, which in turn is 
+> connected to LINTIN0 pin on all processors. If that is the case, even in
+> this mode, all the CPU should see the timer interrupts (which is coming
+> from 8259)?
 
+However things are implemented completely differently now.  I don't think
+the coherent hypertransport domain of AMD processors actually routes
+ExtINT interrupts to all cpus but instead one (the default route?) is
+picked.
+
+So I think for the kdump case we pretty much need to use an IOAPIC
+in virtual wire mode for recent AMD systems.
+
+For current Intel systems I believe either scenario still works.
+
+> Can you print the LAPIC registers (print_local_APIC) during normal boot
+> and during kdump boot and paste here?
+
+It's worth a look.
+
+I still think we need to just use apic mode at kernel startup, and
+be done with it.
+
+Eric
