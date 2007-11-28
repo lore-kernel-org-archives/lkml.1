@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbXK1BHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760277AbXK1BKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760226AbXK1BHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 20:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXK1BHW
+	id S1760277AbXK1BKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 20:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbXK1BKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 20:07:22 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:55525 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbXK1BHV (ORCPT
+	Tue, 27 Nov 2007 20:10:31 -0500
+Received: from hu-out-0506.google.com ([72.14.214.239]:17768 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754094AbXK1BK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 20:07:21 -0500
+	Tue, 27 Nov 2007 20:10:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jvj/ofUV2xEm0wEHz8DJCu2DOSr6rQHv9c5LN3qzexRydDrLJV55rmE8cGyuQwD98d+YOPVz+WPgQVk79xZ0uDTiAUG7dfb74Of4TMON6uT6YWRiJgN34V75dowxLNpdFI6JaVOxJQ0j00ysAGkkbhiMJkkbIhEG3gvKO7tU3j8=
-Message-ID: <2accc2ff0711271707o636c060ck7587a259dab92917@mail.gmail.com>
-Date: Tue, 27 Nov 2007 20:07:16 -0500
-From: "Nelson Castillo" <nelsoneci@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Module for keyboard statistics / What should I look at?
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=V+HmW6fLNFP3ITNFdHLYvMg6MLt5oWfahe8GgYKjJrFt4PD3H3fVloXIL1BBuxmBiiPUPZ0Cl7wxPPfbfhM/Ch/roNWGTlee69zELYilAhQPhWN1J/wHPlZi4R56umveFPk8Z9A0I9NkEuR3JGXMKJz6R3nKrCdONVd8U+Ki3wE=
+Message-ID: <474CBFB6.4020105@gmail.com>
+Date: Wed, 28 Nov 2007 10:09:10 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kjartan Maraas <kmaraas@broadpark.no>
+CC: Tomas Carnecky <tom@dbservice.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: laptop reboots right after hibernation
+References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz> <4740692E.7010801@dbservice.com> <47409DA3.7070909@dbservice.com> <1195551141.2792.3.camel@localhost.localdomain>
+In-Reply-To: <1195551141.2792.3.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Kjartan Maraas wrote:
+> I get this exact error message on a normal first time boot here. I'm
+> using the latest fedora development kernel which is 2.6.24-rc2-git6
+> based. And I have the latest BIOS from HP IIRC.
+> 
+> This is an HP nc6400 intel based laptop:
 
-More than 2 years ago I wrote a small non-portable patch [1] to gather
-some statistics
-about keyboard usage[2] ( I show the counters with modulo 10 but still this is a
-security risk. Perhaps some random noise should be added ).
-
-[1] http://svn.arhuaco.org/svn/src/pcgotchi/trunk/proc-keystrokes.patch.linux-2.6.12.2.txt
-[2] http://pcgotchi.blogspot.com/2005/10/11140-times.html
-
-I liked to use this in my PC but stopped using this because I didn't
-want to compile whenever I
-upgraded Kernels (Debian).
-
-I thought I had already asked in LKML as suggested by Blaisorblade[3],
-but I did ask in
-kernelnewbies instead[4].
-
-[3] http://www.mail-archive.com/user-mode-linux-devel@lists.sourceforge.net/msg02168.html
-[4] http://mail.nl.linux.org/kernelnewbies/2006-05/msg00367.html
-
-My questions are:
-
-* What should I read to do this in a module?
-* Is there a better way to to this? (perhaps using /dev/input/... and
-a user-space program) ?
-
-Regards,
-Nelson.-
-
-PS: I don't wish to write a keylogger. I really want the statistics
-and you are screwed if
-someone gets to be root in your machine anyway.
+Care to post boot dmesg?  Or does harddisk detection fail because of this?
 
 -- 
-http://arhuaco.org
+tejun
