@@ -1,137 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXK1TUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbXK1TZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbXK1TUt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:20:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbXK1TUk
+	id S1759371AbXK1TZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbXK1TZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:20:40 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:52804 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760694AbXK1TUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:20:39 -0500
-Subject: Re: git guidance
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: willem <wli222@casema.nl>
-Cc: Tilman Schmidt <tilman@imap.cc>, Jan Engelhardt <jengelh@computergmbh.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <474DBD3C.8040602@casema.nl>
-References: <474C9B31.8000408@imap.cc>
-	 <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr>
-	 <1196262922.19921.20.camel@moss-terrapins.epoch.ncsc.mil>
-	 <474D8FD2.4010009@imap.cc>
-	 <1196267837.19921.41.camel@moss-terrapins.epoch.ncsc.mil>
-	 <474DBD3C.8040602@casema.nl>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 14:18:26 -0500
-Message-Id: <1196277506.21012.18.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 14:25:38 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:48018 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753629AbXK1TZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 14:25:36 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 28 Nov 2007 11:25:30 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>
+Subject: Re: 2.6.24-rc3-mm2 - Build Failure on powerpc timerfd() undeclared
+In-Reply-To: <20071128104345.9474025e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711281123360.14548@alien.or.mcafeemobile.com>
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+ <474D61CF.6080400@linux.vnet.ibm.com> <200711281432.09178.arnd@arndb.de>
+ <20071128104345.9474025e.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-290824188-1196277930=:14548"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 20:10 +0100, willem wrote:
-> Dave Quigley wrote:
-> > On Wed, 2007-11-28 at 16:57 +0100, Tilman Schmidt wrote:
-> >   
-> >> Dave Quigley schrieb:
-> >>     
-> >>> There is a project listed on the kernel.org git page called guilt. I
-> >>> find it very useful. It is much more responsive than stgit and it
-> >>> actually has a git backend which quilt does not.
-> >>>
-> >>> On Wed, 2007-11-28 at 00:20 +0100, Jan Engelhardt wrote:
-> >>>       
-> >>>> On Nov 27 2007 23:33, Tilman Schmidt wrote:
-> >>>>         
-> >>>>> Well, it did. So now I'm back to keeping a virgin kernel source tree
-> >>>>> alongside my development area in order to produce diffs. That can't
-> >>>>> be right?
-> >>>>>
-> >>>>>           
-> >>>> No, it can't. Use stgit/quilt ;p
-> >>>>         
-> >> In which respect would stgit/quilt/guilt help me? At first glance
-> >> they just seem to add another level of complexity.
-> >>
-> >> Thanks,
-> >> Tilman
-> >>
-> >>     
-> >
-> > These tools allow you to maintain a set of patches with very little
-> > effort. More importantly it removes a lot of the git specifics from your
-> > development process. For example this is how I use guilt for a new patch
-> > set.
-> >
-> > I take my fresh tree and do a guilt-init in the base. This will create a
-> > new patch series. I then need to create a patch to modify something LSM
-> > related (guilt-new <patch_name>). Things like stgit/quilt/git use the
-> > idea of a stack of patches. At this point if you were to type
-> > guilt-series you would only see the one patch we just created. This
-> > patch is going to be one logical set of changes (it should also produce
-> > a compilable and working kernel). You can make whatever modifications
-> > you need to make to your files and at this point you need to do one of
-> > two things. If they were already in the tree you just type guilt-refresh
-> > and under your .git/patches/<branch_name> directory you will see a file
-> > named <patch_name> which contains your patch. Otherwise you need to do a
-> > guilt-add <file_name> and then a guilt-refresh. The idea here is that
-> > you have a moved your workflow from managing a series of commits and
-> > then breaking out patches from a final version to one where you think in
-> > terms of the patches and make modifications to them instead. In my
-> > example I said I was doing something LSM related. Lets say the first
-> > patch added a new hook and its implementation in the various modules. We
-> > can now add a second patch using the guilt-new command and this one will
-> > add uses of that new hook. At this point we have a stack that looks like
-> > this.
-> >
-> > <patch that adds users>
-> > <patch that adds hook>
-> >
-> > I can pop and push patches onto this stack to have a version of my
-> > kernel tree at any state within the patch set. At this point lets say we
-> > have posted the patch set and have feedback. I need to apply this
-> > feedback to the patch that adds the LSM hook. Since my top patch
-> > (guilt-top) is currently at the one that adds the users of the hook I
-> > need to pop off that patch and get to the one that creates the hook
-> > (guilt-pop). After doing this I'm at a kernel tree state which just has
-> > the changes which add the hook. I make my modifications, type
-> > guilt-refresh to create a new patch and then guilt-push my second patch
-> > on and make sure everything is still working.
-> >
-> > As you can see there is almost no git knowledge required to use this
-> > system and it allows you to focus on development instead of the
-> > versioning system. One useful feature is that when Linus adds new
-> > patches and I want to rebase my set against the current tree It only
-> > takes 3 commands to rebase the patch set (Assuming all goes well).
-> >
-> > guilt-push -a #push all patches onto the stack
-> > git-fetch #pull down the index
-> > guilt-rebase FETCH_HEAD #Rebase our patches should do a merge and
-> > #reapply all patches
-> >
-> > These are just some basics about guilt. Jeff has written a better
-> > tutorial with a sample repository for you to work with if your
-> > interested. I don't know if this will help your development process but
-> > I can tell you from experience breaking patches by hand was a pain in
-> > the ass and a huge waste of time and I'm glad to have a tool like this
-> >   
-> Where can I find that tutorial ?
-> 
-> regards
-> > now.
-> >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> >   
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Hmm actually the tutorial in the docs is somewhat minimal. However you
-can find it in the Documentation/HOWTO file under the guilt tree once
-you clone it. Maybe I can write a better one some day not on work time
-though :)
+--1795850513-290824188-1196277930=:14548
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+On Wed, 28 Nov 2007, Andrew Morton wrote:
+
+> On Wed, 28 Nov 2007 14:32:07 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
+>=20
+> > On Wednesday 28 November 2007, Kamalesh Babulal wrote:
+> > > Kernel build fails, with build error
+> > >=20
+> > > =C2=A0 CC =C2=A0 =C2=A0 =C2=A0arch/powerpc/platforms/cell/spu_callbac=
+ks.o
+> > > In file included from arch/powerpc/platforms/cell/spu_callbacks.c:49:
+> > > include/asm/systbl.h:312: error: =E2=80=98sys_timerfd=E2=80=99 undecl=
+ared here (not in a function)
+> > > make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
+> > > make[1]: *** [arch/powerpc/platforms/cell] Error 2
+> > > make: *** [arch/powerpc/platforms] Error 2
+> > >=20
+> >=20
+> > I guess all architectures except x86 are currently broken because they
+> > reference the old sys_timerfd function.
+>=20
+> None of them were broken in my testing and I'm unsure why powerpc broke
+> here.
+>=20
+> > This patch should add the missing
+> > bits to powerpc.
+> >=20
+>=20
+> Because the patches in -mm left the stubs in place in sys_ni.c and powerp=
+c
+> _should_ have (incorrectly) picked those up.
+
+My fault. I forgot to update sys_ni.c with the new functions (and with the
+sys_timerfd->sys_timerfd_create name change).
+Do you want a patch Andrew?
 
 
+
+- Davide
+
+--1795850513-290824188-1196277930=:14548--
