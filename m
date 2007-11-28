@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760777AbXK1XEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbXK1XHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760777AbXK1XEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 18:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbXK1XEc
+	id S1759745AbXK1XHV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 18:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbXK1XHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 18:04:32 -0500
-Received: from mx12.go2.pl ([193.17.41.142]:39327 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756381AbXK1XEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 18:04:31 -0500
-Message-ID: <474DF4CB.4090606@o2.pl>
-Date: Thu, 29 Nov 2007 00:07:55 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Wed, 28 Nov 2007 18:07:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:27416 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755528AbXK1XHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 18:07:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=jwfNBseQdec7c+b/qOA6mSgGnPAqIP1lgZfbOkOcCYhORYPSznYo1NsbvEOGGEE9Jxloky3QO3uCbENafrbMuY6ZUXLbGUuus/M3jmPFY+vjfpCVXfoXS1vP08xm70zcFokUvJBMtLm8LlsAcDuSWnoiDkxS7bJDCT6ueE0sS+s=
+Message-ID: <474DF493.3010903@gmail.com>
+Date: Thu, 29 Nov 2007 00:06:59 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-CC: Larry Finger <larry.finger@lwfinger.net>, Andreas Schwab <schwab@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Question regarding mutex locking
-References: <474CF06C.8020208@lwfinger.net> <jemysy2y3y.fsf@sykes.suse.de> <474D8C22.7010902@lwfinger.net> <474DEF79.1080900@o2.pl> <474DF207.2090705@o2.pl>
-In-Reply-To: <474DF207.2090705@o2.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>
+Subject: named + capset = EPERM [Was: 2.6.24-rc3-mm2]
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+In-Reply-To: <20071128034140.648383f0.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote, On 11/28/2007 11:56 PM:
+On 11/28/2007 12:41 PM, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc3/2.6.24-rc3-mm2/
+[...]
+> +capabilities-introduce-per-process-capability-bounding-set.patch
 
-> Jarek Poplawski wrote, On 11/28/2007 11:45 PM:
-> 
->> Larry Finger wrote, On 11/28/2007 04:41 PM:
->>
->>> Andreas Schwab wrote:
->>>> Larry Finger <Larry.Finger@lwfinger.net> writes:
->>>>
->>>>> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
->>>>> would the following code be SMP safe?
->>>>>
->>>>> hold_lock = mutex_trylock()
->>>>>
->>>>> ...
->>>>>
->>>>> if (hold_lock)
->>>>> 	mutex_unlock()
->>>> When two CPUs may enter the critical region at the same time, what is
->>>> the point of the mutex?  Also, the first CPU may unlock the mutex while
->>>> the second one is still inside the critical region.
->>> Thank you for that answer. I think that I'm finally beginning to understand.
->> Probably it would be faster without these "...", which look like
->> no man's land...
->>
->> hold_lock = mutex_trylock()
->> if (hold_lock) {
->> 	/* SMP safe */
->> 	...
->>  	mutex_unlock()
->> } else {
->> 	/* SMP unsafe */
+A regression against -mm1. This patch breaks bind (9.5.0-18.a7.fc8):
+capset(0x19980330, 0,
+{CAP_DAC_READ_SEARCH|CAP_SETGID|CAP_SETUID|CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SYS_RESOURCE,
+CAP_DAC_READ_SEARCH|CAP_SETGID|CAP_SETUID|CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SYS_RESOURCE,
+0}) = -1 EPERM (Operation not permitted)
 
+$ grep SEC .config
+CONFIG_SECCOMP=y
+# CONFIG_NETWORK_SECMARK is not set
+CONFIG_RPCSEC_GSS_KRB5=m
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
 
-...But, not for sure! If our caller holds the lock and we can
-check this...
+probably this hunk?:
+@@ -133,6 +119,12 @@ int cap_capset_check (struct task_struct
+                /* incapable of using this inheritable set */
+                return -EPERM;
+        }
++       if (!!cap_issubset(*inheritable,
++                          cap_combine(target->cap_inheritable,
++                                      current->cap_bset))) {
++               /* no new pI capabilities outside bounding set */
++               return -EPERM;
++       }
 
->> 	...
->> 	/* maybe try again after some break or check */
-> 
-> 
-> OOPS! Of course, since it can be called with this lock held,
-> any break is not enough: we can only check if there is a
-> possibility that another thread is holding the lock.
-> 
->> }
->>
->> Regards,
->> Jarek P.
-> 
-> 
+        /* verify restrictions on target's new Permitted set */
+        if (!cap_issubset (*permitted,
 
 
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
