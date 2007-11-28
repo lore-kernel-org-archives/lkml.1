@@ -1,144 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761556AbXK1QAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761064AbXK1QFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761556AbXK1QAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 11:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760991AbXK1QAj
+	id S1761064AbXK1QFL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 11:05:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbXK1QE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 11:00:39 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:2682 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbXK1QAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 11:00:38 -0500
-Date: Wed, 28 Nov 2007 10:54:35 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Neil Horman <nhorman@redhat.com>
-Cc: Ben Woodard <woodard@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, kexec@lists.infradead.org,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       vgoyal@in.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071128155435.GA21165@hmsendeavour.rdu.redhat.com>
-References: <20071127014740.GA28622@hmsreliant.think-freely.org> <200711271445.56792.ak@suse.de> <20071127142826.GB31376@hmsreliant.think-freely.org> <200711271543.11809.ak@suse.de> <20071127144856.GC31376@hmsreliant.think-freely.org> <m14pf7k8ns.fsf@ebiederm.dsl.xmission.com> <474C832C.1060903@redhat.com> <20071127210558.GI14887@hmsendeavour.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071127210558.GI14887@hmsendeavour.rdu.redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 28 Nov 2007 11:04:57 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:64477 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754986AbXK1QE5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 11:04:57 -0500
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <20071128165205.30ef426f@gondolin.boeblingen.de.ibm.com>
+References: <20071127230252.GB10038@kroah.com>
+	 <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
+	 <1196253354.3242.40.camel@lov.site>
+	 <20071128165205.30ef426f@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 17:03:07 +0100
+Message-Id: <1196265787.3242.65.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19Kws3L4JUd2yM3rCelaIF2u8SoUbfZRUvoG33
+ y93lkpHHmWn4lYRdhjIQnCGPVP2+P38im5A4Fy8JCcPj1LqPHP
+ HATPMmPnJdo5JdeiSxSAOLooUavBceb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 04:05:58PM -0500, Neil Horman wrote:
-> On Tue, Nov 27, 2007 at 12:50:52PM -0800, Ben Woodard wrote:
-> > Eric W. Biederman wrote:
-> > >Neil Horman <nhorman@tuxdriver.com> writes:
-> > >
-> > >>So, it sounds to me then, like unless I'm willing to really re-write the 
-> > >>APIC
-> > >>setup code (which I don't feel qualified to do quite yet), that the 
-> > >>immediate
-> > >>solution would be to not rely on interrupts in legacy mode, which was 
-> > >>according
-> > >>to my understanding, what the use of the irqpoll command line option was
-> > >>supposed to enable.  Any thoughts as to why that might not be working in 
-> > >>this
-> > >>case, or suggested tests to determine a cause there?
-> > >
-> > >Hmm.  It looks like irqpoll expects to have at least one irq working.
-> > >I wonder if we can fix that.
-> > >
-> > >Looking at it from the other direction what does this line
-> > >from check_timer() look like when you boot a normal kernel?
-> > >
-> > >	apic_printk(APIC_VERBOSE,KERN_INFO "..TIMER: vector=0x%02X apic1=%d 
-> > >	pin1=%d apic2=%d pin2=%d\n",
-> > >		cfg->vector, apic1, pin1, apic2, pin2);
-> > >
-> > 
-> > Here is what I get on a normal boot of the problem motherboard:
-> > 
-> > ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> > 
+On Wed, 2007-11-28 at 16:52 +0100, Cornelia Huck wrote:
+> On Wed, 28 Nov 2007 13:35:54 +0100,
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
 > 
-> Ok, I think from what I understand of what we're reading here, the apic2 = -1
-> and pin2 = -1 indicate that the 8259 has no direct connection to any cpu, which
-> means that on shutdown disable_IO_APIC should take us into virtual wire mode.
-> As such enabling the APIC early in boot should fix us, but more consisely,
-> rewriting the entry in the IOAPIC to deliver int0 to the only running cpu should
-> accomplish the same goal for this problem.  Does that sound reasonable (at least
-> as a test to ensure we understand the problem) to everyone?
-> 
-> Neil
-> 
-
-I'm sorry to reply to myself, but I think I actually had this backwards.  The
-fact that the 8259 does not get reported as being routed through the ioapic,
-means that in disable_IO_APIC during a crash shutdown, we do _not_ go into
-virtual wire mode.  Instead we simply disable the LVT0 on the ioapic (which as I
-understand it from above is the  timer interrupt), and we trust the 8259 to
-route the interrupt to the appropriate cpu.  If the 8259 is hardwired to deliver
-interrupts to cpu0 only, then we do in fact need to switch processors during
-shutdown.  Perhaps what we need to do is detect if the 8259 is not routed
-through the ioapic on shutdown, and if it is, only them implement my patch to
-jump to the bsp.
-
-Thoughts?
-
-Neil
-
-> 
+> > On Wed, 2007-11-28 at 10:01 +0100, Cornelia Huck wrote:
+> > > On Tue, 27 Nov 2007 15:02:52 -0800, Greg KH <greg@kroah.com> wrote:
 > > 
-> > >I'm curious what values we see at boot for the legacy mode the first
-> > >time it is setup, and possibly what chipset you are on.
-> > >I know we have had a few times where we have failed to reprogram
-> > >the ioapic properly at shutdown.  So it can't hurt to look at
-> > >that possibility one last time.
-> > >
-> > >
-> > >For whatever it is worth my original attempt at using only the
-> > >apic mode was commit: f2b36db692b7ff6972320ad9839ae656a3b0ee3e
-> > >Looks like I didn't have an x86_64 version.
-> > >
-> > >It looks like about half the cleanups I needed was to decouple
-> > >smp cpu startup and apic initialization.  I think the hotplug cpu
-> > >case has done a more thorough version of that now.
-> > >
-> > >There was a bit of reshuffling needed to get the everything initialized
-> > >in the right order when we started apic mode sooner.
-> > >
-> > >Anyway I might just take another look at this if I can find enough
-> > >moments to string together.
-> > >
-> > >Eric
-> > >
-> > >_______________________________________________
-> > >kexec mailing list
-> > >kexec@lists.infradead.org
-> > >http://lists.infradead.org/mailman/listinfo/kexec
+> > > > Among other things, kobject_init() sets the kobject's reference count to
+> > > > one.  Calling kobject_init() is not sufficient, however. Kobject users
+> > > > must, at a minimum, set the name of the kobject; this is the name that will
+> > > > be used in sysfs entries. 
+> > > 
+> > > Unless they don't register their kobject. (But they should always set a
+> > > name anyway to avoid funny debug messages, so it is probably a good
+> > > idea to call this a "must").
 > > 
-> > 
-> > -- 
-> > -ben
-> > -=-
+> > Yeah, we should require it. And kobject_cleanup() needs to be called to
+> > free the allocated name, if the object is not already added and needs to
+> > be deleted (common in rewinding on error).
 > 
-> -- 
-> /***************************************************
->  *Neil Horman
->  *Software Engineer
->  *Red Hat, Inc.
->  *nhorman@redhat.com
->  *gpg keyid: 1024D / 0x92A74FA1
->  *http://pgp.mit.edu
->  ***************************************************/
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Always using kobject_put() should take care of that.
 
--- 
-/***************************************************
- *Neil Horman
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Ok, so we can always require a kobject_put() after a kobject_init(), to
+cleanup what happened after _init() and before _add()?
+
+> > Btw, do you have a good example for unregistered/unnamed kobjects?
+> 
+> Unfortunately not (I can only think of devices that might never be
+> registered).
+
+This is good, we should just get rid of that use case, it seems it
+doesn't make any sense to use kobjects which will never be registered.
+
+Thanks,
+Kay
+
