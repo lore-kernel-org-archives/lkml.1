@@ -1,92 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761414AbXK1VRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbXK1VR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761414AbXK1VRm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 16:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbXK1VPf
+	id S1758951AbXK1VR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 16:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbXK1VPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 28 Nov 2007 16:15:35 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56245 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755595AbXK1VP2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 16:15:28 -0500
-Message-Id: <20071128211527.846491979@sgi.com>
+Received: from relay1.sgi.com ([192.48.171.29]:38903 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755511AbXK1VP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 16:15:27 -0500
+Message-Id: <20071128211527.373111512@sgi.com>
 References: <20071128210926.008783214@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 28 Nov 2007 13:09:34 -0800
+Date: Wed, 28 Nov 2007 13:09:32 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: [patch 08/10] Sparc64: Use generic percpu
-Content-Disposition: inline; filename=sparc64_generic_percpu
+Cc: linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com
+Subject: [patch 06/10] s390: Use generic percpu
+Content-Disposition: inline; filename=s390_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparc64 has a way of providing the base address for the per cpu area of the
-currently executing processor in a global register.
+s390 has a special way to determine the pointer to a per cpu area
+plus there is a way to access the base of the per cpu area of the
+currently executing processor.
 
-Sparc64 also provides a way to calculate the address of a per cpu area
-from a base address instead of performing an array lookup.
+Note: I had to do a minor change to ASM code. Please check that
+this was done right.
 
-Cc: David Miller <davem@davemloft.net>
+Cc: schwidefsky@de.ibm.com
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- arch/sparc64/mm/init.c       |    5 +++++
- include/asm-sparc64/percpu.h |   12 ++----------
- 2 files changed, 7 insertions(+), 10 deletions(-)
+ include/asm-s390/percpu.h |   33 +++++++++------------------------
+ 1 file changed, 9 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.24-rc3-mm2/include/asm-sparc64/percpu.h
+Index: linux-2.6.24-rc3-mm2/include/asm-s390/percpu.h
 ===================================================================
---- linux-2.6.24-rc3-mm2.orig/include/asm-sparc64/percpu.h	2007-11-28 12:51:42.448213150 -0800
-+++ linux-2.6.24-rc3-mm2/include/asm-sparc64/percpu.h	2007-11-28 12:52:01.036463295 -0800
-@@ -7,7 +7,6 @@ register unsigned long __local_per_cpu_o
+--- linux-2.6.24-rc3-mm2.orig/include/asm-s390/percpu.h	2007-11-28 12:51:42.448213150 -0800
++++ linux-2.6.24-rc3-mm2/include/asm-s390/percpu.h	2007-11-28 12:51:53.193400115 -0800
+@@ -13,40 +13,25 @@
+  */
+ #if defined(__s390x__) && defined(MODULE)
  
- #ifdef CONFIG_SMP
+-#define __reloc_hide(var,offset) (*({			\
++#define SHIFT_PTR(ptr,offset) (({			\
+ 	extern int simple_identifier_##var(void);	\
+ 	unsigned long *__ptr;				\
+-	asm ( "larl %0,per_cpu__"#var"@GOTENT"		\
+-	    : "=a" (__ptr) : "X" (per_cpu__##var) );	\
+-	(typeof(&per_cpu__##var))((*__ptr) + (offset));	}))
++	asm ( "larl %0, %1@GOTENT"		\
++	    : "=a" (__ptr) : "X" (ptr) );		\
++	(typeof(ptr))((*__ptr) + (offset));	}))
  
--#define setup_per_cpu_areas()			do { } while (0)
- extern void real_setup_per_cpu_areas(void);
+ #else
  
- extern unsigned long __per_cpu_base;
-@@ -16,21 +15,14 @@ extern unsigned long __per_cpu_shift;
- 	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
- #define per_cpu_offset(x) (__per_cpu_offset(x))
+-#define __reloc_hide(var, offset) (*({				\
++#define SHIFT_PTR(ptr, offset) (({				\
+ 	extern int simple_identifier_##var(void);		\
+ 	unsigned long __ptr;					\
+-	asm ( "" : "=a" (__ptr) : "0" (&per_cpu__##var) );	\
+-	(typeof(&per_cpu__##var)) (__ptr + (offset)); }))
++	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
++	(typeof(ptr)) (__ptr + (offset)); }))
  
--/* var is in discarded region: offset to particular copy we want */
--#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
--#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
--#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
-+#define __my_cpu_offset __local_per_cpu_offset
+ #endif
  
- #else /* ! SMP */
+-#ifdef CONFIG_SMP
++#define __my_cpu_offset S390_lowcore.percpu_offset
  
- #define real_setup_per_cpu_areas()		do { } while (0)
- 
--#define per_cpu(var, cpu)			(*((void)cpu, &per_cpu__##var))
--#define __get_cpu_var(var)			per_cpu__##var
--#define __raw_get_cpu_var(var)			per_cpu__##var
+-extern unsigned long __per_cpu_offset[NR_CPUS];
 -
- #endif	/* SMP */
- 
+-#define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+-#define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+-#define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#else /* ! SMP */
+-
+-#define __get_cpu_var(var) __reloc_hide(var,0)
+-#define __raw_get_cpu_var(var) __reloc_hide(var,0)
+-#define per_cpu(var,cpu) __reloc_hide(var,0)
+-
+-#endif /* SMP */
+-
 -#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
 +#include <asm-generic/percpu.h>
  
- #endif /* __ARCH_SPARC64_PERCPU__ */
-Index: linux-2.6.24-rc3-mm2/arch/sparc64/mm/init.c
-===================================================================
---- linux-2.6.24-rc3-mm2.orig/arch/sparc64/mm/init.c	2007-11-28 12:51:19.464963124 -0800
-+++ linux-2.6.24-rc3-mm2/arch/sparc64/mm/init.c	2007-11-28 12:52:01.040463210 -0800
-@@ -1323,6 +1323,11 @@ pgd_t swapper_pg_dir[2048];
- static void sun4u_pgprot_init(void);
- static void sun4v_pgprot_init(void);
- 
-+/* Dummy function */
-+void __init setup_per_cpu_areas(void)
-+{
-+}
-+
- void __init paging_init(void)
- {
- 	unsigned long end_pfn, pages_avail, shift, phys_base;
+ #endif /* __ARCH_S390_PERCPU__ */
 
 -- 
