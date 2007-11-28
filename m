@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760370AbXK1BzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbXK1Bzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760370AbXK1BzB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 20:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXK1Byu
+	id S1760739AbXK1Bzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 20:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759584AbXK1Bza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 20:54:50 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38550 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbXK1Byt (ORCPT
+	Tue, 27 Nov 2007 20:55:30 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:30687 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754762AbXK1Bz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 20:54:49 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jack@suse.cz, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: /proc dcache deadlock in do_exit
-References: <20071127132022.GW6840@v2.random>
-	<20071127143852.601509ac.akpm@linux-foundation.org>
-	<20071128012129.GD6840@v2.random>
-Date: Tue, 27 Nov 2007 18:53:29 -0700
-In-Reply-To: <20071128012129.GD6840@v2.random> (Andrea Arcangeli's message of
-	"Wed, 28 Nov 2007 02:21:29 +0100")
-Message-ID: <m1ve7ngmp2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 27 Nov 2007 20:55:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PvKnjA1CnjAEe7txuWzC8HVb49bXxvQ5daJjvuE8Rt0RJHBlwCv9pAE1bvav+b3l67ARUSdJiUtw4QUke1xVfoEVCbg5xplLG+2NXEQRU4KyGEECS9ELM5P//LHU2MCL2cv3NUWWRPwWMPbrdVjgiz4YRYtxJd5PVZ/6xA4/McU=
+Message-ID: <474CCA82.7030000@gmail.com>
+Date: Wed, 28 Nov 2007 10:55:14 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Pavel Machek <pavel@ucw.cz>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, noah <noah123@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz>
+In-Reply-To: <20071126120649.GC4701@ucw.cz>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli <andrea@suse.de> writes:
+Pavel Machek wrote:
+> Hi!
+> 
+>>>  kernel: [734344.717844] irq 21: nobody cared (try booting with the
+>>> "irqpoll" option)
+>>>  kernel: [734344.717866]
+>> Your machine decided to emit interrupt 21 without an apparent reason.
+>> Whatever caused that made the kernel shut down IRQ 21 at which point the
+>> disk drives on that IRQ were no longer being serviced. Everything on IRQ
+>> 21 would have died - which may be why your networking failed too.
+> 
+> Hmm, perhaps that 'nobody cared' message should be worded more
+> strongly, and printed and KERN_CRIT?
 
-> On Tue, Nov 27, 2007 at 02:38:52PM -0800, Andrew Morton wrote:
->> I don't see why the schedule() will not return?  Because the task has
->> PF_EXITING set?  Doesn't TASK_DEAD do that?
->
-> Ouch, I assumed you couldn't sleep safely anymore in release_task
-> given it's the function that will free the task structure itself and
-> there was no preempt related action anywhere close to it!
-> delayed_put_task_struct can be called if a quiescent point is reached
-> and any scheduling would exactly allow it to run (it requires quite a
-> bit of a race, with local irq triggering a reschedule and the timer
-> irq invoking the tasklet to run to free the task struct before do_exit
-> finishes and all other cpus in quiescent state too).
->
-> So a corollary question is how can it be safe to call
-> preempt_disable() after call_rcu(delayed_put_task_struct)?
+Agreed.  Nobody cared on ATA controllers is usually very effective at
+taking the whole machine down.  Is there any reason why we don't turn on
+irqpoll on turned off IRQs automatically?
 
+Thanks.
 
-> Back in sles9 preempt_disable was implemented as
-> _raw_write_unlock(&tasklist_lock) and it happened _before_
-> release_task, and scheduling there wouldn't return because PF_DEAD was
-> already set. If mainline can come back, it will crash for a different
-> reason because the task struct is long gone by the time
-> release_task+schedule() runs. Either ways, still a kernel crashing bug
-> there is. Or is there some magic that prevents call_rcu + schedule to
-> invoke the rcu callback?
-
-I don't quite see where it comes from but there is another reference
-on the task struct held by the scheduler  That we don't drop until
-finish_task_switch with exit_state == TASK_DEAD.
-
-So since we have one additional reference the task_struct won't
-get freed.
-
-We don't set TASK_DEAD until much later.
-
-> So you may need to apply this one too (this one is needed to fix the
-> second bug, my previous patch is needed after applying this one):
-
-No.  We should be fine.
-
-In fact it looks like this is just a sles9 issue and mainline is
-fine, as we can safely schedule until just before the end of do_exit.
-
-Eric
+-- 
+tejun
