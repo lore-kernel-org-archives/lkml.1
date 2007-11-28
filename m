@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXK1Kww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbXK1KyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbXK1Kww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 05:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXK1Kwm
+	id S1760711AbXK1KyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 05:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbXK1Kxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 05:52:42 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:37872 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755436AbXK1Kwl (ORCPT
+	Wed, 28 Nov 2007 05:53:53 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:13852 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756404AbXK1Kxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 05:52:41 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Frans Pop <elendil@planet.nl>, schwidefsky@de.ibm.com
-Subject: Re: [s390] build failure
-Date: Wed, 28 Nov 2007 11:51:58 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-References: <200711281127.30051.elendil@planet.nl>
-In-Reply-To: <200711281127.30051.elendil@planet.nl>
+	Wed, 28 Nov 2007 05:53:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YoIRWzHh/DtZbFQLKDUJhRYYCQQr0EVgOnZz1wcnP/h3b+TNijON5kbDgVuC7c7G+9RSSTioHZTax7G3L3h5dfpKMzzIEbkker8ybnQyGwfrvcem69hDOBldxgn/k9LCX7rHN40wjRH7Yu71VuiphuyR7s9TlWFbNMvg4wiMBvc=
+Message-ID: <aa79d98a0711280253x3d1d28d6qa0cee0b731e807fe@mail.gmail.com>
+Date: Wed, 28 Nov 2007 13:53:46 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
+Cc: PPCML <linuxppc-dev@ozlabs.org>, "Olof Johansson" <olof@lixom.net>,
+       "Paul Mackerras" <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Ishizaki Kou" <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <1196243333.2109.2.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711281151.58236.borntraeger@de.ibm.com>
+References: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
+	 <1196243333.2109.2.camel@concordia>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 28. November 2007 schrieb Frans Pop:
-> $ git describe
-> v2.6.24-rc3-342-g8c27eba
-> 
-> arch/s390/kernel/built-in.o: In function `cleanup_io_leave_insn':
-> diag.c:(.text+0xc29a): undefined reference to `preempt_schedule_irq'
-> make[2]: *** [.tmp_vmlinux1] Error 1
-> 
-> 
+On 11/28/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+> On Mon, 2007-11-26 at 10:46 +0300, Cyrill Gorcunov wrote:
+> > This patch adds checking for NULL value returned to prevent possible
+> > NULL pointer dereference.
+> > Also two unneeded 'return' are removed.
+> >
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> > ---
+> > Any comments are welcome.
+>
+> I guess it's good to be paranoid, but this is a little verbose:
+>
+>        wi0 = of_get_property(node, "device-id", NULL);
+> +       if (unlikely((!wi0))) {
+> +               printk(KERN_ERR "PCI: device-id not found.\n");
+> +               goto error;
+> +       }
+>        wi1 = of_get_property(node, "vendor-id", NULL);
+> +       if (unlikely((!wi1))) {
+> +               printk(KERN_ERR "PCI: vendor-id not found.\n");
+> +               goto error;
+> +       }
+>        wi2 = of_get_property(node, "class-code", NULL);
+> +       if (unlikely((!wi2))) {
+> +               printk(KERN_ERR "PCI: class-code not found.\n");
+> +               goto error;
+> +       }
+>        wi3 = of_get_property(node, "revision-id", NULL);
+> +       if (unlikely((!wi3))) {
+> +               printk(KERN_ERR "PCI: revision-id not found.\n");
+> +               goto error;
+> +       }
+>
+> Perhaps instead:
+>
+>        wi0 = of_get_property(node, "device-id", NULL);
+>        wi1 = of_get_property(node, "vendor-id", NULL);
+>        wi2 = of_get_property(node, "class-code", NULL);
+>        wi3 = of_get_property(node, "revision-id", NULL);
+>
+>       if (!wi0 || !wi1 || !wi2 || !wi3) {
+>               printk(KERN_ERR "PCI: Missing device tree properties.\n");
+>               goto error;
+>       }
 
-We have a patch for that in our repository.
-Martin will send that fix with the next bunch of fixes.
+Hi Michael, yes that is much better (actually I was doubt about what form of
+which the checking style to use - your form is much compact but mine does
+show where *exactly* the problem appeared). So 'case that is the fake driver
+your form is preferred ;) Ishizaki, could you use Michael's part then?
 
+>
+>
+> cheers
+>
+> --
+> Michael Ellerman
+> OzLabs, IBM Australia Development Lab
+>
+> wwweb: http://michael.ellerman.id.au
+> phone: +61 2 6212 1183 (tie line 70 21183)
+>
+> We do not inherit the earth from our ancestors,
+> we borrow it from our children. - S.M.A.R.T Person
+>
+>
 
-Subject: [PATCH] Fix compile error on 31bit without preemption
-
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-
-Commit b8e7a54cd06b0b0174029ef3a7f5a1415a2c28f2 introduced a compile
-error if CONFIG_PREEMPT is not set:
-
-arch/s390/kernel/built-in.o: In function `cleanup_io_leave_insn':
-/space/kvm/arch/s390/kernel/entry.S:(.text+0xbfce): undefined reference to `preempt_schedule_irq'
-
-This patch hides preempt_schedule_irq if CONFIG_PREEMPT is not set.
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/kernel/entry.S |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff -urpN linux-2.6/arch/s390/kernel/entry.S linux-2.6-patched/arch/s390/kernel/entry.S
---- linux-2.6/arch/s390/kernel/entry.S	2007-11-27 16:31:36.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry.S	2007-11-27 16:31:45.000000000 +0100
-@@ -1079,8 +1079,10 @@ cleanup_io_leave_insn:
- .Lexecve_tail:	.long	execve_tail
- .Ljump_table:	.long	pgm_check_table
- .Lschedule:	.long	schedule
-+#ifdef CONFIG_PREEMPT
- .Lpreempt_schedule_irq:
- 		.long	preempt_schedule_irq
-+#endif
- .Ltrace:	.long	syscall_trace
- .Lschedtail:	.long	schedule_tail
- .Lsysc_table:	.long	sys_call_table
-
+Cyrill
