@@ -1,167 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761018AbXK1LqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbXK1LzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761018AbXK1LqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 06:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbXK1LqO
+	id S1760703AbXK1LzH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 06:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbXK1Lyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 06:46:14 -0500
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:37343 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758401AbXK1LqM (ORCPT
+	Wed, 28 Nov 2007 06:54:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40529 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751467AbXK1Lyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 06:46:12 -0500
-Date: Wed, 28 Nov 2007 12:45:45 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071128124545.39ae8070@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20071127230252.GB10038@kroah.com>
-References: <20071127230252.GB10038@kroah.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	Wed, 28 Nov 2007 06:54:51 -0500
+Date: Wed, 28 Nov 2007 03:49:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc3-git3 oom-killer invoked
+Message-Id: <20071128034906.6093448d.akpm@linux-foundation.org>
+In-Reply-To: <474D4DB8.4000104@linux.vnet.ibm.com>
+References: <474D4DB8.4000104@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007 15:02:52 -0800,
-Greg KH <greg@kroah.com> wrote:
+On Wed, 28 Nov 2007 16:45:04 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
+> Hi,
 > 
-> ksets
+> oom-killer gets invoked while running ltprunall on AMD Opteron box
 > 
-> A kset is merely a collection of kobjects that want to be associated with
-> each other.  There is no restriction that they be of the same ktype, but be
-> very careful if they are not.
+> sleep invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
+> Pid: 23477, comm: sleep Not tainted 2.6.24-rc3-git3-autokern1 #1
 > 
-> A kset serves these functions:
+> Call Trace:
+>  [<ffffffff8026ac6b>] oom_kill_process+0x4f/0xf5
+>  [<ffffffff8026b147>] out_of_memory+0x1bc/0x22d
+>  [<ffffffff8026db44>] __alloc_pages+0x282/0x313
+>  [<ffffffff804e4a5c>] __wait_on_bit_lock+0x5b/0x66
+>  [<ffffffff8026f684>] __do_page_cache_readahead+0x7c/0x18f
+>  [<ffffffff8026a353>] filemap_fault+0x15d/0x317
+>  [<ffffffff80274d06>] __do_fault+0x68/0x3bb
+>  [<ffffffff804e5cb1>] _spin_unlock_irq+0x9/0xc
+>  [<ffffffff8027690a>] handle_mm_fault+0x325/0x694
+>  [<ffffffff804e78c1>] do_page_fault+0x3c5/0x764
+>  [<ffffffff8024c5b9>] hrtimer_try_to_cancel+0x5f/0x68
+>  [<ffffffff8024c5ce>] hrtimer_cancel+0xc/0x16
+>  [<ffffffff804e4e43>] do_nanosleep+0x4e/0x77
+>  [<ffffffff8024c73f>] hrtimer_nanosleep+0x58/0xf8
+>  [<ffffffff8024c301>] hrtimer_wakeup+0x0/0x21
+>  [<ffffffff804e5e59>] error_exit+0x0/0x51
 > 
->  - It serves as a bag containing a group of objects. A kset can be used by
->    the kernel to track "all block devices" or "all PCI device drivers."
+> Mem-info:
+> Node 0 DMA per-cpu:
+> CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+> Node 0 DMA32 per-cpu:
+> CPU    0: Hot: hi:  186, btch:  31 usd:  40   Cold: hi:   62, btch:  15 usd:  50
+> CPU    1: Hot: hi:  186, btch:  31 usd:  24   Cold: hi:   62, btch:  15 usd:  24
+> CPU    2: Hot: hi:  186, btch:  31 usd:   3   Cold: hi:   62, btch:  15 usd:  21
+> CPU    3: Hot: hi:  186, btch:  31 usd: 163   Cold: hi:   62, btch:  15 usd:  45
+> Active:122323 inactive:122411 dirty:0 writeback:1 unstable:0
+>  free:1979 slab:2772 mapped:10 pagetables:2062 bounce:0
+> Node 0 DMA free:3988kB min:28kB low:32kB high:40kB active:2056kB inactive:2108kB present:7656kB pages_scanned:7201 all_unreclaimable? yes
+> lowmem_reserve[]: 0 992 992 992
+> Node 0 DMA32 free:4228kB min:4012kB low:5012kB high:6016kB active:489852kB inactive:485192kB present:1015864kB pages_scanned:70920 all_unreclaimable? no
+> lowmem_reserve[]: 0 0 0 0
+> Node 0 DMA: 3*4kB 5*8kB 2*16kB 0*32kB 1*64kB 2*128kB 2*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3988kB
+> Node 0 DMA32: 117*4kB 16*8kB 5*16kB 1*32kB 1*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 4228kB
+> Swap cache: add 815346, delete 815330, find 474/677, race 0+0
+> Free swap  = 0kB
+> Total swap = 2031640kB
+> Free swap:            0kB
+> 262093 pages of RAM
+> 6955 reserved pages
+> 288 pages shared
+> 40 pages swap cached
+> Out of memory: kill process 23475 (mem01) score 46734 or a child
+> Killed process 23475 (mem01)
 > 
->  - A kset is also a subdirectory in sysfs, where the associated kobjects
->    with the kset can show up.  
 
-Perhaps better wording:
+It ran out of swapspace and killed the piggy process.  There's no bug here.
 
-A kset is also represented via a subdirectory in sysfs, under which the
-kobjects associated with the kset can show up.
+Unless there's a memory leak.  Check to see how much memory is free after
+everything has been killed off.
 
-> Every kset contains a kobject which can be
->    set up to be the parent of other kobjects; in this way the device model
->    hierarchy is constructed.
-> 
->  - Ksets can support the "hotplugging" of kobjects and influence how
->    uevent events are reported to user space.
-> 
->  - A kset can provide a set of default attributes that all kobjects that
->    belong to it automatically inherit and have created whenever a kobject
->    is registered belonging to the kset.
-
-Hm, the default attributes are provided by the ktype?
-
-> 
-> In object-oriented terms, "kset" is the top-level container class; ksets
-> contain their own kobject, but that kobject is managed by the kset code and
-> should not be manipulated by any other user.
-> 
-> A kset keeps its children in a standard kernel linked list.  Kobjects point
-> back to their containing kset via their kset field. In almost all cases,
-> the contained kobjects also have a pointer to the kset (or, strictly, its
-> embedded kobject) in their parent field.
-> 
-> As a kset contains a kobject within it, it should always be dynamically
-> created and never declared statically or on the stack.  To create a new
-> kset use:
->   struct kset *kset_create_and_register(char *name,
-> 					struct kset_uevent_ops *u,
-> 					struct kobject *parent);
-> 
-> When you are finished with the kset, call:
->   void kset_unregister(struct kset *kset);
-> to destroy it.
-
-Maybe also mention kset_get()/kset_put() here? kset_unregister() will
-only destroy the kset if the caller holds the last reference to it.
-
-> 
-> An example of using a kset can be seen in the
-> samples/kobject/kset-example.c file in the kernel tree.
-> 
-> If a kset wishes to control the uevent operations of the kobjects
-> associated with it, it can use the struct kset_uevent_ops to handle it:
-> 
-> struct kset_uevent_ops {
->         int (*filter)(struct kset *kset, struct kobject *kobj);
->         const char *(*name)(struct kset *kset, struct kobject *kobj);
->         int (*uevent)(struct kset *kset, struct kobject *kobj,
->                       struct kobj_uevent_env *env);
-> };
-> 
-> 
-> The filter function allows a kset to prevent a uevent from being emitted to
-> userspace for a specific kobject.  If the function returns 0, the uevent
-> will not be emitted.
-> 
-> The name function will be called to override the default name of the kset
-> that the uevent sends to userspace.  By default, the name will be the same
-> as the kset itself, but this function, if present, can override that name.
-> 
-> The uevent function will be called when the uevent is about to be sent to
-> userspace to allow more environment variables to be added to the uevent.
-
-It may be helpful to mention which uevents are by default created by
-the kobject core (KOBJ_ADD, KOBJ_DEL, KOBJ_MOVE).
-
-> 
-> One might ask how, exactly, a kobject is added to a kset, given that no
-> functions which perform that function have been presented. The answer is
-> that this task is handled by kobject_add(). When a kobject is passed to
-> kobject_add(), its kset member should point to the kset to which the
-> kobject will belong. kobject_add() will handle the rest. There is currently
-> no other way to add a kobject to a kset without directly messing with the
-> list pointers.
-> 
-> 
-> Kobject initialization again
-> 
-> Now that we have covered all of that stuff, we can talk in detail about how
-> a kobject should be prepared for its existence in the kernel. Here are all
-> of the struct kobject fields which must be initialized somehow:
-> 
->  - k_name - the name of the object. This fields should always be
->    initialized with kobject_set_name(), or specified in the original call
->    to kobject_create_and_register().
-> 
->  - refcount is the kobject's reference count; it is initialized by kobject_init()
-
-There is no field called "refcount"; the embedded struct kref kref is
-initialized by kobject_init().
-
-> 
->  - parent is the kobject's parent in whatever hierarchy it belongs to. It
->    can be set explicitly by the creator. If parent is NULL when
->    kobject_add() is called, it will be set to the kobject of the containing
->    kset.
-> 
->  - kset is a pointer to the kset which will contain this kobject; it should
->    be set prior to calling kobject_init().
-> 
->  - ktype is the type of the kobject; it should be set prior to calling
->    kobject_init().
-> 
-> Often, much of the initialization of a kobject is handled by the layer that
-> manages the containing kset.  See the sample/kobject/kset-example.c for how
-> this is usually handled.
-
-Do we also want to mention kobject_rename() and kobject_move(), or are
-those functions so esoteric that most people don't want to know about
-them?
