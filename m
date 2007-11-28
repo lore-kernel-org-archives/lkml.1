@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbXK1PRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbXK1PXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760043AbXK1PRs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 10:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbXK1PRi
+	id S1760028AbXK1PXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 10:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXK1PXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 10:17:38 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:49851 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752930AbXK1PRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 10:17:38 -0500
-Subject: Re: git guidance
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr>
-References: <474C9B31.8000408@imap.cc>
-	 <Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 10:15:22 -0500
-Message-Id: <1196262922.19921.20.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 10:23:04 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34172 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbXK1PXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 10:23:01 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Question regarding mutex locking
+References: <474CF06C.8020208@lwfinger.net>
+X-Yow: It's the RINSE CYCLE!!  They've ALL IGNORED the RINSE CYCLE!!
+Date: Wed, 28 Nov 2007 16:22:57 +0100
+In-Reply-To: <474CF06C.8020208@lwfinger.net> (Larry Finger's message of "Tue\,
+	27 Nov 2007 22\:37\:00 -0600")
+Message-ID: <jemysy2y3y.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a project listed on the kernel.org git page called guilt. I
-find it very useful. It is much more responsive than stgit and it
-actually has a git backend which quilt does not.
+Larry Finger <Larry.Finger@lwfinger.net> writes:
 
-git-clone git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
+> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
+> would the following code be SMP safe?
+>
+> hold_lock = mutex_trylock()
+>
+> ...
+>
+> if (hold_lock)
+> 	mutex_unlock()
 
-There is a tutorial associated with guilt which explains the commands
-pretty well. The only thing that I find a problem with guilt is
-sometimes I forget to pop/push the patches to the right place before
-editing them. Actually that is less of a problem with guilt and more of
-a problem with me :) Two of the main features that I find very useful
-since I track the head of Linus's tree are guilt-rebase and then
-guilt-patchbomb for sending patches.
+When two CPUs may enter the critical region at the same time, what is
+the point of the mutex?  Also, the first CPU may unlock the mutex while
+the second one is still inside the critical region.
 
-On Wed, 2007-11-28 at 00:20 +0100, Jan Engelhardt wrote:
-> On Nov 27 2007 23:33, Tilman Schmidt wrote:
-> >
-> >It didn't work too well. The first result was one of maximal
-> >embarrassment: I produced a patch that didn't even compile when
-> >applied to the official tree. This shouldn't happen with git, right?
-> >Well, it did. So now I'm back to keeping a virgin kernel source tree
-> >alongside my development area in order to produce diffs. That can't
-> >be right?
-> >
-> No, it can't. Use stgit/quilt ;p
-> 
-> >Does somebody have a step by step tutorial for doing the standard
-> >"edit - test - modify - retest - submit - edit - resubmit" sequence
-> >with GIT? Is there a GIT newsgroup or mailinglist? Or should I just
-> >post my silly questions to LKML?
-> >
-> http://www.linuxworld.com/video/?bcpid=1138309735&bclid=1213841149&bctid=1221911905
-> 
-> James Bottomley's intro helps a lot.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Andreas.
 
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
