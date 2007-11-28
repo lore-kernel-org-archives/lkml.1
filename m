@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXK1Klx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXK1Koe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbXK1Klx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 05:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760698AbXK1Kl1
+	id S1760575AbXK1Koe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 05:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757072AbXK1KoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 05:41:27 -0500
-Received: from ro-out-1112.google.com ([72.14.202.183]:1665 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760686AbXK1KlW (ORCPT
+	Wed, 28 Nov 2007 05:44:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42523 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755620AbXK1KoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 05:41:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:cc:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:thread-index;
-        b=tRV4zpnCmJ8X/4KtS3TyPIoHUOepnialB+bbONyaAOD4lCQob35TXI0nv1Z2RkY+uhunRJnFjamLs+PxynUc9cdYinahy9flpNp7jPE5R49mISomY7yVdGlqWel0ea2xxDmFrHl/D1JbRb2k9uzDQIBgfHw+6JvBgSJCWCXYh6M=
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: <yi.zhu@intel.com>, <ipw3945-devel@lists.sourceforge.net>,
-       <linux-wireless@vger.kernel.org>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: [PATCH 2/2] [net/wireless/iwlwifi] : iwlwifi 4965 Fix race conditional panic.
-Date: Wed, 28 Nov 2007 19:41:08 +0900
-Message-ID: <00e601c831ab$30475910$9c94fea9@jason>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Wed, 28 Nov 2007 05:44:23 -0500
+Date: Wed, 28 Nov 2007 02:43:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: suspend-related lockdep warning
+Message-Id: <20071128024355.5931c6ec.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: Acgxqy3b0Wax4D2cS2K2KiJh0hzjUQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think 4965 may suffer it too, but I could not test.
 
-Thanks
-Joonwoo
+2.6.24-rc3-mm2 (which will be released if it boots on two more machines and
+if I stay awake) will say this during suspend-to-RAM on the Vaio:
 
-[net/wireless/iwlwifi] : iwlwifi 4965 Fix race conditional panic.
+[   91.876445] Syncing filesystems ... done.
+[   92.382595] Freezing user space processes ... WARNING: at kernel/lockdep.c:2662 check_flags()
+[   92.384000] Pid: 1925, comm: dbus-daemon Not tainted 2.6.24-rc3-mm2 #32
+[   92.384177]  [<c0104a74>] show_trace_log_lvl+0x12/0x25
+[   92.384335]  [<c01052ff>] show_trace+0xd/0x10
+[   92.384469]  [<c01059be>] dump_stack+0x55/0x5d
+[   92.384605]  [<c0136a29>] check_flags+0x7f/0x11a
+[   92.384746]  [<c0139cfb>] lock_acquire+0x3a/0x86
+[   92.384886]  [<c031f4de>] _spin_lock+0x26/0x53
+[   92.385023]  [<c0141d3b>] refrigerator+0x13/0xc8
+[   92.385163]  [<c01274c8>] get_signal_to_deliver+0x32/0x3fb
+[   92.385326]  [<c01030f4>] do_notify_resume+0x8c/0x699
+[   92.385476]  [<c0103c18>] work_notifysig+0x13/0x1b
+[   92.385620]  =======================
+[   92.385719] irq event stamp: 309
+[   92.385809] hardirqs last  enabled at (309): [<c0103c79>] syscall_exit_work+0x11/0x26
+[   92.386045] hardirqs last disabled at (308): [<c0103b42>] syscall_exit+0x14/0x25
+[   92.386265] softirqs last  enabled at (0): [<c011bea5>] copy_process+0x374/0x130e
+[   92.386491] softirqs last disabled at (0): [<00000000>] 0x0
+[   92.392457] (elapsed 0.00 seconds) done.
+[   92.392581] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+[   92.392882] PM: Entering mem sleep
+[   92.392974] Suspending console(s)
 
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
----
-diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-index 9918780..a71a572 100644
---- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-@@ -9165,6 +9165,7 @@ static void iwl_pci_remove(struct pci_dev *pdev)
- 	IWL_DEBUG_INFO("*** UNLOAD DRIVER ***\n");
- 
- 	mutex_lock(&priv->mutex);
-+	cancel_delayed_work_sync(&priv->init_alive_start);
- 	set_bit(STATUS_EXIT_PENDING, &priv->status);
- 	__iwl_down(priv);
- 	mutex_unlock(&priv->mutex);
----
+this has been happening for quite some time and might even be happening in
+mainline.  
+
+Also, a few seconds after resume has completed we get a whimper from the
+hangcheck driver:
+
+[    1.762425] usb 2-1: configuration #1 chosen from 1 choice
+[    1.826548] input: Microsoft Microsoft Wireless Optical Mouse_ 1.00 as /class/input/input9
+[    1.866211] input: USB HID v1.11 Mouse [Microsoft Microsoft Wireless Optical Mouse_ 1.00] on usb-0000:00:1d.1-1
+[    5.757927] Hangcheck: hangcheck value past margin!
 
