@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbXK1WPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbXK1WQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759295AbXK1WPA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:15:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXK1WOw
+	id S1760301AbXK1WQV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbXK1WQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:14:52 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41988 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754391AbXK1WOw (ORCPT
+	Wed, 28 Nov 2007 17:16:10 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60143 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757621AbXK1WQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:14:52 -0500
-Date: Wed, 28 Nov 2007 17:14:51 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Raymano Garibaldi <raymano@faunos.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
-In-Reply-To: <1618816c0711272202ydd8f1aeib98672d91356368a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0711281711210.3641-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Nov 2007 17:16:08 -0500
+Date: Wed, 28 Nov 2007 22:12:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm2: Result: hostbyte=0x01
+ driverbyte=0x00\nend_request: I/O error
+Message-ID: <20071128221238.4a5ee8bb@the-village.bc.nu>
+In-Reply-To: <20071128134036.417b3def.akpm@linux-foundation.org>
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+	<20071128200130.GA13361@martell.zuzino.mipt.ru>
+	<20071128134036.417b3def.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Nov 2007, Raymano Garibaldi wrote:
-
-> Hi Alan,
+> > [  225.378426] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.378659] end_request: I/O error, dev sdb, sector 141295703
+> > [  225.390133] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.391988] end_request: I/O error, dev sdb, sector 141295703
+> > [  225.392463] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.392625] end_request: I/O error, dev sdb, sector 141295703
+> > [  225.392999] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.393161] end_request: I/O error, dev sdb, sector 141295703
+> > [  225.393571] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.393731] end_request: I/O error, dev sdb, sector 141295703
+> > [  225.394382] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.394544] end_request: I/O error, dev sdb, sector 141295703
+> > [  225.395247] sd 2:0:1:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+> > [  225.395412] end_request: I/O error, dev sdb, sector 141295703
 > 
-> Here's what I got after compiling kernel with CONFIG_USB_PERSIST and
-> CONFIG_USB_DEBUG both enabled. The attached files are:
-> 
-> config - shows the .config file used when compiling kernel 2.6.23.9
-> 
-> sysandmount.txt - shows mounts and the state of persist for all usb
-> devices right before suspending.
-> 
-> dmesg_attached.txt - dmesg right after resuming when the USB device
-> remained attached while machine was suspend
-> 
-> dmesg_detachedandreattached.txt - dmesg right after resuming when the
-> USB device was detached while suspended and then reattached before
-> resuming.
+> I don't know whether this failure was a scsi thing or an ata thing?
 
-This all looks okay.  Earlier you wrote:
-
-> I have tried this. Simply turning off CONFIG_USB_PERSIST doesn't work.
-> In this case the USB drive file system is unmounted on resume, even if
-> the drive remained plugged in during suspend.
-
-But the logs you just posted show that the filesystem _does_ remain 
-mounted after resume, provided you don't unplug the drive.  At least 
-that's what it looked like -- it was hard to tell for sure because each 
-logfile contained multiple suspend/resume cycles with varying outcomes.
-
-Alan Stern
-
+The ATA layer would print diagnostics if it failed the command so I'm a
+bit baffled by the report. It looks like the SCSI mid layer rejected it
+before we even got it ?
