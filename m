@@ -1,132 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbXK1GY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbXK1GbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbXK1GY5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 01:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbXK1GYt
+	id S1757121AbXK1GbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 01:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXK1Ga4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 01:24:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41485 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbXK1GYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 01:24:48 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Natalie Protasevich" <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] i386 IOAPIC: de-fang IRQ compression
-Date: Wed, 28 Nov 2007 01:21:18 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: linux-kernel@vger.kernel.org
+	Wed, 28 Nov 2007 01:30:56 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:33908 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbXK1Gaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 01:30:55 -0500
+Message-ID: <474D0AAC.5010005@linux.vnet.ibm.com>
+Date: Wed, 28 Nov 2007 11:59:00 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200711280121.18376.lenb@kernel.org>
-Content-Type: text/plain;
-  charset="us-ascii"
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUG] 2.6.24-rc3-git2 softlockup detected 
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    commit c434b7a6aedfe428ad17cd61b21b125a7b7a29ce
-    (x86: avoid wasting IRQs for PCI devices)
-    created a concept of "IRQ compression" on i386
-    to conserve IRQ numbers on systems with many
-    sparsely populated IO APICs.
-    
-    The same scheme was also added to x86_64,
-    but later removed when x86_64 recieved an IRQ over-haul
-    that made it unnecessary -- including per-CPU
-    IRQ vectors that greatly increased the IRQ capacity
-    on the machine.
-    
-    i386 has not received the analogous over-haul,
-    and thus a previous attempt to delete IRQ compression
-    from i386 was rejected on the theory that there may
-    exist machines that actually need it.  The fact is
-    that the author of IRQ compression patch was unable
-    to confirm the actual existence of such a system.
-    
-    As a result, all i386 kernels with IOAPIC support
-    pay the following:
-    
-    1. confusion
-    
-    IRQ compression re-names the traditional IOAPIC
-    pin numbers (aka ACPI GSI's) into sequential IRQ #s:
-    
-    ACPI: PCI Interrupt 0000:00:1c.0[A] -> GSI 20 (level, low) -> IRQ 16
-    ACPI: PCI Interrupt 0000:00:1c.1[B] -> GSI 21 (level, low) -> IRQ 17
-    ACPI: PCI Interrupt 0000:00:1c.2[C] -> GSI 22 (level, low) -> IRQ 18
-    ACPI: PCI Interrupt 0000:00:1c.3[D] -> GSI 23 (level, low) -> IRQ 19
-    ACPI: PCI Interrupt 0000:00:1c.4[A] -> GSI 20 (level, low) -> IRQ 16
-    
-    This makes /proc/interrupts look different
-    depending on system configuration and device probe order.
-    It is also different than the x86_64 kernel running
-    on the exact same system.  As a result, programmers
-    get confused when comparing systems.
-    
-    2. complexity
-    
-    The IRQ code in Linux is already overly complex,
-    and IRQ compression makes it worse.  There have
-    already been two bug workarounds related to IRQ
-    compression -- the IRQ0 timer workaround and
-    the VIA PCI IRQ workaround.
-    
-    3. size
-    
-    All i386 kernels with IOAPIC support contain an int[4096] --
-    a 4 page array to contain the renamed IRQs.
-    
-    So while the irq compression code on i386 should really
-    be deleted -- even before merging the x86_64 irq-overhaul,
-    this patch simply disables it on all high volume systems
-    to avoid problems #1 and #2 on most all i386 systems.
-    
-    A large system with pin numbers >=64 will still have compression
-    to conserve limited IRQ numbers for sparse IOAPICS.  However,
-    the vast majority of the planet, those with only pin numbers < 64
-    will use an identity GSI -> IRQ mapping.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Hi,
 
-diff --git a/arch/x86/kernel/mpparse_32.c b/arch/x86/kernel/mpparse_32.c
-index 7a05a7f..468d6ed 100644
---- a/arch/x86/kernel/mpparse_32.c
-+++ b/arch/x86/kernel/mpparse_32.c
-@@ -1041,13 +1041,14 @@ void __init mp_config_acpi_legacy_irqs (void)
- }
- 
- #define MAX_GSI_NUM	4096
-+#define IRQ_COMPRESSION_START	64
- 
- int mp_register_gsi(u32 gsi, int triggering, int polarity)
- {
- 	int ioapic = -1;
- 	int ioapic_pin = 0;
- 	int idx, bit = 0;
--	static int pci_irq = 16;
-+	static int pci_irq = IRQ_COMPRESSION_START;
- 	/*
- 	 * Mapping between Global System Interrups, which
- 	 * represent all possible interrupts, and IRQs
-@@ -1086,12 +1087,16 @@ int mp_register_gsi(u32 gsi, int triggering, int polarity)
- 	if ((1<<bit) & mp_ioapic_routing[ioapic].pin_programmed[idx]) {
- 		Dprintk(KERN_DEBUG "Pin %d-%d already programmed\n",
- 			mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
--		return gsi_to_irq[gsi];
-+		return (gsi < IRQ_COMPRESSION_START ? gsi : gsi_to_irq[gsi]);
- 	}
- 
- 	mp_ioapic_routing[ioapic].pin_programmed[idx] |= (1<<bit);
- 
--	if (triggering == ACPI_LEVEL_SENSITIVE) {
-+	/*
-+	 * For GSI >= 64, use IRQ compression
-+	 */
-+	if ((gsi >= IRQ_COMPRESSION_START)
-+		&& (triggering == ACPI_LEVEL_SENSITIVE)) {
- 		/*
- 		 * For PCI devices assign IRQs in order, avoiding gaps
- 		 * due to unused I/O APIC pins.
+Soft lockup is detected while bootup with 2.6.24-rc3-git2 on powerbox
+
+BUG: soft lockup - CPU#1 stuck for 11s! [insmod:375]
+NIP: c00000000002f02c LR: d0000000001414fc CTR: c00000000002f018
+REGS: c00000077cbef0b0 TRAP: 0901   Not tainted  (2.6.24-rc3-git2-autotest)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24022088  XER: 00000000
+TASK = c00000077cbd8000[375] 'insmod' THREAD: c00000077cbec000 CPU: 1
+GPR00: d0000000001414fc c00000077cbef330 c00000000052b930 d000080080002014 
+GPR04: d00008008000202c 0000000000000000 c00000077ca1cb00 d00000000014ce54 
+GPR08: c00000077ca1c63c 0000000000000000 000000000000002a c00000000002f018 
+GPR12: d000000000143610 c000000000473d00 
+NIP [c00000000002f02c] .ioread8+0x14/0x60
+LR [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
+Call Trace:
+[c00000077cbef330] [c00000077cbef3c0] 0xc00000077cbef3c0 (unreliable)
+[c00000077cbef3a0] [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
+[c00000077cbef470] [d0000000001395f8] .sym2_probe+0x700/0x99c [sym53c8xx]
+[c00000077cbef710] [c0000000001bc118] .pci_device_probe+0x124/0x1b0
+[c00000077cbef7b0] [c000000000221138] .driver_probe_device+0x144/0x20c
+[c00000077cbef850] [c000000000221450] .__driver_attach+0xcc/0x154
+[c00000077cbef8e0] [c00000000021ff94] .bus_for_each_dev+0x7c/0xd4
+[c00000077cbef9a0] [c000000000220e9c] .driver_attach+0x28/0x40
+[c00000077cbefa20] [c0000000002204d8] .bus_add_driver+0x90/0x228
+[c00000077cbefac0] [c000000000221858] .driver_register+0x94/0xb0
+[c00000077cbefb40] [c0000000001bc430] .__pci_register_driver+0x6c/0xcc
+[c00000077cbefbe0] [d000000000143428] .sym2_init+0x108/0x15b0 [sym53c8xx]
+[c00000077cbefc80] [c00000000008ce80] .sys_init_module+0x17c4/0x1958
+[c00000077cbefe30] [c00000000000872c] syscall_exit+0x0/0x40
+Instruction dump:
+60000000 786b0420 38210070 7d635b78 e8010010 7c0803a6 4e800020 7c0802a6 
+f8010010 f821ff91 7c0004ac 89230000 <0c090000> 4c00012c 79290620 2f8900ff 
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
