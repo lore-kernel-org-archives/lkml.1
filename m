@@ -1,177 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbXK1GVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbXK1GY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbXK1GVY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 01:21:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXK1GVN
+	id S1757292AbXK1GY5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 01:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbXK1GYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 01:21:13 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:33232 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751305AbXK1GVM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 01:21:12 -0500
-Date: Tue, 27 Nov 2007 22:21:08 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: James Huang <James.Huang@watchguard.com>
-Cc: linux-kernel@vger.kernel.org, Manfred Spraul <manfred@colorfullife.com>,
-       jamesclhuang@yahoo.com, ego@in.ibm.com
-Subject: Re: __rcu_process_callbacks() in Linux 2.6
-Message-ID: <20071128062108.GA17777@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <590353.52909.qm@web83819.mail.sp1.yahoo.com> <F474D80A8B96F34D8D70C85A98D6FC178D8BE7@VS02SE.wgti.net> <20071127023958.GF9136@linux.vnet.ibm.com> <20071128014915.GA28908@linux.vnet.ibm.com>
+	Wed, 28 Nov 2007 01:24:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41485 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751213AbXK1GYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 01:24:48 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Natalie Protasevich" <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] i386 IOAPIC: de-fang IRQ compression
+Date: Wed, 28 Nov 2007 01:21:18 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071128014915.GA28908@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200711280121.18376.lenb@kernel.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 05:49:15PM -0800, Paul E. McKenney wrote:
-> On Mon, Nov 26, 2007 at 06:39:58PM -0800, Paul E. McKenney wrote:
-> > On Mon, Nov 26, 2007 at 02:48:08PM -0800, James Huang wrote:
-> > > > From: James Huang [mailto:jamesclhuang@yahoo.com]
-> > > > Sent: Monday, November 26, 2007 2:21 PM
-> > > > To: James Huang
-> > > > Subject: Fw: __rcu_process_callbacks() in Linux 2.6
-> > > > 
-> > > > ----- Forwarded Message ----
-> > > > From: Manfred Spraul <manfred@colorfullife.com>
-> > > > To: James Huang <jamesclhuang@yahoo.com>
-> > > > Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>; linux-
-> > > > kernel@vger.kernel.org
-> > > > Sent: Monday, November 26, 2007 10:28:37 AM
-> > > > Subject: __rcu_process_callbacks() in Linux 2.6
-> > > > 
-> > > > Hi James,
-> > > > 
-> > > > If I understand the issue correctly, then the race is:
-> > > > 
-> > > > step 1: cpu 1: starts a new rcu batch (i.e. rcp->cur++, smb_mb)
-> > > > 
-> > > > step 2: cpu 2: completes the quiet state
-> > > > step 3: cpu 2: reads pointer 0x123 (ptr to a rcu protected struct)
-> > > > 
-> > > > step 4: cpu 3: call_rcu(0x123): rcu protected struct added to
-> > > rdp->nxtlist
-> > > > step 5: cpu 3: moves a new batch into rdp->curlist, rdp->batch = rcp-
-> > > > >cur+1.
-> > > > xxxxxxxxxxxxxxx Problem: where is the smp_rmb() that guarantees that
-> > > > xxxxxxxxxxxxxxx  update to rcp->cur from step 1 is seen by cpu 3?
-> > > > step 6: cpu 3: completes quiet state
-> > > > step 7: cpu 3: struct 0x123 destroyed
-> > > > 
-> > > > step 8: cpu 2: accesses pointer 0x123, but the struct is already
-> > > destroyed
-> > > > 
-> > > > James: Is that the race?
-> > > 
-> > > 
-> > > [James Huang] 
-> > > 
-> > > Yes, this is the race condition that I am concerned about.
-> > > 
-> > > 
-> > > > 
-> > > > I agree with Paul, there are smb_rmb's on cpu 3 between Step 1 and
-> > > Step 5:
-> > > > Either the test_and_set_bit in tasklet_action for rcu_process_callback
-> > > > if step 4 happens before the tasklet or somewhere in the irq handler
-> > > > path if step 4 happens in an irq handler that interrupted
-> > > > rcu_process_callback.
-> > > > 
-> > > > Thus theoretically no additional smb_rmb() should be necessary.
-> > > > What is missing is proper documentation.
-> > > > 
-> > > 
-> > > 
-> > > [James Huang] 
-> > > 
-> > > Is it true that a smb_rmb() before a read operation (say from variable
-> > > X) will guarantee that the read will always retrieve the most "current"
-> > > value of X?   I can not find such a guarantee in atomic_ops.txt or
-> > > memory-barriers.txt under Linux's documentation directory.  What is
-> > > described in both documents is relative ordering, e.g.
-> > > 
-> > >             CPU1                       CPU2
-> > >            ------                     ------
-> > >           write X = x1
-> > >           smp_wmb()  
-> > >           write Y = y1 
-> > > 
-> > >                                       read Y
-> > >                                       smp_rmb()
-> > >                                       read X
-> > > 
-> > > Then CPU2 will read X with a value of x1 if it reads Y with a value of
-> > > y1.
-> > > 
-> > > Please point me to the right section in the document if smp_rmb() does
-> > > provide such a guarantee.
-> > 
-> > You are correct, smp_rmb() is about ordering rather than about any sort
-> > of immediacy.  For one thing, it can be quite difficult to say exactly what
-> > the most "current" version of X might be at a given point in time from
-> > the viewpoint of a given CPU -- the different CPUs might well disagree as
-> > to what the "current" version is for awhile (though they are guaranteed
-> > to come to agreement).
-> > 
-> > > Thanks,
-> > > -- James Huang
-> > > 
-> > > > I'm analyzing the code right now:
-> > > > Is it really true that typically a cpu only completes data in every
-> > > other
-> > > > rcu
-> > > > cycle? I.e. that most structures are stored in the rcu callback list
-> > > until
-> > > > two
-> > > > quiet states happened?
-> > 
-> > That is correct.  This does mean that we should be able to leverage
-> > locking primitives and memory barriers executed from the scheduling
-> > clock interrupt.
-> 
-> And I managed to get some time on a 64-CPU POWER5+ system.  Been running
-> rcutorture for about 2.5 hours without a failure (128 reader processes)
-> running through not quite 1.5M RCU updates.  Of course, this is not
-> proof that the Classic RCU implementation works, but is should provide
-> some reassurance.
-> 
-> I will keep it running until I get kicked off (probably rather soon).
+    commit c434b7a6aedfe428ad17cd61b21b125a7b7a29ce
+    (x86: avoid wasting IRQs for PCI devices)
+    created a concept of "IRQ compression" on i386
+    to conserve IRQ numbers on systems with many
+    sparsely populated IO APICs.
+    
+    The same scheme was also added to x86_64,
+    but later removed when x86_64 recieved an IRQ over-haul
+    that made it unnecessary -- including per-CPU
+    IRQ vectors that greatly increased the IRQ capacity
+    on the machine.
+    
+    i386 has not received the analogous over-haul,
+    and thus a previous attempt to delete IRQ compression
+    from i386 was rejected on the theory that there may
+    exist machines that actually need it.  The fact is
+    that the author of IRQ compression patch was unable
+    to confirm the actual existence of such a system.
+    
+    As a result, all i386 kernels with IOAPIC support
+    pay the following:
+    
+    1. confusion
+    
+    IRQ compression re-names the traditional IOAPIC
+    pin numbers (aka ACPI GSI's) into sequential IRQ #s:
+    
+    ACPI: PCI Interrupt 0000:00:1c.0[A] -> GSI 20 (level, low) -> IRQ 16
+    ACPI: PCI Interrupt 0000:00:1c.1[B] -> GSI 21 (level, low) -> IRQ 17
+    ACPI: PCI Interrupt 0000:00:1c.2[C] -> GSI 22 (level, low) -> IRQ 18
+    ACPI: PCI Interrupt 0000:00:1c.3[D] -> GSI 23 (level, low) -> IRQ 19
+    ACPI: PCI Interrupt 0000:00:1c.4[A] -> GSI 20 (level, low) -> IRQ 16
+    
+    This makes /proc/interrupts look different
+    depending on system configuration and device probe order.
+    It is also different than the x86_64 kernel running
+    on the exact same system.  As a result, programmers
+    get confused when comparing systems.
+    
+    2. complexity
+    
+    The IRQ code in Linux is already overly complex,
+    and IRQ compression makes it worse.  There have
+    already been two bug workarounds related to IRQ
+    compression -- the IRQ0 timer workaround and
+    the VIA PCI IRQ workaround.
+    
+    3. size
+    
+    All i386 kernels with IOAPIC support contain an int[4096] --
+    a 4 page array to contain the renamed IRQs.
+    
+    So while the irq compression code on i386 should really
+    be deleted -- even before merging the x86_64 irq-overhaul,
+    this patch simply disables it on all high volume systems
+    to avoid problems #1 and #2 on most all i386 systems.
+    
+    A large system with pin numbers >=64 will still have compression
+    to conserve limited IRQ numbers for sparse IOAPICS.  However,
+    the vast majority of the planet, those with only pin numbers < 64
+    will use an identity GSI -> IRQ mapping.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-More than seven hours, more than 4M RCU updates without failure.
-Someone else's turn for the machine.
-
-Again, not proof, but at least some reassurance.
-
-						Thanx, Paul
-> 
-> > > > I've tried to track the values of rcp->cur and rdp->batch.
-> > > > If next_pending is set, then cpu_quiet() immetiately starts
-> > > > the next rcu cycle and a cpu cannot both complete the currently
-> > > > pending rcu callbacks and add new callbacks to the next cycle,
-> > > > thus a cpu only takes part in every other rcu cycle.
-> > > > 
-> > > > The oocalc file is at
-> > > > http://www.colorfullife.com/~manfred/rcu.ods
-> > > > http://www.colorfullife.com/~manfred/rcu.pdf
-> > > > 
-> > > > Is that analysis correct? Perhaps the whole code should be rewritten?
-> > 
-> > I believe that the sequencing in spreadsheet is correct (and thank
-> > you very much for going through it!!!), but it seems to be silent on
-> > memory-barrier issues.
-> > 
-> > I also believe that Gautham's new CPU-hotplug setup will make
-> > it possible to simplify the code quite a bit.  And given that the
-> > grace-period-detection code is not on any sort of hot code path, it should
-> > be possible to use a less-aggressive design, perhaps one using straight
-> > locking to guard the shared structures.  Also, we are working in the
-> > -rt implementation on a scheme that allows CPUs to stay asleep through
-> > a grace period without the heavy overhead that is otherwise required to
-> > interact with them.  The trick is to maintain a per-CPU counter that is
-> > incremented on each entry and exit to low-power state.  But I would like
-> > to get this right in -rt before trying it in Classic RCU.  ;-)
-> > 
-> > 						Thanx, Paul
+diff --git a/arch/x86/kernel/mpparse_32.c b/arch/x86/kernel/mpparse_32.c
+index 7a05a7f..468d6ed 100644
+--- a/arch/x86/kernel/mpparse_32.c
++++ b/arch/x86/kernel/mpparse_32.c
+@@ -1041,13 +1041,14 @@ void __init mp_config_acpi_legacy_irqs (void)
+ }
+ 
+ #define MAX_GSI_NUM	4096
++#define IRQ_COMPRESSION_START	64
+ 
+ int mp_register_gsi(u32 gsi, int triggering, int polarity)
+ {
+ 	int ioapic = -1;
+ 	int ioapic_pin = 0;
+ 	int idx, bit = 0;
+-	static int pci_irq = 16;
++	static int pci_irq = IRQ_COMPRESSION_START;
+ 	/*
+ 	 * Mapping between Global System Interrups, which
+ 	 * represent all possible interrupts, and IRQs
+@@ -1086,12 +1087,16 @@ int mp_register_gsi(u32 gsi, int triggering, int polarity)
+ 	if ((1<<bit) & mp_ioapic_routing[ioapic].pin_programmed[idx]) {
+ 		Dprintk(KERN_DEBUG "Pin %d-%d already programmed\n",
+ 			mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
+-		return gsi_to_irq[gsi];
++		return (gsi < IRQ_COMPRESSION_START ? gsi : gsi_to_irq[gsi]);
+ 	}
+ 
+ 	mp_ioapic_routing[ioapic].pin_programmed[idx] |= (1<<bit);
+ 
+-	if (triggering == ACPI_LEVEL_SENSITIVE) {
++	/*
++	 * For GSI >= 64, use IRQ compression
++	 */
++	if ((gsi >= IRQ_COMPRESSION_START)
++		&& (triggering == ACPI_LEVEL_SENSITIVE)) {
+ 		/*
+ 		 * For PCI devices assign IRQs in order, avoiding gaps
+ 		 * due to unused I/O APIC pins.
