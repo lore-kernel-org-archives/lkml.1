@@ -1,174 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbXK1Wxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbXK1Wx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762054AbXK1Wxl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 17:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761964AbXK1WxY
+	id S1762133AbXK1Wx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 17:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761293AbXK1Wxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 17:53:24 -0500
-Received: from ns1.suse.de ([195.135.220.2]:57383 "EHLO mx1.suse.de"
+	Wed, 28 Nov 2007 17:53:30 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57394 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761950AbXK1WxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 17:53:22 -0500
+	id S1761573AbXK1Wx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 17:53:27 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Daniel Drake <dsd@gentoo.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Kay Sievers <kay.sievers@vrfy.org>, stable <stable@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/6] create /sys/.../power when CONFIG_PM is set
-Date: Wed, 28 Nov 2007 14:52:16 -0800
-Message-Id: <1196290340-28828-2-git-send-email-gregkh@suse.de>
+Cc: Hans J Koch <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/6] UIO: fix up the UIO documentation
+Date: Wed, 28 Nov 2007 14:52:17 -0800
+Message-Id: <1196290340-28828-3-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <20071128224746.GA28410@kroah.com>
 References: <20071128224746.GA28410@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Drake <dsd@gentoo.org>
+From: Hans J Koch <hjk@linutronix.de>
 
-The CONFIG_SUSPEND changes in 2.6.23 caused a regression under certain
-configuration conditions (SUSPEND=n, USB_AUTOSUSPEND=y) where all USB
-device attributes in sysfs (idVendor, idProduct, ...) silently disappeared,
-causing udev breakage and more.
+Remove references to the old uio_dummy demo module from UIO documentation.
+Add a small paragraph to make it clearer that UIO is not a universal driver
+interface.
 
-The cause of this is that the /sys/.../power subdirectory is now only
-created when CONFIG_PM_SLEEP is set, however, it should be created whenever
-CONFIG_PM is set to handle the above situation.  The following patch fixes
-the regression.
-
-Signed-off-by: Daniel Drake <dsd@gentoo.org>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Hans J Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c         |    4 +++-
- drivers/base/power/Makefile |    3 ++-
- drivers/base/power/main.c   |    8 +-------
- drivers/base/power/power.h  |   28 +++++++++++++++++++++-------
- 4 files changed, 27 insertions(+), 16 deletions(-)
+ Documentation/DocBook/uio-howto.tmpl |   90 ++++++++++++----------------------
+ 1 files changed, 32 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 3f4d6aa..2683eac 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -770,9 +770,10 @@ int device_add(struct device *dev)
- 	error = device_add_attrs(dev);
- 	if (error)
- 		goto AttrsError;
--	error = device_pm_add(dev);
-+	error = dpm_sysfs_add(dev);
- 	if (error)
- 		goto PMError;
-+	device_pm_add(dev);
- 	error = bus_add_device(dev);
- 	if (error)
- 		goto BusError;
-@@ -797,6 +798,7 @@ int device_add(struct device *dev)
- 	return error;
-  BusError:
- 	device_pm_remove(dev);
-+	dpm_sysfs_remove(dev);
-  PMError:
- 	if (dev->bus)
- 		blocking_notifier_call_chain(&dev->bus->bus_notifier,
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index a803733..44504e6 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,5 +1,6 @@
- obj-y			:= shutdown.o
--obj-$(CONFIG_PM_SLEEP)	+= main.o sysfs.o
-+obj-$(CONFIG_PM)	+= sysfs.o
-+obj-$(CONFIG_PM_SLEEP)	+= main.o
- obj-$(CONFIG_PM_TRACE)	+= trace.o
+diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
+index c119484..fdd7f4f 100644
+--- a/Documentation/DocBook/uio-howto.tmpl
++++ b/Documentation/DocBook/uio-howto.tmpl
+@@ -30,6 +30,12 @@
  
- ifeq ($(CONFIG_DEBUG_DRIVER),y)
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 0ab4ab2..691ffb6 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -38,20 +38,14 @@ static DEFINE_MUTEX(dpm_list_mtx);
- int (*platform_enable_wakeup)(struct device *dev, int is_on);
+ <revhistory>
+ 	<revision>
++	<revnumber>0.4</revnumber>
++	<date>2007-11-26</date>
++	<authorinitials>hjk</authorinitials>
++	<revremark>Removed section about uio_dummy.</revremark>
++	</revision>
++	<revision>
+ 	<revnumber>0.3</revnumber>
+ 	<date>2007-04-29</date>
+ 	<authorinitials>hjk</authorinitials>
+@@ -94,6 +100,26 @@ interested in translating it, please email me
+ 	user space. This simplifies development and reduces the risk of
+ 	serious bugs within a kernel module.
+ 	</para>
++	<para>
++	Please note that UIO is not an universal driver interface. Devices
++	that are already handled well by other kernel subsystems (like
++	networking or serial or USB) are no candidates for an UIO driver.
++	Hardware that is ideally suited for an UIO driver fulfills all of
++	the following:
++	</para>
++<itemizedlist>
++<listitem>
++	<para>The device has memory that can be mapped. The device can be
++	controlled completely by writing to this memory.</para>
++</listitem>
++<listitem>
++	<para>The device usually generates interrupts.</para>
++</listitem>
++<listitem>
++	<para>The device does not fit into one of the standard kernel
++	subsystems.</para>
++</listitem>
++</itemizedlist>
+ </sect1>
  
+ <sect1 id="thanks">
+@@ -174,8 +200,9 @@ interested in translating it, please email me
+ 	For cards that don't generate interrupts but need to be
+ 	polled, there is the possibility to set up a timer that
+ 	triggers the interrupt handler at configurable time intervals.
+-	See <filename>drivers/uio/uio_dummy.c</filename> for an
+-	example of this technique.
++	This interrupt simulation is done by calling
++	<function>uio_event_notify()</function>
++	from the timer's event handler.
+ 	</para>
  
--int device_pm_add(struct device *dev)
-+void device_pm_add(struct device *dev)
- {
--	int error;
+ 	<para>
+@@ -263,63 +290,11 @@ offset = N * getpagesize();
+ </sect1>
+ </chapter>
+ 
+-<chapter id="using-uio_dummy" xreflabel="Using uio_dummy">
+-<?dbhtml filename="using-uio_dummy.html"?>
+-<title>Using uio_dummy</title>
+-	<para>
+-	Well, there is no real use for uio_dummy. Its only purpose is
+-	to test most parts of the UIO system (everything except
+-	hardware interrupts), and to serve as an example for the
+-	kernel module that you will have to write yourself.
+-	</para>
 -
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
- 	list_add_tail(&dev->power.entry, &dpm_active);
--	error = dpm_sysfs_add(dev);
--	if (error)
--		list_del(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
--	return error;
- }
- 
- void device_pm_remove(struct device *dev)
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 5c4efd4..379da4e 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -13,14 +13,29 @@ extern void device_shutdown(void);
- 
- extern struct list_head dpm_active;	/* The active device list */
- 
--static inline struct device * to_device(struct list_head * entry)
-+static inline struct device *to_device(struct list_head *entry)
- {
- 	return container_of(entry, struct device, power.entry);
- }
- 
--extern int device_pm_add(struct device *);
-+extern void device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
- 
-+#else /* CONFIG_PM_SLEEP */
-+
-+
-+static inline void device_pm_add(struct device *dev)
-+{
-+}
-+
-+static inline void device_pm_remove(struct device *dev)
-+{
-+}
-+
-+#endif
-+
-+#ifdef CONFIG_PM
-+
- /*
-  * sysfs.c
-  */
-@@ -28,16 +43,15 @@ extern void device_pm_remove(struct device *);
- extern int dpm_sysfs_add(struct device *);
- extern void dpm_sysfs_remove(struct device *);
- 
--#else /* CONFIG_PM_SLEEP */
+-<sect1 id="what_uio_dummy_does">
+-<title>What uio_dummy does</title>
+-	<para>
+-	The kernel module <filename>uio_dummy.ko</filename> creates a
+-	device that uses a timer to generate periodic interrupts. The
+-	interrupt handler does nothing but increment a counter. The
+-	driver adds two custom attributes, <varname>count</varname>
+-	and <varname>freq</varname>, that appear under
+-	<filename>/sys/devices/platform/uio_dummy/</filename>.
+-	</para>
 -
-+#else /* CONFIG_PM */
- 
--static inline int device_pm_add(struct device * dev)
-+static inline int dpm_sysfs_add(struct device *dev)
- {
- 	return 0;
- }
--static inline void device_pm_remove(struct device * dev)
--{
- 
-+static inline void dpm_sysfs_remove(struct device *dev)
-+{
- }
- 
- #endif
+-	<para>
+-	The attribute <varname>count</varname> can be read and
+-	written.  The associated file
+-	<filename>/sys/devices/platform/uio_dummy/count</filename>
+-	appears as a normal text file and contains the total number of
+-	timer interrupts. If you look at it (e.g. using
+-	<function>cat</function>), you'll notice it is slowly counting
+-	up.
+-	</para>
+-
+-	<para>
+-	The attribute <varname>freq</varname> can be read and written.
+-	The content of
+-	<filename>/sys/devices/platform/uio_dummy/freq</filename>
+-	represents the number of system timer ticks between two timer
+-	interrupts. The default value of <varname>freq</varname> is
+-	the value of the kernel variable <varname>HZ</varname>, which
+-	gives you an interval of one second. Lower values will
+-	increase the frequency. Try the following:
+-	</para>
+-<programlisting format="linespecific">
+-cd /sys/devices/platform/uio_dummy/
+-echo 100 > freq
+-</programlisting>
+-	<para>
+-	Use <function>cat count</function> to see how the interrupt
+-	frequency changes.
+-	</para>
+-</sect1>
+-</chapter>
+-
+ <chapter id="custom_kernel_module" xreflabel="Writing your own kernel module">
+ <?dbhtml filename="custom_kernel_module.html"?>
+ <title>Writing your own kernel module</title>
+ 	<para>
+-	Please have a look at <filename>uio_dummy.c</filename> as an
++	Please have a look at <filename>uio_cif.c</filename> as an
+ 	example. The following paragraphs explain the different
+ 	sections of this file.
+ 	</para>
+@@ -354,9 +329,8 @@ See the description below for details.
+ interrupt, it's your modules task to determine the irq number during
+ initialization. If you don't have a hardware generated interrupt but
+ want to trigger the interrupt handler in some other way, set
+-<varname>irq</varname> to <varname>UIO_IRQ_CUSTOM</varname>. The
+-uio_dummy module does this as it triggers the event mechanism in a timer
+-routine. If you had no interrupt at all, you could set
++<varname>irq</varname> to <varname>UIO_IRQ_CUSTOM</varname>.
++If you had no interrupt at all, you could set
+ <varname>irq</varname> to <varname>UIO_IRQ_NONE</varname>, though this
+ rarely makes sense.
+ </para></listitem>
 -- 
 1.5.3.4
 
