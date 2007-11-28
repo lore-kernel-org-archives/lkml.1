@@ -1,278 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbXK1GK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbXK1GVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbXK1GK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 01:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbXK1GKr
+	id S1756763AbXK1GVY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 01:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXK1GVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 01:10:47 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:60539 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbXK1GKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 01:10:46 -0500
-Message-ID: <474D05AE.60905@cn.fujitsu.com>
-Date: Wed, 28 Nov 2007 14:07:42 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 28 Nov 2007 01:21:13 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:33232 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbXK1GVM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 01:21:12 -0500
+Date: Tue, 27 Nov 2007 22:21:08 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Huang <James.Huang@watchguard.com>
+Cc: linux-kernel@vger.kernel.org, Manfred Spraul <manfred@colorfullife.com>,
+       jamesclhuang@yahoo.com, ego@in.ibm.com
+Subject: Re: __rcu_process_callbacks() in Linux 2.6
+Message-ID: <20071128062108.GA17777@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <590353.52909.qm@web83819.mail.sp1.yahoo.com> <F474D80A8B96F34D8D70C85A98D6FC178D8BE7@VS02SE.wgti.net> <20071127023958.GF9136@linux.vnet.ibm.com> <20071128014915.GA28908@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: roland@redhat.com, mingo@redhat.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Fw: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound
- occurs
-References: <474CF7D5.6010702@cn.fujitsu.com>
-In-Reply-To: <474CF7D5.6010702@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128014915.GA28908@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Roland McGrath wrote::
-> cf http://lkml.org/lkml/2007/10/3/41
+On Tue, Nov 27, 2007 at 05:49:15PM -0800, Paul E. McKenney wrote:
+> On Mon, Nov 26, 2007 at 06:39:58PM -0800, Paul E. McKenney wrote:
+> > On Mon, Nov 26, 2007 at 02:48:08PM -0800, James Huang wrote:
+> > > > From: James Huang [mailto:jamesclhuang@yahoo.com]
+> > > > Sent: Monday, November 26, 2007 2:21 PM
+> > > > To: James Huang
+> > > > Subject: Fw: __rcu_process_callbacks() in Linux 2.6
+> > > > 
+> > > > ----- Forwarded Message ----
+> > > > From: Manfred Spraul <manfred@colorfullife.com>
+> > > > To: James Huang <jamesclhuang@yahoo.com>
+> > > > Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>; linux-
+> > > > kernel@vger.kernel.org
+> > > > Sent: Monday, November 26, 2007 10:28:37 AM
+> > > > Subject: __rcu_process_callbacks() in Linux 2.6
+> > > > 
+> > > > Hi James,
+> > > > 
+> > > > If I understand the issue correctly, then the race is:
+> > > > 
+> > > > step 1: cpu 1: starts a new rcu batch (i.e. rcp->cur++, smb_mb)
+> > > > 
+> > > > step 2: cpu 2: completes the quiet state
+> > > > step 3: cpu 2: reads pointer 0x123 (ptr to a rcu protected struct)
+> > > > 
+> > > > step 4: cpu 3: call_rcu(0x123): rcu protected struct added to
+> > > rdp->nxtlist
+> > > > step 5: cpu 3: moves a new batch into rdp->curlist, rdp->batch = rcp-
+> > > > >cur+1.
+> > > > xxxxxxxxxxxxxxx Problem: where is the smp_rmb() that guarantees that
+> > > > xxxxxxxxxxxxxxx  update to rcp->cur from step 1 is seen by cpu 3?
+> > > > step 6: cpu 3: completes quiet state
+> > > > step 7: cpu 3: struct 0x123 destroyed
+> > > > 
+> > > > step 8: cpu 2: accesses pointer 0x123, but the struct is already
+> > > destroyed
+> > > > 
+> > > > James: Is that the race?
+> > > 
+> > > 
+> > > [James Huang] 
+> > > 
+> > > Yes, this is the race condition that I am concerned about.
+> > > 
+> > > 
+> > > > 
+> > > > I agree with Paul, there are smb_rmb's on cpu 3 between Step 1 and
+> > > Step 5:
+> > > > Either the test_and_set_bit in tasklet_action for rcu_process_callback
+> > > > if step 4 happens before the tasklet or somewhere in the irq handler
+> > > > path if step 4 happens in an irq handler that interrupted
+> > > > rcu_process_callback.
+> > > > 
+> > > > Thus theoretically no additional smb_rmb() should be necessary.
+> > > > What is missing is proper documentation.
+> > > > 
+> > > 
+> > > 
+> > > [James Huang] 
+> > > 
+> > > Is it true that a smb_rmb() before a read operation (say from variable
+> > > X) will guarantee that the read will always retrieve the most "current"
+> > > value of X?   I can not find such a guarantee in atomic_ops.txt or
+> > > memory-barriers.txt under Linux's documentation directory.  What is
+> > > described in both documents is relative ordering, e.g.
+> > > 
+> > >             CPU1                       CPU2
+> > >            ------                     ------
+> > >           write X = x1
+> > >           smp_wmb()  
+> > >           write Y = y1 
+> > > 
+> > >                                       read Y
+> > >                                       smp_rmb()
+> > >                                       read X
+> > > 
+> > > Then CPU2 will read X with a value of x1 if it reads Y with a value of
+> > > y1.
+> > > 
+> > > Please point me to the right section in the document if smp_rmb() does
+> > > provide such a guarantee.
+> > 
+> > You are correct, smp_rmb() is about ordering rather than about any sort
+> > of immediacy.  For one thing, it can be quite difficult to say exactly what
+> > the most "current" version of X might be at a given point in time from
+> > the viewpoint of a given CPU -- the different CPUs might well disagree as
+> > to what the "current" version is for awhile (though they are guaranteed
+> > to come to agreement).
+> > 
+> > > Thanks,
+> > > -- James Huang
+> > > 
+> > > > I'm analyzing the code right now:
+> > > > Is it really true that typically a cpu only completes data in every
+> > > other
+> > > > rcu
+> > > > cycle? I.e. that most structures are stored in the rcu callback list
+> > > until
+> > > > two
+> > > > quiet states happened?
+> > 
+> > That is correct.  This does mean that we should be able to leverage
+> > locking primitives and memory barriers executed from the scheduling
+> > clock interrupt.
 > 
-> To summarize: on Linux, SA_ONSTACK decides whether you are already on the
-> signal stack based on the value of the SP at the time of a signal.  If
-> you are not already inside the range, you are not "on the signal stack"
-> and so the new signal handler frame starts over at the base of the signal
-> stack.
+> And I managed to get some time on a 64-CPU POWER5+ system.  Been running
+> rcutorture for about 2.5 hours without a failure (128 reader processes)
+> running through not quite 1.5M RCU updates.  Of course, this is not
+> proof that the Classic RCU implementation works, but is should provide
+> some reassurance.
 > 
-> sigaltstack (and sigstack before it) was invented in BSD.  There, the
-> SA_ONSTACK behavior has always been different.  It uses a kernel state
-> flag to decide, rather than the SP value.  When you first take an
-> SA_ONSTACK signal and switch to the alternate signal stack, it sets the
-> SS_ONSTACK flag in the thread's sigaltstack state in the kernel.
-> Thereafter you are "on the signal stack" and don't switch SP before
-> pushing a handler frame no matter what the SP value is.  Only when you
-> sigreturn from the original handler context do you clear the SS_ONSTACK
-> flag so that a new handler frame will start over at the base of the
-> alternate signal stack.
+> I will keep it running until I get kicked off (probably rather soon).
+
+More than seven hours, more than 4M RCU updates without failure.
+Someone else's turn for the machine.
+
+Again, not proof, but at least some reassurance.
+
+						Thanx, Paul
 > 
-> The undesireable effect of the Linux behavior is that an overflow of the
-> alternate signal stack can not only go undetected, but lead to a ring
-> buffer effect of clobbering the original handler frame at the base of the
-> signal stack for each successive signal that comes just after the
-> overflow.  This is what Shi Weihua's test case demonstrates.  Normally
-> this does not come up because of the signal mask, but the test case uses
-> SA_NODEFER for its SIGSEGV handler.
-> 
-> The other subtle part of the existing Linux semantics is that a simple
-> longjmp out of a signal handler serves to take you off the signal stack
-> in a safe and reliable fashion without having used sigreturn (nor having
-> just returned from the handler normally, which means the same).  After
-> the longjmp (or even informal stack switching not via any proper libc or
-> kernel interface), the alternate signal stack stands ready to be used
-> again.
-> 
-> A paranoid program would allocate a PROT_NONE red zone around its
-> alternate signal stack.  Then a small overflow would trigger a SIGSEGV in
-> handler setup, and be fatal (core dump) whether or not SIGSEGV is
-> blocked.  As with thread stack red zones, that cannot catch all overflows
-> (or underflows).  e.g., a local array as large as page size allocated in
-> a function called from a handler, but not actually touched before more
-> calls push more stack, could cause an overflow that silently pushes into
-> some unrelated allocated pages.
-> 
-> The BSD behavior does not do anything in particular about overflow.  But
-> it does at least avoid the wraparound or "ring buffer effect", so you'll
-> just get a straightforward all-out overflow down your address space past
-> the low end of the alternate signal stack.  I don't know what the BSD
-> behavior is for longjmp out of an SA_ONSTACK handler.
-> 
-> The POSIX wording relating to sigaltstack is pretty minimal.  I don't
-> think it speaks to this issue one way or another.  (The program that
-> overflows its stack is clearly in undefined behavior territory of one
-> sort or another anyhow.)
-> 
-> Given the longjmp issue and the potential for highly subtle complications
-> in existing programs relying on this in arcane ways deep in their code, I
-> am very dubious about changing the behavior to the BSD style persistent
-> flag.  I think Shi Weihua's patches have a similar effect by tracking the
-> SP used in the last handler setup.
-> 
-> I think it would be sensible for the signal handler setup code to detect
-> when it would itself be causing a stack overflow.  Maybe something like
-> the following patch (untested).  This issue exists in the same way on all
-> machines, so ideally they would all do a similar check.  
-> 
-> When it's the handler function itself or its callees that cause the
-> overflow, rather than the signal handler frame setup alone crossing the
-> boundary, this still won't help.  But I don't see any way to distinguish
-> that from the valid longjmp case.
-
-Thank you for your detailed explanation and patch.
-I tested your patch, unfortunately it can not stop all kinds of overflow.
-
-The esp is a user space pointer, so the user can move it. 
-For example, the user defines "int i[1000];" in  the handler function.
-Please run the following test program, and pay attention to "int i[1000];".
--------------------------------------------------------------------------
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <string.h>
-
-volatile int counter = 0;
-
-#ifdef __i386__
-void print_esp()
-{
-	unsigned long esp;
-	__asm__ __volatile__("movl %%esp, %0":"=g"(esp));
-
-	printf("esp = 0x%08lx\n", esp);
-}
-#endif
-
-void segv_handler()
-{
-#ifdef __i386__
-	print_esp();
-#endif
-
-	int *c = NULL;
-	counter++;
-	printf("%d\n", counter);
-
-	int i[1000];	// <- Pay attention here.
-
-	*c = 1;			// SEGV
-}
-
-int main()
-{
-	int *c = NULL;
-	char *s = malloc(SIGSTKSZ);
-	stack_t stack;
-	struct sigaction action;
-
-	memset(s, 0, SIGSTKSZ);
-	stack.ss_sp = s;
-	stack.ss_flags = 0;
-	stack.ss_size = SIGSTKSZ;
-	int error = sigaltstack(&stack, NULL);
-	if (error) {
-		printf("Failed to use sigaltstack!\n");
-		return -1;
-	}
-
-	memset(&action, 0, sizeof(action));
-	action.sa_handler = segv_handler;
-	action.sa_flags = SA_ONSTACK | SA_NODEFER;
-
-	sigemptyset(&action.sa_mask);
-
-	sigaction(SIGSEGV, &action, NULL);
-
-	*c = 0;			//SEGV
-
-	if (!s)
-		free(s);
-
-	return 0;
-}
--------------------------------------------------------------------------
-
-So, the patch I posted is still needed 
-Surely, adding a variable to sched.h is not a good idea. 
-Could you tell me a better place to store the previous esp?
-
-Here is a new patch rebased on 2.6.24-rc3-git2.
-
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
-
---- /shiwh-tmp/linux-2.6.24-rc3-git2.orig/arch/x86/kernel/signal_32.c	2007-11-28 09:15:34.000000000 +0800
-+++ /shiwh-tmp/linux-2.6.24-rc3-git2/arch/x86/kernel/signal_32.c	2007-11-28 13:19:13.000000000 +0800
-@@ -297,7 +297,8 @@ get_sigframe(struct k_sigaction *ka, str
- 
- 	/* This is the X/Open sanctioned signal stack switching.  */
- 	if (ka->sa.sa_flags & SA_ONSTACK) {
--		if (sas_ss_flags(esp) == 0)
-+		if (sas_ss_flags(esp) == 0 &&
-+		    !on_sig_stack(current->pre_ss_sp))
- 			esp = current->sas_ss_sp + current->sas_ss_size;
- 	}
- 
-@@ -330,9 +331,15 @@ static int setup_frame(int sig, struct k
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame));
- 
-+	if ((ka->sa.sa_flags & SA_ONSTACK) &&
-+	    !sas_ss_flags((unsigned long)frame))
-+		goto give_sigsegv;
-+
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		goto give_sigsegv;
- 
-+	current->pre_ss_sp = (unsigned long)frame;
-+
- 	usig = current_thread_info()->exec_domain
- 		&& current_thread_info()->exec_domain->signal_invmap
- 		&& sig < 32
-@@ -422,9 +429,15 @@ static int setup_rt_frame(int sig, struc
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame));
- 
-+	if ((ka->sa.sa_flags & SA_ONSTACK) &&
-+	    !sas_ss_flags((unsigned long)frame))
-+		goto give_sigsegv;
-+
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		goto give_sigsegv;
- 
-+	current->pre_ss_sp = (unsigned long)frame;
-+
- 	usig = current_thread_info()->exec_domain
- 		&& current_thread_info()->exec_domain->signal_invmap
- 		&& sig < 32
---- /shiwh-tmp/linux-2.6.24-rc3-git2.orig/include/linux/sched.h	2007-11-28 09:15:52.000000000 +0800
-+++ /shiwh-tmp/linux-2.6.24-rc3-git2/include/linux/sched.h	2007-11-28 13:20:04.000000000 +0800
-@@ -1059,6 +1059,7 @@ struct task_struct {
- 	struct sigpending pending;
- 
- 	unsigned long sas_ss_sp;
-+	unsigned long pre_ss_sp;
- 	size_t sas_ss_size;
- 	int (*notifier)(void *priv);
- 	void *notifier_data;
---- /shiwh-tmp/linux-2.6.24-rc3-git2.orig/kernel/signal.c	2007-11-28 09:15:52.000000000 +0800
-+++ /shiwh-tmp/linux-2.6.24-rc3-git2/kernel/signal.c	2007-11-28 13:20:54.000000000 +0800
-@@ -2403,6 +2403,9 @@ do_sigaltstack (const stack_t __user *us
- 
- 		current->sas_ss_sp = (unsigned long) ss_sp;
- 		current->sas_ss_size = ss_size;
-+
-+		/* reset previous sp */
-+		current->pre_ss_sp = 0;
- 	}
- 
- 	if (uoss) {
-
-Thanks,
-Shi Weihua
-
-> 
-> 
-> Thanks,
-> Roland
-> 
-> ---
-> 
-> diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-> index d58d455..0000000 100644  
-> --- a/arch/x86/kernel/signal_32.c
-> +++ b/arch/x86/kernel/signal_32.c
-> @@ -295,6 +295,13 @@ get_sigframe(struct k_sigaction *ka, str
->  	/* Default to using normal stack */
->  	esp = regs->esp;
->  
-> +	/*
-> +	 * If we are on the alternate signal stack and would overflow it, don't.
-> +	 * Return an always-bogus address instead so we will die with SIGSEGV.
-> +	 */
-> +	if (on_sig_stack(esp) && !likely(on_sig_stack(esp - frame_size)))
-> +		return (void __user *) -1L;
-> +
->  	/* This is the X/Open sanctioned signal stack switching.  */
->  	if (ka->sa.sa_flags & SA_ONSTACK) {
->  		if (sas_ss_flags(esp) == 0)
-
+> > > > I've tried to track the values of rcp->cur and rdp->batch.
+> > > > If next_pending is set, then cpu_quiet() immetiately starts
+> > > > the next rcu cycle and a cpu cannot both complete the currently
+> > > > pending rcu callbacks and add new callbacks to the next cycle,
+> > > > thus a cpu only takes part in every other rcu cycle.
+> > > > 
+> > > > The oocalc file is at
+> > > > http://www.colorfullife.com/~manfred/rcu.ods
+> > > > http://www.colorfullife.com/~manfred/rcu.pdf
+> > > > 
+> > > > Is that analysis correct? Perhaps the whole code should be rewritten?
+> > 
+> > I believe that the sequencing in spreadsheet is correct (and thank
+> > you very much for going through it!!!), but it seems to be silent on
+> > memory-barrier issues.
+> > 
+> > I also believe that Gautham's new CPU-hotplug setup will make
+> > it possible to simplify the code quite a bit.  And given that the
+> > grace-period-detection code is not on any sort of hot code path, it should
+> > be possible to use a less-aggressive design, perhaps one using straight
+> > locking to guard the shared structures.  Also, we are working in the
+> > -rt implementation on a scheme that allows CPUs to stay asleep through
+> > a grace period without the heavy overhead that is otherwise required to
+> > interact with them.  The trick is to maintain a per-CPU counter that is
+> > incremented on each entry and exit to low-power state.  But I would like
+> > to get this right in -rt before trying it in Classic RCU.  ;-)
+> > 
+> > 						Thanx, Paul
