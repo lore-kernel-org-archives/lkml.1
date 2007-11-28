@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbXK1Jn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbXK1JtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759371AbXK1Jn1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 04:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbXK1JnP
+	id S1758978AbXK1JtL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 04:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbXK1Js4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 04:43:15 -0500
-Received: from verein.lst.de ([213.95.11.210]:49276 "EHLO verein.lst.de"
+	Wed, 28 Nov 2007 04:48:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:34680 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755319AbXK1JnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 04:43:13 -0500
-Date: Wed, 28 Nov 2007 10:43:01 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Edward Shishkin <edward@namesys.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Reiserfs-list <reiserfs-devel@vger.kernel.org>, bfields@citi.umich.edu,
-       Neil Brown <neilb@suse.de>, Christoph Hellwig <hch@lst.de>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/2] reiser4: new export ops
-Message-ID: <20071128094301.GA7760@lst.de>
-References: <200710212348.l9LNm3Cq000694@imap1.linux-foundation.org> <474CBEEF.3060303@namesys.com>
+	id S1754735AbXK1Js4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 04:48:56 -0500
+Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: PPCML <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
+References: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SxJAWHRVCLUUuseXi9OR"
+Date: Wed, 28 Nov 2007 20:48:53 +1100
+Message-Id: <1196243333.2109.2.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474CBEEF.3060303@namesys.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code looks a little confusing to me..
 
->   */
->  static char *decode_inode(struct super_block *s, char *addr,
->  			  reiser4_object_on_wire * obj)
-> @@ -41,7 +42,8 @@
->  	fplug = file_plugin_by_disk_id(reiser4_get_tree(s), (d16 *) addr);
->  	if (fplug != NULL) {
->  		addr += sizeof(d16);
-> -		obj->plugin = fplug;
-> +		if (obj)
-> +			obj->plugin = fplug;
+--=-SxJAWHRVCLUUuseXi9OR
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-You are adding quite a few of those if (obj) clauses.  I can't see a
-reason for that - care to explain?  The new aops should not disallow for
-any functionality that has been there before.
+On Mon, 2007-11-26 at 10:46 +0300, Cyrill Gorcunov wrote:
+> This patch adds checking for NULL value returned to prevent possible
+> NULL pointer dereference.
+> Also two unneeded 'return' are removed.
+>=20
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> Any comments are welcome.
 
-> static struct dentry *reiser4_decode_fh(struct super_block *super, __u32 *fh,
-> +					int len, int fhtype, int parent)
->  {
->  	reiser4_context *ctx;
->  	reiser4_object_on_wire object;
->  	char *addr;
->  
->  	ctx = reiser4_init_context(super);
->  	if (IS_ERR(ctx))
-> @@ -80,25 +77,19 @@
->  	assert("vs-1482",
->  	       fhtype == FH_WITH_PARENT || fhtype == FH_WITHOUT_PARENT);
->  
-> 	addr = (char *)fh;
-> 
-> 	object_on_wire_init(&object);
-> +
-> +	if (parent)
-> +		/* skip first onwire object */
-> +		addr = decode_inode(super, addr, NULL);
-> 	if (!IS_ERR(addr)) {
-> +		addr = decode_inode(super, addr, &object);
-> 		if (!IS_ERR(addr)) {
-> 			struct dentry *d;
-> 
-> +			d = reiser4_get_dentry(super, &object);
+I guess it's good to be paranoid, but this is a little verbose:
 
-I'd suggest to directly poke into the place where the parent handle
-is stored.  XFS used a similar construct to the decode_inode helper,
-but with the new aops it's faster and easier to read if you just have
-a helper on how many bytes to skip.  Did you take a look at how the
-various other filesystem handle the export ops?
+        wi0 =3D of_get_property(node, "device-id", NULL);
++       if (unlikely((!wi0))) {
++               printk(KERN_ERR "PCI: device-id not found.\n");
++               goto error;
++       }
+        wi1 =3D of_get_property(node, "vendor-id", NULL);
++       if (unlikely((!wi1))) {
++               printk(KERN_ERR "PCI: vendor-id not found.\n");
++               goto error;
++       }
+        wi2 =3D of_get_property(node, "class-code", NULL);
++       if (unlikely((!wi2))) {
++               printk(KERN_ERR "PCI: class-code not found.\n");
++               goto error;
++       }
+        wi3 =3D of_get_property(node, "revision-id", NULL);
++       if (unlikely((!wi3))) {
++               printk(KERN_ERR "PCI: revision-id not found.\n");
++               goto error;
++       }
 
-> --- linux-2.6.23-mm1/fs/reiser4/dscale.c.orig
-> +++ linux-2.6.23-mm1/fs/reiser4/dscale.c
-> @@ -126,6 +126,24 @@
+Perhaps instead:
 
-How are the changes to all these other files related to the export
-operations changes?
+        wi0 =3D of_get_property(node, "device-id", NULL);
+        wi1 =3D of_get_property(node, "vendor-id", NULL);
+        wi2 =3D of_get_property(node, "class-code", NULL);
+        wi3 =3D of_get_property(node, "revision-id", NULL);
+
+       if (!wi0 || !wi1 || !wi2 || !wi3) {
+               printk(KERN_ERR "PCI: Missing device tree properties.\n");
+               goto error;
+       }
+
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-SxJAWHRVCLUUuseXi9OR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHTTmFdSjSd0sB4dIRAkUlAKC97nGHNwqDUa3D7eZ5/XSLyI4WLACeMjoP
+2s61ngBVOglJijVK2md/gB8=
+=kQsS
+-----END PGP SIGNATURE-----
+
+--=-SxJAWHRVCLUUuseXi9OR--
 
