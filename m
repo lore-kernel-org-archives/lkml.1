@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbXK1Csd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760750AbXK1Cxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbXK1Csd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Nov 2007 21:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbXK1CsX
+	id S1760750AbXK1Cxr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Nov 2007 21:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbXK1Cxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Nov 2007 21:48:23 -0500
-Received: from smtp2.Stanford.EDU ([171.67.20.25]:56035 "EHLO
-	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759743AbXK1CsW (ORCPT
+	Tue, 27 Nov 2007 21:53:40 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60705 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760042AbXK1Cxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Nov 2007 21:48:22 -0500
-Subject: Re: 2.6.22.14 + rt? vs 2.6.23.9-rt12
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1196211739.22601.66.camel@cmn3.stanford.edu>
-References: <1196211739.22601.66.camel@cmn3.stanford.edu>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 18:48:21 -0800
-Message-Id: <1196218101.22601.77.camel@cmn3.stanford.edu>
+	Tue, 27 Nov 2007 21:53:39 -0500
+Date: Tue, 27 Nov 2007 18:53:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] Fix hpet wrong values
+Message-Id: <20071127185322.77c76bac.akpm@linux-foundation.org>
+In-Reply-To: <20071127122308.GA2640@elf.ucw.cz>
+References: <20071127122308.GA2640@elf.ucw.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-11-27 at 17:02 -0800, Fernando Lopez-Lezcano wrote:
-> Hi Ingo... any hope of an updated realtime patch for 2.6.22.14? I'm
-> having problems with 2.6.23.1 + rt11 (I spent the morning rediffing
-> agains 2.6.23.9 and just _now_ pressed reload in my browser and there it
-> is..., rt12 for 2.6.23.9!, argh! :-) and wanted to compare with 2.6.22.x
-> and the latest I managed to repatch and run successfully is 2.6.22.10. I
-> did 2.6.22.14 in the afternoon but I obviously bungled it somewhere as
-> the boot... takes... a... long... time... I can send my .14 patch off
-> the list if you want/need it. 
-> 
-> [in my 2.6.23.1-rt11 tests I am getting "delayed..." messages from
-> jackd, smells like a problem with internal timing in the kernel]
-> 
-> I'll try rt12...
+On Tue, 27 Nov 2007 13:23:08 +0100 Pavel Machek <pavel@ucw.cz> wrote:
 
-Same problems in rt12, getting lots of "delay of xxx usecs exceeds
-estimated spare time of yyyy; restart" in jackd (on my T61 Lenovo laptop
-running fc7). Does not happen with 2.6.22.10 + rt9. This is both with
-the internal snd-hda-intel card and a pcmcia rme hdsp multiface. 
+> If hpet is not enabled in config, its init should not pretend to work,
+> and people should not try to get time from it. 
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> diff --git a/include/asm-x86/hpet.h b/include/asm-x86/hpet.h
+> index b1f3c1e..1777d68 100644
+> --- a/include/asm-x86/hpet.h
+> +++ b/include/asm-x86/hpet.h
+> @@ -81,8 +81,8 @@ #endif /* CONFIG_HPET_EMULATE_RTC */
+>  
+>  #else
+>  
+> -static inline int hpet_enable(void) { return 0; }
+> -static inline unsigned long hpet_readl(unsigned long a) { return 0; }
+> +static inline int hpet_enable(void) { return -ENODEV; }
+> +static inline unsigned long hpet_readl(unsigned long a) { BUG(); }
+>  
+>  #endif /* CONFIG_HPET_TIMER */
+>  #endif /* ASM_X86_HPET_H */
+> 
 
--- Fernando
+Dare I point out Documentation/SubmitChecklist?
+
+
+
+include/asm/hpet.h: In function 'hpet_readl':
+include/asm/hpet.h:86: warning: no return statement in function returning non-void
+
+just delete it and rely on -Werror-implicit-function-declaration
+
+--- a/include/asm-x86/hpet.h~fix-hpet-wrong-values-fix
++++ a/include/asm-x86/hpet.h
+@@ -82,7 +82,6 @@ extern irqreturn_t hpet_rtc_interrupt(in
+ #else
+ 
+ static inline int hpet_enable(void) { return -ENODEV; }
+-static inline unsigned long hpet_readl(unsigned long a) { BUG(); }
+ 
+ #endif /* CONFIG_HPET_TIMER */
+ #endif /* ASM_X86_HPET_H */
+_
+
 
 
