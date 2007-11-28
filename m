@@ -1,84 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbXK1TIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXK1TJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755258AbXK1TIY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 14:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759492AbXK1TIJ
+	id S1759547AbXK1TJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 14:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbXK1TJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 14:08:09 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:38584 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756823AbXK1TIG (ORCPT
+	Wed, 28 Nov 2007 14:09:05 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:54476 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755075AbXK1TJD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 14:08:06 -0500
-Date: Wed, 28 Nov 2007 14:04:41 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: Remy Bohmer <linux@bohmer.net>, Daniel Walker <dwalker@mvista.com>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will
- stall forever
-In-Reply-To: <20071128172509.GA30173@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
-References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
- <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
- <1196176294.13982.58.camel@localhost.localdomain> <1196177122.23808.7.camel@imap.mvista.com>
- <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
- <20071128172509.GA30173@flint.arm.linux.org.uk>
+	Wed, 28 Nov 2007 14:09:03 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Date: Wed, 28 Nov 2007 12:08:37 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501D33B5B@NAMAIL1.ad.lsil.com>
+In-Reply-To: <20071127153252.GC3230@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Thread-Index: AcgxCshQ/OeAV3hHSAWQoAH5gpnKCgA5yEaQ
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Cc: <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
+       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+X-OriginalArrivalTime: 28 Nov 2007 19:08:40.0227 (UTC) FILETIME=[16134F30:01C831F2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew,
 
+Yes, as I mentioned, our applications are built in 32-bit environment
+(except for ia64).
+We may see a different behavior if we build it in 64-bit for x86-64. 
 
-On Wed, 28 Nov 2007, Russell King - ARM Linux wrote:
-> On Wed, Nov 28, 2007 at 03:38:11PM +0100, Remy Bohmer wrote:
-> > Hello Daniel,
-> >
-> > >  *      Note: The caller is expected to handle the ack, clear, mask and
-> > >  *      unmask issues if necessary.
-> > > So we shouldn't need any flow control unless there is some other
-> > > factors..
-> >
-> > This comment can be misinterpreted, I think. Who is assumed to be the
-> > caller in this context? The 2 other routines in the driver that
-> > actually do the unmasking stuff besides only calling this routine? Is
-> > it allowed to call it directly or should it always be done through a
-> > wrapper that does all these special things?
->
-> The whole point of this simple handler is to accomodate interrupts such
-> as those found on the Neponset board.
->
-> There, you have a status register in a CPLD but no enable/disable
-> registers.  The status register tells you whether the SA1111, ethernet
-> or 'USAR' chip asserted its interrupt.
->
-> However, as there is no way to disable the sources, this situation has
-> to be handled carefully - the function decoding the interrupt source
-> needs to mask and unmask the _parent_ interrupt itself, and it's
-> exactly that which the comment is directed towards.
->
-> See neponset_irq_handler().
->
-> The simple IRQ handler is not meant for anything other than that really
-> simple implementation.  If people have been using it with interrupts
-> which can be individually masked and unmasked, that's where the bug is.
-> They should be using one of the other handlers.
->
+Regards.
 
-Russell,
+Bo Yang
 
-Thanks for the reply and this nice explanation.
+-----Original Message-----
+From: Matthew Wilcox [mailto:matthew@wil.cx] 
+Sent: Tuesday, November 27, 2007 10:33 AM
+To: Yang, Bo
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
+cmds with sense info
 
-I'm taking this as a NACK.
+On Tue, Nov 27, 2007 at 08:19:09AM -0700, Yang, Bo wrote:
+> Matthew,
+> 
+> Thanks for your review.
+> 
+> We have a 32 bit application(s) (megaraid utility) that is used in 
+> both
+> x86 and x86_64.
+> For ia64, the application is built in ia64 environment.
 
-Daniel or Remy, could you find the offending users and make send patches
-to fix them.
+Are you saying the application is built 32-bit for x86-64?
+Is it true that, if this application were built 64-bit for x86-64, you
+would have the same situation as with ia64?
 
--- Steve
+> The sense_ptr picked up from the ioc->frame.raw is a 32-bit value from
 
+> the application. When we make it "unsigned long*" it picks up a 64-bit
+
+> value & the copy_to_user fails. Without this fix the issue is seen in
+> x86_64 kernels. But for ia64 it is an unsigned long * value (8 bytes) 
+> and so we need a compile time flag.
+>  
+> Regards,
+> 
+> Bo Yang
+> 
+> -----Original Message-----
+> From: Matthew Wilcox [mailto:matthew@wil.cx]
+> Sent: Tuesday, November 20, 2007 3:42 PM
+> To: Yang, Bo
+> Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com; 
+> akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, 
+> Neela
+> Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of 
+> DCDB cmds with sense info
+> 
+> On Wed, Nov 21, 2007 at 08:40:56AM +0000, bo yang wrote:
+> > Sense buffer ptr data type in the ioctl path is reverted back to u32
+
+> > *
+> 
+> > for x86 and x86_64 as in previous versions of driver. For IA64 it 
+> > will
+> 
+> > be unsigned long *. Compile time flag added for ia64 for this.
+> 
+> This changelog tells us what you're doing, but not why you're doing
+it.
+> Why is it that ia64 is different from x86 and x86_64?  What should 
+> other architectures be doing?  This patch really doesn't make any 
+> sense to me at all; it should be doing the exact same thing on all 
+> three architectures.
+> 
+> > Signed-off-by: Bo Yang <bo.yang@lsi.com>
+> > 
+> > ---
+> > Documentation/scsi/ChangeLog.megaraid_sas |   15 +++++++++++++++
+> > drivers/scsi/megaraid/megaraid_sas.c      |   14 ++++++++++----
+> > drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+> >  3 files changed, 28 insertions(+), 7 deletions(-)
+> > 
+> > diff -rupN 
+> > linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
+> linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+> > --- linux-2.6.22_orig/Documentation/scsi/ChangeLog.megaraid_sas
+> 2007-11-20 17:50:13.000000000 -0500
+> > +++ linux-2.6.22_new/Documentation/scsi/ChangeLog.megaraid_sas
+> 2007-11-20 21:37:16.000000000 -0500
+> > @@ -1,3 +1,18 @@
+> > +1 Release Date    : Thur. Nov. 19 16:30:43 PST 2007 -
+> > +			(emaild-id:megaraidlinux@lsi.com)
+> > +			Sumant Patro
+> > +			Bo Yang
+> > +
+> > +2 Current Version : 00.00.03.17-RC1
+> > +3 Older Version   : 00.00.03.16
+> > +
+> > +1. Fix random failure of DCDB cmds with sense info.
+> > +
+> > +Fix: 	sense buffer ptr data type in the ioctl path is reverted
+> back
+> > +	to u32 * for x86, x86_64 as in previous versions of driver.
+> > +	For IA64 it will be unsigned long *. Compile time flag added
+> > +	for ia64 for this.
+> > +
+> >  1 Release Date    : Thur. Nov. 07 16:30:43 PST 2007 -
+> >  			(emaild-id:megaraidlinux@lsi.com)
+> >  			Sumant Patro
+> > diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+> linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> > --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c
+> 2007-11-20 17:50:13.000000000 -0500
+> > +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> 2007-11-20 17:50:13.000000000 -0500
+> > @@ -10,7 +10,7 @@
+> >   *	   2 of the License, or (at your option) any later version.
+> >   *
+> >   * FILE		: megaraid_sas.c
+> > - * Version	: v00.00.03.16-rc1
+> > + * Version	: v00.00.03.17-rc1
+> >   *
+> >   * Authors:
+> >   *	(email-id : megaraidlinux@lsi.com)
+> > @@ -3020,10 +3020,16 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+> >  		 * sense buffer address
+> >  		 */
+> >  		sense_buff = (unsigned long *) ((unsigned
+> long)ioc->frame.raw +
+> > -
+> ioc->sense_off);
+> > -
+> > -		if (copy_to_user((void __user *)(unsigned
+> long)(*sense_buff),
+> > +					ioc->sense_off);
+> > +		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
+> > +					ioc->sense_off);
+> > +#if defined(__ia64__)
+> > +		if (copy_to_user((void __user *)((unsigned
+> long)(*sense_buff)),
+> > +				sense, ioc->sense_len)) {
+> > +#else
+> > +		if (copy_to_user((void __user *)((unsigned
+> long)(*sense_ptr)),
+> >  				sense, ioc->sense_len)) {
+> > +#endif
+> >  			printk(KERN_ERR "megasas: Failed to copy out to
+> user "
+> >  					"sense data\n");
+> >  			error = -EFAULT;
+> > diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+> linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+> > --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h
+> 2007-11-20 17:50:13.000000000 -0500
+> > +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+> 2007-11-20 17:50:13.000000000 -0500
+> > @@ -18,9 +18,9 @@
+> >  /*
+> >   * MegaRAID SAS Driver meta data
+> >   */
+> > -#define MEGASAS_VERSION
+> "00.00.03.16-rc1"
+> > -#define MEGASAS_RELDATE				"Nov. 07, 2007"
+> > -#define MEGASAS_EXT_VERSION			"Thu. Nov. 07
+10:09:32
+> PDT 2007"
+> > +#define MEGASAS_VERSION
+> "00.00.03.17-rc1"
+> > +#define MEGASAS_RELDATE				"Nov. 19, 2007"
+> > +#define MEGASAS_EXT_VERSION			"Mon. Nov. 19
+10:09:32
+> PDT 2007"
+> >  
+> >  /*
+> >   * Device IDs
+> > 
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe
+linux-scsi" 
+> > in the body of a message to majordomo@vger.kernel.org More majordomo
+
+> > info at  http://vger.kernel.org/majordomo-info.html
+> 
+> --
+> Intel are signing my paycheques ... these opinions are still mine 
+> "Bill, look, we understand that you're interested in selling us this 
+> operating system, but compare it to ours.  We can't possibly take such
+
+> a retrograde step."
+
+--
+Intel are signing my paycheques ... these opinions are still mine "Bill,
+look, we understand that you're interested in selling us this operating
+system, but compare it to ours.  We can't possibly take such a
+retrograde step."
