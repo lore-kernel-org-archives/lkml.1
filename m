@@ -1,61 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760080AbXK1Odx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbXK1OeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760080AbXK1Odx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 09:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbXK1Odp
+	id S1760649AbXK1OeW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 09:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbXK1OeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 09:33:45 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:38976 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755884AbXK1Odo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 09:33:44 -0500
-Message-ID: <474D7C32.1070809@linux.vnet.ibm.com>
-Date: Wed, 28 Nov 2007 20:03:22 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
+	Wed, 28 Nov 2007 09:34:14 -0500
+Received: from styx.suse.cz ([82.119.242.94]:43698 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759199AbXK1OeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 09:34:12 -0500
+Date: Wed, 28 Nov 2007 15:34:11 +0100
+From: Jan Kara <jack@suse.cz>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] 2.6.24-rc3-mm2 soft lockup while running tbench
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-In-Reply-To: <20071128034140.648383f0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [PATCH] Fix assertion failure in fs/jbd/checkpoint.c
+Message-ID: <20071128143410.GD11350@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+  Hi,
 
-while running tbench on the powerpc with 2.6.24-rc3-mm2 softlock up occurs
+  the patch below should fix an assertion failure in JBD checkpointing
+code. The patch survived some fsstress and similar runs on my test machine
+so it shouldn't be obviously wrong ;).
 
-BUG: soft lockup - CPU#0 stuck for 11s! [tbench:12183]
-NIP: c0000000000ac978 LR: c0000000000acff0 CTR: c00000000005c648
-REGS: C00000076F0F3200 TRAP: 0901   Not tainted  (2.6.24-rc3-mm2-autotest)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44000482  XER: 00000000
-TASK = C00000076F4BC000[12183] 'tbench' THREAD: C00000076F0F0000 CPU: 0
-NIP [c0000000000ac978] .get_page_from_freelist+0x1cc/0x754
-LR [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
-Call Trace:
-[c00000076f0f3480] [c00000076f0f3560] 0xc00000076f0f3560 (unreliable)
-[c00000076f0f3590] [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
-[c00000076f0f3680] [c0000000000ce2e4] .alloc_pages_current+0xa8/0xc8
-[c00000076f0f3710] [c0000000000ac6ec] .__get_free_pages+0x20/0x70
-[c00000076f0f3790] [c0000000000d75c8] .__kmalloc_node_track_caller+0x60/0x148
-[c00000076f0f3840] [c0000000002c22b0] .__alloc_skb+0x98/0x184
-[c00000076f0f38f0] [c000000000306cd8] .tcp_sendmsg+0x1fc/0xe24
-[c00000076f0f3a10] [c0000000002b963c] .sock_sendmsg+0xe4/0x128
-[c00000076f0f3c10] [c0000000002ba4ec] .sys_sendto+0xd4/0x120
-[c00000076f0f3d90] [c0000000002df2f8] .compat_sys_socketcall+0x148/0x214
-[c00000076f0f3e30] [c00000000000872c] syscall_exit+0x0/0x40
-Instruction dump:
-720b0001 eb970000 40820070 72000002 4182000c e8bc0000 48000018 72080004 
-4182000c e8bc0008 48000008 e8bc0010 <e8c10078> 7f83e378 7de407b4 7e078378 
-
+								Honza
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
+
+Before we start committing a transaction, we call
+__journal_clean_checkpoint_list() to cleanup transaction's written-back
+buffers. If this call happens to remove all of them (and there were already
+some buffers), __journal_remove_checkpoint() will decide to free the
+transaction because it isn't (yet) a committing transaction and soon we fail
+some assertion - the transaction really isn't ready to be freed :).
+We change the check in __journal_remove_checkpoint() to free only a transaction
+in T_FINISHED state. The locking there is subtle though (as everywhere in
+JBD ;(). We use j_list_lock to protect the check and a subsequent call to
+__journal_drop_transaction() and do the same in the end of
+journal_commit_transaction() which is the only place where a transaction can
+get to T_FINISHED state. Probably I'm too paranoid here and such locking is
+not really necessary - checkpoint lists are processed only from
+log_do_checkpoint() where a transaction must be already committed to be
+processed or from __journal_clean_checkpoint_list() where kjournald itself
+calls it and thus transaction cannot change state either. Better be safe if
+something changes in future...
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+
+diff --git a/fs/jbd/checkpoint.c b/fs/jbd/checkpoint.c
+index 47552d4..0f69c41 100644
+--- a/fs/jbd/checkpoint.c
++++ b/fs/jbd/checkpoint.c
+@@ -602,15 +602,15 @@ int __journal_remove_checkpoint(struct journal_head *jh)
+ 
+ 	/*
+ 	 * There is one special case to worry about: if we have just pulled the
+-	 * buffer off a committing transaction's forget list, then even if the
+-	 * checkpoint list is empty, the transaction obviously cannot be
+-	 * dropped!
++	 * buffer off a running or committing transaction's checkpoing list,
++	 * then even if the checkpoint list is empty, the transaction obviously
++	 * cannot be dropped!
+ 	 *
+-	 * The locking here around j_committing_transaction is a bit sleazy.
++	 * The locking here around t_state is a bit sleazy.
+ 	 * See the comment at the end of journal_commit_transaction().
+ 	 */
+-	if (transaction == journal->j_committing_transaction) {
+-		JBUFFER_TRACE(jh, "belongs to committing transaction");
++	if (transaction->t_state != T_FINISHED) {
++		JBUFFER_TRACE(jh, "belongs to running/committing transaction");
+ 		goto out;
+ 	}
+ 
+diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
+index 8f1f2aa..610264b 100644
+--- a/fs/jbd/commit.c
++++ b/fs/jbd/commit.c
+@@ -858,10 +858,10 @@ restart_loop:
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
+ 	/*
+-	 * This is a bit sleazy.  We borrow j_list_lock to protect
+-	 * journal->j_committing_transaction in __journal_remove_checkpoint.
+-	 * Really, __journal_remove_checkpoint should be using j_state_lock but
+-	 * it's a bit hassle to hold that across __journal_remove_checkpoint
++	 * This is a bit sleazy.  We use j_list_lock to protect transition
++	 * of a transaction into T_FINISHED state and calling
++	 * __journal_drop_transaction(). Otherwise we could race with
++	 * other checkpointing code processing the transaction...
+ 	 */
+ 	spin_lock(&journal->j_state_lock);
+ 	spin_lock(&journal->j_list_lock);
+diff --git a/include/linux/jbd.h b/include/linux/jbd.h
+index 16e7ed8..d9ecd13 100644
+--- a/include/linux/jbd.h
++++ b/include/linux/jbd.h
+@@ -439,6 +439,8 @@ struct transaction_s
+ 	/*
+ 	 * Transaction's current state
+ 	 * [no locking - only kjournald alters this]
++	 * [j_list_lock] guards transition of a transaction into T_FINISHED
++	 * state and subsequent call of __journal_drop_transaction()
+ 	 * FIXME: needs barriers
+ 	 * KLUDGE: [use j_state_lock]
+ 	 */
