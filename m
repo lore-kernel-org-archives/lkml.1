@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbXK2HSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXK2HX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbXK2HSj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 02:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbXK2HS1
+	id S1757870AbXK2HX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 02:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXK2HXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 02:18:27 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:4972 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbXK2HS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 02:18:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fno/RGuzVnSBWYnls7UOmQ38ZQ2mjNU1GLzwUkpjGYt/UdEOy4A4UWkO7xES6vHdv5rpx4BnLfQHis+/2p8QVWBaKNqZ/M4ka4u6QsYd04wnvecJeBpfCTk8m49NRNFxUydYsBJJSp9N2tPZoi8w1a8oCQct5PXyMevRKfqAKmU=
-Message-ID: <4e5ebad50711282318k3d99d0cei42b97d51f8aac7f2@mail.gmail.com>
-Date: Thu, 29 Nov 2007 15:18:24 +0800
-From: "Sonic Zhang" <sonic.adi@gmail.com>
-To: "Linux IDE" <linux-ide@vger.kernel.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [libata] Set proper ATA UDMA mode for bf548 according to system clock.
-In-Reply-To: <1196138859.6974.2.camel@eight.analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Nov 2007 02:23:19 -0500
+Received: from mfe1.polimi.it ([131.175.12.23]:41387 "EHLO polimi.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751719AbXK2HXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 02:23:18 -0500
+Date: Thu, 29 Nov 2007 08:20:29 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
+Message-ID: <20071129082029.22d6448a@morte>
+In-Reply-To: <200711242031.26134.rjw@sisk.pl>
+References: <20071124175112.58193424@morte>
+	<200711241948.58881.rjw@sisk.pl>
+	<20071124194635.58f5a44b@morte>
+	<200711242031.26134.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1196138859.6974.2.camel@eight.analog.com>
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.11.28.230449
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any comment?
+On Sat, 24 Nov 2007 20:31:25 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Thanks
+> On Saturday, 24 of November 2007, Stefano Brivio wrote:
+> > On Sat, 24 Nov 2007 19:48:58 +0100
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > NO_HZ?  Highres timers?
+> > 
+> > CONFIG_HZ_1000=y
+> > # CONFIG_HIGH_RES_TIMERS is not set
+> >  
+> > > I understand that the previous kernels behave correctly.  All of them?
+> > 
+> > 2.6.21 behaved correctly. Sorry but git-bisect would take a lot of time
+> > (I can't reliably reproduce the jiffies jump), so I would avoid that if
+> > not strictly needed.
+> 
+> Well, it would be good to know if 2.6.23 behaves correctly, at least.
 
-Sonic
+Weird, it looks like I can't boot with 2.6.23.9 because of some issues with
+dm-crypt (my root filesystem is encrypted). I double-checked the
+configuration (which I just took from my current one), well, no way. Any
+other test I can do?
 
-On Nov 27, 2007 12:47 PM, sonic zhang <sonic.adi@gmail.com> wrote:
-> UDMA Mode - Frequency compatibility
->
-> UDMA5 - 100 MB/s   - SCLK  = 133 MHz
-> UDMA4 - 66 MB/s    - SCLK >=  80 MHz
-> UDMA3 - 44.4 MB/s  - SCLK >=  50 MHz
-> UDMA2 - 33 MB/s    - SCLK >=  40 MHz
->
->
-> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-> ---
->  drivers/ata/pata_bf54x.c |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
-> index 81db405..088a41f 100644
-> --- a/drivers/ata/pata_bf54x.c
-> +++ b/drivers/ata/pata_bf54x.c
-> @@ -1489,6 +1489,8 @@ static int __devinit bfin_atapi_probe(st
->         int board_idx = 0;
->         struct resource *res;
->         struct ata_host *host;
-> +       unsigned int fsclk = get_sclk();
-> +       int udma_mode = 5;
->         const struct ata_port_info *ppi[] =
->                 { &bfin_port_info[board_idx], NULL };
->
-> @@ -1507,6 +1509,11 @@ static int __devinit bfin_atapi_probe(st
->         if (res == NULL)
->                 return -EINVAL;
->
-> +       while (bfin_port_info[board_idx].udma_mask>0 && udma_fsclk[udma_mode] > fsclk) {
-> +               udma_mode--;
-> +               bfin_port_info[board_idx].udma_mask >>= 1;
-> +       }
-> +
->         /*
->          * Now that that's out of the way, wire up the port..
->          */
-> --
-> 1.4.3.4
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+In the meanwhile, I noted another thing: sometimes it happens that I become
+root and the jiffies counter jumps ahead. Then, when I close any root
+session, the jiffies counter jumps back to the correct value.
+
+Please remember that this isn't just an aesthetic issue, as some drivers
+(e.g. b43 and b43legacy, but I guess a lot more) rely on jiffies. Do I need
+to file a bug to bugzilla.kernel.org? Thank you.
+
+
+--
+Ciao
+Stefano
