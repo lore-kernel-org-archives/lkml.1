@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbXK2UGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933755AbXK2UG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933483AbXK2UGD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:06:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759521AbXK2UFx
+	id S933755AbXK2UG0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbXK2UGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:05:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52004 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759437AbXK2UFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:05:53 -0500
-Date: Thu, 29 Nov 2007 15:04:31 -0500
-From: Dave Jones <davej@redhat.com>
-To: Stefano Brivio <stefano.brivio@polimi.it>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
-Message-ID: <20071129200431.GH12481@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Stefano Brivio <stefano.brivio@polimi.it>,
-	Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Len Brown <lenb@kernel.org>
-References: <20071124175112.58193424@morte> <200711241948.58881.rjw@sisk.pl> <20071124194635.58f5a44b@morte> <200711242031.26134.rjw@sisk.pl> <20071129095034.24b3fc59@morte> <20071129103511.GD10577@elte.hu> <20071129174548.GC12481@redhat.com> <20071129185743.46daa8ad@morte> <20071129182402.GE12481@redhat.com> <20071129202546.7a65a13c@morte>
+	Thu, 29 Nov 2007 15:06:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:41425 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759521AbXK2UGO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:06:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cYmFsZM1iwLQR00hv8ydl1oh8yuVwxSdU9OMvuf30/2od11q5yTAgsQblTMaRPPYAd2AWkzzQbZYl8bBjB+ELJ3WljJXi335pckwOM5yY3GffrXijtzl6pFeQpQvS14PIVBx2eOUa/+WpchwpNnn1cAiw/6mdGcgx9iZtXDvCkY=
+Message-ID: <5a4c581d0711291206x5d92c166iba4e4b6d336643dc@mail.gmail.com>
+Date: Thu, 29 Nov 2007 21:06:12 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ata4294967295: failed to start port (errno=-19)
+Cc: "Meelis Roos" <mroos@linux.ee>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071128200716.14eccfdd@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071129202546.7a65a13c@morte>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <Pine.SOC.4.64.0711281947090.15823@math.ut.ee>
+	 <20071128200716.14eccfdd@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 08:25:46PM +0100, Stefano Brivio wrote:
- > On Thu, 29 Nov 2007 13:24:02 -0500
- > Dave Jones <davej@redhat.com> wrote:
- > 
- > > On Thu, Nov 29, 2007 at 06:57:43PM +0100, Stefano Brivio wrote:
- > 
- > >  > Do you want me to comment out adjust_jiffies() and see what happens?
- > >  
- > > Just for laughs, why not.
- > 
- > I wanted to laugh, but the behaviour didn't change at all. How boring.
+On Nov 28, 2007 9:07 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > This message comes from 2.6.24-rc3 + todays git, version
+> > a531a141089714efe39eca89593524fdf05104f2. I did grep the logs and found
+> > that it first appeared in 2.6.24-rc1 (+ some git mayve) on Nov 3.
+> > I used 2.6.23 before that and it did not show this message.
+>
+> Can you stick a stack trace in at that point ? That would help diagnose
+> it a great deal quicker.
 
-Unless I'm missing something obvious, this would exonorate cpufreq
-as a cause, which would seem odd based upon your earlier diagnosis.
+I've also been seeing this for a while on my Dell Latitude D610,
+ but stuff just works, so... I'm overloaded at this time, if nobody
+ gets there first I'll give a go at tracing this next week.
 
-deeply confused.
+--alessandro
 
-	Dave
+ "Damaged people are dangerous. They know they can survive."
 
--- 
-http://www.codemonkey.org.uk
+   (Anna Barton/Juliette Binoche, 'Damage')
