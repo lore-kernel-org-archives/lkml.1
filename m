@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbXK2RGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763672AbXK2RHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763310AbXK2RGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761459AbXK2RG2
+	id S1763672AbXK2RHB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:07:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbXK2RGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:06:28 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:34911 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761330AbXK2RG1 (ORCPT
+	Thu, 29 Nov 2007 12:06:52 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35403 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1762177AbXK2RGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:06:27 -0500
-Subject: Re: Out of tree module using LSM
-From: Jon Masters <jonathan@jonmasters.org>
-To: Greg KH <greg@kroah.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Valdis.Kletnieks@vt.edu,
-       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071129164746.GB9664@kroah.com>
-References: <20071128144156.GA14106@infradead.org>
-	 <416908.77038.qm@web36613.mail.mud.yahoo.com>
-	 <20071128164613.GA21815@infradead.org>
-	 <25290.1196273705@turing-police.cc.vt.edu>
-	 <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com>
-	 <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
-	 <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion>
-	 <20071129164746.GB9664@kroah.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Thu, 29 Nov 2007 12:05:36 -0500
-Message-Id: <1196355936.6473.74.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Thu, 29 Nov 2007 12:06:51 -0500
+Date: Thu, 29 Nov 2007 12:06:50 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
+In-Reply-To: <1196352280.3118.11.camel@lov.site>
+Message-ID: <Pine.LNX.4.44L0.0711291202570.4712-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Nov 2007, Kay Sievers wrote:
 
-On Thu, 2007-11-29 at 08:47 -0800, Greg KH wrote:
-> On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
-> > On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
-> > 
-> > > The easiest way is as Al described above, just have the userspace
-> > > program that wrote the file to disk, check it then.
-> > 
-> > But the problem is that this isn't just Samba, this is a countless
-> > myriad of different applications. And if one of them doesn't support
-> > on-access scanning, then the whole solution isn't worth using.
+> > In fact, if we were designing the kobject API from scratch, I'd suggest 
+> > making the ktype value an argument to kobject_init() so that it 
+> > _couldn't_ be omitted.
 > 
-> Ok, which specific applications do they care about?  Last time I asked
-> it was still limited to a very small handful, all of which would be
-> trivial to add such a hook to.
+> Sounds fine, maybe we should also pass the name along, so it will be
+> obvious what happens here:
+>   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
 
-Like I said, I'm trying to put together a set of "feature requirements"
-that we can publish to LKML and get feedback. I am lead to believe that
-they basically want to trap every file operation, of every potential
-userspace program, so I don't think it's a handful at this point.
+I don't know...  Normally *_init() routines can't fail, but this could.  
+Then things like device_register() would run into trouble: The caller 
+wouldn't know whether a failure occurred before or after the 
+kobject_init() call, so it wouldn't know what sort of cleanup action 
+was needed: kfree() or device_put().
 
-> > > There are some nice SAMBA plugins that do just that already out there...
-> > 
-> > That's really not the problem :-)
-> 
-> Yes it is.  That's all you want to catch, when a Windows machine wants
-> to access a file on a SAMBA server.  Do the check then, in userspace.
+> Oh, if you want to rewind on error and have an initialized but still
+> unregistered kobject, and just want to free the allocated name by
+> calling kobject_cleanup() or kobject_put() you might not expect, that
+> your whole object that embeds the kobject will be gone. Just something
+> we need to document ...
 
-Oh, I meant that if it was just Samba we'd all be home and dry by now.
+When that sort of thing happens, the unwinding should be done by the   
+code responsible for whole object.  For example, if device_add() fails
+then the caller should go on to call device_put() rather than
+kfree(dev).
 
-> Believe me, I've been over and over and over and over this before...
+That's how you would expect things to work in most cases.  There aren't
+many bare kobjects in the kernel.
 
-Yeah. I know, I'm trying not to flog a dead horse here, but I think
-there's real genuine interest here this time around. So, maybe I'm just
-trying because everyone else already did, but it's worth a shot :-)
+I agree that documenting this behavior would be good.
 
-Jon.
-
+Alan Stern
 
