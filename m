@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763307AbXK2V1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbXK2VeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763307AbXK2V1G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:27:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbXK2V0t
+	id S1763427AbXK2VeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXK2VeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:26:49 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:23183 "EHLO hobbit.corpit.ru"
+	Thu, 29 Nov 2007 16:34:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46061 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758786AbXK2V0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:26:49 -0500
-Message-ID: <474F2E97.5080802@msgid.tls.msk.ru>
-Date: Fri, 30 Nov 2007 00:26:47 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+	id S1758786AbXK2VeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:34:09 -0500
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: =?UTF-8?B?IlBhdWwgUm9sbGFuZCAo44Od44O844Or44O744Ot44Op44OzKSI=?= 
-	<rol@witbe.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: constant_tsc and TSC unstable
-References: <20071129171142.56c7890a@tux.DEF.witbe.net> <474F0D47.7020006@zytor.com>
-In-Reply-To: <474F0D47.7020006@zytor.com>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 06/11] x86 ptrace arch merge
+In-Reply-To: Andrew Morton's message of  Thursday, 29 November 2007 09:28:52 -0800 <20071129092852.3b7a4b2f.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20071129115711.9FC8526F8E7@magilla.localdomain>
+	<20071129120014.E34C326F8E7@magilla.localdomain>
+	<20071129092852.3b7a4b2f.akpm@linux-foundation.org>
+X-Windows: a mistake carried out to perfection.
+Message-Id: <20071129213357.00EA226F8E7@magilla.localdomain>
+Date: Thu, 29 Nov 2007 13:33:56 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Paul Rolland (ポール・ロラン) wrote:
-[]
->> Measured 3978592228 cycles TSC warp between CPUs, turning off TSC clock.
->> Marking TSC unstable due to: check_tsc_sync_source failed.
-[]
->> but I was wondering if this is a bug or a feature ;)
+> > --- a/arch/x86/kernel/ptrace.c
+> > +++ b/arch/x86/kernel/ptrace.c
+> > @@ -461,12 +461,13 @@ static int ptrace_set_debugreg(struct task_struct *child,
+> >  void ptrace_disable(struct task_struct *child)
+> >  {
+> >  	user_disable_single_step(child);
+> > +#ifdef TIF_SYSCALL_EMU
+> >  	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
+> > +#endif
+> 
+> Is TIF_SYSCALL_EMU ever undefined here?
 
-> The problem you're having is that the TSCs of your two cores are
-> completely different, over a second apart.  This is a bug, unrelated to
-> constant_tsc.
+Yes, it not defined on CONFIG_X86_64.
+(That is something to be addressed later on.)
 
-A bug in where - in the CPU or in kernel?
 
-The thing is that all our dual-core machines shows something like
-that.
-
-For example, dualcore PentiumD machine:
-Nov  7 20:23:56 paltus kernel: Linux version 2.6.22-i686smp (mjt@paltus.tls.msk.ru) (gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)) #2.6.22.12 SMP Wed Nov 7 20:02:14 MSK 2007
-...
-Nov  7 20:23:56 paltus kernel: checking TSC synchronization [CPU#0 -> CPU#1]:
-Nov  7 20:23:56 paltus kernel: Measured 112 cycles TSC warp between CPUs, turning off TSC clock.
-Nov  7 20:23:56 paltus kernel: Marking TSC unstable due to: check_tsc_sync_source failed.
-Nov  7 20:23:56 paltus kernel: Brought up 2 CPUs
-
-(not that huge difference as Paul reported, but still "unstable".
-The same happens with 2.6.23)
-
-Note that once TSC is disabled (it's using "jiffies" as far
-as I can see), ntpd constantly speeds up and slows down the
-clock, it jumps +/- 0.5sec every several minutes or hours -
-I guess that's when ntpd process gets moved from one core
-to another for whatever reason.  And an interesting thing
-is that with 64bits kernel this TSC problem does not occur
-on this very machine.
-
-Something similar is reported on AMD X2 64 machines as well --
-can't check right now.
-
-Thanks.
-
-/mjt
+Thanks,
+Roland
