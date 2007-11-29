@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763355AbXK2UmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763428AbXK2Uo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763355AbXK2UmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760151AbXK2UmB
+	id S1763428AbXK2Uo2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760151AbXK2UoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:42:01 -0500
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:64445 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759259AbXK2UmA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:42:00 -0500
-X-Greylist: delayed 1682 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 15:41:59 EST
-Message-ID: <474F1D96.3060606@cs.columbia.edu>
-Date: Thu, 29 Nov 2007 15:14:14 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 29 Nov 2007 15:44:17 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:54756 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756775AbXK2UoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:44:17 -0500
+Date: Thu, 29 Nov 2007 21:43:58 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Dave Young <hidave.darkstar@gmail.com>, bgsmith@bendcable.com,
+       BlueZ users <bluez-users@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Bluez-users] Lost connections - mouse and keyboard
+In-Reply-To: <6EE8D368-C303-400A-B4FE-811228391639@holtmann.org>
+Message-ID: <Pine.LNX.4.64.0711292141220.19853@twin.jikos.cz>
+References: <1196009038.14897.6.camel@pico> <1196056187.4217.54.camel@aeonflux>
+ <1196305426.23029.12.camel@pico> <a8e1da0711290006x4bd3cc45x1ae8dcaa9c0ab462@mail.gmail.com>
+ <6EE8D368-C303-400A-B4FE-811228391639@holtmann.org>
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Pavel Emelyanov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch -mm 2/4] mqueue namespace : add unshare support
-References: <20071128163728.177495768@fr.ibm.com>>	<20071128164349.196734045@fr.ibm.com>>	<474DA61B.5030301@openvz.org> <474E944C.4020809@fr.ibm.com>
-In-Reply-To: <474E944C.4020809@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Nov 2007, Marcel Holtmann wrote:
 
+> > >Nov 28 18:53:39 pico kernel: WARNING: at drivers/hid/hid-core.c:784
+[ ... ]
 
-Cedric Le Goater wrote:
->>> Index: 2.6.24-rc3-mm2/include/linux/sched.h
->>> ===================================================================
->>> --- 2.6.24-rc3-mm2.orig/include/linux/sched.h
->>> +++ 2.6.24-rc3-mm2/include/linux/sched.h
->>> @@ -27,6 +27,7 @@
->>>  #define CLONE_NEWUSER		0x10000000	/* New user namespace */
->>>  #define CLONE_NEWPID		0x20000000	/* New pid namespace */
->>>  #define CLONE_NEWNET		0x40000000	/* New network namespace */
->>> +#define CLONE_NEWMQ		0x80000000	/* New posix mqueue namespace */
->> That's it :) We've run out of clone flags on 32-bit platforms :(
-> 
-> yes. 
-> 
-> I have been giving some thoughts to a clone2() to extend the flags but
-> andrew is preparing to recycle CLONE_DETACHED and CLONE_STOPPED for
-> 2.6.26. Some we might have some more time in front of us.
+> > Does bluetooth input devices have something to do with usbhid? I don't 
+> > know, perhaps this is another problem in kernel.
+> in case you have a HID proxy dongle the usbhid driver can be involved. And
+> since this is hiddev, then it will be caused by the hid2hci program.
 
-Two comments:
+Absolutely.
 
-1) Does it ever make any sense to clone the IPC namespace *without* doing
-so also for the MQ namespace or vice versa ?  Unless there is a good
-reason for doing so, a single CLONE_IPCMQ flag would suffice.
+This particular warning means, that someone (usually indeed hid2hci) 
+passed usage through hiddev that was out of bounds, with respect to the 
+device's report descriptor.
 
-2) Before coming up with a new clone2() or other solution, what about the
-proposed (and debated) sys_indrect() -- if it gets merged it can provide
-the solution.
+This usually means that hid2hci has chosen the wrong method to switch the 
+modes. Unfortunately, it's not easy to implement always the switching 
+properly, if we don't know the vendor-specific packet that has to be sent.
 
-Oren.
-
-> 
-> C.
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+Jiri Kosina
