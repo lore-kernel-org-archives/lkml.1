@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932544AbXK2SZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbXK2S0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932544AbXK2SZX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:25:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbXK2SZH
+	id S933208AbXK2S0I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758962AbXK2SZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:25:07 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47852 "EHLO mx1.redhat.com"
+	Thu, 29 Nov 2007 13:25:51 -0500
+Received: from ns2.lanforge.com ([66.165.47.211]:55807 "EHLO ns2.lanforge.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932068AbXK2SZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:25:05 -0500
-Date: Thu, 29 Nov 2007 13:24:02 -0500
-From: Dave Jones <davej@redhat.com>
-To: Stefano Brivio <stefano.brivio@polimi.it>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
-Message-ID: <20071129182402.GE12481@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Stefano Brivio <stefano.brivio@polimi.it>,
-	Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Len Brown <lenb@kernel.org>
-References: <20071124175112.58193424@morte> <200711241948.58881.rjw@sisk.pl> <20071124194635.58f5a44b@morte> <200711242031.26134.rjw@sisk.pl> <20071129095034.24b3fc59@morte> <20071129103511.GD10577@elte.hu> <20071129174548.GC12481@redhat.com> <20071129185743.46daa8ad@morte>
+	id S1756222AbXK2SZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:25:50 -0500
+Message-ID: <474F0422.6090309@candelatech.com>
+Date: Thu, 29 Nov 2007 10:25:38 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129185743.46daa8ad@morte>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Divy Le Ray <divy@chelsio.com>
+CC: Jeff Garzik <jeff@garzik.org>, NetDev <netdev@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] cxgb - driver fixes.
+References: <474C8BF8.9080609@chelsio.com>
+In-Reply-To: <474C8BF8.9080609@chelsio.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 06:57:43PM +0100, Stefano Brivio wrote:
+Divy Le Ray wrote:
+> Jeff,
+> 
+> I'm submitting a patch series for inclusion in 2.6.24 for the cxgb driver.
+> The patches are built against Linus'git tree.
+> 
+> Here is a brief description:
+> - Ensure that GSO skbs have enough headroom before encapsulating them,
+> - Fix a crash in NAPI mode,
+> - Fix statistics accounting and report.
 
- > > adjust_jiffies() always gets called on a speed transition. I'm wondering
- > > if perhaps we shouldn't do that if we're using something other than
- > > the tsc for timekeeping.
- > 
- > I gave other clocksources a try:
- > 
- > morte st3 # cat /sys/devices/system/clocksource/clocksource0/available_clocksource
- > acpi_pm pit jiffies tsc
- > 
- > Setting tsc as current clocksource:
- > morte st3 # echo tsc > /sys/devices/system/clocksource/clocksource0/current_clocksource
- > [13367.729060] Time: tsc clocksource has been installed.
- > didn't fix anything. Other weirdness here: it looks like it affects my
- > typematic delay and repeat rate.
+We ran pktgen overnight on 2.6.23 with patch 1 and 3 applied (patch 2
+not needed on .23 it seems) and it was stable at about 1.5Gbps bi-directional
+using 1500 MTU sized frames.
 
-*grumble*
- 
- > Setting jiffies or pit as current clocksource didn't fix anything, but at
- > least it doesn't cause anything bad.
- > 
- > Do you want me to comment out adjust_jiffies() and see what happens?
- 
-Just for laughs, why not.
+We'll run some more tests with user-space TCP & UDP today, but it looks good
+so far.
 
-	Dave
+Perhaps these patches should be considered for .23 stable as well?
+
+Thanks,
+Ben
 
 -- 
-http://www.codemonkey.org.uk
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
+
