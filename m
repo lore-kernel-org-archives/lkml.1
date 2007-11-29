@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbXK2Rjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763653AbXK2Rj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763519AbXK2Rjc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXK2RjY
+	id S1763653AbXK2Rj7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761931AbXK2Rju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:39:24 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:35107 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755442AbXK2RjX (ORCPT
+	Thu, 29 Nov 2007 12:39:50 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53880 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754325AbXK2Rjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:39:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=AwvQVWOqAtR/B3ZAMPrxKaJ31+NvkcYx/1sLNGl6bCOH8qrtm2GKhrYR0R6clCqANeImGPVs/hrwnjS12DDa42DBeGXnJRIORT/tSSCMP4z5yIsvuyzdeXgXHzIIkEPIrDB0Cab52w0yXpWORR2+PyxYmoRVILuAHaUgaaIDF/0=
-Message-ID: <3ae72650711290939w4fee581fm6f0d65a33abf1b82@mail.gmail.com>
-Date: Thu, 29 Nov 2007 18:39:21 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Dan Kegel" <dank@kegel.com>
-Subject: Re: Relax permissions for reading hard drive serial number?
-Cc: "Xavier Bestel" <xavier.bestel@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <a71bd89a0711290746q57002217ga14c4f4f7201683d@mail.gmail.com>
+	Thu, 29 Nov 2007 12:39:49 -0500
+Date: Thu, 29 Nov 2007 17:39:44 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 4/6] x86-64 ptrace get/putreg current task
+Message-ID: <20071129173944.GB556@infradead.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004118.D317B26F8E7@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
-	 <1196350632.20567.191.camel@skunk.anacadf.mentorg.com>
-	 <a71bd89a0711290746q57002217ga14c4f4f7201683d@mail.gmail.com>
-X-Google-Sender-Auth: a1d7eb92fd482327
+In-Reply-To: <20071129004118.D317B26F8E7@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2007 4:46 PM, Dan Kegel <dank@kegel.com> wrote:
-> On Nov 29, 2007 7:37 AM, Xavier Bestel <xavier.bestel@free.fr> wrote:
-> > > One sticking point is that apps like Photoshop and probably
-> > > Punkbuster want to retrieve the hard drive's serial number
-> >
-> > So they can't be installed on a network drive ?
->
-> I think Adobe supports that, though perhaps not with the
-> retail version.  Big companies with network drives are
-> probably an important revenue source for them.
->
-> I haven't looked closely at what happens when you try installing
-> onto network drives.  If you are really interested, it's pretty easy to
-> try yourself; just run the app under wine with
-> WINEDEBUG=+cdrom,+disk and look in the log for calls like
-> CreateFile("\\\\.\\PhysicalDrive0", ...).
-> There's some chance the code always checks drive 0 instead
-> of the drive you're installing onto.
+On Wed, Nov 28, 2007 at 04:41:18PM -0800, Roland McGrath wrote:
+> 
+> This generalizes the getreg and putreg functions so they can be used on the
+> current task, as well as on a task stopped in TASK_TRACED and switched off.
+> This lays the groundwork to share this code for all kinds of user-mode
+> machine state access, not just ptrace.
 
-There are people who, for privacy reasons, really don't like that "unique"
-unchangeable serial numbers can be retrieved by untrusted users.
+Not sure it's a that good idea as it means almost every case now has
+a branch for two entirely separate cases.  Wouldn't it be better to have
+a separate helper for the looking at the current proces case?
 
-You should probably chmod the file on the users system, if he is fine with
-that, but not change the kernel default.
+Either way support for looking at the current thread should only be
+merged together with an actual user for that.
 
-Kay
