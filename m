@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764032AbXK2Xzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933907AbXK3AAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764032AbXK2Xzb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 18:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763566AbXK2XzQ
+	id S933907AbXK3AAx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 19:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbXK3AAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 18:55:16 -0500
-Received: from main.gmane.org ([80.91.229.2]:60569 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757664AbXK2XzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 18:55:15 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Holger Hoffstaette" <holger@wizards.de>
-Subject: Reproducible data corruption with sendfile+vsftp - splice regression?
-Date: Fri, 30 Nov 2007 00:42:56 +0100
-Organization: The Fists of the White Lotus
-Message-ID: <pan.2007.11.29.23.42.52.661624@wizards.de>
+	Thu, 29 Nov 2007 19:00:40 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52064 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753733AbXK3AAj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 19:00:39 -0500
+Date: Thu, 29 Nov 2007 15:59:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, ak@suse.de, suresh.b.siddha@intel.com,
+       markus.t.metzger@intel.com, Michael Kerrisk <mtk-manpages@gmx.net>
+Subject: Re: [patch 0/2] x86, ptrace:  support for branch trace store(BTS)
+Message-Id: <20071129155940.7df70ac2.akpm@linux-foundation.org>
+In-Reply-To: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com>
+References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: port-87-234-135-174.dynamic.qsc.de
-User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Nov 2007 08:14:10 -0000
+"Metzger, Markus T" <markus.t.metzger@intel.com> wrote:
 
-Hi -
+> Support for Intel's last branch recording to ptrace. This gives
+> debuggers
+> access to this hardware feature and allows them to show an execution
+> trace
+> of the debugged application.
+> 
+> Last branch recording (see section 18.5 in the Intel 64 and IA-32
+> Architectures Software Developer's Manual) allows taking an execution
+> trace of the running application without instrumentation. When a branch
+> is executed, the hardware logs the source and destination address in a
+> cyclic buffer given to it by the OS.
+> 
+> This can be a great debugging aid. It shows you how exactly you got
+> where you currently are without requiring you to do lots of single
+> stepping and rerunning.
+> 
+> This patch manages the various buffers, configures the trace
+> hardware, disentangles the trace, and provides a user interface via
+> ptrace. On the high-level design:
+> - there is one optional trace buffer per thread_struct
+> - upon a context switch, the trace hardware is reconfigured to either
+>   disable tracing or to use the appropriate buffer for the new task.
+>   - tracing induces ~20% overhead as branch records are sent out on
+>     the bus. 
+>   - the hardware collects trace per processor. To disentangle the
+>     traces for different tasks, we use separate buffers and reconfigure
+>     the trace hardware.
+> - the low-level data layout is configured at cpu initialization time
+>   - different processors use different branch record formats
+> 
+> 
+> patch 1/2 contains the kernel changes
+> patch 2/2 contains changes to the ptrace man pages
+> 
+> 
 
-This regular Linux user and lkml lurker just noticed data corruption in
-ftp'ed files and narrowed it down to vsftpd using sendfile(). So far this
-has never caused problems in the past; I have not noticed this with
-2.6.22.x but may have missed it. I do remember reading about some changes
-to the underlying splice stuff since .23 so that may have something to do
-with it.
+Is there any userspace code avaialble which people can use to play with
+this?
 
-The scenario:
+How do you envisage it being used in the long term?  Do you expect any of
+the standard performance tuning tools will be tweaked to understand this
+feature and if so which ones?
 
-- created a file with known bit pattern on Linux server
-- ftp-got this file to Windows client: file has bad crc (yes, binary)
-- verified with another client: same result
+I'm generally wondering "how will developers be using this in a year or
+two's time?"
 
-I have thus far eliminated (to the best of my knowledge) NICs, switches,
-cables, the Windows FTP clients, the hard disk in the server (SATA, ext3):
-nothing suspicious in any logs. Box is an AMD Sempron 2600+ with 1.5 GB
-RAM, added rt8169 card, Gentoo, vsftpd stable 2.0.5 - nothing fancy.
-Transferring the file with samba (interestingly with sendfile enabled) and
-via ftp but from /dev/shm repeatably works fine; pulling from disk creates
-bad crc, every time. The file is readable and can be copied, verified etc.
-over and over so I'm sure that I'm not falling prey to a false positive.
-ifconfig indicates no dropped or otherwise corrupted packets.
-I noticed this first with 2.6.4-rc3, but also just tried the latest stable
-2.6.23.9 with the same config, with no change in behaviour. After setting
-vsftpd to use_sendfile=NO, gigs can be transferred without corruption.
+Please cc Michael Kerrisk <mtk-manpages@gmx.net> on future versions of
+these patches.
 
-The data corruption is sporadic, but absolutely repeatable. The file with
-the known good pattern just contains multiple lines of:
+The patches were horridly wordwrapped.
 
-012345678901234567890123456789012345678901234567890
-012345678901234567890123456789012345678901234567890
-012345678901234567890123456789012345678901234567890
-..etc..
-
-A corrupted file is missing random characters, so that the corrupted lines
-looks like this (line numbers added by me):
-
-19785: 012345678901234567890123456789012345678901234567890
-19786: 01234567890123456789012345678901234567890123678901234567890
-19787: 012345678901234567890123456789012345678901234567890
-
-or:
-
-20074: 012345678901234567890123456789012345678901234567890
-20075: 01234567890123456789012345678901234567890123012345678901234567890123456789012345678901234567890
-20076: 012345678901234567890123456789012345678901234567890
-
-Again, other network or hd traffic shows no signs of gremlins; the box is
-perfectly stable, and turning sendfile on or off triggers/untriggers the
-corruption reliably.  I will try 2.6.22.x over the weekend, and before I
-bother lkml with dmesg/.config etc. I wanted to fish for initial thoughts.
-
-thanks
-Holger
-
+Is there any likelihood that any other CPUs do now or will in the future
+support any similar feature to this?  If so, is an implementation which is
+100% contained to arch/x86 appropriate?  
 
