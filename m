@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762547AbXK2KkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbXK2Kny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762547AbXK2KkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbXK2KkF
+	id S1762179AbXK2Kny (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXK2Kno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:40:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49201 "EHLO mx2.mail.elte.hu"
+	Thu, 29 Nov 2007 05:43:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40087 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbXK2KkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:40:02 -0500
-Date: Thu, 29 Nov 2007 11:39:38 +0100
+	id S1751175AbXK2Knn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 05:43:43 -0500
+Date: Thu, 29 Nov 2007 11:43:25 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 1/6] x86-64 ia32 ptrace pt_regs cleanup
-Message-ID: <20071129103938.GE10577@elte.hu>
-References: <20071129003849.428E026F8E7@magilla.localdomain>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       ak@suse.de, "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org
+Subject: Re: [patch 1/2] x86, ptrace: support for branch trace store(BTS)
+Message-ID: <20071129104325.GF10577@elte.hu>
+References: <029E5BE7F699594398CA44E3DDF5544401024076@swsmsx413.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071129003849.428E026F8E7@magilla.localdomain>
+In-Reply-To: <029E5BE7F699594398CA44E3DDF5544401024076@swsmsx413.ger.corp.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,7 +35,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-thanks - i've queued up all 6 patches of yours. They applied fine to 
-x86.git and passed a quick build & boot test as well.
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+
+> Changes to previous version(s):
+> - moved task arrives/departs notifications to __switch_to_xtra()
+> - added _TIF_BTS_TRACE and _TIF_BTS_TRACE_TS to _TIF_WORK_CTXSW_*
+> - split _TIF_WORK_CTXSW into ~_PREV and ~_NEXT for x86_64
+> - ptrace_bts_init_intel() function called from init_intel()
+> - removed PTRACE_BTS_INIT ptrace command
+> - cache DEBUGCTRL MSR
+> - replace struct declarations and operations struct with
+>   configuration struct defining offset/size pairs and
+>   generic operations
+> - added a patch for the ptrace.2 man page for discussing the API
+>   in this forum
+
+i tried to apply your patches to x86.git, but your patches were 
+linewrapped and had strange artifacts in them:
+
+| @@ -610,6 +612,32 @@
+|                                         (struct user_desc __user *)
+| data);
+|                 break;
+| =20
+| +       case PTRACE_BTS_ALLOCATE_BUFFER:
+| +
+
+could you please resend with this fixed (preferably against x86.git, 
+which has Roland's ptrace cleanups?).
 
 	Ingo
