@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763493AbXK2QxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763575AbXK2Qxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763493AbXK2QxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761877AbXK2QxF
+	id S1763575AbXK2Qxn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761502AbXK2Qxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:53:05 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35512 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755113AbXK2QxD (ORCPT
+	Thu, 29 Nov 2007 11:53:35 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48172 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756159AbXK2Qxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:53:03 -0500
-Date: Thu, 29 Nov 2007 08:51:48 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jon Masters <jcm@redhat.com>
-Cc: James Morris <jmorris@namei.org>, tvrtko.ursulin@sophos.com,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+	Thu, 29 Nov 2007 11:53:35 -0500
+Date: Thu, 29 Nov 2007 17:53:33 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Greg KH <greg@kroah.com>
+cc: Jon Masters <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
+       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: Out of tree module using LSM
-Message-ID: <20071129085148.5dff3636@freepuppy.rosehill>
-In-Reply-To: <1196353666.6473.43.camel@perihelion>
-References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
-	<Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
-	<1196353666.6473.43.camel@perihelion>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071129164746.GB9664@kroah.com>
+Message-ID: <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
+References: <20071128144156.GA14106@infradead.org> <416908.77038.qm@web36613.mail.mud.yahoo.com>
+ <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu>
+ <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com>
+ <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+ <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion>
+ <20071129164746.GB9664@kroah.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 11:27:45 -0500
-Jon Masters <jcm@redhat.com> wrote:
 
-> On Thu, 2007-11-29 at 11:12 +1100, James Morris wrote:
-> > On Wed, 28 Nov 2007, tvrtko.ursulin@sophos.com wrote:
-> > 
-> > > So as there is no question the current code does some ugly things it is 
-> > > even more true that we would be even more happy to use an official API. 
-> > 
-> > How about becoming involved in creating that official API ?
-> 
-> Sophos are interested in doing so, and we have spoken about this several
-> times recently over the phone. This is why they sent the email in
-> question yesterday, to kickstart debate. And that's awesome. I am trying
-> to bring a few of these folks together at the moment, so that we can get
-> a solution that is acceptable to upstream at some point in the future.
-> 
-> So, rather than criticise their current code, or their intentions, or
-> blanketly dismiss the virus protection market, perhaps we can focus
-> instead on the fact that there is a known third party who wishes to
-> perform a task that is not well supportable at this moment. We can all
-> agree the syscall table hacking isn't such a good idea - but these guys
-> are *very* open to listening to useful alternative suggestions.
-> 
-> They (virus protection folks) generally think they want to intercept
-> various system calls, such as open() and block until they have performed
-> a scan operation on the file. I explained the mmap issue to several of
-> these companies recently, in quite some detail, and I know they are
-> interested in listening this time around :-) At the end of the day, what
-> I have been lead to believe is that they don't care whether they
-> intercept syscall entries, or use a better method, they just want to
-> scan files and take some action if a file is "bad". That's it really.
-> 
-> I have been trying to put together an exact feature set that is needed
-> from these different vendors, so we can discuss it further here, and
-> hopefully actually get somewhere, too. There have been a few delays
-> after I pointed out the mmap issues at some length.
-> 
+On Nov 29 2007 08:47, Greg KH wrote:
+>On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
+>> On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
+>> 
+>> > The easiest way is as Al described above, just have the userspace
+>> > program that wrote the file to disk, check it then.
+>> 
+>> But the problem is that this isn't just Samba, this is a countless
+>> myriad of different applications. And if one of them doesn't support
+>> on-access scanning, then the whole solution isn't worth using.
+>
+>Ok, which specific applications do they care about?  Last time I asked
+>it was still limited to a very small handful, all of which would be
+>trivial to add such a hook to.
+>
+Well, think bash, syscalls. While you can add a plugin to samba "easily",
+it seems overkill to do the same for rm, mv, cp, bash.
 
-Perhaps this kind of scanning belongs in the application. Couldn't an
-apache or samba have a plugin to do it?
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
