@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763125AbXK2REj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbXK2REz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763125AbXK2REj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762790AbXK2REX
+	id S1763132AbXK2REz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763433AbXK2REl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:04:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34214 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762714AbXK2REW (ORCPT
+	Thu, 29 Nov 2007 12:04:41 -0500
+Received: from there.is.no.cabal.ca ([134.117.69.58]:37201 "EHLO
+	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763417AbXK2REk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:04:22 -0500
-Date: Thu, 29 Nov 2007 09:03:26 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Jon Masters <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
-       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071129170326.GA10024@kroah.com>
-References: <416908.77038.qm@web36613.mail.mud.yahoo.com> <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com> <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr> <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion> <20071129164746.GB9664@kroah.com> <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
+	Thu, 29 Nov 2007 12:04:40 -0500
+Date: Thu, 29 Nov 2007 12:04:36 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, avuton@gmail.com, hancockr@shaw.ca,
+       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org, mrmacman_g4@mac.com,
+       dean@arctic.org, argggh@dolphinics.no, jengelh@computergmbh.de,
+       shdl@zakalwe.fi, vlobanov@speakeasy.net, drzeus-list@drzeus.cx,
+       strange@nsk.no-ip.org, dm.n9107@gmail.com, johannes@sipsolutions.net
+Subject: Re: [RFC v2] Documentation about unaligned memory access
+Message-ID: <20071129170436.GA2754@fattire.cabal.ca>
+References: <20071129161523.E0C349D4B52@zog.reactivated.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071129161523.E0C349D4B52@zog.reactivated.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 05:53:33PM +0100, Jan Engelhardt wrote:
+Hi Daniel,
+
+On Thu, Nov 29, 2007 at 04:15:23PM +0000, Daniel Drake wrote:
+> Unaligned memory accesses occur when you try to read N bytes of data starting
+> from an address that is not evenly divisible by N (i.e. addr % N != 0).
+> For example, reading 4 bytes of data from address 0x10004 is fine, but
+> reading 4 bytes of data from address 0x10005 would be an unaligned memory
+> access.
 > 
-> On Nov 29 2007 08:47, Greg KH wrote:
-> >On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
-> >> On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
-> >> 
-> >> > The easiest way is as Al described above, just have the userspace
-> >> > program that wrote the file to disk, check it then.
-> >> 
-> >> But the problem is that this isn't just Samba, this is a countless
-> >> myriad of different applications. And if one of them doesn't support
-> >> on-access scanning, then the whole solution isn't worth using.
-> >
-> >Ok, which specific applications do they care about?  Last time I asked
-> >it was still limited to a very small handful, all of which would be
-> >trivial to add such a hook to.
-> >
-> Well, think bash, syscalls. While you can add a plugin to samba "easily",
-> it seems overkill to do the same for rm, mv, cp, bash.
 
-Again, these are not things that these companies care about.
+This is rather ambiguous, while most people know what you mean,
+clarifying it a bit might be nice. How about something like,
 
-Please, let's stop arguing about this, until someone actually produces
-some code they want to see help resolve this "issue".
+Unaligned memory accesses occur when trying to read more than a byte
+(i.e. u16, u32, u64) in a single instruction from an address that is not
+evenly divisible by the width of the type (i.e. addr % width != 0).
 
-thanks,
+For example, if you had 4GB of virtual memory, picture it as an
+array of bytes,
+	u8 memory[4096 * (1024 * 1024)];	/* 4G bytes */
+Aligned accesses would be accessing this array in this manner,
+	u16 memory[(4096 * (1024 * 1024)) / sizeof(u16)] /* 2G bytes */
+	u32 memory[(4096 * (1024 * 1024)) / sizeof(u32)] /* 1G bytes */
+	u64 memory[(4096 * (1024 * 1024)) / sizeof(u64)] /* 512M bytes */
+And an unaligned access would be accessing on a non-integer multiple
+boundary.
 
-greg k-h
+Ok, that kind of sucked too. But you get the idea.
+
+> 
+> Why unaligned access is bad
+> ===========================
+> 
+
+The rest of this looks good.
+
+Acked-by: Kyle McMartin <kyle@parisc-linux.org>
+
+cheers,
+	Kyle
