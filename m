@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbXK2UKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933685AbXK2ULn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761220AbXK2UKN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXK2UJ6
+	id S933685AbXK2ULn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762379AbXK2ULe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:09:58 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58935 "EHLO mx2.suse.de"
+	Thu, 29 Nov 2007 15:11:34 -0500
+Received: from mail.suse.de ([195.135.220.2]:50421 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932121AbXK2UJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:09:58 -0500
-Date: Thu, 29 Nov 2007 12:12:24 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
-	insert/remove race (v3)
-Message-ID: <20071129201224.GA25356@suse.de>
-References: <Pine.LNX.4.44L0.0711291417530.5666-100000@iolanthe.rowland.org> <474F1AAC.7040908@rtr.ca>
+	id S1761832AbXK2ULd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:11:33 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
+Date: Thu, 29 Nov 2007 21:11:26 +0100
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, zach@vmware.com
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129192721.GP24223@one.firstfloor.org> <alpine.LFD.0.9999.0711291139290.8458@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0711291139290.8458@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <474F1AAC.7040908@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200711292111.26661.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 03:01:48PM -0500, Mark Lord wrote:
-> Alan Stern wrote:
->> On Thu, 29 Nov 2007, Mark Lord wrote:
->>> Mark Lord wrote:
->>>> ..
->>>>
->>>> While doing insert/remove (quickly) tests on USB,
->>>> I managed to trigger an Oops on 2.6.23.8 on a call
->>>> to strlen() in make_class_name().
->> Does this oops occur under 2.6.24?  The SCSI async scanning code was
->> changed between 2.6.23 and 2.6.24, in a way intended to prevent exactly 
->> this sort of thing.
->>> And below is a "prevented Oops", courtesy of the patch.
->>> The next bug to fix is whereever the code resides that
->>> repeatedly continues to flog the unplugged device
->>> after the test, despite SCSI returning host_byte=DID_NO_CONNECT.
->> It has probably already been fixed.
->> Besides, it's not the flogging an unplugged device that causes the oops.  
->> It's trying to unregister a device that was never registered in the first 
->> place.
-> ..
->
-> Well, duh, I kinda knew that already, thanks.  ;)
->
-> But the flogging continues multiple times per second
-> until the system is shutdown, so it is "the next bug to fix".
->
-> Unless the 2.6.24 code already has that one taken care of.
-> This machine doesn't run 2.6.24 (yet) due to other incompatibilities.
 
-Incompatibilities in the 2.4.24-rc tree?  Have they been reported so
-that they can be fixed?
+> HOWEVER. That is actually not the right (well, "complete") conditional, 
+> since it's only one sub-case of the thing that matters. The right 
+> conditional is probably
+> 
+> 	/*
+> 	 * Restore %gs if needed (which is common).
+> 	 * We can avoid it if they are identical, and
+> 	 * point to the GDT.
 
-I'll hold off on adding this patch for now.
+How would you catch (common) the case of them having different bases in the 
+GDT TLS entries? At some point the selector has to be reloaded, otherwise 
+it won't be picked up by the CPU.
 
-thanks,
+I think the original condition is correct. You could maybe merge it with the 
+TLS entry rewrite and only do it if something changes there. Not
+sure it is worth it though.
 
-greg k-h
+-Andi
+> 	 */
+> 	if ((prev->gs ^ next->gs) | (next->gs & 4))
+> 		loadsegment(gs, next->gs);
+> 
+> At that point, we would only have to reload stuff if the user actually 
+> uses a local descriptor table entry (which does happen for threaded apps, 
+> I guess, but at least we avoid it for all the common traditional UNIX 
+> processes).
+> 
+> 			Linus
+> 
+
+
