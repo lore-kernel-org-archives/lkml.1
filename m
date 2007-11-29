@@ -1,133 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbXK2SKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbXK2SKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763589AbXK2SKg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:10:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbXK2SKX
+	id S1763926AbXK2SKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761861AbXK2SKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:10:23 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4807 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932327AbXK2SKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:10:21 -0500
-Subject: [PATCH] Remove #define hex_asc from kernel.h, update lib/hexdump.c
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 10:08:44 -0800
-Message-Id: <1196359724.22120.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 13:10:38 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38044 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763627AbXK2SKh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:10:37 -0500
+Date: Thu, 29 Nov 2007 10:09:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
+ task
+In-Reply-To: <474EF824.3020806@redhat.com>
+Message-ID: <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's only use is in lib/hexdump.c
-Instead, use scnprintf in lib/hexdump.c
-
-Use "%0nx" not "%n.nx" (Smaller kernel, one byte at a time, woohoo!)
-Use true not 1 for print_hex_dump
-A bit of indentation style in lib/hexdump.c
-
-Size before/after
-   text    data     bss     dec     hex filename
-   1037       0       0    1037     40d lib/hexdump.o
-
-   text    data     bss     dec     hex filename
-   1019       0       0    1019     3fb lib/hexdump.o
-
-Signed-off-by: Joe Perches <joe@perches.com>
-
----
-
- include/linux/kernel.h |    1 -
- lib/hexdump.c          |   23 ++++++++++-------------
- 2 files changed, 10 insertions(+), 14 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 94bc996..77b187f 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -256,7 +256,6 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
- 				const void *buf, size_t len, bool ascii);
- extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
- 			const void *buf, size_t len);
--#define hex_asc(x)	"0123456789abcdef"[x]
- 
- #define pr_emerg(fmt, arg...) \
- 	printk(KERN_EMERG fmt, ##arg)
-diff --git a/lib/hexdump.c b/lib/hexdump.c
-index bd5edae..70e23fb 100644
---- a/lib/hexdump.c
-+++ b/lib/hexdump.c
-@@ -41,7 +41,6 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
- 			bool ascii)
- {
- 	const u8 *ptr = buf;
--	u8 ch;
- 	int j, lx = 0;
- 	int ascii_column;
- 
-@@ -62,7 +61,9 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
- 
- 		for (j = 0; j < ngroups; j++)
- 			lx += scnprintf(linebuf + lx, linebuflen - lx,
--				"%16.16llx ", (unsigned long long)*(ptr8 + j));
-+					"%016llx ",
-+					(unsigned long long)*(ptr8 + j) &
-+					0xffffffffffffffffULL);
- 		ascii_column = 17 * ngroups + 2;
- 		break;
- 	}
-@@ -73,7 +74,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
- 
- 		for (j = 0; j < ngroups; j++)
- 			lx += scnprintf(linebuf + lx, linebuflen - lx,
--				"%8.8x ", *(ptr4 + j));
-+					"%08x ", *(ptr4 + j) & 0xffffffffU);
- 		ascii_column = 9 * ngroups + 2;
- 		break;
- 	}
-@@ -84,19 +85,15 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
- 
- 		for (j = 0; j < ngroups; j++)
- 			lx += scnprintf(linebuf + lx, linebuflen - lx,
--				"%4.4x ", *(ptr2 + j));
-+					"%04x ", *(ptr2 + j) & 0xffff);
- 		ascii_column = 5 * ngroups + 2;
- 		break;
- 	}
- 
- 	default:
--		for (j = 0; (j < rowsize) && (j < len) && (lx + 4) < linebuflen;
--		     j++) {
--			ch = ptr[j];
--			linebuf[lx++] = hex_asc(ch >> 4);
--			linebuf[lx++] = hex_asc(ch & 0x0f);
--			linebuf[lx++] = ' ';
--		}
-+		for (j = 0; (j < rowsize) && (j < len) < linebuflen; j++)
-+			lx += scnprintf(linebuf + lx, linebuflen - lx,
-+					"%02x ", ptr[j] & 0xff);
- 		ascii_column = 3 * rowsize + 2;
- 		break;
- 	}
-@@ -163,7 +160,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
- 		switch (prefix_type) {
- 		case DUMP_PREFIX_ADDRESS:
- 			printk("%s%s%*p: %s\n", level, prefix_str,
--				(int)(2 * sizeof(void *)), ptr + i, linebuf);
-+			       (int)(2 * sizeof(void *)), ptr + i, linebuf);
- 			break;
- 		case DUMP_PREFIX_OFFSET:
- 			printk("%s%s%.8x: %s\n", level, prefix_str, i, linebuf);
-@@ -192,6 +189,6 @@ void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
- 			const void *buf, size_t len)
- {
- 	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
--			buf, len, 1);
-+		       buf, len, true);
- }
- EXPORT_SYMBOL(print_hex_dump_bytes);
 
 
+Chuck seems to have caught a bug, although the wrong one:
+
+On Thu, 29 Nov 2007, Chuck Ebbert wrote:
+>
+> On 11/28/2007 07:42 PM, Roland McGrath wrote:
+> > --- a/arch/x86/ia32/ptrace32.c
+> > +++ b/arch/x86/ia32/ptrace32.c
+> > ...
+> > +		if (child == current)
+> > +			load_gs_index(child->thread.gsindex);
+
+This is correct.
+
+But the ones that do the same thing for fs/es/ds are *not*. Those three 
+registers are kernel mode registers (ds/es are the regular kernel data 
+segment, fs is the per-cpu data segment), and restored on return to user 
+space from the stack.
+
+For similar reasons, this is wrong:
+
+> > @@ -129,15 +137,23 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
+> >  	switch (regno) {
+> >  	case offsetof(struct user32, regs.fs):
+> >  		*val = child->thread.fsindex;
+> > +		if (child == current)
+> > +			asm("movl %%fs,%0" : "=r" (*val));
+> >  		break;
+
+That %fs is the kernel per-cpu thing, not the user %fs.
+
+But this one is correct:
+
+> >  	case offsetof(struct user32, regs.gs):
+> >  		*val = child->thread.gsindex;
+> > +		if (child == current)
+> > +			asm("movl %%gs,%0" : "=r" (*val));
+> 
+> Won't this return the kernel's GS instead of the user's?
+
+No, %gs is untouched by the kernel, so it contains user space version, and 
+getting the value directly from %gs looks correct.
+
+		Linus
