@@ -1,96 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbXK2Ogu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXK2OhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932306AbXK2Ogu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 09:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762167AbXK2Ogl
+	id S932436AbXK2OhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 09:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbXK2Ogq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 09:36:41 -0500
-Received: from hu-out-0506.google.com ([72.14.214.224]:14070 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756567AbXK2Ogk (ORCPT
+	Thu, 29 Nov 2007 09:36:46 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:37510 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755108AbXK2Ogp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 09:36:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=sMxjI2hULsqYlQPFH7qa0lHLDXUDtdKYJf+YazZwlNF3PhK5qQW5xg65gvTp2PEApiwTSZD05ynZmP4T3jhxuhwOpPo2ABfJGPJqierL0nDWsH78YunjUngyohf6s+Tl1LrVZDqCUB4kPf5zeK8pLkOxWjdkqZta87G+SX1Of/s=
-Date: Thu, 29 Nov 2007 15:36:30 +0100
-To: Johann Wilhelm <johann.wilhelm@student.tugraz.at>
-Cc: Oliver Neukum <oliver@neukum.org>, Rui Santos <rsantos@grupopie.com>,
-       Pete Zaitcev <zaitcev@redhat.com>, linux-usb@vger.kernel.org,
-       preining@logic.at, kristoffer.ericson@gmail.com, drussell@redhat.com,
-       linux-kernel@vger.kernel.org, jsagarribay@gmail.com
-Subject: Re: Add the infamous Huawei E220 to option.c
-Message-Id: <20071129153630.d85882ca.Kristoffer.ericson@gmail.com>
-In-Reply-To: <20071129150550.86453nubw8i5xi68@webmail.tugraz.at>
-References: <20071128161305.b01167b3.zaitcev@redhat.com>
-	<200711291149.46326.oliver@neukum.org>
-	<474E9D7E.4040007@grupopie.com>
-	<200711291255.08603.oliver@neukum.org>
-	<20071129150550.86453nubw8i5xi68@webmail.tugraz.at>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 09:36:45 -0500
+Message-ID: <474ECE6A.3010500@linux.vnet.ibm.com>
+Date: Thu, 29 Nov 2007 20:06:26 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       samba-technical@lists.samba.org, nfs@lists.sourceforge.net,
+       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
+References: <20071128034140.648383f0.akpm@linux-foundation.org> <474E7F9E.9000601@linux.vnet.ibm.com> <20071129010906.772e0c15.akpm@linux-foundation.org> <474EA914.1060502@linux.vnet.ibm.com> <20071129121001.GD16558@duck.suse.cz>
+In-Reply-To: <20071129121001.GD16558@duck.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll give it a go later today, still on 2.6.22.4.
+Jan Kara wrote:
+> On Thu 29-11-07 17:27:08, Kamalesh Babulal wrote:
+>> Andrew Morton wrote:
+>>> On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>>>
+>>>> Hi Andrew,
+>>>>
+>>>> While running file system stress on nfs and cifs mounted partitions, the machine
+>>>> drops to xmon
+>>>>
+>>>> 1:mon> e
+>>>> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
+>>>>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
+>>>>     lr: c0000000001074d0: .vfs_link+0x204/0x298
+>>>>     sp: c000000080a9fb00
+>>>>    msr: 8000000000009032
+>>>>    dar: 280 
+>>>>  dsisr: 40010000
+>>>>   current = 0xc0000000c8e6f670
+>>>>   paca    = 0xc000000000512c00
+>>>>     pid   = 2848, comm = fsstress
+>>>> 1:mon> t
+>>>> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
+>>>> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
+>>>> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
+>>>> --- Exception: c00 (System Call) at 000000000ff1bdfc
+>>>> SP (ffeaed10) is in userspace
+>>>> 1:mon> r
+>>>> R00 = c0000000001074d0   R16 = 0000000000000000
+>>>> R01 = c000000080a9fb00   R17 = 0000000000000000
+>>>> R02 = c00000000060c380   R18 = 0000000000000000
+>>>> R03 = 0000000000000000   R19 = 0000000000000000
+>>>> R04 = 0000000000000004   R20 = 0000000000000000
+>>>> R05 = 0000000000000000   R21 = 0000000000000000
+>>>> R06 = 0000000000000000   R22 = 0000000000000000
+>>>> R07 = 0000000000000000   R23 = 0000000000000004
+>>>> R08 = 0000000000000000   R24 = 0000000000000280
+>>>> R09 = 0000000000000000   R25 = fffffffffffff000
+>>>> R10 = 0000000000000001   R26 = c000000082827790
+>>>> R11 = c0000000003963e8   R27 = c0000000828275a0
+>>>> R12 = d000000000deec78   R28 = 0000000000000000
+>>>> R13 = c000000000512c00   R29 = c00000007b18fcf0
+>>>> R14 = 0000000000000000   R30 = c0000000005bc088
+>>>> R15 = 0000000000000000   R31 = 0000000000000000
+>>>> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
+>>>> lr  = c0000000001074d0 .vfs_link+0x204/0x298
+>>>> msr = 8000000000009032   cr  = 24000882
+>>>> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
+>>>> dar = 0000000000000280   dsisr = 40010000
+>>>>
+>>>>
+>>>> The gdb output shows 
+>>>>
+>>>> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
+>>>> 103      * fsnotify_create - 'name' was linked in
+>>>> 104      */  
+>>>> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+>>>> 106     {   
+>>>> 107             inode_dir_notify(inode, DN_CREATE);
+>>>> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
+>>>> 109                                       dentry->d_inode);
+>>>> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
+>>>> 111     }   
+>>>> 112
+>>>>
+>>> If it is reproducible can you please try reverting
+>>> inotify-send-in_attrib-events-when-link-count-changes.patch?
+>> Hi Andrew,
+>>
+>> reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
+>> bug is not reproduced.
+>   OK, thanks for testing. I was trying to reproduce the problem locally but
+> without success so far - I guess it's either NFS or CIFS which makes the
+> problem appear. I'll investigate more.
+> 
+> 									Honza
 
-Any logs of interest except for obvious behavior?
+Hi Jan,
 
-On Thu, 29 Nov 2007 15:05:50 +0100
-Johann Wilhelm <johann.wilhelm@student.tugraz.at> wrote:
+I was running file system stress parallely on NFS and CIFS mounted partitions.
+  
 
-> If everything's working please also add code to also support the other  
-> E220 device... so both PID 0x1003 and 0x1004 should be treaded the  
-> same way...
-> 
-> to test the device with the 0x1004-PID maybe Jaime Velasco  
-> <jsagarribay@gmail.com> could be asked.. he initialy added the lines  
-> for this device in option.c
-> 
-> 73
-> 
-> Zitat von Oliver Neukum <oliver@neukum.org>:
-> 
-> > Am Donnerstag 29 November 2007 schrieb Rui Santos:
-> >> >> Just to remember that that specific flag was one SET and, was removed,
-> >> >> in part, because of what I state. Of course we aim at perfection but, if
-> >> >> the benefits are only for a few situations and, will cause all this
-> >> >> problems for all other, perhaps the reinsert of that flag would be a
-> >> >> positive action.
-> >> >>
-> >> >
-> >> > OK, can you provide "lsusb -v" for the device in the CD mode and in
-> >> > the modem mode?
-> >> >
-> >> Of course. Heri it is.
-> >
-> > Thanks. Please try this patch.
-> >
-> > 	Regards
-> > 		Oliver
-> >
-> > ----
-> >
-> > --- a/drivers/usb/serial/option.c	2007-11-29 12:35:09.000000000 +0100
-> > +++ b/drivers/usb/serial/option.c	2007-11-29 12:47:34.000000000 +0100
-> > @@ -158,7 +158,7 @@ static struct usb_device_id option_ids[]
-> >  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
-> >  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_NETWORK) },
-> >  	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
-> > -	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
-> > +	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID,  
-> > HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
-> >  	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS) },
-> >  	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel  
-> > Merlin XS620/S640 */
-> >  	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel  
-> > Merlin S620 */
-> >
-> >
-> 
-> 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
