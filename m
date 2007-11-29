@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934612AbXK2XdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934377AbXK2Xff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934612AbXK2XdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 18:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934403AbXK2Xc7
+	id S934377AbXK2Xff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 18:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762220AbXK2XfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 18:32:59 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:27902 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934267AbXK2Xc4 (ORCPT
+	Thu, 29 Nov 2007 18:35:20 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:50838 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761190AbXK2XfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 18:32:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EfynD93f25VZNh9eU7zBY5c158WEoGjH5oSYYYR/ZEeDv4dt41o+C6x5gFrs0tK5LlblsPVXz6uYPOEZLYBLLvvuA7mCoEd8aWkJ9RjSk1Ta1oBzcaKnwsFDMXLqFjfytebmELrLt5j2vYKqtRSrK9f1SCrw+Ip1wlr98d8+N9Y=
-Message-ID: <5501535d0711291532u1ea214f9n7c47aa175892962d@mail.gmail.com>
-Date: Fri, 30 Nov 2007 00:32:55 +0100
-From: "Bjoern Olausson" <lkmlist@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata NCQ blacklist entry
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <474F43C0.6080008@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 29 Nov 2007 18:35:19 -0500
+Subject: Re: Out of tree module using LSM
+From: Jon Masters <jonathan@jonmasters.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ray Lee <ray-lk@madrabbit.org>, tvrtko.ursulin@sophos.com,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu
+In-Reply-To: <20071129214527.1d62056c@the-village.bc.nu>
+References: <20071128183040.GW8181@ftp.linux.org.uk>
+	 <OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
+	 <20071129173601.34273083@the-village.bc.nu>
+	 <2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
+	 <1196362612.6473.98.camel@perihelion>
+	 <2c0942db0711291111t16a4eb49h6b1e83ddf7bb4cf9@mail.gmail.com>
+	 <1196365551.6473.103.camel@perihelion>
+	 <20071129214527.1d62056c@the-village.bc.nu>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Thu, 29 Nov 2007 18:34:33 -0500
+Message-Id: <1196379273.6473.121.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071107111813.GA9064@dudweiler.stuttgart.redhat.com>
-	 <4731B5DD.1060203@gmail.com>
-	 <5501535d0711290917r16a16b0dx36669de89f829231@mail.gmail.com>
-	 <474F43C0.6080008@gmail.com>
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/07, Tejun Heo <htejun@gmail.com> wrote:
->
-> I now have affected drives on my desk and am gonna try reproduce it.  My
-> gut feeling says it's timing related problem on controller / driver
-> side.  Please wait a bit.
->
 
-> > by the way, and OT, did the Plextor DVD-RW drive reach you, Tejun?
->
-> No, not yet.  Do you have a tracking number or something?
->
-> Thanks.
+On Thu, 2007-11-29 at 21:45 +0000, Alan Cox wrote:
+> > Jargon File in all its glory. And if you still think you could look for
+> > patterns, how about executable code that self-modifies in random ways
+> > but when executed as a whole actually has the functionality of fetchmail
+> > embedded within it? How would you guard against that?
+> 
+> Thats a problem for whoever writes the ESR detection tool and to what
+> level it works. The question for the kernel is how do we provide a
+> mechanism to allow (to some extent at least) this kind of tool to run.
+
+Right. I'm just saying reading a single page out of context (no pun
+intended) is not going to be very useful. They need to scan the entire
+file, which means that there are limited ways this is practical - it's
+not practical to do that on every write into a shared mapping, hence a
+solution that scans on open, etc. is probably the best there is.
+
+(I know you know this)
+
+Jon.
+
+
