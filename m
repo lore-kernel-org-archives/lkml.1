@@ -1,334 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762474AbXK2OQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbXK2OST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762474AbXK2OQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 09:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbXK2OQ2
+	id S1762804AbXK2OST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 09:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761651AbXK2OSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 09:16:28 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:39403 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756567AbXK2OQ1 (ORCPT
+	Thu, 29 Nov 2007 09:18:08 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:63615 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756567AbXK2OSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 09:16:27 -0500
-Date: Thu, 29 Nov 2007 15:16:11 +0100
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: linux-usb@vger.kernel.org, kristoffer.ericson@gmail.com,
-       drussell@redhat.com, johann.wilhelm@student.tugraz.at,
-       linux-kernel@vger.kernel.org
-Subject: Re: Add the infamous Huawei E220 to option.c
-Message-ID: <20071129141611.GB27279@gamma.logic.tuwien.ac.at>
-References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129141444.GA27279@gamma.logic.tuwien.ac.at>
+	Thu, 29 Nov 2007 09:18:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=xgljW9+DYr3HUlBL2nrPZhCfwBLEpNdDMO7AcwNu9LVvRIpAc17x0GWu1UHPpVKRL3zwYSsQvTxOPS5X6s6Kecz3O6EXw2LCg7BtPg6RE3KXQOwa6HEYu9oy4a9AneHZKt06b+7q7z6eGD6R1KLEy3mRBcUhScoa7BhRQRRvBes=
+Message-ID: <3efb10970711290618v2bd93edfrbc53d9df4b73b33b@mail.gmail.com>
+Date: Thu, 29 Nov 2007 15:18:04 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Daniel Walker" <dwalker@mvista.com>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20071129133604.GA23845@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="azLHFNyN32YCQGCU"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071129141444.GA27279@gamma.logic.tuwien.ac.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+References: <1196177122.23808.7.camel@imap.mvista.com>
+	 <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
+	 <20071128172509.GA30173@flint.arm.linux.org.uk>
+	 <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
+	 <20071128200550.GA3494@flint.arm.linux.org.uk>
+	 <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
+	 <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
+	 <20071129102506.GB22793@flint.arm.linux.org.uk>
+	 <3efb10970711290327s3c60da1ey3b6fae738090ca5@mail.gmail.com>
+	 <20071129133604.GA23845@flint.arm.linux.org.uk>
+X-Google-Sender-Auth: 86a3050694e3618c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Russell,
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> If people insist on adding the mask/unmask crap to it, the function
+> might as well be deleted and be an alias for handle_level_IRQ.  Because
+> that's _precisely_ what you lot are turning it into.
 
-On Do, 29 Nov 2007, preining wrote:
-> So to be clear: kernl 2.6.24-rc3 + your patch gives me permanent cycles
-> and an error:
-> 	option_start_huawei: HUAWEI E220 setup failed (1)
-> I attach the syslog part which exhibits the behaviour.
+First, I want to make clear that I am just debugging a problem on RT
+that does not exist on mainline, and I am trying to find a way to get
+it solved nicely _on RT_, and preferable in a way that it works for
+everybody with the least chance for regression.
 
-Now really attached.
+I already mentioned that RT is doing masking in this code during
+normal use, where the mainline kernel does not do this, **except** in
+an error situation.
 
-Best wishes
+I also mentioned that there are 2 ways of solving it on RT:
+1) do not do masking at all, (just as on mainline), and only mask it
+when there is an error (just as on mainline)
+2) Fix it by adding an unmask, which I proposed in my first patch, and
+which others also did in their patches. (not knowing your opinion, as
+I do know)
 
-Norbert
+Still, I believe, that the fact if a interrupt **can** be masked is
+not a reason to forbid the simple_irq type(), and surely does not make
+it automatically a level type interrupt.
+The interrupt type I talk about is actually edge triggered (the
+interrupt triggers on _BOTH_ edges of the input-line), but there is no
+way of 'acknowledging' the interrupt, which makes the edge type
+handler unsuitable, and much too heavy.
+As mentioned, this type of irq is never pending, and unmasking it will
+never lead to get a interrupt request immediately; the interrupt that
+occurs during the masked time, is just lost.
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-YONDER BOGINE (n.)
-The kind of restaurant advertised as 'just three minutes from this
-cinema' which clearly nobody ever goes to and, even if they had ever
-contemplated it, have certainly changed their mind since seeing the
-advert.
-			--- Douglas Adams, The Meaning of Liff
+So, as far as I can tell , the type really used on at91 for the GPIO
+stuff _is_ a simple_irq as you describe, but one that can be
+masked/unmasked **in case of errors**. It should never be masked
+during normal use.
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=syslog
+So, I propose option 1 to solve it on RT, and thus to trigger Steven
+to NACK my first patch. I will try and see if I can make it work
+_without_ masking on RT (except in case of errors, just as in
+mainline).
+...and probably add some clear description about the purpose of
+simple_irq, especially related to masking...
 
-usb 2-2: new full speed USB device using uhci_hcd and address 2
-PM: Adding info for usb:2-2
-PM: Adding info for No Bus:usbdev2.2_ep00
-usb 2-2: configuration #1 chosen from 1 choice
-PM: Adding info for usb:2-2:1.0
-PM: Adding info for No Bus:usbdev2.2_ep83
-PM: Adding info for No Bus:usbdev2.2_ep04
-PM: Adding info for No Bus:usbdev2.2
-Initializing USB Mass Storage driver...
-scsi2 : SCSI emulation for USB Mass Storage devices
-PM: Adding info for No Bus:host2
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-usb-storage: device found at 2
-usb-storage: waiting for device to settle before scanning
-usbcore: registered new interface driver usbserial
-drivers/usb/serial/usb-serial.c: USB Serial support registered for generic
-usbcore: registered new interface driver usbserial_generic
-drivers/usb/serial/usb-serial.c: USB Serial Driver core
-drivers/usb/serial/usb-serial.c: USB Serial support registered for GSM modem (1-port)
-usbcore: registered new interface driver option
-drivers/usb/serial/option.c: USB Driver for GSM modems: v0.7.1
-usb 2-2: USB disconnect, address 2
-PM: Removing info for No Bus:usbdev2.2_ep83
-PM: Removing info for No Bus:usbdev2.2_ep04
-PM: Removing info for No Bus:host2
-PM: Removing info for usb:2-2:1.0
-PM: Removing info for No Bus:usbdev2.2
-PM: Removing info for No Bus:usbdev2.2_ep00
-PM: Removing info for usb:2-2
-usb 2-2: new full speed USB device using uhci_hcd and address 3
-PM: Adding info for usb:2-2
-PM: Adding info for No Bus:usbdev2.3_ep00
-usb 2-2: configuration #1 chosen from 1 choice
-PM: Adding info for usb:2-2:1.0
-usb-storage: probe of 2-2:1.0 failed with error -5
-option 2-2:1.0: GSM modem (1-port) converter detected
-option_start_huawei: HUAWEI E220 setup failed (1)
-PM: Adding info for usb-serial:ttyUSB0
-PM: Adding info for No Bus:ttyUSB0
-usb 2-2: GSM modem (1-port) converter now attached to ttyUSB0
-PM: Adding info for No Bus:usbdev2.3_ep81
-PM: Adding info for No Bus:usbdev2.3_ep82
-PM: Adding info for No Bus:usbdev2.3_ep02
-PM: Adding info for usb:2-2:1.1
-usb-storage: probe of 2-2:1.1 failed with error -5
-option 2-2:1.1: GSM modem (1-port) converter detected
-option_start_huawei: HUAWEI E220 setup failed (1)
-PM: Adding info for usb-serial:ttyUSB1
-PM: Adding info for No Bus:ttyUSB1
-usb 2-2: GSM modem (1-port) converter now attached to ttyUSB1
-PM: Adding info for No Bus:usbdev2.3_ep85
-PM: Adding info for No Bus:usbdev2.3_ep05
-PM: Adding info for usb:2-2:1.2
-scsi5 : SCSI emulation for USB Mass Storage devices
-PM: Adding info for No Bus:host5
-PM: Adding info for No Bus:usbdev2.3_ep83
-PM: Adding info for No Bus:usbdev2.3_ep04
-PM: Adding info for No Bus:usbdev2.3
-usb-storage: device found at 3
-usb-storage: waiting for device to settle before scanning
-PM: Adding info for No Bus:target5:0:0
-scsi 5:0:0:0: CD-ROM            HUAWEI   Mass Storage     2.31 PQ: 0 ANSI: 2
-PM: Adding info for scsi:5:0:0:0
-PM: Adding info for No Bus:target5:0:1
-PM: Removing info for No Bus:target5:0:1
-PM: Adding info for No Bus:target5:0:2
-PM: Removing info for No Bus:target5:0:2
-PM: Adding info for No Bus:target5:0:3
-PM: Removing info for No Bus:target5:0:3
-PM: Adding info for No Bus:target5:0:4
-PM: Removing info for No Bus:target5:0:4
-PM: Adding info for No Bus:target5:0:5
-PM: Removing info for No Bus:target5:0:5
-PM: Adding info for No Bus:target5:0:6
-PM: Removing info for No Bus:target5:0:6
-PM: Adding info for No Bus:target5:0:7
-PM: Removing info for No Bus:target5:0:7
-usb-storage: device scan complete
-sr0: scsi-1 drive
-Uniform CD-ROM driver Revision: 3.20
-sr 5:0:0:0: Attached scsi CD-ROM sr0
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-sr 5:0:0:0: Attached scsi generic sg1 type 5
-usb 2-2: reset full speed USB device using uhci_hcd and address 3
-usb 2-2: reset full speed USB device using uhci_hcd and address 3
-usb 2-2: device descriptor read/64, error -71
-usb 2-2: USB disconnect, address 3
-PM: Removing info for No Bus:usbdev2.3_ep81
-PM: Removing info for No Bus:usbdev2.3_ep82
-PM: Removing info for No Bus:usbdev2.3_ep02
-PM: Removing info for No Bus:ttyUSB0
-option1 ttyUSB0: GSM modem (1-port) converter now disconnected from ttyUSB0
-PM: Removing info for usb-serial:ttyUSB0
-option 2-2:1.0: device disconnected
-PM: Removing info for usb:2-2:1.0
-PM: Removing info for No Bus:usbdev2.3_ep85
-PM: Removing info for No Bus:usbdev2.3_ep05
-PM: Removing info for No Bus:ttyUSB1
-option1 ttyUSB1: GSM modem (1-port) converter now disconnected from ttyUSB1
-PM: Removing info for usb-serial:ttyUSB1
-option 2-2:1.1: device disconnected
-PM: Removing info for usb:2-2:1.1
-PM: Removing info for No Bus:usbdev2.3_ep83
-PM: Removing info for No Bus:usbdev2.3_ep04
-PM: Removing info for scsi:5:0:0:0
-PM: Removing info for No Bus:host5
-PM: Removing info for usb:2-2:1.2
-PM: Removing info for No Bus:usbdev2.3
-PM: Removing info for No Bus:usbdev2.3_ep00
-PM: Removing info for usb:2-2
-PM: Removing info for No Bus:target5:0:0
-usb 2-2: new full speed USB device using uhci_hcd and address 4
-PM: Adding info for usb:2-2
-PM: Adding info for No Bus:usbdev2.4_ep00
-usb 2-2: configuration #1 chosen from 1 choice
-PM: Adding info for usb:2-2:1.0
-usb-storage: probe of 2-2:1.0 failed with error -5
-option 2-2:1.0: GSM modem (1-port) converter detected
-option_start_huawei: HUAWEI E220 setup failed (1)
-PM: Adding info for usb-serial:ttyUSB0
-PM: Adding info for No Bus:ttyUSB0
-usb 2-2: GSM modem (1-port) converter now attached to ttyUSB0
-PM: Adding info for No Bus:usbdev2.4_ep81
-PM: Adding info for No Bus:usbdev2.4_ep82
-PM: Adding info for No Bus:usbdev2.4_ep02
-PM: Adding info for usb:2-2:1.1
-usb-storage: probe of 2-2:1.1 failed with error -5
-option 2-2:1.1: GSM modem (1-port) converter detected
-option_start_huawei: HUAWEI E220 setup failed (1)
-PM: Adding info for usb-serial:ttyUSB1
-PM: Adding info for No Bus:ttyUSB1
-usb 2-2: GSM modem (1-port) converter now attached to ttyUSB1
-PM: Adding info for No Bus:usbdev2.4_ep85
-PM: Adding info for No Bus:usbdev2.4_ep05
-PM: Adding info for usb:2-2:1.2
-scsi8 : SCSI emulation for USB Mass Storage devices
-PM: Adding info for No Bus:host8
-PM: Adding info for No Bus:usbdev2.4_ep83
-PM: Adding info for No Bus:usbdev2.4_ep04
-PM: Adding info for No Bus:usbdev2.4
-usb-storage: device found at 4
-usb-storage: waiting for device to settle before scanning
-PM: Adding info for No Bus:target8:0:0
-usb 2-2: reset full speed USB device using uhci_hcd and address 4
-scsi 8:0:0:0: CD-ROM            HUAWEI   Mass Storage     2.31 PQ: 0 ANSI: 2
-PM: Adding info for scsi:8:0:0:0
-sr0: scsi-1 drive
-sr 8:0:0:0: Attached scsi CD-ROM sr0
-sr 8:0:0:0: Attached scsi generic sg1 type 5
-PM: Adding info for No Bus:target8:0:1
-PM: Removing info for No Bus:target8:0:1
-PM: Adding info for No Bus:target8:0:2
-PM: Removing info for No Bus:target8:0:2
-PM: Adding info for No Bus:target8:0:3
-PM: Removing info for No Bus:target8:0:3
-PM: Adding info for No Bus:target8:0:4
-PM: Removing info for No Bus:target8:0:4
-PM: Adding info for No Bus:target8:0:5
-PM: Removing info for No Bus:target8:0:5
-PM: Adding info for No Bus:target8:0:6
-PM: Removing info for No Bus:target8:0:6
-PM: Adding info for No Bus:target8:0:7
-PM: Removing info for No Bus:target8:0:7
-usb-storage: device scan complete
-usb 2-2: reset full speed USB device using uhci_hcd and address 4
-usb 2-2: reset full speed USB device using uhci_hcd and address 4
-usb 2-2: USB disconnect, address 4
-PM: Removing info for No Bus:usbdev2.4_ep81
-PM: Removing info for No Bus:usbdev2.4_ep82
-PM: Removing info for No Bus:usbdev2.4_ep02
-PM: Removing info for No Bus:ttyUSB0
-option1 ttyUSB0: GSM modem (1-port) converter now disconnected from ttyUSB0
-PM: Removing info for usb-serial:ttyUSB0
-option 2-2:1.0: device disconnected
-PM: Removing info for usb:2-2:1.0
-PM: Removing info for No Bus:usbdev2.4_ep85
-PM: Removing info for No Bus:usbdev2.4_ep05
-PM: Removing info for No Bus:ttyUSB1
-option1 ttyUSB1: GSM modem (1-port) converter now disconnected from ttyUSB1
-PM: Removing info for usb-serial:ttyUSB1
-option 2-2:1.1: device disconnected
-PM: Removing info for usb:2-2:1.1
-PM: Removing info for No Bus:usbdev2.4_ep83
-PM: Removing info for No Bus:usbdev2.4_ep04
-PM: Removing info for scsi:8:0:0:0
-PM: Removing info for No Bus:host8
-PM: Removing info for usb:2-2:1.2
-PM: Removing info for No Bus:usbdev2.4
-PM: Removing info for No Bus:usbdev2.4_ep00
-PM: Removing info for usb:2-2
-PM: Removing info for No Bus:target8:0:0
-usb 2-2: new full speed USB device using uhci_hcd and address 5
-PM: Adding info for usb:2-2
-PM: Adding info for No Bus:usbdev2.5_ep00
-usb 2-2: configuration #1 chosen from 1 choice
-PM: Adding info for usb:2-2:1.0
-usb-storage: probe of 2-2:1.0 failed with error -5
-option 2-2:1.0: GSM modem (1-port) converter detected
-option_start_huawei: HUAWEI E220 setup failed (1)
-PM: Adding info for usb-serial:ttyUSB0
-PM: Adding info for No Bus:ttyUSB0
-usb 2-2: GSM modem (1-port) converter now attached to ttyUSB0
-PM: Adding info for No Bus:usbdev2.5_ep81
-PM: Adding info for No Bus:usbdev2.5_ep82
-PM: Adding info for No Bus:usbdev2.5_ep02
-PM: Adding info for usb:2-2:1.1
-usb-storage: probe of 2-2:1.1 failed with error -5
-option 2-2:1.1: GSM modem (1-port) converter detected
-option_start_huawei: HUAWEI E220 setup failed (1)
-PM: Adding info for usb-serial:ttyUSB1
-PM: Adding info for No Bus:ttyUSB1
-usb 2-2: GSM modem (1-port) converter now attached to ttyUSB1
-PM: Adding info for No Bus:usbdev2.5_ep85
-PM: Adding info for No Bus:usbdev2.5_ep05
-PM: Adding info for usb:2-2:1.2
-scsi11 : SCSI emulation for USB Mass Storage devices
-PM: Adding info for No Bus:host11
-PM: Adding info for No Bus:usbdev2.5_ep83
-PM: Adding info for No Bus:usbdev2.5_ep04
-PM: Adding info for No Bus:usbdev2.5
-usb-storage: device found at 5
-usb-storage: waiting for device to settle before scanning
-PM: Adding info for No Bus:target11:0:0
-usb 2-2: reset full speed USB device using uhci_hcd and address 5
-scsi 11:0:0:0: CD-ROM            HUAWEI   Mass Storage     2.31 PQ: 0 ANSI: 2
-PM: Adding info for scsi:11:0:0:0
-sr0: scsi-1 drive
-sr 11:0:0:0: Attached scsi CD-ROM sr0
-sr 11:0:0:0: Attached scsi generic sg1 type 5
-PM: Adding info for No Bus:target11:0:1
-PM: Removing info for No Bus:target11:0:1
-PM: Adding info for No Bus:target11:0:2
-PM: Removing info for No Bus:target11:0:2
-PM: Adding info for No Bus:target11:0:3
-PM: Removing info for No Bus:target11:0:3
-PM: Adding info for No Bus:target11:0:4
-PM: Removing info for No Bus:target11:0:4
-PM: Adding info for No Bus:target11:0:5
-PM: Removing info for No Bus:target11:0:5
-PM: Adding info for No Bus:target11:0:6
-PM: Removing info for No Bus:target11:0:6
-PM: Adding info for No Bus:target11:0:7
-PM: Removing info for No Bus:target11:0:7
-usb-storage: device scan complete
-usb 2-2: USB disconnect, address 5
-PM: Removing info for No Bus:usbdev2.5_ep81
-PM: Removing info for No Bus:usbdev2.5_ep82
-PM: Removing info for No Bus:usbdev2.5_ep02
-PM: Removing info for No Bus:ttyUSB0
-option1 ttyUSB0: GSM modem (1-port) converter now disconnected from ttyUSB0
-PM: Removing info for usb-serial:ttyUSB0
-option 2-2:1.0: device disconnected
-PM: Removing info for usb:2-2:1.0
-PM: Removing info for No Bus:usbdev2.5_ep85
-PM: Removing info for No Bus:usbdev2.5_ep05
-PM: Removing info for No Bus:ttyUSB1
-option1 ttyUSB1: GSM modem (1-port) converter now disconnected from ttyUSB1
-PM: Removing info for usb-serial:ttyUSB1
-option 2-2:1.1: device disconnected
-PM: Removing info for usb:2-2:1.1
-PM: Removing info for No Bus:usbdev2.5_ep83
-PM: Removing info for No Bus:usbdev2.5_ep04
-PM: Removing info for scsi:11:0:0:0
-PM: Removing info for No Bus:target11:0:0
-PM: Removing info for No Bus:host11
-PM: Removing info for usb:2-2:1.2
-PM: Removing info for No Bus:usbdev2.5
-PM: Removing info for No Bus:usbdev2.5_ep00
-PM: Removing info for usb:2-2
+Do you agree on this Russell?
 
---azLHFNyN32YCQGCU--
+> Ah, and looking at the changes to the file, the addition of the mask
+> and unmask was done by someone who didn't understand what this was
+> trying to do.  So that change should be backed out.
+
+Maybe he was trying to mask the irq during an error situation?
+
+
+Kind regards,
+
+Remy
