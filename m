@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760264AbXK2ED6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXK2EGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760264AbXK2ED6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 23:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbXK2EDu
+	id S1760811AbXK2EGe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 23:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbXK2EGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 23:03:50 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:24909 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750857AbXK2EDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 23:03:49 -0500
-Date: Thu, 29 Nov 2007 13:03:29 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig: Make KCONFIG_ALLCONFIG work with randconfig.
-Message-ID: <20071129040329.GA10564@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Roman Zippel <zippel@linux-m68k.org>,
-	Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20071128122011.GB29552@linux-sh.org> <Pine.LNX.4.64.0711281751160.1817@scrub.home>
+	Wed, 28 Nov 2007 23:06:25 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:7438 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbXK2EGY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 23:06:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=hfF3/Ddjv3vf9TArS7C3eKU0SYYQpVQLFK33sVVCK5TGOSSgRN+S7rMNdQ+jBdM0JA6vo5B8q4xquH3e1nolX6cshnmV7j4n3lrnAfaqtIs17biAIrE2EsFiA+LaerI2wHs1Sn5sk5K8Y54Nkdid+IgRWM2CEDIZcmBtQ4toP/Y=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH -mm] printk trivial optimizations fix
+Date: Wed, 28 Nov 2007 20:06:18 -0800
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0711281900010.25292@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0711281900010.25292@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711281751160.1817@scrub.home>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200711282006.18527.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 06:08:16PM +0100, Roman Zippel wrote:
-> On Wed, 28 Nov 2007, Paul Mundt wrote:
-> > While allyes/mod/noconfigs do seem to work fine with KCONFIG_ALLCONFIG
-> > provisions, randconfig tramples all over the provided values at perhaps
-> > not surprisingly, random.
-> 
-> Please be careful with such broad statements, there is only an issue with 
-> choice values.
-> 
-Ok, I'll rephrase, '100% of the provided values I tested with were being
-randomly clobbered'. Is that better? Broken is broken, whether it applies
-to a small subset of symbols or not.
+On Wednesday 28 November 2007 11:02, Hugh Dickins wrote:
+> mm's printk has been showing "%p" in abominable upper case recently:
+> its trivial optimizations have changed the default from lower to upper,
+> so the 'p' case needs to enforce lower explicitly.
+>
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+>
+>  lib/vsprintf.c |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> --- 2.6.24-rc3-mm2/lib/vsprintf.c	2007-11-28 12:42:26.000000000 +0000
+> +++ linux/lib/vsprintf.c	2007-11-28 17:01:20.000000000 +0000
+> @@ -525,6 +525,7 @@ int vsnprintf(char *buf, size_t size, co
+>  				continue;
+>
+>  			case 'p':
+> +				flags |= SMALL;
+>  				if (field_width == -1) {
+>  					field_width = 2*sizeof(void *);
+>  					flags |= ZEROPAD;
 
-> > Debugging this a bit, there seemed to be two issues:
-> > 
-> > 	- SYMBOL_DEF and SYMBOL_DEF_USER overlap, which made
-> > 	  def_sym->flags the same regardless of whether we came from an
-> > 	  KCONFIG_ALLCONFIG path or not.
-> 
-> Look at how SYMBOL_DEF is used in confdata.c.
-> 
-Ah, ok. I was just trying to find something I could test that would be
-different for the KCONFIG_ALLCONFIG path, but it seems like is_new is a
-much cleaner solution for this, thanks for pointing it out!
-
-Updated patch follows.
-
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- scripts/kconfig/conf.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-index a38787a..8d6f174 100644
---- a/scripts/kconfig/conf.c
-+++ b/scripts/kconfig/conf.c
-@@ -374,7 +374,8 @@ static int conf_choice(struct menu *menu)
- 				continue;
- 			break;
- 		case set_random:
--			def = (random() % cnt) + 1;
-+			if (is_new)
-+				def = (random() % cnt) + 1;
- 		case set_default:
- 		case set_yes:
- 		case set_mod:
+Thanks Hugh for catching this. My fault :(
+--
+vda
