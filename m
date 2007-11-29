@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXK2KET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbXK2KFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXK2KET (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbXK2KEH
+	id S1762154AbXK2KFa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbXK2KFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:04:07 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:5998 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758847AbXK2KEF (ORCPT
+	Thu, 29 Nov 2007 05:05:23 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:46720 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758101AbXK2KFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:04:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CuFM7DKa+wrmzlGa1tyUg5k+VIMeQLsnUZcVCZuC8btM7V6VrqpWH+wa3WUIBWv1zKKJR4Cq8p7rU+kytC9VCYL4AYV6841YtxzZQE1V9E2LpFc8UDYBW9d4jqHriAVG+tme6JFO6QDb9jEoZntVv8JxzO6vn4tuAqZ6zIupIW8=
-Message-ID: <19f34abd0711290204m6d23957o9b31b1d527c07694@mail.gmail.com>
-Date: Thu, 29 Nov 2007 11:04:04 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0711291127470.26543@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 29 Nov 2007 05:05:22 -0500
+Date: Thu, 29 Nov 2007 11:05:12 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
+ kobject_init
+Message-ID: <20071129110512.02ae44e1@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711281654560.2729-100000@iolanthe.rowland.org>
+References: <20071128214502.GA3255@kroah.com>
+	<Pine.LNX.4.44L0.0711281654560.2729-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <474C34CC.6060509@gmail.com>
-	 <84144f020711290002p290e91a4ubc40f1efbc877f75@mail.gmail.com>
-	 <19f34abd0711290110n501ddb43wf3ab69b526acef95@mail.gmail.com>
-	 <Pine.LNX.4.64.0711291127470.26543@sbz-30.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2007 10:39 AM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> Hi,
->
-> On Nov 29, 2007 9:02 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > > Is it really necessary to track every memory address? Tracking slab
-> > > objects would require far less memory. You might also want to make
-> > > kzalloc() and GFP_ZERO mark the memory area as initialized to avoid
-> > > some page faults.
->
-> On Thu, 29 Nov 2007, Vegard Nossum wrote:
-> > Yes, we are in fact only tracking the memory within SLUB allocations
-> > (minus what SLUB itself needs for bookkeeping -- like the caches).
->
-> Yeah but you didn't answer my question: why do we track every memory
-> address instead of slab objects? What's the benefit? Like I already said,
-> tracking slab objects would require much less memory which makes the
-> thing more practical. It also reduces the number of false positives (the
-> CONFIG_OPTIMIZE_FOR_SIZE problem). And we already have slab poisoning to
-> cover the cases we would not catch with this scheme.
+On Wed, 28 Nov 2007 17:00:57 -0500 (EST),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-If I understand you correctly, you only want to be notified if any
-memory within an allocation is used before any memory within the
-allocation has been initialized. I think that this would be quite
-useless compared to tracking all the bytes of an allocation. I am not
-truly concerned about the memory usage; this kind of error detection
-is by definition slow and memory intense. I think that slab poisoning
-is in a way more subtle, since it does not immediately produce a
-warning on its own; what it does is really to invoke *other* error
-catching mechanisms. Slab poisoning works best with pointers since
-pointers will be dereferenced. What about other kinds of data? The
-kernel will not complain (loudly enough, anyway) if your bit-field
-contains some arbitrary unexpected value. Kmemcheck will immediately
-print a message to the log in this case.
+> On Wed, 28 Nov 2007, Greg KH wrote:
+> 
+> > On Wed, Nov 28, 2007 at 03:42:00PM -0500, Alan Stern wrote:
+> > > This patch (as1020) adds a check to kobject_init() to insure that the
+> > > ktype field is not NULL.  This is just for safety's sake; as far as I
+> > > know there are no remaining places where the field is left unset.  But
+> > > ironically, kset_init() did fail to set it!  The patch fixes that and
+> > > removes some redundant initialization in kset_createa().
+> > > 
+> > > The patch also fixes up elevator_init(), where ktype was set after
+> > > calling kobject_init() instead of before.
+> > 
+> > No, it's safe to set ktype after kobject_init, it was just not safe to
+> > set the kset.  As Kay pointed out, I just added a patch to my tree to
+> > resolve this issue, and I'll go back and update the documentation now.
+> > 
+> > I do like the "check for a ktype" warning, I'll go add that to my local
+> > tree and see what breaks.  Odds are, all the static kobjects will :(
+> 
+> You have to be careful.  The ktype check I wrote lives in
+> kobject_init() -- that's why I had to make elevator_init() assign the
+> ktype before calling kobject_init().  If you put the check into
+> kobject_add() instead then you won't end up checking objects that get
+> initialized but not added.
+> 
+> Yes, nobody would deliberately use a kobject without adding it, but it 
+> could happen as the result of an failure between the _init and _add 
+> calls.
 
-> On Thu, 29 Nov 2007, Vegard Nossum wrote:
-> > As for the kzalloc() and GFP_ZERO, I believe these will write zeros to
-> > the data in question before the memory is returned to the caller. In
-> > that case, the area will be "automatically" set to initialized since
-> > these writes are also intercepted by kmemcheck.
->
-> Yes, and what I proposed is as a potential optimization. Debugging aids
-> need to be fast enough to be practical.
-
-Yep, I didn't realize. Thanks. :-)
-
->
->                         Pekka
->
-
-Vegard
+And if someone calls kobject_put() after kobject_init() to clean up,
+their release function will not be called if they didn't set the ktype.
+So the check really belongs into kobject_init() IMO.
