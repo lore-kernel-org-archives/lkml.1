@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXK2TsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbXK2TvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933251AbXK2TsN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:48:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933723AbXK2Tqq
+	id S932919AbXK2TvO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:51:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbXK2Tu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:46:46 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:49526 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933716AbXK2Tqp (ORCPT
+	Thu, 29 Nov 2007 14:50:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51429 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758115AbXK2Tu4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:46:45 -0500
-Subject: Re: Out of tree module using LSM
-From: Jon Masters <jonathan@jonmasters.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, tvrtko.ursulin@sophos.com,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Valdis.Kletnieks@vt.edu
-In-Reply-To: <2c0942db0711291111t16a4eb49h6b1e83ddf7bb4cf9@mail.gmail.com>
-References: <20071128183040.GW8181@ftp.linux.org.uk>
-	 <OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
-	 <20071129173601.34273083@the-village.bc.nu>
-	 <2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
-	 <1196362612.6473.98.camel@perihelion>
-	 <2c0942db0711291111t16a4eb49h6b1e83ddf7bb4cf9@mail.gmail.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Thu, 29 Nov 2007 14:45:51 -0500
-Message-Id: <1196365551.6473.103.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Thu, 29 Nov 2007 14:50:56 -0500
+Date: Thu, 29 Nov 2007 11:49:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, zach@vmware.com
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
+ task
+In-Reply-To: <20071129192721.GP24223@one.firstfloor.org>
+Message-ID: <alpine.LFD.0.9999.0711291139290.8458@woody.linux-foundation.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <474F01F6.2030509@zytor.com>
+ <alpine.LFD.0.9999.0711291027070.8458@woody.linux-foundation.org> <474F08E1.2090806@zytor.com> <alpine.LFD.0.9999.0711291057320.8458@woody.linux-foundation.org> <474F1027.2020801@zytor.com> <20071129192721.GP24223@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2007-11-29 at 11:11 -0800, Ray Lee wrote:
-> On Nov 29, 2007 10:56 AM, Jon Masters <jonathan@jonmasters.org> wrote:
-> > On Thu, 2007-11-29 at 10:40 -0800, Ray Lee wrote:
-> > > On Nov 29, 2007 9:36 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > > > closed. But more importantly further access to it can be blocked until
-> > > > > appropriate actions are taken which also applies with your example, no? Is
-> > > >
-> > > > That bit is hard- very hard.
-> > >
-> > > In some sense it seems like the same problem faced by dynamic
-> > > translators such as Qemu. They really want to vet a dirtied or faulted
-> > > page before allowing the app to run unhindered. It's be nice to have
-> > > some way to do that without virtualizing the whole of userspace.
-> >
-> > Like I hinted at, you can't just "vet a page". Because a page alone is
-> > meaningless garbage, unless it happens to be an extremely small program,
-> > with headers, all nicely aligned. Most likely you don't know if a random
-> > page of data is code from a COFF file, ELF file, or some random crap I
-> > typed in at a terminal after having too much coffee.
-> >
-> > So. You'd need to scan *all the pages* of *the entire file*, every time
-> > that you performed any type of operation.
+
+On Thu, 29 Nov 2007, Andi Kleen wrote:
 > 
-> *blink* Really?
+> For i386 iirc Jeremy/Zach did the benchmarking and they settled
+> on %fs because it was faster for something (originally it was %gs too) 
 
-Yeah, really.
+Hmm. Context switching ends up having to switch the segment that we do 
+*not* use for the kernel, and the context switching can be faster for the 
+case where
 
-> To lift Alan's example, a naive first implementation
-> would be to create a suffix tree of all of ESR's works, then scan each
-> page on fault to see if there are any partial matches in the tree.
+ (a) the segment selector is identical in both source and destination
+*AND*
+ (b) the selector is either zero or points to a GDT entry.
 
-Ah, but I could write a sequence of pages that on their own looked
-garbage, but in reality, when executed would print out a copy of the
-Jargon File in all its glory. And if you still think you could look for
-patterns, how about executable code that self-modifies in random ways
-but when executed as a whole actually has the functionality of fetchmail
-embedded within it? How would you guard against that?
+So yes, context switching can be faster for a NUL selector if both old and 
+new threads use it, and in fact that's the onle case we check right now:
 
-Jon.
+	/*
+	 * Restore %gs if needed (which is common)
+	 */
+	if (prev->gs | next->gs)
+		loadsegment(gs, next->gs);
 
+for the 32-bit case. That is faster if "gs" is normally zero, since that 
+means that we can avoid that loadsegment.
 
+HOWEVER. That is actually not the right (well, "complete") conditional, 
+since it's only one sub-case of the thing that matters. The right 
+conditional is probably
+
+	/*
+	 * Restore %gs if needed (which is common).
+	 * We can avoid it if they are identical, and
+	 * point to the GDT.
+	 */
+	if ((prev->gs ^ next->gs) | (next->gs & 4))
+		loadsegment(gs, next->gs);
+
+At that point, we would only have to reload stuff if the user actually 
+uses a local descriptor table entry (which does happen for threaded apps, 
+I guess, but at least we avoid it for all the common traditional UNIX 
+processes).
+
+			Linus
