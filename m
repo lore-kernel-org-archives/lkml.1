@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXK2OAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXK2OHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbXK2OAd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 09:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbXK2OAX
+	id S1762298AbXK2OHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 09:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbXK2OGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 09:00:23 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:59332 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755733AbXK2OAW (ORCPT
+	Thu, 29 Nov 2007 09:06:51 -0500
+Received: from mailrelay.tu-graz.ac.at ([129.27.2.202]:51811 "EHLO
+	mailrelay.tugraz.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754610AbXK2OGt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 09:00:22 -0500
-Date: Thu, 29 Nov 2007 08:57:01 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: Remy Bohmer <linux@bohmer.net>, Daniel Walker <dwalker@mvista.com>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will
- stall forever
-In-Reply-To: <20071129133604.GA23845@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.58.0711290849140.21439@gandalf.stny.rr.com>
-References: <1196177122.23808.7.camel@imap.mvista.com>
- <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
- <20071128172509.GA30173@flint.arm.linux.org.uk>
- <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
- <20071128200550.GA3494@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
- <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
- <20071129102506.GB22793@flint.arm.linux.org.uk>
- <3efb10970711290327s3c60da1ey3b6fae738090ca5@mail.gmail.com>
- <20071129133604.GA23845@flint.arm.linux.org.uk>
+	Thu, 29 Nov 2007 09:06:49 -0500
+X-DKIM: Sendmail DKIM Filter v2.3.2 mailrelay1.tugraz.at lATE5nHC011807
+Message-ID: <20071129150550.86453nubw8i5xi68@webmail.tugraz.at>
+X-Priority: 3 (Normal)
+Date: Thu, 29 Nov 2007 15:05:50 +0100
+From: Johann Wilhelm <johann.wilhelm@student.tugraz.at>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Rui Santos <rsantos@grupopie.com>, Pete Zaitcev <zaitcev@redhat.com>,
+       linux-usb@vger.kernel.org, preining@logic.at,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org, jsagarribay@gmail.com
+Subject: Re: Add the infamous Huawei E220 to option.c
+References: <20071128161305.b01167b3.zaitcev@redhat.com>
+	<200711291149.46326.oliver@neukum.org> <474E9D7E.4040007@grupopie.com>
+	<200711291255.08603.oliver@neukum.org>
+In-Reply-To: <200711291255.08603.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.2-cvs)
+X-Organization: Graz University of Technology
+X-Originating-IP: 77.118.231.238
+X-Remote-Browser: Mozilla/5.0 (compatible; Konqueror/3.5; Linux)
+	KHTML/3.5.7 (like Gecko)
+X-Spam-Scanner: SpamAssassin 3.002003 
+X-Spam-Score-relay: -3.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If everything's working please also add code to also support the other  
+E220 device... so both PID 0x1003 and 0x1004 should be treaded the  
+same way...
 
-On Thu, 29 Nov 2007, Russell King - ARM Linux wrote:
+to test the device with the 0x1004-PID maybe Jaime Velasco  
+<jsagarribay@gmail.com> could be asked.. he initialy added the lines  
+for this device in option.c
 
-> On Thu, Nov 29, 2007 at 12:27:30PM +0100, Remy Bohmer wrote:
+73
+
+Zitat von Oliver Neukum <oliver@neukum.org>:
+
+> Am Donnerstag 29 November 2007 schrieb Rui Santos:
+>> >> Just to remember that that specific flag was one SET and, was removed,
+>> >> in part, because of what I state. Of course we aim at perfection but, if
+>> >> the benefits are only for a few situations and, will cause all this
+>> >> problems for all other, perhaps the reinsert of that flag would be a
+>> >> positive action.
+>> >>
+>> >
+>> > OK, can you provide "lsusb -v" for the device in the CD mode and in
+>> > the modem mode?
+>> >
+>> Of course. Heri it is.
 >
-> Ah, and looking at the changes to the file, the addition of the mask
-> and unmask was done by someone who didn't understand what this was
-> trying to do.  So that change should be backed out.
+> Thanks. Please try this patch.
+>
+> 	Regards
+> 		Oliver
+>
+> ----
+>
+> --- a/drivers/usb/serial/option.c	2007-11-29 12:35:09.000000000 +0100
+> +++ b/drivers/usb/serial/option.c	2007-11-29 12:47:34.000000000 +0100
+> @@ -158,7 +158,7 @@ static struct usb_device_id option_ids[]
+>  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
+>  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_NETWORK) },
+>  	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
+> -	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
+> +	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID,  
+> HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
+>  	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS) },
+>  	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel  
+> Merlin XS620/S640 */
+>  	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel  
+> Merlin S620 */
+>
 >
 
-Perhaps only part of the change should be backed out.  The part that masks
-the irq in the handle_simple_irq code.
-
-That's from commit 76d2160147f43f982dfe881404cfde9fd0a9da21 which is to
-not disable an irq line when disable_irq is called.  A form of lazy
-disable irq.
-
-This speeds up code that uses disable_irq, since the line is only masked
-when an interrupt actually arrives. Using disable_irq / enable_irq does no
-IRQ chip modifications if an interrupt from the IRQ line does not arrive
-between the two.
-
-Now the question is, can something that uses handle_simple_irq call
-disable_irq?  If there is no mask function, I would assume that this would
-be a noop in such a case. If this is true, then we could remove the mask
-from handle_simple_irq. But then we might want to add a BUG() in
-disable_irq for simple_irqs.
-
--- Steve
 
