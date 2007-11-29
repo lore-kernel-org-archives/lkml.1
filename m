@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933861AbXK2WgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbXK2WhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933861AbXK2WgP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbXK2Wf4
+	id S934088AbXK2WhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbXK2WhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:35:56 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45195 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754965AbXK2Wfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:35:55 -0500
-Date: Thu, 29 Nov 2007 14:34:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-cc: Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
- task
-In-Reply-To: <20071129222531.EFEA826F8E7@magilla.localdomain>
-Message-ID: <alpine.LFD.0.9999.0711291434270.8458@woody.linux-foundation.org>
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <20071129222531.EFEA826F8E7@magilla.localdomain>
+	Thu, 29 Nov 2007 17:37:03 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57229 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759437AbXK2Wg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 17:36:57 -0500
+Date: Thu, 29 Nov 2007 14:11:32 -0800
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
+	insert/remove race (v3)
+Message-ID: <20071129221132.GA13651@suse.de>
+References: <474F2532.5090708@rtr.ca> <Pine.LNX.4.44L0.0711291700260.5666-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0711291700260.5666-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 29 Nov 2007, Roland McGrath wrote:
+On Thu, Nov 29, 2007 at 05:07:58PM -0500, Alan Stern wrote:
+> On Thu, 29 Nov 2007, Mark Lord wrote:
 > 
-> Um, really?  This is x86-64 code.  AIUI those values don't have any effect
-> at all in 64-bit mode (as the kernel is).  I haven't found any code in
-> entry_64.S or ia32entry.S that touches them.  __switch_to uses direct
-> access to the segment registers just as I've done.
+> > > So again, the problem is in the higher up scsi layer, and that is where
+> > > the problem should already be fixed.
+> > ..
+> > 
+> > Ahhh.. so you figure the Oops should also have been fixed
+> > as part of the 2.6.24 SCSI fixes ?  That's what I was missing here.
+> 
+> Yes indeed.  I wish I could point you to the exact patch containing the 
+> fix, but the git software seems to have lost track of it (it's combined
+> in with a large number of other patches with no obvious way to separate 
+> it out).  It's also available in the various mailing list archives, but 
+> I don't have a pointer to it and there's no reasonable way to search 
+> for it.
+> 
+> The patch in question was written by Matthew Wilcox; it added code to 
+> the SCSI async-scanning routines to utilize the scan_mutex.  IMO it 
+> should have been applied to 2.6.23 but it wasn't.
 
-Yes, you're right, I just looked at the ia32 part and didn't read your 
-patches right.
+If someone can dig it out, and send it to stable@kernel.org, I'd be
+gladd to add it to the older kernel trees...
 
-		Linus
+thanks,
+
+greg k-h
