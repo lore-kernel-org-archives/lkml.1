@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbXK2PlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXK2Plk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760446AbXK2PlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbXK2Pkw
+	id S1760975AbXK2Plk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbXK2Plc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:40:52 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:26345 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754805AbXK2Pkv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:40:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=J0X+j4rRu+YBE4UDJa3vfvhAVVR4cApHcT1s1+bj5KBXoEgxiOf41p8zxXKPS8ZsfCF+sm/cLP6Oyeh2oHznohElAOQyPfmgyPkX5dJObJk29fAF/Jfh6FDCYZwFM/zLCYzSoq9z3kDGFLCbxTqkHNQmbKrtVJPpbkh48kzdne0=
-Message-ID: <2c0942db0711290740y7c730fb3te629454462df3efe@mail.gmail.com>
-Date: Thu, 29 Nov 2007 07:40:49 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: bdupree@techfinesse.com
-Subject: Re: Dynticks Causing High Context Switch Rate in ksoftirqd
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46738.67.173.156.207.1196304247.squirrel@www.techfinesse.net>
+	Thu, 29 Nov 2007 10:41:32 -0500
+Received: from rtr.ca ([76.10.145.34]:3593 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756632AbXK2Plb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 10:41:31 -0500
+Message-ID: <474EDDA9.1040205@rtr.ca>
+Date: Thu, 29 Nov 2007 10:41:29 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Greg KH <gregkh@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] base/class.c: prevent ooops due to insert/remove race
+References: <474E3964.7040200@rtr.ca> <20071129043307.GA4766@suse.de>
+In-Reply-To: <20071129043307.GA4766@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46738.67.173.156.207.1196304247.squirrel@www.techfinesse.net>
-X-Google-Sender-Auth: 87c490f1116f4c6b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 28, 2007 6:44 PM, <bdupree@techfinesse.com> wrote:
-> I built the same dynticks-enabled 2.6.23.9 kernel on a nearly identical
-> system with minor changes to reflect the slightly different hardware.
-> These two systems have identical MSI E7210 MasterX FA6R motherboards (same
-> model and revision.) The differences are as follows:
->
-> behemoth (using Slackware 10.2)
-> -----------------------------------------------------------------
-> dual 2.4 GHz Xeons 400 MHz FSB
-> LSI 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI
-> Newer SATA/PATA Intel PIIX drivers
->
-> titan (using Slackware 11.0)
-> -----------------------------------------------------------------
-> dual 2.0 GHz Xeons 533 MHz FSB
-> Creative Labs SB Audigy LS (using ALSA driver)
-> Older IDE PATA Intel PIIX drivers
->
-> The result is that "behemoth" continues to exhibit 155,000 context
-> switches per second at idle while "titan" shows about 25 - 30 context
-> switches per second. Note that motherboard BIOS'es are at the same
-> revision and configured identically.
->
-> I guess (ugh) it's time for me to pull the MPT-Fusion U320 HBA and the
-> SATA disks out of "behemoth" and configure it with old style IDE drives to
-> be as close as possible to "titan." Then I can add parts back and see when
-> the problem occurs.
+Greg KH wrote:
+> On Wed, Nov 28, 2007 at 11:00:36PM -0500, Mark Lord wrote:
+>> While doing insert/remove (quickly) tests on USB, I managed to trigger
+>> an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
+>>
+>> This patch prevents this oops.
+>>
+>> There is still the larger problem of the overall race
+>> that caused this in the first place, but much of the rest
+>> of the code in class.c appears to also do NULL checks to
+>> avoid Oops'ing, so this continues the tradition.
+>>
+>> Signed-off-by:  Mark Lord <mlord@pobox.com>
+> 
+> As this is a bandage over the real problem, I'd prefer to not apply this
+> one right now until we find the root cause.
+...
 
-Well, the first thing that seems obvious is that you're using
-different version of userspace, and the newer userspace is on the
-system that behaves better.
+Ahh.. but the problem there, is that you've already said you will
+not be looking for any cause.  This patch prevents the Oops,
+in the same manner as existing code in that same file.
 
-The second thing that pops to mind: are you doing all these
-measurements booted into single user mode (init=/bin/bash or
-somesuch)? If not, then I don't think we can pin this on the hardware
-quite yet.
+Would you perhaps prefer a second patch to remove all of the other
+existing bandages from that file?  I don't think so.
+
+This patch fixes a *real* ooops that can occur on servers, desktops,
+and portables whenever a USB device is connected.
+
+Sounds like something worth fixing.
+
+Cheers
