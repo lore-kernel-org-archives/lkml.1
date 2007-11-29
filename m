@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbXK2KZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbXK2K0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762245AbXK2KZy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXK2KZp
+	id S1762641AbXK2K0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbXK2K0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:25:45 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55621 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758024AbXK2KZo (ORCPT
+	Thu, 29 Nov 2007 05:26:15 -0500
+Received: from alephnull.demon.nl ([83.160.184.112]:56829 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168AbXK2K0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:25:44 -0500
-Date: Thu, 29 Nov 2007 10:25:06 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Daniel Walker <dwalker@mvista.com>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
-Message-ID: <20071129102506.GB22793@flint.arm.linux.org.uk>
-References: <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com> <1196176294.13982.58.camel@localhost.localdomain> <1196177122.23808.7.camel@imap.mvista.com> <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com> <20071128172509.GA30173@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com> <20071128200550.GA3494@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com> <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
+	Thu, 29 Nov 2007 05:26:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=G1Ofx/sYJ1gMSOwDfPV3EKEio6XtWOrlex+cRZxQVdVVfcDU5rQXN96ry9f3U
+	v2zoDgJefIS8Bl6RE2lD5EipQ==
+Date: Thu, 29 Nov 2007 11:26:11 +0100
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>, kernel@wantstofly.org
+Subject: Re: [PATCH] asm-arm/{arch-omap,arch-ixp23xx}: parentheses around NR_IRQS definition
+Message-ID: <20071129102611.GB3959@xi.wantstofly.org>
+References: <474E10BA.8020704@tiscali.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <474E10BA.8020704@tiscali.nl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 11:14:30AM +0100, Remy Bohmer wrote:
-> I do not think Russell is right here with assuming that the wrong
-> interrupt handler type is used. Looking at the behaviour of the
-> mainline kernel (non-RT), the implementation is quite different: On
-> mainline the handle_simple_irq() in chip.c is not re-entrant, the
-> masking is **only** done in case of errors, and therefor never
-> unmasked again, of course.
+On Thu, Nov 29, 2007 at 02:07:06AM +0100, Roel Kluin wrote:
 
-The issue comes down to a very simple question:
+> in include/asm-arm/arch-omap/board-innovator.h:40
+> #define NR_IRQS    IH_BOARD_BASE + NR_FPGA_IRQS
+> 
+> in include/asm-arm/arch-ixp23xx/irqs.h:156:
+> #define NR_IRQS      NR_IXP23XX_IRQS + NR_IXP23XX_MACH_IRQS
+> 
+> This could lead to problems when this definition is used in:
+> 
+> arch/ia64/sn/kernel/irq.c:516:
+> sn_irq_lh = kmalloc(sizeof(struct list_head *) * NR_IRQS, GFP_KERNEL);
+> arch/x86/kernel/io_apic_32.c:693:
+> irq_cpu_data[i].irq_delta = kmalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+> 694:
+> irq_cpu_data[i].last_irq = kmalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+> 699:
+> memset(irq_cpu_data[i].irq_delta,0,sizeof(unsigned long) * NR_IRQS);
+> 700:
+> memset(irq_cpu_data[i].last_irq,0,sizeof(unsigned long) * NR_IRQS);
+> fs/proc/proc_misc.c:464:
+> per_irq_sum = kzalloc(sizeof(unsigned int)*NR_IRQS, GFP_KERNEL);
+> 
+> I am not sure whether this definition actually is used in any of these files.
+> Am I being paranoya? anyway, adding parentheses should be safe.
+> --
+> Add parentheses to prevent operator precedence errors
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-  Are you using handle_simple_irq() with an interrupt which can be masked?
+Acked-by: Lennert Buytenhek <buytenh@wantstofly.org>
 
-If the answer to that question is 'yes' then you're using the wrong handler.
-If 'no' then it's the right handler and the mask/unmask methods associated
-with the interrupt will be no-ops.
-
-Therefore, if you have mask/unmask methods for a simple IRQ which actually
-do something, clearly the first answer is the one which applies.  You're
-using the wrong handler.  Use the level or edge handlers instead.
+Please send to the ARM patch system.
