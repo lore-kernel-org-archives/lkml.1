@@ -1,320 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbXK2UZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934165AbXK2U0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934088AbXK2UZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933028AbXK2UZL
+	id S934165AbXK2U0B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934001AbXK2UZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:25:11 -0500
-Received: from mga02.intel.com ([134.134.136.20]:49329 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932522AbXK2UZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:25:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,230,1194249600"; 
-   d="scan'208";a="282854332"
-Date: Thu, 29 Nov 2007 12:19:25 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch] ata: ahci: Enclosure Management via LED
-Message-ID: <20071129121925.7d178915@appleyard>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 15:25:38 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39123 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933993AbXK2UZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:25:36 -0500
+Date: Thu, 29 Nov 2007 12:23:59 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, zach@vmware.com
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
+ task
+In-Reply-To: <200711292111.26661.ak@suse.de>
+Message-ID: <alpine.LFD.0.9999.0711291219230.8458@woody.linux-foundation.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129192721.GP24223@one.firstfloor.org> <alpine.LFD.0.9999.0711291139290.8458@woody.linux-foundation.org> <200711292111.26661.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements Enclosure Management via the LED protocol.  See
-the AHCI 1.1 spec for details.
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
----
-Ok, here's one that actually compiles...
 
- drivers/ata/ahci.c        |  154 ++++++++++++++++++++++++++++++++++++++++++++-
- drivers/ata/libata-scsi.c |    5 +-
- include/linux/libata.h    |    2 +
- 3 files changed, 157 insertions(+), 4 deletions(-)
+On Thu, 29 Nov 2007, Andi Kleen wrote:
+> 
+> How would you catch (common) the case of them having different bases in the 
+> GDT TLS entries? At some point the selector has to be reloaded, otherwise 
+> it won't be picked up by the CPU.
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 2c686b4..27f8b3f 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -44,6 +44,7 @@
- #include <linux/dmi.h>
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_cmnd.h>
-+#include <scsi/scsi_device.h>
- #include <linux/libata.h>
- 
- #define DRV_NAME	"ahci"
-@@ -92,6 +93,8 @@ enum {
- 	HOST_IRQ_STAT		= 0x08, /* interrupt status */
- 	HOST_PORTS_IMPL		= 0x0c, /* bitmap of implemented ports */
- 	HOST_VERSION		= 0x10, /* AHCI spec. version compliancy */
-+	HOST_EM_LOC		= 0x1c, /* Enclosure Management location */
-+	HOST_EM_CTL		= 0x20, /* Enclosure Management Control */
- 
- 	/* HOST_CTL bits */
- 	HOST_RESET		= (1 << 0),  /* reset controller; self-clear */
-@@ -99,6 +102,7 @@ enum {
- 	HOST_AHCI_EN		= (1 << 31), /* AHCI enabled */
- 
- 	/* HOST_CAP bits */
-+	HOST_CAP_EMS		= (1 << 6),  /* Enclosure Management support */
- 	HOST_CAP_SSC		= (1 << 14), /* Slumber capable */
- 	HOST_CAP_PMP		= (1 << 17), /* Port Multiplier support */
- 	HOST_CAP_CLO		= (1 << 24), /* Command List Override support */
-@@ -193,6 +197,10 @@ enum {
- 					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN |
- 					  ATA_FLAG_IPM,
- 	AHCI_LFLAG_COMMON		= ATA_LFLAG_SKIP_D2H_BSY,
-+
-+	/* em_ctl bits */
-+	EM_CTL_RST			= (1 << 9), /* Reset */
-+	EM_CTL_TM			= (1 << 8), /* Transmit Message */
- };
- 
- struct ahci_cmd_hdr {
-@@ -216,6 +224,7 @@ struct ahci_host_priv {
- 	u32			port_map;	/* port map to use */
- 	u32			saved_cap;	/* saved initial cap */
- 	u32			saved_port_map;	/* saved initial port_map */
-+	u32 			em_loc; /* enclosure management location */
- };
- 
- struct ahci_port_priv {
-@@ -231,6 +240,7 @@ struct ahci_port_priv {
- 	unsigned int		ncq_saw_dmas:1;
- 	unsigned int		ncq_saw_sdb:1;
- 	u32 			intr_mask;	/* interrupts to enable */
-+	u16			led_state;	/* saved current led state */
- };
- 
- static int ahci_scr_read(struct ata_port *ap, unsigned int sc_reg, u32 *val);
-@@ -572,6 +582,11 @@ static struct pci_driver ahci_pci_driver = {
- #endif
- };
- 
-+static int ahci_em_messages = 1;
-+module_param(ahci_em_messages, int, 0444);
-+/* add other LED protocol types when they become supported */
-+MODULE_PARM_DESC(ahci_em_messages,
-+	"Set AHCI Enclosure Management Message type (0 = disabled, 1 = LED");
- 
- static inline int ahci_nr_ports(u32 cap)
- {
-@@ -1082,6 +1097,118 @@ static int ahci_reset_controller(struct ata_host *host)
- 	return 0;
- }
- 
-+/****** LED Enclosure Management routines ********/
-+static int ahci_reset_em(struct ata_host *host)
-+{
-+	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+	u32 em_ctl;
-+
-+	em_ctl = readl(mmio + HOST_EM_CTL);
-+	if ((em_ctl & EM_CTL_TM) || (em_ctl & EM_CTL_RST))
-+		return -EINVAL;
-+
-+	writel(em_ctl | EM_CTL_RST, mmio + HOST_EM_CTL);
-+	return 0;
-+}
-+
-+static int ahci_transmit_led_message(struct ata_port *ap, int led_num,
-+			int state)
-+{
-+	struct ahci_host_priv *hpriv = ap->host->private_data;
-+	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
-+	struct ahci_port_priv *pp = ap->private_data;
-+	u32 em_ctl;
-+	u32 message[] = {0, 0};
-+	unsigned int flags;
-+
-+	spin_lock_irqsave(ap->lock, flags);
-+
-+	/*
-+	 * if we are still busy transmitting a previous message,
-+	 * do not allow
-+	 */
-+	em_ctl = readl(mmio + HOST_EM_CTL);
-+	if (em_ctl & EM_CTL_TM) {
-+		spin_unlock_irqrestore(ap->lock, flags);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * create message header - this is all zero except for
-+	 * the message size, which is 4 bytes.
-+	 */
-+	message[0] |= (4 << 8);
-+
-+	pp->led_state &= ~(9 << (3*led_num));
-+
-+	/*
-+	 * create the actual message
-+	 * XXX will need Port Multiplier support
-+	 */
-+	message[1] = (ap->port_no | (pp->led_state << 16));
-+
-+	/* LED bit locations are determined by the led_num */
-+	message[1] |= (state << (16 + (3*led_num)));
-+
-+	/* write message to EM_LOC */
-+	writel(message[0], mmio + hpriv->em_loc);
-+	writel(message[1], mmio + hpriv->em_loc+4);
-+
-+	/* save off new led state */
-+	pp->led_state = ((message[1] >> 16) & 0x00ff);
-+
-+	/*
-+	 * tell hardware to transmit the message
-+	 */
-+	writel(em_ctl | EM_CTL_TM, mmio + HOST_EM_CTL);
-+
-+	spin_unlock_irqrestore(ap->lock, flags);
-+	return 0;
-+}
-+
-+static int ahci_led_store(struct device *dev, const char *buf, int num)
-+{
-+	struct scsi_device *sdev = to_scsi_device(dev);
-+	struct ata_port *ap = ata_shost_to_port(sdev->host);
-+	struct ata_device *atadev = ata_scsi_find_dev(ap, sdev);
-+	int state;
-+
-+	if (!atadev || !ata_dev_enabled(atadev))
-+		return -EINVAL;
-+
-+	state = simple_strtoul(buf, NULL, 0);
-+	if (state != 0 && state != 1)
-+		return -EINVAL;
-+
-+	return ahci_transmit_led_message(ap, num, state);
-+}
-+
-+static ssize_t ahci_led_locate_store(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	int rc = ahci_led_store(dev, buf, 1);
-+	if (!rc)
-+		return count;
-+	return rc;
-+}
-+static DEVICE_ATTR(locate, S_IWUSR | S_IRUGO, NULL, ahci_led_locate_store);
-+
-+static ssize_t ahci_led_fault_store(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	int rc = ahci_led_store(dev, buf, 2);
-+	if (!rc)
-+		return count;
-+	return rc;
-+}
-+static DEVICE_ATTR(fault, S_IWUGO, NULL, ahci_led_fault_store);
-+
-+static struct device_attribute *ahci_em_led_attrs[] = {
-+	&dev_attr_locate,
-+	&dev_attr_fault,
-+	NULL
-+};
-+
- static void ahci_port_init(struct pci_dev *pdev, struct ata_port *ap,
- 			   int port_no, void __iomem *mmio,
- 			   void __iomem *port_mmio)
-@@ -2178,7 +2305,8 @@ static void ahci_print_info(struct ata_host *host)
- 	dev_printk(KERN_INFO, &pdev->dev,
- 		"flags: "
- 		"%s%s%s%s%s%s%s"
--		"%s%s%s%s%s%s%s\n"
-+		"%s%s%s%s%s%s%s"
-+		"%s\n"
- 		,
- 
- 		cap & (1 << 31) ? "64bit " : "",
-@@ -2195,7 +2323,8 @@ static void ahci_print_info(struct ata_host *host)
- 		cap & (1 << 17) ? "pmp " : "",
- 		cap & (1 << 15) ? "pio " : "",
- 		cap & (1 << 14) ? "slum " : "",
--		cap & (1 << 13) ? "part " : ""
-+		cap & (1 << 13) ? "part " : "",
-+		cap & (1 << 6) ? "ems ": ""
- 		);
- }
- 
-@@ -2331,6 +2460,27 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	ahci_init_controller(host);
- 	ahci_print_info(host);
- 
-+	if (ahci_em_messages && (hpriv->cap & HOST_CAP_EMS)) {
-+		u8 messages;
-+		void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+		u32 em_loc = readl(mmio + HOST_EM_LOC);
-+		u32 em_ctl = readl(mmio + HOST_EM_CTL);
-+
-+		messages = (em_ctl & 0x000f0000) >> 16;
-+
-+		/* we only support LED message type right now */
-+		if ((messages & 0x01) && (ahci_em_messages == 1)) {
-+			/* store em_loc */
-+			hpriv->em_loc = ((em_loc >> 16) * 4);
-+
-+			/* reset the LEDs */
-+			ahci_reset_em(host);
-+
-+			/* modify sht to add led sysfs files */
-+			ahci_sht.sdev_attrs = ahci_em_led_attrs;
-+		}
-+	}
-+
- 	pci_set_master(pdev);
- 	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
- 				 &ahci_sht);
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index fad236d..a49dc19 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -55,7 +55,7 @@ typedef unsigned int (*ata_xlat_func_t)(struct ata_queued_cmd *qc);
- 
- static struct ata_device *__ata_scsi_find_dev(struct ata_port *ap,
- 					const struct scsi_device *scsidev);
--static struct ata_device *ata_scsi_find_dev(struct ata_port *ap,
-+struct ata_device *ata_scsi_find_dev(struct ata_port *ap,
- 					    const struct scsi_device *scsidev);
- static int ata_scsi_user_scan(struct Scsi_Host *shost, unsigned int channel,
- 			      unsigned int id, unsigned int lun);
-@@ -2593,7 +2593,7 @@ static int ata_scsi_dev_enabled(struct ata_device *dev)
-  *	RETURNS:
-  *	Associated ATA device, or %NULL if not found.
-  */
--static struct ata_device *
-+struct ata_device *
- ata_scsi_find_dev(struct ata_port *ap, const struct scsi_device *scsidev)
- {
- 	struct ata_device *dev = __ata_scsi_find_dev(ap, scsidev);
-@@ -2603,6 +2603,7 @@ ata_scsi_find_dev(struct ata_port *ap, const struct scsi_device *scsidev)
- 
- 	return dev;
- }
-+EXPORT_SYMBOL_GPL(ata_scsi_find_dev);
- 
- /*
-  *	ata_scsi_map_proto - Map pass-thru protocol value to taskfile value.
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index ef52a07..1ccbd83 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -900,6 +900,8 @@ extern int ata_scsi_slave_config(struct scsi_device *sdev);
- extern void ata_scsi_slave_destroy(struct scsi_device *sdev);
- extern int ata_scsi_change_queue_depth(struct scsi_device *sdev,
- 				       int queue_depth);
-+struct ata_device *ata_scsi_find_dev(struct ata_port *ap,
-+				      const struct scsi_device *scsidev);
- extern struct ata_device *ata_dev_pair(struct ata_device *adev);
- extern int ata_do_set_mode(struct ata_link *link, struct ata_device **r_failed_dev);
- extern u8 ata_irq_on(struct ata_port *ap);
--- 
-1.5.3.4
+You're right. I somehow thought we were using the LDT for TLS entries, 
+which I guess we did back before kernel support, but yeah, we're using 
+per-CPU GDT entries, and would need to check that those match too.
+
+So yeah, the only safe ones are the ones we don't ever change, and that is 
+basically just the kernel entries (that users cannot load anyway).
+
+So scratch that. You're right - the NUL selector is the only special one 
+for the context switcher. 
+
+		Linus
