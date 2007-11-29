@@ -1,82 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933709AbXK2Tvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933849AbXK2TwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933709AbXK2Tvg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932910AbXK2TvA
+	id S933849AbXK2TwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933762AbXK2Tvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:51:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41343 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932320AbXK2Tu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:50:58 -0500
-Date: Thu, 29 Nov 2007 20:50:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH x86/mm 08/11] x86 ia32 ptrace getreg/putreg merge
-Message-ID: <20071129195032.GC15245@elte.hu>
-References: <20071129115711.9FC8526F8E7@magilla.localdomain> <20071129120031.F0F4F26F989@magilla.localdomain> <20071129173734.GA556@infradead.org> <474EFDF8.8090506@zytor.com>
+	Thu, 29 Nov 2007 14:51:41 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:41005 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933721AbXK2Tvj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 14:51:39 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=N/UijVYFbfy5ipubrXwVpe8KnmHAnAhY3xjNf+R2hhRrjuRUswGb0Uut+x3FcN6PQ
+	pE6DmUJ+ses5aemslme8A==
+Message-ID: <532480950711291151g25e24b8mf5dc453ac654a3e1@mail.gmail.com>
+Date: Thu, 29 Nov 2007 11:51:25 -0800
+From: "Michael Rubin" <mrubin@google.com>
+To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
+Subject: Re: [patch 1/1] Writeback fix for concurrent large and small file writes
+Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Chris Mason" <chris.mason@oracle.com>
+In-Reply-To: <396296481.07368@ustc.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <474EFDF8.8090506@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20071128192957.511EAB8310@localhost> <396296481.07368@ustc.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+So Feng's one line change fixes the problem at hand. I will do some
+more testing with it and then submit his patch credited with him for
+2.6.24. If that's cool with Feng.
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+Also I will take the comment changes and re-submit my patch for 2.6.25
+for general purpose improvement and see what happens.
 
-> Christoph Hellwig wrote:
->> On Thu, Nov 29, 2007 at 04:00:31AM -0800, Roland McGrath wrote:
->>> +#define R32(l,q)							\
->>> +	case offsetof(struct user32, regs.l):				\
->>> +		regs->q = value; break
->>> +
->>> +#define SEG32(rs)							\
->>> +	case offsetof(struct user32, regs.rs):				\
->>> +		return set_segment_reg(child,				\
->>> +				       offsetof(struct user_regs_struct, rs), \
->>> +				       value);				\
->>> +		break
->>
->> The code would be a lot more readable if you just opencoded this in the
->> caller instead of these obsfucated macros.
+mrubin
+
+On Nov 28, 2007 4:34 PM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> On Wed, Nov 28, 2007 at 11:29:57AM -0800, Michael Rubin wrote:
+> > >From mrubin@matchstick.corp.google.com Wed Nov 28 11:10:06 2007
+> > Message-Id: <20071128190121.716364000@matchstick.corp.google.com>
+> > Date: Wed, 28 Nov 2007 11:01:21 -0800
+> > From: mrubin@google.com
+> > To: mrubin@google.com
+> > Subject: [patch 1/1] Writeback fix for concurrent large and small file writes.
+> >
+> > From: Michael Rubin <mrubin@google.com>
+> >
+> > Fixing a bug where writing to large files while concurrently writing to
+> > smaller ones creates a situation where writeback cannot keep up with the
 >
-> For better or worse, though, that is style of existing code.  I 
-> personally found it easy to deal with when I went through the code 
-> recently.
-
-yep. The ptrace code has certainly lots of inconsistent style crap piled 
-up during its 10 year history of only be touched with a 10 foot pole. 
-I'd go for small patches that continuously improve the picture within 
-the existing mechanisms than any "100% pure required" approach. With 48 
-clean patches from Roland we are already on the right granularity level 
-i think.
-
-See how ptrace.c raw code quality has already increased leaps and 
-bounds:
-
-                                       errors   lines of code   errors/KLOC
- [before]
- arch/x86/kernel/ptrace_64.c               58             621          93.3
- arch/x86/kernel/ptrace_32.c               39             717          54.3
-
- [after]
- arch/x86/kernel/ptrace.c                  13            1135          11.4
-
-so i'm not worried about that aspect. We are definitely "for the 
-better".
-
-	Ingo
+> Could you demonstrate the situation? Or if I guess it right, could it
+> be fixed by the following patch? (not a nack: If so, your patch could
+> also be considered as a general purpose improvement, instead of a bug
+> fix.)
+>
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 0fca820..62e62e2 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -301,7 +301,7 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+>                          * Someone redirtied the inode while were writing back
+>                          * the pages.
+>                          */
+> -                       redirty_tail(inode);
+> +                       requeue_io(inode);
+>                 } else if (atomic_read(&inode->i_count)) {
+>                         /*
+>                          * The inode is clean, inuse
+>
+> Thank you,
+> Fengguang
+>
+>
+> > traffic and memory baloons until the we hit the threshold watermark. This
+> > can result in surprising latency spikes when syncing. This latency
+> > can take minutes on large memory systems. Upon request I can provide
+> > a test to reproduce this situation. The flush tree fixes this issue and
+> > fixes several other minor issues with fairness also.
+> >
+> > 1) Adding a data structure to guarantee fairness when writing inodes
+> > to disk.  The flush_tree is based on an rbtree. The only difference is
+> > how duplicate keys are chained off the same rb_node.
+> >
+> > 2) Added a FS flag to mark file systems that are not disk backed so we
+> > don't have to flush them. Not sure I marked all of them. But just marking
+> > these improves writeback performance.
+> >
+> > 3) Added an inode flag to allow inodes to be marked so that they are
+> > never written back to disk. See get_pipe_inode.
+> >
+> > Under autotest this patch has passed: fsx, bonnie, and iozone. I am
+> > currently writing more writeback focused tests (which so far have been
+> > passed) to add into autotest.
+> >
+> > Signed-off-by: Michael Rubin <mrubin@google.com>
+> > ---
+>
+>
