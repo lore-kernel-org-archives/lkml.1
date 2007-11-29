@@ -1,142 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbXK2GSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXK2G0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbXK2GSJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 01:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXK2GR4
+	id S1756886AbXK2G0R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 01:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXK2G0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 01:17:56 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:33695 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750987AbXK2GRz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 01:17:55 -0500
-Message-ID: <474E598C.7080107@snapgear.com>
-Date: Thu, 29 Nov 2007 16:17:48 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       David McCullough <david_mccullough@au.securecomputing.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: nommu: Add new vmalloc_user() and remap_vmalloc_range() interfaces.
-References: <20071128084914.GA28486@linux-sh.org>
-In-Reply-To: <20071128084914.GA28486@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 29 Nov 2007 01:26:00 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59878 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbXK2GZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 01:25:59 -0500
+Subject: Re: [RFC PATCH] LTTng instrumentation mm (using page_to_pfn)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071129023421.GA711@Krystal>
+References: <20071113193349.214098508@polymtl.ca>
+	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
+	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
+	 <20071116143019.GA16082@Krystal> <1195495485.27759.115.camel@localhost>
+	 <20071128140953.GA8018@Krystal> <1196268856.18851.20.camel@localhost>
+	 <20071129023421.GA711@Krystal>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 22:25:52 -0800
+Message-Id: <1196317552.18851.47.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-11-28 at 21:34 -0500, Mathieu Desnoyers wrote:
+> Before I start digging deeper in checking whether it is already
+> instrumented by the fs instrumentation (and would therefore be
+> redundant), is there a particular data structure from mm/ that you
+> suggest taking the swap file number and location in swap from ?
 
+page_private() at this point stores a swp_entry_t.  There are swp_type()
+and swp_offset() helpers to decode the two bits you need after you've
+turned page_private() into a swp_entry_t.  See how get_swap_bio()
+creates a temporary swp_entry_t from the page_private() passed into it,
+then uses swp_type/offset() on it?
 
-Paul Mundt wrote:
-> This builds on top of the earlier vmalloc_32_user() work introduced by
-> b50731732f926d6c49fd0724616a7344c31cd5cf, as we now have places in the
-> nommu allmodconfig that hit up against these missing APIs.
-> 
-> As vmalloc_32_user() is already implemented, this is moved over to
-> vmalloc_user() and simply made a wrapper. As all current nommu platforms
-> are 32-bit addressable, there's no special casing we have to do for
-> ZONE_DMA and things of that nature as per GFP_VMALLOC32.
-> 
-> remap_vmalloc_range() needs to check VM_USERMAP in order to figure out
-> whether we permit the remap or not, which means that we also have to
-> rework the vmalloc_user() code to grovel for the VMA and set the flag.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+I don't know if there is some history behind it, but it doesn't make a
+whole ton of sense to me to be passing page_private(page) into
+get_swap_bio() (which happens from its only two call sites).  It just
+kinda obfuscates where 'index' came from.
 
-Acked-by: Greg Ungerer <gerg@snapgear.com>
+It think we probably could just be doing
 
+	swp_entry_t entry = { .val = page_private(page), };
 
->  mm/nommu.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 44 insertions(+), 1 deletion(-)
-> 
-> diff --git a/mm/nommu.c b/mm/nommu.c
-> index 35622c5..c4768d0 100644
-> --- a/mm/nommu.c
-> +++ b/mm/nommu.c
-> @@ -10,6 +10,7 @@
->   *  Copyright (c) 2000-2003 David McCullough <davidm@snapgear.com>
->   *  Copyright (c) 2000-2001 D Jeff Dionne <jeff@uClinux.org>
->   *  Copyright (c) 2002      Greg Ungerer <gerg@snapgear.com>
-> + *  Copyright (c) 2007      Paul Mundt <lethal@linux-sh.org>
->   */
->  
->  #include <linux/module.h>
-> @@ -183,6 +184,26 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
->  }
->  EXPORT_SYMBOL(__vmalloc);
->  
-> +void *vmalloc_user(unsigned long size)
-> +{
-> +	void *ret;
-> +
-> +	ret = __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
-> +			PAGE_KERNEL);
-> +	if (ret) {
-> +		struct vm_area_struct *vma;
-> +
-> +		down_write(&current->mm->mmap_sem);
-> +		vma = find_vma(current->mm, (unsigned long)ret);
-> +		if (vma)
-> +			vma->vm_flags |= VM_USERMAP;
-> +		up_write(&current->mm->mmap_sem);
-> +	}
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(vmalloc_user);
-> +
->  struct page * vmalloc_to_page(void *addr)
->  {
->  	return virt_to_page(addr);
-> @@ -253,10 +274,17 @@ EXPORT_SYMBOL(vmalloc_32);
->   *
->   * The resulting memory area is 32bit addressable and zeroed so it can be
->   * mapped to userspace without leaking data.
-> + *
-> + * VM_USERMAP is set on the corresponding VMA so that subsequent calls to
-> + * remap_vmalloc_range() are permissible.
->   */
->  void *vmalloc_32_user(unsigned long size)
->  {
-> -	return __vmalloc(size, GFP_KERNEL | __GFP_ZERO, PAGE_KERNEL);
-> +	/*
-> +	 * We'll have to sort out the ZONE_DMA bits for 64-bit,
-> +	 * but for now this can simply use vmalloc_user() directly.
-> +	 */
-> +	return vmalloc_user(size);
->  }
->  EXPORT_SYMBOL(vmalloc_32_user);
->  
-> @@ -1213,6 +1241,21 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long from,
->  }
->  EXPORT_SYMBOL(remap_pfn_range);
->  
-> +int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
-> +			unsigned long pgoff)
-> +{
-> +	unsigned int size = vma->vm_end - vma->vm_start;
-> +
-> +	if (!(vma->vm_flags & VM_USERMAP))
-> +		return -EINVAL;
-> +
-> +	vma->vm_start = (unsigned long)(addr + (pgoff << PAGE_SHIFT));
-> +	vma->vm_end = vma->vm_start + size;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(remap_vmalloc_range);
-> +
->  void swap_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
->  {
->  }
-> 
+in get_swap_bio() and not passing page_private().  We have the page in
+there already, so we don't need to pass a derived value like
+page_private().  At the least, it'll save some clutter in the function
+declaration.  
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Or, make a helper:
+
+static swp_entry_t page_swp_entry(struct page *page)
+{
+	swp_entry_t entry;
+	VM_BUG_ON(!PageSwapCache(page));
+	entry.val = page_private(page);
+	return entry;
+}
+
+I see at least 4 call sites that could use this.  The try_to_unmap_one()
+caller would trip over the debug check, so you'd have to move the call
+inside of the if(PageSwapCache(page)) statement.
+
+-- Dave
+
