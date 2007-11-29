@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761017AbXK2P7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbXK2P7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761017AbXK2P7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXK2P7D
+	id S1762628AbXK2P7a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbXK2P7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:59:03 -0500
-Received: from k2smtpout03-02.prod.mesa1.secureserver.net ([64.202.189.172]:53247
-	"HELO k2smtpout03-02.prod.mesa1.secureserver.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751440AbXK2P7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:59:01 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 10:59:01 EST
-Message-ID: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com>
-Date: Thu, 29 Nov 2007 10:52:20 -0500
-From: Jing Xue <jingxue@digizenstudio.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: git guidance
+	Thu, 29 Nov 2007 10:59:05 -0500
+Received: from rtr.ca ([76.10.145.34]:3690 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756740AbXK2P7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 10:59:04 -0500
+Message-ID: <474EE1C6.2080100@rtr.ca>
+Date: Thu, 29 Nov 2007 10:59:02 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+To: Greg KH <gregkh@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] base/class.c: prevent ooops due to insert/remove race (v2)
+References: <474E3964.7040200@rtr.ca> <20071129043307.GA4766@suse.de>
+In-Reply-To: <20071129043307.GA4766@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> On Wed, Nov 28, 2007 at 11:00:36PM -0500, Mark Lord wrote:
+>> While doing insert/remove (quickly) tests on USB, I managed to trigger
+>> an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
+>>
+>> This patch prevents this oops.
+>>
+>> There is still the larger problem of the overall race
+>> that caused this in the first place, but much of the rest
+>> of the code in class.c appears to also do NULL checks to
+>> avoid Oops'ing, so this continues the tradition.
+>>
+>> Signed-off-by:  Mark Lord <mlord@pobox.com>
+> 
+> As this is a bandage over the real problem, I'd prefer to not apply this
+> one right now until we find the root cause.
+...
 
-Quoting Al Boldi <a1426z@gawab.com>:
+Ahh... okay.. but since nobody is actually actively trying
+to "find the root cause", there's a problem with that approach.
 
-> Sure, browsing is the easy part, but Version Control starts when things
-> become writable.
+Rather than have systems continue to crash (reboot required to regain
+use of USB after the Oops), here is an improved version of the patch
+that addresses Greg's concern.
 
-But how is that supposed to work?  What happens when you make some
-changes to a file and save it?  Do you want the "git file system" to
-commit it right aways or wait until you to issue a "commit" command?
-The first behavior would obviously be wrong, and the second would make
-the "file system" not operationally transparent anyways. Right?
+This version still prevents the Oops, but also flags the BUG so that
+it will not go unnoticed.
 
-By the way, the only SCM I have worked with that tries to mount its
-repository (or a view on top of it) as a file system is ClearCase with
-its dynamic views. And, between the buggy file system implementation,
-the intrusion on workflow, and the lack of scalability, at least in
-the organization I worked for, it turned out to be a horrible,
-horrible, horrible idea.
+This should make everyone happier.
 
-Cheers.
--- 
-Jing Xue
+* * * *
 
+While doing insert/remove (quickly) tests on USB, I managed to trigger
+an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
 
+This patch prevents the oops, but still keeps the bug visible.
+
+There is still the larger problem of the overall race
+that caused this in the first place, but much of the rest
+of the code in class.c appears to also do NULL checks to
+avoid Oops'ing, so this continues the tradition.
+
+Signed-off-by:  Mark Lord <mlord@pobox.com> 
+---
+
+Patch applies to both 2.6.24 and 2.6.23.
+
+--- linux/drivers/base/class.c.orig	2007-11-29 10:51:43.000000000 -0500
++++ linux/drivers/base/class.c	2007-11-29 10:54:42.000000000 -0500
+@@ -354,6 +354,10 @@
+ 	char *class_name;
+ 	int size;
+ 
++	if (!name) {
++		BUG_ON(1);
++		return NULL;
++	}
+ 	size = strlen(name) + strlen(kobject_name(kobj)) + 2;
+ 
+ 	class_name = kmalloc(size, GFP_KERNEL);
