@@ -1,322 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762327AbXK2Ruu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762986AbXK2RvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762327AbXK2Ruu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932121AbXK2Ruh
+	id S1762986AbXK2RvM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:51:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761089AbXK2Ru5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:50:37 -0500
-Received: from mga11.intel.com ([192.55.52.93]:47339 "EHLO mga11.intel.com"
+	Thu, 29 Nov 2007 12:50:57 -0500
+Received: from rtr.ca ([76.10.145.34]:2880 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760880AbXK2Ruf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:50:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,230,1194249600"; 
-   d="scan'208";a="408056836"
-Date: Thu, 29 Nov 2007 09:48:02 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch] ata: ahci: Enclosure Management via LED
-Message-ID: <20071129094802.49e729ed@appleyard>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1762682AbXK2Ru4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 12:50:56 -0500
+Message-ID: <474EFBFF.9090400@rtr.ca>
+Date: Thu, 29 Nov 2007 12:50:55 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH] base/class.c: prevent ooops due to insert/remove race
+References: <474E3964.7040200@rtr.ca> <20071129043307.GA4766@suse.de> <474EDDA9.1040205@rtr.ca> <20071129162727.GA8352@suse.de> <474EFAC1.1010100@rtr.ca> <474EFB61.8090803@rtr.ca>
+In-Reply-To: <474EFB61.8090803@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements Enclosure Management via the LED protocol.  See
-the AHCI 1.1 spec for details.
+Mark Lord wrote:
+> Mark Lord wrote:
+>...
+> And here is a "prevented" oops, courtesy of the patch (2.6.23.8).
+> These are easy to reproduce (just jiggle the connection on an
+> attached USB multi-card reader with a CF card inserted):
+...
+> [  347.099562] usb 5-6: USB disconnect, address 10
+> [  347.101077] BUG: unable to handle kernel NULL pointer dereference at 
+> virtual address 00000000
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
----
-Here's a new version of the Enclosure management patch I sent a few
-weeks ago.  I tried to incorporate all the feedback, although I'm
-still checking on whether it's ok to use these capability bits on
-a 1.0 ahci device.  Please let me know if there are additional
-changes needed.
+...
 
- drivers/ata/ahci.c        |  152 ++++++++++++++++++++++++++++++++++++++++++++-
- drivers/ata/libata-scsi.c |    5 +-
- include/linux/libata.h    |    2 +
- 3 files changed, 155 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 2c686b4..5f22132 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -44,6 +44,7 @@
- #include <linux/dmi.h>
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_cmnd.h>
-+#include <scsi/scsi_device.h>
- #include <linux/libata.h>
- 
- #define DRV_NAME	"ahci"
-@@ -92,6 +93,8 @@ enum {
- 	HOST_IRQ_STAT		= 0x08, /* interrupt status */
- 	HOST_PORTS_IMPL		= 0x0c, /* bitmap of implemented ports */
- 	HOST_VERSION		= 0x10, /* AHCI spec. version compliancy */
-+	HOST_EM_LOC		= 0x1c, /* Enclosure Management location */
-+	HOST_EM_CTL		= 0x20, /* Enclosure Management Control */
- 
- 	/* HOST_CTL bits */
- 	HOST_RESET		= (1 << 0),  /* reset controller; self-clear */
-@@ -99,6 +102,7 @@ enum {
- 	HOST_AHCI_EN		= (1 << 31), /* AHCI enabled */
- 
- 	/* HOST_CAP bits */
-+	HOST_CAP_EMS		= (1 << 6),  /* Enclosure Management support */
- 	HOST_CAP_SSC		= (1 << 14), /* Slumber capable */
- 	HOST_CAP_PMP		= (1 << 17), /* Port Multiplier support */
- 	HOST_CAP_CLO		= (1 << 24), /* Command List Override support */
-@@ -193,6 +197,10 @@ enum {
- 					  ATA_FLAG_ACPI_SATA | ATA_FLAG_AN |
- 					  ATA_FLAG_IPM,
- 	AHCI_LFLAG_COMMON		= ATA_LFLAG_SKIP_D2H_BSY,
-+
-+	/* em_ctl bits */
-+	EM_CTL_RST			= (1 << 9), /* Reset */
-+	EM_CTL_TM			= (1 << 8), /* Transmit Message */
- };
- 
- struct ahci_cmd_hdr {
-@@ -216,6 +224,7 @@ struct ahci_host_priv {
- 	u32			port_map;	/* port map to use */
- 	u32			saved_cap;	/* saved initial cap */
- 	u32			saved_port_map;	/* saved initial port_map */
-+	u32 			em_loc; /* enclosure management location */
- };
- 
- struct ahci_port_priv {
-@@ -231,6 +240,7 @@ struct ahci_port_priv {
- 	unsigned int		ncq_saw_dmas:1;
- 	unsigned int		ncq_saw_sdb:1;
- 	u32 			intr_mask;	/* interrupts to enable */
-+	u16			led_state;	/* saved current led state */
- };
- 
- static int ahci_scr_read(struct ata_port *ap, unsigned int sc_reg, u32 *val);
-@@ -572,6 +582,11 @@ static struct pci_driver ahci_pci_driver = {
- #endif
- };
- 
-+static int ahci_em_messages = 1;
-+module_param(ahci_em_messages, int, 0444);
-+/* add other LED protocol types when they become supported */
-+MODULE_PARM_DESC(ahci_em_messages,
-+	"Set AHCI Enclosure Management Message type (0 = disabled, 1 = LED");
- 
- static inline int ahci_nr_ports(u32 cap)
- {
-@@ -1082,6 +1097,116 @@ static int ahci_reset_controller(struct ata_host *host)
- 	return 0;
- }
- 
-+/****** LED Enclosure Management routines ********/
-+static int ahci_reset_em(struct ata_host *host)
-+{
-+	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+	u32 em_ctl;
-+
-+	em_ctl = readl(mmio + HOST_EM_CTL);
-+	if ((em_ctl & EM_CTL_TM) || (em_ctl & EM_CTL_RST))
-+		return -EINVAL;
-+
-+	writel(em_ctl | EM_CTL_RST, mmio + HOST_EM_CTL);
-+	return 0;
-+}
-+
-+static int ahci_transmit_led_message(struct ata_port *ap, int led_num,
-+			int state)
-+{
-+	struct ahci_host_priv *hpriv = ap->host->private_data;
-+	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
-+	struct ahci_port_priv *pp = ap->private_data;
-+	u32 em_ctl;
-+	u32 message[] = {0, 0};
-+	unsigned int flags;
-+
-+	spin_lock_irqsave(ap->lock, flags);
-+
-+	/*
-+	 * if we are still busy transmitting a previous message,
-+	 * do not allow
-+	 */
-+	em_ctl = readl(mmio + HOST_EM_CTL);
-+	if (em_ctl & EM_CTL_TM) {
-+		spin_unlock_irqrestore(ap->lock, flags);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * create message header - this is all zero except for
-+	 * the message size, which is 4 bytes.
-+	 */
-+	message[0] |= (4 << 8);
-+
-+	pp->led_state &= ~(9 << (3*led_num));
-+
-+	/*
-+	 * create the actual message
-+	 * XXX will need Port Multiplier support
-+	 */
-+	message[1] = (ap->port_no | (pp->led_state << 16));
-+
-+	/* LED bit locations are determined by the led_num */
-+	message[1] |= (state << (16 + (3*led_num)));
-+
-+	/* write message to EM_LOC */
-+	writel(message[0], mmio + hpriv->em_loc);
-+	writel(message[1], mmio + hpriv->em_loc+4);
-+
-+	/* save off new led state */
-+	pp->led_state = ((message[1] >> 16) & 0x00ff);
-+
-+	/*
-+	 * tell hardware to transmit the message
-+	 */
-+	writel(em_ctl | EM_CTL_TM, mmio + HOST_EM_CTL);
-+
-+	spin_unlock_irqrestore(ap->lock, flags);
-+	return 0;
-+}
-+
-+static ssize_t ahci_led_store(struct device *dev, const char *buf, int num)
-+{
-+	struct scsi_device *sdev = to_scsi_device(dev);
-+	struct ata_port *ap = ata_shost_to_port(sdev->host);
-+	struct ata_device *atadev = ata_scsi_find_dev(ap, sdev);
-+	int state;
-+	int rc;
-+
-+	if (!atadev || !ata_dev_enabled(atadev))
-+		return -EINVAL;
-+
-+	state = simple_strtoul(buf, NULL, 0);
-+	if (state != 0 && state != 1)
-+		return -EINVAL;
-+
-+	rc = ahci_transmit_led_message(ap, num, state);
-+	if (!rc)
-+		return count;
-+	return rc;
-+}
-+
-+static ssize_t ahci_led_locate_store(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	ahci_led_store(dev, buf, 1);
-+}
-+static DEVICE_ATTR(locate, S_IWUSR | S_IRUGO, NULL, ahci_led_locate_store);
-+
-+static ssize_t ahci_led_fault_store(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	ahci_led_store(dev, buf, 2);
-+}
-+static DEVICE_ATTR(fault, S_IWUGO, NULL, ahci_led_fault_store);
-+
-+static struct device_attribute *ahci_em_led_attrs[] = {
-+	&dev_attr_locate,
-+	&dev_attr_fault,
-+	NULL
-+};
-+
- static void ahci_port_init(struct pci_dev *pdev, struct ata_port *ap,
- 			   int port_no, void __iomem *mmio,
- 			   void __iomem *port_mmio)
-@@ -2178,7 +2303,8 @@ static void ahci_print_info(struct ata_host *host)
- 	dev_printk(KERN_INFO, &pdev->dev,
- 		"flags: "
- 		"%s%s%s%s%s%s%s"
--		"%s%s%s%s%s%s%s\n"
-+		"%s%s%s%s%s%s%s"
-+		"%s\n"
- 		,
- 
- 		cap & (1 << 31) ? "64bit " : "",
-@@ -2195,7 +2321,8 @@ static void ahci_print_info(struct ata_host *host)
- 		cap & (1 << 17) ? "pmp " : "",
- 		cap & (1 << 15) ? "pio " : "",
- 		cap & (1 << 14) ? "slum " : "",
--		cap & (1 << 13) ? "part " : ""
-+		cap & (1 << 13) ? "part " : "",
-+		cap & (1 << 6) ? "ems ": ""
- 		);
- }
- 
-@@ -2331,6 +2458,27 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	ahci_init_controller(host);
- 	ahci_print_info(host);
- 
-+	if (ahci_em_messages && (hpriv->cap & HOST_CAP_EMS)) {
-+		u8 messages;
-+		void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+		u32 em_loc = readl(mmio + HOST_EM_LOC);
-+		u32 em_ctl = readl(mmio + HOST_EM_CTL);
-+
-+		messages = (em_ctl & 0x000f0000) >> 16;
-+
-+		/* we only support LED message type right now */
-+		if ((messages & 0x01) && (ahci_em_messages == 1)) {
-+			/* store em_loc */
-+			hpriv->em_loc = ((em_loc >> 16) * 4);
-+
-+			/* reset the LEDs */
-+			ahci_reset_em(host);
-+
-+			/* modify sht to add led sysfs files */
-+			ahci_sht.sdev_attrs = ahci_em_led_attrs;
-+		}
-+	}
-+
- 	pci_set_master(pdev);
- 	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
- 				 &ahci_sht);
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index fad236d..a49dc19 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -55,7 +55,7 @@ typedef unsigned int (*ata_xlat_func_t)(struct ata_queued_cmd *qc);
- 
- static struct ata_device *__ata_scsi_find_dev(struct ata_port *ap,
- 					const struct scsi_device *scsidev);
--static struct ata_device *ata_scsi_find_dev(struct ata_port *ap,
-+struct ata_device *ata_scsi_find_dev(struct ata_port *ap,
- 					    const struct scsi_device *scsidev);
- static int ata_scsi_user_scan(struct Scsi_Host *shost, unsigned int channel,
- 			      unsigned int id, unsigned int lun);
-@@ -2593,7 +2593,7 @@ static int ata_scsi_dev_enabled(struct ata_device *dev)
-  *	RETURNS:
-  *	Associated ATA device, or %NULL if not found.
-  */
--static struct ata_device *
-+struct ata_device *
- ata_scsi_find_dev(struct ata_port *ap, const struct scsi_device *scsidev)
- {
- 	struct ata_device *dev = __ata_scsi_find_dev(ap, scsidev);
-@@ -2603,6 +2603,7 @@ ata_scsi_find_dev(struct ata_port *ap, const struct scsi_device *scsidev)
- 
- 	return dev;
- }
-+EXPORT_SYMBOL_GPL(ata_scsi_find_dev);
- 
- /*
-  *	ata_scsi_map_proto - Map pass-thru protocol value to taskfile value.
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index ef52a07..1ccbd83 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -900,6 +900,8 @@ extern int ata_scsi_slave_config(struct scsi_device *sdev);
- extern void ata_scsi_slave_destroy(struct scsi_device *sdev);
- extern int ata_scsi_change_queue_depth(struct scsi_device *sdev,
- 				       int queue_depth);
-+struct ata_device *ata_scsi_find_dev(struct ata_port *ap,
-+				      const struct scsi_device *scsidev);
- extern struct ata_device *ata_dev_pair(struct ata_device *adev);
- extern int ata_do_set_mode(struct ata_link *link, struct ata_device **r_failed_dev);
- extern u8 ata_irq_on(struct ata_port *ap);
--- 
-1.5.3.4
+Mmmm.. that's odd.  It *did* Oops there.  I wonder how/why ?
+
+Perhaps a *MAINTAINER* could take an interest in decoding the exact C-stmt
+that crashed ?
+
+> [  347.101086]  printing eip:
+> [  347.101088] c01bfe2d
+> [  347.101091] *pde = 00000000
+> [  347.101095] Oops: 0000 [#1]
+> [  347.101098] PREEMPT SMP [  347.101102] Modules linked in: 
+> nls_iso8859_1 nls_cp437 vfat fat usb_storage libusual microcode 
+> binfmt_misc rfcomm l2cap bluetooth nfs nfsd exportfs lockd nfs_acl 
+> auth_rpcgss sunrpc acpi_cpufreq cpufreq_stats cpufreq_userspace 
+> cpufreq_ondemand freq_table cpufreq_powersave container fan 
+> firmware_class pciehp pci_hotplug usbhid hid visor af_packet usbserial 
+> fuse firewire_sbp2 mousedev snd_hda_intel snd_pcm_oss snd_pcm 
+> snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi 
+> serio_raw snd_seq_midi_event snd_seq snd_timer snd_seq_device 
+> firewire_ohci firewire_core b44 mii thermal ehci_hcd uhci_hcd usbcore 
+> sdhci pcspkr sr_mod cdrom mmc_core crc_itu_t sg ac psmouse processor snd 
+> soundcore intel_agp agpgart battery button snd_page_alloc unix
+> [  347.101196] CPU:    1
+> [  347.101197] EIP:    0060:[strlen+8/17]    Not tainted VLI
+> [  347.101199] EFLAGS: 00010246   (2.6.23.8 #6)
+> [  347.101209] EIP is at strlen+0x8/0x11
+> [  347.101212] eax: 00000000   ebx: 0000000b   ecx: ffffffff   edx: 
+> f6cad204
+> [  347.101217] esi: c02f6887   edi: 00000000   ebp: f6cad204   esp: 
+> f7152e58
+> [  347.101221] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> [  347.101226] Process khubd (pid: 2087, ti=f7152000 task=c29beaa0 
+> task.ti=f7152000)
+> [  347.101229] Stack: f6cad204 c020ed4c f6cad1fc c03297f4 c0329780 
+> c020ee65 00000000 f6cad1fc [  347.101240]        f6cad098 00000202 
+> f5a70000 c020eef9 f6cad000 c021ab43 f6cad000 f77e0000 [  
+> 347.101250]        c021868c f77e0038 f77e0000 c02139bc f77e02ec f77e0000 
+> f8be27c0 f8bd6691 [  347.101261] Call Trace:
+> [  347.101268]  [make_class_name+29/87] make_class_name+0x1d/0x57
+> [  347.101280]  [class_device_del+131/271] class_device_del+0x83/0x10f
+> [  347.101291]  [class_device_unregister+8/16] 
+> class_device_unregister+0x8/0x10
+> [  347.101300]  [__scsi_remove_device+43/104] 
+> __scsi_remove_device+0x2b/0x68
+> [  347.101309]  [scsi_forget_host+45/74] scsi_forget_host+0x2d/0x4a
+> [  347.101319]  [scsi_remove_host+101/213] scsi_remove_host+0x65/0xd5
+> [  347.101329]  [<f8bd6691>] quiesce_and_remove_host+0x99/0xa7 
+> [usb_storage]
+> Nov 29 12:39:07 corey kernel: [  347.101346]  [<f8bd6763>] 
+> storage_disconnect+0xe/0x16 [usb_storage]
+> Nov 29 12:39:07 corey kernel: [  347.101361]  [<f88d7a50>] 
+> usb_unbind_interface+0x44/0x94 [usbcore]
+> Nov 29 12:39:07 corey kernel: [  347.101409]  
+> [__device_release_driver+113/142] __device_release_driver+0x71/0x8e
+> Nov 29 12:39:07 corey kernel: [  347.101418]  
+> [device_release_driver+30/52] device_release_driver+0x1e/0x34
+> Nov 29 12:39:07 corey kernel: [  347.101426]  
+> [bus_remove_device+109/125] bus_remove_device+0x6d/0x7d
+> Nov 29 12:39:07 corey kernel: [  347.101434]  [device_del+460/576] 
+> device_del+0x1cc/0x240
+> Nov 29 12:39:07 corey kernel: [  347.101444]  [<f88d53f9>] 
+> usb_disable_device+0x5c/0xbb [usbcore]
+> Nov 29 12:39:07 corey kernel: [  347.101489]  [<f88d1aff>] 
+> usb_disconnect+0x83/0x11b [usbcore]
+> Nov 29 12:39:07 corey kernel: [  347.101537]  [<f88d220d>] 
+> hub_thread+0x388/0xa8d [usbcore]
+> Nov 29 12:39:07 corey kernel: [  347.101586]  [schedule+1417/1463] 
+> __sched_text_start+0x589/0x5b7
+> Nov 29 12:39:07 corey kernel: [  347.101602]  
+> [autoremove_wake_function+0/53] autoremove_wake_function+0x0/0x35
+> Nov 29 12:39:07 corey kernel: [  347.101615]  [<f88d1e85>] 
+> hub_thread+0x0/0xa8d [usbcore]
+> Nov 29 12:39:07 corey kernel: [  347.101656]  [kthread+56/95] 
+> kthread+0x38/0x5f
+> Nov 29 12:39:07 corey kernel: [  347.101663]  [kthread+0/95] 
+> kthread+0x0/0x5f
+> Nov 29 12:39:07 corey kernel: [  347.101669]  
+> [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
+> Nov 29 12:39:07 corey kernel: [  347.101681]  =======================
+> Nov 29 12:39:07 corey kernel: [  347.101683] Code: f0 48 5e c3 56 89 d1 
+> 89 c6 83 ec 04 31 d2 89 c8 88 c4 ac 38 e0 75 03 8d 56 ff 84 c0 75 f4 5e 
+> 89 d0 5e c3 57 83 c9 ff 89 c7 31 c0 <f2> ae f7 d1 49 5f 89 c8 c3 57 89 
+> c7 89 d0 31 d2 85 c9 74 0c f2 Nov 29 12:39:07 corey kernel: [  
+> 347.101738] EIP: [strlen+8/17] strlen+0x8/0x11 SS:ESP 0068:f7152e58
+> Nov 29 12:39:07 corey kernel: [  345.226354] sd 7:0:0:0: [sdc] READ 
+> CAPACITY failed
+> Nov 29 12:39:07 corey kernel: [  345.226360] sd 7:0:0:0: [sdc] Result: 
+> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> Nov 29 12:39:07 corey kernel: [  345.226367] sd 7:0:0:0: [sdc] Sense not 
+> available.
+> Nov 29 12:39:07 corey kernel: [  345.226382] sd 7:0:0:0: [sdc] Write 
+> Protect is off
+> Nov 29 12:39:07 corey kernel: [  345.226386] sd 7:0:0:0: [sdc] Mode 
+> Sense: 00 00 00 00
+> Nov 29 12:39:07 corey kernel: [  345.226390] sd 7:0:0:0: [sdc] Assuming 
+> drive cache: write through
+> Nov 29 12:39:07 corey kernel: [  345.226471] sd 7:0:0:0: [sdc] Attached 
+> SCSI removable disk
+> Nov 29 12:39:07 corey kernel: [  345.226539] sd 7:0:0:0: Attached scsi 
+> generic sg2 type 0
+> Nov 29 12:39:07 corey kernel: [  347.151887] sd 7:0:0:0: [sdc] READ 
+> CAPACITY failed
+> Nov 29 12:39:07 corey kernel: [  347.151895] sd 7:0:0:0: [sdc] Result: 
+> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> Nov 29 12:39:07 corey kernel: [  347.151902] sd 7:0:0:0: [sdc] Sense not 
+> available.
+> Nov 29 12:39:07 corey kernel: [  347.151918] sd 7:0:0:0: [sdc] Write 
+> Protect is off
+> Nov 29 12:39:07 corey kernel: [  347.151922] sd 7:0:0:0: [sdc] Mode 
+> Sense: 00 00 00 00
+> Nov 29 12:39:07 corey kernel: [  347.151927] sd 7:0:0:0: [sdc] Assuming 
+> drive cache: write through
+> Nov 29 12:39:07 corey kernel: [  347.151981] sd 7:0:0:0: [sdc] READ 
+> CAPACITY failed
+> Nov 29 12:39:07 corey kernel: [  347.151985] sd 7:0:0:0: [sdc] Result: 
+> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> Nov 29 12:39:07 corey kernel: [  347.151993] sd 7:0:0:0: [sdc] Sense not 
+> available.
+> Nov 29 12:39:07 corey kernel: [  347.152008] sd 7:0:0:0: [sdc] Write 
+> Protect is off
+> Nov 29 12:39:07 corey kernel: [  347.152013] sd 7:0:0:0: [sdc] Mode 
+> Sense: 00 00 00 00
+> Nov 29 12:39:07 corey kernel: [  347.152017] sd 7:0:0:0: [sdc] Assuming 
+> drive cache: write through
+> Nov 29 12:39:07 corey kernel: [  345.279916] sd 7:0:0:0: [sdc] READ 
+> CAPACITY failed
+> Nov 29 12:39:07 corey kernel: [  345.279951] sd 7:0:0:0: [sdc] Result: 
+> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> Nov 29 12:39:07 corey kernel: [  345.279965] sd 7:0:0:0: [sdc] Sense not 
+> available.
+> Nov 29 12:39:07 corey kernel: [  345.279982] sd 7:0:0:0: [sdc] Write 
+> Protect is off
+> Nov 29 12:39:07 corey kernel: [  345.279987] sd 7:0:0:0: [sdc] Mode 
+> Sense: 00 00 00 00
+> Nov 29 12:39:07 corey kernel: [  345.279991] sd 7:0:0:0: [sdc] Assuming 
+> drive cache: write through
+> Nov 29 12:39:07 corey kernel: [  345.280047] sd 7:0:0:0: [sdc] READ 
+> CAPACITY failed
+> Nov 29 12:39:07 corey kernel: [  345.280051] sd 7:0:0:0: [sdc] Result: 
+> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> Nov 29 12:39:07 corey kernel: [  345.280059] sd 7:0:0:0: [sdc] Sense not 
+> available.
+> Nov 29 12:39:07 corey kernel: [  345.280075] sd 7:0:0:0: [sdc] Write 
+> Protect is off
+> Nov 29 12:39:07 corey kernel: [  345.280079] sd 7:0:0:0: [sdc] Mode 
+> Sense: 00 00 00 00
+> Nov 29 12:39:07 corey kernel: [  345.280083] sd 7:0:0:0: [sdc] Assuming 
+> drive cache: write through
+> Nov 29 12:39:07 corey kernel: [  345.289528] sd 7:0:0:0: [sdc] READ 
+> CAPACITY failed
+> Nov 29 12:39:07 corey kernel: [  345.289536] sd 7:0:0:0: [sdc] Result: 
+> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK
+> Nov 29 12:39:07 corey kernel: [  345.289542] sd 7:0:0:0: [sdc] Sense not 
+> available.
+> Nov 29 12:39:07 corey kernel: [  345.289560] sd 7:0:0:0: [sdc] Write 
+> Protect is off
+> Nov 29 12:39:07 corey kernel: [  345.289564] sd 7:0:0:0: [sdc] Mode 
+> Sense: 00 00 00 00
+> Nov 29 12:39:07 corey kernel: [  345.289569] sd 7:0:0:0: [sdc] Assuming 
+> drive cache: write through
+> 
+
