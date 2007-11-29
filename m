@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762436AbXK2KaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbXK2Kdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762436AbXK2KaE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:30:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbXK2K3v
+	id S1761293AbXK2Kdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbXK2Kdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:29:51 -0500
-Received: from mail.suse.de ([195.135.220.2]:33292 "EHLO mx1.suse.de"
+	Thu, 29 Nov 2007 05:33:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42054 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932AbXK2K3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:29:50 -0500
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
-References: <474C34CC.6060509@gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 Nov 2007 11:29:48 +0100
-In-Reply-To: <474C34CC.6060509@gmail.com>
-Message-ID: <p734pf59wf7.fsf@crumb.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1750987AbXK2Kdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 05:33:40 -0500
+Date: Thu, 29 Nov 2007 11:33:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Michael Buesch <mb@bu3sch.de>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
+Message-ID: <20071129103312.GC10577@elte.hu>
+References: <20071124175112.58193424@morte> <200711241948.58881.rjw@sisk.pl> <20071124194635.58f5a44b@morte> <200711242031.26134.rjw@sisk.pl> <20071129082029.22d6448a@morte>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071129082029.22d6448a@morte>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum <vegard.nossum@gmail.com> writes:
-> 
-> - We properly flush TLB entries that change. This used to not be the case, and so we
 
-For low values of "properly" @)
+* Stefano Brivio <stefano.brivio@polimi.it> wrote:
 
-> +	pte = lookup_address(addr);
-> +	change_page_attr(page, 1, __pgprot(pte->pte_low | _PAGE_VISIBLE));
-> +	__flush_tlb_one(addr);
+> Please remember that this isn't just an aesthetic issue, as some 
+> drivers (e.g. b43 and b43legacy, but I guess a lot more) rely on 
+> jiffies. Do I need to file a bug to bugzilla.kernel.org? Thank you.
 
-That's not enough, you need to flush all CPUs.
+yes, please do file a bugzilla report too - there seems to be no 
+progress or quick ideas at the moment.
 
-Also when you don't call global_flush_tlb() eventually because c_p_a() will leak flush
-objects over time.
-
--Andi
-
+	Ingo
