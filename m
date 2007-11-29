@@ -1,91 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXK2Aet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbXK2AjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbXK2Aet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:34:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXK2Aej
+	id S1761509AbXK2AjN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXK2AjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:34:39 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:47005 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1761638AbXK2Aeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:34:37 -0500
-Message-ID: <396296481.07368@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Thu, 29 Nov 2007 08:34:33 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Michael Rubin <mrubin@google.com>
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [patch 1/1] Writeback fix for concurrent large and small file
-	writes
-References: <20071128192957.511EAB8310@localhost>
+	Wed, 28 Nov 2007 19:39:03 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46972 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750850AbXK2AjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:39:01 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128192957.511EAB8310@localhost>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.17 (2007-11-01)
-Message-Id: <E1IxXMP-0002i8-4S@localhost>
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH x86/mm 1/6] x86-64 ia32 ptrace pt_regs cleanup
+X-Zippy-Says: I'll clean your ROOM!!  I know some GOOD stories, too!!  All about
+    ROAD Island's, HUSH Puppies, and how LUKE finds GOLD on his LAND!!
+Message-Id: <20071129003849.428E026F8E7@magilla.localdomain>
+Date: Wed, 28 Nov 2007 16:38:49 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 11:29:57AM -0800, Michael Rubin wrote:
-> >From mrubin@matchstick.corp.google.com Wed Nov 28 11:10:06 2007
-> Message-Id: <20071128190121.716364000@matchstick.corp.google.com>
-> Date: Wed, 28 Nov 2007 11:01:21 -0800
-> From: mrubin@google.com
-> To: mrubin@google.com
-> Subject: [patch 1/1] Writeback fix for concurrent large and small file writes.
-> 
-> From: Michael Rubin <mrubin@google.com>
-> 
-> Fixing a bug where writing to large files while concurrently writing to
-> smaller ones creates a situation where writeback cannot keep up with the
 
-Could you demonstrate the situation? Or if I guess it right, could it
-be fixed by the following patch? (not a nack: If so, your patch could
-also be considered as a general purpose improvement, instead of a bug
-fix.)
+This cleans up the getreg32/putreg32 functions to use struct pt_regs in a
+straightforward fashion, instead of equivalent ugly pointer arithmetic.
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 0fca820..62e62e2 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -301,7 +301,7 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
- 			 * Someone redirtied the inode while were writing back
- 			 * the pages.
- 			 */
--			redirty_tail(inode);
-+			requeue_io(inode);
- 		} else if (atomic_read(&inode->i_count)) {
- 			/*
- 			 * The inode is clean, inuse
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/ia32/ptrace32.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
-Thank you,
-Fengguang
-
-> traffic and memory baloons until the we hit the threshold watermark. This
-> can result in surprising latency spikes when syncing. This latency
-> can take minutes on large memory systems. Upon request I can provide
-> a test to reproduce this situation. The flush tree fixes this issue and
-> fixes several other minor issues with fairness also.
-> 
-> 1) Adding a data structure to guarantee fairness when writing inodes
-> to disk.  The flush_tree is based on an rbtree. The only difference is
-> how duplicate keys are chained off the same rb_node.
-> 
-> 2) Added a FS flag to mark file systems that are not disk backed so we
-> don't have to flush them. Not sure I marked all of them. But just marking
-> these improves writeback performance.
-> 
-> 3) Added an inode flag to allow inodes to be marked so that they are
-> never written back to disk. See get_pipe_inode.
-> 
-> Under autotest this patch has passed: fsx, bonnie, and iozone. I am
-> currently writing more writeback focused tests (which so far have been
-> passed) to add into autotest.
-> 
-> Signed-off-by: Michael Rubin <mrubin@google.com>
-> ---
-
+diff --git a/arch/x86/ia32/ptrace32.c b/arch/x86/ia32/ptrace32.c
+index 1e382e3..c52d066 100644
+--- a/arch/x86/ia32/ptrace32.c
++++ b/arch/x86/ia32/ptrace32.c
+@@ -37,11 +37,11 @@
+ 
+ #define R32(l,q)							\
+ 	case offsetof(struct user32, regs.l):				\
+-		stack[offsetof(struct pt_regs, q) / 8] = val; break
++		regs->q = val; break;
+ 
+ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ {
+-	__u64 *stack = (__u64 *)task_pt_regs(child);
++	struct pt_regs *regs = task_pt_regs(child);
+ 
+ 	switch (regno) {
+ 	case offsetof(struct user32, regs.fs):
+@@ -65,12 +65,12 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 	case offsetof(struct user32, regs.ss):
+ 		if ((val & 3) != 3)
+ 			return -EIO;
+-		stack[offsetof(struct pt_regs, ss)/8] = val & 0xffff;
++		regs->ss = val & 0xffff;
+ 		break;
+ 	case offsetof(struct user32, regs.cs):
+ 		if ((val & 3) != 3)
+ 			return -EIO;
+-		stack[offsetof(struct pt_regs, cs)/8] = val & 0xffff;
++		regs->cs = val & 0xffff;
+ 		break;
+ 
+ 	R32(ebx, bx);
+@@ -84,9 +84,7 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 	R32(eip, ip);
+ 	R32(esp, sp);
+ 
+-	case offsetof(struct user32, regs.eflags): {
+-		__u64 *flags = &stack[offsetof(struct pt_regs, flags)/8];
+-
++	case offsetof(struct user32, regs.eflags):
+ 		val &= FLAG_MASK;
+ 		/*
+ 		 * If the user value contains TF, mark that
+@@ -97,9 +95,8 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 			clear_tsk_thread_flag(child, TIF_FORCED_TF);
+ 		else if (test_tsk_thread_flag(child, TIF_FORCED_TF))
+ 			val |= X86_EFLAGS_TF;
+-		*flags = val | (*flags & ~FLAG_MASK);
++		regs->flags = val | (regs->flags & ~FLAG_MASK);
+ 		break;
+-	}
+ 
+ 	case offsetof(struct user32, u_debugreg[0]) ...
+ 		offsetof(struct user32, u_debugreg[7]):
+@@ -123,11 +120,11 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
+ 
+ #define R32(l,q)							\
+ 	case offsetof(struct user32, regs.l):				\
+-		*val = stack[offsetof(struct pt_regs, q)/8]; break
++		*val = regs->q; break
+ 
+ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
+ {
+-	__u64 *stack = (__u64 *)task_pt_regs(child);
++	struct pt_regs *regs = task_pt_regs(child);
+ 
+ 	switch (regno) {
+ 	case offsetof(struct user32, regs.fs):
+@@ -160,7 +157,7 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
+ 		/*
+ 		 * If the debugger set TF, hide it from the readout.
+ 		 */
+-		*val = stack[offsetof(struct pt_regs, flags)/8];
++		*val = regs->flags;
+ 		if (test_tsk_thread_flag(child, TIF_FORCED_TF))
+ 			*val &= ~X86_EFLAGS_TF;
+ 		break;
