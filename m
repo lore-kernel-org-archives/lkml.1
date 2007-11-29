@@ -1,92 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759664AbXK2IPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbXK2IPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759664AbXK2IPM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 03:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXK2IO6
+	id S1757794AbXK2IPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 03:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbXK2IPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 03:14:58 -0500
-Received: from imx9.toshiba.co.jp ([202.33.96.51]:53909 "EHLO
-	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbXK2IO5 (ORCPT
+	Thu, 29 Nov 2007 03:15:21 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:33556 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757701AbXK2IPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 03:14:57 -0500
-Date: Thu, 29 Nov 2007 16:44:18 +0900 (JST)
-Message-Id: <20071129.164418.-1300542154.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Cc: gorcunov@gmail.com, olof@lixom.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH] PPC: CELLEB - fix possible NULL pointer dereference
-In-Reply-To: <aa79d98a0711282141l6b07569fmb925b198730a554e@mail.gmail.com>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 29 Nov 2007 03:15:19 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: Add the infamous Huawei E220 to option.c
+Date: Thu, 29 Nov 2007 09:14:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+       linux-usb@vger.kernel.org, preining@logic.at,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <200711290844.39428.oliver@neukum.org> <20071129000149.7569eab1.zaitcev@redhat.com>
+In-Reply-To: <20071129000149.7569eab1.zaitcev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711290914.48050.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Donnerstag, 29. November 2007 09:01:49 schrieb Pete Zaitcev:
+> On Thu, 29 Nov 2007 08:44:38 +0100, Oliver Neukum <oliver@neukum.org> wrote:
+> > 3. Make sure usbcore doesn't probe the devices in the wrong mode with the
+> > option driver
+>
+> This fixes duplication. And to take it further, why don't we turn this
+> idea around and let usb-storage fail to attach with some "ignore" quirk?
+> I suspect that someone put the initializer into usb-storage in order
+> to let the generic usb serial to work, but this simply was a bad idea.
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+Yes, you are right. That's the correct approach.
 
-This patch adds checking for NULL returned value to
-prevent possible NULL pointer dereference.
+	Regards
+		Oliver
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
-
-Paul,
-This is a resend of a patch from Cyrill. I changed it to inline style.
-
-Cyrill,
-This works good on Celleb. Thanks.
-
-Best regards,
-Kou Ishizaki
-
-
- arch/powerpc/platforms/celleb/pci.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/celleb/pci.c b/arch/powerpc/platforms/celleb/pci.c
-index 6bc32fd..13ec4a6 100644
---- a/arch/powerpc/platforms/celleb/pci.c
-+++ b/arch/powerpc/platforms/celleb/pci.c
-@@ -138,8 +138,6 @@ static void celleb_config_read_fake(unsigned char *config, int where,
- 		*val = celleb_fake_config_readl(p);
- 		break;
- 	}
--
--	return;
- }
- 
- static void celleb_config_write_fake(unsigned char *config, int where,
-@@ -158,7 +156,6 @@ static void celleb_config_write_fake(unsigned char *config, int where,
- 		celleb_fake_config_writel(val, p);
- 		break;
- 	}
--	return;
- }
- 
- static int celleb_fake_pci_read_config(struct pci_bus *bus,
-@@ -351,6 +348,10 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
- 	wi1 = of_get_property(node, "vendor-id", NULL);
- 	wi2 = of_get_property(node, "class-code", NULL);
- 	wi3 = of_get_property(node, "revision-id", NULL);
-+	if (!wi0 || !wi1 || !wi2 || !wi3) {
-+		printk(KERN_ERR "PCI: Missing device tree properties.\n");
-+		goto error;
-+	}
- 
- 	celleb_config_write_fake(*config, PCI_DEVICE_ID, 2, wi0[0] & 0xffff);
- 	celleb_config_write_fake(*config, PCI_VENDOR_ID, 2, wi1[0] & 0xffff);
-@@ -372,6 +373,10 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
- 	celleb_setup_pci_base_addrs(hose, devno, fn, num_base_addr);
- 
- 	li = of_get_property(node, "interrupts", &rlen);
-+	if (!li) {
-+		printk(KERN_ERR "PCI: interrupts not found.\n");
-+		goto error;
-+	}
- 	val = li[0];
- 	celleb_config_write_fake(*config, PCI_INTERRUPT_PIN, 1, 1);
- 	celleb_config_write_fake(*config, PCI_INTERRUPT_LINE, 1, val);
