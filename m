@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbXK2P7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbXK2QEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762628AbXK2P7a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:59:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbXK2P7F
+	id S1760662AbXK2QEx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXK2QEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:59:05 -0500
-Received: from rtr.ca ([76.10.145.34]:3690 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756740AbXK2P7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:59:04 -0500
-Message-ID: <474EE1C6.2080100@rtr.ca>
-Date: Thu, 29 Nov 2007 10:59:02 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] base/class.c: prevent ooops due to insert/remove race (v2)
-References: <474E3964.7040200@rtr.ca> <20071129043307.GA4766@suse.de>
-In-Reply-To: <20071129043307.GA4766@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 29 Nov 2007 11:04:45 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37633 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755113AbXK2QEo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 11:04:44 -0500
+Date: Thu, 29 Nov 2007 17:04:35 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove one useless extern declaration
+Message-Id: <20071129170435.2f79a833.pierre.peiffer@bull.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 29/11/2007 17:12:05,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 29/11/2007 17:12:05,
+	Serialize complete at 29/11/2007 17:12:05
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Nov 28, 2007 at 11:00:36PM -0500, Mark Lord wrote:
->> While doing insert/remove (quickly) tests on USB, I managed to trigger
->> an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
->>
->> This patch prevents this oops.
->>
->> There is still the larger problem of the overall race
->> that caused this in the first place, but much of the rest
->> of the code in class.c appears to also do NULL checks to
->> avoid Oops'ing, so this continues the tradition.
->>
->> Signed-off-by:  Mark Lord <mlord@pobox.com>
-> 
-> As this is a bandage over the real problem, I'd prefer to not apply this
-> one right now until we find the root cause.
-...
 
-Ahh... okay.. but since nobody is actually actively trying
-to "find the root cause", there's a problem with that approach.
 
-Rather than have systems continue to crash (reboot required to regain
-use of USB after the Oops), here is an improved version of the patch
-that addresses Greg's concern.
+The file exit.c contains one useless extern declaration of sem_exit().
+Moreover, it refers to nothing.
 
-This version still prevents the Oops, but also flags the BUG so that
-it will not go unnoticed.
+This trivial patch removes it.
 
-This should make everyone happier.
 
-* * * *
-
-While doing insert/remove (quickly) tests on USB, I managed to trigger
-an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
-
-This patch prevents the oops, but still keeps the bug visible.
-
-There is still the larger problem of the overall race
-that caused this in the first place, but much of the rest
-of the code in class.c appears to also do NULL checks to
-avoid Oops'ing, so this continues the tradition.
-
-Signed-off-by:  Mark Lord <mlord@pobox.com> 
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
 ---
+ kernel/exit.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-Patch applies to both 2.6.24 and 2.6.23.
+Index: b/kernel/exit.c
+===================================================================
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -50,8 +50,6 @@
+ #include <asm/pgtable.h>
+ #include <asm/mmu_context.h>
+ 
+-extern void sem_exit (void);
+-
+ static void exit_mm(struct task_struct * tsk);
+ 
+ static void __unhash_process(struct task_struct *p)
 
---- linux/drivers/base/class.c.orig	2007-11-29 10:51:43.000000000 -0500
-+++ linux/drivers/base/class.c	2007-11-29 10:54:42.000000000 -0500
-@@ -354,6 +354,10 @@
- 	char *class_name;
- 	int size;
- 
-+	if (!name) {
-+		BUG_ON(1);
-+		return NULL;
-+	}
- 	size = strlen(name) + strlen(kobject_name(kobj)) + 2;
- 
- 	class_name = kmalloc(size, GFP_KERNEL);
+-- 
+Pierre Peiffer
