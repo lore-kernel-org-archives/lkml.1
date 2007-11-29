@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbXK2JF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbXK2JKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760278AbXK2JF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 04:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbXK2JFI
+	id S1760257AbXK2JKd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 04:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXK2JKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 04:05:08 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33586 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755783AbXK2JFH (ORCPT
+	Thu, 29 Nov 2007 04:10:16 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:35154
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751451AbXK2JKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 04:05:07 -0500
-Date: Thu, 29 Nov 2007 09:04:00 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Remy Bohmer <linux@bohmer.net>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
-Message-ID: <20071129090359.GA14728@flint.arm.linux.org.uk>
-References: <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com> <20071128172509.GA30173@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com> <20071128200550.GA3494@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com> <1196282672.27964.32.camel@imap.mvista.com> <Pine.LNX.4.58.0711281608490.26365@gandalf.stny.rr.com> <20071128230331.GA31730@flint.arm.linux.org.uk> <1196291955.27964.47.camel@imap.mvista.com>
+	Thu, 29 Nov 2007 04:10:14 -0500
+Date: Thu, 29 Nov 2007 01:09:26 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Pete Zaitcev <zaitcev@redhat.com>,
+       Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+       linux-usb@vger.kernel.org, preining@logic.at,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Add the infamous Huawei E220 to option.c
+Message-ID: <20071129090926.GD24795@one-eyed-alien.net>
+Mail-Followup-To: Oliver Neukum <oliver@neukum.org>,
+	Pete Zaitcev <zaitcev@redhat.com>,
+	Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+	linux-usb@vger.kernel.org, preining@logic.at,
+	kristoffer.ericson@gmail.com, drussell@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <200711290844.39428.oliver@neukum.org> <20071129000149.7569eab1.zaitcev@redhat.com> <200711290914.48050.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ylS2wUBXLOxYXZFQ"
 Content-Disposition: inline
-In-Reply-To: <1196291955.27964.47.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200711290914.48050.oliver@neukum.org>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2007 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Thu, 29 Nov 2007 01:09:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 03:19:14PM -0800, Daniel Walker wrote:
-> On Wed, 2007-11-28 at 23:03 +0000, Russell King - ARM Linux wrote:
-> > On Wed, Nov 28, 2007 at 04:13:07PM -0500, Steven Rostedt wrote:
-> > > 
-> > > 
-> > > On Wed, 28 Nov 2007, Daniel Walker wrote:
-> > > 
-> > > >
-> > > > Ignoring the ARM side of things for a sec, handle_simple_irq() will
-> > > > mask() the interrupt in the special case that an interrupt is already in
-> > > > the processes of being handled.. handle_simple_irq() also unmasks when
-> > > > it finishes handling an interrupt (something real time adds for some
-> > > > reason) ..
-> > > >
-> > > > In terms of threading the irq everything is the same except there is no
-> > > > unmask() call when the thread finishes ..
-> > > >
-> > > 
-> > > OK, to be honest, I never fully understood the concept of this
-> > > "simple_irq". I figured it was because of the ARM architecture.
-> > 
-> > If you read what I said compared with what Daniel said, you'll see that
-> > adding the mask/unmask is _pointless_ because for the case where the
-> > simple handler should be used, there is _no_ hardware masking available
-> > except via the parent interrupt signal.
-> > 
-> > So actually Daniel's argument misses the basic point - that using
-> > handle_simple_irq for non-simple IRQs is just WRONG.
-> 
-> Well we've got at least two ARM boards which need the additional unmask
-> to work correctly with interrupt threading .. So there must be at least
-> two ARM boards using handle_simple_irq incorrectly .. It sounds like you
-> would prefer we send patches to move those handle_simple_irq users into
-> another method ?
 
-If you read my explaination of the purpose of handle_simple_irq() you'll
-see that for the _correct_ case where this handler should be used, the
-mask and unmask can only be empty.  To repeat for the third time - it's
-for the case where the hardware supplies NO way to mask the interrupt.
+--ylS2wUBXLOxYXZFQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So adding calls to the mask/unmask methods would be pointless for the
-correct use case.
+On Thu, Nov 29, 2007 at 09:14:47AM +0100, Oliver Neukum wrote:
+> Am Donnerstag, 29. November 2007 09:01:49 schrieb Pete Zaitcev:
+> > On Thu, 29 Nov 2007 08:44:38 +0100, Oliver Neukum <oliver@neukum.org> w=
+rote:
+> > > 3. Make sure usbcore doesn't probe the devices in the wrong mode with=
+ the
+> > > option driver
+> >
+> > This fixes duplication. And to take it further, why don't we turn this
+> > idea around and let usb-storage fail to attach with some "ignore" quirk?
+> > I suspect that someone put the initializer into usb-storage in order
+> > to let the generic usb serial to work, but this simply was a bad idea.
+>=20
+> Yes, you are right. That's the correct approach.
 
-If you do have the ability to mask, then you should be using the level or
-edge handlers.
+Changing the unusual_devs.h flag to IGNORE_DEVICE should accomplish what
+you want.
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+C:  Like the Furby?
+DP: He gives me the creeps.  Think the SPCA will take him?
+					-- Cobb and Dust Puppy
+User Friendly, 1/2/1999
+
+--ylS2wUBXLOxYXZFQ
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHToHGHL9iwnUZqnkRAthpAKCDxTlSan6DyZEsWDceeGnM5UZyYwCfZyOd
+NyPAht5O7rb+KjsRn1SrB2E=
+=Xwo/
+-----END PGP SIGNATURE-----
+
+--ylS2wUBXLOxYXZFQ--
