@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXK2SSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbXK2SSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbXK2SSY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXK2SRM
+	id S932965AbXK2SSt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932766AbXK2SSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:17:12 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:59915 "EHLO smtp.drzeus.cx"
+	Thu, 29 Nov 2007 13:18:03 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53842 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932965AbXK2SRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:17:09 -0500
-Date: Thu, 29 Nov 2007 19:17:04 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC update
-Message-ID: <20071129191704.6151294a@poseidon.drzeus.cx>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S933074AbXK2SSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:18:00 -0500
+Message-ID: <474F0243.1020103@redhat.com>
+Date: Thu, 29 Nov 2007 13:17:39 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On 11/29/2007 01:09 PM, Linus Torvalds wrote:
+>>>  	case offsetof(struct user32, regs.gs):
+>>>  		*val = child->thread.gsindex;
+>>> +		if (child == current)
+>>> +			asm("movl %%gs,%0" : "=r" (*val));
+>> Won't this return the kernel's GS instead of the user's?
+> 
+> No, %gs is untouched by the kernel, so it contains user space version, and 
+> getting the value directly from %gs looks correct.
+> 
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
+But this is x86_64, where swapgs is done on kernel entry.
 
-to receive the following updates:
-
- drivers/mmc/card/sdio_uart.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-Andre Haupt (1):
-      sdio_uart: fix sign of paramter status in sdio_uart_receive_chars()
-
-diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index d552de6..eeea84c 100644
---- a/drivers/mmc/card/sdio_uart.c
-+++ b/drivers/mmc/card/sdio_uart.c
-@@ -386,7 +386,7 @@ static void sdio_uart_stop_rx(struct sdio_uart_port *port)
-        sdio_out(port, UART_IER, port->ier);
- }
- 
--static void sdio_uart_receive_chars(struct sdio_uart_port *port, int *status)
-+static void sdio_uart_receive_chars(struct sdio_uart_port *port, unsigned int *status)
- {
-        struct tty_struct *tty = port->tty;
-        unsigned int ch, flag;
-
-
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
