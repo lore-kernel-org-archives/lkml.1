@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXK2CGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762183AbXK2CNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbXK2CGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 21:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbXK2CGI
+	id S1762183AbXK2CNy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 21:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbXK2CNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 21:06:08 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34947 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758023AbXK2CGH (ORCPT
+	Wed, 28 Nov 2007 21:13:44 -0500
+Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:28682 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756317AbXK2CNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 21:06:07 -0500
-Date: Wed, 28 Nov 2007 18:06:06 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch
- specific percpu setup
-In-Reply-To: <474E1900.1010209@goop.org>
-Message-ID: <Pine.LNX.4.64.0711281800100.20125@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com> <200711281236.02014.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0711281050470.11968@schroedinger.engr.sgi.com>
- <200711291017.52727.rusty@rustcorp.com.au> <474DFD7E.907@goop.org>
- <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com>
- <474E163E.2070702@goop.org> <Pine.LNX.4.64.0711281731410.19914@schroedinger.engr.sgi.com>
- <474E1900.1010209@goop.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Nov 2007 21:13:44 -0500
+To: Michael Rubin <mrubin@google.com>
+Subject: Re: [patch 1/1] Writeback fix for concurrent large and small file writes
+Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, wfg@mail.ustc.edu.cn
+In-reply-To: <20071128192957.511EAB8310@localhost>
+References: <20071128192957.511EAB8310@localhost>
+Message-Id: <E1IxYuL-0001tu-8f@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Thu, 29 Nov 2007 03:13:41 +0100
+X-OriginalArrivalTime: 29 Nov 2007 02:13:41.0879 (UTC) FILETIME=[763E9870:01C8322D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007, Jeremy Fitzhardinge wrote:
+Two typos in comments.
 
-> > percpu references are quite frequent already (vm statistics) and will be 
-> > more frequent after we have converted the per cpu arrays to per cpu 
-> > allocations.
-> >   
-> 
-> Well, I think the point is moot, because x86 will always use 32-bit
-> offsets.  Each reference will only be 1 byte bigger than a normal
-> variable reference.
+Cheers,
+FJP
 
-Just because i386 is not able to use it does not mean that other arches 
-are not. F.e. IA64 can embedd offsets in the actual instruction (but of 
-course not 64bit).
+Michael Rubin wrote:
+> + * The flush tree organizes the dirtied_when keys with the rb_tree. Any
+> + * inodes with a duplicate dirtied_when value are link listed together.
+> This + * link list is sorted by the inode's i_flushed_when. When both the
+> + * dirited_when and the i_flushed_when are indentical the order in the
+> + * linked list determines the order we flush the inodes.
 
-x86_64 can use a 32 bit offset instead of a 64 bit addres because it uses 
-the small model. A load of a 64 bit address would require much more 
-expensive instructions. A load of a 64 bit address is currently avoided 
-through the use of the pda that contains the full 64 bit address in the
-data_offset field. Operations on per cpu data on x86_64 must therefore 
-first load data_offset via gs and then add the per cpu address to this
-offset. Then the per cpu operation is performed on that address.
+s/dirited_when/dirtied_when/
 
-In order to avoid this situation through one instruction we need a small 
-32 bit offset relative to gs. Otherwise we cannot get away from the PDA 
-and the use of data_offset.
+> + * Here is where we interate to find the next inode to process. The
+> + * strategy is to first look for any other inodes with the same
+> dirtied_when + * value. If we have already processed that node then we
+> need to find + * the next highest dirtied_when value in the tree.
 
- 
+s/interate/iterate/
+
