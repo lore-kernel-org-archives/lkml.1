@@ -1,106 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXK2QkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbXK2Qqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXK2QkO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:40:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXK2QkA
+	id S1761577AbXK2Qqn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbXK2Qqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:40:00 -0500
-Received: from pmx2.sophos.com ([213.31.172.17]:54761 "EHLO pmx2.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932206AbXK2Qj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:39:59 -0500
-In-Reply-To: <p738x4i9nyd.fsf@crumb.suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
+	Thu, 29 Nov 2007 11:46:35 -0500
+Received: from mxintern.schlund.de ([212.227.126.204]:58721 "EHLO
+	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757301AbXK2Qqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 11:46:34 -0500
+Date: Thu, 29 Nov 2007 17:45:57 +0100
+From: Anders Henke <anders.henke@1und1.de>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: jack@ucw.cz, fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory) (fwd)
+Message-ID: <20071129164557.GD30957@1und1.de>
+References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz> <20071129235813Y.tomof@acm.org>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 6.5.5 November 30, 2005
-Message-ID: <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com>
-From: tvrtko.ursulin@sophos.com
-Date: Thu, 29 Nov 2007 16:39:54 +0000
-X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.2FP1|January 10, 2007) at
- 29/11/2007 16:39:57,
-	Serialize complete at 29/11/2007 16:39:57
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071129235813Y.tomof@acm.org>
+Organization: 1&1 Internet AG
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-UI-Msg-Verification: 1930381e29ea237c38110e61e587bd08
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ak@suse.de wrote on 28/11/2007 19:20:26:
-
-> "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com> writes:
+On Nov 29 2007, FUJITA Tomonori wrote:
+> On Thu, 29 Nov 2007 14:03:19 +0100
+> Jan Kara <jack@ucw.cz> wrote:
 > 
-> > We here at Sophos (the fourth largest endpoint security vendor in 
-> the world) 
-> > have such a module called Talpa which is a part of our main 
-> endpoint security 
-> > product
+> >   Adding relevant people and lists to CC...
+> > 
+> > 									Honza
+> > 
+> > ----- Forwarded message from Anders Henke <anders.henke@1und1.de> -----
+> > 
+> > Date:	Thu, 29 Nov 2007 13:31:50 +0100
+> > From: Anders Henke <anders.henke@1und1.de>
+> > To: linux-kernel@vger.kernel.org
+> > Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory)
+> > User-Agent: Mutt/1.5.13 (2006-08-11)
+> > 
+> > On November 28 2007, Anders Henke wrote:
+> > > As "everything is reported as being zero" is quite odd an Jan took a
+> > > guess that it might be block-layer or driver-related, I've assumed
+> > > that the driver is responsible for this; just out of the curiousity, 
+> > > I've manually replaced the dpt_i2o driver by the 2.6.19 one by copying 
+> > > driver/scsi/dpt_i2o.c driver/scsi/dpti.h and driver/scsi/dpt/ into a 
+> > > vanilla 2.6.23.1. kernel; using this kernel fixed the issue for me.
+> > > 
+> > > I haven't yet fine-tested from which kernel release on the dpt_i2o driver 
+> > > behaves like this and spews out zeroed blocks when trying to mount
+> > > the rootfs. Maybe this is just some timing issue.
+> > 
+> > I've started the fine-tests and can say so far that dpt_i2o from 
+> > 2.6.22 is still fine. Test is simple:
+> > 
+> > anders@ista:/usr/src/linux-2.6.22/drivers/scsi/dpt$ cp -r dpt/ dpt_i2o.c dpti.h /usr/src/linux-2.6.23.1/drivers/scsi/
+> > 
+> > ... recompile the kernel, reboot: works.
+> > 
+> > 2.6.22 and 2.6.23 differ in terms of the dpt_i2o driver by two different
+> > patch sets:
+> > -one 2 Kb small set of patches from 2.6.22 to 2.6.22-rc1
+> > -one 7 Kb set of patches from 2.6.23-rc2 to 2.6.23-rc3
+> > -one 162 Kb set of patches from 2.6.23-rc9 to 2.6.23-rc10.
+> > 
+> > When applying the 2.6.23-rc1-based driver to "my" 2.6.31.1 kernel,
+> > the "zero blocks"-symptom show up, so it's the "lucky" situation
+> > that the smallest patch actually seams to be the broken one.
+> > 
+> > According to the 2.6.23-rc1 short-form changelog, there is
+> > one major edit on the dpt_i2o driver:
+> > 
+> > FUJITA Tomonori 
+> > 
+> >       [SCSI] dpt_i2o: convert to use the data buffer accessors
+> > 
+> > Stephen Rothwell 
+> >       dpt_i2o depends on virt_to_bus
+> > 
+> > Fujita, would you please take a look at this?
 > 
-> What is a "endpoint security product" exactly? A gateway that scans
-> files passing through it?
-
-No, it would be more like a desktop/workstation thingy which protects 
-against different kinds of malware and can also enforce policies, all 
-centraly managed. I am afraid to use to more marketing words not to upset 
-the LKML filters because originaly my posdt was blocked on.. hah! I almost 
-wrote it now! :) It was "security vendor" but with another term for 
-vendor.
- 
-> > In essence, what our module does is it intercepts file accesses and 
-allows 
-> > userspace daemons to vet them.
+> Sorry about the bug. Can you try this?
 > 
-> I suspect the only good way forward would be to collect the
-> requirements of your user space and then define a proper official
-> interface to do what they want to do. Ideally would be a shared proposal
-> from multiple groups who are doing this, e.g. if you could talk to
-> some others doing similar things that would be best.
-
-I completely agree and effort to do that is under way. I am not the one 
-coordinating that but hopefully those who are will post something soon.
- 
-> Personally I admit I never quite saw the point of intercepting all
-> file accesses for everything. That will just always be slow as often
-> demonstrated on other operating systems and racey and unreliable too.
-> And at least the internal daemons should be already reasonably well
-> protected by standard (or beyond standard, like AA/SELinux etc.)
-> security measures, so e.g. it does not really make sense to intercept
-> all of your /etc file accesses and similar.
-
-Personally I don't know. I am often surprised when I hear what techniques 
-the bad guys use and what is possible.
-
-Solution that we currently have is not so slow (btw you are free to try it 
-out). And by working on a proper interface race and reliability issues 
-should be solvable.
- 
-> It might be better to identify the services (gateway, samba, file
-> server whatever) that are actually dealing with possible infected
-> "external" files and then define some generic interface that would
-> allow you to check those as the data appears.
 > 
-> I would expect such an approach to perform better in the end and be more
-> reliable too.
-> 
-> Note such a interface might well be user space only.
+> diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
+> index 8258506..1255b26 100644
+> --- a/drivers/scsi/dpt_i2o.c
+> +++ b/drivers/scsi/dpt_i2o.c
+> @@ -3295,7 +3295,7 @@ static struct scsi_host_template adpt_template = {
+>  	.this_id		= 7,
+>  	.cmd_per_lun		= 1,
+>  	.use_clustering		= ENABLE_CLUSTERING,
+> -	.use_sg_chaining	= ENABLE_SG_CHAINING,
+> +	.use_sg_chaining	= DISABLE_SG_CHAINING,
+>  };
+>  
+>  static s32 adpt_scsi_register(adpt_hba* pHba)
 
-That is fine for some classes of servers. But for some other and desktop 
-more could be needed. 
+The structure to patch does look different and doesn't include an
+tag "use_sg_chaining":
 
---
-Tvrtko August Ursulin
-Senior Software Engineer, Sophos
+---cut
+static struct scsi_host_template adpt_template = {
+        .name                   = "dpt_i2o",
+        .proc_name              = "dpt_i2o",
+        .proc_info              = adpt_proc_info,
+        .info                   = adpt_info,
+        .queuecommand           = adpt_queue,
+        .eh_abort_handler       = adpt_abort,
+        .eh_device_reset_handler = adpt_device_reset,
+        .eh_bus_reset_handler   = adpt_bus_reset,
+        .eh_host_reset_handler  = adpt_reset,
+        .bios_param             = adpt_bios_param,
+        .slave_configure        = adpt_slave_configure,
+        .can_queue              = MAX_TO_IOP_MESSAGES,
+        .this_id                = 7,
+        .cmd_per_lun            = 1,
+        .use_clustering         = ENABLE_CLUSTERING,
+};
 
-"Views and opinions expressed in this email are strictly those of the 
-author.
- The contents has not been reviewed or approved by Sophos."
-
-Tel: 01235 559933
-Web: www.sophos.com
-Protecting business against viruses, spyware, spam and policy abuse
+static s32 adpt_scsi_register(adpt_hba* pHba)
+---cut
 
 
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
 
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+Anders
+-- 
+1&1 Internet AG              System Design
+Brauerstrasse 48             v://49.721.91374.50
+D-76135 Karlsruhe            f://49.721.91374.225
 
+Amtsgericht Montabaur HRB 6484
+Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
+Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Norbert Lang, Achim Weiss
+Aufsichtsratsvorsitzender: Michael Scheeren
