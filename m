@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbXK2WOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbXK2WQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898AbXK2WOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932728AbXK2WNy
+	id S933379AbXK2WQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932735AbXK2WQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:13:54 -0500
-Received: from bbasa1.bakbone.com ([209.126.247.190]:47714 "EHLO
-	mail.bakbone.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756086AbXK2WNy (ORCPT
+	Thu, 29 Nov 2007 17:16:30 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:38216 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932728AbXK2WQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:13:54 -0500
-From: Justin Banks <justinb@bakbone.com>
-Date: Thu, 29 Nov 2007 15:12:38 -0700
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jon Masters <jonathan@jonmasters.org>, Ray Lee <ray-lk@madrabbit.org>,
-       tvrtko.ursulin@sophos.com, Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Valdis.Kletnieks@vt.edu
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071129221238.GF5601@bleen.corp.bb>
-References: <1196365551.6473.103.camel@perihelion> <20071129214527.1d62056c@the-village.bc.nu>
+	Thu, 29 Nov 2007 17:16:29 -0500
+Date: Thu, 29 Nov 2007 17:16:28 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: kobject_init rewrite
+In-Reply-To: <20071129215304.GA5043@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0711291713330.6294-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129214527.1d62056c@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote
-> > Jargon File in all its glory. And if you still think you could look for
-> > patterns, how about executable code that self-modifies in random ways
-> > but when executed as a whole actually has the functionality of fetchmail
-> > embedded within it? How would you guard against that?
-> 
-> Thats a problem for whoever writes the ESR detection tool and to what
-> level it works. The question for the kernel is how do we provide a
-> mechanism to allow (to some extent at least) this kind of tool to run.
+On Thu, 29 Nov 2007, Greg KH wrote:
 
-In a general way, what about providing a kind of {file,inode}_operations 
-xchange functionality given a super_block such that filesystems could
-essentially be stacked, e.g. a
+> Ok, how about this function.  If it errors out, it is free to just call
+> kfree() on the kobject.  Seems simple enough to me, any objections?  If
+> not, I'll go through and fix up the whole tree...
 
-int op_xchange(struct super_block *sb, struct inode_operations *new_iop, 
-	struct inode_operations *old_iop, struct file_operations *new_fop,
-	struct file_operations *old_fop);
+Looks good, _provided_ you also get rid of kobject_register().  Which 
+you pretty much would have to do anyway, since it doesn't accept the 
+ktype or the name as an argument.
 
-The caller could/would/should be vetted, but replacing the static ops
-with new ones of the caller's specification would allow them to
-intercept the i/o, do whatever checking they wanted to do, and then call
-the proper underlying operation (even modifying the parameters, I guess,
-but that may be too weird). Perhaps separate get_* and set_* so that the
-caller can retrieve the current operations vector and only "override"
-the functions they really care about?
+Alan Stern
 
-It's not perfect, but as was recently pointed out, if you can only get
-98% of the way there rather than 100% is that a reason for not trying to
-make it possible? It'd obviously not work for mmap, but as near as I can
-tell the whole point is to get the "normal" malware cases without having
-to do icky things like mangle the syscall table.
-
--justinb
-
--- 
-Justin Banks
-BakBone Software
-justinb@bakbone.com
