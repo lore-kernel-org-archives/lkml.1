@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXK2GgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbXK2GpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbXK2GgN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 01:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXK2Gf6
+	id S1757124AbXK2GpY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 01:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXK2GpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 01:35:58 -0500
-Received: from mx10.go2.pl ([193.17.41.74]:54767 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751348AbXK2Gf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 01:35:58 -0500
-Date: Thu, 29 Nov 2007 07:40:34 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
+	Thu, 29 Nov 2007 01:45:09 -0500
+Received: from horse.categorical.net ([64.235.44.205]:36265 "EHLO
+	horse.categorical.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbXK2GpH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 01:45:07 -0500
+X-Greylist: delayed 1214 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 01:45:07 EST
+From: Tim Barbour <trb@phasechangeit.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: Question regarding mutex locking
-Message-ID: <20071129064034.GB9536@ff.dom.local>
-References: <474CF06C.8020208@lwfinger.net> <jemysy2y3y.fsf@sykes.suse.de> <474D8C22.7010902@lwfinger.net> <474DEF79.1080900@o2.pl> <20071128153312.14144472@freepuppy.rosehill>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128153312.14144472@freepuppy.rosehill>
-User-Agent: Mutt/1.4.2.2i
+Subject: get block_device from name
+Reply-to: trb@phasechangeit.com
+Comments: Hyperbole mail buttons accepted, v04.18.
+Message-Id: <E1IxcpP-0002gv-Ng@elysium.home>
+Date: Wed, 28 Nov 2007 22:24:51 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 03:33:12PM -0800, Stephen Hemminger wrote:
-...
-> WTF are you teaching a lesson on how NOT to do locking?
-> 
-> Any code which has this kind of convoluted dependency on conditional
-> locking is fundamentally broken.
-> 
+Please CC: me on any replies, as I am not subscribed to the list.
 
-As a matter of fact I've been thinking, about one more Re: to myself
-to point this all is a good example how problematic such solution
-would be, but I've decided it's rather apparent. IMHO learning needs
-bad examples too - to better understand why they should be avoided.
+I want to do some bio IO on a block device (*no* filesystem involved).
 
-On the other hand, I've seen quite a lot of fundamentally right, but
-practically broken code, so I'm not sure what's better. And, btw., I
-guess this 'fundamentally broken' type of locking could be found in
-the kernel too, but I'd prefer not too look after this now.
+First I need to get hold of the struct block_device. What is the current
+recommended way to get from the name of a device (e.g. "/dev/sda1") to the
+corresponding struct block_device ? What is the current canonical representation
+of a device - dev_t ? Did kdev_t go away ?
 
-Thanks,
-Jarek P.
+Given the struct block_device, can I immediately use it in a bio, or do I need
+to prepare the device first ?
+
+I think I understand how to submit a bio, once I have the block_device ready.
+
+I have read that the handling of block_devices is not as straightforward as it
+could be... ( http://lwn.net/Articles/247072/ )
+
+Any suggestions would be appreciated.
+
+Again, please CC: me on any replies.
+
+Tim
