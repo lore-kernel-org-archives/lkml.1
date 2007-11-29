@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932939AbXK2UuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932992AbXK2Uz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932939AbXK2UuD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:50:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761923AbXK2Uts
+	id S932992AbXK2Uz0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761871AbXK2UzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:49:48 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:51116 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762088AbXK2Uts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:49:48 -0500
-Date: Thu, 29 Nov 2007 21:49:43 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: XFS related Oops (suspend/resume related)
-Message-ID: <20071129204943.GA1960@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20071112064706.GA23595@dose.home.local> <20071127211155.GK119954183@sgi.com> <200711272253.01136.rjw@sisk.pl> <200711292205.25431.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711292205.25431.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 29 Nov 2007 15:55:18 -0500
+Received: from gate.crashing.org ([63.228.1.57]:54677 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761874AbXK2UzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:55:18 -0500
+Subject: Re: [PATCH 5/5] PPC cleanup: powermac - do use for_each macro
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: PPCML <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20071129194654.GF12123@cvg>
+References: <20071129194654.GF12123@cvg>
+Content-Type: text/plain
+Date: Fri, 30 Nov 2007 07:54:59 +1100
+Message-Id: <1196369699.13230.62.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 22:05:24 +0100, Rafael J. Wysocki wrote:
 
-[...]
+On Thu, 2007-11-29 at 22:46 +0300, Cyrill Gorcunov wrote:
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
 
-> Tino, can you check if this patch helps, please?
+Ack.
 
-Not really. I suspend one to several times a day, and in most cases
-resume works. I thing checking the patch is hard when I have no real
-procedure to reproduce the resume failure.
+>  arch/powerpc/platforms/powermac/low_i2c.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+> index da2007e..864fbf4 100644
+> --- a/arch/powerpc/platforms/powermac/low_i2c.c
+> +++ b/arch/powerpc/platforms/powermac/low_i2c.c
+> @@ -585,8 +585,7 @@ static void __init kw_i2c_probe(void)
+>  	struct device_node *np, *child, *parent;
+>  
+>  	/* Probe keywest-i2c busses */
+> -	for (np = NULL;
+> -	     (np = of_find_compatible_node(np, "i2c","keywest-i2c")) != NULL;){
+> +	for_each_compatible_node(np, "i2c","keywest-i2c") {
+>  		struct pmac_i2c_host_kw *host;
+>  		int multibus, chans, i;
+>  
 
-Regards,
-Tino
