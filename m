@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763372AbXK2Qtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762763AbXK2QwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763372AbXK2Qtn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762395AbXK2Qsm
+	id S1762763AbXK2QwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbXK2QwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:48:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60830 "EHLO
+	Thu, 29 Nov 2007 11:52:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33823 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762283AbXK2Qsl (ORCPT
+	with ESMTP id S1758893AbXK2QwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:48:41 -0500
-Date: Thu, 29 Nov 2007 08:47:46 -0800
+	Thu, 29 Nov 2007 11:52:09 -0500
+Date: Thu, 29 Nov 2007 08:51:04 -0800
 From: Greg KH <greg@kroah.com>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Valdis.Kletnieks@vt.edu,
-       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+To: Jon Masters <jcm@redhat.com>
+Cc: James Morris <jmorris@namei.org>, tvrtko.ursulin@sophos.com,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: Out of tree module using LSM
-Message-ID: <20071129164746.GB9664@kroah.com>
-References: <20071128144156.GA14106@infradead.org> <416908.77038.qm@web36613.mail.mud.yahoo.com> <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com> <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr> <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion>
+Message-ID: <20071129165104.GC9664@kroah.com>
+References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com> <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au> <1196353666.6473.43.camel@perihelion>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1196354172.6473.52.camel@perihelion>
+In-Reply-To: <1196353666.6473.43.camel@perihelion>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
-> On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
+On Thu, Nov 29, 2007 at 11:27:45AM -0500, Jon Masters wrote:
+> On Thu, 2007-11-29 at 11:12 +1100, James Morris wrote:
+> > On Wed, 28 Nov 2007, tvrtko.ursulin@sophos.com wrote:
+> > 
+> > > So as there is no question the current code does some ugly things it is 
+> > > even more true that we would be even more happy to use an official API. 
+> > 
+> > How about becoming involved in creating that official API ?
 > 
-> > The easiest way is as Al described above, just have the userspace
-> > program that wrote the file to disk, check it then.
-> 
-> But the problem is that this isn't just Samba, this is a countless
-> myriad of different applications. And if one of them doesn't support
-> on-access scanning, then the whole solution isn't worth using.
+> Sophos are interested in doing so, and we have spoken about this several
+> times recently over the phone.
 
-Ok, which specific applications do they care about?  Last time I asked
-it was still limited to a very small handful, all of which would be
-trivial to add such a hook to.
+Great, but this email did not show that they were interested in doing
+so.
 
-> > There are some nice SAMBA plugins that do just that already out there...
-> 
-> That's really not the problem :-)
+> So, rather than criticise their current code, or their intentions, or
+> blanketly dismiss the virus protection market, perhaps we can focus
+> instead on the fact that there is a known third party who wishes to
+> perform a task that is not well supportable at this moment. We can all
+> agree the syscall table hacking isn't such a good idea - but these guys
+> are *very* open to listening to useful alternative suggestions.
 
-Yes it is.  That's all you want to catch, when a Windows machine wants
-to access a file on a SAMBA server.  Do the check then, in userspace.
+It's not only not a good idea, it's insecure and is trivial to
+circumvent, so it's a non-issue here.
 
-Believe me, I've been over and over and over and over this before...
+> They (virus protection folks) generally think they want to intercept
+> various system calls, such as open() and block until they have performed
+> a scan operation on the file. I explained the mmap issue to several of
+> these companies recently, in quite some detail, and I know they are
+> interested in listening this time around :-) At the end of the day, what
+> I have been lead to believe is that they don't care whether they
+> intercept syscall entries, or use a better method, they just want to
+> scan files and take some action if a file is "bad". That's it really.
+
+Yes, I too have talked with people doing this kind of work, see my other
+messages in this thread for how it can be done all in userspace, no
+kernel changes needed at all.
 
 thanks,
 
