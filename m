@@ -1,84 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762973AbXK2Rge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbXK2Rhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762973AbXK2Rge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762254AbXK2RgQ
+	id S1763291AbXK2Rhu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbXK2Rhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:36:16 -0500
-Received: from [81.2.110.250] ([81.2.110.250]:41189 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762100AbXK2RgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:36:15 -0500
-Date: Thu, 29 Nov 2007 17:27:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Greg KH <greg@kroah.com>,
-       Jon Masters <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
-       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071129172740.2515fa75@the-village.bc.nu>
-In-Reply-To: <20071129165731.GA30719@infradead.org>
-References: <416908.77038.qm@web36613.mail.mud.yahoo.com>
-	<20071128164613.GA21815@infradead.org>
-	<25290.1196273705@turing-police.cc.vt.edu>
-	<20071128183040.GW8181@ftp.linux.org.uk>
-	<20071129003840.GA22530@kroah.com>
-	<Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
-	<20071129010753.GA19106@kroah.com>
-	<1196354172.6473.52.camel@perihelion>
-	<20071129164746.GB9664@kroah.com>
-	<Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
-	<20071129165731.GA30719@infradead.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 12:37:42 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53850 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759174AbXK2Rhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 12:37:42 -0500
+Date: Thu, 29 Nov 2007 17:37:34 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 08/11] x86 ia32 ptrace getreg/putreg merge
+Message-ID: <20071129173734.GA556@infradead.org>
+References: <20071129115711.9FC8526F8E7@magilla.localdomain> <20071129120031.F0F4F26F989@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071129120031.F0F4F26F989@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can we please stop this useless discussion?  Trying to check the content
-> of files to see whether they might be malicious is inherently braindead,
-> and no amounts of plugins in random places will fix this.
+On Thu, Nov 29, 2007 at 04:00:31AM -0800, Roland McGrath wrote:
+> +#define R32(l,q)							\
+> +	case offsetof(struct user32, regs.l):				\
+> +		regs->q = value; break
+> +
+> +#define SEG32(rs)							\
+> +	case offsetof(struct user32, regs.rs):				\
+> +		return set_segment_reg(child,				\
+> +				       offsetof(struct user_regs_struct, rs), \
+> +				       value);				\
+> +		break
 
-Actually it is quite effective especially for files whose content is
-expected not to be executable material - there are some very distinct
-mathematical signatures.
+The code would be a lot more readable if you just opencoded this in the
+caller instead of these obsfucated macros.
 
-For the purposes of figuring out what is needed you can consider a random
-simple user case such as a system which protects you against the works of
-Eric S Raymond. Replace the mathematical analysis and heuristics with a
-user space tool which spots the various ESR papers and design it for that
-if it makes you happier.
-
-SELinux seems to be able to do most of the lifting around the problem as
-it can relabel a file into eric_t and constrain further access to it.
-
-The big problem to me is that this essentially boils down to revoke() on
-ordinary files, which as we know is _hard_.
-
-The simple case is
-	open
-	write cathedral and bazaar in some order
-	close
-	<trap close -> process -> label eric_t>
-
-	open (eric_t) - SELinux "no"
-
-
-Anyone smart will then write it out of order and keep the file open, or
-make sure someone else has it open. At that point close ceases to be a
-point you can check the labelling. Open doesn't seem too helpful either
-as the target may have the file open before it is modified into an ESR
-work.
-
-Even if you can spot the surrepticious assembly of an ESR work on your
-computer you then have to implement revocation in order to take the file
-away from those with it open.
-
-Alan
+> +
+> +static int putreg32(struct task_struct *child, unsigned regno, u32 value)
+> +{
+> +	struct pt_regs *regs = task_pt_regs(child);
+> +
+> +	switch (regno) {
+> +
+> +	SEG32(cs);
+> +	SEG32(ds);
+> +	SEG32(es);
+> +	SEG32(fs);
+> +	SEG32(gs);
+> +	SEG32(ss);
+> +
+> +	R32(ebx, bx);
+> +	R32(ecx, cx);
+> +	R32(edx, dx);
+> +	R32(edi, di);
+> +	R32(esi, si);
+> +	R32(ebp, bp);
+> +	R32(eax, ax);
+> +	R32(orig_eax, orig_ax);
+> +	R32(eip, ip);
+> +	R32(esp, sp);
+> +
+> +	case offsetof(struct user32, regs.eflags):
+> +		return set_flags(child, value);
+> +
+> +	case offsetof(struct user32, u_debugreg[0]) ...
+> +		offsetof(struct user32, u_debugreg[7]):
+> +		regno -= offsetof(struct user32, u_debugreg[0]);
+> +		return ptrace_set_debugreg(child, regno / 4, value);
+> +
+> +	default:
+> +		if (regno > sizeof(struct user32) || (regno & 3))
+> +			return -EIO;
+> +
+> +		/*
+> +		 * Other dummy fields in the virtual user structure
+> +		 * are ignored
+> +		 */
+> +		break;
+> +	}
+> +	return 0;
+> +}
+> +
+> +#undef R32
+> +#undef SEG32
+> +
+> +#define R32(l,q)							\
+> +	case offsetof(struct user32, regs.l):				\
+> +		*val = regs->q; break
+> +
+> +#define SEG32(rs)							\
+> +	case offsetof(struct user32, regs.rs):				\
+> +		*val = get_segment_reg(child,				\
+> +				       offsetof(struct user_regs_struct, rs)); \
+> +		break
+> +
+> +static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
+> +{
+> +	struct pt_regs *regs = task_pt_regs(child);
+> +
+> +	switch (regno) {
+> +
+> +	SEG32(ds);
+> +	SEG32(es);
+> +	SEG32(fs);
+> +	SEG32(gs);
+> +
+> +	R32(cs, cs);
+> +	R32(ss, ss);
+> +	R32(ebx, bx);
+> +	R32(ecx, cx);
+> +	R32(edx, dx);
+> +	R32(edi, di);
+> +	R32(esi, si);
+> +	R32(ebp, bp);
+> +	R32(eax, ax);
+> +	R32(orig_eax, orig_ax);
+> +	R32(eip, ip);
+> +	R32(esp, sp);
+> +
+> +	case offsetof(struct user32, regs.eflags):
+> +		*val = get_flags(child);
+> +		break;
+> +
+> +	case offsetof(struct user32, u_debugreg[0]) ...
+> +		offsetof(struct user32, u_debugreg[7]):
+> +		regno -= offsetof(struct user32, u_debugreg[0]);
+> +		*val = ptrace_get_debugreg(child, regno / 4);
+> +		break;
+> +
+> +	default:
+> +		if (regno > sizeof(struct user32) || (regno & 3))
+> +			return -EIO;
+> +
+> +		/*
+> +		 * Other dummy fields in the virtual user structure
+> +		 * are ignored
+> +		 */
+> +		*val = 0;
+> +		break;
+> +	}
+> +	return 0;
+> +}
+> +
+> +#undef R32
+> +#undef SEG32
+> +
+> +#endif	/* CONFIG_IA32_EMULATION */
+> +
+>  #ifdef CONFIG_X86_32
+>  
+>  void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+---end quoted text---
