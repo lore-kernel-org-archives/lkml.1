@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbXK2V4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933966AbXK2V45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933901AbXK2V4e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933601AbXK2Vzt
+	id S933966AbXK2V45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933726AbXK2Vzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:55:49 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:39985 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933553AbXK2Vzq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:55:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GPZN6ZWbf+z3D5nYF232pkhfbwdC1w+21QuFYN7MYIlT/ipareop2SqYFW0uzgrPJUPaMHi4Dva5IBzTM3UwFrXf5D8rVLkXkX15hOj0M1o78GEnM1XILdBlt5eP90Vm+qUDmgmL6s9U3KXLxwAMBfc0jm/uWjqdCp+Y9sUFgkE=
-Message-ID: <474F3544.1090006@gmail.com>
-Date: Thu, 29 Nov 2007 22:55:16 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: kondemand: kernel BUG at kernel/workqueue.c:258!
-References: <474F3248.3040808@gmail.com> <924EFEDD5F540B4284297C4DC59F3DEE2FA920@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE2FA920@orsmsx423.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 16:55:53 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45906 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933705AbXK2Vzv (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:55:51 -0500
+Date: Fri, 30 Nov 2007 08:55:44 +1100
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Race between generic_forget_inode() and sync_sb_inodes()?
+Message-ID: <20071129215544.GK115527101@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/2007 10:47 PM, Pallipadi, Venkatesh wrote:
->  
-> 
->> -----Original Message-----
->> From: Jiri Slaby [mailto:jirislaby@gmail.com] 
->> Sent: Thursday, November 29, 2007 1:43 PM
->> To: Pallipadi, Venkatesh; Nakajima, Jun
->> Cc: Linux kernel mailing list
->> Subject: kondemand: kernel BUG at kernel/workqueue.c:258!
->>
->> Hi,
->>
->> while trying to evoke another bug by endlessly change 
->> governors, this appeared:
->> kernel BUG at .../kernel/workqueue.c:258!
->> invalid opcode: 0000 [1] PREEMPT SMP
->> CPU 0
->> Modules linked in: iwl3945 mac80211 cfg80211 tun 
->> cpufreq_userspace rfcomm
->> l2cap hci_usb bluetooth kvm_intel arc4 ecb blkcipher kvm cryptomgr
->> crypto_algapi acpi_cpufreq fglrx(P) asus_laptop sr_mod cdrom ehci_hcd
->> uhci_hcd battery
->> Pid: 443, comm: kondemand/0 Tainted: P        2.6.23 #38
 
-Here :).
+If we are in the process of dropping an inode and it is hashed,
+generic_forget_inode() will mark it I_WILL_FREE and drop the
+inode_lock before calling write_inode_now().
 
->> RIP: 0010:[<ffffffff802484ba>]  [<ffffffff802484ba>] 
->> run_workqueue+0xca/0x120
->> RSP: 0000:ffff81003ff3bea0  EFLAGS: 00010283
->> RAX: ffff81003fc08200 RBX: ffff810001e0a300 RCX: 0000000000000000
->> RDX: ffff810001e0a300 RSI: ffff81003ff3bed0 RDI: ffff81003fc08180
->> RBP: ffff81003fc08180 R08: ffff81003ff3a000 R09: 0000000000000000
->> R10: 0000003a18d529f0 R11: 0000000000000001 R12: ffff810001e0a2f8
->> R13: ffffffff803c7160 R14: ffff81003fc08188 R15: 0000000000000000
->> FS:  0000000000000000(0000) GS:ffffffff805db000(0000) 
->> knlGS:0000000000000000
->> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->> CR2: 0000003a18a9afa0 CR3: 000000002e431000 CR4: 00000000000026e0
->> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> Process kondemand/0 (pid: 443, threadinfo ffff81003ff3a000, task
->> ffff81003fe67560)
->> Stack:  ffff81003fc08198 ffff81003fc08180 ffffffff80249060 
->> ffff81003fc08188
->> 0000000000000000 ffffffff80249125 0000000000000000 ffff81003fe67560
->> ffffffff8024cb20 ffff81003ff3bee8 ffff81003ff3bee8 00000000fffffffc
->> Call Trace:
->> [<ffffffff80249060>] worker_thread+0x0/0x130
->> [<ffffffff80249125>] worker_thread+0xc5/0x130
->> [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
->> [<ffffffff80249060>] worker_thread+0x0/0x130
->> [<ffffffff80249060>] worker_thread+0x0/0x130
->> [<ffffffff8024c71b>] kthread+0x4b/0x80
->> [<ffffffff8020cbb8>] child_rip+0xa/0x12
->> [<ffffffff8021fff0>] flat_send_IPI_mask+0x0/0x70
->> [<ffffffff8024c6d0>] kthread+0x0/0x80
->> [<ffffffff8020cbae>] child_rip+0x0/0x12
->>
->>
->> Code: 0f 0b eb fe 66 90 65 48 8b 34 25 00 00 00 00 48 c7 c7 10 98
->> RIP  [<ffffffff802484ba>] run_workqueue+0xca/0x120
->> RSP <ffff81003ff3bea0>
->>
-> 
-> Kernel version?
+However, at this point, the inode is still on the sb->s_dirty_list
+so sync_sb_inodes() could see it and try to write it back.
+i.e.:
 
-above, thanks,
+	generic_forget_inode		sync_sb_inodes
+
+	i_state |= I_WILL_FREE
+	spin_unlock(inode_lock)
+	write_inode_now()
+					spin_lock(inode_lock)
+					__iget(inode)
+					__writeback_single_inode()
+					spin_unlock(inode_lock)
+	spin_lock(inode_lock)
+	i_state &= ~I_WILL_FREE
+	(remove from lists)
+	i_state |= I_FREEING
+	spin_unlock(inode_lock)
+	i_state = I_CLEAR
+					spin_lock(inode_lock)
+					iput(inode)
+					BUG_ON(i_state == I_CLEAR)
+	(inode gets freed)
+
+
+I came across this because I've been making changes to XFS to avoid the
+inode hash, and I've found that I need to remove the inode from the
+dirty list when setting I_WILL_FREE to avoid this race. I can't see
+how this race is avoided when inodes are hashed, so I'm wondering
+if we've just been lucky or there's something that I'm missing that
+means the above does not occur.
+
+If it really is a race, then sync_sb_inodes() should really check
+I_WILL_FREE before doing an __iget(), I think. If I_WILL_FREE is set
+we are already doing writeback so we don't need to do it from 
+sync_sb_inodes(), right?
+
+Cheers,
+
+Dave.
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
