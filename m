@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbXK2DjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbXK2Dm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760254AbXK2DjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 22:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbXK2DjJ
+	id S1760880AbXK2Dm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 22:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbXK2Dmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 22:39:09 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33335 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755087AbXK2DjI (ORCPT
+	Wed, 28 Nov 2007 22:42:50 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:59833 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755528AbXK2Dmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 22:39:08 -0500
-Date: Thu, 29 Nov 2007 12:42:07 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH][for -mm] per-zone and reclaim enhancements for memory
- controller take 3 [3/10] per-zone active inactive counter
-Message-Id: <20071129124207.b59ae745.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20071129033328.20E5F1CFEAA@siro.lan>
-References: <20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071129033328.20E5F1CFEAA@siro.lan>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 22:42:49 -0500
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Marcus Eder <meder@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Fix static rate if path faster than link
+X-Message-Flag: Warning: May contain useful information
+References: <200711281446.29085.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 28 Nov 2007 19:42:43 -0800
+In-Reply-To: <200711281446.29085.fenkes@de.ibm.com> (Joachim Fenkes's message of "Wed, 28 Nov 2007 15:46:28 +0200")
+Message-ID: <adatzn5n2do.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Nov 2007 03:42:43.0598 (UTC) FILETIME=[E6283AE0:01C83239]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 12:33:28 +0900 (JST)
-yamamoto@valinux.co.jp (YAMAMOTO Takashi) wrote:
-
-> > +static inline struct mem_cgroup_per_zone *
-> > +mem_cgroup_zoneinfo(struct mem_cgroup *mem, int nid, int zid)
-> > +{
-> > +	if (!mem->info.nodeinfo[nid])
-> 
-> can this be true?
-> 
-> YAMAMOTO Takashi
-
-When I set early_init=1, I added that check.
-BUG_ON() is better ?
-
-Thanks,
--Kame
-
+thanks, applied
