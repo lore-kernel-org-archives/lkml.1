@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbXK2N6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXK2OAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbXK2N6M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 08:58:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbXK2N54
+	id S932179AbXK2OAd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 09:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbXK2OAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 08:57:56 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38199 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752574AbXK2N5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 08:57:55 -0500
-Date: Thu, 29 Nov 2007 07:57:28 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [patch -mm 2/4] mqueue namespace : add unshare support
-Message-ID: <20071129135727.GA3343@sergelap.austin.ibm.com>
-References: <20071128163728.177495768@fr.ibm.com> <20071128164349.196734045@fr.ibm.com> <474DA61B.5030301@openvz.org> <474E944C.4020809@fr.ibm.com> <20071129025246.a0d03eef.akpm@linux-foundation.org>
+	Thu, 29 Nov 2007 09:00:23 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:59332 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755733AbXK2OAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 09:00:22 -0500
+Date: Thu, 29 Nov 2007 08:57:01 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: Remy Bohmer <linux@bohmer.net>, Daniel Walker <dwalker@mvista.com>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will
+ stall forever
+In-Reply-To: <20071129133604.GA23845@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.58.0711290849140.21439@gandalf.stny.rr.com>
+References: <1196177122.23808.7.camel@imap.mvista.com>
+ <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
+ <20071128172509.GA30173@flint.arm.linux.org.uk>
+ <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
+ <20071128200550.GA3494@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
+ <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
+ <20071129102506.GB22793@flint.arm.linux.org.uk>
+ <3efb10970711290327s3c60da1ey3b6fae738090ca5@mail.gmail.com>
+ <20071129133604.GA23845@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129025246.a0d03eef.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Thu, 29 Nov 2007 11:28:28 +0100 Cedric Le Goater <clg@fr.ibm.com> wrote:
-> 
-> > >> Index: 2.6.24-rc3-mm2/include/linux/sched.h
-> > >> ===================================================================
-> > >> --- 2.6.24-rc3-mm2.orig/include/linux/sched.h
-> > >> +++ 2.6.24-rc3-mm2/include/linux/sched.h
-> > >> @@ -27,6 +27,7 @@
-> > >>  #define CLONE_NEWUSER		0x10000000	/* New user namespace */
-> > >>  #define CLONE_NEWPID		0x20000000	/* New pid namespace */
-> > >>  #define CLONE_NEWNET		0x40000000	/* New network namespace */
-> > >> +#define CLONE_NEWMQ		0x80000000	/* New posix mqueue namespace */
-> > > 
-> > > That's it :) We've run out of clone flags on 32-bit platforms :(
-> > 
-> > yes. 
-> > 
-> > I have been giving some thoughts to a clone2() to extend the flags
-> 
-> There appears to be little alternative.
 
-Just thinking aloud, but
+On Thu, 29 Nov 2007, Russell King - ARM Linux wrote:
 
-given the concerns with the safety and sanity of unsharing only partial
-namespaces, and before much userspace is depending on any of
-	CLONE_NEWUTS,CLONE_NEWIPC,CLONE_NEWUSER,CLONE_NEWNET,CLONE_NEWMQUEUE
+> On Thu, Nov 29, 2007 at 12:27:30PM +0100, Remy Bohmer wrote:
+>
+> Ah, and looking at the changes to the file, the addition of the mask
+> and unmask was done by someone who didn't understand what this was
+> trying to do.  So that change should be backed out.
+>
 
-maybe we should have traditional clone only support CLONE_NEWNS (since
-it's the most useful on its own) and CLONE_NEWCONTAINER, where
-CLONE_NEWCONTAINER always unshares all the namespaces we know about.
+Perhaps only part of the change should be backed out.  The part that masks
+the irq in the handle_simple_irq code.
 
-Then clone2 can allow more finegrained choice of namespaces.  It takes
-the exact same clone_flags as clone(), but instead of parent_tidptr
-and child_tidptr args it has a ns_unshare flag which specifies which
-namespaces to unshare.
+That's from commit 76d2160147f43f982dfe881404cfde9fd0a9da21 which is to
+not disable an irq line when disable_irq is called.  A form of lazy
+disable irq.
 
--serge
+This speeds up code that uses disable_irq, since the line is only masked
+when an interrupt actually arrives. Using disable_irq / enable_irq does no
+IRQ chip modifications if an interrupt from the IRQ line does not arrive
+between the two.
 
-> > but
-> > andrew is preparing to recycle CLONE_DETACHED and CLONE_STOPPED for
-> > 2.6.26. Some we might have some more time in front of us.
-> 
-> CLONE_DETACHED proved to be in use.  There are no reports of anyone using
-> CLONE_STOPPED though.
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+Now the question is, can something that uses handle_simple_irq call
+disable_irq?  If there is no mask function, I would assume that this would
+be a noop in such a case. If this is true, then we could remove the mask
+from handle_simple_irq. But then we might want to add a BUG() in
+disable_irq for simple_irqs.
+
+-- Steve
+
