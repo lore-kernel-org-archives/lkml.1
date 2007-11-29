@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXK2G0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXK2GgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbXK2G0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 01:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXK2G0A
+	id S1756686AbXK2GgN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 01:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXK2Gf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 01:26:00 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59878 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbXK2GZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 01:25:59 -0500
-Subject: Re: [RFC PATCH] LTTng instrumentation mm (using page_to_pfn)
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mbligh@google.com
-In-Reply-To: <20071129023421.GA711@Krystal>
-References: <20071113193349.214098508@polymtl.ca>
-	 <20071113194025.150641834@polymtl.ca> <1195160783.7078.203.camel@localhost>
-	 <20071115215142.GA7825@Krystal> <1195164977.27759.10.camel@localhost>
-	 <20071116143019.GA16082@Krystal> <1195495485.27759.115.camel@localhost>
-	 <20071128140953.GA8018@Krystal> <1196268856.18851.20.camel@localhost>
-	 <20071129023421.GA711@Krystal>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 22:25:52 -0800
-Message-Id: <1196317552.18851.47.camel@localhost>
+	Thu, 29 Nov 2007 01:35:58 -0500
+Received: from mx10.go2.pl ([193.17.41.74]:54767 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751348AbXK2Gf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 01:35:58 -0500
+Date: Thu, 29 Nov 2007 07:40:34 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Question regarding mutex locking
+Message-ID: <20071129064034.GB9536@ff.dom.local>
+References: <474CF06C.8020208@lwfinger.net> <jemysy2y3y.fsf@sykes.suse.de> <474D8C22.7010902@lwfinger.net> <474DEF79.1080900@o2.pl> <20071128153312.14144472@freepuppy.rosehill>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128153312.14144472@freepuppy.rosehill>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 21:34 -0500, Mathieu Desnoyers wrote:
-> Before I start digging deeper in checking whether it is already
-> instrumented by the fs instrumentation (and would therefore be
-> redundant), is there a particular data structure from mm/ that you
-> suggest taking the swap file number and location in swap from ?
+On Wed, Nov 28, 2007 at 03:33:12PM -0800, Stephen Hemminger wrote:
+...
+> WTF are you teaching a lesson on how NOT to do locking?
+> 
+> Any code which has this kind of convoluted dependency on conditional
+> locking is fundamentally broken.
+> 
 
-page_private() at this point stores a swp_entry_t.  There are swp_type()
-and swp_offset() helpers to decode the two bits you need after you've
-turned page_private() into a swp_entry_t.  See how get_swap_bio()
-creates a temporary swp_entry_t from the page_private() passed into it,
-then uses swp_type/offset() on it?
+As a matter of fact I've been thinking, about one more Re: to myself
+to point this all is a good example how problematic such solution
+would be, but I've decided it's rather apparent. IMHO learning needs
+bad examples too - to better understand why they should be avoided.
 
-I don't know if there is some history behind it, but it doesn't make a
-whole ton of sense to me to be passing page_private(page) into
-get_swap_bio() (which happens from its only two call sites).  It just
-kinda obfuscates where 'index' came from.
+On the other hand, I've seen quite a lot of fundamentally right, but
+practically broken code, so I'm not sure what's better. And, btw., I
+guess this 'fundamentally broken' type of locking could be found in
+the kernel too, but I'd prefer not too look after this now.
 
-It think we probably could just be doing
-
-	swp_entry_t entry = { .val = page_private(page), };
-
-in get_swap_bio() and not passing page_private().  We have the page in
-there already, so we don't need to pass a derived value like
-page_private().  At the least, it'll save some clutter in the function
-declaration.  
-
-Or, make a helper:
-
-static swp_entry_t page_swp_entry(struct page *page)
-{
-	swp_entry_t entry;
-	VM_BUG_ON(!PageSwapCache(page));
-	entry.val = page_private(page);
-	return entry;
-}
-
-I see at least 4 call sites that could use this.  The try_to_unmap_one()
-caller would trip over the debug check, so you'd have to move the call
-inside of the if(PageSwapCache(page)) statement.
-
--- Dave
-
+Thanks,
+Jarek P.
