@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761859AbXK2P4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761017AbXK2P7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761859AbXK2P4W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbXK2P4P
+	id S1761017AbXK2P7Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXK2P7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:56:15 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:60639 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754645AbXK2P4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:56:14 -0500
-Subject: Re: [patch 06/10] s390: Use generic percpu
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071128211527.373111512@sgi.com>
-References: <20071128210926.008783214@sgi.com>
-	 <20071128211527.373111512@sgi.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 29 Nov 2007 16:56:01 +0100
-Message-Id: <1196351761.23168.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 29 Nov 2007 10:59:03 -0500
+Received: from k2smtpout03-02.prod.mesa1.secureserver.net ([64.202.189.172]:53247
+	"HELO k2smtpout03-02.prod.mesa1.secureserver.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751440AbXK2P7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 10:59:01 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 10:59:01 EST
+Message-ID: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com>
+Date: Thu, 29 Nov 2007 10:52:20 -0500
+From: Jing Xue <jingxue@digizenstudio.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: git guidance
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-11-28 at 13:09 -0800, Christoph Lameter wrote:
-> s390 has a special way to determine the pointer to a per cpu area
-> plus there is a way to access the base of the per cpu area of the
-> currently executing processor.
-> 
-> Note: I had to do a minor change to ASM code. Please check that
-> this was done right.
 
-Hi Christoph,
+Quoting Al Boldi <a1426z@gawab.com>:
 
-after fixing the trainwreck with Gregs kset changes I've got rc3-mm2
-compiled with your percpu patches. The new s390 percpu code works fine:
+> Sure, browsing is the easy part, but Version Control starts when things
+> become writable.
 
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+But how is that supposed to work?  What happens when you make some
+changes to a file and save it?  Do you want the "git file system" to
+commit it right aways or wait until you to issue a "commit" command?
+The first behavior would obviously be wrong, and the second would make
+the "file system" not operationally transparent anyways. Right?
 
+By the way, the only SCM I have worked with that tries to mount its
+repository (or a view on top of it) as a file system is ClearCase with
+its dynamic views. And, between the buggy file system implementation,
+the intrusion on workflow, and the lack of scalability, at least in
+the organization I worked for, it turned out to be a horrible,
+horrible, horrible idea.
+
+Cheers.
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Jing Xue
 
 
