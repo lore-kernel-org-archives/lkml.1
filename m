@@ -1,155 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbXK2S03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762882AbXK2ScR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933237AbXK2S03 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933210AbXK2S0J
+	id S1762882AbXK2ScR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757721AbXK2ScB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:26:09 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:28416 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933181AbXK2S0I (ORCPT
+	Thu, 29 Nov 2007 13:32:01 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:49212 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757301AbXK2ScA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:26:08 -0500
-Date: Thu, 29 Nov 2007 10:24:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Remove #define hex_asc from kernel.h, update
- lib/hexdump.c
-Message-Id: <20071129102400.dac158d8.randy.dunlap@oracle.com>
-In-Reply-To: <1196359724.22120.22.camel@localhost>
-References: <1196359724.22120.22.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 13:32:00 -0500
+Message-ID: <474F05C0.9040002@linux.vnet.ibm.com>
+Date: Fri, 30 Nov 2007 00:02:32 +0530
+From: Ciju Rajan K <ciju@linux.vnet.ibm.com>
+Reply-To: ciju@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: aglitke <agl@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as
+ root
+References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain> <20071114220038.GD1806@holomorphy.com>
+In-Reply-To: <20071114220038.GD1806@holomorphy.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 10:08:44 -0800 Joe Perches wrote:
+Hi Wli,
+   I tested your patch. But that is not solving the problem.
+   If the code change to user_shm_lock() is not a good solution, could 
+you please suggest a method so that the normal user is able to allocate 
+the huge pages, if his gid is added to /proc/sys/vm/hugetlb_shm_group
 
-> It's only use is in lib/hexdump.c
-> Instead, use scnprintf in lib/hexdump.c
-> 
-> Use "%0nx" not "%n.nx" (Smaller kernel, one byte at a time, woohoo!)
-> Use true not 1 for print_hex_dump
-> A bit of indentation style in lib/hexdump.c
+Thanks
+Ciju
 
-I don't care for the mixed spaces/tabs.
-
-> Size before/after
->    text    data     bss     dec     hex filename
->    1037       0       0    1037     40d lib/hexdump.o
+William Lee Irwin III wrote:
+> On Wed, Nov 14, 2007 at 09:31:41AM -0600, aglitke wrote:
+>> ... if the user's locked limit (ulimit -l) is set to unlimited, allowed
+>> (above) is set to 1.  In that case, the second part of that if() is
+>> bypassed, and the function grants permission.  Therefore, the easy
+>> solution is to make sure your user's lock_limit is RLIM_INFINITY.
 > 
->    text    data     bss     dec     hex filename
->    1019       0       0    1019     3fb lib/hexdump.o
+> This function deserves a minor cleanup and a bit more commenting.
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> Reading user->locked_shm within shmlock_user_lock would be nice, too.
 > 
-> ---
+> Maybe something like this (untested, uncompiled) would do.
 > 
->  include/linux/kernel.h |    1 -
->  lib/hexdump.c          |   23 ++++++++++-------------
->  2 files changed, 10 insertions(+), 14 deletions(-)
 > 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index 94bc996..77b187f 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -256,7 +256,6 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
->  				const void *buf, size_t len, bool ascii);
->  extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->  			const void *buf, size_t len);
-> -#define hex_asc(x)	"0123456789abcdef"[x]
->  
->  #define pr_emerg(fmt, arg...) \
->  	printk(KERN_EMERG fmt, ##arg)
-> diff --git a/lib/hexdump.c b/lib/hexdump.c
-> index bd5edae..70e23fb 100644
-> --- a/lib/hexdump.c
-> +++ b/lib/hexdump.c
-> @@ -41,7 +41,6 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
->  			bool ascii)
->  {
->  	const u8 *ptr = buf;
-> -	u8 ch;
->  	int j, lx = 0;
->  	int ascii_column;
->  
-> @@ -62,7 +61,9 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
->  
->  		for (j = 0; j < ngroups; j++)
->  			lx += scnprintf(linebuf + lx, linebuflen - lx,
-> -				"%16.16llx ", (unsigned long long)*(ptr8 + j));
-> +					"%016llx ",
-> +					(unsigned long long)*(ptr8 + j) &
-> +					0xffffffffffffffffULL);
->  		ascii_column = 17 * ngroups + 2;
->  		break;
->  	}
-> @@ -73,7 +74,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
->  
->  		for (j = 0; j < ngroups; j++)
->  			lx += scnprintf(linebuf + lx, linebuflen - lx,
-> -				"%8.8x ", *(ptr4 + j));
-> +					"%08x ", *(ptr4 + j) & 0xffffffffU);
->  		ascii_column = 9 * ngroups + 2;
->  		break;
->  	}
-> @@ -84,19 +85,15 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
->  
->  		for (j = 0; j < ngroups; j++)
->  			lx += scnprintf(linebuf + lx, linebuflen - lx,
-> -				"%4.4x ", *(ptr2 + j));
-> +					"%04x ", *(ptr2 + j) & 0xffff);
->  		ascii_column = 5 * ngroups + 2;
->  		break;
->  	}
->  
->  	default:
-> -		for (j = 0; (j < rowsize) && (j < len) && (lx + 4) < linebuflen;
-> -		     j++) {
-> -			ch = ptr[j];
-> -			linebuf[lx++] = hex_asc(ch >> 4);
-> -			linebuf[lx++] = hex_asc(ch & 0x0f);
-> -			linebuf[lx++] = ' ';
-> -		}
-> +		for (j = 0; (j < rowsize) && (j < len) < linebuflen; j++)
-
-What does
-					(j < len) < linebuflen;
-do?  I don't see that C construct very often.
-
-
-> +			lx += scnprintf(linebuf + lx, linebuflen - lx,
-> +					"%02x ", ptr[j] & 0xff);
->  		ascii_column = 3 * rowsize + 2;
->  		break;
->  	}
-> @@ -163,7 +160,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
->  		switch (prefix_type) {
->  		case DUMP_PREFIX_ADDRESS:
->  			printk("%s%s%*p: %s\n", level, prefix_str,
-> -				(int)(2 * sizeof(void *)), ptr + i, linebuf);
-> +			       (int)(2 * sizeof(void *)), ptr + i, linebuf);
->  			break;
->  		case DUMP_PREFIX_OFFSET:
->  			printk("%s%s%.8x: %s\n", level, prefix_str, i, linebuf);
-> @@ -192,6 +189,6 @@ void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->  			const void *buf, size_t len)
->  {
->  	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
-> -			buf, len, 1);
-> +		       buf, len, true);
+> -- wli
+> 
+> 
+> diff --git a/mm/mlock.c b/mm/mlock.c
+> index 7b26560..5f51792 100644
+> --- a/mm/mlock.c
+> +++ b/mm/mlock.c
+> @@ -234,6 +234,12 @@ asmlinkage long sys_munlockall(void)
+>  /*
+>   * Objects with different lifetime than processes (SHM_LOCK and SHM_HUGETLB
+>   * shm segments) get accounted against the user_struct instead.
+> + * First, user_shm_lock() checks that the user has permission to lock
+> + * enough memory; then if so, the locked shm is accounted to the user's
+> + * system-wide state. shmlock_user_lock protects the per-user field
+> + * tracking how much locked_shm is in use within the struct user_struct.
+> + * shmlock_user_lock is taken early to guard the read-only check that
+> + * user->locked_shm is in-bounds against updates to user->locked_shm.
+>   */
+>  static DEFINE_SPINLOCK(shmlock_user_lock);
+> 
+> @@ -242,19 +248,22 @@ int user_shm_lock(size_t size, struct user_struct *user)
+>  	unsigned long lock_limit, locked;
+>  	int allowed = 0;
+> 
+> +	spin_lock(&shmlock_user_lock);
+>  	locked = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+>  	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+>  	if (lock_limit == RLIM_INFINITY)
+>  		allowed = 1;
+> -	lock_limit >>= PAGE_SHIFT;
+> -	spin_lock(&shmlock_user_lock);
+> -	if (!allowed &&
+> -	    locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
+> -		goto out;
+> -	get_uid(user);
+> -	user->locked_shm += locked;
+> -	allowed = 1;
+> -out:
+> +	else {
+> +		lock_limit >>= PAGE_SHIFT;
+> +		if (locked + user->locked_shm <= lock_limit)
+> +			allowed = 1;
+> +		else if (capable(CAP_IPC_LOCK))
+> +			allowed = 1;
+> +	}
+> +	if (allowed) {
+> +		get_uid(user);
+> +		user->locked_shm += locked;
+> +	}
+>  	spin_unlock(&shmlock_user_lock);
+>  	return allowed;
 >  }
->  EXPORT_SYMBOL(print_hex_dump_bytes);
 
-
----
-~Randy
