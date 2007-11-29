@@ -1,97 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbXK2JK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXK2JLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761627AbXK2JK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 04:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761380AbXK2JKj
+	id S1761974AbXK2JLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 04:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761401AbXK2JKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 04:10:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40480 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761135AbXK2JKe (ORCPT
+	Thu, 29 Nov 2007 04:10:42 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:47053 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761315AbXK2JKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 04:10:34 -0500
-Date: Thu, 29 Nov 2007 01:09:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, samba-technical@lists.samba.org,
-       nfs@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>, Balbir Singh <balbir@in.ibm.com>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted
- partitions
-Message-Id: <20071129010906.772e0c15.akpm@linux-foundation.org>
-In-Reply-To: <474E7F9E.9000601@linux.vnet.ibm.com>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<474E7F9E.9000601@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 04:10:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ep9pJaFxekQ9J4kKPrcUq4CXX4l6mRg7m6OTaWl+EEqOuBjwASRM2oW9iqUH/X4LzpXpRs7Dg5B/sUViXPG4Zi59JhNny+fU/qL50l3JIenzA5wu3YFFpmXZEoa0Wrnr5TLfB8kZYvkcaf3yNyfGD/lv+UHxYplpviemyr8aBxQ=
+Message-ID: <19f34abd0711290110n501ddb43wf3ab69b526acef95@mail.gmail.com>
+Date: Thu, 29 Nov 2007 10:10:33 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <84144f020711290002p290e91a4ubc40f1efbc877f75@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <474C34CC.6060509@gmail.com>
+	 <84144f020711290002p290e91a4ubc40f1efbc877f75@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Hi,
 
-> Hi Andrew,
-> 
-> While running file system stress on nfs and cifs mounted partitions, the machine
-> drops to xmon
-> 
-> 1:mon> e
-> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
->     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
->     lr: c0000000001074d0: .vfs_link+0x204/0x298
->     sp: c000000080a9fb00
->    msr: 8000000000009032
->    dar: 280 
->  dsisr: 40010000
->   current = 0xc0000000c8e6f670
->   paca    = 0xc000000000512c00
->     pid   = 2848, comm = fsstress
-> 1:mon> t
-> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
-> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
-> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
-> --- Exception: c00 (System Call) at 000000000ff1bdfc
-> SP (ffeaed10) is in userspace
-> 1:mon> r
-> R00 = c0000000001074d0   R16 = 0000000000000000
-> R01 = c000000080a9fb00   R17 = 0000000000000000
-> R02 = c00000000060c380   R18 = 0000000000000000
-> R03 = 0000000000000000   R19 = 0000000000000000
-> R04 = 0000000000000004   R20 = 0000000000000000
-> R05 = 0000000000000000   R21 = 0000000000000000
-> R06 = 0000000000000000   R22 = 0000000000000000
-> R07 = 0000000000000000   R23 = 0000000000000004
-> R08 = 0000000000000000   R24 = 0000000000000280
-> R09 = 0000000000000000   R25 = fffffffffffff000
-> R10 = 0000000000000001   R26 = c000000082827790
-> R11 = c0000000003963e8   R27 = c0000000828275a0
-> R12 = d000000000deec78   R28 = 0000000000000000
-> R13 = c000000000512c00   R29 = c00000007b18fcf0
-> R14 = 0000000000000000   R30 = c0000000005bc088
-> R15 = 0000000000000000   R31 = 0000000000000000
-> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
-> lr  = c0000000001074d0 .vfs_link+0x204/0x298
-> msr = 8000000000009032   cr  = 24000882
-> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
-> dar = 0000000000000280   dsisr = 40010000
-> 
-> 
-> The gdb output shows 
-> 
-> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
-> 103      * fsnotify_create - 'name' was linked in
-> 104      */  
-> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
-> 106     {   
-> 107             inode_dir_notify(inode, DN_CREATE);
-> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
-> 109                                       dentry->d_inode);
-> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
-> 111     }   
-> 112
-> 
+On Nov 29, 2007 9:02 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Hi Vegard,
+>
+> On Nov 27, 2007 5:16 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > +config KMEMCHECK
+> > +       bool "Trap use of uninitialized memory"
+> > +       depends on X86_32 && !CC_OPTIMIZE_FOR_SIZE
+> > +       help
+> > +         This option enables tracing of dynamically allocated kernel memory
+> > +         to see if memory is used before it has been given an initial value.
+> > +         Be aware that this requires half of your memory for bookkeeping and
+> > +         will insert extra code at *every* read and write to tracked memory
+> > +         thus slow down the kernel code (but user code is unaffected).
+>
+> Is it really necessary to track every memory address? Tracking slab
+> objects would require far less memory. You might also want to make
+> kzalloc() and GFP_ZERO mark the memory area as initialized to avoid
+> some page faults.
 
-If it is reproducible can you please try reverting
-inotify-send-in_attrib-events-when-link-count-changes.patch?
+Yes, we are in fact only tracking the memory within SLUB allocations
+(minus what SLUB itself needs for bookkeeping -- like the caches).
+Maybe the Kconfig text was unclear?
+
+As for the kzalloc() and GFP_ZERO, I believe these will write zeros to
+the data in question before the memory is returned to the caller. In
+that case, the area will be "automatically" set to initialized since
+these writes are also intercepted by kmemcheck. If not, I will have to
+investigate some more :-)
+
+> On Nov 27, 2007 5:16 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > +       /* Actually allocate twice as much, since we need to track the
+> > +        * status of each byte within the allocation. */
+> > +       if (!(flags & __GFP_NOTRACK)) {
+>
+> If you change __GFP_NOTRACK to __GFP_TRACK, you can avoid the double
+> negation here.
+
+I deliberately chose this form. Here is my rationale: By default, when
+kmemcheck is enabled, we want to track as much as possible. So every
+"normal" allocation should be tracked. It seems easier to make an
+exception for the pages that should *not* be tracked (like the SLUB
+caches, DMA allocations), since this group of allocations is much
+smaller than the group of allocations that should be tracked.
+
+I could embed __GFP_TRACK into GFP_KERNEL, but then I would have to
+mask this out at every non-tracked allocation, which leaves us with
+the exact opposite problem, just in a different place.
+
+Thank you for looking :)
+
+>
+>                                     Pekka
+>
+
+Vegard
