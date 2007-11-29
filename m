@@ -1,164 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758541AbXK2HAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbXK2HSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758541AbXK2HAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 02:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbXK2HAa
+	id S1756712AbXK2HSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 02:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbXK2HS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 02:00:30 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53119 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752617AbXK2HA2 (ORCPT
+	Thu, 29 Nov 2007 02:18:27 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:4972 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753050AbXK2HS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 02:00:28 -0500
-Message-ID: <474E5CAC.9000108@linux.vnet.ibm.com>
-Date: Thu, 29 Nov 2007 12:01:08 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Thu, 29 Nov 2007 02:18:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fno/RGuzVnSBWYnls7UOmQ38ZQ2mjNU1GLzwUkpjGYt/UdEOy4A4UWkO7xES6vHdv5rpx4BnLfQHis+/2p8QVWBaKNqZ/M4ka4u6QsYd04wnvecJeBpfCTk8m49NRNFxUydYsBJJSp9N2tPZoi8w1a8oCQct5PXyMevRKfqAKmU=
+Message-ID: <4e5ebad50711282318k3d99d0cei42b97d51f8aac7f2@mail.gmail.com>
+Date: Thu, 29 Nov 2007 15:18:24 +0800
+From: "Sonic Zhang" <sonic.adi@gmail.com>
+To: "Linux IDE" <linux-ide@vger.kernel.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [libata] Set proper ATA UDMA mode for bf548 according to system clock.
+In-Reply-To: <1196138859.6974.2.camel@eight.analog.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
-References: <474D0AAC.5010005@linux.vnet.ibm.com> <20071127225328.9e3f3827.akpm@linux-foundation.org> <474D15FF.5080508@linux.vnet.ibm.com> <20071127232552.ad16e95c.akpm@linux-foundation.org>
-In-Reply-To: <20071127232552.ad16e95c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1196138859.6974.2.camel@eight.analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 28 Nov 2007 12:47:19 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
->> Andrew Morton wrote:
->>> On Wed, 28 Nov 2007 11:59:00 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>>
->>>> Hi,
->>> (cc linux-scsi, for sym53c8xx)
->>>
->>>> Soft lockup is detected while bootup with 2.6.24-rc3-git2 on powerbox
->>> I assume this is a post-2.6.23 regression?
->>>
->>>> BUG: soft lockup - CPU#1 stuck for 11s! [insmod:375]
->>>> NIP: c00000000002f02c LR: d0000000001414fc CTR: c00000000002f018
->>>> REGS: c00000077cbef0b0 TRAP: 0901   Not tainted  (2.6.24-rc3-git2-autotest)
->>>> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24022088  XER: 00000000
->>>> TASK = c00000077cbd8000[375] 'insmod' THREAD: c00000077cbec000 CPU: 1
->>>> GPR00: d0000000001414fc c00000077cbef330 c00000000052b930 d000080080002014 
->>>> GPR04: d00008008000202c 0000000000000000 c00000077ca1cb00 d00000000014ce54 
->>>> GPR08: c00000077ca1c63c 0000000000000000 000000000000002a c00000000002f018 
->>>> GPR12: d000000000143610 c000000000473d00 
->>>> NIP [c00000000002f02c] .ioread8+0x14/0x60
->>>> LR [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
->>>> Call Trace:
->>>> [c00000077cbef330] [c00000077cbef3c0] 0xc00000077cbef3c0 (unreliable)
->>>> [c00000077cbef3a0] [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
->>>> [c00000077cbef470] [d0000000001395f8] .sym2_probe+0x700/0x99c [sym53c8xx]
->>>> [c00000077cbef710] [c0000000001bc118] .pci_device_probe+0x124/0x1b0
->>>> [c00000077cbef7b0] [c000000000221138] .driver_probe_device+0x144/0x20c
->>>> [c00000077cbef850] [c000000000221450] .__driver_attach+0xcc/0x154
->>>> [c00000077cbef8e0] [c00000000021ff94] .bus_for_each_dev+0x7c/0xd4
->>>> [c00000077cbef9a0] [c000000000220e9c] .driver_attach+0x28/0x40
->>>> [c00000077cbefa20] [c0000000002204d8] .bus_add_driver+0x90/0x228
->>>> [c00000077cbefac0] [c000000000221858] .driver_register+0x94/0xb0
->>>> [c00000077cbefb40] [c0000000001bc430] .__pci_register_driver+0x6c/0xcc
->>>> [c00000077cbefbe0] [d000000000143428] .sym2_init+0x108/0x15b0 [sym53c8xx]
->>>> [c00000077cbefc80] [c00000000008ce80] .sys_init_module+0x17c4/0x1958
->>>> [c00000077cbefe30] [c00000000000872c] syscall_exit+0x0/0x40
->>>> Instruction dump:
->>>> 60000000 786b0420 38210070 7d635b78 e8010010 7c0803a6 4e800020 7c0802a6 
->>>> f8010010 f821ff91 7c0004ac 89230000 <0c090000> 4c00012c 79290620 2f8900ff 
->>> I see no obvious lockup sites near the end of sym_hcb_attach().  Maybe it's
->>> being called lots of times from a higher level..  Do the traces all look
->>> the same?
->> Hi Andrew,
->>
->> I see this call trace twice and both looks similar and on another reboot
->> the following trace is seen twice in different cpu
->>
->> BUG: soft lockup detected on CPU#3!
->> Call Trace:
->> [C00000003FEDEDA0] [C000000000010220] .show_stack+0x68/0x1b0 (unreliable)
->> [C00000003FEDEE40] [C0000000000A061C] .softlockup_tick+0xf0/0x13c
->> [C00000003FEDEEF0] [C000000000072E2C] .run_local_timers+0x1c/0x30
->> [C00000003FEDEF70] [C000000000022FA0] .timer_interrupt+0xa8/0x488
->> [C00000003FEDF050] [C0000000000034EC] decrementer_common+0xec/0x100
->> --- Exception: 901 at .ioread8+0x14/0x60
->>     LR = .sym_hcb_attach+0x1194/0x1384 [sym53c8xx]
->> [C00000003FEDF340] [D0000000002B3BC0] 0xd0000000002b3bc0 (unreliable)
->> [C00000003FEDF3B0] [D00000000029A3C0] .sym_hcb_attach+0x1194/0x1384 [sym53c8xx]
->> [C00000003FEDF480] [D000000000291D30] .sym2_probe+0x75c/0x9f8 [sym53c8xx]
->> [C00000003FEDF710] [C0000000001B65A4] .pci_device_probe+0x13c/0x1dc
->> [C00000003FEDF7D0] [C000000000219A0C] .driver_probe_device+0xa0/0x15c
->> [C00000003FEDF870] [C000000000219C64] .__driver_attach+0xb4/0x138
->> [C00000003FEDF900] [C00000000021913C] .bus_for_each_dev+0x7c/0xd4
->> [C00000003FEDF9C0] [C0000000002198B0] .driver_attach+0x28/0x40
->> [C00000003FEDFA40] [C000000000218BA4] .bus_add_driver+0x98/0x18c
->> [C00000003FEDFAE0] [C00000000021A064] .driver_register+0xa8/0xc4
->> [C00000003FEDFB60] [C0000000001B68AC] .__pci_register_driver+0x5c/0xa4
->> [C00000003FEDFBF0] [D00000000029C204] .sym2_init+0x104/0x1550 [sym53c8xx]
->> [C00000003FEDFC90] [C00000000008D1F4] .sys_init_module+0x1764/0x1998
->> [C00000003FEDFE30] [C00000000000869C] syscall_exit+0x0/0x40
->>
-> 
-> hm, odd.
-> 
-> Can you look up sym_hcb_attach+0x1194/0x1384 in gdb?  Something like
-> 
-Hi Andrew,
+Any comment?
 
-I tried with 2.6.24-rc3-git3 and got the following trace
+Thanks
 
-BUG: soft lockup - CPU#2 stuck for 11s! [insmod:375]
-NIP: c00000000002f02c LR: d0000000001414fc CTR: c00000000002f018
-REGS: c00000077ca3b0b0 TRAP: 0901   Not tainted  (2.6.24-rc3-git3-autokern1)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24022088  XER: 00000000
-TASK = c00000077cc58000[375] 'insmod' THREAD: c00000077ca38000 CPU: 2
-GPR00: d0000000001414fc c00000077ca3b330 c00000000052b880 d000080080002014 
-GPR04: d00008008000202c 0000000000000000 c00000077c82eb00 d00000000014ce54 
-GPR08: c00000077c82e63c 0000000000000000 000000000000002a c00000000002f018 
-GPR12: d000000000143610 c000000000473f80 
-NIP [c00000000002f02c] .ioread8+0x14/0x60
-LR [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
+Sonic
 
-Call Trace:
-[c00000077ca3b330] [c00000077ca3b3c0] 0xc00000077ca3b3c0 (unreliable)
-[c00000077ca3b3a0] [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
-[c00000077ca3b470] [d0000000001395f8] .sym2_probe+0x700/0x99c [sym53c8xx]
-[c00000077ca3b710] [c0000000001bc098] .pci_device_probe+0x124/0x1b0
-[c00000077ca3b7b0] [c0000000002210c4] .driver_probe_device+0x144/0x20c
-[c00000077ca3b850] [c0000000002213dc] .__driver_attach+0xcc/0x154
-[c00000077ca3b8e0] [c00000000021ff20] .bus_for_each_dev+0x7c/0xd4
-[c00000077ca3b9a0] [c000000000220e28] .driver_attach+0x28/0x40
-[c00000077ca3ba20] [c000000000220464] .bus_add_driver+0x90/0x228
-[c00000077ca3bac0] [c0000000002217e4] .driver_register+0x94/0xb0
-[c00000077ca3bb40] [c0000000001bc3b0] .__pci_register_driver+0x6c/0xcc
-[c00000077ca3bbe0] [d000000000143428] .sym2_init+0x108/0x15b0 [sym53c8xx]
-[c00000077ca3bc80] [c00000000008ce80] .sys_init_module+0x17c4/0x1958
-[c00000077ca3be30] [c00000000000872c] syscall_exit+0x0/0x40
-
-Instruction dump:
-60000000 786b0420 38210070 7d635b78 e8010010 7c0803a6 4e800020 7c0802a6
-f8010010 f821ff91 7c0004ac 89230000 <0c090000> 4c00012c 79290620 2f8900ff
-
-The gdb list the following for the above trace
-
-0xa4fc is in sym_hcb_attach (drivers/scsi/sym53c8xx_2/sym_hipd.c:1041).
-1036            OUTL_DSP(np, pc);
-1037            /*
-1038             *  Wait 'til done (with timeout)
-1039             */
-1040            for (i=0; i<SYM_SNOOP_TIMEOUT; i++)
-1041                    if (INB(np, nc_istat) & (INTF|SIP|DIP))
-1042                            break;
-1043            if (i>=SYM_SNOOP_TIMEOUT) {
-1044                    printf ("CACHE TEST FAILED: timeout.\n");
-1045                    return (0x20);
-
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+On Nov 27, 2007 12:47 PM, sonic zhang <sonic.adi@gmail.com> wrote:
+> UDMA Mode - Frequency compatibility
+>
+> UDMA5 - 100 MB/s   - SCLK  = 133 MHz
+> UDMA4 - 66 MB/s    - SCLK >=  80 MHz
+> UDMA3 - 44.4 MB/s  - SCLK >=  50 MHz
+> UDMA2 - 33 MB/s    - SCLK >=  40 MHz
+>
+>
+> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+> ---
+>  drivers/ata/pata_bf54x.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
+> index 81db405..088a41f 100644
+> --- a/drivers/ata/pata_bf54x.c
+> +++ b/drivers/ata/pata_bf54x.c
+> @@ -1489,6 +1489,8 @@ static int __devinit bfin_atapi_probe(st
+>         int board_idx = 0;
+>         struct resource *res;
+>         struct ata_host *host;
+> +       unsigned int fsclk = get_sclk();
+> +       int udma_mode = 5;
+>         const struct ata_port_info *ppi[] =
+>                 { &bfin_port_info[board_idx], NULL };
+>
+> @@ -1507,6 +1509,11 @@ static int __devinit bfin_atapi_probe(st
+>         if (res == NULL)
+>                 return -EINVAL;
+>
+> +       while (bfin_port_info[board_idx].udma_mask>0 && udma_fsclk[udma_mode] > fsclk) {
+> +               udma_mode--;
+> +               bfin_port_info[board_idx].udma_mask >>= 1;
+> +       }
+> +
+>         /*
+>          * Now that that's out of the way, wire up the port..
+>          */
+> --
+> 1.4.3.4
+>
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
