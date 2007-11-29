@@ -1,64 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbXK2ALq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbXK2AN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760785AbXK2ALq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXK2ALi
+	id S1761637AbXK2AN3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXK2ANU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:11:38 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54096 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750787AbXK2ALh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:11:37 -0500
-Date: Wed, 28 Nov 2007 16:11:37 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch
- specific percpu setup
-In-Reply-To: <474DFD7E.907@goop.org>
-Message-ID: <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com> <200711281236.02014.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0711281050470.11968@schroedinger.engr.sgi.com>
- <200711291017.52727.rusty@rustcorp.com.au> <474DFD7E.907@goop.org>
+	Wed, 28 Nov 2007 19:13:20 -0500
+Received: from namei.org ([69.55.235.186]:35867 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750850AbXK2ANT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:13:19 -0500
+Date: Thu, 29 Nov 2007 11:12:40 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: tvrtko.ursulin@sophos.com
+cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: Out of tree module using LSM
+In-Reply-To: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
+Message-ID: <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
+References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007, Jeremy Fitzhardinge wrote:
+On Wed, 28 Nov 2007, tvrtko.ursulin@sophos.com wrote:
 
- > Yes, I would like to convert x86_64 to match i386's percpu, and drop the
-> pda altogether.  The only thing preventing this is the stack canary, and
-> I'm wondering how much value there is in keeping it, given the
-> disadvantages of having this divergence between 32 and 64 bit.
+> So as there is no question the current code does some ugly things it is 
+> even more true that we would be even more happy to use an official API. 
 
-I think most of the PDA could be gotten rid of. The problems are
+How about becoming involved in creating that official API ?
 
-1. The stack canary
+"A person will stand on the top of a hill for a very long time with their 
+mouth open before a roast duck will fly in"
 
-2. The PDA is used to store per cpu data before the per cpu areas
-   are setup.
+> LSM was that and we were happily using it which we won't be able to do if 
+> it abruptly goes away. Yes it is not a perfect match but until it is 
+> modified to be better, or until something appropriate is designed and 
+> implemented, it would be very nice if it could stay.
 
-The i386 way of referring to per cpu data is not optimal because it is 
-always offset by __per_cpu_start. per cpu data offsets need to be relative 
-to the beginning of the per cpu area. per cpu data is less than 64k so 2 
-byte offsets would be enough.
+So, what you're asking for is for us to maintain infrastructure in the 
+kernel, for your out of tree code, which we could not have even known 
+about until it was dumped on sourceforge a couple of days ago ?
 
-That way the __per_cpu_offset array and the registers that are used on 
-various platforms are pointing to the actual data and can be loaded
-directly into a register and then a load with a small offset to that 
-register can be performed. On x86_64 this is gs, on i386 fs, on sparc g5, 
-on ia64 a fixed address stands in for the register. In loops over all per 
-cpu variables this will also simplify the code.
+And you're expecting us to modify it to be "better", for you, but without 
+us possibly knowing what you want ?
 
-And ultimately we can get rid of the ugly RELOC_HIDE macro. It simply 
-becomes the adding of the base address in a register to a per cpu offset.
+How is this sustainable?  Every time we make a change in the kernel code, 
+do we have to wait for months while all of the (unknown) out of tree users 
+discover their code is broken and then complain to Linus ?
+
+Do you really thing we should be supporting developers who make zero 
+effort to engage with the kernel community, and instead abuse kernel APIs 
+and ship out of tree code to customers?
+
+You are essentially demanding that we provide you with a stable kernel 
+API.  I suggest you review Greg KH's excellent document on the issue: 
+<http://os.cqu.edu.au/docs/kernel-doc/Documentation/stable_api_nonsense.txt>
+
+Also, your users are likely unaware of the risks associated with these 
+techniques, such as, that they are not actually running "linux" any more, 
+and that their kernel is made unsupportable by both the community and 
+their OS vendors when code like this is being used:
+
+/*
+ * hidden vfsmnt_lock handling
+ */
+#ifdef TALPA_USE_VFSMOUNT_LOCK
+static inline void talpa_vfsmount_lock(void)
+{
+    spinlock_t* talpa_vfsmount_lock_addr = (spinlock_t *)TALPA_VFSMOUNT_LOCK_ADDR;
+
+    spin_lock(talpa_vfsmount_lock_addr);
+}
+
+Code quality and correctness issues are definitely relevant, and in fact  
+are directly linked to the fact that out of tree code receives no
+community peer review, and is not able to be considered in the general
+kernel design & development process.
+
+Hacks like this effectively void support from the community, which is 
+another way of saying that the user's kernel becomes proprietary once the 
+module containing it is loaded.
+
+Actually, it's worse than that, as not only is the kernel no longer "open 
+source", but also lacks even the level of support provided by proprietary 
+OS vendors (who provide stable interfaces for such purposes).
+
+If you want to resolve this properly, you'll need to do more than complain 
+to Linus when the upstream APIs (which you are abusing) change.
+
+You'll need to become productively engaged in designing, developing and 
+maintaining appropriate APIs, which suit not only your specific needs, but 
+likely those of others, and submit your code for review and upstream 
+inclusion.
+
+What I'd suggest, is that you create a public mailing list, get the other 
+AV projects involved, and then work on a set of requirements so that the 
+general problem can be understood.  Then, propose a solution to the 
+problem and have it reviewed by core kernel folk (cc it to lkml), so that 
+it can be evaluated in terms of e.g. VFS correctness, maintainability etc.  
+
+That would be at least a useful first step in taking this issue seriously.
+
+Thanks,
 
 
-
-
-
-
+- James 
+-- 
+James Morris 
+<jmorris@namei.org>
