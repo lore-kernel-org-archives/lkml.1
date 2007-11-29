@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbXK2JmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbXK2Jwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762120AbXK2JmP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 04:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757866AbXK2JmA
+	id S1761293AbXK2Jwm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 04:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbXK2Jwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 04:42:00 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:48508 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755998AbXK2Jl7 (ORCPT
+	Thu, 29 Nov 2007 04:52:32 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:64281 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754945AbXK2Jwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 04:41:59 -0500
-Date: Thu, 29 Nov 2007 04:41:55 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: does /proc/sys/kernel/modprobe actually do anything?
-Message-ID: <alpine.LFD.0.9999.0711290438060.13461@localhost.localdomain>
+	Thu, 29 Nov 2007 04:52:31 -0500
+Message-ID: <474E8BDC.4080403@fr.ibm.com>
+Date: Thu, 29 Nov 2007 10:52:28 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch -mm 0/4] mqueue namespace
+References: <20071128163728.177495768@fr.ibm.com>> <474DA549.6060408@openvz.org>
+In-Reply-To: <474DA549.6060408@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Emelyanov wrote:
+> Cedric Le Goater wrote:
+>> Hello ! 
+>>
+>> Here's a small patchset introducing a new namespace for POSIX
+>> message queues. 
+>>
+>> Nothing really complex a part from the mqueue filesystem which 
+>> needed some special care
+> 
+> Hm... Why did you decided to make it separately from the
+> IPC namespace?
 
-  (i asked about this earlier on the newbies list, but after poking
-around a bit more, i thought i'd ask here.)
+Mostly because it has its own configuration option and filesystem
+which requires to clone also the mnt namespace.  
 
-  according to Documentation/debugging-modules.txt:
+but yes they could probably be merged. Let's see what the others 
+have to say about it.
 
-The correct way of debugging module problems is something like this:
-
-echo '#! /bin/sh' > /tmp/modprobe
-echo 'echo "$@" >> /tmp/modprobe.log' >> /tmp/modprobe
-echo 'exec /sbin/modprobe "$@"' >> /tmp/modprobe
-chmod a+x /tmp/modprobe
-echo /tmp/modprobe > /proc/sys/kernel/modprobe
-
-  i've tried that and i don't see that it does anything whatsoever.  i
-ran modprobe under "strace" and it doesn't appear to make any effort
-to check /proc/sys/kernel/modprobe.  i even downloaded the source to
-the module-init-tools package and scanned the source and ... nothing.
-
-  so what's up with that?
-
-rday
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+C.
