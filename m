@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933681AbXK2TqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXK2Tqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933681AbXK2TqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932992AbXK2Tpf
+	id S932819AbXK2Tqt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbXK2TqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:45:35 -0500
+	Thu, 29 Nov 2007 14:46:00 -0500
 Received: from ug-out-1314.google.com ([66.249.92.170]:3835 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932416AbXK2Tpd (ORCPT
+	with ESMTP id S933619AbXK2Tp6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:45:33 -0500
+	Thu, 29 Nov 2007 14:45:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=G1PfhHETW6ZgCNOjPgGWWUTC31ftSOItIXWkcfeGaTDqRGsRa3qQmf1BIe0HogO3gcqCzxeVIqIRIkqWGNzwerWpMkQqoB8GyzFU83CiivbFLnADW6S/800XS3BeHjC2eNJfkdTp04gOdM69QnErRBntXijyacR8poqATn90aL4=
-Date: Thu, 29 Nov 2007 22:46:13 +0300
+        b=tXfpLf14kaIIPcPjQ1hZXI6+UC/ss8G5GD4EIIgNE6tT4FRxqqrLVHmY24qZXVEkg/vJKGg6V1+EZlaLPNGgz2NSrAD4vCoqM9Lp2ZdY796j7obkckSSR23zX++FXhimujwmr2xHsejCYYbqBbDTWDeLGeuadX8JgB/IN9S03Jw=
+Date: Thu, 29 Nov 2007 22:46:39 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: PPCML <linuxppc-dev@ozlabs.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Vitaly Bordug <vitb@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/5] PPC cleanup: 82xx - do use for_each macro
-Message-ID: <20071129194613.GD12123@cvg>
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 4/5] PPC cleanup: celleb - do use for_each macro
+Message-ID: <20071129194639.GE12123@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,26 +32,29 @@ From: Cyrill Gorcunov <gorcunov@gmail.com>
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
 
- arch/powerpc/platforms/82xx/pq2.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/celleb/scc_sio.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/pq2.c b/arch/powerpc/platforms/82xx/pq2.c
-index a497cba..9e74393 100644
---- a/arch/powerpc/platforms/82xx/pq2.c
-+++ b/arch/powerpc/platforms/82xx/pq2.c
-@@ -72,11 +72,11 @@ err:
- 
- void __init pq2_init_pci(void)
+diff --git a/arch/powerpc/platforms/celleb/scc_sio.c b/arch/powerpc/platforms/celleb/scc_sio.c
+index 6100082..5e43bac 100644
+--- a/arch/powerpc/platforms/celleb/scc_sio.c
++++ b/arch/powerpc/platforms/celleb/scc_sio.c
+@@ -42,14 +42,13 @@ static struct {
+ static int __init txx9_serial_init(void)
  {
--	struct device_node *np = NULL;
-+	struct device_node *np;
+ 	extern int early_serial_txx9_setup(struct uart_port *port);
+-	struct device_node *node = NULL;
++	struct device_node *node;
+ 	int i;
+ 	struct uart_port req;
+ 	struct of_irq irq;
+ 	struct resource res;
  
- 	ppc_md.pci_exclude_device = pq2_pci_exclude_device;
- 
--	while ((np = of_find_compatible_node(np, NULL, "fsl,pq2-pci")))
-+	for_each_compatible_node(np, NULL, "fsl,pq2-pci")
- 		pq2_pci_add_bridge(np);
- }
- #endif
+-	while ((node = of_find_compatible_node(node,
+-				"serial", "toshiba,sio-scc")) != NULL) {
++	for_each_compatible_node(node, "serial", "toshiba,sio-scc") {
+ 		for (i = 0; i < ARRAY_SIZE(txx9_scc_tab); i++) {
+ 			if (!(txx9_serial_bitmap & (1<<i)))
+ 				continue;
 -- 
 1.5.3.5
