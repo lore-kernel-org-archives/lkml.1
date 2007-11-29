@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbXK2UNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933448AbXK2UQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933901AbXK2UNt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932663AbXK2UNl
+	id S933448AbXK2UQW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760503AbXK2UQC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:13:41 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:51989 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932648AbXK2UNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:13:40 -0500
-Date: Thu, 29 Nov 2007 15:13:39 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mark Lord <lkml@rtr.ca>
-cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
- insert/remove race (v3)
-In-Reply-To: <474F1AAC.7040908@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0711291510200.5666-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Nov 2007 15:16:02 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4907 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757782AbXK2UQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:16:00 -0500
+Subject: Re: Peculiar out-of-sync boot log lines
+From: Joe Perches <joe@perches.com>
+To: Nick Warne <nick@ukfsn.org>
+Cc: Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <20071129200332.2130298b@linuxamd.linicks.net>
+References: <20071129193728.2f1c237e@linuxamd.linicks.net>
+	 <1196365871.6473.107.camel@perihelion>
+	 <20071129200332.2130298b@linuxamd.linicks.net>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 12:13:46 -0800
+Message-Id: <1196367226.22120.53.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Mark Lord wrote:
+On Thu, 2007-11-29 at 20:03 +0000, Nick Warne wrote:
+> Yes, but where does the <7> come from?
 
-> But the flogging continues multiple times per second
-> until the system is shutdown, so it is "the next bug to fix".
+printk interleaving of functions in ide-cd and ide-iops.
 
-That's not true.  The number of commands sent while probing a device is
-predetermined and strictly limited.
+drivers/ide/ide-cd.c ide_cdrom_probe_capabilities could
+use something like the string_buf implementations talked
+about awhile ago.
 
-In any case, what you're talking about is a SCSI issue -- not a USB 
-issue.
-
-Alan Stern
 
