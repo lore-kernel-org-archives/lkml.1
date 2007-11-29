@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763582AbXK2XM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933696AbXK2XX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763582AbXK2XM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 18:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXK2XMr
+	id S933696AbXK2XX6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 18:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760762AbXK2XXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 18:12:47 -0500
-Received: from holomorphy.com ([66.93.40.71]:57810 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753137AbXK2XMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 18:12:46 -0500
-Date: Thu, 29 Nov 2007 15:11:21 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ciju Rajan K <ciju@linux.vnet.ibm.com>
-Cc: aglitke <agl@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as root
-Message-ID: <20071129231121.GA31637@holomorphy.com>
-References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain> <20071114220038.GD1806@holomorphy.com> <474F05C0.9040002@linux.vnet.ibm.com>
+	Thu, 29 Nov 2007 18:23:43 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:36600 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756215AbXK2XXm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 18:23:42 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Jaime Velasco Juan <jsagarribay@gmail.com>
+Subject: Re: Add the infamous Huawei E220 to option.c
+Date: Fri, 30 Nov 2007 00:23:07 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+       Rui Santos <rsantos@grupopie.com>, Pete Zaitcev <zaitcev@redhat.com>,
+       linux-usb@vger.kernel.org, preining@logic.at,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129150550.86453nubw8i5xi68@webmail.tugraz.at> <20071129185339.GA10445@singular.local>
+In-Reply-To: <20071129185339.GA10445@singular.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <474F05C0.9040002@linux.vnet.ibm.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200711300023.08999.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 12:02:32AM +0530, Ciju Rajan K wrote:
->   I tested your patch. But that is not solving the problem.
->   If the code change to user_shm_lock() is not a good solution, could 
-> you please suggest a method so that the normal user is able to allocate 
-> the huge pages, if his gid is added to /proc/sys/vm/hugetlb_shm_group
+Am Donnerstag, 29. November 2007 19:53:39 schrieb Jaime Velasco Juan:
+> Hi,
+>
+> El jue. 29 de nov. de 2007, a las 15:05:50 +0100, Johann Wilhelm escribió:
+> > If everything's working please also add code to also support the other
+> > E220 device... so both PID 0x1003 and 0x1004 should be treaded the same
+> > way...
+> >
+> > to test the device with the 0x1004-PID maybe Jaime Velasco
+> > <jsagarribay@gmail.com> could be asked.. he initialy added the lines for
+> > this device in option.c
+>
+> The following patch works for me (on kernel 2.6.23).
 
-The patch I posted resolves a race unrelated to your issue. Raising your
-locked memory limits should not be difficult. /etc/limits.conf or similar
-should set it up for you. You can also change the default rlimit in the
-kernel and compile it with default limits elevated to what you want your
-unprivileged process to have to start with if you're truly having lots
-of trouble getting userspace to set the default limits properly. I'd
-look in include/asm-generic/resource.h
+Jaime, please add your signed off by line and resend the patch with
+both lines to Greg.
 
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
 
--- wli
+	Regards
+		Oliver
