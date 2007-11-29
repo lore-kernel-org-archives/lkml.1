@@ -1,51 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933755AbXK2UG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933787AbXK2UGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933755AbXK2UG0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbXK2UGQ
+	id S933787AbXK2UGz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757721AbXK2UGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:06:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:41425 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759521AbXK2UGO (ORCPT
+	Thu, 29 Nov 2007 15:06:44 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54187 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760703AbXK2UGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:06:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cYmFsZM1iwLQR00hv8ydl1oh8yuVwxSdU9OMvuf30/2od11q5yTAgsQblTMaRPPYAd2AWkzzQbZYl8bBjB+ELJ3WljJXi335pckwOM5yY3GffrXijtzl6pFeQpQvS14PIVBx2eOUa/+WpchwpNnn1cAiw/6mdGcgx9iZtXDvCkY=
-Message-ID: <5a4c581d0711291206x5d92c166iba4e4b6d336643dc@mail.gmail.com>
-Date: Thu, 29 Nov 2007 21:06:12 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ata4294967295: failed to start port (errno=-19)
-Cc: "Meelis Roos" <mroos@linux.ee>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071128200716.14eccfdd@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 15:06:41 -0500
+Date: Fri, 30 Nov 2007 01:48:33 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, skumar@linux.vnet.ibm.com,
+       menage@google.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] sched: cpu accounting controller
+Message-ID: <20071129201833.GA18023@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129113035.bbdf35db.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.SOC.4.64.0711281947090.15823@math.ut.ee>
-	 <20071128200716.14eccfdd@the-village.bc.nu>
+In-Reply-To: <20071129113035.bbdf35db.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 28, 2007 9:07 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > This message comes from 2.6.24-rc3 + todays git, version
-> > a531a141089714efe39eca89593524fdf05104f2. I did grep the logs and found
-> > that it first appeared in 2.6.24-rc1 (+ some git mayve) on Nov 3.
-> > I used 2.6.23 before that and it did not show this message.
->
-> Can you stick a stack trace in at that point ? That would help diagnose
-> it a great deal quicker.
+On Thu, Nov 29, 2007 at 11:30:35AM -0800, Andrew Morton wrote:
+> > 	- Make the accounting scalable on SMP systems (perhaps
+> >  	  for 2.6.25)
+> 
+> That sounds like a rather important todo.  How bad is it now?
 
-I've also been seeing this for a while on my Dell Latitude D610,
- but stuff just works, so... I'm overloaded at this time, if nobody
- gets there first I'll give a go at tracing this next week.
+It is indeed an important todo. Right now we take a per-group global
+lock on every accounting update (which can be very frequent) and hence
+it is pretty bad.
 
---alessandro
+Ingo had expressed the need to reintroduce this patch asap and hence I resent 
+it w/o attacking the scalability part. I will take a shot at scalability
+enhancements tomorrow and send it as a separate patch.
 
- "Damaged people are dangerous. They know they can survive."
+> > +struct cpuacct {
+> > +     struct cgroup_subsys_state css;
+> > +     spinlock_t lock;
+> > +     /* total time used by this class (in nanoseconds) */
+> > +     u64 time;
+> > +};
+> > +
+> > +struct cgroup_subsys cpuacct_subsys;
+> 
+> This can be made static.
 
-   (Anna Barton/Juliette Binoche, 'Damage')
+This symbol is needed in kernel/cgroup.c file, where it does this:
+
+static struct cgroup_subsys *subsys[] = {
+#include <linux/cgroup_subsys.h>
+};
+
+and hence it cant be static. Thanks for the rest of your comments. I
+have fixed them in this version below:
+
+Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+
+---
+ include/linux/cgroup_subsys.h |    6 ++
+ include/linux/cpu_acct.h      |   14 +++++
+ init/Kconfig                  |    7 ++
+ kernel/Makefile               |    1 
+ kernel/cpu_acct.c             |  101 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched.c                |   27 -----------
+ kernel/sched_fair.c           |    5 ++
+ kernel/sched_rt.c             |    1 
+ 8 files changed, 136 insertions(+), 26 deletions(-)
+
+Index: current/include/linux/cgroup_subsys.h
+===================================================================
+--- current.orig/include/linux/cgroup_subsys.h
++++ current/include/linux/cgroup_subsys.h
+@@ -11,6 +11,12 @@
+ SUBSYS(cpuset)
+ #endif
+ 
++#ifdef CONFIG_CGROUP_CPUACCT
++SUBSYS(cpuacct)
++#endif
++
++/* */
++
+ /* */
+ 
+ #ifdef CONFIG_CGROUP_DEBUG
+Index: current/include/linux/cpu_acct.h
+===================================================================
+--- /dev/null
++++ current/include/linux/cpu_acct.h
+@@ -0,0 +1,14 @@
++
++#ifndef _LINUX_CPU_ACCT_H
++#define _LINUX_CPU_ACCT_H
++
++#include <linux/cgroup.h>
++#include <asm/cputime.h>
++
++#ifdef CONFIG_CGROUP_CPUACCT
++extern void cpuacct_charge(struct task_struct *tsk, u64 cputime);
++#else
++static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
++#endif
++
++#endif
+Index: current/init/Kconfig
+===================================================================
+--- current.orig/init/Kconfig
++++ current/init/Kconfig
+@@ -354,6 +354,13 @@ config FAIR_CGROUP_SCHED
+ 
+ endchoice
+ 
++config CGROUP_CPUACCT
++	bool "Simple CPU accounting cgroup subsystem"
++	depends on CGROUPS
++	help
++	  Provides a simple Resource Controller for monitoring the
++	  total CPU consumed by the tasks in a cgroup
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+Index: current/kernel/Makefile
+===================================================================
+--- current.orig/kernel/Makefile
++++ current/kernel/Makefile
+@@ -40,6 +40,7 @@ obj-$(CONFIG_COMPAT) += compat.o
+ obj-$(CONFIG_CGROUPS) += cgroup.o
+ obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+ obj-$(CONFIG_CPUSETS) += cpuset.o
++obj-$(CONFIG_CGROUP_CPUACCT) += cpu_acct.o
+ obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+ obj-$(CONFIG_IKCONFIG) += configs.o
+ obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
+Index: current/kernel/cpu_acct.c
+===================================================================
+--- /dev/null
++++ current/kernel/cpu_acct.c
+@@ -0,0 +1,101 @@
++/*
++ * kernel/cpu_acct.c - CPU accounting cgroup subsystem
++ *
++ * Copyright (C) Google Inc, 2006
++ *
++ * Developed by Paul Menage (menage@google.com) and Balbir Singh
++ * (balbir@in.ibm.com)
++ *
++ */
++
++/*
++ * Example cgroup subsystem for reporting total CPU usage of tasks in a
++ * cgroup.
++ */
++
++#include <linux/module.h>
++#include <linux/cgroup.h>
++#include <linux/fs.h>
++#include <linux/rcupdate.h>
++
++struct cpuacct {
++	struct cgroup_subsys_state css;
++	spinlock_t lock;
++	/* total time used by this class (in nanoseconds) */
++	u64 time;
++};
++
++struct cgroup_subsys cpuacct_subsys;
++
++static inline struct cpuacct *cgroup_ca(struct cgroup *cont)
++{
++	return container_of(cgroup_subsys_state(cont, cpuacct_subsys_id),
++			    struct cpuacct, css);
++}
++
++static inline struct cpuacct *task_ca(struct task_struct *task)
++{
++	return container_of(task_subsys_state(task, cpuacct_subsys_id),
++			    struct cpuacct, css);
++}
++
++static struct cgroup_subsys_state *cpuacct_create(
++	struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
++
++	if (!ca)
++		return ERR_PTR(-ENOMEM);
++	spin_lock_init(&ca->lock);
++	return &ca->css;
++}
++
++static void cpuacct_destroy(struct cgroup_subsys *ss,
++			    struct cgroup *cont)
++{
++	kfree(cgroup_ca(cont));
++}
++
++static u64 cpuusage_read(struct cgroup *cont, struct cftype *cft)
++{
++	struct cpuacct *ca = cgroup_ca(cont);
++
++	return ca->time;
++}
++
++static struct cftype files[] = {
++	{
++		.name = "usage",
++		.read_uint = cpuusage_read,
++	},
++};
++
++static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
++}
++
++void cpuacct_charge(struct task_struct *task, u64 cputime)
++{
++	struct cpuacct *ca;
++	unsigned long flags;
++
++	if (!cpuacct_subsys.active)
++		return;
++	rcu_read_lock();
++	ca = task_ca(task);
++	if (ca) {
++		spin_lock_irqsave(&ca->lock, flags);
++		ca->time += cputime;
++		spin_unlock_irqrestore(&ca->lock, flags);
++	}
++	rcu_read_unlock();
++}
++
++struct cgroup_subsys cpuacct_subsys = {
++	.name = "cpuacct",
++	.create = cpuacct_create,
++	.destroy = cpuacct_destroy,
++	.populate = cpuacct_populate,
++	.subsys_id = cpuacct_subsys_id,
++};
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -52,6 +52,7 @@
+ #include <linux/cpu.h>
+ #include <linux/cpuset.h>
+ #include <linux/percpu.h>
++#include <linux/cpu_acct.h>
+ #include <linux/kthread.h>
+ #include <linux/seq_file.h>
+ #include <linux/sysctl.h>
+@@ -7221,38 +7222,12 @@ static u64 cpu_shares_read_uint(struct c
+ 	return (u64) tg->shares;
+ }
+ 
+-static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
+-{
+-	struct task_group *tg = cgroup_tg(cgrp);
+-	unsigned long flags;
+-	u64 res = 0;
+-	int i;
+-
+-	for_each_possible_cpu(i) {
+-		/*
+-		 * Lock to prevent races with updating 64-bit counters
+-		 * on 32-bit arches.
+-		 */
+-		spin_lock_irqsave(&cpu_rq(i)->lock, flags);
+-		res += tg->se[i]->sum_exec_runtime;
+-		spin_unlock_irqrestore(&cpu_rq(i)->lock, flags);
+-	}
+-	/* Convert from ns to ms */
+-	do_div(res, NSEC_PER_MSEC);
+-
+-	return res;
+-}
+-
+ static struct cftype cpu_files[] = {
+ 	{
+ 		.name = "shares",
+ 		.read_uint = cpu_shares_read_uint,
+ 		.write_uint = cpu_shares_write_uint,
+ 	},
+-	{
+-		.name = "usage",
+-		.read_uint = cpu_usage_read,
+-	},
+ };
+ 
+ static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+Index: current/kernel/sched_fair.c
+===================================================================
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -351,6 +351,11 @@ static void update_curr(struct cfs_rq *c
+ 
+ 	__update_curr(cfs_rq, curr, delta_exec);
+ 	curr->exec_start = now;
++	if (entity_is_task(curr)) {
++		struct task_struct *curtask = task_of(curr);
++
++		cpuacct_charge(curtask, delta_exec);
++	}
+ }
+ 
+ static inline void
+Index: current/kernel/sched_rt.c
+===================================================================
+--- current.orig/kernel/sched_rt.c
++++ current/kernel/sched_rt.c
+@@ -23,6 +23,7 @@ static void update_curr_rt(struct rq *rq
+ 
+ 	curr->se.sum_exec_runtime += delta_exec;
+ 	curr->se.exec_start = rq->clock;
++	cpuacct_charge(curr, delta_exec);
+ }
+ 
+ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+
+-- 
+Regards,
+vatsa
