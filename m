@@ -1,131 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXK2GQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbXK2GSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbXK2GQY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 01:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbXK2GQP
+	id S1757240AbXK2GSJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 01:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXK2GR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 01:16:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58280 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbXK2GQO (ORCPT
+	Thu, 29 Nov 2007 01:17:56 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:33695 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750987AbXK2GRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 01:16:14 -0500
-Date: Wed, 28 Nov 2007 22:18:14 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071129061814.GJ26327@kroah.com>
-References: <20071127230252.GB10038@kroah.com> <Pine.LNX.4.44L0.0711281359440.5566-100000@iolanthe.rowland.org>
+	Thu, 29 Nov 2007 01:17:55 -0500
+Message-ID: <474E598C.7080107@snapgear.com>
+Date: Thu, 29 Nov 2007 16:17:48 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0711281359440.5566-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       David McCullough <david_mccullough@au.securecomputing.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: nommu: Add new vmalloc_user() and remap_vmalloc_range() interfaces.
+References: <20071128084914.GA28486@linux-sh.org>
+In-Reply-To: <20071128084914.GA28486@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 02:03:28PM -0500, Alan Stern wrote:
-> On Tue, 27 Nov 2007, Greg KH wrote:
+
+
+Paul Mundt wrote:
+> This builds on top of the earlier vmalloc_32_user() work introduced by
+> b50731732f926d6c49fd0724616a7344c31cd5cf, as we now have places in the
+> nommu allmodconfig that hit up against these missing APIs.
 > 
-> > Part of the difficulty in understanding the driver model - and the kobject
-> > abstraction upon which it is built - is that there is no obvious starting
-> > place. Dealing with kobjects requires understanding a few different types,
-> > all of which make reference to each other. In an attempt to make things
-> > easier, we'll take a multi-pass approach, starting with vague terms and
-> > adding detail as we go. To that end, here are some quick definitions of
-> > some terms we will be working with.
-> > 
-> >  - A kobject is an object of type struct kobject.  Kobjects have a name
-> >    and a reference count.  A kobject also has a parent pointer (allowing
-> >    objects to be arranged into hierarchies), a specific type, and,
-> >    usually, a representation in the sysfs virtual filesystem.
+> As vmalloc_32_user() is already implemented, this is moved over to
+> vmalloc_user() and simply made a wrapper. As all current nommu platforms
+> are 32-bit addressable, there's no special casing we have to do for
+> ZONE_DMA and things of that nature as per GFP_VMALLOC32.
 > 
-> As Cornelia said, it would be worthwhile mentioning krefs in this
-> document as well.  They are simple enough to explain, after all.
-
-Now added, thanks.
-
-> > Initialization of kobjects
-> > 
-> > Code which creates a kobject must, of course, initialize that object. Some
-> > of the internal fields are setup with a (mandatory) call to kobject_init():
+> remap_vmalloc_range() needs to check VM_USERMAP in order to figure out
+> whether we permit the remap or not, which means that we also have to
+> rework the vmalloc_user() code to grovel for the VMA and set the flag.
 > 
-> kobject_init() isn't mandatory if you use kobject_register().  But then 
-> Kay wants to do away with kobject_register()...
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+Acked-by: Greg Ungerer <gerg@snapgear.com>
+
+
+>  mm/nommu.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 44 insertions(+), 1 deletion(-)
 > 
-> > The other kobject fields which should be set, directly or indirectly, by
-> > the creator are its ktype, kset, and parent. We will get to those shortly,
-> > however please note that the ktype and kset must be set before the
-> > kobject_init() function is called.
+> diff --git a/mm/nommu.c b/mm/nommu.c
+> index 35622c5..c4768d0 100644
+> --- a/mm/nommu.c
+> +++ b/mm/nommu.c
+> @@ -10,6 +10,7 @@
+>   *  Copyright (c) 2000-2003 David McCullough <davidm@snapgear.com>
+>   *  Copyright (c) 2000-2001 D Jeff Dionne <jeff@uClinux.org>
+>   *  Copyright (c) 2002      Greg Ungerer <gerg@snapgear.com>
+> + *  Copyright (c) 2007      Paul Mundt <lethal@linux-sh.org>
+>   */
+>  
+>  #include <linux/module.h>
+> @@ -183,6 +184,26 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
+>  }
+>  EXPORT_SYMBOL(__vmalloc);
+>  
+> +void *vmalloc_user(unsigned long size)
+> +{
+> +	void *ret;
+> +
+> +	ret = __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
+> +			PAGE_KERNEL);
+> +	if (ret) {
+> +		struct vm_area_struct *vma;
+> +
+> +		down_write(&current->mm->mmap_sem);
+> +		vma = find_vma(current->mm, (unsigned long)ret);
+> +		if (vma)
+> +			vma->vm_flags |= VM_USERMAP;
+> +		up_write(&current->mm->mmap_sem);
+> +	}
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(vmalloc_user);
+> +
+>  struct page * vmalloc_to_page(void *addr)
+>  {
+>  	return virt_to_page(addr);
+> @@ -253,10 +274,17 @@ EXPORT_SYMBOL(vmalloc_32);
+>   *
+>   * The resulting memory area is 32bit addressable and zeroed so it can be
+>   * mapped to userspace without leaking data.
+> + *
+> + * VM_USERMAP is set on the corresponding VMA so that subsequent calls to
+> + * remap_vmalloc_range() are permissible.
+>   */
+>  void *vmalloc_32_user(unsigned long size)
+>  {
+> -	return __vmalloc(size, GFP_KERNEL | __GFP_ZERO, PAGE_KERNEL);
+> +	/*
+> +	 * We'll have to sort out the ZONE_DMA bits for 64-bit,
+> +	 * but for now this can simply use vmalloc_user() directly.
+> +	 */
+> +	return vmalloc_user(size);
+>  }
+>  EXPORT_SYMBOL(vmalloc_32_user);
+>  
+> @@ -1213,6 +1241,21 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long from,
+>  }
+>  EXPORT_SYMBOL(remap_pfn_range);
+>  
+> +int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
+> +			unsigned long pgoff)
+> +{
+> +	unsigned int size = vma->vm_end - vma->vm_start;
+> +
+> +	if (!(vma->vm_flags & VM_USERMAP))
+> +		return -EINVAL;
+> +
+> +	vma->vm_start = (unsigned long)(addr + (pgoff << PAGE_SHIFT));
+> +	vma->vm_end = vma->vm_start + size;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(remap_vmalloc_range);
+> +
+>  void swap_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+>  {
+>  }
 > 
-> In fact kset, ktype, and parent are optional, right?  You might mention
-> at this point that not all those fields are needed, and explain later
-> which combinations are legal.
 
-They are optional, but if you want to do anything, you need to set them :)
-
-> > When a reference is released, the call to kobject_put() will decrement the
-> > reference count and, possibly, free the object. Note that kobject_init()
-> > sets the reference count to one, so the code which sets up the kobject will
-> > need to do a kobject_put() eventually to release that reference.
-> 
-> It's worth mentioning here (and perhaps elsewhere too) that all of the
-> function calls described here can sleep and hence must be made in
-> process context, with the exception of the *_get() routines.  It's
-> possible to call *_put() in atomic context; the SCSI core does this
-> (with device_put, not kobject_put) and has to jump through hoops to run
-> the corresponding release routine in a waitqueue task.  In general,
-> though, it isn't safe.
-
-Is this really needed?  If anyone calls them from non-process context,
-they will get a nasty run-time warning, right?
-
-> > Because kobjects are dynamic, they must not be declared statically or on
-> > the stack, but instead, always from the heap.  Future versions of the
-> > kernel will contain a run-time check for kobjects that are created
-> > statically and will warn the developer of this improper usage.
-> 
-> Why not?  What's wrong with static kobjects?  I've never understood this.
-
-They are reference counted.  Other portions of the kernel can grab them
-and think they are safe to use.  If you do this with a static object,
-what happens when the code goes away?
-
-Most of the nasty race conditions that require this are now cleaned up
-with Tejun's great sysfs work, so you will probably not see problems if
-you do this, but in general, it's not a good thing to do.
-
-> > ktypes and release methods
-> > 
-> > One important thing still missing from the discussion is what happens to a
-> > kobject when its reference count reaches zero. The code which created the
-> > kobject generally does not know when that will happen; if it did, there
-> > would be little point in using a kobject in the first place. Even
-> > predicatable object lifecycles become more complicated when sysfs is
-> 
-> predictable
-
-thanks.
-
-> > One important point cannot be overstated: every kobject must have a
-> > release() method, and the kobject must persist (in a consistent state)
-> > until that method is called. If these constraints are not met, the code is
-> > flawed.  Note that the kernel will warn you if you forget to provide a
-> > release() method.  Do not try to get rid of this warning by providing an
-> > "empty" release function, you will be mocked merciously by the kobject
-> > maintainer if you attempt this.
-> 
-> Not to mention that doing this will leak memory.  Unless the kobject
-> is static...
-
-heh.
-
-I think your other questions are already answered, right?
-
-thanks,
-
-greg k-h
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
