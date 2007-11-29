@@ -1,93 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933467AbXK2Tpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933609AbXK2Tpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933467AbXK2Tpf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXK2TpM
+	id S933609AbXK2Tpx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbXK2Tpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:45:12 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:3835 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757325AbXK2TpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:45:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=EdXY6SJqtD4usZFzxn+TMlWpBNkrdIXLAQ7sIznfkB1ZrYHgfLfIVHlGhGmsRxEX9qxWlc7pxWFZ6QhWzc3ittYe1zyXx44esvIQaPalfqoP4u9aZunvE3DWO+U7U793NQDYQTI2WHDLdSjATVId7Tcjm5e0UXsJcoA99pDnBTE=
-Date: Thu, 29 Nov 2007 22:45:47 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: PPCML <linuxppc-dev@ozlabs.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/5] PPC cleanup: do use for_each macro
-Message-ID: <20071129194547.GC12123@cvg>
+	Thu, 29 Nov 2007 14:45:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44855 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760989AbXK2Tpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 14:45:30 -0500
+Message-ID: <474F16D3.5060009@redhat.com>
+Date: Thu, 29 Nov 2007 14:45:23 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>
+Subject: remap_file_pages() broken in 2.6.23?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+Original report: https://bugzilla.redhat.com/show_bug.cgi?id=404201
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+The test case below, taken from the LTP test code, prints -1 (as
+expected) on 2.6.22 and 0 on 2.6.23. It tries to remap an out-of-range
+page. Proposed patch follows the program. Bug was apparently caused by
+commit 54cb8821de07f2ffcd28c380ce9b93d5784b40d7.
 
- arch/powerpc/kernel/btext.c         |    2 +-
- arch/powerpc/kernel/legacy_serial.c |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+/*
+ * originally remap_file_pages02.c, from LTP
+ *  - creates the file 'cache'; no cleanup
+ *
+ * Copyright (C) Ricardo Salveti de Araujo, 2007
+ *
+ * GPL v2
+ */
 
-diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
-index 3ef51fb..04c9249 100644
---- a/arch/powerpc/kernel/btext.c
-+++ b/arch/powerpc/kernel/btext.c
-@@ -234,7 +234,7 @@ int __init btext_find_display(int allow_nonstdout)
- 	if (rc == 0 || !allow_nonstdout)
- 		return rc;
+#define _GNU_SOURCE
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <syscall.h>
+#include <stdlib.h>
+#include <linux/unistd.h>
+
+/* Test case defines */
+#define WINDOW_START 0x48000000
+
+size_t page_sz;
+size_t page_words;
+size_t cache_pages;
+size_t cache_sz;
+size_t window_pages;
+size_t window_sz;
+
+static char *cache_contents;
+int fd;					/* File descriptor used at the test */
+char *data = NULL;
+char *data01 = NULL;
+
+int
+main(int ac, char **av)
+{
+	int i, j, ret;
+
+	page_sz = getpagesize();
+	page_words = (page_sz/sizeof(char));
+
+	/* Set the cache size */
+	cache_pages = 32;
+	cache_sz = cache_pages*page_sz;
+	cache_contents = (char *) malloc(cache_sz * sizeof(char));
+
+	for (i = 0; i < cache_pages; i++) {
+                char *page = cache_contents + i*page_sz;
+
+		for (j = 0; j < page_words; j++)
+			page[j] = i;
+	}
+
+	if ((fd = open("cache", O_RDWR|O_CREAT|O_TRUNC,S_IRWXU)) < 0)
+		perror("open"),  exit(1);
+
+	if (write(fd, cache_contents, cache_sz) != cache_sz)
+		perror("write"),  exit(1);
+
+	data = mmap((void *)WINDOW_START,
+			cache_sz,
+			PROT_READ|PROT_WRITE,
+			MAP_FIXED | MAP_SHARED,
+			fd, 0);
+
+	if (data == MAP_FAILED)
+		perror("mmap"),  exit(1);
+
+	ret = remap_file_pages(data, page_sz, 0, cache_pages * 2, 0);
+
+	printf("%d\n", ret);
+
+	exit(0);
+}
+
+Patch:
+
+Signed-off-by: Supriya Kannery <supriyak@in.ibm.com>
+
+--- linux-2.6.23/mm/fremap.c.orig	2007-11-22 00:56:09.000000000 -0600
++++ linux-2.6.23/mm/fremap.c	2007-11-26 03:08:55.000000000 -0600
+@@ -124,6 +124,7 @@ asmlinkage long sys_remap_file_pages(uns
+ 	struct vm_area_struct *vma;
+ 	int err = -EINVAL;
+ 	int has_write_lock = 0;
++	unsigned long f_size = 0;
  
--	for (np = NULL; (np = of_find_node_by_type(np, "display"));) {
-+	for_each_node_by_type(np, "display") {
- 		if (of_get_property(np, "linux,opened", NULL)) {
- 			printk("trying %s ...\n", np->full_name);
- 			rc = btext_initialize(np);
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 4ed5887..b5dc646 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -307,7 +307,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with SOC ports */
--	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+	for_each_compatible_node(np, "serial", "ns16550") {
- 		struct device_node *soc = of_get_parent(np);
- 		if (soc && !strcmp(soc->type, "soc")) {
- 			index = add_legacy_soc_port(np, np);
-@@ -318,7 +318,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with ISA ports */
--	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
-+	for_each_node_by_type(np, "serial") {
- 		struct device_node *isa = of_get_parent(np);
- 		if (isa && !strcmp(isa->name, "isa")) {
- 			index = add_legacy_isa_port(np, isa);
-@@ -329,7 +329,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with tsi-bridge ports */
--	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+	for_each_compatible_node(np, "serial", "ns16550") {
- 		struct device_node *tsi = of_get_parent(np);
- 		if (tsi && !strcmp(tsi->type, "tsi-bridge")) {
- 			index = add_legacy_soc_port(np, np);
-@@ -340,7 +340,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with opb bus ports */
--	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+	for_each_compatible_node(np, "serial", "ns16550") {
- 		struct device_node *opb = of_get_parent(np);
- 		if (opb && (!strcmp(opb->type, "opb") ||
- 			    of_device_is_compatible(opb, "ibm,opb"))) {
--- 
-1.5.3.5
+ 	if (__prot)
+ 		return err;
+@@ -181,6 +182,14 @@ asmlinkage long sys_remap_file_pages(uns
+ 			goto retry;
+ 		}
+ 		mapping = vma->vm_file->f_mapping;
++
++		f_size = i_size_read(mapping->host) + PAGE_CACHE_SIZE - 1;
++		f_size = f_size >> PAGE_CACHE_SHIFT;
++		if ((pgoff + size >> PAGE_CACHE_SHIFT) > f_size) {
++			err = -EINVAL;
++			goto out;
++		}
++
+ 		/*
+ 		 * page_mkclean doesn't work on nonlinear vmas, so if
+ 		 * dirty pages need to be accounted, emulate with linear
