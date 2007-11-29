@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932328AbXK2OoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932313AbXK2O5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932328AbXK2OoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 09:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbXK2OoE
+	id S932313AbXK2O5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 09:57:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbXK2O5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 09:44:04 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40838 "EHLO e4.ny.us.ibm.com"
+	Thu, 29 Nov 2007 09:57:01 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:53856 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755503AbXK2OoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 09:44:03 -0500
-Message-ID: <474ED005.7060300@linux.vnet.ibm.com>
-Date: Thu, 29 Nov 2007 20:13:17 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Linux Memory Management List <linux-mm@kvack.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: What can we do to get ready for memory controller merge in 2.6.25
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754610AbXK2O5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 09:57:00 -0500
+Date: Thu, 29 Nov 2007 23:55:37 +0900
+To: anders.henke@1und1.de, jack@ucw.cz
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in
+ directory) (fwd)
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz>
+References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071129235813Y.tomof@acm.org>
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-They say better strike when the iron is hot.
+On Thu, 29 Nov 2007 14:03:19 +0100
+Jan Kara <jack@ucw.cz> wrote:
 
-Since we have so many people discussing the memory controller, I would
-like to access the readiness of the memory controller for mainline
-merge. Given that we have some time until the merge window, I'd like to
-set aside some time (from my other work items) to work on the memory
-controller, fix review comments and defects.
+>   Adding relevant people and lists to CC...
+> 
+> 									Honza
+> 
+> ----- Forwarded message from Anders Henke <anders.henke@1und1.de> -----
+> 
+> Date:	Thu, 29 Nov 2007 13:31:50 +0100
+> From: Anders Henke <anders.henke@1und1.de>
+> To: linux-kernel@vger.kernel.org
+> Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory)
+> User-Agent: Mutt/1.5.13 (2006-08-11)
+> 
+> On November 28 2007, Anders Henke wrote:
+> > As "everything is reported as being zero" is quite odd an Jan took a
+> > guess that it might be block-layer or driver-related, I've assumed
+> > that the driver is responsible for this; just out of the curiousity, 
+> > I've manually replaced the dpt_i2o driver by the 2.6.19 one by copying 
+> > driver/scsi/dpt_i2o.c driver/scsi/dpti.h and driver/scsi/dpt/ into a 
+> > vanilla 2.6.23.1. kernel; using this kernel fixed the issue for me.
+> > 
+> > I haven't yet fine-tested from which kernel release on the dpt_i2o driver 
+> > behaves like this and spews out zeroed blocks when trying to mount
+> > the rootfs. Maybe this is just some timing issue.
+> 
+> I've started the fine-tests and can say so far that dpt_i2o from 
+> 2.6.22 is still fine. Test is simple:
+> 
+> anders@ista:/usr/src/linux-2.6.22/drivers/scsi/dpt$ cp -r dpt/ dpt_i2o.c dpti.h /usr/src/linux-2.6.23.1/drivers/scsi/
+> 
+> ... recompile the kernel, reboot: works.
+> 
+> 2.6.22 and 2.6.23 differ in terms of the dpt_i2o driver by two different
+> patch sets:
+> -one 2 Kb small set of patches from 2.6.22 to 2.6.22-rc1
+> -one 7 Kb set of patches from 2.6.23-rc2 to 2.6.23-rc3
+> -one 162 Kb set of patches from 2.6.23-rc9 to 2.6.23-rc10.
+> 
+> When applying the 2.6.23-rc1-based driver to "my" 2.6.31.1 kernel,
+> the "zero blocks"-symptom show up, so it's the "lucky" situation
+> that the smallest patch actually seams to be the broken one.
+> 
+> According to the 2.6.23-rc1 short-form changelog, there is
+> one major edit on the dpt_i2o driver:
+> 
+> FUJITA Tomonori 
+> 
+>       [SCSI] dpt_i2o: convert to use the data buffer accessors
+> 
+> Stephen Rothwell 
+>       dpt_i2o depends on virt_to_bus
+> 
+> Fujita, would you please take a look at this?
 
-In the past, we've received several useful comments from Rik Van Riel,
-Lee Schermerhorn, Peter Zijlstra, Hugh Dickins, Nick Piggin, Paul Menage
-and code contributions and bug fixes from Hugh Dickins, Pavel Emelianov,
-Lee Schermerhorn, YAMAMOTO-San, Andrew Morton and KAMEZAWA-San. I
-apologize if I missed out any other names or contributions
+Sorry about the bug. Can you try this?
 
-At the VM-Summit we decided to try the current double LRU approach for
-memory control. At this juncture in the space-time continuum, I seek
-your support, feedback, comments and help to move the memory controller
 
--- 
-	Thanks,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
+index 8258506..1255b26 100644
+--- a/drivers/scsi/dpt_i2o.c
++++ b/drivers/scsi/dpt_i2o.c
+@@ -3295,7 +3295,7 @@ static struct scsi_host_template adpt_template = {
+ 	.this_id		= 7,
+ 	.cmd_per_lun		= 1,
+ 	.use_clustering		= ENABLE_CLUSTERING,
+-	.use_sg_chaining	= ENABLE_SG_CHAINING,
++	.use_sg_chaining	= DISABLE_SG_CHAINING,
+ };
+ 
+ static s32 adpt_scsi_register(adpt_hba* pHba)
