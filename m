@@ -1,57 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbXK2BNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762456AbXK2BSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762628AbXK2BNn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 20:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761787AbXK2BNb
+	id S1762456AbXK2BSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 20:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbXK2BSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 20:13:31 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52211 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761911AbXK2BNa (ORCPT
+	Wed, 28 Nov 2007 20:18:08 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48606 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758142AbXK2BSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 20:13:30 -0500
-To: =?us-ascii?Q?=3D=3Futf-8=3Fq=3FFerenc=5FW=3DC3=3DA1gner=3F=3D?= 
-	<wferi@niif.hu>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/3] net/bonding: Return nothing for not applicable values 
-In-reply-to: <87wss3jin5.fsf@szonett.ki.iif.hu> 
-References: <87wss3jin5.fsf@szonett.ki.iif.hu>
-Comments: In-reply-to =?us-ascii?Q?=3D=3Futf-8=3Fq=3FFerenc=5FW=3DC3=3DA1gner=3F=3D?= <wferi@niif.hu>
-   message dated "Wed, 28 Nov 2007 01:52:46 +0100."
-X-Mailer: MH-E 8.0.3; nmh 1.1-RC4; GNU Emacs 22.0.95
-Date: Wed, 28 Nov 2007 17:13:15 -0800
-Message-ID: <26966.1196298795@death>
-From: Jay Vosburgh <fubar@us.ibm.com>
+	Wed, 28 Nov 2007 20:18:07 -0500
+Date: Thu, 29 Nov 2007 02:18:03 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch specific percpu setup
+Message-ID: <20071129011802.GK24223@one.firstfloor.org>
+References: <20071127001407.859743255@sgi.com> <200711281236.02014.rusty@rustcorp.com.au> <Pine.LNX.4.64.0711281050470.11968@schroedinger.engr.sgi.com> <200711291017.52727.rusty@rustcorp.com.au> <474DFD7E.907@goop.org> <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 28, 2007 at 04:11:37PM -0800, Christoph Lameter wrote:
+> 1. The stack canary
 
->The previous code returned '\n' (that is, a single empty line)
->from most files, with one exception (xmit_hash_policy), where
->it returned 'NA\n'.  This patch consolidates each file to return
->nothing at all if not applicable, not even a '\n'.
->
->I find this behaviour more usual, more useful, more efficient
->and shorter to code from both sides.
-[...]
->+	if ((bond->params.mode == BOND_MODE_XOR) ||
->+	    (bond->params.mode == BOND_MODE_8023AD)) {
-> 		count = sprintf(buf, "%s %d\n",
-> 			xmit_hashtype_tbl[bond->params.xmit_policy].modename,
-> 			bond->params.xmit_policy);
+You would need to change gcc with a new option and only allow the stack
+checking when the compiler supports the new option. However the problem
+is still how to get a reasonable fixed offset. Or perhaps just change
+gcc to use a linker symbol relative to %gs that could be set to anything?
 
-	Rather than this (returning nothing if not in xor or 802.3ad
-mode), I'd prefer to see this always return whatever the xmit policy is
-(regardless of the mode), and remove the mode test from
-bonding_store_xmit_hash().
-
-	This would be consistent with the way the arp_ip_target option
-is treated: the actual value is always displayed, even if it is not
-used, and it is legal to change the value, regardless of the mode.
-
-	Other than this, I'm fine with the changes.
-
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+-Andi
