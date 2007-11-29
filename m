@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbXK2QGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762524AbXK2QHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762283AbXK2QGK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbXK2QF5
+	id S1762524AbXK2QHq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXK2QHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:05:57 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:57489 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbXK2QFz (ORCPT
+	Thu, 29 Nov 2007 11:07:38 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36469 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756632AbXK2QHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:05:55 -0500
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
-	kobject_init
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 17:04:40 +0100
-Message-Id: <1196352280.3118.11.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19QHzkDXMxxM6YLArQOz8Y3kvzIAlz1Dv6BVQt
- sGVoa2PMYR7oiLl3IJCDgsm3hgEsG5sJwsEybMXtqkOgOT/wrl
- 8zZdlYSXseGGEtWLm9FKDc0atNoudZ3
+	Thu, 29 Nov 2007 11:07:37 -0500
+To: mingo@elte.hu
+CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20071129105744.GI10577@elte.hu> (message from Ingo Molnar on
+	Thu, 29 Nov 2007 11:57:44 +0100)
+Subject: Re: scheduling anomaly on uml (was: -rt doesn't compile for UML)
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128150637.GA5518@c2.user-mode-linux.org> <E1IxOwS-000752-HF@dorka.pomaz.szeredi.hu> <20071128182935.GA8048@c2.user-mode-linux.org> <E1IxRv7-0007e8-Dq@dorka.pomaz.szeredi.hu> <E1IxgUe-00011b-Sl@dorka.pomaz.szeredi.hu> <20071129105744.GI10577@elte.hu>
+Message-Id: <E1Ixlv9-0001rb-U7@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 29 Nov 2007 17:07:23 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 10:54 -0500, Alan Stern wrote:
-> On Thu, 29 Nov 2007, Kay Sievers wrote:
+> > I can't say I'm understading these traces very well, but here's a 
+> > snippet that looks a bit strange.  I'm running 'while true; do date; 
+> > done' in parallel with the dd.
+> > 
+> > For some time it is doing 100% CPU as expected, then it goes into a 
+> > second or so of mosty idle (afaics), and then returns to the normal 
+> > pattern again.
 > 
-> > > And if someone calls kobject_put() after kobject_init() to clean up,
-> > > their release function will not be called if they didn't set the ktype.
-> > > So the check really belongs into kobject_init() IMO.
+> try:
 > 
-> Right.  And even though cleaning up no longer needs to drop a reference
-> to the kset, it still might need to free the kobject's name.  So for 
-> example, either of these sequences:
+>   echo 1 > /proc/sys/kernel/stackframe_tracing
 > 
-> 	kobject_init();			kobject_set_name();
-> 	kobject_set_name();		kobject_init();
-> 	...				...
-> 	kobject_free();			kobject_free();
-> 
-> would leak memory.
+> to get symbolic stack backdumps for the wakeup points, and add 
+> trace_special_sym() calls to generate extra stackdump entries at 
+> arbitrary places. schedule() does not have it right now - it might make 
+> sense to add it.
 
-Yeah, only the kobject_put() would free the name.
+OK, this helped.
 
-> In fact, if we were designing the kobject API from scratch, I'd suggest 
-> making the ktype value an argument to kobject_init() so that it 
-> _couldn't_ be omitted.
+It looks like the delays are caused by the page allocator, and not
+UML.  Which is good news, because I'm supposed to understand memory
+management better than scheduling.
 
-Sounds fine, maybe we should also pass the name along, so it will be
-obvious what happens here:
-  int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+Thanks,
+Miklos
 
-> > Hmm, will one expect that the whole object will also be free'd when we
-> > suggest to call kobject_put() to cleanup? That might be pretty
-> > unexpected, right?
-> 
-> I don't understand the question.  People _already_ expect the cleanup 
-> routine to free the kobject when the last reference is dropped.  Why 
-> should there be any confusion over this?
 
-Oh, if you want to rewind on error and have an initialized but still
-unregistered kobject, and just want to free the allocated name by
-calling kobject_cleanup() or kobject_put() you might not expect, that
-your whole object that embeds the kobject will be gone. Just something
-we need to document ...
 
-Kay
-
+    bash-504   0.... 6312803us!: schedule <kswapd0-33> (-5 0)
+    bash-504   0.... 6313820us : userspace()<-fork_handler()<-<2f0a3670>()<-(    0)()
+    bash-504   0.... 6313821us+: (    0)()<-(    0)()<-(    0)()<-(    0)()
+    date-5726  0.... 6315334us+: pipe_read()<-do_sync_read()<-vfs_read()<-sys_read()
+    date-5726  0.... 6315336us : handle_syscall()<-handle_trap()<-userspace()<-fork_handler()
+    bash-504   0.... 6315340us!: schedule <date-5726> (0 0)
+    bash-504   0.... 6315731us+: io_schedule_timeout()<-congestion_wait()<-throttle_vm_writeout()<-shrink_zone()
+    bash-504   0.... 6315733us : shrink_zones()<-try_to_free_pages()<-__alloc_pages()<-do_wp_page()
+  <idle>-0     0.... 6315738us!: schedule <bash-504> (0 20)
+  <idle>-0     0.Nh. 6476223us+: __trace_start_sched_wakeup <bash-504> (120 -1)
+  <idle>-0     0.Nh. 6476228us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 6476232us+: __trace_start_sched_wakeup <dd-5155> (120 -1)
+  <idle>-0     0.... 6476256us+: cpu_idle()<-rest_init()<-start_kernel()<-start_kernel_proc()
