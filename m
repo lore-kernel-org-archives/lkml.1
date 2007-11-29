@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934615AbXK2W66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934427AbXK2XBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934615AbXK2W66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932857AbXK2W6s
+	id S934427AbXK2XBx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 18:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762564AbXK2XBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:58:48 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33278 "EHLO mx2.suse.de"
+	Thu, 29 Nov 2007 18:01:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38245 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933553AbXK2W6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:58:47 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>, Greg KH <greg@kroah.com>,
-       Jon Masters <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-From: Andi Kleen <andi@firstfloor.org>
-References: <416908.77038.qm@web36613.mail.mud.yahoo.com>
-	<20071128164613.GA21815@infradead.org>
-	<25290.1196273705@turing-police.cc.vt.edu>
-	<20071128183040.GW8181@ftp.linux.org.uk>
-	<20071129003840.GA22530@kroah.com>
-	<Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
-	<20071129010753.GA19106@kroah.com>
-	<1196354172.6473.52.camel@perihelion>
-	<20071129164746.GB9664@kroah.com>
-	<Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
-	<20071129165731.GA30719@infradead.org>
-	<20071129172740.2515fa75@the-village.bc.nu>
-Date: Thu, 29 Nov 2007 23:58:44 +0100
-In-Reply-To: <20071129172740.2515fa75@the-village.bc.nu> (Alan Cox's message of "Thu\, 29 Nov 2007 17\:27\:40 +0000")
-Message-ID: <p73ir3ky7yz.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1759343AbXK2XBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 18:01:35 -0500
+Message-ID: <474F449B.70603@redhat.com>
+Date: Thu, 29 Nov 2007 18:00:43 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Roland McGrath <roland@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
+References: <20071129003849.428E026F8E7@magilla.localdomain>	<20071129004222.E49AD26F8E7@magilla.localdomain>	<474EF824.3020806@redhat.com> <20071129222157.1120B26F8E7@magilla.localdomain>
+In-Reply-To: <20071129222157.1120B26F8E7@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
->
-> The simple case is
-> 	open
-> 	write cathedral and bazaar in some order
-> 	close
-> 	<trap close -> process -> label eric_t>
->
-> 	open (eric_t) - SELinux "no"
->
->
-> Anyone smart will then write it out of order and keep the file open, or
+On 11/29/2007 05:21 PM, Roland McGrath wrote:
+>>>  	case offsetof(struct user32, regs.gs):
+>>>  		*val = child->thread.gsindex;
+>>> +		if (child == current)
+>>> +			asm("movl %%gs,%0" : "=r" (*val));
+>> Won't this return the kernel's GS instead of the user's?
+> [...]
+>> But this is x86_64, where swapgs is done on kernel entry.
+> 
+> As I understand it, and from what the documentation I have says, swapgs has
+> nothing to do with the %gs selector.  It affects the "GS base register",
+> i.e. the MSR.
+> 
 
-That would assume Eric already has a program running on your system
-optimized to inject his works in a obfuscated way. And if he has a
-program running he can do nearly everything already.  You already
-lost the game.
-
-The normal case Tvrtko et.al. are trying to handle would be more the
-work getting downloaded from somewhere or read from a usb stick using
-normal programs like web browsers or file managers who don't do any
-out of order writing tricks and other obfuscation.
-
-Important exception might be things like BitTorrent who write 
-out of order or parallel downloaders to cheat TCP congestion control.
-Or simply tar+gzip with automatic depacking in desktops.
-There are probably more and it's probably tricky but it is not a 
-"need to handle arbitary nastiness by a determined attacker" situation.
-
-Anyways I'm not saying that pattern matching is a useful security
-measure (just the interaction with compression and encryption makes it
-very dubious), but if you're talking hypothetically you should at
-least look closely at the hypothetical use cases @)
-
--Andi
+Yep, I confused the GS selector with the base address in the descriptor.
