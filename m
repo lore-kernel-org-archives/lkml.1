@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934029AbXK2U1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbXK2Uac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934029AbXK2U1G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:27:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbXK2U0x
+	id S1762864AbXK2Uac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXK2UaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:26:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:59556 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932826AbXK2U0w (ORCPT
+	Thu, 29 Nov 2007 15:30:20 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38774 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756222AbXK2UaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:26:52 -0500
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
-	kobject_init
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <1196367597.7903.25.camel@lov.site>
-References: <Pine.LNX.4.44L0.0711291455410.5666-100000@iolanthe.rowland.org>
-	 <1196367597.7903.25.camel@lov.site>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 21:26:40 +0100
-Message-Id: <1196368000.7903.28.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/FxghIjaGtRzzaKQcE1CXgDCuhpzUpHDmjPG6
- 73AM5Hvktf71644qvGqwPnYl0UpHGKYblF6ZqThR73iVJ3P83o
- dHSdTPBC33x7lIK6DHHe42CIf8J5Exx
+	Thu, 29 Nov 2007 15:30:19 -0500
+Date: Thu, 29 Nov 2007 21:30:09 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tomas Carnecky <tom@dbservice.com>
+Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH?] OSS: fix operator precedence in return of
+	btaudio_dsp_ioctl
+Message-ID: <20071129203009.GJ29463@stusta.de>
+References: <474F02B2.6010406@tiscali.nl> <474F0C0E.8000109@dbservice.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <474F0C0E.8000109@dbservice.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 21:20 +0100, Kay Sievers wrote:
-> On Thu, 2007-11-29 at 15:09 -0500, Alan Stern wrote:
-> > On Thu, 29 Nov 2007, Kay Sievers wrote:
-
-> > > > There's another good reason for not assigning the name in
-> > > > kobject_init(): Code that uses kobjects (like the driver core) doesn't
-> > > > set the name until later.
-> > > 
-> > > That can be done at any stage, I guess. We will rip out the name in the
-> > > struct device anyway.
+On Thu, Nov 29, 2007 at 07:59:26PM +0100, Tomas Carnecky wrote:
+> Roel Kluin wrote:
+> > First of all, is /sound/oss/* still maintained?
 > > 
-> > Are you also going to change all the places in the kernel where the
-> > device name (.bus_id) isn't set until after device_initialize() has
-> > been called?
 > 
-> Yes, I already have a patch that does that for all stuff that was needed
-> on my boxes.
+> Documentation/feature-removal-schedule.txt
+> 
+> What:  drivers depending on OSS_OBSOLETE
+> When:  options in 2.6.23, code in 2.6.25
+> Why:   obsolete OSS drivers
+> Who:   Adrian Bunk <bunk@stusta.de>
 
-To be exact, bus_id will be removed from the device, and the device name
-will be set and retrieved directly from the kobject.
+I'm maintaining only the gradual removal.  ;-)
 
-Kay
+That's only the removal of some of the remaining OSS drivers, but 
+btaudio is among them.
+
+> tom
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
