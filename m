@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbXK2SX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbXK2SYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbXK2SX6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbXK2SXu
+	id S933125AbXK2SYg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760514AbXK2SYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:23:50 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54376 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756222AbXK2SXu (ORCPT
+	Thu, 29 Nov 2007 13:24:23 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:56331 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761017AbXK2SYV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:23:50 -0500
-Message-ID: <474F0389.5030003@zytor.com>
-Date: Thu, 29 Nov 2007 10:23:05 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 29 Nov 2007 13:24:21 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <474F0243.1020103@redhat.com>
-In-Reply-To: <474F0243.1020103@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Date: Thu, 29 Nov 2007 11:24:00 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501D33D61@NAMAIL1.ad.lsil.com>
+In-Reply-To: <20071128192703.GA2584@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Thread-Index: Acgx9Krd+BU9hV11RZWgo5JcfegcdQAwCr4g
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Cc: <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
+       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+X-OriginalArrivalTime: 29 Nov 2007 18:24:04.0069 (UTC) FILETIME=[055FC150:01C832B5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 11/29/2007 01:09 PM, Linus Torvalds wrote:
->>>>  	case offsetof(struct user32, regs.gs):
->>>>  		*val = child->thread.gsindex;
->>>> +		if (child == current)
->>>> +			asm("movl %%gs,%0" : "=r" (*val));
->>> Won't this return the kernel's GS instead of the user's?
->> No, %gs is untouched by the kernel, so it contains user space version, and 
->> getting the value directly from %gs looks correct.
->>
-> 
-> But this is x86_64, where swapgs is done on kernel entry.
-> 
 
-For i386-x86_64 sharing, getting to the user segments probably should be 
-macroized.  I'm thinking something like 
-get_user_[cs|ds|es|fs|gs|ss](thread) in <asm/processor.h> doing the 
-appropriate thing for different configurations.
+Matthew,
 
-	-hpa
+I think my last email confused you. Here are the points for submitting
+this patch:
+
+1. It is only to add the ia64 support to our driver.  This is why we add
+the ia64 flag.
+
+2. We did not change the implementation for x86 and x86_64.  The
+implementation for them with u32 * is there from day one.
+
+3. What I wanted to convey in my previous mail is that if one uses a 64
+bit application (s)he may need to test for all functionality again.	
+
+Regards.
+
+Bo Yang
+
+-----Original Message-----
+From: Matthew Wilcox [mailto:matthew@wil.cx] 
+Sent: Wednesday, November 28, 2007 2:27 PM
+To: Yang, Bo
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
+cmds with sense info
+
+On Wed, Nov 28, 2007 at 12:08:37PM -0700, Yang, Bo wrote:
+> Matthew,
+> 
+> Yes, as I mentioned, our applications are built in 32-bit environment 
+> (except for ia64).
+> We may see a different behavior if we build it in 64-bit for x86-64. 
+
+Then this patch isn't acceptable.  You need to find a way which works
+for both 32-bit and 64-bit applications.
+
+--
+Intel are signing my paycheques ... these opinions are still mine "Bill,
+look, we understand that you're interested in selling us this operating
+system, but compare it to ours.  We can't possibly take such a
+retrograde step."
