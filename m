@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbXK2Av3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbXK2Axz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbXK2Av3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbXK2AvW
+	id S1762253AbXK2Axz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbXK2Axs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:51:22 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56463 "EHLO
+	Wed, 28 Nov 2007 19:53:48 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56468 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755503AbXK2AvV (ORCPT
+	with ESMTP id S1755709AbXK2Axr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:51:21 -0500
-Date: Thu, 29 Nov 2007 01:51:20 +0100 (CET)
+	Wed, 28 Nov 2007 19:53:47 -0500
+Date: Thu, 29 Nov 2007 01:53:46 +0100 (CET)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: tvrtko.ursulin@sophos.com
-cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+To: Greg KH <greg@kroah.com>
+cc: Valdis.Kletnieks@vt.edu, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
        linux-kernel@vger.kernel.org
 Subject: Re: Out of tree module using LSM
-In-Reply-To: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
-Message-ID: <Pine.LNX.4.64.0711290147181.22052@fbirervta.pbzchgretzou.qr>
-References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
+In-Reply-To: <20071129003840.GA22530@kroah.com>
+Message-ID: <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+References: <20071128144156.GA14106@infradead.org> <416908.77038.qm@web36613.mail.mud.yahoo.com>
+ <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu>
+ <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Nov 28 2007 18:22, tvrtko.ursulin@sophos.com wrote:
+On Nov 28 2007 16:38, Greg KH wrote:
+>> 
+>> And if we are talking about the situation when files are written to
+>> in controlled way (i.e. we are not concerned with malware running on
+>> the box in question and just want to stop it from passing through
+>> mailsewer, etc.), then there's no damn need to play with LSM - just
+>> have e.g. coda with its commit-on-close and run the scanner on
+>> commit.  End of story.  Mind you, in such setups one would be much
+>> better off just having the mail server run the tests explicitly in
+>> the userland, along with the rest of anti-spam, etc. filters.
 >
->Talpa is modular itself being composed of a set of kernel modules of which 
->not all are loaded simultaneously. Where possible LSM can be used and _no_ 
->messing with syscall table will take place. Unfortunately where another 
->LSM user is present that won't work
+>I've repeated the above statements so many times to a number of the
+>anti-virus companies, and other people that really should know better,
+>that I'm really sick of it.  For some reason, they keep trying to do
+>things like this in the kernel, despite it being trivial to do in
+>userspace properly.
+>
+Do you mean something along the lines of FUSE?
 
-SELinux supports chaining, so if talpa is loaded as a secondary to selinux,
-where is the problem? For those LSMs which do not support chaining (*cough*
-apparmor *cough* be one, mtadm another), fix them.
 
