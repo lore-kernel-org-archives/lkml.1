@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932788AbXK2Sdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXK2SfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932788AbXK2Sdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757721AbXK2SdY
+	id S932978AbXK2SfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759873AbXK2Sez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:33:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42753 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759614AbXK2SdY (ORCPT
+	Thu, 29 Nov 2007 13:34:55 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:50479 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757721AbXK2Sez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:33:24 -0500
-Date: Thu, 29 Nov 2007 10:31:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Chuck Ebbert <cebbert@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
- task
-In-Reply-To: <474F01F6.2030509@zytor.com>
-Message-ID: <alpine.LFD.0.9999.0711291027070.8458@woody.linux-foundation.org>
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <474F01F6.2030509@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Nov 2007 13:34:55 -0500
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
+	kobject_init
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711291259300.4712-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0711291259300.4712-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 19:33:46 +0100
+Message-Id: <1196361226.7903.6.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+cgZ32TQhQZhWbPoA631H4epQ3aNOfgh3CZK+
+ utTSnJTBPqNUrigu8ksMtpaD6AkODGya7ydUlvTCGqpPTY8iYt
+ UYzC3YEYwhAdn//gG+NtcQC+zLe4Z3k
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 29 Nov 2007, H. Peter Anvin wrote:
+On Thu, 2007-11-29 at 13:04 -0500, Alan Stern wrote: 
+> On Thu, 29 Nov 2007, Kay Sievers wrote:
 > 
-> The kernel uses %fs in 32-bit mode and %gs in 64-bit mode.
+> > > > Sounds fine, maybe we should also pass the name along, so it will be
+> > > > obvious what happens here:
+> > > >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+> > > 
+> > > I don't know...  Normally *_init() routines can't fail, but this could.  
+> > > Then things like device_register() would run into trouble: The caller 
+> > > wouldn't know whether a failure occurred before or after the 
+> > > kobject_init() call, so it wouldn't know what sort of cleanup action 
+> > > was needed: kfree() or device_put().
+> > 
+> > But wouldn't device_register() do the kobject cleanup for you when it
+> > fails? Why would a caller of device_register() care about the state of
+> > the kobject?
+> 
+> Let's say device_register() calls device_init(), which calls 
+> kobject_init(), which fails.  Then there's no cleanup to do -- 
+> device_register() returns -ENOMEM or some such code and the caller has 
+> to do the kfree().
+> 
+> Now let's say device_register() calls device_init(), which succeeds, 
+> and then calls device_add(), which fails.  To recover properly, 
+> somebody then has to call device_put().  That "somebody" can't be the 
+> original caller -- according to the previous paragraph the original 
+> caller won't do anything but kfree().  So the "somebody" has to be 
+> device_register() itself.
+> 
+> But the device_put() will call kobject_put(), which will invoke the
+> device's cleanup routine, which will deallocate the structure.  Now the
+> original caller gets an error code (perhaps -ENOMEM again) but must
+> _not_ call kfree().
+> 
+> So what should the original caller do when an error occurs?
 
-Yeah, thanks for reminding me about this particular insanity.
+Right, and that is not covered today, the current code just leaks the
+allocated name.
 
-We should just make the kernel always use %gs for the percpu data. On 
-32-bit x86 there really is no reason to use %fs over %gs, other than the 
-purely historical one, and the fact that "f" is alphabetically before "g", 
-so it's the one you use first if you have no other preferences.
+Your error scenario confirmed my initial concern about suggesting
+kobject_put() to clean up an initialized kobject.
 
-That way we can more easily share code, if the rules for fs/gs are the 
-same for 32-bit/64-bit code.
+We should probably make kobject_cleanup() free only the resources taken
+by kobject_init(), and use kobject_cleanup() instead of kobject_put()?
 
-However, you also say:
+Kay
 
-> It is advantageous for user space to use the register the kernel 
-> typically won't, in order to speed up system call entry/exit.
-
-but I'm not seeing the reason for that one. Care to comment more? (Yes, 
-there is often a latency from segment reload to use, but the reload 
-latency for system call exit *should* be entirely covered by the cost of 
-doing the system call return itself, no?)
-
-			Linus
