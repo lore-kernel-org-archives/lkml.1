@@ -1,75 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763617AbXK2Vml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXK2Vm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763617AbXK2Vml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760956AbXK2Vm2
+	id S1763995AbXK2Vm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763789AbXK2Vms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:42:28 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:16858 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644AbXK2Vm1 (ORCPT
+	Thu, 29 Nov 2007 16:42:48 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54569 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763784AbXK2Vmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:42:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=YFIRLacFnCPpSezVSiTNB9KCcebpW37ClYXohXWvLsekfowvnPZT7dCaSVxyLpCXYxi1DuHvazB5KqCIJovWbAXqmTIBrFcHJ7WNy5fCO2CFwEE4Z+3qrotbuDz7qiCA3lRj0Yb064+bTMiJX+QgpHmjfexBSrpoezY+BrPn3H4=
-Message-ID: <474F3248.3040808@gmail.com>
-Date: Thu, 29 Nov 2007 22:42:32 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 29 Nov 2007 16:42:44 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Albert Cahalan" <acahalan@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Guillaume Chazarain" <guichaz@yahoo.fr>,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org, oleg@tv-sign.ru,
+       rjw@sisk.pl, roland@redhat.com, xemul@openvz.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Ulrich Drepper" <drepper@redhat.com>
+Subject: Re: + proc-fix-the-threaded-proc-self.patch added to -mm tree
+References: <200711262339.lAQNdNrw029057@imap1.linux-foundation.org>
+	<20071128014901.4b303954@inria.fr>
+	<787b0d920711280141v463759efod86395c50c1b47c5@mail.gmail.com>
+	<20071128104622.GB19694@elte.hu>
+	<m1ve7mehcm.fsf@ebiederm.dsl.xmission.com>
+	<787b0d920711280947g418330faie5c96293102c3f05@mail.gmail.com>
+Date: Thu, 29 Nov 2007 14:40:17 -0700
+In-Reply-To: <787b0d920711280947g418330faie5c96293102c3f05@mail.gmail.com>
+	(Albert Cahalan's message of "Wed, 28 Nov 2007 12:47:31 -0500")
+Message-ID: <m1hcj4buim.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Jun Nakajima <jun.nakajima@intel.com>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: kondemand: kernel BUG at kernel/workqueue.c:258!
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+"Albert Cahalan" <acahalan@gmail.com> writes:
 
-while trying to evoke another bug by endlessly change governors, this appeared:
-kernel BUG at .../kernel/workqueue.c:258!
-invalid opcode: 0000 [1] PREEMPT SMP
-CPU 0
-Modules linked in: iwl3945 mac80211 cfg80211 tun cpufreq_userspace rfcomm
-l2cap hci_usb bluetooth kvm_intel arc4 ecb blkcipher kvm cryptomgr
-crypto_algapi acpi_cpufreq fglrx(P) asus_laptop sr_mod cdrom ehci_hcd
-uhci_hcd battery
-Pid: 443, comm: kondemand/0 Tainted: P        2.6.23 #38
-RIP: 0010:[<ffffffff802484ba>]  [<ffffffff802484ba>] run_workqueue+0xca/0x120
-RSP: 0000:ffff81003ff3bea0  EFLAGS: 00010283
-RAX: ffff81003fc08200 RBX: ffff810001e0a300 RCX: 0000000000000000
-RDX: ffff810001e0a300 RSI: ffff81003ff3bed0 RDI: ffff81003fc08180
-RBP: ffff81003fc08180 R08: ffff81003ff3a000 R09: 0000000000000000
-R10: 0000003a18d529f0 R11: 0000000000000001 R12: ffff810001e0a2f8
-R13: ffffffff803c7160 R14: ffff81003fc08188 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffffffff805db000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000003a18a9afa0 CR3: 000000002e431000 CR4: 00000000000026e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process kondemand/0 (pid: 443, threadinfo ffff81003ff3a000, task
-ffff81003fe67560)
-Stack:  ffff81003fc08198 ffff81003fc08180 ffffffff80249060 ffff81003fc08188
- 0000000000000000 ffffffff80249125 0000000000000000 ffff81003fe67560
- ffffffff8024cb20 ffff81003ff3bee8 ffff81003ff3bee8 00000000fffffffc
-Call Trace:
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff80249125>] worker_thread+0xc5/0x130
- [<ffffffff8024cb20>] autoremove_wake_function+0x0/0x30
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff80249060>] worker_thread+0x0/0x130
- [<ffffffff8024c71b>] kthread+0x4b/0x80
- [<ffffffff8020cbb8>] child_rip+0xa/0x12
- [<ffffffff8021fff0>] flat_send_IPI_mask+0x0/0x70
- [<ffffffff8024c6d0>] kthread+0x0/0x80
- [<ffffffff8020cbae>] child_rip+0x0/0x12
+> On Nov 28, 2007 6:31 AM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> Ingo Molnar <mingo@elte.hu> writes:
+>> > * Albert Cahalan <acahalan@gmail.com> wrote:
+>> >> On Nov 27, 2007 7:49 PM, Guillaume Chazarain <guichaz@yahoo.fr> wrote:
+>
+>> In a lot of ways if you access /proc/self and you get back information
+>> that does not correspond to yourself the result is nonsense.  Which
+>> is a fairly mighty problem.
+>
+> In general, this is not a problem we have.
+
+True in general we do not have a problem, in specific corner cases
+we do have a problem, and being a system software developer corner
+cases that do not work properly disturb me.
 
 
-Code: 0f 0b eb fe 66 90 65 48 8b 34 25 00 00 00 00 48 c7 c7 10 98
-RIP  [<ffffffff802484ba>] run_workqueue+0xca/0x120
- RSP <ffff81003ff3bea0>
+
+
+Linux does not have processes.
+
+Linux has tasks
+Linux has task groups.
+
+Linux tasks when used in one particular way can fulfill the posix
+requirements for single threaded processes. 
+
+Linux task groups when used in one particular way can fulfill the
+posix requirements for processes.
+
+Prior to 2.6 and good threading support task and process were
+used interchangeably in linux.
+
+
+
+Claiming something linux specific should be one way or another way
+because the documentation said process is not an argument but rather
+an indication that the documentation was ambiguous.
+
+
+
+When the CLONE_THREAD support was added in 2.5 we left a lot of
+corner cases ill-defined and not thought through and that continues
+to give us trouble.  In particular peoples intuition varies on what
+the right set of semantics in a different situations are.
+
+
+
+Regardless of the original intent the way the files in /proc are today
+is that both /proc/<tgid>/ and /proc/<tgid>/task/<tid>/ contain all of
+the same status files with the files under /proc/<tgid>/ containing
+information summed across the entire thread group.  To preserve
+the pre thread group understanding of /proc this needs to continue
+to be the case.  Otherwise the /proc/<tgid>/ directory would quickly
+become uninteresting to everything except tools like ps and top.
+
+
+As for where /proc/self points given that procps seems to read
+files like /proc/self/stat.  It looks to me like we have a clear
+case of a user space application that cares about the current
+behavior and would break if we changed things.
+
+
+> Note that it was intended that non-legacy additions
+> would normally be added to either the process directory
+> or the thread directory, not both. I think somebody may
+> have ripped out the ability to do this; at the very least
+> there have been numerous illogical additions.
+
+The rationale was not conveyed and the policy you describe
+seems like deprecating the /proc/<tgid> directory in favor
+of the /proc/<tgid>/task/<pid>/.  Which was a pattern
+never established and it doesn't seem to make anything better
+so I don't see the point there.
+
+
+>> I'm still trying to understand which will break user space more,
+>> adding /proc/task or changing /proc/self.
+>
+> Changing /proc/self makes you get per-thread data
+> when you asked for per-process data. That's bad.
+
+/proc/self used to ask for per task data.  Which is why there
+is some confusion.
+
+>> >> This one is probably best:
+>> >> /proc/task -> 123/task/456
+>> >> (with both numbers showing)
+>> >
+>> > this sounds good to me. If it's a symlink then there's not much other
+>> > choice because the thread PIDs do not even show up under /proc anymore.
+>>
+>> The name sounds good to me.
+
+I will see about writing the patch for this in a bit and sending
+it to Andrew.
+
+>> I am not certain the two components make sense as we have a possible
+>> permission problem where it is remotely possible that a task will
+>> have permission to access /proc/<tid> but not /proc/<tgid>.
+>
+> If it hurts, don't do that. We allow foot shooting.
+
+Well as I replied earlier I have a solution to this so it isn't
+an issue.
+
+However we don't go around pointing guns at peoples feet.  If
+there isn't a reason for problems we should not do it.  Now
+I do admit security modules in general and selinux in particular
+seem to be foot shooting by definition but that is another issue
+entirely.  Waving too many problems away as foot shooting is a
+reckless attitude can cause problems later.
+
+> As I predicted, the container bloat would be a never-ending
+> source of bugs. You're discovering bugs where there were none.
+
+Nope.  /proc/mounts was a symlink to /proc/self/mounts long before
+/proc/self was modified to stop pointing at the task directory and
+changed it point at the new task group directory.
+
+Frankly from what I have seen of the code the task-group work
+seems to be a larger source of bugs, and complications, because
+people have a darn hard time wrapping their head around how it
+is supposed to behave, and all of the corner cases were not
+resolved at the time it was developed.
+
+My favorite ongoing issue is what is needed to allow a threaded
+init to actually function properly.  I think enough fixes have
+gone in that it might even work.
+
+> You'll never run out of this sort of problem. Keeping Linux lean
+> and simple would be far better.
+
+Nah.  The control group stuff has all kinds of corner cases because
+it is a new and untested API.  The namespace work after we get the
+code cleanup up so it is maintainable and we can work with it
+is usually just finding our globals through a pointer instead of
+from a static variable.  Hardly a measurable cost on the best day.
+
+The rule is that the user space interfaces change as little as
+possible.  For /proc that could mean either we capture all of
+the namespaces at mount time so things stay exactly the way
+the are today, or that we find a way to show things that have
+now become namespace dependent.  Given that monitoring works
+best if you can access the status files of other namespaces
+it seems to make sense to follow the lead of /proc mounts.
+Although I believe we should shortly reach the point where
+/proc/.../mounts will have the same inode number if it is
+the same mount namespace.
+
+Eric
