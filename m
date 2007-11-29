@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbXK2UqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXK2Uqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763514AbXK2UqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761354AbXK2UqN
+	id S1763666AbXK2Uqz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762093AbXK2Uqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:46:13 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36120 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760151AbXK2UqM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:46:12 -0500
-Date: Thu, 29 Nov 2007 12:39:00 -0800
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] Sample kset/ktype/kobject implementation
-Message-ID: <20071129203900.GA27877@kroah.com>
-References: <20071127230252.GB10038@kroah.com> <20071127230406.GD10038@kroah.com> <20071128173532.00bc72af@gondolin.boeblingen.de.ibm.com> <20071129061139.GI26327@kroah.com> <20071129103907.0b404071@gondolin.boeblingen.de.ibm.com>
+	Thu, 29 Nov 2007 15:46:45 -0500
+Received: from rtr.ca ([76.10.145.34]:4841 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760136AbXK2Uqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:46:45 -0500
+Message-ID: <474F2532.5090708@rtr.ca>
+Date: Thu, 29 Nov 2007 15:46:42 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129103907.0b404071@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Greg KH <gregkh@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
+ insert/remove race (v3)
+References: <Pine.LNX.4.44L0.0711291417530.5666-100000@iolanthe.rowland.org> <474F1AAC.7040908@rtr.ca> <20071129201224.GA25356@suse.de> <474F1DB3.4030900@rtr.ca> <474F2020.7020004@rtr.ca> <20071129203225.GA5383@suse.de>
+In-Reply-To: <20071129203225.GA5383@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 10:39:07AM +0100, Cornelia Huck wrote:
-> On Wed, 28 Nov 2007 22:11:39 -0800,
-> Greg KH <greg@kroah.com> wrote:
+Greg KH wrote:
+> On Thu, Nov 29, 2007 at 03:25:04PM -0500, Mark Lord wrote:
+>> (resending .. somebody trimmed the CC: list earlier)
+>>
+>> Greg KH wrote:
+>>>>>> Mark Lord wrote:
+>>>>>>> ..
+>>>>>>>
+>>>>>>> While doing insert/remove (quickly) tests on USB,
+>>>>>>> I managed to trigger an Oops on 2.6.23.8 on a call
+>>>>>>> to strlen() in make_class_name().
+>> ...
+>>
+>>> I'll hold off on adding this patch for now.
+>> ..
+>>
+>> Why?
+>>
+>> Bugs that result in Oops in core code (class.c) can bite
+>> just about any subsystem that does hotplug, and should get
+>> prompt attention.  Or so one might think.
 > 
-> > > > 	foo->kobj.kset = example_kset;
-> > > > 	foo->kobj.ktype = &foo_ktype;
-> > > > 
-> > > > 	/*
-> > > > 	 * Register the kobject with the kernel, all the default files will
-> > > > 	 * be created here and the uevent will be sent out.  If we were to
-> > > > 	 * call kobject_init() and then kobject_add() we would be
-> > > > 	 * responsible for sending out the initial KOBJ_ADD uevent.
-> > > > 	 */
-> > > > 	retval = kobject_register(&foo->kobj);
-> > > > 	if (retval) {
-> > > > 		kfree(foo);
-> > > 
-> > > kobject_put(foo) is needed since it gets you through kobject_cleanup()
-> > > where the name can be freed.
-> > 
-> > No, kobject_register() should have handled that for us, right?
-> 
-> kobject_register() doesn't do a kobject_put() if kobject_add() failed.
+> And they have, the 2.6.24 kernel should have the correct fix for this
+> problem, right?  The fact that you oopsed out in this function enabled
+> people to find and fix the problem already.  Adding a BUG_ON() does the
+> same exact thing :)
+..
 
-Crap.  If I can't get this code right in an example, the API is messed
-up.  Time to take Kay seriously and start to revamp the basic kobject
-api :)
+Well, actually BUG_ON() allows the system to continue running
+while still not masking the issue.  But close enough.
 
-thanks,
 
-greg k-h
+> So again, the problem is in the higher up scsi layer, and that is where
+> the problem should already be fixed.
+..
+
+Ahhh.. so you figure the Oops should also have been fixed
+as part of the 2.6.24 SCSI fixes ?  That's what I was missing here.
+
+Thanks.
