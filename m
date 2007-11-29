@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762590AbXK2BeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbXK2BfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762590AbXK2BeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 20:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761407AbXK2BeI
+	id S1762685AbXK2BfQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 20:35:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759760AbXK2BfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 20:34:08 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48635 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761260AbXK2BeH (ORCPT
+	Wed, 28 Nov 2007 20:35:04 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33385 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758024AbXK2BfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 20:34:07 -0500
-Date: Thu, 29 Nov 2007 10:37:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH][for -mm] per-zone and reclaim enhancements for memory
- controller take 3 [3/10] per-zone active inactive counter
-Message-Id: <20071129103702.cbc5cf73.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1196284799.5318.34.camel@localhost>
-References: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
-	<1196284799.5318.34.camel@localhost>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Nov 2007 20:35:02 -0500
+Date: Wed, 28 Nov 2007 17:35:01 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch
+ specific percpu setup
+In-Reply-To: <474E163E.2070702@goop.org>
+Message-ID: <Pine.LNX.4.64.0711281731410.19914@schroedinger.engr.sgi.com>
+References: <20071127001407.859743255@sgi.com> <200711281236.02014.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0711281050470.11968@schroedinger.engr.sgi.com>
+ <200711291017.52727.rusty@rustcorp.com.au> <474DFD7E.907@goop.org>
+ <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com>
+ <474E163E.2070702@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 16:19:59 -0500
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+On Wed, 28 Nov 2007, Jeremy Fitzhardinge wrote:
 
-> As soon as this loop hits the first non-existent node on my platform, I
-> get a NULL pointer deref down in __alloc_pages.  Stack trace below.
+> I don't see the problem.  The way i386 does it inherently supports
+> per-cpu data very early on (it uses the prototype percpu section until
+> the real percpu values are set up).
+
+Ok so we could do that for x86_64 as well? There is more complicated 
+bootstrap since i386 does not support NUMA aware placement of per cpu 
+areas.
+
+> > The i386 way of referring to per cpu data is not optimal because it is 
+> > always offset by __per_cpu_start. per cpu data offsets need to be relative 
+> > to the beginning of the per cpu area. per cpu data is less than 64k so 2 
+> > byte offsets would be enough.
+> >   
 > 
-> Perhaps N_POSSIBLE should be N_HIGH_MEMORY?  That would require handling
-> of memory/node hotplug for each memory control group, right?  But, I'm
-> going to try N_HIGH_MEMORY as a work around.
+> I don't see that's terribly important.  percpu references aren't all
+> that common overall, and - at least on x86 - using a 16-bit offset
+> (assuming its possible) would require a prefix anyway, so it would only
+> save 1 byte per reference.  But I can't convince gas to generate a
+> 16-bit offset anyway.
+
+percpu references are quite frequent already (vm statistics) and will be 
+more frequent after we have converted the per cpu arrays to per cpu 
+allocations.
+
+
+> > That way the __per_cpu_offset array and the registers that are used on 
+> > various platforms are pointing to the actual data and can be loaded
+> > directly into a register and then a load with a small offset to that 
+> > register can be performed. On x86_64 this is gs, on i386 fs, on sparc g5, 
+> > on ia64 a fixed address stands in for the register.
 > 
-Hmm, ok. (>_<
+> The asm used to generate these references is inherently arch-specific
+> anyway, so the type and size of offset needed from the per-cpu base
+> register to the data itself can be arch-dependent without loss of
+> generality.  
 
-
-> Call Trace:
->  [<a000000100014de0>] show_stack+0x80/0xa0
->                                 sp=a0000001008e39c0 bsp=a0000001008dd1b0
->  [<a000000100015a70>] show_regs+0x870/0x8a0
->                                 sp=a0000001008e3b90 bsp=a0000001008dd158
->  [<a00000010003d130>] die+0x190/0x300
->                                 sp=a0000001008e3b90 bsp=a0000001008dd110
->  [<a000000100071b80>] ia64_do_page_fault+0x8e0/0xa20
->                                 sp=a0000001008e3b90 bsp=a0000001008dd0b8
->  [<a00000010000b5c0>] ia64_leave_kernel+0x0/0x270
->                                 sp=a0000001008e3c20 bsp=a0000001008dd0b8
->  [<a000000100132e10>] __alloc_pages+0x30/0x6e0
->                                 sp=a0000001008e3df0 bsp=a0000001008dcfe0
->  [<a000000100187370>] new_slab+0x610/0x6c0
->                                 sp=a0000001008e3e00 bsp=a0000001008dcf80
->  [<a000000100187470>] get_new_slab+0x50/0x200
->                                 sp=a0000001008e3e00 bsp=a0000001008dcf48
->  [<a000000100187900>] __slab_alloc+0x2e0/0x4e0
->                                 sp=a0000001008e3e00 bsp=a0000001008dcf00
->  [<a000000100187c80>] kmem_cache_alloc_node+0x180/0x200
->                                 sp=a0000001008e3e10 bsp=a0000001008dcec0
->  [<a0000001001945a0>] mem_cgroup_create+0x160/0x400
->                                 sp=a0000001008e3e10 bsp=a0000001008dce78
->  [<a0000001000f0940>] cgroup_init_subsys+0xa0/0x400
->                                 sp=a0000001008e3e20 bsp=a0000001008dce28
->  [<a0000001008521f0>] cgroup_init+0x90/0x160
->                                 sp=a0000001008e3e20 bsp=a0000001008dce00
->  [<a000000100831960>] start_kernel+0x700/0x820
->                                 sp=a0000001008e3e20 bsp=a0000001008dcd80
-> 
-Maybe zonelists of NODE_DATA() is not initialized. you are right.
-I think N_HIGH_MEMORY will be suitable here...(I'll consider node-hotplug case later.)
-
-Thank you for test!
-
-Regards,
--Kame
-
+Well yes that is already the case and made explicit by the percpu cleanup 
+done so far. The offset of a base is used by multiple architectures.
 
 
