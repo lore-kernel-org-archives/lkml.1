@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXK2Q5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbXK2RCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762967AbXK2Q5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbXK2Q5m
+	id S1762926AbXK2RCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759661AbXK2RCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:57:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38537 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757600AbXK2Q5m (ORCPT
+	Thu, 29 Nov 2007 12:02:33 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:48220 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1760708AbXK2RCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:57:42 -0500
-Date: Thu, 29 Nov 2007 16:57:31 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Greg KH <greg@kroah.com>, Jon Masters <jonathan@jonmasters.org>,
-       Valdis.Kletnieks@vt.edu, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+	Thu, 29 Nov 2007 12:02:33 -0500
+Date: Thu, 29 Nov 2007 12:02:05 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071129165731.GA30719@infradead.org>
-References: <416908.77038.qm@web36613.mail.mud.yahoo.com> <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com> <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr> <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion> <20071129164746.GB9664@kroah.com> <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
+Subject: Re: scheduling anomaly on uml (was: -rt doesn't compile for UML)
+Message-ID: <20071129170205.GA7415@c2.user-mode-linux.org>
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128150637.GA5518@c2.user-mode-linux.org> <E1IxOwS-000752-HF@dorka.pomaz.szeredi.hu> <20071128182935.GA8048@c2.user-mode-linux.org> <E1IxRv7-0007e8-Dq@dorka.pomaz.szeredi.hu> <E1IxgUe-00011b-Sl@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <E1IxgUe-00011b-Sl@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 05:53:33PM +0100, Jan Engelhardt wrote:
-> >> But the problem is that this isn't just Samba, this is a countless
-> >> myriad of different applications. And if one of them doesn't support
-> >> on-access scanning, then the whole solution isn't worth using.
-> >
-> >Ok, which specific applications do they care about?  Last time I asked
-> >it was still limited to a very small handful, all of which would be
-> >trivial to add such a hook to.
-> >
-> Well, think bash, syscalls. While you can add a plugin to samba "easily",
-> it seems overkill to do the same for rm, mv, cp, bash.
+On Thu, Nov 29, 2007 at 11:19:40AM +0100, Miklos Szeredi wrote:
+>     date-7119  0.... 15636591us!: schedule <bash-502> (0 0)
+>     bash-502   0.... 15643908us!: schedule <date-7119> (0 0)
+>     bash-502   0.... 15646250us!: schedule <date-7120> (0 0)
 
-Can we please stop this useless discussion?  Trying to check the content
-of files to see whether they might be malicious is inherently braindead,
-and no amounts of plugins in random places will fix this.
+How exactly did you end up getting this data?
 
+And is there something I can read to tell what it means?
+
+			Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
