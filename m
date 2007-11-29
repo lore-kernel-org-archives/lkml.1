@@ -1,100 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbXK2NwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932242AbXK2N4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932193AbXK2NwB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 08:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbXK2Nvw
+	id S932242AbXK2N4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 08:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbXK2N4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 08:51:52 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:51728 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756686AbXK2Nvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 08:51:51 -0500
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel@avr32linux.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] atmel_lcdfb: Validate display timings
-Date: Thu, 29 Nov 2007 14:51:33 +0100
-Message-Id: <1196344293-31101-1-git-send-email-hskinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.3.4
+	Thu, 29 Nov 2007 08:56:10 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:42668 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755810AbXK2N4J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 08:56:09 -0500
+Message-ID: <474EA914.1060502@linux.vnet.ibm.com>
+Date: Thu, 29 Nov 2007 17:27:08 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, samba-technical@lists.samba.org,
+       nfs@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>, Balbir Singh <balbir@in.ibm.com>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
+References: <20071128034140.648383f0.akpm@linux-foundation.org> <474E7F9E.9000601@linux.vnet.ibm.com> <20071129010906.772e0c15.akpm@linux-foundation.org>
+In-Reply-To: <20071129010906.772e0c15.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Setting a display timing parameter too high or too low may cause it to
-wrap around and thus become completely wrong. Validate the timings in
-atmel_lcdfb_check_var() and saturate to the highest or lowest possible
-value if necessary.
+Andrew Morton wrote:
+> On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>> Hi Andrew,
+>>
+>> While running file system stress on nfs and cifs mounted partitions, the machine
+>> drops to xmon
+>>
+>> 1:mon> e
+>> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
+>>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
+>>     lr: c0000000001074d0: .vfs_link+0x204/0x298
+>>     sp: c000000080a9fb00
+>>    msr: 8000000000009032
+>>    dar: 280 
+>>  dsisr: 40010000
+>>   current = 0xc0000000c8e6f670
+>>   paca    = 0xc000000000512c00
+>>     pid   = 2848, comm = fsstress
+>> 1:mon> t
+>> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
+>> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
+>> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
+>> --- Exception: c00 (System Call) at 000000000ff1bdfc
+>> SP (ffeaed10) is in userspace
+>> 1:mon> r
+>> R00 = c0000000001074d0   R16 = 0000000000000000
+>> R01 = c000000080a9fb00   R17 = 0000000000000000
+>> R02 = c00000000060c380   R18 = 0000000000000000
+>> R03 = 0000000000000000   R19 = 0000000000000000
+>> R04 = 0000000000000004   R20 = 0000000000000000
+>> R05 = 0000000000000000   R21 = 0000000000000000
+>> R06 = 0000000000000000   R22 = 0000000000000000
+>> R07 = 0000000000000000   R23 = 0000000000000004
+>> R08 = 0000000000000000   R24 = 0000000000000280
+>> R09 = 0000000000000000   R25 = fffffffffffff000
+>> R10 = 0000000000000001   R26 = c000000082827790
+>> R11 = c0000000003963e8   R27 = c0000000828275a0
+>> R12 = d000000000deec78   R28 = 0000000000000000
+>> R13 = c000000000512c00   R29 = c00000007b18fcf0
+>> R14 = 0000000000000000   R30 = c0000000005bc088
+>> R15 = 0000000000000000   R31 = 0000000000000000
+>> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
+>> lr  = c0000000001074d0 .vfs_link+0x204/0x298
+>> msr = 8000000000009032   cr  = 24000882
+>> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
+>> dar = 0000000000000280   dsisr = 40010000
+>>
+>>
+>> The gdb output shows 
+>>
+>> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
+>> 103      * fsnotify_create - 'name' was linked in
+>> 104      */  
+>> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+>> 106     {   
+>> 107             inode_dir_notify(inode, DN_CREATE);
+>> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
+>> 109                                       dentry->d_inode);
+>> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
+>> 111     }   
+>> 112
+>>
+> 
+> If it is reproducible can you please try reverting
+> inotify-send-in_attrib-events-when-link-count-changes.patch?
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- drivers/video/atmel_lcdfb.c |   20 ++++++++++++++++++++
- include/video/atmel_lcdc.h  |   14 +++++++-------
- 2 files changed, 27 insertions(+), 7 deletions(-)
+Hi Andrew,
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 235b618..58d49e4 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -203,6 +203,26 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
- 	var->transp.offset = var->transp.length = 0;
- 	var->xoffset = var->yoffset = 0;
- 
-+	/* Saturate vertical and horizontal timings at maximum values */
-+	var->vsync_len = min_t(u32, var->vsync_len,
-+			(ATMEL_LCDC_VPW >> ATMEL_LCDC_VPW_OFFSET) + 1);
-+	var->upper_margin = min_t(u32, var->upper_margin,
-+			ATMEL_LCDC_VBP >> ATMEL_LCDC_VBP_OFFSET);
-+	var->lower_margin = min_t(u32, var->lower_margin,
-+			ATMEL_LCDC_VFP);
-+	var->right_margin = min_t(u32, var->right_margin,
-+			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 1);
-+	var->hsync_len = min_t(u32, var->hsync_len,
-+			(ATMEL_LCDC_HPW >> ATMEL_LCDC_HPW_OFFSET) + 1);
-+	var->left_margin = min_t(u32, var->left_margin,
-+			ATMEL_LCDC_HBP + 1);
-+
-+	/* Some parameters can't be zero */
-+	var->vsync_len = max_t(u32, var->vsync_len, 1);
-+	var->right_margin = max_t(u32, var->right_margin, 1);
-+	var->hsync_len = max_t(u32, var->hsync_len, 1);
-+	var->left_margin = max_t(u32, var->left_margin, 1);
-+
- 	switch (var->bits_per_pixel) {
- 	case 1:
- 	case 2:
-diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
-index 4eea637..76095e7 100644
---- a/include/video/atmel_lcdc.h
-+++ b/include/video/atmel_lcdc.h
-@@ -115,20 +115,20 @@ struct atmel_lcdfb_info {
- #define		ATMEL_LCDC_MEMOR_LITTLE		(1 << 31)
- 
- #define ATMEL_LCDC_TIM1		0x0808
--#define	ATMEL_LCDC_VFP		(0xff <<  0)
-+#define	ATMEL_LCDC_VFP		(0xffU <<  0)
- #define	ATMEL_LCDC_VBP_OFFSET		8
--#define	ATMEL_LCDC_VBP		(0xff <<  ATMEL_LCDC_VBP_OFFSET)
-+#define	ATMEL_LCDC_VBP		(0xffU <<  ATMEL_LCDC_VBP_OFFSET)
- #define	ATMEL_LCDC_VPW_OFFSET		16
--#define	ATMEL_LCDC_VPW		(0x3f << ATMEL_LCDC_VPW_OFFSET)
-+#define	ATMEL_LCDC_VPW		(0x3fU << ATMEL_LCDC_VPW_OFFSET)
- #define	ATMEL_LCDC_VHDLY_OFFSET		24
--#define	ATMEL_LCDC_VHDLY	(0xf  << ATMEL_LCDC_VHDLY_OFFSET)
-+#define	ATMEL_LCDC_VHDLY	(0xfU  << ATMEL_LCDC_VHDLY_OFFSET)
- 
- #define ATMEL_LCDC_TIM2		0x080c
--#define	ATMEL_LCDC_HBP		(0xff  <<  0)
-+#define	ATMEL_LCDC_HBP		(0xffU  <<  0)
- #define	ATMEL_LCDC_HPW_OFFSET		8
--#define	ATMEL_LCDC_HPW		(0x3f  <<  ATMEL_LCDC_HPW_OFFSET)
-+#define	ATMEL_LCDC_HPW		(0x3fU  <<  ATMEL_LCDC_HPW_OFFSET)
- #define	ATMEL_LCDC_HFP_OFFSET		21
--#define	ATMEL_LCDC_HFP		(0x7ff << ATMEL_LCDC_HFP_OFFSET)
-+#define	ATMEL_LCDC_HFP		(0x7ffU << ATMEL_LCDC_HFP_OFFSET)
- 
- #define ATMEL_LCDC_LCDFRMCFG	0x0810
- #define	ATMEL_LCDC_LINEVAL	(0x7ff <<  0)
+reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
+bug is not reproduced.
+
 -- 
-1.5.3.4
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
