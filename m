@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXK2MBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbXK2MBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbXK2MBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 07:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762721AbXK2MAy
+	id S1762980AbXK2MBj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 07:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762908AbXK2MA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 07:00:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55838 "EHLO mx1.redhat.com"
+	Thu, 29 Nov 2007 07:00:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55849 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762762AbXK2MAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 07:00:52 -0500
+	id S1762907AbXK2MA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 07:00:57 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,258 +19,161 @@ Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH x86/mm 09/11] x86 ia32 ptrace arch merge
+Subject: [PATCH x86/mm 06/11] x86 ptrace arch merge
 In-Reply-To: Roland McGrath's message of  Thursday, 29 November 2007 03:57:11 -0800 <20071129115711.9FC8526F8E7@magilla.localdomain>
 References: <20071129115711.9FC8526F8E7@magilla.localdomain>
-X-Shopping-List: (1) Fluent superstitious deriders
-   (2) Latent remainders
-   (3) Cautious pleasant fiction
-   (4) Solicitous toothpick trash
-   (5) Magnanimous mystic departure lasers
-Message-Id: <20071129120041.8621A26F989@magilla.localdomain>
-Date: Thu, 29 Nov 2007 04:00:41 -0800 (PST)
+X-Zippy-Says: I have accepted Provolone into my life!
+Message-Id: <20071129120014.E34C326F8E7@magilla.localdomain>
+Date: Thu, 29 Nov 2007 04:00:14 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This moves the sys32_ptrace code into arch/x86/kernel/ptrace.c,
-verbatim except for a few hard-coded sizes replaced with sizeof.
-Here this code can use the shared local functions in this file.
+This adds 64-bit support to arch_ptrace in arch/x86/kernel/ptrace.c,
+so this function can be used for native ptrace on both 32 and 64.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/ptrace.c |  214 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 214 insertions(+), 0 deletions(-)
+ arch/x86/kernel/ptrace.c |   65 ++++++++++++++++++++++++---------------------
+ 1 files changed, 35 insertions(+), 30 deletions(-)
 
 diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index bac5058..b3433e1 100644
+index f42f8d2..f4355f3 100644
 --- a/arch/x86/kernel/ptrace.c
 +++ b/arch/x86/kernel/ptrace.c
-@@ -634,6 +634,10 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+@@ -461,12 +461,13 @@ static int ptrace_set_debugreg(struct task_struct *child,
+ void ptrace_disable(struct task_struct *child)
+ {
+ 	user_disable_single_step(child);
++#ifdef TIF_SYSCALL_EMU
+ 	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
++#endif
+ }
  
- #ifdef CONFIG_IA32_EMULATION
+ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ {
+-	struct user * dummy = NULL;
+ 	int i, ret;
+ 	unsigned long __user *datap = (unsigned long __user *)data;
  
-+#include <linux/compat.h>
-+#include <linux/syscalls.h>
-+#include <asm/ia32.h>
-+#include <asm/fpu32.h>
- #include <asm/user32.h>
+@@ -482,18 +483,17 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		unsigned long tmp;
  
- #define R32(l,q)							\
-@@ -756,6 +760,216 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
- #undef R32
- #undef SEG32
+ 		ret = -EIO;
+-		if ((addr & 3) || addr < 0 ||
+-		    addr > sizeof(struct user) - 3)
++		if ((addr & (sizeof(data) - 1)) || addr < 0 ||
++		    addr >= sizeof(struct user))
+ 			break;
  
-+static long ptrace32_siginfo(unsigned request, u32 pid, u32 addr, u32 data)
-+{
-+	siginfo_t __user *si = compat_alloc_user_space(sizeof(siginfo_t));
-+	compat_siginfo_t __user *si32 = compat_ptr(data);
-+	siginfo_t ssi;
-+	int ret;
-+
-+	if (request == PTRACE_SETSIGINFO) {
-+		memset(&ssi, 0, sizeof(siginfo_t));
-+		ret = copy_siginfo_from_user32(&ssi, si32);
-+		if (ret)
-+			return ret;
-+		if (copy_to_user(si, &ssi, sizeof(siginfo_t)))
-+			return -EFAULT;
-+	}
-+	ret = sys_ptrace(request, pid, addr, (unsigned long)si);
-+	if (ret)
-+		return ret;
-+	if (request == PTRACE_GETSIGINFO) {
-+		if (copy_from_user(&ssi, si, sizeof(siginfo_t)))
-+			return -EFAULT;
-+		ret = copy_siginfo_to_user32(si32, &ssi);
-+	}
-+	return ret;
-+}
-+
-+asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
-+{
-+	struct task_struct *child;
-+	struct pt_regs *childregs;
-+	void __user *datap = compat_ptr(data);
-+	int ret;
-+	__u32 val;
-+
-+	switch (request) {
-+	case PTRACE_TRACEME:
-+	case PTRACE_ATTACH:
-+	case PTRACE_KILL:
-+	case PTRACE_CONT:
-+	case PTRACE_SINGLESTEP:
-+	case PTRACE_SINGLEBLOCK:
-+	case PTRACE_DETACH:
-+	case PTRACE_SYSCALL:
-+	case PTRACE_OLDSETOPTIONS:
-+	case PTRACE_SETOPTIONS:
-+	case PTRACE_SET_THREAD_AREA:
-+	case PTRACE_GET_THREAD_AREA:
-+		return sys_ptrace(request, pid, addr, data);
-+
-+	default:
-+		return -EINVAL;
-+
-+	case PTRACE_PEEKTEXT:
-+	case PTRACE_PEEKDATA:
-+	case PTRACE_POKEDATA:
-+	case PTRACE_POKETEXT:
-+	case PTRACE_POKEUSR:
-+	case PTRACE_PEEKUSR:
-+	case PTRACE_GETREGS:
-+	case PTRACE_SETREGS:
-+	case PTRACE_SETFPREGS:
-+	case PTRACE_GETFPREGS:
-+	case PTRACE_SETFPXREGS:
-+	case PTRACE_GETFPXREGS:
-+	case PTRACE_GETEVENTMSG:
-+		break;
-+
-+	case PTRACE_SETSIGINFO:
-+	case PTRACE_GETSIGINFO:
-+		return ptrace32_siginfo(request, pid, addr, data);
-+	}
-+
-+	child = ptrace_get_task_struct(pid);
-+	if (IS_ERR(child))
-+		return PTR_ERR(child);
-+
-+	ret = ptrace_check_attach(child, request == PTRACE_KILL);
-+	if (ret < 0)
-+		goto out;
-+
-+	childregs = task_pt_regs(child);
-+
-+	switch (request) {
-+	case PTRACE_PEEKDATA:
-+	case PTRACE_PEEKTEXT:
-+		ret = 0;
-+		if (access_process_vm(child, addr, &val, sizeof(u32), 0) !=
-+		    sizeof(u32))
-+			ret = -EIO;
-+		else
-+			ret = put_user(val, (unsigned int __user *)datap);
-+		break;
-+
-+	case PTRACE_POKEDATA:
-+	case PTRACE_POKETEXT:
-+		ret = 0;
-+		if (access_process_vm(child, addr, &data, sizeof(u32), 1) !=
-+		    sizeof(u32))
-+			ret = -EIO;
-+		break;
-+
-+	case PTRACE_PEEKUSR:
-+		ret = getreg32(child, addr, &val);
-+		if (ret == 0)
-+			ret = put_user(val, (__u32 __user *)datap);
-+		break;
-+
-+	case PTRACE_POKEUSR:
-+		ret = putreg32(child, addr, data);
-+		break;
-+
-+	case PTRACE_GETREGS: { /* Get all gp regs from the child. */
-+		int i;
-+
-+		if (!access_ok(VERIFY_WRITE, datap, 16*4)) {
-+			ret = -EIO;
-+			break;
-+		}
-+		ret = 0;
-+		for (i = 0; i < sizeof(struct user_regs_struct32); i += sizeof(__u32)) {
-+			getreg32(child, i, &val);
-+			ret |= __put_user(val, (u32 __user *)datap);
-+			datap += sizeof(u32);
-+		}
-+		break;
-+	}
-+
-+	case PTRACE_SETREGS: { /* Set all gp regs in the child. */
-+		unsigned long tmp;
-+		int i;
-+
-+		if (!access_ok(VERIFY_READ, datap, 16*4)) {
-+			ret = -EIO;
-+			break;
-+		}
-+		ret = 0;
-+		for (i = 0; i < sizeof(struct user_regs_struct32); i += sizeof(u32)) {
-+			ret |= __get_user(tmp, (u32 __user *)datap);
-+			putreg32(child, i, tmp);
-+			datap += sizeof(u32);
-+		}
-+		break;
-+	}
-+
-+	case PTRACE_GETFPREGS:
-+		ret = -EIO;
-+		if (!access_ok(VERIFY_READ, compat_ptr(data),
-+			       sizeof(struct user_i387_struct)))
-+			break;
-+		save_i387_ia32(child, datap, childregs, 1);
-+		ret = 0;
-+			break;
-+
-+	case PTRACE_SETFPREGS:
-+		ret = -EIO;
-+		if (!access_ok(VERIFY_WRITE, datap,
-+			       sizeof(struct user_i387_struct)))
-+			break;
-+		ret = 0;
-+		/* don't check EFAULT to be bug-to-bug compatible to i386 */
-+		restore_i387_ia32(child, datap, 1);
-+		break;
-+
-+	case PTRACE_GETFPXREGS: {
-+		struct user32_fxsr_struct __user *u = datap;
-+
-+		init_fpu(child);
-+		ret = -EIO;
-+		if (!access_ok(VERIFY_WRITE, u, sizeof(*u)))
-+			break;
-+			ret = -EFAULT;
-+		if (__copy_to_user(u, &child->thread.i387.fxsave, sizeof(*u)))
-+			break;
-+		ret = __put_user(childregs->cs, &u->fcs);
-+		ret |= __put_user(child->thread.ds, &u->fos);
-+		break;
-+	}
-+	case PTRACE_SETFPXREGS: {
-+		struct user32_fxsr_struct __user *u = datap;
-+
-+		unlazy_fpu(child);
-+		ret = -EIO;
-+		if (!access_ok(VERIFY_READ, u, sizeof(*u)))
-+			break;
-+		/*
-+		 * no checking to be bug-to-bug compatible with i386.
-+		 * but silence warning
-+		 */
-+		if (__copy_from_user(&child->thread.i387.fxsave, u, sizeof(*u)))
-+			;
-+		set_stopped_child_used_math(child);
-+		child->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
-+		ret = 0;
-+		break;
-+	}
-+
-+	case PTRACE_GETEVENTMSG:
-+		ret = put_user(child->ptrace_message,
-+			       (unsigned int __user *)compat_ptr(data));
-+		break;
-+
-+	default:
-+		BUG();
-+	}
-+
-+ out:
-+	put_task_struct(child);
-+	return ret;
-+}
-+
- #endif	/* CONFIG_IA32_EMULATION */
+ 		tmp = 0;  /* Default return condition */
+-		if(addr < FRAME_SIZE*sizeof(long))
++		if (addr < sizeof(struct user_regs_struct))
+ 			tmp = getreg(child, addr);
+-		if(addr >= (long) &dummy->u_debugreg[0] &&
+-		   addr <= (long) &dummy->u_debugreg[7]){
+-			addr -= (long) &dummy->u_debugreg[0];
+-			addr = addr >> 2;
+-			tmp = ptrace_get_debugreg(child, addr);
++		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
++			 addr <= offsetof(struct user, u_debugreg[7])) {
++			addr -= offsetof(struct user, u_debugreg[0]);
++			tmp = ptrace_get_debugreg(child, addr / sizeof(data));
+ 		}
+ 		ret = put_user(tmp, datap);
+ 		break;
+@@ -507,34 +507,26 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
  
- #ifdef CONFIG_X86_32
+ 	case PTRACE_POKEUSR: /* write the word at location addr in the USER area */
+ 		ret = -EIO;
+-		if ((addr & 3) || addr < 0 ||
+-		    addr > sizeof(struct user) - 3)
++		if ((addr & (sizeof(data) - 1)) || addr < 0 ||
++		    addr >= sizeof(struct user))
+ 			break;
+ 
+-		if (addr < FRAME_SIZE*sizeof(long)) {
++		if (addr < sizeof(struct user_regs_struct))
+ 			ret = putreg(child, addr, data);
+-			break;
++		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
++			 addr <= offsetof(struct user, u_debugreg[7])) {
++			addr -= offsetof(struct user, u_debugreg[0]);
++			ret = ptrace_set_debugreg(child,
++						  addr / sizeof(data), data);
+ 		}
+-		/* We need to be very careful here.  We implicitly
+-		   want to modify a portion of the task_struct, and we
+-		   have to be selective about what portions we allow someone
+-		   to modify. */
+-
+-		  ret = -EIO;
+-		  if(addr >= (long) &dummy->u_debugreg[0] &&
+-		     addr <= (long) &dummy->u_debugreg[7]){
+-			  addr -= (long) &dummy->u_debugreg;
+-			  addr = addr >> 2;
+-			  ret = ptrace_set_debugreg(child, addr, data);
+-		  }
+-		  break;
++		break;
+ 
+ 	case PTRACE_GETREGS: { /* Get all gp regs from the child. */
+-	  	if (!access_ok(VERIFY_WRITE, datap, FRAME_SIZE*sizeof(long))) {
++		if (!access_ok(VERIFY_WRITE, datap, sizeof(struct user_regs_struct))) {
+ 			ret = -EIO;
+ 			break;
+ 		}
+-		for ( i = 0; i < FRAME_SIZE*sizeof(long); i += sizeof(long) ) {
++		for (i = 0; i < sizeof(struct user_regs_struct); i += sizeof(long)) {
+ 			__put_user(getreg(child, i), datap);
+ 			datap++;
+ 		}
+@@ -544,11 +536,11 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 
+ 	case PTRACE_SETREGS: { /* Set all gp regs in the child. */
+ 		unsigned long tmp;
+-	  	if (!access_ok(VERIFY_READ, datap, FRAME_SIZE*sizeof(long))) {
++		if (!access_ok(VERIFY_READ, datap, sizeof(struct user_regs_struct))) {
+ 			ret = -EIO;
+ 			break;
+ 		}
+-		for ( i = 0; i < FRAME_SIZE*sizeof(long); i += sizeof(long) ) {
++		for (i = 0; i < sizeof(struct user_regs_struct); i += sizeof(long)) {
+ 			__get_user(tmp, datap);
+ 			putreg(child, i, tmp);
+ 			datap++;
+@@ -582,6 +574,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		break;
+ 	}
+ 
++#ifdef CONFIG_X86_32
+ 	case PTRACE_GETFPXREGS: { /* Get the child extended FPU state. */
+ 		if (!access_ok(VERIFY_WRITE, datap,
+ 			       sizeof(struct user_fxsr_struct))) {
+@@ -604,7 +597,9 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		ret = set_fpxregs(child, (struct user_fxsr_struct __user *)data);
+ 		break;
+ 	}
++#endif
+ 
++#if defined CONFIG_X86_32 || defined CONFIG_IA32_EMULATION
+ 	case PTRACE_GET_THREAD_AREA:
+ 		if (addr < 0)
+ 			return -EIO;
+@@ -618,6 +613,16 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		ret = do_set_thread_area(child, addr,
+ 					 (struct user_desc __user *) data, 0);
+ 		break;
++#endif
++
++#ifdef CONFIG_X86_64
++		/* normal 64bit interface to access TLS data.
++		   Works just like arch_prctl, except that the arguments
++		   are reversed. */
++	case PTRACE_ARCH_PRCTL:
++		ret = do_arch_prctl(child, data, addr);
++		break;
++#endif
+ 
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
