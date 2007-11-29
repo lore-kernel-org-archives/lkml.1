@@ -1,100 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932313AbXK2O5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbXK2PC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932313AbXK2O5P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 09:57:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbXK2O5B
+	id S932258AbXK2PC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbXK2PCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 09:57:01 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:53856 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754610AbXK2O5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 09:57:00 -0500
-Date: Thu, 29 Nov 2007 23:55:37 +0900
-To: anders.henke@1und1.de, jack@ucw.cz
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in
- directory) (fwd)
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz>
-References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 29 Nov 2007 10:02:46 -0500
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:34328 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756740AbXK2PCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 10:02:46 -0500
+Message-ID: <474ED490.9030608@tiscali.nl>
+Date: Thu, 29 Nov 2007 16:02:40 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: ysato@users.sourceforge.jp
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] asm-h8300: parentheses around definition CLOCK_TICK_RATE
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071129235813Y.tomof@acm.org>
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 14:03:19 +0100
-Jan Kara <jack@ucw.cz> wrote:
+Some places where CLOCK_TICK_RATE may be used incorrectly:
 
->   Adding relevant people and lists to CC...
-> 
-> 									Honza
-> 
-> ----- Forwarded message from Anders Henke <anders.henke@1und1.de> -----
-> 
-> Date:	Thu, 29 Nov 2007 13:31:50 +0100
-> From: Anders Henke <anders.henke@1und1.de>
-> To: linux-kernel@vger.kernel.org
-> Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory)
-> User-Agent: Mutt/1.5.13 (2006-08-11)
-> 
-> On November 28 2007, Anders Henke wrote:
-> > As "everything is reported as being zero" is quite odd an Jan took a
-> > guess that it might be block-layer or driver-related, I've assumed
-> > that the driver is responsible for this; just out of the curiousity, 
-> > I've manually replaced the dpt_i2o driver by the 2.6.19 one by copying 
-> > driver/scsi/dpt_i2o.c driver/scsi/dpti.h and driver/scsi/dpt/ into a 
-> > vanilla 2.6.23.1. kernel; using this kernel fixed the issue for me.
-> > 
-> > I haven't yet fine-tested from which kernel release on the dpt_i2o driver 
-> > behaves like this and spews out zeroed blocks when trying to mount
-> > the rootfs. Maybe this is just some timing issue.
-> 
-> I've started the fine-tests and can say so far that dpt_i2o from 
-> 2.6.22 is still fine. Test is simple:
-> 
-> anders@ista:/usr/src/linux-2.6.22/drivers/scsi/dpt$ cp -r dpt/ dpt_i2o.c dpti.h /usr/src/linux-2.6.23.1/drivers/scsi/
-> 
-> ... recompile the kernel, reboot: works.
-> 
-> 2.6.22 and 2.6.23 differ in terms of the dpt_i2o driver by two different
-> patch sets:
-> -one 2 Kb small set of patches from 2.6.22 to 2.6.22-rc1
-> -one 7 Kb set of patches from 2.6.23-rc2 to 2.6.23-rc3
-> -one 162 Kb set of patches from 2.6.23-rc9 to 2.6.23-rc10.
-> 
-> When applying the 2.6.23-rc1-based driver to "my" 2.6.31.1 kernel,
-> the "zero blocks"-symptom show up, so it's the "lucky" situation
-> that the smallest patch actually seams to be the broken one.
-> 
-> According to the 2.6.23-rc1 short-form changelog, there is
-> one major edit on the dpt_i2o driver:
-> 
-> FUJITA Tomonori 
-> 
->       [SCSI] dpt_i2o: convert to use the data buffer accessors
-> 
-> Stephen Rothwell 
->       dpt_i2o depends on virt_to_bus
-> 
-> Fujita, would you please take a look at this?
+arch/arm/mach-mx3/time.c:125:   __raw_writel((v / CLOCK_TICK_RATE) - 1, MXC_GPT_GPTPR);
+drivers/watchdog/davinci_wdt.c:103:     timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) & 0xffffffff);
+drivers/watchdog/davinci_wdt.c:105:     timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) >> 32);
+drivers/watchdog/ks8695_wdt.c:64:       unsigned long tval = wdt_time * CLOCK_TICK_RATE;
 
-Sorry about the bug. Can you try this?
+I'm not sure whether this definition is used there, but adding parentheses
+should be good anyways.
+--
+Add parentheses to prevent operator precedence errors
 
-
-diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-index 8258506..1255b26 100644
---- a/drivers/scsi/dpt_i2o.c
-+++ b/drivers/scsi/dpt_i2o.c
-@@ -3295,7 +3295,7 @@ static struct scsi_host_template adpt_template = {
- 	.this_id		= 7,
- 	.cmd_per_lun		= 1,
- 	.use_clustering		= ENABLE_CLUSTERING,
--	.use_sg_chaining	= ENABLE_SG_CHAINING,
-+	.use_sg_chaining	= DISABLE_SG_CHAINING,
- };
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/include/asm-h8300/timex.h b/include/asm-h8300/timex.h
+index 2041314..23e6701 100644
+--- a/include/asm-h8300/timex.h
++++ b/include/asm-h8300/timex.h
+@@ -6,7 +6,7 @@
+ #ifndef _ASM_H8300_TIMEX_H
+ #define _ASM_H8300_TIMEX_H
  
- static s32 adpt_scsi_register(adpt_hba* pHba)
+-#define CLOCK_TICK_RATE CONFIG_CPU_CLOCK*1000/8192 /* Timer input freq. */
++#define CLOCK_TICK_RATE (CONFIG_CPU_CLOCK*1000/8192) /* Timer input freq. */
+ 
+ typedef unsigned long cycles_t;
+ extern short h8300_timer_count;
