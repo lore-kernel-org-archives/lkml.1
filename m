@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934277AbXK2Whp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934223AbXK2Wip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934277AbXK2Whp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932669AbXK2WhF
+	id S934223AbXK2Wip (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761184AbXK2Wih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:37:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41433 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759343AbXK2WhC (ORCPT
+	Thu, 29 Nov 2007 17:38:37 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:57473 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759713AbXK2Wig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:37:02 -0500
-Date: Thu, 29 Nov 2007 14:24:21 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: kobject_init rewrite
-Message-ID: <20071129222421.GA15840@kroah.com>
-References: <20071129215304.GA5043@kroah.com> <Pine.LNX.4.44L0.0711291713330.6294-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0711291713330.6294-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 29 Nov 2007 17:38:36 -0500
+X-Greylist: delayed 2182 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 17:38:36 EST
+Subject: [SPARC64] Export symbols for sunvnet and sunvdc to be built modular
+From: Ben Collins <ben.collins@ubuntu.com>
+To: kernel list <linux-kernel@vger.kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Organization: Canonical
+Date: Thu, 29 Nov 2007 17:02:10 -0500
+Message-Id: <1196373730.13800.2.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 05:16:28PM -0500, Alan Stern wrote:
-> On Thu, 29 Nov 2007, Greg KH wrote:
-> 
-> > Ok, how about this function.  If it errors out, it is free to just call
-> > kfree() on the kobject.  Seems simple enough to me, any objections?  If
-> > not, I'll go through and fix up the whole tree...
-> 
-> Looks good, _provided_ you also get rid of kobject_register().  Which 
-> you pretty much would have to do anyway, since it doesn't accept the 
-> ktype or the name as an argument.
+Fixes this build failure:
+    
+ERROR: "vio_driver_init" [drivers/net/sunvnet.ko] undefined!
+ERROR: "vio_driver_init" [drivers/block/sunvdc.ko] undefined!
+ERROR: "ldc_map_sg" [drivers/block/sunvdc.ko] undefined!
+    
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
 
-Yes, I would do that at the same time.
+diff --git a/arch/sparc64/kernel/ldc.c b/arch/sparc64/kernel/ldc.c
+index cbe6fa2..be80948 100644
+--- a/arch/sparc64/kernel/ldc.c
++++ b/arch/sparc64/kernel/ldc.c
+@@ -2105,6 +2105,7 @@ int ldc_map_sg(struct ldc_channel *lp,
+ 
+ 	return state.nc;
+ }
++EXPORT_SYMBOL(ldc_map_sg);
+ 
+ int ldc_map_single(struct ldc_channel *lp,
+ 		   void *buf, unsigned int len,
+diff --git a/arch/sparc64/kernel/viohs.c b/arch/sparc64/kernel/viohs.c
+index eeeb5ed..708fa17 100644
+--- a/arch/sparc64/kernel/viohs.c
++++ b/arch/sparc64/kernel/viohs.c
+@@ -819,3 +819,4 @@ int vio_driver_init(struct vio_driver_state *vio, struct vio_dev *vdev,
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(vio_driver_init);
 
-Well, not at the _exact_ same time, it might take a few patches to get
-there :)
+-- 
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
+SwissDisk: http://www.swissdisk.com/
 
-thanks for the review,
-
-greg k-h
