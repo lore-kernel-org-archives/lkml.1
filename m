@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbXK2WHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbXK2WH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933813AbXK2WHf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762737AbXK2WHP
+	id S932920AbXK2WH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933870AbXK2WHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:07:15 -0500
-Received: from ns2.suse.de ([195.135.220.15]:50399 "EHLO mx2.suse.de"
+	Thu, 29 Nov 2007 17:07:44 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:41595 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762711AbXK2WHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:07:13 -0500
-From: Neil Brown <neilb@suse.de>
-To: David Chinner <dgc@sgi.com>
-Date: Fri, 30 Nov 2007 09:07:06 +1100
+	id S933130AbXK2WHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 17:07:43 -0500
+Date: Thu, 29 Nov 2007 23:07:05 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Zhao Yakui <yakui.zhao@intel.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
+       linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: ACPI related Warning in 2.6.24-rc3-git2
+Message-ID: <20071129220705.GA4259@ics.muni.cz>
+References: <20071127150557.GA4365@ics.muni.cz> <200711271637.13036.rjw@sisk.pl> <924EFEDD5F540B4284297C4DC59F3DEE2B3AD7@orsmsx423.amr.corp.intel.com> <1196324563.4062.15.camel@yakui_zhao.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18255.14346.684631.944181@notabene.brown>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Race between generic_forget_inode() and sync_sb_inodes()?
-In-Reply-To: message from David Chinner on Friday November 30
-References: <20071129215544.GK115527101@sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1196324563.4062.15.camel@yakui_zhao.sh.intel.com>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 29 Nov 2007 23:07:07 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi David,
-
-On Friday November 30, dgc@sgi.com wrote:
+On Thu, Nov 29, 2007 at 04:22:43PM +0800, Zhao Yakui wrote:
+> Subject: ACPI : Delete the IRQ operation in throttling controll via PTC
+> >From : Zhao Yakui <yakui.zhao@intel.com>
 > 
+> The IRQ operation(enable/disable) should be avoided when throttling is
+> controlled via PTC method. It is replaced by the migration of task. 
 > 
-> I came across this because I've been making changes to XFS to avoid the
-> inode hash, and I've found that I need to remove the inode from the
-> dirty list when setting I_WILL_FREE to avoid this race. I can't see
-> how this race is avoided when inodes are hashed, so I'm wondering
-> if we've just been lucky or there's something that I'm missing that
-> means the above does not occur.
+> Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 
-Looking at inode.c in 2.6.23-mm1, in generic_forget_inode, I see code:
+works for me.
 
-	if (!hlist_unhashed(&inode->i_hash)) {
-		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
-			list_move(&inode->i_list, &inode_unused);
-
-so it looks to me like:
-   If the inode is hashed and dirty, then move it (off the s_dirty
-   list) to inode_unused.
-
-So it seems to me that generic_forget_inode also finds it needs to
-remove the inode from the dirty list when setting I_WILL_FREE.
-
-Maybe we are looking at different kernel versions?  Maybe I
-misunderstood your problem?
-
-NeilBrown
+-- 
+Luká¹ Hejtmánek
