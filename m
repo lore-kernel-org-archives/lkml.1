@@ -1,123 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXK2FxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbXK2F5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbXK2FxJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 00:53:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXK2Fwz
+	id S1756945AbXK2F5O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 00:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXK2F47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 00:52:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34113 "EHLO
+	Thu, 29 Nov 2007 00:56:59 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54684 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbXK2Fwy (ORCPT
+	with ESMTP id S1751882AbXK2F46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 00:52:54 -0500
-Date: Wed, 28 Nov 2007 21:46:56 -0800
+	Thu, 29 Nov 2007 00:56:58 -0500
+Date: Wed, 28 Nov 2007 21:59:02 -0800
 From: Greg KH <greg@kroah.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
 Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071129054656.GA26327@kroah.com>
-References: <20071127230252.GB10038@kroah.com> <2532.1196221814@lwn.net>
+Message-ID: <20071129055902.GC26327@kroah.com>
+References: <20071127230252.GB10038@kroah.com> <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2532.1196221814@lwn.net>
+In-Reply-To: <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 27, 2007 at 08:50:14PM -0700, Jonathan Corbet wrote:
+On Wed, Nov 28, 2007 at 10:01:08AM +0100, Cornelia Huck wrote:
+> On Tue, 27 Nov 2007 15:02:52 -0800,
 > Greg KH <greg@kroah.com> wrote:
-> 
-> > Jonathan, I used your old lwn.net article about kobjects as the basis
-> > for this document, I hope you don't mind
-> 
-> Certainly I have no objections, I'm glad it was useful.
-
-Thanks, it was a great framework to work with.
-
-> > It is rare (even unknown) for kernel code to create a standalone kobject;
-> > with one major exception explained below.
-> 
-> You don't keep this promise - bet you thought we wouldn't notice...
-> Actually I guess you do, in the "creating simple kobjects" section.
-> When you get to that point, you should mention that this is a situation
-> where standalone kobjects make sense.
-
-Sorry, yes, that is where I tried to explain it.  I'll flush it out some
-more.
-
-> Given that there are quite a few standalone kobjects created by this
-> patch set (kernel_kobj, security_kobj, s390_kobj, etc.), the "(even
-> unknown)" should probably come out.
-
-Ok.
-
 > > So, for example, UIO code has a structure that defines the memory region
 > > associated with a uio device:
+> > 
+> > struct uio_mem {
+> > 	struct kobject kobj;
+> > 	unsigned long addr;
+> > 	unsigned long size;
+> > 	int memtype;
+> > 	void __iomem *internal_addr;
+> > };
+> > 
+> > If you have a struct uio_mem structure, finding its embedded kobject is just a
+> > matter of using the kobj pointer.  
 > 
-> *The* UIO code, presumably.
+> Pointer may be a confusing term, how about "structure member"?
 
-fixed.
+thanks, now fixed.
 
+> > Code that works with kobjects will often
+> > have the opposite problem, however: given a struct kobject pointer, what is
+> > the pointer to the containing structure?  You must avoid tricks (such as
+> > assuming that the kobject is at the beginning of the structure) and,
+> > instead, use the container_of() macro, found in <linux/kernel.h>:
+> > 
+> > 	container_of(pointer, type, member)
+> > 
+> > where pointer is the pointer to the embedded kobject, type is the type of
+> > the containing structure, and member is the name of the structure field to
+> > which pointer points.  The return value from container_of() is a pointer to
 > > the given type. So, for example, a pointer to a struct kobject embedded
 > > within a struct cdev called "kp" could be converted to a pointer to the
-> > containing structure with:
 > 
-> That should be "struct uio_mem", I think.
+> "struct uio_mem", I guess.
 
-fixed.
+yes, now fixed.
 
+> > containing structure with:
+> > 
+> >     struct uio_mem *u_mem = container_of(kp, struct uio_mem, kobj);
+> > 
+> > Programmers will often define a simple macro for "back-casting" kobject
+> > pointers to the containing type.
+> > 
+> > 
+> > Initialization of kobjects
+> > 
+> > Code which creates a kobject must, of course, initialize that object. Some
+> > of the internal fields are setup with a (mandatory) call to kobject_init():
+> > 
+> >     void kobject_init(struct kobject *kobj);
+> > 
+> > Among other things, kobject_init() sets the kobject's reference count to
 > > one.  Calling kobject_init() is not sufficient, however. Kobject users
 > > must, at a minimum, set the name of the kobject; this is the name that will
-> > be used in sysfs entries.
+> > be used in sysfs entries. 
 > 
-> Is setting the name mandatory now, or are there still places where
-> kobjects (which do not appear in sysfs) do have - and do not need - a
-> name?
+> Unless they don't register their kobject. (But they should always set a
+> name anyway to avoid funny debug messages, so it is probably a good
+> idea to call this a "must").
 
-Any kobject that is registered needs to have a name.  If someone tries
-to call kobject_register() or kobject_add() without a name set they will
-find out that it is not allowed :)
+Yeah, I'll leave this in.
 
-And yes, there are a few places in the kernel with kobjects that are
-never registered.  I'm working on trying to get rid of them...
+> > To set the name of a kobject properly, do not
+> > attempt to manipulate the internal name field, but instead use:
+> > 
+> >     int kobject_set_name(struct kobject *kobj, const char *format, ...);
+> > 
+> > This function takes a printk-style variable argument list. Believe it or
+> > not, it is actually possible for this operation to fail; conscientious code
+> > should check the return value and react accordingly.
+> > 
+> > The other kobject fields which should be set, directly or indirectly, by
+> > the creator are its ktype, kset, and parent. We will get to those shortly,
+> > however please note that the ktype and kset must be set before the
+> > kobject_init() function is called.
+> > 
+> > 
+> > 
+> > Reference counts
+> > 
+> > One of the key functions of a kobject is to serve as a reference counter
+> > for the object in which it is embedded. 
+> 
+> Hm, I thought that was the purpose of struct kref?
 
+Yes, I'll add a reference to kref now.
+
+> > As long as references to the object
+> > exist, the object (and the code which supports it) must continue to exist.
+> > The low-level functions for manipulating a kobject's reference counts are:
+> > 
+> >     struct kobject *kobject_get(struct kobject *kobj);
+> >     void kobject_put(struct kobject *kobj);
+> > 
+> > A successful call to kobject_get() will increment the kobject's reference
+> > counter and return the pointer to the kobject. If, however, the kobject is
+> > already in the process of being destroyed, the operation will fail and
+> > kobject_get() will return NULL. 
+> 
+> Eh, no. We'll always return !NULL if the kobject is !NULL to start
+> with. If the reference count is already 0, the code will moan, but the
+> caller will still get a pointer.
+
+Good point, this was the way things used to work a long time ago, I'll remove
+this.
+
+> > This return value must always be tested, or
+> > no end of unpleasant race conditions could result.
+> > 
+> > When a reference is released, the call to kobject_put() will decrement the
+> > reference count and, possibly, free the object. Note that kobject_init()
+> > sets the reference count to one, so the code which sets up the kobject will
+> > need to do a kobject_put() eventually to release that reference.
+> > 
 > > Because kobjects are dynamic, they must not be declared statically or on
 > > the stack, but instead, always from the heap.  Future versions of the
+> > kernel will contain a run-time check for kobjects that are created
+> > statically and will warn the developer of this improper usage.
+> > 
+> > 
+> > Hooking into sysfs
+> > 
+> > An initialized kobject will perform reference counting without trouble, but
+> > it will not appear in sysfs. To create sysfs entries, kernel code must pass
+> > the object to kobject_add():
+> > 
+> >     int kobject_add(struct kobject *kobj);
+> > 
+> > As always, this operation can fail. The function:
+> > 
+> >     void kobject_del(struct kobject *kobj);
+> > 
+> > will remove the kobject from sysfs.
+> > 
+> > There is a kobject_register() function, which is really just the
+> > combination of the calls to kobject_init() and kobject_add().
 > 
-> "always be allocated from the heap"?
+> Plus the uevent.
+> 
+> >  Similarly,
+> > kobject_unregister() will call kobject_del(), then call kobject_put() to
+> > release the initial reference created with kobject_register() (or really
+> > kobject_init()).
+> 
+> And also throw a uevent :)
+
+Heh, ok, I've now added this for both :)
+
+> > Creating "simple" kobjects
+> > 
+> > Sometimes all that a developer wants is a way to create a simple directory
+> > in the sysfs heirachy, and not have to mess with the whole complication of
+> 
+> hierarchy
 
 thanks.
 
-> > "empty" release function, you will be mocked merciously by the kobject
-> > maintainer if you attempt this.
+> > ktypes and release methods
+> > 
+> > One important thing still missing from the discussion is what happens to a
+> > kobject when its reference count reaches zero. The code which created the
+> > kobject generally does not know when that will happen; if it did, there
+> > would be little point in using a kobject in the first place. Even
+> > predicatable object lifecycles become more complicated when sysfs is
+> > brought in; user-space programs can keep a reference to a kobject (by
+> > keeping one of its associated sysfs files open) for an arbitrary period of
+> > time.
 > 
-> So just how should severely should we mock kobject maintainers who can't
-> spell "mercilessly"?  :)
-
-Heh, turns out that a lot of people sent me this privately :)
-
-> >  - A kset can provide a set of default attributes that all kobjects that
-> >    belong to it automatically inherit and have created whenever a kobject
-> >    is registered belonging to the kset.
+> This is no longer true?
 > 
-> Can we try that one again?
+> The major problem is that registered kobjects can be looked-up by other
+> kernel code that can get a reference.
+
+yes, you are right.
+
+> > The end result is that a structure protected by a kobject cannot be freed
+> > before its reference count goes to zero. The reference count is not under
+> > the direct control of the code which created the kobject. So that code must
+> > be notified asynchronously whenever the last reference to one of its
+> > kobjects goes away.
 > 
->  - A kset can provide a set of default attributes for all kobjects which
->    belong to it.
-
-No, it's the ktype that does this, I'll go fix that up...
-
-> > There is currently
-> > no other way to add a kobject to a kset without directly messing with the
-> > list pointers.
+> We should perhaps add a bit fat warning here:
 > 
-> Presumably the latter way is not recommended; I would either say so or
-> not mention this possibility at all.
+> Note that once you registered your kobject via kobject_add(), you must
+> never use kfree() to free it directly. The only safe way is to use
+> kobject_put(). It is good practice to always use kobject_put() after
+> kobject_init() to avoid errors creeping in.
 
-Ah, yes, now removed.
+Now added, thanks.
 
-Thanks for the review, I really appreciate it.
+thanks for the review, I really appreciate it.
 
 greg k-h
