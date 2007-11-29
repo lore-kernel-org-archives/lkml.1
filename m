@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXK2SfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932836AbXK2SjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932978AbXK2SfH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759873AbXK2Sez
+	id S932836AbXK2SjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbXK2SjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:34:55 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:50479 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757721AbXK2Sez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:34:55 -0500
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
-	kobject_init
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.44L0.0711291259300.4712-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0711291259300.4712-100000@iolanthe.rowland.org>
+	Thu, 29 Nov 2007 13:39:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54479 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755055AbXK2SjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:39:06 -0500
+Subject: Re: Out of tree module using LSM
+From: Jon Masters <jcm@redhat.com>
+To: Justin Banks <justinb@bakbone.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Greg KH <greg@kroah.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, Valdis.Kletnieks@vt.edu,
+       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071129181957.GA5575@bleen.corp.bb>
+References: <20071129003840.GA22530@kroah.com>
+	 <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+	 <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion>
+	 <20071129164746.GB9664@kroah.com>
+	 <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
+	 <20071129170326.GA10024@kroah.com>
+	 <2c0942db0711290935l56d28b70v2b35dfb1663e4d2b@mail.gmail.com>
+	 <20071129174528.GA14431@kroah.com>
+	 <2c0942db0711291003h45177f3cr5496cf30bdb01996@mail.gmail.com>
+	 <20071129181957.GA5575@bleen.corp.bb>
 Content-Type: text/plain
-Date: Thu, 29 Nov 2007 19:33:46 +0100
-Message-Id: <1196361226.7903.6.camel@lov.site>
+Organization: Red Hat, Inc.
+Date: Thu, 29 Nov 2007 13:38:28 -0500
+Message-Id: <1196361508.6473.88.camel@perihelion>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+cgZ32TQhQZhWbPoA631H4epQ3aNOfgh3CZK+
- utTSnJTBPqNUrigu8ksMtpaD6AkODGya7ydUlvTCGqpPTY8iYt
- UYzC3YEYwhAdn//gG+NtcQC+zLe4Z3k
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 13:04 -0500, Alan Stern wrote: 
-> On Thu, 29 Nov 2007, Kay Sievers wrote:
-> 
-> > > > Sounds fine, maybe we should also pass the name along, so it will be
-> > > > obvious what happens here:
-> > > >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
-> > > 
-> > > I don't know...  Normally *_init() routines can't fail, but this could.  
-> > > Then things like device_register() would run into trouble: The caller 
-> > > wouldn't know whether a failure occurred before or after the 
-> > > kobject_init() call, so it wouldn't know what sort of cleanup action 
-> > > was needed: kfree() or device_put().
+
+On Thu, 2007-11-29 at 11:19 -0700, Justin Banks wrote:
+> Ray Lee wrote
+> > On Nov 29, 2007 9:45 AM, Greg KH <greg@kroah.com> wrote:
+> > > > Perhaps if you looked at this outside of a file-server scenario, the
+> > > > problem would be clearer? Anti-malware companies want to check
+> > > > anything written to disk on a system, either at write time or blocking
+> > > > the open/mmap. That means proactively protecting email programs with
+> > > > known vulnerabilities that have yet to be patched, web browsers
+> > > > writing and reading their caches, an Apache instance running WebDAV,
+> > > > the list goes on. And these are on desktop systems, with no attached
+> > > > file/network server.
+> > >
+> > > Ok, if they want to check on every open/mmap then just hook in glibc to
+> > > do this.  Especially as they want to run userspace code at this point in
+> > > time.
 > > 
-> > But wouldn't device_register() do the kobject cleanup for you when it
-> > fails? Why would a caller of device_register() care about the state of
-> > the kobject?
+> > Doesn't help statically linked binaries, or anything else that bypases glibc.
 > 
-> Let's say device_register() calls device_init(), which calls 
-> kobject_init(), which fails.  Then there's no cleanup to do -- 
-> device_register() returns -ENOMEM or some such code and the caller has 
-> to do the kfree().
-> 
-> Now let's say device_register() calls device_init(), which succeeds, 
-> and then calls device_add(), which fails.  To recover properly, 
-> somebody then has to call device_put().  That "somebody" can't be the 
-> original caller -- according to the previous paragraph the original 
-> caller won't do anything but kfree().  So the "somebody" has to be 
-> device_register() itself.
-> 
-> But the device_put() will call kobject_put(), which will invoke the
-> device's cleanup routine, which will deallocate the structure.  Now the
-> original caller gets an error code (perhaps -ENOMEM again) but must
-> _not_ call kfree().
-> 
-> So what should the original caller do when an error occurs?
+> Or NFS servers for that matter, either.
 
-Right, and that is not covered today, the current code just leaks the
-allocated name.
+Right. I threw all of these examples out there and was given the
+impression that a one-size fits all "solution" is needed. And to be
+honest, I can understand that desire.
 
-Your error scenario confirmed my initial concern about suggesting
-kobject_put() to clean up an initialized kobject.
+I don't want to fall into any "snake oil" traps, because I know the
+reality is that there are holes in any solution. The only way
+to /really/ be sure of file integrity is to mark every user-visible
+pagecache page read only, trap on every single write, and re-scan the
+entirety of the file at that point. And even more silliness.
 
-We should probably make kobject_cleanup() free only the resources taken
-by kobject_init(), and use kobject_cleanup() instead of kobject_put()?
+A compromise is therefore called for. I will go shut up and go talk to
+these guys and see if I can hook up a public discussion around a set of
+requirements. Preferably some code too, but at least a requirements doc.
 
-Kay
+Thanks,
+
+Jon.
+
 
