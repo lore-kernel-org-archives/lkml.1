@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbXK2Bmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762624AbXK2Bnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762302AbXK2Bmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 20:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbXK2Bm1
+	id S1762624AbXK2Bnr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 20:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759230AbXK2Bnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 20:42:27 -0500
-Received: from gw.goop.org ([64.81.55.164]:43740 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757880AbXK2Bm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 20:42:26 -0500
-Message-ID: <474E1900.1010209@goop.org>
-Date: Wed, 28 Nov 2007 17:42:24 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 28 Nov 2007 20:43:33 -0500
+Received: from hu-out-0506.google.com ([72.14.214.225]:32440 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758552AbXK2Bnb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 20:43:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:references:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:in-reply-to:thread-index;
+        b=HsgMtD8YFbhFYwnAsXwroZQc50KzD36pbIJ322aY/W6l5DoJoFmnQ1uWGrf/8gSLVB7xwpPHmrVTnWOh7UFGBwDIoIIIsqt7tZAUzna91PVtnYM4fpBCoIr0bfuN+gZUaQetg20X9yZ7yOSl9kV11CGvJHfxshC682G5xWktQl8=
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: "'Zhu Yi'" <yi.zhu@intel.com>
+Cc: <ipw3945-devel@lists.sourceforge.net>, <linux-wireless@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+References: <00e501c831ab$2e78daa0$9c94fea9@jason> <1196298656.7614.77.camel@debian.sh.intel.com>
+Subject: RE: [PATCH 1/2] [net/wireless/iwlwifi] : iwlwifi 3945 Fix raceconditional panic.
+Date: Thu, 29 Nov 2007 10:42:49 +0900
+Message-ID: <016401c83229$3302d250$9c94fea9@jason>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch
- specific percpu setup
-References: <20071127001407.859743255@sgi.com> <200711281236.02014.rusty@rustcorp.com.au> <Pine.LNX.4.64.0711281050470.11968@schroedinger.engr.sgi.com> <200711291017.52727.rusty@rustcorp.com.au> <474DFD7E.907@goop.org> <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com> <474E163E.2070702@goop.org> <Pine.LNX.4.64.0711281731410.19914@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0711281731410.19914@schroedinger.engr.sgi.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+In-Reply-To: <1196298656.7614.77.camel@debian.sh.intel.com>
+Thread-Index: AcgyJPMrK/8DoAiVSmOa50uab7nVxQAAxFfA
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Wed, 28 Nov 2007, Jeremy Fitzhardinge wrote:
->
->   
->> I don't see the problem.  The way i386 does it inherently supports
->> per-cpu data very early on (it uses the prototype percpu section until
->> the real percpu values are set up).
->>     
->
-> Ok so we could do that for x86_64 as well? There is more complicated 
-> bootstrap since i386 does not support NUMA aware placement of per cpu 
-> areas.
->   
+2007/11/29, Zhu Yi <yi.zhu@intel.com>:
+> 
+> Good catch. But it will be better if you add it into
+> iwl_cancel_deferred_work().
+> 
 
-Don't think it matters either way.  Before percpu is allocated, NUMA
-issues don't matter.  Once they are - by whatever mechanism - you can
-set the segment bases up appropriately.  The fact that you chose to put
-percpu data at address X doesn't affect the percpu mechanism one way or
-the other.
+Thanks.
+I agree with you. 
+Actually, I considered it, but I was afraid of side effect.
+Anyway, I'm attaching a new one.
 
-> percpu references are quite frequent already (vm statistics) and will be 
-> more frequent after we have converted the per cpu arrays to per cpu 
-> allocations.
->   
+Thanks.
+Joonwoo
 
-Well, I think the point is moot, because x86 will always use 32-bit
-offsets.  Each reference will only be 1 byte bigger than a normal
-variable reference.
+[net/wireless/iwlwifi] : iwlwifi 3945 Fix race conditional panic.
 
-    J
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+---
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 465da4f..e51e872 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -8270,6 +8270,7 @@ static void iwl_cancel_deferred_work(struct iwl_priv *priv)
+ {
+ 	iwl_hw_cancel_deferred_work(priv);
+ 
++	cancel_delayed_work_sync(&priv->init_alive_start);
+ 	cancel_delayed_work(&priv->scan_check);
+ 	cancel_delayed_work(&priv->alive_start);
+ 	cancel_delayed_work(&priv->post_associate);
+---
+
