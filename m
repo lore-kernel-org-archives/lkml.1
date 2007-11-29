@@ -1,109 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbXK2DXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbXK2DXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbXK2DXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 22:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbXK2DXI
+	id S1760254AbXK2DXd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 22:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbXK2DXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 22:23:08 -0500
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:64797 "EHLO
-	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218AbXK2DXG (ORCPT
+	Wed, 28 Nov 2007 22:23:09 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52347 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756360AbXK2DXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 22:23:06 -0500
-X-Greylist: delayed 66584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Nov 2007 22:23:06 EST
-Date: Thu, 29 Nov 2007 12:22:45 +0900 (JST)
-Message-Id: <20071129.122245.-1300543769.kouish@swc.toshiba.co.jp>
-To: gorcunov@gmail.com
-Cc: michael@ellerman.id.au, olof@lixom.net, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
-In-Reply-To: <aa79d98a0711280259o6cc6fb12mf020c4a986d84ca6@mail.gmail.com>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+	Wed, 28 Nov 2007 22:23:08 -0500
+Date: Thu, 29 Nov 2007 12:25:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH][for -mm] per-zone and reclaim enhancements for memory
+ controller take 3 [3/10] per-zone active inactive counter
+Message-Id: <20071129122532.68ff4e75.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071129031937.3C86F1CFE80@siro.lan>
+References: <20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071129031937.3C86F1CFE80@siro.lan>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> On 11/28/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> > On 11/28/07, Michael Ellerman <michael@ellerman.id.au> wrote:
-> > > On Mon, 2007-11-26 at 10:46 +0300, Cyrill Gorcunov wrote:
-> > > > This patch adds checking for NULL value returned to prevent possible
-> > > > NULL pointer dereference.
-> > > > Also two unneeded 'return' are removed.
-> > > >
-> > > > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> > > > ---
-> > > > Any comments are welcome.
-> > >
-> > > I guess it's good to be paranoid, but this is a little verbose:
-> > >
-> > >        wi0 = of_get_property(node, "device-id", NULL);
-> > > +       if (unlikely((!wi0))) {
-> > > +               printk(KERN_ERR "PCI: device-id not found.\n");
-> > > +               goto error;
-> > > +       }
-> > >        wi1 = of_get_property(node, "vendor-id", NULL);
-> > > +       if (unlikely((!wi1))) {
-> > > +               printk(KERN_ERR "PCI: vendor-id not found.\n");
-> > > +               goto error;
-> > > +       }
-> > >        wi2 = of_get_property(node, "class-code", NULL);
-> > > +       if (unlikely((!wi2))) {
-> > > +               printk(KERN_ERR "PCI: class-code not found.\n");
-> > > +               goto error;
-> > > +       }
-> > >        wi3 = of_get_property(node, "revision-id", NULL);
-> > > +       if (unlikely((!wi3))) {
-> > > +               printk(KERN_ERR "PCI: revision-id not found.\n");
-> > > +               goto error;
-> > > +       }
-> > >
-> > > Perhaps instead:
-> > >
-> > >        wi0 = of_get_property(node, "device-id", NULL);
-> > >        wi1 = of_get_property(node, "vendor-id", NULL);
-> > >        wi2 = of_get_property(node, "class-code", NULL);
-> > >        wi3 = of_get_property(node, "revision-id", NULL);
-> > >
-> > >       if (!wi0 || !wi1 || !wi2 || !wi3) {
-> > >               printk(KERN_ERR "PCI: Missing device tree properties.\n");
-> > >               goto error;
-> > >       }
-> >
-> > Hi Michael, yes that is much better (actually I was doubt about what form of
-> > which the checking style to use - your form is much compact but mine does
-> > show where *exactly* the problem appeared). So 'case that is the fake driver
-> > your form is preferred ;) Ishizaki, could you use Michael's part then?
-> >
-> > >
-> > >
-> > > cheers
-> > >
-> > > --
-> > > Michael Ellerman
-> > > OzLabs, IBM Australia Development Lab
-> > >
-> > > wwweb: http://michael.ellerman.id.au
-> > > phone: +61 2 6212 1183 (tie line 70 21183)
-> > >
-> > > We do not inherit the earth from our ancestors,
-> > > we borrow it from our children. - S.M.A.R.T Person
-> > >
-> > >
-> >
-> > Cyrill
-> >
-> Ishizaki I can update the patch if you needed. Should I?
+On Thu, 29 Nov 2007 12:19:37 +0900 (JST)
+yamamoto@valinux.co.jp (YAMAMOTO Takashi) wrote:
+
+> > @@ -651,10 +758,11 @@
+> >  		/* Avoid race with charge */
+> >  		atomic_set(&pc->ref_cnt, 0);
+> >  		if (clear_page_cgroup(page, pc) == pc) {
+> > +			int active;
+> >  			css_put(&mem->css);
+> > +			active = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
+> >  			res_counter_uncharge(&mem->res, PAGE_SIZE);
+> > -			list_del_init(&pc->lru);
+> > -			mem_cgroup_charge_statistics(mem, pc->flags, false);
+> > +			__mem_cgroup_remove_list(pc);
+> >  			kfree(pc);
+> >  		} else 	/* being uncharged ? ...do relax */
+> >  			break;
 > 
-> Cyrill
+> 'active' seems unused.
+> 
+ok, I will post clean-up against -mm2.
 
-There is no problem to use Michael's part, and I also prefer simple
-one like this.
+Thanks,
+-Kame
 
-Cyrill, would you please update your patch?
-
-Best regards,
-Kou Ishizaki
