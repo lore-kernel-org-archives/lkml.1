@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbXK2Ris@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbXK2Rjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763368AbXK2Ris (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbXK2Ril
+	id S1763519AbXK2Rjc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXK2RjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:38:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:59778 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755295AbXK2Rik (ORCPT
+	Thu, 29 Nov 2007 12:39:24 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:35107 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755442AbXK2RjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:38:40 -0500
+	Thu, 29 Nov 2007 12:39:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DaRqgniDaTjLY1G6rmx7K2ItM3COXEQT9fr4pnwn4+pqXb0jEdvfrRLGcgV/XMqOngpCfqhUF5lKG2CxS0hw41pt3Ti10dACh+Lbj0QhqHeMnXHGTTBEjsP2mNKV3tCnWew4LS5UsX1dRaXvBP6g7c34FD0s5E6GhGk78HiWfbE=
-Message-ID: <2c0942db0711290938q7be4268fg8b1249b24804482f@mail.gmail.com>
-Date: Thu, 29 Nov 2007 09:38:37 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: bdupree@techfinesse.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Dynticks Causing High Context Switch Rate in ksoftirqd
-In-Reply-To: <17931.144.160.98.31.1196356276.squirrel@www.techfinesse.net>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=AwvQVWOqAtR/B3ZAMPrxKaJ31+NvkcYx/1sLNGl6bCOH8qrtm2GKhrYR0R6clCqANeImGPVs/hrwnjS12DDa42DBeGXnJRIORT/tSSCMP4z5yIsvuyzdeXgXHzIIkEPIrDB0Cab52w0yXpWORR2+PyxYmoRVILuAHaUgaaIDF/0=
+Message-ID: <3ae72650711290939w4fee581fm6f0d65a33abf1b82@mail.gmail.com>
+Date: Thu, 29 Nov 2007 18:39:21 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Dan Kegel" <dank@kegel.com>
+Subject: Re: Relax permissions for reading hard drive serial number?
+Cc: "Xavier Bestel" <xavier.bestel@free.fr>, linux-kernel@vger.kernel.org
+In-Reply-To: <a71bd89a0711290746q57002217ga14c4f4f7201683d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46738.67.173.156.207.1196304247.squirrel@www.techfinesse.net>
-	 <2c0942db0711290740y7c730fb3te629454462df3efe@mail.gmail.com>
-	 <17931.144.160.98.31.1196356276.squirrel@www.techfinesse.net>
-X-Google-Sender-Auth: 7d135c6736f25be7
+References: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
+	 <1196350632.20567.191.camel@skunk.anacadf.mentorg.com>
+	 <a71bd89a0711290746q57002217ga14c4f4f7201683d@mail.gmail.com>
+X-Google-Sender-Auth: a1d7eb92fd482327
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2007 9:11 AM,  <bdupree@techfinesse.com> wrote:
+On Nov 29, 2007 4:46 PM, Dan Kegel <dank@kegel.com> wrote:
+> On Nov 29, 2007 7:37 AM, Xavier Bestel <xavier.bestel@free.fr> wrote:
+> > > One sticking point is that apps like Photoshop and probably
+> > > Punkbuster want to retrieve the hard drive's serial number
+> >
+> > So they can't be installed on a network drive ?
 >
-> These are good points. However, on the Slack 10.2 box I repeated these
-> measurements with all userspace code quiesced. No daemons running except
-> for those that are kernel threads. Secondly, I do run dynticks kernels on
-> other Slackware 10.2 boxen without these issues. The hardware may not be
-> identical, e.g. Xeons with Intel E7501 chipsets or Opterons with AMD 8131
-> chipsets, but I don't see any of this weirdness. Maybe I'll fire up Slack
-> 10.2 on spare partition on the other (almost) identical machine and see if
-> it exhibits this problem.
+> I think Adobe supports that, though perhaps not with the
+> retail version.  Big companies with network drives are
+> probably an important revenue source for them.
+>
+> I haven't looked closely at what happens when you try installing
+> onto network drives.  If you are really interested, it's pretty easy to
+> try yourself; just run the app under wine with
+> WINEDEBUG=+cdrom,+disk and look in the log for calls like
+> CreateFile("\\\\.\\PhysicalDrive0", ...).
+> There's some chance the code always checks drive 0 instead
+> of the drive you're installing onto.
 
-Any way you can narrow down the problem space will help, as there are
-a lot of variables right now.
+There are people who, for privacy reasons, really don't like that "unique"
+unchangeable serial numbers can be retrieved by untrusted users.
 
-Also, please keep the kernel list CC:d so others who are lurking can
-see what's going on, and not ask for duplicate data.
+You should probably chmod the file on the users system, if he is fine with
+that, but not change the kernel default.
+
+Kay
