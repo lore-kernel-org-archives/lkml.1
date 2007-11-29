@@ -1,77 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbXK2K7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbXK2LH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762110AbXK2K7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbXK2K65
+	id S1760291AbXK2LH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 06:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXK2LHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:58:57 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:58952 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbXK2K6z (ORCPT
+	Thu, 29 Nov 2007 06:07:47 -0500
+Received: from bipbip.grupopie.com ([195.23.16.24]:49815 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbXK2LHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:58:55 -0500
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
-	kobject_init
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20071129110512.02ae44e1@gondolin.boeblingen.de.ibm.com>
-References: <20071128214502.GA3255@kroah.com>
-	 <Pine.LNX.4.44L0.0711281654560.2729-100000@iolanthe.rowland.org>
-	 <20071129110512.02ae44e1@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 11:59:06 +0100
-Message-Id: <1196333946.3242.214.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 29 Nov 2007 06:07:45 -0500
+Message-ID: <474E9D7E.4040007@grupopie.com>
+Date: Thu, 29 Nov 2007 11:07:42 +0000
+From: Rui Santos <rsantos@grupopie.com>
+Organization: GrupoPIE, Portugal SA
+User-Agent: Thunderbird 2.0.0.9 (X11/20071114)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: Pete Zaitcev <zaitcev@redhat.com>,
+       Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+       linux-usb@vger.kernel.org, preining@logic.at,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Add the infamous Huawei E220 to option.c
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129090926.GD24795@one-eyed-alien.net> <474E8DFE.4040300@grupopie.com> <200711291149.46326.oliver@neukum.org>
+In-Reply-To: <200711291149.46326.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19Y3uUAUH+CAPFvYpw3RyJHgPq46fz/JfLKKgW
- AyuOk4V/jpDt+JTnuNJrL4fQk9JuX8NpN0jCInMs7Z0tYrd/oU
- gSXbwYF3lxCcEj+HngZNPHRm5klgy2K
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 11:05 +0100, Cornelia Huck wrote:
-> On Wed, 28 Nov 2007 17:00:57 -0500 (EST),
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Wed, 28 Nov 2007, Greg KH wrote:
-> > > On Wed, Nov 28, 2007 at 03:42:00PM -0500, Alan Stern wrote:
-> > > > This patch (as1020) adds a check to kobject_init() to insure that the
-> > > > ktype field is not NULL.  This is just for safety's sake; as far as I
-> > > > know there are no remaining places where the field is left unset.  But
-> > > > ironically, kset_init() did fail to set it!  The patch fixes that and
-> > > > removes some redundant initialization in kset_createa().
-> > > > 
-> > > > The patch also fixes up elevator_init(), where ktype was set after
-> > > > calling kobject_init() instead of before.
-> > > 
-> > > No, it's safe to set ktype after kobject_init, it was just not safe to
-> > > set the kset.  As Kay pointed out, I just added a patch to my tree to
-> > > resolve this issue, and I'll go back and update the documentation now.
-> > > 
-> > > I do like the "check for a ktype" warning, I'll go add that to my local
-> > > tree and see what breaks.  Odds are, all the static kobjects will :(
-> > 
-> > You have to be careful.  The ktype check I wrote lives in
-> > kobject_init() -- that's why I had to make elevator_init() assign the
-> > ktype before calling kobject_init().  If you put the check into
-> > kobject_add() instead then you won't end up checking objects that get
-> > initialized but not added.
-> > 
-> > Yes, nobody would deliberately use a kobject without adding it, but it 
-> > could happen as the result of an failure between the _init and _add 
-> > calls.
-> 
-> And if someone calls kobject_put() after kobject_init() to clean up,
-> their release function will not be called if they didn't set the ktype.
-> So the check really belongs into kobject_init() IMO.
+Oliver Neukum wrote:
+> Am Donnerstag, 29. November 2007 11:01:34 schrieb Rui Santos:
+>   
+>>> Changing the unusual_devs.h flag to IGNORE_DEVICE should accomplish what
+>>> you want.
+>>>  
+>>>       
+>> If the IGNORE_DEVICE flag is set, access to the device's virtual-cd is
+>> no longer possible, and might not be the correct approach. Just as an
+>> example, one of my country's ISP has an ini file on it, with quite
+>> relevant information: Dial number, login, password and APN. Of course
+>> that, all of this information could be obtained with a simple phone call
+>> to that ISP.
+>>
+>> Just to remember that that specific flag was one SET and, was removed,
+>> in part, because of what I state. Of course we aim at perfection but, if
+>> the benefits are only for a few situations and, will cause all this
+>> problems for all other, perhaps the reinsert of that flag would be a
+>> positive action.
+>>     
+>
+> OK, can you provide "lsusb -v" for the device in the CD mode and in
+> the modem mode?
+>   
+Of course. Heri it is.
 
-Hmm, will one expect that the whole object will also be free'd when we
-suggest to call kobject_put() to cleanup? That might be pretty
-unexpected, right?
+lsusb -v in "usb-storage only" mode:
 
-Kay
+Bus 005 Device 005: ID 12d1:1003 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  idVendor           0x12d1
+  idProduct          0x1003
+  bcdDevice            0.00
+  iManufacturer           1 HUAWEI Technologies
+  iProduct                2 HUAWEI Mobile
+  iSerial                 0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           32
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0xa0
+      (Bus Powered)
+      Remote Wakeup
+    MaxPower              500mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         8 Mass Storage
+      bInterfaceSubClass      6 SCSI
+      bInterfaceProtocol     80 Bulk (Zip)
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x04  EP 4 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+Device Status:     0x0000
+  (Bus Powered)
+
+
+lsusb -v in "modem + usb-storage" mode:
+
+Bus 005 Device 011: ID 12d1:1003 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  idVendor           0x12d1
+  idProduct          0x1003
+  bcdDevice            0.00
+  iManufacturer           1 HUAWEI Technologies
+  iProduct                2 HUAWEI Mobile
+  iSerial                 0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           85
+    bNumInterfaces          3
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0xa0
+      (Bus Powered)
+      Remote Wakeup
+    MaxPower              500mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           3
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    255 Vendor Specific Subclass
+      bInterfaceProtocol    255 Vendor Specific Protocol
+      iInterface              3 Data Interface
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0010  1x 16 bytes
+        bInterval             128
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x02  EP 2 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    255 Vendor Specific Subclass
+      bInterfaceProtocol    255 Vendor Specific Protocol
+      iInterface              3 Data Interface
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x85  EP 5 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x05  EP 5 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        2
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         8 Mass Storage
+      bInterfaceSubClass      6 SCSI
+      bInterfaceProtocol     80 Bulk (Zip)
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x04  EP 4 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+Device Status:     0x0000
+  (Bus Powered)
+
+If you ( on anyone ), need any other info or requires any testing on
+these devices, don't hesitate to ask.
+
+Rui Santos
 
