@@ -1,41 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXK2Vyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933695AbXK2Vz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933410AbXK2Vyw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762810AbXK2Vyk
+	id S933695AbXK2Vz0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933384AbXK2Vyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:54:40 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48996 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758786AbXK2Vyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:54:40 -0500
-Date: Thu, 29 Nov 2007 13:17:31 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
-	insert/remove race (v3)
-Message-ID: <20071129211731.GA11629@suse.de>
-References: <Pine.LNX.4.44L0.0711291417530.5666-100000@iolanthe.rowland.org> <474F1AAC.7040908@rtr.ca> <20071129201224.GA25356@suse.de> <474F1DB3.4030900@rtr.ca> <474F2020.7020004@rtr.ca> <20071129203225.GA5383@suse.de> <474F2532.5090708@rtr.ca>
+	Thu, 29 Nov 2007 16:54:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45148 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933332AbXK2Vyu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:54:50 -0500
+Date: Thu, 29 Nov 2007 13:53:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: kobject_init rewrite
+Message-ID: <20071129215304.GA5043@kroah.com>
+References: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org> <1196352280.3118.11.camel@lov.site> <20071129172134.74849579@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <474F2532.5090708@rtr.ca>
+In-Reply-To: <20071129172134.74849579@gondolin.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 03:46:42PM -0500, Mark Lord wrote:
-> Greg KH wrote:
->> So again, the problem is in the higher up scsi layer, and that is where
->> the problem should already be fixed.
-> ..
->
-> Ahhh.. so you figure the Oops should also have been fixed
-> as part of the 2.6.24 SCSI fixes ?  That's what I was missing here.
+On Thu, Nov 29, 2007 at 05:21:34PM +0100, Cornelia Huck wrote:
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+> >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+> 
+> Agreed. Better don't hide too much.
 
-Yes, that is what Alan originally stated...
+
+Ok, how about this function.  If it errors out, it is free to just call
+kfree() on the kobject.  Seems simple enough to me, any objections?  If
+not, I'll go through and fix up the whole tree...
+
+thanks,
+
+greg k-h
+
+-----------------
+
+/**
+ * kobject_init - initialize a kobject structure
+ * @kobj: pointer to the kobject to initialize
+ * @ktype: pointer to the ktype for this kobject.
+ * @fmt: the name of the kobject
+ *
+ * This function will properly initialize a kobject such that it can then
+ * be passed to the kobject_add() call.
+ *
+ * If the function returns an error, the memory allocated by the kobject
+ * can be safely freed, no other functions need to be called.
+ */
+int kobject_init(struct kobject *kobj, struct kobj_type *ktype, const char *fmt, ...)
+{
+	va_list args;
+	int retval;
+
+	if (!kobj)
+		return -EINVAL;
+
+	if (!ktype)
+		return -EINVAL;
+
+	WARN_ON(atomic_read(&kobj->kref.refcount));
+	kref_init(&kobj->kref);
+	INIT_LIST_HEAD(&kobj->entry);
+	kobj->ktype = ktype;
+
+	va_start(args, fmt);
+	retval = kobject_set_name_vargs(kobj, fmt, args);
+	va_end(args);
+
+	return retval;
+}
+
