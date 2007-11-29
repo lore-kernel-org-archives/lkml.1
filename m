@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbXK2M6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbXK2NDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbXK2M6k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 07:58:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbXK2M6d
+	id S1762797AbXK2NDU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 08:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbXK2NDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 07:58:33 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:44770 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754684AbXK2M6c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 07:58:32 -0500
-Date: Thu, 29 Nov 2007 07:58:29 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: does /proc/sys/kernel/modprobe actually do anything?
-In-Reply-To: <b6fcc0a0711290207jf82e618uccecf922a22c4f33@mail.gmail.com>
-Message-ID: <alpine.LFD.0.9999.0711290756090.29674@localhost.localdomain>
-References: <alpine.LFD.0.9999.0711290438060.13461@localhost.localdomain> <b6fcc0a0711290207jf82e618uccecf922a22c4f33@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 29 Nov 2007 08:03:10 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:55324 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760395AbXK2NDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 08:03:09 -0500
+Date: Thu, 29 Nov 2007 14:03:02 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: git guidance
+Message-ID: <20071129140302.75cdc81b@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <474EB478.8070907@imap.cc>
+References: <474C9B31.8000408@imap.cc>
+	<Pine.LNX.4.64.0711280019200.4181@fbirervta.pbzchgretzou.qr>
+	<20071129002245.33096661@siona>
+	<474EB478.8070907@imap.cc>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0-rc1 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Alexey Dobriyan wrote:
+On Thu, 29 Nov 2007 13:45:44 +0100
+Tilman Schmidt <tilman@imap.cc> wrote:
 
-> On 11/29/07, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> > echo '#! /bin/sh' > /tmp/modprobe
-> > echo 'echo "$@" >> /tmp/modprobe.log' >> /tmp/modprobe
-> > echo 'exec /sbin/modprobe "$@"' >> /tmp/modprobe
-> > chmod a+x /tmp/modprobe
-> > echo /tmp/modprobe > /proc/sys/kernel/modprobe
-> >
-> >   i've tried that and i don't see that it does anything whatsoever.  i
-> > ran modprobe under "strace" and it doesn't appear to make any effort
-> > to check /proc/sys/kernel/modprobe.
->
-> Kernel, not modprobe, checks /proc/sys/kernel/modprobe .
+> Haavard Skinnemoen schrieb:
+> > 
+> > No, use "git rebase --interactive" ;-)  
+> 
+> What's that? I can't find it in "man git-rebase".
 
-actually, ignore that earlier query of mine, i've found the relevant
-code under kernel/ in sysctl.c and sysctl_check.c and kmod.c.  but
-it's still not clear why what is described in
-Documentation/debugging-modules.txt (and shown above) doesn't work, so
-i'm still open to suggestions.  thanks.
+I think it was added very recently; most distributions probably don't
+have a recent enough version. git 1.5.3.4 includes "git rebase
+--interactive", and you can read about it here.
 
-rday
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+http://www.kernel.org/pub/software/scm/git/docs/git-rebase.html
 
-http://crashcourse.ca
-========================================================================
+Haavard
