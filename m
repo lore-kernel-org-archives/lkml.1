@@ -1,78 +1,368 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762225AbXK2KOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761976AbXK2KT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762225AbXK2KOm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXK2KOd
+	id S1761976AbXK2KT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbXK2KTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:14:33 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:7629 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756508AbXK2KOc (ORCPT
+	Thu, 29 Nov 2007 05:19:51 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:55317 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755159AbXK2KTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:14:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=h5ijABzhY4rbZUo8baVHiDMs9FXa/skWxNYE6mlzDp731KwCQzUW9sGUW1YBDEjTGcjBpi77H9wxi3Rb22VLrzoRPbfqVgIYtX6KkNbiPe91gxABPGs39rD8m/oZ1jKDh+MocgGRUwySk9E2VZ8ZR6jHJnaR40OIF/HPvffdURE=
-Message-ID: <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
-Date: Thu, 29 Nov 2007 11:14:30 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
-	 <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
-	 <1196176294.13982.58.camel@localhost.localdomain>
-	 <1196177122.23808.7.camel@imap.mvista.com>
-	 <1196178834.23808.11.camel@imap.mvista.com>
-	 <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
-	 <20071128172509.GA30173@flint.arm.linux.org.uk>
-	 <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
-	 <20071128200550.GA3494@flint.arm.linux.org.uk>
-	 <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
-X-Google-Sender-Auth: 2dd6760896f9b5b1
+	Thu, 29 Nov 2007 05:19:50 -0500
+To: jdike@addtoit.com
+CC: mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <E1IxRv7-0007e8-Dq@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Wed, 28 Nov 2007 19:46:01 +0100)
+Subject: scheduling anomaly on uml (was: -rt doesn't compile for UML)
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128150637.GA5518@c2.user-mode-linux.org> <E1IxOwS-000752-HF@dorka.pomaz.szeredi.hu> <20071128182935.GA8048@c2.user-mode-linux.org> <E1IxRv7-0007e8-Dq@dorka.pomaz.szeredi.hu>
+Message-Id: <E1IxgUe-00011b-Sl@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 29 Nov 2007 11:19:40 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Steven,
+I can't say I'm understading these traces very well, but here's a
+snippet that looks a bit strange.  I'm running 'while true; do date;
+done' in parallel with the dd.
 
-> Remy, sorry about this round-a-bout. But I don't have any of the hardware
-> that this affects, and I'm just being cautious.
+For some time it is doing 100% CPU as expected, then it goes into a
+second or so of mosty idle (afaics), and then returns to the normal
+pattern again.
 
-No problem, I expected this discussion when I submitted the patch. It
-is logical that everybody is cautious on this subject. But still,
-there is a bug here. The question is how to figure out the best
-solution. (with the least chance of regression).
+Any thoughts?
 
-I do not think Russell is right here with assuming that the wrong
-interrupt handler type is used. Looking at the behaviour of the
-mainline kernel (non-RT), the implementation is quite different: On
-mainline the handle_simple_irq() in chip.c is not re-entrant, the
-masking is **only** done in case of errors, and therefor never
-unmasked again, of course.
-On RT the masking is done when the next interrupt arrives, while the
-1st interrupt is in progress by the interrupt thread, so it is masked
-under normal valid conditions, and never unmasked. So, this is where
-the real bug is.
 
-So, I see 2 solutions:
-* Never mask the interrupt in the first place. (should also work for
-this type of interrupt)
-* Add an unmask to the interrupt, once it is handled. (I chose this
-route with my patch)
-
-It is definitely only related to interrupt threading, and thus only RT related.
-
-Kind Regards,
-
-Remy
+    date-7119  0.... 15636591us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15643908us!: schedule <date-7119> (0 0)
+    bash-502   0.... 15646250us!: schedule <date-7120> (0 0)
+    date-7120  0.... 15647023us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 15654505us+: schedule <date-7120> (0 0)
+    bash-502   0.... 15654602us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 15656809us!: schedule <date-7121> (0 0)
+    date-7121  0.... 15657585us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 15664962us+: schedule <date-7121> (0 0)
+    bash-502   0.... 15665056us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 15667246us!: schedule <date-7122> (0 0)
+    date-7122  0.... 15668015us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 15675447us+: schedule <date-7122> (0 0)
+    bash-502   0.... 15675539us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 15677726us!: schedule <date-7123> (0 0)
+    date-7123  0.... 15678496us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15685867us!: schedule <date-7123> (0 0)
+    bash-502   0.... 15688117us!: schedule <date-7124> (0 0)
+    date-7124  0.... 15688896us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15696317us!: schedule <date-7124> (0 0)
+    bash-502   0.... 15698604us!: schedule <date-7125> (0 0)
+    date-7125  0.... 15699374us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15706800us!: schedule <date-7125> (0 0)
+    bash-502   0.... 15709065us!: schedule <date-7126> (0 0)
+    date-7126  0.... 15709838us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15717247us!: schedule <date-7126> (0 0)
+    bash-502   0.... 15719626us!: schedule <date-7127> (0 0)
+    date-7127  0.... 15720405us+: schedule <bash-502> (0 0)
+    date-7127  0.Ns. 15720466us+: __trace_start_sched_wakeup <ksoftirq-3> (115 -1)
+ksoftirq-3     0.... 15720471us+: schedule <date-7127> (0 -5)
+    date-7127  0.... 15720481us!: schedule <ksoftirq-3> (-5 0)
+      dd-6444  0.... 15723423us!: schedule <date-7127> (0 0)
+      dd-6444  0.... 15727689us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 15736528us+: schedule <dd-6444> (0 -5)
+      dd-6444  0.... 15736537us!: schedule <kswapd0-33> (-5 0)
+    date-7127  0.... 15740399us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 15745240us!: schedule <date-7127> (0 0)
+    bash-502   0.... 15747667us!: schedule <date-7128> (0 0)
+    date-7128  0.... 15748462us!: schedule <bash-502> (0 0)
+    date-7128  0.... 15749685us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 15755989us+: schedule <date-7128> (0 -5)
+    bash-502   0.... 15756000us!: schedule <kswapd0-33> (-5 0)
+    bash-502   0.Ns. 15756427us+: __trace_start_sched_wakeup <kblockd/-14> (115 -1)
+kblockd/-14    0.... 15756436us+: schedule <bash-502> (0 -5)
+    bash-502   0.... 15756480us!: schedule <kblockd/-14> (-5 0)
+    bash-502   0.... 15758372us!: schedule <date-7129> (0 0)
+    date-7129  0.... 15759148us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15766505us!: schedule <date-7129> (0 0)
+    bash-502   0.... 15768896us!: schedule <date-7130> (0 0)
+    date-7130  0.... 15769677us!: schedule <bash-502> (0 0)
+    date-7130  0..h. 15773773us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 15777168us+: schedule <date-7130> (0 -5)
+      dd-6444  0.... 15777180us+: schedule <kswapd0-33> (-5 0)
+    bash-502   0.... 15777274us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 15779535us!: schedule <date-7131> (0 0)
+    date-7131  0.... 15780307us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15787778us!: schedule <date-7131> (0 0)
+    bash-502   0.... 15790057us!: schedule <date-7132> (0 0)
+    date-7132  0.... 15790829us!: schedule <bash-502> (0 0)
+    bash-502   0.... 15798234us!: schedule <date-7132> (0 0)
+    bash-502   0.... 15800525us!: schedule <date-7133> (0 0)
+    date-7133  0.... 15801298us!: schedule <bash-502> (0 0)
+  <idle>-0     0.... 15802726us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 15854372us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 15854375us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 15854378us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 15854392us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 15854400us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 15854407us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 15854412us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 15904812us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 15904815us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 15904818us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+ kswapd0-33    0.... 15904833us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 15904843us+: schedule <kswapd0-33> (-5 0)
+    date-7133  0.... 15904852us+: schedule <dd-6444> (0 0)
+  <idle>-0     0.... 15904858us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 15945062us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 15945065us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 15945067us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 15945083us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 15945091us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 15945099us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 15945106us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 15975282us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 15975285us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 15975289us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+ kswapd0-33    0.... 15975307us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 15975319us+: schedule <kswapd0-33> (-5 0)
+    date-7133  0.... 15975329us+: schedule <dd-6444> (0 0)
+  <idle>-0     0.... 15975337us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16025774us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16025777us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16025781us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 16025801us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 16025812us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16025844us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 16025852us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16035765us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16035768us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 16035772us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16035780us+: __trace_start_sched_wakeup <kjournal-68> (115 -1)
+ kswapd0-33    0.... 16035802us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 16035814us+: schedule <kswapd0-33> (-5 0)
+kjournal-68    0.... 16035824us!: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16036451us+: schedule <kjournal-68> (-5 0)
+  <idle>-0     0.... 16036459us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Ns. 16044503us+: __trace_start_sched_wakeup <events/0-4> (115 -1)
+events/0-4     0.... 16044512us+: schedule <<idle>-0> (20 -5)
+  <idle>-0     0.... 16044564us!: schedule <events/0-4> (-5 20)
+  <idle>-0     0.Nh. 16076072us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16076075us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16076078us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 16076104us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 16076114us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16076124us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 16076132us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16237235us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16237239us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 16237242us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+ kswapd0-33    0.... 16237266us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 16237280us+: schedule <kswapd0-33> (-5 0)
+    date-7133  0.... 16237291us+: schedule <dd-6444> (0 0)
+  <idle>-0     0.... 16237299us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16338000us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16338003us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16338007us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 16338034us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 16338045us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16338056us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 16338063us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16347973us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16347976us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 16347979us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+ kswapd0-33    0.... 16348002us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 16348014us+: schedule <kswapd0-33> (-5 0)
+    date-7133  0.... 16348024us+: schedule <dd-6444> (0 0)
+  <idle>-0     0.... 16348032us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16438814us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16438818us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16438821us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 16438843us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 16438855us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16438865us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 16438873us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16519442us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16519445us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 16519448us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+ kswapd0-33    0.... 16519466us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 16519478us+: schedule <kswapd0-33> (-5 0)
+    date-7133  0.... 16519488us+: schedule <dd-6444> (0 0)
+  <idle>-0     0.... 16519496us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16579941us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16579944us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16579947us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 16579968us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 16579978us+: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16579988us+: schedule <kswapd0-33> (-5 0)
+  <idle>-0     0.... 16579996us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16589889us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16589892us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+  <idle>-0     0.Nh. 16589895us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+ kswapd0-33    0.... 16589913us+: schedule <<idle>-0> (20 -5)
+      dd-6444  0.... 16589924us+: schedule <kswapd0-33> (-5 0)
+    date-7133  0.... 16589935us+: schedule <dd-6444> (0 0)
+  <idle>-0     0.... 16589942us!: schedule <date-7133> (0 20)
+  <idle>-0     0.Nh. 16610104us+: __trace_start_sched_wakeup <date-7133> (120 -1)
+  <idle>-0     0.Nh. 16610107us+: __trace_start_sched_wakeup <dd-6444> (120 -1)
+  <idle>-0     0.Nh. 16610110us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+      dd-6444  0.... 16610130us+: schedule <<idle>-0> (20 0)
+ kswapd0-33    0.... 16610140us!: schedule <dd-6444> (0 -5)
+    date-7133  0.... 16610487us!: schedule <kswapd0-33> (-5 0)
+    bash-502   0.... 16622148us!: schedule <date-7133> (0 0)
+    bash-502   0.... 16626384us!: schedule <date-7134> (0 0)
+    date-7134  0.... 16627783us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16641348us!: schedule <date-7134> (0 0)
+    bash-502   0.... 16645627us!: schedule <date-7135> (0 0)
+    date-7135  0.... 16647022us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16658816us!: schedule <date-7135> (0 0)
+    date-7136  0..h. 16660498us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 16661220us+: schedule <date-7136> (0 -5)
+      dd-6444  0.... 16661230us+: schedule <kswapd0-33> (-5 0)
+    bash-502   0.... 16661238us!: schedule <dd-6444> (0 0)
+    date-7136  0.... 16662012us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16669457us!: schedule <date-7136> (0 0)
+    bash-502   0.... 16671791us!: schedule <date-7137> (0 0)
+    date-7137  0.... 16672512us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16679839us!: schedule <date-7137> (0 0)
+    bash-502   0.... 16682313us!: schedule <date-7138> (0 0)
+    date-7138  0.... 16683096us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16691274us!: schedule <date-7138> (0 0)
+    bash-502   0.... 16694598us!: schedule <date-7139> (0 0)
+    date-7139  0.... 16695374us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16702798us!: schedule <date-7139> (0 0)
+    bash-502   0.... 16705100us!: schedule <date-7140> (0 0)
+    date-7140  0.... 16705881us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 16713383us+: schedule <date-7140> (0 0)
+    bash-502   0.... 16713486us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 16715698us!: schedule <date-7141> (0 0)
+    date-7141  0.... 16716479us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16723865us!: schedule <date-7141> (0 0)
+    bash-502   0.... 16726163us!: schedule <date-7142> (0 0)
+    date-7142  0.... 16726929us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16734434us!: schedule <date-7142> (0 0)
+    bash-502   0.... 16736736us!: schedule <date-7143> (0 0)
+    date-7143  0.... 16737509us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16744911us!: schedule <date-7143> (0 0)
+    bash-502   0.... 16747186us!: schedule <date-7144> (0 0)
+    date-7144  0.... 16747955us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16755349us!: schedule <date-7144> (0 0)
+    bash-502   0.... 16757672us!: schedule <date-7145> (0 0)
+    date-7145  0.... 16758447us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 16765879us+: schedule <date-7145> (0 0)
+    bash-502   0.... 16765982us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 16768170us!: schedule <date-7146> (0 0)
+    date-7146  0.... 16768954us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16776368us!: schedule <date-7146> (0 0)
+    bash-502   0.... 16778667us!: schedule <date-7147> (0 0)
+    date-7147  0.... 16779439us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16786847us!: schedule <date-7147> (0 0)
+    bash-502   0.... 16789129us!: schedule <date-7148> (0 0)
+    date-7148  0.... 16789906us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16797281us!: schedule <date-7148> (0 0)
+    bash-502   0.... 16799726us!: schedule <date-7149> (0 0)
+    date-7149  0.... 16800504us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16807922us!: schedule <date-7149> (0 0)
+    bash-502   0.... 16810202us!: schedule <date-7150> (0 0)
+    date-7150  0.... 16810969us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16818372us!: schedule <date-7150> (0 0)
+    bash-502   0.... 16820666us!: schedule <date-7151> (0 0)
+    date-7151  0.... 16821440us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 16829023us+: schedule <date-7151> (0 0)
+    bash-502   0.... 16829125us!: schedule <dd-6444> (0 0)
+    bash-502   0.... 16831302us!: schedule <date-7152> (0 0)
+    date-7152  0.... 16832074us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16839389us!: schedule <date-7152> (0 0)
+    bash-502   0.... 16841702us!: schedule <date-7153> (0 0)
+    bash-502   0.N.. 16842322us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 16842352us!: schedule <bash-502> (0 -5)
+    bash-502   0.... 16842568us!: schedule <kswapd0-33> (-5 0)
+    date-7153  0.... 16842745us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16850087us!: schedule <date-7153> (0 0)
+    bash-502   0.... 16852366us!: schedule <date-7154> (0 0)
+    date-7154  0.... 16853151us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16860617us!: schedule <date-7154> (0 0)
+    bash-502   0.... 16862940us!: schedule <date-7155> (0 0)
+    date-7155  0.... 16863715us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16871092us!: schedule <date-7155> (0 0)
+    date-7156  0..h. 16872536us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 16873519us+: schedule <date-7156> (0 -5)
+      dd-6444  0.... 16873527us+: schedule <kswapd0-33> (-5 0)
+    bash-502   0.... 16873535us!: schedule <dd-6444> (0 0)
+    date-7156  0.... 16874310us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16881743us!: schedule <date-7156> (0 0)
+    bash-502   0.... 16884041us!: schedule <date-7157> (0 0)
+    date-7157  0.... 16884824us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16892154us!: schedule <date-7157> (0 0)
+    bash-502   0.... 16894569us!: schedule <date-7158> (0 0)
+    date-7158  0.... 16895343us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16902783us!: schedule <date-7158> (0 0)
+    bash-502   0.... 16905369us!: schedule <date-7159> (0 0)
+    date-7159  0.... 16906191us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16913569us!: schedule <date-7159> (0 0)
+    bash-502   0.... 16915927us!: schedule <date-7160> (0 0)
+    date-7160  0.... 16916760us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16924096us!: schedule <date-7160> (0 0)
+    bash-502   0.... 16926448us!: schedule <date-7161> (0 0)
+    date-7161  0.... 16927257us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16934587us!: schedule <date-7161> (0 0)
+    bash-502   0.... 16936905us!: schedule <date-7162> (0 0)
+    date-7162  0.... 16937720us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16945142us!: schedule <date-7162> (0 0)
+    bash-502   0.... 16947452us!: schedule <date-7163> (0 0)
+    date-7163  0.... 16948262us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16955611us!: schedule <date-7163> (0 0)
+      dd-6444  0.... 16956304us!: schedule <bash-502> (0 0)
+      dd-6444  0.... 16958669us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 16958806us+: schedule <dd-6444> (0 -5)
+    bash-502   0.... 16958900us!: schedule <kswapd0-33> (-5 0)
+    bash-502   0.... 16960857us!: schedule <date-7164> (0 0)
+    date-7164  0.... 16961712us!: schedule <bash-502> (0 0)
+    date-7164  0.Ns. 16968470us+: __trace_start_sched_wakeup <ksoftirq-3> (115 -1)
+ksoftirq-3     0.... 16968479us+: schedule <date-7164> (0 -5)
+    date-7164  0.... 16968578us!: schedule <ksoftirq-3> (-5 0)
+    bash-502   0.... 16969310us!: schedule <date-7164> (0 0)
+    bash-502   0.... 16971659us!: schedule <date-7165> (0 0)
+    date-7165  0.... 16972487us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16979969us!: schedule <date-7165> (0 0)
+    bash-502   0.... 16982280us!: schedule <date-7166> (0 0)
+    date-7166  0.... 16983107us!: schedule <bash-502> (0 0)
+    bash-502   0.... 16990504us!: schedule <date-7166> (0 0)
+    bash-502   0.... 16992802us!: schedule <date-7167> (0 0)
+    date-7167  0.... 16993618us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17001059us!: schedule <date-7167> (0 0)
+    bash-502   0.... 17003350us!: schedule <date-7168> (0 0)
+    date-7168  0.... 17004162us!: schedule <bash-502> (0 0)
+    date-7168  0..h. 17006553us!: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
+ kswapd0-33    0.... 17011682us+: schedule <date-7168> (0 -5)
+    bash-502   0.... 17011692us!: schedule <kswapd0-33> (-5 0)
+    bash-502   0.... 17014005us!: schedule <date-7169> (0 0)
+    date-7169  0.... 17014814us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17022217us!: schedule <date-7169> (0 0)
+    bash-502   0.... 17024519us!: schedule <date-7170> (0 0)
+    date-7170  0.... 17025334us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17032788us!: schedule <date-7170> (0 0)
+    bash-502   0.... 17035069us!: schedule <date-7171> (0 0)
+    date-7171  0.... 17035878us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17043372us!: schedule <date-7171> (0 0)
+    bash-502   0.... 17045678us!: schedule <date-7172> (0 0)
+    date-7172  0.... 17046486us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17053866us!: schedule <date-7172> (0 0)
+    bash-502   0.... 17056168us!: schedule <date-7173> (0 0)
+    date-7173  0.... 17056999us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17064367us!: schedule <date-7173> (0 0)
+    bash-502   0.... 17066673us!: schedule <date-7174> (0 0)
+    date-7174  0.... 17067523us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17074961us!: schedule <date-7174> (0 0)
+    bash-502   0.... 17077271us!: schedule <date-7175> (0 0)
+    date-7175  0.... 17078082us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17085411us!: schedule <date-7175> (0 0)
+    bash-502   0.... 17087738us!: schedule <date-7176> (0 0)
+    date-7176  0.... 17088561us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17095920us!: schedule <date-7176> (0 0)
+    bash-502   0.... 17098194us!: schedule <date-7177> (0 0)
+    date-7177  0.... 17098958us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17106376us!: schedule <date-7177> (0 0)
+    bash-502   0.... 17108848us!: schedule <date-7178> (0 0)
+    date-7178  0.... 17109639us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17117073us!: schedule <date-7178> (0 0)
+    bash-502   0.... 17119410us!: schedule <date-7179> (0 0)
+    date-7179  0.... 17120214us!: schedule <bash-502> (0 0)
+    bash-502   0.... 17127600us!: schedule <date-7179> (0 0)
