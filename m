@@ -1,50 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbXK2VeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbXK2VfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763427AbXK2VeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXK2VeK
+	id S1763597AbXK2VfJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760503AbXK2Vez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:34:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46061 "EHLO mx1.redhat.com"
+	Thu, 29 Nov 2007 16:34:55 -0500
+Received: from waste.org ([66.93.16.53]:39375 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758786AbXK2VeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:34:09 -0500
+	id S1762273AbXK2Vey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:34:54 -0500
+Date: Thu, 29 Nov 2007 15:32:18 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Allan Stephens <allan.stephens@windriver.com>,
+       Jon Paul Maloy <jon.maloy@ericsson.com>
+Subject: Re: [bug] SLOB, tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52 kmap_atomic_prot()
+Message-ID: <20071129213217.GW19691@waste.org>
+References: <20071129142546.GA27719@elte.hu> <20071129143920.GA32146@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 06/11] x86 ptrace arch merge
-In-Reply-To: Andrew Morton's message of  Thursday, 29 November 2007 09:28:52 -0800 <20071129092852.3b7a4b2f.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20071129115711.9FC8526F8E7@magilla.localdomain>
-	<20071129120014.E34C326F8E7@magilla.localdomain>
-	<20071129092852.3b7a4b2f.akpm@linux-foundation.org>
-X-Windows: a mistake carried out to perfection.
-Message-Id: <20071129213357.00EA226F8E7@magilla.localdomain>
-Date: Thu, 29 Nov 2007 13:33:56 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20071129143920.GA32146@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > --- a/arch/x86/kernel/ptrace.c
-> > +++ b/arch/x86/kernel/ptrace.c
-> > @@ -461,12 +461,13 @@ static int ptrace_set_debugreg(struct task_struct *child,
-> >  void ptrace_disable(struct task_struct *child)
-> >  {
-> >  	user_disable_single_step(child);
-> > +#ifdef TIF_SYSCALL_EMU
-> >  	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
-> > +#endif
+On Thu, Nov 29, 2007 at 03:39:20PM +0100, Ingo Molnar wrote:
 > 
-> Is TIF_SYSCALL_EMU ever undefined here?
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > i'm getting this on 32-bit (with the kmap-atomic debugging patch 
+> > applied):
+> > 
+> >  ---------------->
+> >  Calling initcall 0x78b67c00: tipc_init+0x0/0xc0()
+> >  TIPC: Activated (version 1.6.2 compiled Nov 29 2007 15:04:36)
+> >  WARNING: at arch/x86/mm/highmem_32.c:52 kmap_atomic_prot()
+> >  Pid: 1, comm: swapper Not tainted 2.6.24-rc3-cfs-v24 #45
+> >   [<78107272>] show_trace_log_lvl+0x12/0x40
+> >   [<781072ad>] show_trace+0xd/0x20
+> >   [<781086f8>] dump_stack+0x58/0x60
+> >   [<7811541f>] kmap_atomic_prot+0x1bf/0x240
+> >   [<781154ae>] kmap_atomic+0xe/0x20
+> >   [<78157be5>] get_page_from_freelist+0x225/0x420
+> >   [<78157e4d>] __alloc_pages+0x6d/0x3a0
+> >   [<78169a7b>] slob_new_page+0x1b/0x60
+> >   [<78169be4>] slob_alloc+0x124/0x1e0
+> >   [<78169e0f>] __kmalloc_node+0x6f/0xa0
+> >   [<7884f7c2>] reg_init+0x42/0x80
+> >   [<7884f80a>] tipc_reg_start+0xa/0x40
+> >   [<7883e6c6>] tipc_core_start+0x66/0xc0
+> >   [<78b67c81>] tipc_init+0x81/0xc0
+> 
+> this is due to the kzalloc() here:
+> 
+> 0x7884f1d0 is in reg_init (net/tipc/user_reg.c:88).
+> 83              spin_lock_bh(&reg_lock);
+> 84              if (!users) {
+> 85                      users = kzalloc(USER_LIST_SIZE, GFP_ATOMIC);
+> 86                      if (users) {
+> 87                              for (i = 1; i <= MAX_USERID; i++) {
+> 88                                      users[i].next = i - 1;
+> 
+> which does a:
+> 
+> 120     static inline void clear_highpage(struct page *page)
+> 121     {
+> 122             void *kaddr = kmap_atomic(page, KM_USER0);
+> 123             clear_page(kaddr);
+> 124             kunmap_atomic(kaddr, KM_USER0);
+> 125     }
+> 
+> but ... why does the debug code think it's in softirq context?
+> 
+> plus, and this is a slob question i guess, how come we drop into 
+> clear_highpage() for a kzalloc()??
 
-Yes, it not defined on CONFIG_X86_64.
-(That is something to be addressed later on.)
+Good question. Looks like kzalloc switched from doing a memset to
+passing a GFP_ZERO flag down to kmalloc. Slob didn't get completely
+updated to reflect this, so it blindly propagates the flag onto
+__alloc_pages and does a harmless double-clear.
 
+Someone should remind us what the point of moving the kzalloc memset
+down into the allocators was. We now have all three allocators doing:
 
-Thanks,
-Roland
+        if (unlikely((flags & __GFP_ZERO) && ptr))
+                memset(ptr, 0, obj_size(cachep));
+
+and needing to mask flags before passing them to page allocators,
+which hardly seems better than kzalloc unconditionally doing the
+memset. Wouldn't it be better/faster/smaller to make kzalloc a
+non-inline?
+
+Slob also has a nice second path for large kmallocs where it just
+calls the page allocator directly which also needs this treatment.
+Which does the right thing with non-highmem systems, but can hit this
+bug otherwise.
+
+Below is a totally untested patch. Alternately, we could simply tweak
+clear_highpage to remove the limitation, but that would leave slob
+doing an extra clear.
+
+diff -r c60016ba6237 mm/slob.c
+--- a/mm/slob.c	Tue Nov 13 09:09:36 2007 -0800
++++ b/mm/slob.c	Thu Nov 29 15:15:54 2007 -0600
+@@ -223,6 +231,7 @@ static void *slob_new_page(gfp_t gfp, in
+ {
+ 	void *page;
+ 
++	gfp &= ~__GFP_ZERO;
+ #ifdef CONFIG_NUMA
+ 	if (node != -1)
+ 		page = alloc_pages_node(node, gfp, order);
+@@ -457,6 +470,8 @@ void *__kmalloc_node(size_t size, gfp_t 
+ 			page = virt_to_page(ret);
+ 			page->private = size;
+ 		}
++		if (unlikely((gfp & __GFP_ZERO) && ret))
++			memset(ret, 0, size);
+ 		return ret;
+ 	}
+ }
+
+-- 
+Mathematics is the supreme nostalgia of our time.
