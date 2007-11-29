@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762183AbXK2AlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762448AbXK2Alb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762183AbXK2AlR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXK2AlE
+	id S1762448AbXK2Alb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760527AbXK2AlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:41:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51419 "EHLO mx1.redhat.com"
+	Wed, 28 Nov 2007 19:41:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51423 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755541AbXK2AlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:41:01 -0500
+	id S1760000AbXK2AlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:41:07 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,14 +19,12 @@ Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH x86/mm 3/6] x86-32 ptrace whitespace
+Subject: [PATCH x86/mm 2/6] x86-64 ptrace whitespace
 In-Reply-To: Roland McGrath's message of  Wednesday, 28 November 2007 16:38:49 -0800 <20071129003849.428E026F8E7@magilla.localdomain>
 References: <20071129003849.428E026F8E7@magilla.localdomain>
-X-Shopping-List: (1) Hypothetical approval
-   (2) Odious persecuters
-   (3) Fat erosion
-Message-Id: <20071129004052.65B3026F8EA@magilla.localdomain>
-Date: Wed, 28 Nov 2007 16:40:52 -0800 (PST)
+Emacs: because idle RAM is the Devil's playground.
+Message-Id: <20071129004028.006B026F8E7@magilla.localdomain>
+Date: Wed, 28 Nov 2007 16:40:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -35,36 +33,81 @@ This canonicalizes the indentation in the getreg and putreg functions.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/ptrace_32.c |  110 +++++++++++++++++++++---------------------
- 1 files changed, 55 insertions(+), 55 deletions(-)
+ arch/x86/kernel/ptrace_64.c |  224 +++++++++++++++++++++---------------------
+ 1 files changed, 112 insertions(+), 112 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
-index f81e2f1..5aca84e 100644
---- a/arch/x86/kernel/ptrace_32.c
-+++ b/arch/x86/kernel/ptrace_32.c
-@@ -51,37 +51,37 @@ static int putreg(struct task_struct *child,
+diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
+index 56b31cd..2427548 100644
+--- a/arch/x86/kernel/ptrace_64.c
++++ b/arch/x86/kernel/ptrace_64.c
+@@ -2,7 +2,7 @@
+ /*
+  * Pentium III FXSR, SSE support
+  *	Gareth Hughes <gareth@valinux.com>, May 2000
+- * 
++ *
+  * x86-64 port 2000-2002 Andi Kleen
+  */
+ 
+@@ -48,7 +48,7 @@
+  * Make sure the single step bit is not set.
+  */
+ void ptrace_disable(struct task_struct *child)
+-{ 
++{
+ 	user_disable_single_step(child);
+ }
+ 
+@@ -63,69 +63,69 @@ static int putreg(struct task_struct *child,
+ {
  	struct pt_regs *regs = task_pt_regs(child);
- 	regno >>= 2;
  	switch (regno) {
--		case GS:
+-		case offsetof(struct user_regs_struct,fs):
 -			if (value && (value & 3) != 3)
 -				return -EIO;
--			child->thread.gs = value;
+-			child->thread.fsindex = value & 0xffff; 
 -			return 0;
--		case DS:
--		case ES:
--		case FS:
+-		case offsetof(struct user_regs_struct,gs):
 -			if (value && (value & 3) != 3)
 -				return -EIO;
--			value &= 0xffff;
--			break;
--		case SS:
--		case CS:
+-			child->thread.gsindex = value & 0xffff;
+-			return 0;
+-		case offsetof(struct user_regs_struct,ds):
+-			if (value && (value & 3) != 3)
+-				return -EIO;
+-			child->thread.ds = value & 0xffff;
+-			return 0;
+-		case offsetof(struct user_regs_struct,es): 
+-			if (value && (value & 3) != 3)
+-				return -EIO;
+-			child->thread.es = value & 0xffff;
+-			return 0;
+-		case offsetof(struct user_regs_struct,ss):
 -			if ((value & 3) != 3)
 -				return -EIO;
 -			value &= 0xffff;
--			break;
--		case EFL:
+-			return 0;
+-		case offsetof(struct user_regs_struct,fs_base):
+-			if (value >= TASK_SIZE_OF(child))
+-				return -EIO;
+-			/*
+-			 * When changing the segment base, use do_arch_prctl
+-			 * to set either thread.fs or thread.fsindex and the
+-			 * corresponding GDT slot.
+-			 */
+-			if (child->thread.fs != value)
+-				return do_arch_prctl(child, ARCH_SET_FS, value);
+-			return 0;
+-		case offsetof(struct user_regs_struct,gs_base):
+-			/*
+-			 * Exactly the same here as the %fs handling above.
+-			 */
+-			if (value >= TASK_SIZE_OF(child))
+-				return -EIO;
+-			if (child->thread.gs != value)
+-				return do_arch_prctl(child, ARCH_SET_GS, value);
+-			return 0;
+-		case offsetof(struct user_regs_struct,flags):
 -			value &= FLAG_MASK;
 -			/*
 -			 * If the user value contains TF, mark that
@@ -77,25 +120,57 @@ index f81e2f1..5aca84e 100644
 -				value |= X86_EFLAGS_TF;
 -			value |= regs->flags & ~FLAG_MASK;
 -			break;
-+	case GS:
+-		case offsetof(struct user_regs_struct,cs): 
+-			if ((value & 3) != 3)
+-				return -EIO;
+-			value &= 0xffff;
+-			break;
++	case offsetof(struct user_regs_struct,fs):
 +		if (value && (value & 3) != 3)
 +			return -EIO;
-+		child->thread.gs = value;
++		child->thread.fsindex = value & 0xffff;
 +		return 0;
-+	case DS:
-+	case ES:
-+	case FS:
++	case offsetof(struct user_regs_struct,gs):
 +		if (value && (value & 3) != 3)
 +			return -EIO;
-+		value &= 0xffff;
-+		break;
-+	case SS:
-+	case CS:
++		child->thread.gsindex = value & 0xffff;
++		return 0;
++	case offsetof(struct user_regs_struct,ds):
++		if (value && (value & 3) != 3)
++			return -EIO;
++		child->thread.ds = value & 0xffff;
++		return 0;
++	case offsetof(struct user_regs_struct,es):
++		if (value && (value & 3) != 3)
++			return -EIO;
++		child->thread.es = value & 0xffff;
++		return 0;
++	case offsetof(struct user_regs_struct,ss):
 +		if ((value & 3) != 3)
 +			return -EIO;
 +		value &= 0xffff;
-+		break;
-+	case EFL:
++		return 0;
++	case offsetof(struct user_regs_struct,fs_base):
++		if (value >= TASK_SIZE_OF(child))
++			return -EIO;
++		/*
++		 * When changing the segment base, use do_arch_prctl
++		 * to set either thread.fs or thread.fsindex and the
++		 * corresponding GDT slot.
++		 */
++		if (child->thread.fs != value)
++			return do_arch_prctl(child, ARCH_SET_FS, value);
++		return 0;
++	case offsetof(struct user_regs_struct,gs_base):
++		/*
++		 * Exactly the same here as the %fs handling above.
++		 */
++		if (value >= TASK_SIZE_OF(child))
++			return -EIO;
++		if (child->thread.gs != value)
++			return do_arch_prctl(child, ARCH_SET_GS, value);
++		return 0;
++	case offsetof(struct user_regs_struct,flags):
 +		value &= FLAG_MASK;
 +		/*
 +		 * If the user value contains TF, mark that
@@ -108,66 +183,108 @@ index f81e2f1..5aca84e 100644
 +			value |= X86_EFLAGS_TF;
 +		value |= regs->flags & ~FLAG_MASK;
 +		break;
++	case offsetof(struct user_regs_struct,cs):
++		if ((value & 3) != 3)
++			return -EIO;
++		value &= 0xffff;
++		break;
  	}
  	*pt_regs_access(regs, regno) = value;
  	return 0;
-@@ -94,26 +94,26 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
- 
- 	regno >>= 2;
+@@ -136,49 +136,49 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
+ 	struct pt_regs *regs = task_pt_regs(child);
+ 	unsigned long val;
  	switch (regno) {
--		case EFL:
+-		case offsetof(struct user_regs_struct, fs):
+-			return child->thread.fsindex;
+-		case offsetof(struct user_regs_struct, gs):
+-			return child->thread.gsindex;
+-		case offsetof(struct user_regs_struct, ds):
+-			return child->thread.ds;
+-		case offsetof(struct user_regs_struct, es):
+-			return child->thread.es; 
+-		case offsetof(struct user_regs_struct, fs_base):
+-			/*
+-			 * do_arch_prctl may have used a GDT slot instead of
+-			 * the MSR.  To userland, it appears the same either
+-			 * way, except the %fs segment selector might not be 0.
+-			 */
+-			if (child->thread.fs != 0)
+-				return child->thread.fs;
+-			if (child->thread.fsindex != FS_TLS_SEL)
+-				return 0;
+-			return get_desc_base(&child->thread.tls_array[FS_TLS]);
+-		case offsetof(struct user_regs_struct, gs_base):
+-			/*
+-			 * Exactly the same here as the %fs handling above.
+-			 */
+-			if (child->thread.gs != 0)
+-				return child->thread.gs;
+-			if (child->thread.gsindex != GS_TLS_SEL)
+-				return 0;
+-			return get_desc_base(&child->thread.tls_array[GS_TLS]);
+-		case offsetof(struct user_regs_struct, flags):
 -			/*
 -			 * If the debugger set TF, hide it from the readout.
 -			 */
--			retval = regs->flags;
+-			val = regs->flags;
+-			if (test_tsk_thread_flag(child, TIF_IA32))
+-				val &= 0xffffffff;
 -			if (test_tsk_thread_flag(child, TIF_FORCED_TF))
--				retval &= ~X86_EFLAGS_TF;
--			break;
--		case GS:
--			retval = child->thread.gs;
--			break;
--		case DS:
--		case ES:
--		case FS:
--		case SS:
--		case CS:
--			retval = 0xffff;
--			/* fall through */
+-				val &= ~X86_EFLAGS_TF;
+-			return val;
 -		default:
--			retval &= *pt_regs_access(regs, regno);
-+	case EFL:
+-			val = *pt_regs_access(regs, regno);
+-			if (test_tsk_thread_flag(child, TIF_IA32))
+-				val &= 0xffffffff;
+-			return val;
++	case offsetof(struct user_regs_struct, fs):
++		return child->thread.fsindex;
++	case offsetof(struct user_regs_struct, gs):
++		return child->thread.gsindex;
++	case offsetof(struct user_regs_struct, ds):
++		return child->thread.ds;
++	case offsetof(struct user_regs_struct, es):
++		return child->thread.es;
++	case offsetof(struct user_regs_struct, fs_base):
++		/*
++		 * do_arch_prctl may have used a GDT slot instead of
++		 * the MSR.  To userland, it appears the same either
++		 * way, except the %fs segment selector might not be 0.
++		 */
++		if (child->thread.fs != 0)
++			return child->thread.fs;
++		if (child->thread.fsindex != FS_TLS_SEL)
++			return 0;
++		return get_desc_base(&child->thread.tls_array[FS_TLS]);
++	case offsetof(struct user_regs_struct, gs_base):
++		/*
++		 * Exactly the same here as the %fs handling above.
++		 */
++		if (child->thread.gs != 0)
++			return child->thread.gs;
++		if (child->thread.gsindex != GS_TLS_SEL)
++			return 0;
++		return get_desc_base(&child->thread.tls_array[GS_TLS]);
++	case offsetof(struct user_regs_struct, flags):
 +		/*
 +		 * If the debugger set TF, hide it from the readout.
 +		 */
-+		retval = regs->flags;
++		val = regs->flags;
++		if (test_tsk_thread_flag(child, TIF_IA32))
++			val &= 0xffffffff;
 +		if (test_tsk_thread_flag(child, TIF_FORCED_TF))
-+			retval &= ~X86_EFLAGS_TF;
-+		break;
-+	case GS:
-+		retval = child->thread.gs;
-+		break;
-+	case DS:
-+	case ES:
-+	case FS:
-+	case SS:
-+	case CS:
-+		retval = 0xffff;
-+		/* fall through */
++			val &= ~X86_EFLAGS_TF;
++		return val;
 +	default:
-+		retval &= *pt_regs_access(regs, regno);
++		val = *pt_regs_access(regs, regno);
++		if (test_tsk_thread_flag(child, TIF_IA32))
++			val &= 0xffffffff;
++		return val;
  	}
- 	return retval;
+ 
  }
-@@ -190,7 +190,7 @@ static int ptrace_set_debugreg(struct task_struct *child,
-  * Make sure the single step bit is not set.
-  */
- void ptrace_disable(struct task_struct *child)
--{ 
-+{
- 	user_disable_single_step(child);
- 	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
- }
-@@ -203,7 +203,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+@@ -244,7 +244,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
  
  	switch (request) {
  	/* when I and D space are separate, these will need to be fixed. */
@@ -176,21 +293,25 @@ index f81e2f1..5aca84e 100644
  	case PTRACE_PEEKDATA:
  		ret = generic_ptrace_peekdata(child, addr, data);
  		break;
-@@ -213,7 +213,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		unsigned long tmp;
+@@ -310,10 +310,10 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 					 (struct user_desc __user *) data, 0);
+ 		break;
+ #endif
+-		/* normal 64bit interface to access TLS data. 
++		/* normal 64bit interface to access TLS data.
+ 		   Works just like arch_prctl, except that the arguments
+ 		   are reversed. */
+-	case PTRACE_ARCH_PRCTL: 
++	case PTRACE_ARCH_PRCTL:
+ 		ret = do_arch_prctl(child, data, addr);
+ 		break;
  
- 		ret = -EIO;
--		if ((addr & 3) || addr < 0 || 
-+		if ((addr & 3) || addr < 0 ||
- 		    addr > sizeof(struct user) - 3)
- 			break;
+@@ -386,7 +386,7 @@ static void syscall_trace(struct pt_regs *regs)
+ 	printk("trace %s ip %lx sp %lx ax %d origrax %d caller %lx tiflags %x ptrace %x\n",
+ 	       current->comm,
+ 	       regs->ip, regs->sp, regs->ax, regs->orig_ax, __builtin_return_address(0),
+-	       current_thread_info()->flags, current->ptrace); 
++	       current_thread_info()->flags, current->ptrace);
+ #endif
  
-@@ -238,7 +238,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 
- 	case PTRACE_POKEUSR: /* write the word at location addr in the USER area */
- 		ret = -EIO;
--		if ((addr & 3) || addr < 0 || 
-+		if ((addr & 3) || addr < 0 ||
- 		    addr > sizeof(struct user) - 3)
- 			break;
- 
+ 	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
