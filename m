@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbXK2Pqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbXK2Pr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbXK2Pqb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbXK2PqV
+	id S1761232AbXK2Pr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbXK2PrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:46:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:42157 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbXK2PqU (ORCPT
+	Thu, 29 Nov 2007 10:47:20 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50909 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755115AbXK2PrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:46:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=u06PwBc2uksN61sJg0MhAXeHg7xNsUonRfzGxOoK6yt269FD5yvw02XjsSGqnYaCllpdp9ugS0D+rhR4vGnmf2ekXah3dYkeOsTNlbccc7SMIidocyLkaxu7u+bOgBHdYWgJFwjCN4QS/JJ2LbuGfxrLv5LX+6TIYdlG8Iqauh0=
-Message-ID: <a71bd89a0711290746q57002217ga14c4f4f7201683d@mail.gmail.com>
-Date: Thu, 29 Nov 2007 07:46:19 -0800
-From: "Dan Kegel" <dank@kegel.com>
-To: "Xavier Bestel" <xavier.bestel@free.fr>
-Subject: Re: Relax permissions for reading hard drive serial number?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1196350632.20567.191.camel@skunk.anacadf.mentorg.com>
+	Thu, 29 Nov 2007 10:47:20 -0500
+Date: Thu, 29 Nov 2007 10:47:19 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Greg KH <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+In-Reply-To: <20071129111251.35b3b17d@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0711291042240.4516-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
-	 <1196350632.20567.191.camel@skunk.anacadf.mentorg.com>
-X-Google-Sender-Auth: cf440fa1f45b58c4
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2007 7:37 AM, Xavier Bestel <xavier.bestel@free.fr> wrote:
-> > One sticking point is that apps like Photoshop and probably
-> > Punkbuster want to retrieve the hard drive's serial number
->
-> So they can't be installed on a network drive ?
+On Thu, 29 Nov 2007, Cornelia Huck wrote:
 
-I think Adobe supports that, though perhaps not with the
-retail version.  Big companies with network drives are
-probably an important revenue source for them.
+> > The only problem arises when a child's driver retains a reference to 
+> > the parent kobject.  If things are done properly, this reference should 
+> > involve incrementing the module count -- which would prevent the module 
+> > from being unloaded in the first place.
+> 
+> This still leaves the possibility that random code may grab a reference
+> once the kobject is present in the tree and lookupable. You gave up the
+> control of the number of references to your object once you made it
+> public.
 
-I haven't looked closely at what happens when you try installing
-onto network drives.  If you are really interested, it's pretty easy to
-try yourself; just run the app under wine with
-WINEDEBUG=+cdrom,+disk and look in the log for calls like
-CreateFile("\\\\.\\PhysicalDrive0", ...).
-There's some chance the code always checks drive 0 instead
-of the drive you're installing onto.
-- Dan
+I don't agree with this argument.  Code should never grab random
+references without insuring that the owner of the referenced object is
+pinned.  This rule applies to everything, not just kobjects.
+
+Unfortunately kobjects don't have an owner field.  In practice this 
+means that it isn't possible to pin the owner of some random kobject -- 
+you have to know where the kobject came from or what it's embedded in.  
+All users of kobjects need to work this way.
+
+Alan Stern
+
