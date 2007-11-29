@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbXK2QTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932285AbXK2QUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbXK2QTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:19:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbXK2QTj
+	id S932285AbXK2QUE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:20:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762724AbXK2QTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:19:39 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:46170 "EHLO e5.ny.us.ibm.com"
+	Thu, 29 Nov 2007 11:19:50 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:59306 "EHLO smtp.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755644AbXK2QTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:19:38 -0500
-Message-ID: <474EE667.6050106@linux.vnet.ibm.com>
-Date: Thu, 29 Nov 2007 21:48:47 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Linux Memory Management List <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in 2.6.25
-References: <474ED005.7060300@linux.vnet.ibm.com> <20071129104726.5698321f@cuia.boston.redhat.com>
-In-Reply-To: <20071129104726.5698321f@cuia.boston.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1762388AbXK2QTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 11:19:48 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 11:19:47 EST
+Date: Thu, 29 Nov 2007 17:11:42 +0100
+From: Paul Rolland (=?UTF-8?Q?=E3=83=9D=E3=83=BC=E3=83=AB=E3=83=BB?=
+	=?UTF-8?Q?=E3=83=AD=E3=83=A9=E3=83=B3?=) <rol@witbe.net>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: rol@witbe.net
+Subject: constant_tsc and TSC unstable
+Message-ID: <20071129171142.56c7890a@tux.DEF.witbe.net>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Thu, 29 Nov 2007 20:13:17 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> They say better strike when the iron is hot.
->>
->> Since we have so many people discussing the memory controller, I would
->> like to access the readiness of the memory controller for mainline
->> merge.
-> 
->> At the VM-Summit we decided to try the current double LRU approach for
->> memory control. At this juncture in the space-time continuum, I seek
->> your support, feedback, comments and help to move the memory controller
-> 
-> The memory controller code currently in -mm seems fine to me,
-> especially with the changes that got committed over the last
-> days making reclaim more efficient.
-> 
+Hello,
 
-Yes, I agree. Per zone reclaim and lists have helped make the code
-better. Credit goes to KAMEZAWA-San for the per zone code and to
-YAMAMOTO-San for background reclaim.
+I've a machine with a Core2Duo CPU. /proc/cpuinfo reports the flag
+constant_tsc, but at boot time, I have the log :
 
-> I don't think there are any bugs left that can be found by
-> code inspection - only the kind of testing that the mainline
-> kernel gets might shake out more bugs.
-> 
-> I would like to see the memory controller code go into the
-> mainline kernel ASAP.
-> 
+...
+Total of 2 processors activated (6919.15 BogoMIPS).
+ENABLING IO-APIC IRQs
+..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+checking TSC synchronization [CPU#0 -> CPU#1]:
+Measured 3978592228 cycles TSC warp between CPUs, turning off TSC clock.
+Marking TSC unstable due to: check_tsc_sync_source failed.
+Brought up 2 CPUs
+...
 
-Excellent, thanks!
+This machine is running 2.6.23.1-21.fc7. I know I should report to Fedora,
+but I was wondering if this is a bug or a feature ;)
 
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Regards,
+Paul
