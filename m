@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbXK2EAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760264AbXK2ED6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbXK2EAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 23:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbXK2EAi
+	id S1760264AbXK2ED6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 23:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbXK2EDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 23:00:38 -0500
-Received: from rtr.ca ([76.10.145.34]:1711 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756321AbXK2EAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 23:00:38 -0500
-Message-ID: <474E3964.7040200@rtr.ca>
-Date: Wed, 28 Nov 2007 23:00:36 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 28 Nov 2007 23:03:50 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:24909 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750857AbXK2EDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 23:03:49 -0500
+Date: Thu, 29 Nov 2007 13:03:29 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: Make KCONFIG_ALLCONFIG work with randconfig.
+Message-ID: <20071129040329.GA10564@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Roman Zippel <zippel@linux-m68k.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20071128122011.GB29552@linux-sh.org> <Pine.LNX.4.64.0711281751160.1817@scrub.home>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] base/class.c: prevent ooops due to insert/remove race
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0711281751160.1817@scrub.home>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While doing insert/remove (quickly) tests on USB, I managed to trigger
-an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
+On Wed, Nov 28, 2007 at 06:08:16PM +0100, Roman Zippel wrote:
+> On Wed, 28 Nov 2007, Paul Mundt wrote:
+> > While allyes/mod/noconfigs do seem to work fine with KCONFIG_ALLCONFIG
+> > provisions, randconfig tramples all over the provided values at perhaps
+> > not surprisingly, random.
+> 
+> Please be careful with such broad statements, there is only an issue with 
+> choice values.
+> 
+Ok, I'll rephrase, '100% of the provided values I tested with were being
+randomly clobbered'. Is that better? Broken is broken, whether it applies
+to a small subset of symbols or not.
 
-This patch prevents this oops.
+> > Debugging this a bit, there seemed to be two issues:
+> > 
+> > 	- SYMBOL_DEF and SYMBOL_DEF_USER overlap, which made
+> > 	  def_sym->flags the same regardless of whether we came from an
+> > 	  KCONFIG_ALLCONFIG path or not.
+> 
+> Look at how SYMBOL_DEF is used in confdata.c.
+> 
+Ah, ok. I was just trying to find something I could test that would be
+different for the KCONFIG_ALLCONFIG path, but it seems like is_new is a
+much cleaner solution for this, thanks for pointing it out!
 
-There is still the larger problem of the overall race
-that caused this in the first place, but much of the rest
-of the code in class.c appears to also do NULL checks to
-avoid Oops'ing, so this continues the tradition.
+Updated patch follows.
 
-Signed-off-by:  Mark Lord <mlord@pobox.com>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
 ---
 
-Patch applies to both 2.6.24 and 2.6.23.
+ scripts/kconfig/conf.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- old/drivers/base/class.c	2007-11-28 22:54:59.000000000 -0500
-+++ linux/drivers/base/class.c	2007-11-28 22:54:48.000000000 -0500
-@@ -354,6 +354,8 @@
- 	char *class_name;
- 	int size;
- 
-+	if (!name)
-+		return NULL;
- 	size = strlen(name) + strlen(kobject_name(kobj)) + 2;
- 
- 	class_name = kmalloc(size, GFP_KERNEL);
+diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
+index a38787a..8d6f174 100644
+--- a/scripts/kconfig/conf.c
++++ b/scripts/kconfig/conf.c
+@@ -374,7 +374,8 @@ static int conf_choice(struct menu *menu)
+ 				continue;
+ 			break;
+ 		case set_random:
+-			def = (random() % cnt) + 1;
++			if (is_new)
++				def = (random() % cnt) + 1;
+ 		case set_default:
+ 		case set_yes:
+ 		case set_mod:
