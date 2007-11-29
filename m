@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932910AbXK2ThW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbXK2Thv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932910AbXK2ThW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759568AbXK2ThH
+	id S933342AbXK2Thv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXK2Thj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:37:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55025 "EHLO mx3.mail.elte.hu"
+	Thu, 29 Nov 2007 14:37:39 -0500
+Received: from s2.ukfsn.org ([217.158.120.143]:49949 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757820AbXK2ThE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:37:04 -0500
-Date: Thu, 29 Nov 2007 20:36:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefano Brivio <stefano.brivio@polimi.it>
-Cc: Dave Jones <davej@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [BUG] jiffies counter leaps in 2.6.24-rc3
-Message-ID: <20071129193624.GA15245@elte.hu>
-References: <20071124175112.58193424@morte> <200711241948.58881.rjw@sisk.pl> <20071124194635.58f5a44b@morte> <200711242031.26134.rjw@sisk.pl> <20071129095034.24b3fc59@morte> <20071129103511.GD10577@elte.hu> <20071129174548.GC12481@redhat.com> <20071129185743.46daa8ad@morte> <20071129182402.GE12481@redhat.com> <20071129202546.7a65a13c@morte>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129202546.7a65a13c@morte>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S932838AbXK2Thi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 14:37:38 -0500
+Date: Thu, 29 Nov 2007 19:37:28 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Peculiar out-of-sync boot log lines
+Message-ID: <20071129193728.2f1c237e@linuxamd.linicks.net>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stefano Brivio <stefano.brivio@polimi.it> wrote:
+Hi all,
 
-> On Thu, 29 Nov 2007 13:24:02 -0500
-> Dave Jones <davej@redhat.com> wrote:
-> 
-> > On Thu, Nov 29, 2007 at 06:57:43PM +0100, Stefano Brivio wrote:
-> 
-> >  > Do you want me to comment out adjust_jiffies() and see what happens?
-> >  
-> > Just for laughs, why not.
-> 
-> I wanted to laugh, but the behaviour didn't change at all. How boring.
+2.6.23.9
 
-just to make sure there is no tsc impact, does booting with "notsc" 
-change anything?
+I have noticed after applying Bart's patch to word93 blacklist my new
+DVD drive:
 
-if not, does booting with idle=halt or idle=poll help? [your power usage 
-will go up so it's not very useful - but it could help exclude a few 
-sources of trouble.]
+http://lkml.org/lkml/2007/10/23/475
 
-	Ingo
+I see now in logs (look at the hdd line:
+
+[dmesg]
+hdc: 39876480 sectors (20416 MB) w/2048KiB Cache, CHS=39560/16/63,
+UDMA(66)
+hdc: cache flushes not supported
+ hdc: hdc1
+hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache<7>hdd:
+skipping word 93 validity check
+, UDMA(66)
+Uniform CD-ROM driver Revision: 3.20
+
+
+<7> ??  And the ", UDMA(66)" gets new lined, so in syslog it appears all
+by itself:
+
+
+[/var/log/syslog]
+Nov 29 19:22:00 linuxamd kernel: hda: Maxtor 6Y080L0, ATA DISK drive
+Nov 29 19:22:00 linuxamd kernel: hdb: Maxtor 51536H2, ATA DISK drive
+Nov 29 19:22:00 linuxamd kernel: ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+Nov 29 19:22:00 linuxamd kernel: hdc: Maxtor 52049H3, ATA DISK drive
+Nov 29 19:22:00 linuxamd kernel: hdd: TSSTcorp CDDVDW SH-S202J, ATAPI
+CD/DVD-ROM drive
+Nov 29 19:22:00 linuxamd kernel: ide1 at 0x170-0x177,0x376 on irq 15
+Nov 29 19:22:00 linuxamd kernel: , UDMA(66)
+
+
+
+I have tried to trace this, but cannot see anywhere printk
+does this.
+
+Nick
+-- 
+Free Software Foundation Associate Member 5508
