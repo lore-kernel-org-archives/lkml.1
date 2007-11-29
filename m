@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbXK2SEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763804AbXK2SFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763745AbXK2SEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762165AbXK2SEM
+	id S1763804AbXK2SFQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761952AbXK2SFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:04:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60031 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761877AbXK2SEK (ORCPT
+	Thu, 29 Nov 2007 13:05:04 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:59585 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761523AbXK2SFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:04:10 -0500
-Message-ID: <474EFDF8.8090506@zytor.com>
-Date: Thu, 29 Nov 2007 09:59:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 29 Nov 2007 13:05:01 -0500
+Date: Thu, 29 Nov 2007 13:04:59 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
+In-Reply-To: <1196356667.3118.16.camel@lov.site>
+Message-ID: <Pine.LNX.4.44L0.0711291259300.4712-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH x86/mm 08/11] x86 ia32 ptrace getreg/putreg merge
-References: <20071129115711.9FC8526F8E7@magilla.localdomain> <20071129120031.F0F4F26F989@magilla.localdomain> <20071129173734.GA556@infradead.org>
-In-Reply-To: <20071129173734.GA556@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Thu, Nov 29, 2007 at 04:00:31AM -0800, Roland McGrath wrote:
->> +#define R32(l,q)							\
->> +	case offsetof(struct user32, regs.l):				\
->> +		regs->q = value; break
->> +
->> +#define SEG32(rs)							\
->> +	case offsetof(struct user32, regs.rs):				\
->> +		return set_segment_reg(child,				\
->> +				       offsetof(struct user_regs_struct, rs), \
->> +				       value);				\
->> +		break
-> 
-> The code would be a lot more readable if you just opencoded this in the
-> caller instead of these obsfucated macros.
-> 
+On Thu, 29 Nov 2007, Kay Sievers wrote:
 
-For better or worse, though, that is style of existing code.  I 
-personally found it easy to deal with when I went through the code recently.
+> > > Sounds fine, maybe we should also pass the name along, so it will be
+> > > obvious what happens here:
+> > >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+> > 
+> > I don't know...  Normally *_init() routines can't fail, but this could.  
+> > Then things like device_register() would run into trouble: The caller 
+> > wouldn't know whether a failure occurred before or after the 
+> > kobject_init() call, so it wouldn't know what sort of cleanup action 
+> > was needed: kfree() or device_put().
+> 
+> But wouldn't device_register() do the kobject cleanup for you when it
+> fails? Why would a caller of device_register() care about the state of
+> the kobject?
 
-	-hpa
+Let's say device_register() calls device_init(), which calls 
+kobject_init(), which fails.  Then there's no cleanup to do -- 
+device_register() returns -ENOMEM or some such code and the caller has 
+to do the kfree().
+
+Now let's say device_register() calls device_init(), which succeeds, 
+and then calls device_add(), which fails.  To recover properly, 
+somebody then has to call device_put().  That "somebody" can't be the 
+original caller -- according to the previous paragraph the original 
+caller won't do anything but kfree().  So the "somebody" has to be 
+device_register() itself.
+
+But the device_put() will call kobject_put(), which will invoke the
+device's cleanup routine, which will deallocate the structure.  Now the
+original caller gets an error code (perhaps -ENOMEM again) but must
+_not_ call kfree().
+
+So what should the original caller do when an error occurs?
+
+Alan Stern
+
