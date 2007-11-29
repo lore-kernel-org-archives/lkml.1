@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933695AbXK2Vz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933750AbXK2V4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933695AbXK2Vz0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933384AbXK2Vyw
+	id S933750AbXK2V4A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762810AbXK2Vzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:54:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45148 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933332AbXK2Vyu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:54:50 -0500
-Date: Thu, 29 Nov 2007 13:53:04 -0800
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: kobject_init rewrite
-Message-ID: <20071129215304.GA5043@kroah.com>
-References: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org> <1196352280.3118.11.camel@lov.site> <20071129172134.74849579@gondolin.boeblingen.de.ibm.com>
+	Thu, 29 Nov 2007 16:55:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56174 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932885AbXK2Vzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:55:36 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>, David Chinner <dgc@sgi.com>
+Subject: Re: XFS related Oops (suspend/resume related)
+Date: Thu, 29 Nov 2007 23:13:52 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <20071112064706.GA23595@dose.home.local> <200711292205.25431.rjw@sisk.pl> <20071129204943.GA1960@dose.home.local>
+In-Reply-To: <20071129204943.GA1960@dose.home.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071129172134.74849579@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Message-Id: <200711292313.53409.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 05:21:34PM +0100, Cornelia Huck wrote:
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
-> >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+On Thursday, 29 of November 2007, Tino Keitel wrote:
+> On Thu, Nov 29, 2007 at 22:05:24 +0100, Rafael J. Wysocki wrote:
 > 
-> Agreed. Better don't hide too much.
+> [...]
+> 
+> > Tino, can you check if this patch helps, please?
+> 
+> Not really. I suspend one to several times a day, and in most cases
+> resume works. I thing checking the patch is hard when I have no real
+> procedure to reproduce the resume failure.
 
+I see.
 
-Ok, how about this function.  If it errors out, it is free to just call
-kfree() on the kobject.  Seems simple enough to me, any objections?  If
-not, I'll go through and fix up the whole tree...
+Still, I think that the patch is needed.
 
-thanks,
+David, are you going to take it or do you want me to push it upstream?
 
-greg k-h
-
------------------
-
-/**
- * kobject_init - initialize a kobject structure
- * @kobj: pointer to the kobject to initialize
- * @ktype: pointer to the ktype for this kobject.
- * @fmt: the name of the kobject
- *
- * This function will properly initialize a kobject such that it can then
- * be passed to the kobject_add() call.
- *
- * If the function returns an error, the memory allocated by the kobject
- * can be safely freed, no other functions need to be called.
- */
-int kobject_init(struct kobject *kobj, struct kobj_type *ktype, const char *fmt, ...)
-{
-	va_list args;
-	int retval;
-
-	if (!kobj)
-		return -EINVAL;
-
-	if (!ktype)
-		return -EINVAL;
-
-	WARN_ON(atomic_read(&kobj->kref.refcount));
-	kref_init(&kobj->kref);
-	INIT_LIST_HEAD(&kobj->entry);
-	kobj->ktype = ktype;
-
-	va_start(args, fmt);
-	retval = kobject_set_name_vargs(kobj, fmt, args);
-	va_end(args);
-
-	return retval;
-}
-
+Rafael
