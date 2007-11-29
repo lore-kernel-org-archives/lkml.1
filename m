@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762524AbXK2QHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762039AbXK2QIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762524AbXK2QHq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:07:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXK2QHi
+	id S1762039AbXK2QIV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbXK2QIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:07:38 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:36469 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756632AbXK2QHh (ORCPT
+	Thu, 29 Nov 2007 11:08:07 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:37532 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756234AbXK2QIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:07:37 -0500
-To: mingo@elte.hu
-CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20071129105744.GI10577@elte.hu> (message from Ingo Molnar on
-	Thu, 29 Nov 2007 11:57:44 +0100)
-Subject: Re: scheduling anomaly on uml (was: -rt doesn't compile for UML)
-References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128150637.GA5518@c2.user-mode-linux.org> <E1IxOwS-000752-HF@dorka.pomaz.szeredi.hu> <20071128182935.GA8048@c2.user-mode-linux.org> <E1IxRv7-0007e8-Dq@dorka.pomaz.szeredi.hu> <E1IxgUe-00011b-Sl@dorka.pomaz.szeredi.hu> <20071129105744.GI10577@elte.hu>
-Message-Id: <E1Ixlv9-0001rb-U7@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 29 Nov 2007 17:07:23 +0100
+	Thu, 29 Nov 2007 11:08:04 -0500
+Date: Thu, 29 Nov 2007 11:08:03 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Raymano Garibaldi <raymano@faunos.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       <kirk@faunos.com>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+In-Reply-To: <1618816c0711290353h3c0e4192we5909725d1aff3e9@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I can't say I'm understading these traces very well, but here's a 
-> > snippet that looks a bit strange.  I'm running 'while true; do date; 
-> > done' in parallel with the dd.
-> > 
-> > For some time it is doing 100% CPU as expected, then it goes into a 
-> > second or so of mosty idle (afaics), and then returns to the normal 
-> > pattern again.
-> 
-> try:
-> 
->   echo 1 > /proc/sys/kernel/stackframe_tracing
-> 
-> to get symbolic stack backdumps for the wakeup points, and add 
-> trace_special_sym() calls to generate extra stackdump entries at 
-> arbitrary places. schedule() does not have it right now - it might make 
-> sense to add it.
+On Thu, 29 Nov 2007, Raymano Garibaldi wrote:
 
-OK, this helped.
+> The feature does work as long as the device remains plugged in and
+> that is what I have said in my previous postings too. What I'm saying
+> that should work and worked under 2.6.21 and is not working currently
+> is the ability to unplug and plug back in the device while the
+> computer is suspended before resuming without losing the mount.
 
-It looks like the delays are caused by the page allocator, and not
-UML.  Which is good news, because I'm supposed to understand memory
-management better than scheduling.
+Okay, guess I misunderstood what you wrote before.
 
-Thanks,
-Miklos
+The patch below for 2.6.23 should do what you want (and more besides).  
+It forces the USB Persist feature to apply to all persist-enabled 
+devices, whether they were unplugged or not.
+
+There's no chance of this getting accepted into the official kernel in 
+such a simple form, but at least it will allow you to do what you want.
+
+Alan Stern
 
 
+--- 2.6.23/drivers/usb/core/driver.c1	2007-11-29 10:57:36.000000000 -0500
++++ 2.6.23/drivers/usb/core/driver.c	2007-11-29 11:01:44.000000000 -0500
+@@ -1550,6 +1550,9 @@
+ 		if (!(udev->reset_resume && udev->do_remote_wakeup))
+ 			return -EPERM;
+ 	}
++
++	/* Force all system resumes to be reset-resumes */
++	udev->reset_resume = 1;
+ 	return usb_external_resume_device(udev);
+ }
+ 
 
-    bash-504   0.... 6312803us!: schedule <kswapd0-33> (-5 0)
-    bash-504   0.... 6313820us : userspace()<-fork_handler()<-<2f0a3670>()<-(    0)()
-    bash-504   0.... 6313821us+: (    0)()<-(    0)()<-(    0)()<-(    0)()
-    date-5726  0.... 6315334us+: pipe_read()<-do_sync_read()<-vfs_read()<-sys_read()
-    date-5726  0.... 6315336us : handle_syscall()<-handle_trap()<-userspace()<-fork_handler()
-    bash-504   0.... 6315340us!: schedule <date-5726> (0 0)
-    bash-504   0.... 6315731us+: io_schedule_timeout()<-congestion_wait()<-throttle_vm_writeout()<-shrink_zone()
-    bash-504   0.... 6315733us : shrink_zones()<-try_to_free_pages()<-__alloc_pages()<-do_wp_page()
-  <idle>-0     0.... 6315738us!: schedule <bash-504> (0 20)
-  <idle>-0     0.Nh. 6476223us+: __trace_start_sched_wakeup <bash-504> (120 -1)
-  <idle>-0     0.Nh. 6476228us+: __trace_start_sched_wakeup <kswapd0-33> (115 -1)
-  <idle>-0     0.Nh. 6476232us+: __trace_start_sched_wakeup <dd-5155> (120 -1)
-  <idle>-0     0.... 6476256us+: cpu_idle()<-rest_init()<-start_kernel()<-start_kernel_proc()
