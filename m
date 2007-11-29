@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXK2RRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762577AbXK2RVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbXK2RRr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070AbXK2RRg
+	id S1762577AbXK2RVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbXK2RVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:17:36 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:62532 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763522AbXK2RRf (ORCPT
+	Thu, 29 Nov 2007 12:21:34 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:56718 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758815AbXK2RVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:17:35 -0500
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
-	kobject_init
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.44L0.0711291202570.4712-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0711291202570.4712-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 18:17:47 +0100
-Message-Id: <1196356667.3118.16.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18cRGxN3HUgloJ72lWeF6HIjoKXfpyTwu6+B6l
- IBbllwWJuWFgqI5wIGUsI9wKw0xW2djCGndG2hmwWR7lBQv5WA
- AFHefB+A4Bn95ZugjW0PXMerT1nMYsM
+	Thu, 29 Nov 2007 12:21:33 -0500
+Date: Thu, 29 Nov 2007 12:21:21 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: does /proc/sys/kernel/modprobe actually do anything?
+In-Reply-To: <3ae72650711290914q162e81a8l9fbecf1a1196ba79@mail.gmail.com>
+Message-ID: <alpine.LFD.0.9999.0711291218240.2902@localhost.localdomain>
+References: <alpine.LFD.0.9999.0711290438060.13461@localhost.localdomain>  <b6fcc0a0711290207jf82e618uccecf922a22c4f33@mail.gmail.com>  <alpine.LFD.0.9999.0711290756090.29674@localhost.localdomain>
+ <3ae72650711290914q162e81a8l9fbecf1a1196ba79@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 12:06 -0500, Alan Stern wrote:
-> On Thu, 29 Nov 2007, Kay Sievers wrote:
-> 
-> > > In fact, if we were designing the kobject API from scratch, I'd suggest 
-> > > making the ktype value an argument to kobject_init() so that it 
-> > > _couldn't_ be omitted.
-> > 
-> > Sounds fine, maybe we should also pass the name along, so it will be
-> > obvious what happens here:
-> >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
-> 
-> I don't know...  Normally *_init() routines can't fail, but this could.  
-> Then things like device_register() would run into trouble: The caller 
-> wouldn't know whether a failure occurred before or after the 
-> kobject_init() call, so it wouldn't know what sort of cleanup action 
-> was needed: kfree() or device_put().
+On Thu, 29 Nov 2007, Kay Sievers wrote:
 
-But wouldn't device_register() do the kobject cleanup for you when it
-fails? Why would a caller of device_register() care about the state of
-the kobject?
+> On Nov 29, 2007 1:58 PM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+> > On Thu, 29 Nov 2007, Alexey Dobriyan wrote:
+> >
+> > > On 11/29/07, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+> > > > echo '#! /bin/sh' > /tmp/modprobe
+> > > > echo 'echo "$@" >> /tmp/modprobe.log' >> /tmp/modprobe
+> > > > echo 'exec /sbin/modprobe "$@"' >> /tmp/modprobe
+> > > > chmod a+x /tmp/modprobe
+> > > > echo /tmp/modprobe > /proc/sys/kernel/modprobe
+> > > >
+> > > >   i've tried that and i don't see that it does anything whatsoever.  i
+> > > > ran modprobe under "strace" and it doesn't appear to make any effort
+> > > > to check /proc/sys/kernel/modprobe.
+> > >
+> > > Kernel, not modprobe, checks /proc/sys/kernel/modprobe .
+> >
+> > actually, ignore that earlier query of mine, i've found the relevant
+> > code under kernel/ in sysctl.c and sysctl_check.c and kmod.c.  but
+> > it's still not clear why what is described in
+> > Documentation/debugging-modules.txt (and shown above) doesn't work, so
+> > i'm still open to suggestions.  thanks.
+>
+> Kernel code can request a module to be loaded by calling
+> request_module(). The /proc/sys/kernel/modprobe value is the path to
+> the binary which the kernel executes when this function is called.
+> It is used by some modules, or if you open an existing device node
+> which has no actual driver loaded.
+>
+> Most modules are loaded by device id's (modalias) of a device. The
+> module is loaded by pure userspace tools and not by the kernel and
+> therefore /proc/sys/kernel/modprobe is not involved at all in most
+> module loading.
+>
+> The text in Documentation/debugging-modules.txt is purely about
+> kernel module loading requests, and not helpful for the common
+> module loading case.
 
-> > Oh, if you want to rewind on error and have an initialized but still
-> > unregistered kobject, and just want to free the allocated name by
-> > calling kobject_cleanup() or kobject_put() you might not expect, that
-> > your whole object that embeds the kobject will be gone. Just something
-> > we need to document ...
-> 
-> When that sort of thing happens, the unwinding should be done by the   
-> code responsible for whole object.  For example, if device_add() fails
-> then the caller should go on to call device_put() rather than
-> kfree(dev).
-> 
-> That's how you would expect things to work in most cases.  There aren't
-> many bare kobjects in the kernel.
-> 
-> I agree that documenting this behavior would be good.
+i'd eventually come to a conclusion sort of like that.  so that
+suggests that what's in Documentation/debugging-modules.txt should
+really be updated to reflect that; otherwise, other folks might trip
+across it like i did and wonder why it's just not working for them.
 
-Ok, fine. Hope we will collect all that information in the end. :)
+rday
 
-Kay
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://crashcourse.ca
+========================================================================
