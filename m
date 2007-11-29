@@ -1,91 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbXK2JKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbXK2JK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760257AbXK2JKd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 04:10:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXK2JKQ
+	id S1761627AbXK2JK5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 04:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761380AbXK2JKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 04:10:16 -0500
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:35154
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751451AbXK2JKO (ORCPT
+	Thu, 29 Nov 2007 04:10:39 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40480 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761135AbXK2JKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 04:10:14 -0500
-Date: Thu, 29 Nov 2007 01:09:26 -0800
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pete Zaitcev <zaitcev@redhat.com>,
-       Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
-       linux-usb@vger.kernel.org, preining@logic.at,
-       kristoffer.ericson@gmail.com, drussell@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Add the infamous Huawei E220 to option.c
-Message-ID: <20071129090926.GD24795@one-eyed-alien.net>
-Mail-Followup-To: Oliver Neukum <oliver@neukum.org>,
-	Pete Zaitcev <zaitcev@redhat.com>,
-	Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
-	linux-usb@vger.kernel.org, preining@logic.at,
-	kristoffer.ericson@gmail.com, drussell@redhat.com,
-	linux-kernel@vger.kernel.org
-References: <20071128161305.b01167b3.zaitcev@redhat.com> <200711290844.39428.oliver@neukum.org> <20071129000149.7569eab1.zaitcev@redhat.com> <200711290914.48050.oliver@neukum.org>
+	Thu, 29 Nov 2007 04:10:34 -0500
+Date: Thu, 29 Nov 2007 01:09:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, samba-technical@lists.samba.org,
+       nfs@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>, Balbir Singh <balbir@in.ibm.com>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted
+ partitions
+Message-Id: <20071129010906.772e0c15.akpm@linux-foundation.org>
+In-Reply-To: <474E7F9E.9000601@linux.vnet.ibm.com>
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+	<474E7F9E.9000601@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ylS2wUBXLOxYXZFQ"
-Content-Disposition: inline
-In-Reply-To: <200711290914.48050.oliver@neukum.org>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2007 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Thu, 29 Nov 2007 01:09:27 -0800 (PST)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
---ylS2wUBXLOxYXZFQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hi Andrew,
+> 
+> While running file system stress on nfs and cifs mounted partitions, the machine
+> drops to xmon
+> 
+> 1:mon> e
+> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
+>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
+>     lr: c0000000001074d0: .vfs_link+0x204/0x298
+>     sp: c000000080a9fb00
+>    msr: 8000000000009032
+>    dar: 280 
+>  dsisr: 40010000
+>   current = 0xc0000000c8e6f670
+>   paca    = 0xc000000000512c00
+>     pid   = 2848, comm = fsstress
+> 1:mon> t
+> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
+> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
+> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
+> --- Exception: c00 (System Call) at 000000000ff1bdfc
+> SP (ffeaed10) is in userspace
+> 1:mon> r
+> R00 = c0000000001074d0   R16 = 0000000000000000
+> R01 = c000000080a9fb00   R17 = 0000000000000000
+> R02 = c00000000060c380   R18 = 0000000000000000
+> R03 = 0000000000000000   R19 = 0000000000000000
+> R04 = 0000000000000004   R20 = 0000000000000000
+> R05 = 0000000000000000   R21 = 0000000000000000
+> R06 = 0000000000000000   R22 = 0000000000000000
+> R07 = 0000000000000000   R23 = 0000000000000004
+> R08 = 0000000000000000   R24 = 0000000000000280
+> R09 = 0000000000000000   R25 = fffffffffffff000
+> R10 = 0000000000000001   R26 = c000000082827790
+> R11 = c0000000003963e8   R27 = c0000000828275a0
+> R12 = d000000000deec78   R28 = 0000000000000000
+> R13 = c000000000512c00   R29 = c00000007b18fcf0
+> R14 = 0000000000000000   R30 = c0000000005bc088
+> R15 = 0000000000000000   R31 = 0000000000000000
+> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
+> lr  = c0000000001074d0 .vfs_link+0x204/0x298
+> msr = 8000000000009032   cr  = 24000882
+> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
+> dar = 0000000000000280   dsisr = 40010000
+> 
+> 
+> The gdb output shows 
+> 
+> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
+> 103      * fsnotify_create - 'name' was linked in
+> 104      */  
+> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+> 106     {   
+> 107             inode_dir_notify(inode, DN_CREATE);
+> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
+> 109                                       dentry->d_inode);
+> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
+> 111     }   
+> 112
+> 
 
-On Thu, Nov 29, 2007 at 09:14:47AM +0100, Oliver Neukum wrote:
-> Am Donnerstag, 29. November 2007 09:01:49 schrieb Pete Zaitcev:
-> > On Thu, 29 Nov 2007 08:44:38 +0100, Oliver Neukum <oliver@neukum.org> w=
-rote:
-> > > 3. Make sure usbcore doesn't probe the devices in the wrong mode with=
- the
-> > > option driver
-> >
-> > This fixes duplication. And to take it further, why don't we turn this
-> > idea around and let usb-storage fail to attach with some "ignore" quirk?
-> > I suspect that someone put the initializer into usb-storage in order
-> > to let the generic usb serial to work, but this simply was a bad idea.
->=20
-> Yes, you are right. That's the correct approach.
-
-Changing the unusual_devs.h flag to IGNORE_DEVICE should accomplish what
-you want.
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-C:  Like the Furby?
-DP: He gives me the creeps.  Think the SPCA will take him?
-					-- Cobb and Dust Puppy
-User Friendly, 1/2/1999
-
---ylS2wUBXLOxYXZFQ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHToHGHL9iwnUZqnkRAthpAKCDxTlSan6DyZEsWDceeGnM5UZyYwCfZyOd
-NyPAht5O7rb+KjsRn1SrB2E=
-=Xwo/
------END PGP SIGNATURE-----
-
---ylS2wUBXLOxYXZFQ--
+If it is reproducible can you please try reverting
+inotify-send-in_attrib-events-when-link-count-changes.patch?
