@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761804AbXK2KNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762225AbXK2KOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761804AbXK2KNG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbXK2KMz
+	id S1762225AbXK2KOm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXK2KOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:12:55 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:13442 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756508AbXK2KMy (ORCPT
+	Thu, 29 Nov 2007 05:14:33 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:7629 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756508AbXK2KOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:12:54 -0500
-Date: Thu, 29 Nov 2007 11:12:51 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071129111251.35b3b17d@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0711281407320.5566-100000@iolanthe.rowland.org>
-References: <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.44L0.0711281407320.5566-100000@iolanthe.rowland.org>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 05:14:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=h5ijABzhY4rbZUo8baVHiDMs9FXa/skWxNYE6mlzDp731KwCQzUW9sGUW1YBDEjTGcjBpi77H9wxi3Rb22VLrzoRPbfqVgIYtX6KkNbiPe91gxABPGs39rD8m/oZ1jKDh+MocgGRUwySk9E2VZ8ZR6jHJnaR40OIF/HPvffdURE=
+Message-ID: <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
+Date: Thu, 29 Nov 2007 11:14:30 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
+Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Daniel Walker" <dwalker@mvista.com>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3efb10970711260531x5e9f05acgfabdfa885a220192@mail.gmail.com>
+	 <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com>
+	 <1196176294.13982.58.camel@localhost.localdomain>
+	 <1196177122.23808.7.camel@imap.mvista.com>
+	 <1196178834.23808.11.camel@imap.mvista.com>
+	 <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
+	 <20071128172509.GA30173@flint.arm.linux.org.uk>
+	 <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com>
+	 <20071128200550.GA3494@flint.arm.linux.org.uk>
+	 <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
+X-Google-Sender-Auth: 2dd6760896f9b5b1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 14:18:18 -0500 (EST),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+Hello Steven,
 
-> On Wed, 28 Nov 2007, Cornelia Huck wrote:
-> 
-> > We should perhaps add a bit fat warning here:
-> > 
-> > Note that once you registered your kobject via kobject_add(), you must
-> > never use kfree() to free it directly. The only safe way is to use
-> 
-> Slightly ambiguous.  Instead just say:
-> 
-> If you have initialized your kobject via kobject_init() or
-> kobject_register(), you must not deallocate the kobject anywhere other
-> than its release() method (which is invoked during the final
-> kobject_put() call).  Otherwise the kernel will leak memory.
+> Remy, sorry about this round-a-bout. But I don't have any of the hardware
+> that this affects, and I'm just being cautious.
 
-And references to the kobject's kset...
+No problem, I expected this discussion when I submitted the patch. It
+is logical that everybody is cautious on this subject. But still,
+there is a bug here. The question is how to figure out the best
+solution. (with the least chance of regression).
 
-> 
-> > > One important point cannot be overstated: every kobject must have a
-> > > release() method, and the kobject must persist (in a consistent state)
-> > > until that method is called. 
-> > 
-> > Which is especially hurting if you use kobjects in modules. (Which
-> > reminds me: Must dig up the patchset that fixes the module unload vs.
-> > release problem.)
-> 
-> In theory modules shouldn't present a problem -- especially if Greg 
-> merges the "Kobjects: drop child->parent ref at unregistration" patch.
-> 
-> When a module is unloaded, it has to unregister all its kobjects, which 
-> should force all their children to be unregistered too.  At that time 
-> the children's drivers should drop all their references to the parent 
-> kobject, leaving only references held by the module being unloaded.  
-> Presumably it can arrange to drop its own references before its exit() 
-> routine returns.
-> 
-> The only problem arises when a child's driver retains a reference to 
-> the parent kobject.  If things are done properly, this reference should 
-> involve incrementing the module count -- which would prevent the module 
-> from being unloaded in the first place.
+I do not think Russell is right here with assuming that the wrong
+interrupt handler type is used. Looking at the behaviour of the
+mainline kernel (non-RT), the implementation is quite different: On
+mainline the handle_simple_irq() in chip.c is not re-entrant, the
+masking is **only** done in case of errors, and therefor never
+unmasked again, of course.
+On RT the masking is done when the next interrupt arrives, while the
+1st interrupt is in progress by the interrupt thread, so it is masked
+under normal valid conditions, and never unmasked. So, this is where
+the real bug is.
 
-This still leaves the possibility that random code may grab a reference
-once the kobject is present in the tree and lookupable. You gave up the
-control of the number of references to your object once you made it
-public.
+So, I see 2 solutions:
+* Never mask the interrupt in the first place. (should also work for
+this type of interrupt)
+* Add an unmask to the interrupt, once it is handled. (I chose this
+route with my patch)
+
+It is definitely only related to interrupt threading, and thus only RT related.
+
+Kind Regards,
+
+Remy
