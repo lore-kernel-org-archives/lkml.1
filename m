@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbXK2REz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbXK2RGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763132AbXK2REz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763433AbXK2REl
+	id S1763310AbXK2RGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761459AbXK2RG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:04:41 -0500
-Received: from there.is.no.cabal.ca ([134.117.69.58]:37201 "EHLO
-	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763417AbXK2REk (ORCPT
+	Thu, 29 Nov 2007 12:06:28 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:34911 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761330AbXK2RG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:04:40 -0500
-Date: Thu, 29 Nov 2007 12:04:36 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, avuton@gmail.com, hancockr@shaw.ca,
-       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org, mrmacman_g4@mac.com,
-       dean@arctic.org, argggh@dolphinics.no, jengelh@computergmbh.de,
-       shdl@zakalwe.fi, vlobanov@speakeasy.net, drzeus-list@drzeus.cx,
-       strange@nsk.no-ip.org, dm.n9107@gmail.com, johannes@sipsolutions.net
-Subject: Re: [RFC v2] Documentation about unaligned memory access
-Message-ID: <20071129170436.GA2754@fattire.cabal.ca>
-References: <20071129161523.E0C349D4B52@zog.reactivated.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129161523.E0C349D4B52@zog.reactivated.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 29 Nov 2007 12:06:27 -0500
+Subject: Re: Out of tree module using LSM
+From: Jon Masters <jonathan@jonmasters.org>
+To: Greg KH <greg@kroah.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Valdis.Kletnieks@vt.edu,
+       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071129164746.GB9664@kroah.com>
+References: <20071128144156.GA14106@infradead.org>
+	 <416908.77038.qm@web36613.mail.mud.yahoo.com>
+	 <20071128164613.GA21815@infradead.org>
+	 <25290.1196273705@turing-police.cc.vt.edu>
+	 <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com>
+	 <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+	 <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion>
+	 <20071129164746.GB9664@kroah.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Thu, 29 Nov 2007 12:05:36 -0500
+Message-Id: <1196355936.6473.74.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
 
-On Thu, Nov 29, 2007 at 04:15:23PM +0000, Daniel Drake wrote:
-> Unaligned memory accesses occur when you try to read N bytes of data starting
-> from an address that is not evenly divisible by N (i.e. addr % N != 0).
-> For example, reading 4 bytes of data from address 0x10004 is fine, but
-> reading 4 bytes of data from address 0x10005 would be an unaligned memory
-> access.
+On Thu, 2007-11-29 at 08:47 -0800, Greg KH wrote:
+> On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
+> > On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
+> > 
+> > > The easiest way is as Al described above, just have the userspace
+> > > program that wrote the file to disk, check it then.
+> > 
+> > But the problem is that this isn't just Samba, this is a countless
+> > myriad of different applications. And if one of them doesn't support
+> > on-access scanning, then the whole solution isn't worth using.
 > 
+> Ok, which specific applications do they care about?  Last time I asked
+> it was still limited to a very small handful, all of which would be
+> trivial to add such a hook to.
 
-This is rather ambiguous, while most people know what you mean,
-clarifying it a bit might be nice. How about something like,
+Like I said, I'm trying to put together a set of "feature requirements"
+that we can publish to LKML and get feedback. I am lead to believe that
+they basically want to trap every file operation, of every potential
+userspace program, so I don't think it's a handful at this point.
 
-Unaligned memory accesses occur when trying to read more than a byte
-(i.e. u16, u32, u64) in a single instruction from an address that is not
-evenly divisible by the width of the type (i.e. addr % width != 0).
-
-For example, if you had 4GB of virtual memory, picture it as an
-array of bytes,
-	u8 memory[4096 * (1024 * 1024)];	/* 4G bytes */
-Aligned accesses would be accessing this array in this manner,
-	u16 memory[(4096 * (1024 * 1024)) / sizeof(u16)] /* 2G bytes */
-	u32 memory[(4096 * (1024 * 1024)) / sizeof(u32)] /* 1G bytes */
-	u64 memory[(4096 * (1024 * 1024)) / sizeof(u64)] /* 512M bytes */
-And an unaligned access would be accessing on a non-integer multiple
-boundary.
-
-Ok, that kind of sucked too. But you get the idea.
-
+> > > There are some nice SAMBA plugins that do just that already out there...
+> > 
+> > That's really not the problem :-)
 > 
-> Why unaligned access is bad
-> ===========================
-> 
+> Yes it is.  That's all you want to catch, when a Windows machine wants
+> to access a file on a SAMBA server.  Do the check then, in userspace.
 
-The rest of this looks good.
+Oh, I meant that if it was just Samba we'd all be home and dry by now.
 
-Acked-by: Kyle McMartin <kyle@parisc-linux.org>
+> Believe me, I've been over and over and over and over this before...
 
-cheers,
-	Kyle
+Yeah. I know, I'm trying not to flog a dead horse here, but I think
+there's real genuine interest here this time around. So, maybe I'm just
+trying because everyone else already did, but it's worth a shot :-)
+
+Jon.
+
+
