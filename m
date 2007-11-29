@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934244AbXK2XbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934496AbXK2Xbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934244AbXK2XbQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 18:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932841AbXK2XbA
+	id S934496AbXK2Xbf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 18:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934366AbXK2XbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 18:31:00 -0500
-Received: from mx2.suse.de ([195.135.220.15]:37867 "EHLO mx2.suse.de"
+	Thu, 29 Nov 2007 18:31:20 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:1076 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932747AbXK2Xa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 18:30:59 -0500
-Date: Fri, 30 Nov 2007 00:30:58 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: remap_file_pages() broken in 2.6.23?
-Message-ID: <20071129233058.GA10359@wotan.suse.de>
-References: <474F16D3.5060009@redhat.com>
+	id S934351AbXK2XbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 18:31:18 -0500
+Subject: Re: [PATCH] Reduce stack used by lib/hexdump.c
+From: Joe Perches <joe@perches.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr>
+References: <1196359724.22120.22.camel@localhost>
+	 <20071129102400.dac158d8.randy.dunlap@oracle.com>
+	 <1196361860.22120.27.camel@localhost> <474F0A68.1080809@oracle.com>
+	 <1196369873.22120.69.camel@localhost> <474F28EB.20608@oracle.com>
+	 <Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 15:28:42 -0800
+Message-Id: <1196378922.22120.72.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474F16D3.5060009@redhat.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 02:45:23PM -0500, Chuck Ebbert wrote:
-> Original report: https://bugzilla.redhat.com/show_bug.cgi?id=404201
-> 
-> The test case below, taken from the LTP test code, prints -1 (as
-> expected) on 2.6.22 and 0 on 2.6.23. It tries to remap an out-of-range
-> page. Proposed patch follows the program. Bug was apparently caused by
-> commit 54cb8821de07f2ffcd28c380ce9b93d5784b40d7.
+On Thu, 2007-11-29 at 22:07 +0100, Jan Engelhardt wrote:
+> I'd add GFP_ATOMIC here. Who knows whether tomorrow, the oops dumper
+> or warn_on will use print_hex_dump.
 
-Ah, that's not such good behaviour anyway. mmap is allowed to map
-outside the file offset, so you're telling me that remap_file_pages
-just magically should not be allowed to remap these...?
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 70e23fb..be94934 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -140,13 +140,20 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
+  * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
+  */
++
++#define HEX_LINE_SIZE 200
++
+ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 			int rowsize, int groupsize,
+ 			const void *buf, size_t len, bool ascii)
+ {
+ 	const u8 *ptr = buf;
+ 	int i, linelen, remaining = len;
+-	unsigned char linebuf[200];
++	unsigned char *linebuf;
++
++	linebuf = kmalloc(HEX_LINE_SIZE, GFP_ATOMIC);
++	if (!linebuf) {
++		WARN_ON(1);
++		return;
++	}
+ 
+ 	if (rowsize != 16 && rowsize != 32)
+ 		rowsize = 16;
+@@ -155,7 +162,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 		linelen = min(remaining, rowsize);
+ 		remaining -= rowsize;
+ 		hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
+-				linebuf, sizeof(linebuf), ascii);
++				linebuf, HEX_LINE_SIZE, ascii);
+ 
+ 		switch (prefix_type) {
+ 		case DUMP_PREFIX_ADDRESS:
+@@ -170,6 +177,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 			break;
+ 		}
+ 	}
++	kfree(linebuf);
+ }
+ EXPORT_SYMBOL(print_hex_dump);
  
 
-> Patch:
-> 
-> Signed-off-by: Supriya Kannery <supriyak@in.ibm.com>
-> 
-> --- linux-2.6.23/mm/fremap.c.orig	2007-11-22 00:56:09.000000000 -0600
-> +++ linux-2.6.23/mm/fremap.c	2007-11-26 03:08:55.000000000 -0600
-> @@ -124,6 +124,7 @@ asmlinkage long sys_remap_file_pages(uns
->  	struct vm_area_struct *vma;
->  	int err = -EINVAL;
->  	int has_write_lock = 0;
-> +	unsigned long f_size = 0;
->  
->  	if (__prot)
->  		return err;
-> @@ -181,6 +182,14 @@ asmlinkage long sys_remap_file_pages(uns
->  			goto retry;
->  		}
->  		mapping = vma->vm_file->f_mapping;
-> +
-> +		f_size = i_size_read(mapping->host) + PAGE_CACHE_SIZE - 1;
-> +		f_size = f_size >> PAGE_CACHE_SHIFT;
-> +		if ((pgoff + size >> PAGE_CACHE_SHIFT) > f_size) {
-> +			err = -EINVAL;
-> +			goto out;
-> +		}
-> +
->  		/*
->  		 * page_mkclean doesn't work on nonlinear vmas, so if
->  		 * dirty pages need to be accounted, emulate with linear
-
-
-I don't think there is anything preventing truncate races here. Theoretically
-we could do it by taking i_mutex around here, but anyway then a subsequent
-truncate is just going to be able to cause the mapping to be out of bounds
-anyway.
-
-If it were any other syscall than remap_file_pages, I'd be much more
-hesitant to say this: I propose we change the test case instead. I
-also changed other elements of the API, and we had the result tested
-and verified by Oracle...
 
