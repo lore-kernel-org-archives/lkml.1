@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbXK2SSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbXK2STt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932965AbXK2SSt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932766AbXK2SSD
+	id S933032AbXK2STt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbXK2STg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:18:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53842 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933074AbXK2SSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:18:00 -0500
-Message-ID: <474F0243.1020103@redhat.com>
-Date: Thu, 29 Nov 2007 13:17:39 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 29 Nov 2007 13:19:36 -0500
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:54030 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932544AbXK2STf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:19:35 -0500
+Message-ID: <474F02B2.6010406@tiscali.nl>
+Date: Thu, 29 Nov 2007 19:19:30 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH?] OSS: fix operator precedence in return of btaudio_dsp_ioctl
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/2007 01:09 PM, Linus Torvalds wrote:
->>>  	case offsetof(struct user32, regs.gs):
->>>  		*val = child->thread.gsindex;
->>> +		if (child == current)
->>> +			asm("movl %%gs,%0" : "=r" (*val));
->> Won't this return the kernel's GS instead of the user's?
-> 
-> No, %gs is untouched by the kernel, so it contains user space version, and 
-> getting the value directly from %gs looks correct.
-> 
+First of all, is /sound/oss/* still maintained?
 
-But this is x86_64, where swapgs is done on kernel entry.
+#define HWBASE_AD (448000)
+...
+with if(bta->analog) evaluating to true bta->decimation may range
+from 15 to 5
+...
+HWBASE_AD*4/bta->decimation>>bta->sampleshift
 
+which is equivalent to 
+
+((HWBASE_AD * 4)/bta->decimation) >> bta->sampleshift
+
+actually may evaluate to something like:
+
+(1792000 / 15 ) >> bta->sampleshift
+
+Isn't intended (HWBASE_AD * 4)/(bta->decimation >> bta->sampleshift)?
+Then consider the patch below.
+--
+Fix operator precedence in return
+
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/sound/oss/btaudio.c b/sound/oss/btaudio.c
+index 4d5cf05..2a5cace 100644
+--- a/sound/oss/btaudio.c
++++ b/sound/oss/btaudio.c
+@@ -661,7 +661,8 @@ static int btaudio_dsp_ioctl(struct inode *inode, struct file *file,
+ 		/* fall through */
+         case SOUND_PCM_READ_RATE:
+ 		if (bta->analog) {
+-			return put_user(HWBASE_AD*4/bta->decimation>>bta->sampleshift, p);
++			return put_user((HWBASE_AD * 4) /
++				(bta->decimation >> bta->sampleshift), p);
+ 		} else {
+ 			return put_user(bta->rate, p);
+ 		}
