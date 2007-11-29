@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763491AbXK2RRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXK2RRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763491AbXK2RRb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762912AbXK2RRL
+	id S1763671AbXK2RRr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070AbXK2RRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:17:11 -0500
-Received: from py-out-1112.google.com ([64.233.166.182]:28813 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762742AbXK2RRJ (ORCPT
+	Thu, 29 Nov 2007 12:17:36 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:62532 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763522AbXK2RRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:17:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Yji5N+fhtYvwrqThKRzlDh1ieToS/7q6NKrAk0BDLsBy4FafZoaBhnwI+lnoNyCuLrTuKl2ROnVBEvRWKnFa+Hyg/2x51jGckff9kybbtoE7LoqL6ib8JWfiSylv2p3YWJ4Xg2H4RvsMUGc6URHzAtaQC0xlboiaO77A7CJS6gM=
-Message-ID: <5501535d0711290917r16a16b0dx36669de89f829231@mail.gmail.com>
-Date: Thu, 29 Nov 2007 18:17:07 +0100
-From: "Bjoern Olausson" <lkmlist@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata NCQ blacklist entry
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <4731B5DD.1060203@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 29 Nov 2007 12:17:35 -0500
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
+	kobject_init
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711291202570.4712-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0711291202570.4712-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 18:17:47 +0100
+Message-Id: <1196356667.3118.16.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071107111813.GA9064@dudweiler.stuttgart.redhat.com>
-	 <4731B5DD.1060203@gmail.com>
+X-Provags-ID: V01U2FsdGVkX18cRGxN3HUgloJ72lWeF6HIjoKXfpyTwu6+B6l
+ IBbllwWJuWFgqI5wIGUsI9wKw0xW2djCGndG2hmwWR7lBQv5WA
+ AFHefB+A4Bn95ZugjW0PXMerT1nMYsM
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/7/07, Tejun Heo <htejun@gmail.com> wrote:
->
-> Thanks.  We're currently trying to find out what's actually going on
-> with all these drives.  At first, drives which got blacklisted aren't
-> many and made sense (had other problems with NCQ, etc..) but with new
-> generation drives from many vendors showing the same symptom, we aren't
-> too sure now.
->
-> I'll keep your email in my todo list and add the drive to the blacklist
-> once the problem is verified.
->
-> Thanks.
+On Thu, 2007-11-29 at 12:06 -0500, Alan Stern wrote:
+> On Thu, 29 Nov 2007, Kay Sievers wrote:
+> 
+> > > In fact, if we were designing the kobject API from scratch, I'd suggest 
+> > > making the ktype value an argument to kobject_init() so that it 
+> > > _couldn't_ be omitted.
+> > 
+> > Sounds fine, maybe we should also pass the name along, so it will be
+> > obvious what happens here:
+> >   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+> 
+> I don't know...  Normally *_init() routines can't fail, but this could.  
+> Then things like device_register() would run into trouble: The caller 
+> wouldn't know whether a failure occurred before or after the 
+> kobject_init() call, so it wouldn't know what sort of cleanup action 
+> was needed: kfree() or device_put().
 
-Something new on the NCQ front?
-Just asking if you need someone to test some of your ideas?
+But wouldn't device_register() do the kobject cleanup for you when it
+fails? Why would a caller of device_register() care about the state of
+the kobject?
 
-I got the "WDC WD740ADFD-00NLR1"
+> > Oh, if you want to rewind on error and have an initialized but still
+> > unregistered kobject, and just want to free the allocated name by
+> > calling kobject_cleanup() or kobject_put() you might not expect, that
+> > your whole object that embeds the kobject will be gone. Just something
+> > we need to document ...
+> 
+> When that sort of thing happens, the unwinding should be done by the   
+> code responsible for whole object.  For example, if device_add() fails
+> then the caller should go on to call device_put() rather than
+> kfree(dev).
+> 
+> That's how you would expect things to work in most cases.  There aren't
+> many bare kobjects in the kernel.
+> 
+> I agree that documenting this behavior would be good.
 
-by the way, and OT, did the Plextor DVD-RW drive reach you, Tejun?
+Ok, fine. Hope we will collect all that information in the end. :)
+
+Kay
+
