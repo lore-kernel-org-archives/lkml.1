@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932661AbXK2Q0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbXK2Q2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932661AbXK2Q0p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXK2Q0U
+	id S932712AbXK2Q2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932080AbXK2Q16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:26:20 -0500
-Received: from pmx2.sophos.com ([213.31.172.17]:53453 "EHLO pmx2.sophos.com"
+	Thu, 29 Nov 2007 11:27:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51774 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932427AbXK2Q0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:26:18 -0500
-In-Reply-To: <20071128183040.GW8181@ftp.linux.org.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Valdis.Kletnieks@vt.edu
+	id S932070AbXK2Q15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 11:27:57 -0500
 Subject: Re: Out of tree module using LSM
-MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 6.5.5 November 30, 2005
-Message-ID: <OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
-From: tvrtko.ursulin@sophos.com
-Date: Thu, 29 Nov 2007 16:26:12 +0000
-X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.2FP1|January 10, 2007) at
- 29/11/2007 16:26:15,
-	Serialize complete at 29/11/2007 16:26:15
-Content-Type: text/plain; charset="US-ASCII"
+From: Jon Masters <jcm@redhat.com>
+To: James Morris <jmorris@namei.org>
+Cc: tvrtko.ursulin@sophos.com,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+In-Reply-To: <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
+References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
+	 <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Thu, 29 Nov 2007 11:27:45 -0500
+Message-Id: <1196353666.6473.43.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ftp.linux.org.uk> wrote on 28/11/2007 18:30:40:
-
-> On Wed, Nov 28, 2007 at 01:15:05PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> > (Note that the concept has interesting implications in the other 
-> direction as
-> > well - rather than stopping you from reading a file that has 
-> malware, you could
-> > in theory write an anti-export package that would let you write 
-> onto external
-> > memory or outbound e-mail, but prevent the write if it was 
-> corporate-sensitive
-> > data, or whatever.
+On Thu, 2007-11-29 at 11:12 +1100, James Morris wrote:
+> On Wed, 28 Nov 2007, tvrtko.ursulin@sophos.com wrote:
 > 
-> You _can_ _not_ do that.  If shared mapping gets dirtied, you have no 
-way to
-> intercept that.  At all.  Especially since the page stays mapped while 
-it is
-> written out, so the next modification can come when hardware had already
-> started outbound DMA and there's no way to abort it, no matter what your
-> external scanner would do.
+> > So as there is no question the current code does some ugly things it is 
+> > even more true that we would be even more happy to use an official API. 
 > 
-> Folks, really, that doesn't work.  At all.  You can intercept all system
-> calls you want and it will not be enough to prevent the "bad" contents
-> from hitting the disk.
+> How about becoming involved in creating that official API ?
 
-On this level we are not talking about stopping bad stuff from hitting the 
-disk. There is a lot simpler scenario how that can happen and that is via 
-a dropper at which point it can be detected and reported when the file is 
-closed. But more importantly further access to it can be blocked until 
-appropriate actions are taken which also applies with your example, no? Is 
-it possible to open for execute and have dirty mappings (or open for 
-write) on a file at the same time?
+Sophos are interested in doing so, and we have spoken about this several
+times recently over the phone. This is why they sent the email in
+question yesterday, to kickstart debate. And that's awesome. I am trying
+to bring a few of these folks together at the moment, so that we can get
+a solution that is acceptable to upstream at some point in the future.
 
-> And if we are talking about the situation when files are written to in
-> controlled way (i.e. we are not concerned with malware running on the 
-box
-> in question and just want to stop it from passing through mailsewer, 
-etc.),
-> then there's no damn need to play with LSM - just have e.g. coda with 
-its
-> commit-on-close and run the scanner on commit.  End of story.  Mind you,
-> in such setups one would be much better off just having the mail server 
-run
-> the tests explicitly in the userland, along with the rest of anti-spam, 
-etc.
-> filters.
+So, rather than criticise their current code, or their intentions, or
+blanketly dismiss the virus protection market, perhaps we can focus
+instead on the fact that there is a known third party who wishes to
+perform a task that is not well supportable at this moment. We can all
+agree the syscall table hacking isn't such a good idea - but these guys
+are *very* open to listening to useful alternative suggestions.
 
-That is true for that scenario.
+They (virus protection folks) generally think they want to intercept
+various system calls, such as open() and block until they have performed
+a scan operation on the file. I explained the mmap issue to several of
+these companies recently, in quite some detail, and I know they are
+interested in listening this time around :-) At the end of the day, what
+I have been lead to believe is that they don't care whether they
+intercept syscall entries, or use a better method, they just want to
+scan files and take some action if a file is "bad". That's it really.
 
---
-Tvrtko August Ursulin
-Senior Software Engineer, Sophos
+I have been trying to put together an exact feature set that is needed
+from these different vendors, so we can discuss it further here, and
+hopefully actually get somewhere, too. There have been a few delays
+after I pointed out the mmap issues at some length.
 
-"Views and opinions expressed in this email are strictly those of the 
-author.
- The contents has not been reviewed or approved by Sophos."
+Jon.
 
-Tel: 01235 559933
-Web: www.sophos.com
-Protecting business against viruses, spyware, spam and policy abuse
-
-
-Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
-OX14 3YP, United Kingdom.
-
-Company Reg No 2096520. VAT Reg No GB 348 3873 20.
 
