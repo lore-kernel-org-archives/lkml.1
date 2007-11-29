@@ -1,96 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbXK2Fl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXK2FxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbXK2Fl1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 00:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXK2FlR
+	id S1755945AbXK2FxJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 00:53:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXK2Fwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 00:41:17 -0500
-Received: from nz-out-0506.google.com ([64.233.162.239]:27157 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbXK2FlQ (ORCPT
+	Thu, 29 Nov 2007 00:52:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34113 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751719AbXK2Fwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 00:41:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=G/aNWuS5KWA/xouV69UhdGMVmvUMtbJSywre2dLjyVg2rkUIL+m369IJg8yLBkY+AhGaUX7sMQ9uKc49hg+ymKOxGlenAEOp5hkj+fahKHULETG/PG7UPKvVjdO/t+8vv7RfowXqDm5Ozrpu92KS3OlTAYWyFoKWwW+rAmBrMBU=
-Message-ID: <aa79d98a0711282141l6b07569fmb925b198730a554e@mail.gmail.com>
-Date: Thu, 29 Nov 2007 08:41:14 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Ishizaki Kou" <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
-Cc: michael@ellerman.id.au, olof@lixom.net, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071129.122245.-1300543769.kouish@swc.toshiba.co.jp>
+	Thu, 29 Nov 2007 00:52:54 -0500
+Date: Wed, 28 Nov 2007 21:46:56 -0800
+From: Greg KH <greg@kroah.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
+Message-ID: <20071129054656.GA26327@kroah.com>
+References: <20071127230252.GB10038@kroah.com> <2532.1196221814@lwn.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_581_27737840.1196314874618"
-References: <aa79d98a0711280259o6cc6fb12mf020c4a986d84ca6@mail.gmail.com>
-	 <20071129.122245.-1300543769.kouish@swc.toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2532.1196221814@lwn.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_581_27737840.1196314874618
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, Nov 27, 2007 at 08:50:14PM -0700, Jonathan Corbet wrote:
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > Jonathan, I used your old lwn.net article about kobjects as the basis
+> > for this document, I hope you don't mind
+> 
+> Certainly I have no objections, I'm glad it was useful.
 
-On 11/29/07, Ishizaki Kou <kou.ishizaki@toshiba.co.jp> wrote:
-[...snip...]
->
-> There is no problem to use Michael's part, and I also prefer simple
-> one like this.
->
-> Cyrill, would you please update your patch?
->
-> Best regards,
-> Kou Ishizaki
->
+Thanks, it was a great framework to work with.
 
-Please see updated patch enveloped. (Can't do it inline becase I'm on
-my work now where I have no Linux machine)
+> > It is rare (even unknown) for kernel code to create a standalone kobject;
+> > with one major exception explained below.
+> 
+> You don't keep this promise - bet you thought we wouldn't notice...
+> Actually I guess you do, in the "creating simple kobjects" section.
+> When you get to that point, you should mention that this is a situation
+> where standalone kobjects make sense.
 
-Cyrill
+Sorry, yes, that is where I tried to explain it.  I'll flush it out some
+more.
 
-------=_Part_581_27737840.1196314874618
-Content-Type: text/plain; name=ppc-celleb-fix-null-v2.diff
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f9kuy5f4
-Content-Disposition: attachment; filename=ppc-celleb-fix-null-v2.diff
+> Given that there are quite a few standalone kobjects created by this
+> patch set (kernel_kobj, security_kobj, s390_kobj, etc.), the "(even
+> unknown)" should probably come out.
 
-LS0tCkZyb206IEN5cmlsbCBHb3JjdW5vdiA8Z29yY3Vub3ZAZ21haWwuY29tPgpTdWJqZWN0OiBb
-UEFUQ0hdIFBQQzogQ0VMTEVCIC0gZml4IHBvc3NpYmxlIE5VTEwgcG9pbnRlciBkZXJlZmVyZW5j
-ZQoKVGhpcyBwYXRjaCBhZGRzIGNoZWNraW5nIGZvciBOVUxMIHJldHVybmVkIHZhbHVlIHRvCnBy
-ZXZlbnQgcG9zc2libGUgTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNlLgoKU2lnbmVkLW9mZi1ieTog
-Q3lyaWxsIEdvcmN1bm92IDxnb3JjdW5vdkBnbWFpbC5jb20+Ci0tLQoKIGFyY2gvcG93ZXJwYy9w
-bGF0Zm9ybXMvY2VsbGViL3BjaS5jIHwgICAxMSArKysrKysrKy0tLQogMSBmaWxlcyBjaGFuZ2Vk
-LCA4IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dl
-cnBjL3BsYXRmb3Jtcy9jZWxsZWIvcGNpLmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGxl
-Yi9wY2kuYwppbmRleCA2YmMzMmZkLi4xM2VjNGE2IDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMv
-cGxhdGZvcm1zL2NlbGxlYi9wY2kuYworKysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGxl
-Yi9wY2kuYwpAQCAtMTM4LDggKzEzOCw2IEBAIHN0YXRpYyB2b2lkIGNlbGxlYl9jb25maWdfcmVh
-ZF9mYWtlKHVuc2lnbmVkIGNoYXIgKmNvbmZpZywgaW50IHdoZXJlLAogCQkqdmFsID0gY2VsbGVi
-X2Zha2VfY29uZmlnX3JlYWRsKHApOwogCQlicmVhazsKIAl9Ci0KLQlyZXR1cm47CiB9CiAKIHN0
-YXRpYyB2b2lkIGNlbGxlYl9jb25maWdfd3JpdGVfZmFrZSh1bnNpZ25lZCBjaGFyICpjb25maWcs
-IGludCB3aGVyZSwKQEAgLTE1OCw3ICsxNTYsNiBAQCBzdGF0aWMgdm9pZCBjZWxsZWJfY29uZmln
-X3dyaXRlX2Zha2UodW5zaWduZWQgY2hhciAqY29uZmlnLCBpbnQgd2hlcmUsCiAJCWNlbGxlYl9m
-YWtlX2NvbmZpZ193cml0ZWwodmFsLCBwKTsKIAkJYnJlYWs7CiAJfQotCXJldHVybjsKIH0KIAog
-c3RhdGljIGludCBjZWxsZWJfZmFrZV9wY2lfcmVhZF9jb25maWcoc3RydWN0IHBjaV9idXMgKmJ1
-cywKQEAgLTM1MSw2ICszNDgsMTAgQEAgc3RhdGljIGludCBfX2luaXQgY2VsbGViX3NldHVwX2Zh
-a2VfcGNpX2RldmljZShzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGUsCiAJd2kxID0gb2ZfZ2V0X3By
-b3BlcnR5KG5vZGUsICJ2ZW5kb3ItaWQiLCBOVUxMKTsKIAl3aTIgPSBvZl9nZXRfcHJvcGVydHko
-bm9kZSwgImNsYXNzLWNvZGUiLCBOVUxMKTsKIAl3aTMgPSBvZl9nZXRfcHJvcGVydHkobm9kZSwg
-InJldmlzaW9uLWlkIiwgTlVMTCk7CisJaWYgKCF3aTAgfHwgIXdpMSB8fCAhd2kyIHx8ICF3aTMp
-IHsKKwkJcHJpbnRrKEtFUk5fRVJSICJQQ0k6IE1pc3NpbmcgZGV2aWNlIHRyZWUgcHJvcGVydGll
-cy5cbiIpOworCQlnb3RvIGVycm9yOworCX0KIAogCWNlbGxlYl9jb25maWdfd3JpdGVfZmFrZSgq
-Y29uZmlnLCBQQ0lfREVWSUNFX0lELCAyLCB3aTBbMF0gJiAweGZmZmYpOwogCWNlbGxlYl9jb25m
-aWdfd3JpdGVfZmFrZSgqY29uZmlnLCBQQ0lfVkVORE9SX0lELCAyLCB3aTFbMF0gJiAweGZmZmYp
-OwpAQCAtMzcyLDYgKzM3MywxMCBAQCBzdGF0aWMgaW50IF9faW5pdCBjZWxsZWJfc2V0dXBfZmFr
-ZV9wY2lfZGV2aWNlKHN0cnVjdCBkZXZpY2Vfbm9kZSAqbm9kZSwKIAljZWxsZWJfc2V0dXBfcGNp
-X2Jhc2VfYWRkcnMoaG9zZSwgZGV2bm8sIGZuLCBudW1fYmFzZV9hZGRyKTsKIAogCWxpID0gb2Zf
-Z2V0X3Byb3BlcnR5KG5vZGUsICJpbnRlcnJ1cHRzIiwgJnJsZW4pOworCWlmICghbGkpIHsKKwkJ
-cHJpbnRrKEtFUk5fRVJSICJQQ0k6IGludGVycnVwdHMgbm90IGZvdW5kLlxuIik7CisJCWdvdG8g
-ZXJyb3I7CisJfQogCXZhbCA9IGxpWzBdOwogCWNlbGxlYl9jb25maWdfd3JpdGVfZmFrZSgqY29u
-ZmlnLCBQQ0lfSU5URVJSVVBUX1BJTiwgMSwgMSk7CiAJY2VsbGViX2NvbmZpZ193cml0ZV9mYWtl
-KCpjb25maWcsIFBDSV9JTlRFUlJVUFRfTElORSwgMSwgdmFsKTsK
-------=_Part_581_27737840.1196314874618--
+Ok.
+
+> > So, for example, UIO code has a structure that defines the memory region
+> > associated with a uio device:
+> 
+> *The* UIO code, presumably.
+
+fixed.
+
+> > the given type. So, for example, a pointer to a struct kobject embedded
+> > within a struct cdev called "kp" could be converted to a pointer to the
+> > containing structure with:
+> 
+> That should be "struct uio_mem", I think.
+
+fixed.
+
+> > one.  Calling kobject_init() is not sufficient, however. Kobject users
+> > must, at a minimum, set the name of the kobject; this is the name that will
+> > be used in sysfs entries.
+> 
+> Is setting the name mandatory now, or are there still places where
+> kobjects (which do not appear in sysfs) do have - and do not need - a
+> name?
+
+Any kobject that is registered needs to have a name.  If someone tries
+to call kobject_register() or kobject_add() without a name set they will
+find out that it is not allowed :)
+
+And yes, there are a few places in the kernel with kobjects that are
+never registered.  I'm working on trying to get rid of them...
+
+> > Because kobjects are dynamic, they must not be declared statically or on
+> > the stack, but instead, always from the heap.  Future versions of the
+> 
+> "always be allocated from the heap"?
+
+thanks.
+
+> > "empty" release function, you will be mocked merciously by the kobject
+> > maintainer if you attempt this.
+> 
+> So just how should severely should we mock kobject maintainers who can't
+> spell "mercilessly"?  :)
+
+Heh, turns out that a lot of people sent me this privately :)
+
+> >  - A kset can provide a set of default attributes that all kobjects that
+> >    belong to it automatically inherit and have created whenever a kobject
+> >    is registered belonging to the kset.
+> 
+> Can we try that one again?
+> 
+>  - A kset can provide a set of default attributes for all kobjects which
+>    belong to it.
+
+No, it's the ktype that does this, I'll go fix that up...
+
+> > There is currently
+> > no other way to add a kobject to a kset without directly messing with the
+> > list pointers.
+> 
+> Presumably the latter way is not recommended; I would either say so or
+> not mention this possibility at all.
+
+Ah, yes, now removed.
+
+Thanks for the review, I really appreciate it.
+
+greg k-h
