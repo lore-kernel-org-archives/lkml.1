@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbXK2UJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbXK2UKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933571AbXK2UJW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXK2UJN
+	id S1761220AbXK2UKN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXK2UJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:09:13 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:54418 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759497AbXK2UJM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:09:12 -0500
-Date: Thu, 29 Nov 2007 15:09:10 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
-In-Reply-To: <1196365883.7903.11.camel@lov.site>
-Message-ID: <Pine.LNX.4.44L0.0711291455410.5666-100000@iolanthe.rowland.org>
+	Thu, 29 Nov 2007 15:09:58 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58935 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932121AbXK2UJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:09:58 -0500
+Date: Thu, 29 Nov 2007 12:12:24 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
+	insert/remove race (v3)
+Message-ID: <20071129201224.GA25356@suse.de>
+References: <Pine.LNX.4.44L0.0711291417530.5666-100000@iolanthe.rowland.org> <474F1AAC.7040908@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <474F1AAC.7040908@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Kay Sievers wrote:
+On Thu, Nov 29, 2007 at 03:01:48PM -0500, Mark Lord wrote:
+> Alan Stern wrote:
+>> On Thu, 29 Nov 2007, Mark Lord wrote:
+>>> Mark Lord wrote:
+>>>> ..
+>>>>
+>>>> While doing insert/remove (quickly) tests on USB,
+>>>> I managed to trigger an Oops on 2.6.23.8 on a call
+>>>> to strlen() in make_class_name().
+>> Does this oops occur under 2.6.24?  The SCSI async scanning code was
+>> changed between 2.6.23 and 2.6.24, in a way intended to prevent exactly 
+>> this sort of thing.
+>>> And below is a "prevented Oops", courtesy of the patch.
+>>> The next bug to fix is whereever the code resides that
+>>> repeatedly continues to flog the unplugged device
+>>> after the test, despite SCSI returning host_byte=DID_NO_CONNECT.
+>> It has probably already been fixed.
+>> Besides, it's not the flogging an unplugged device that causes the oops.  
+>> It's trying to unregister a device that was never registered in the first 
+>> place.
+> ..
+>
+> Well, duh, I kinda knew that already, thanks.  ;)
+>
+> But the flogging continues multiple times per second
+> until the system is shutdown, so it is "the next bug to fix".
+>
+> Unless the 2.6.24 code already has that one taken care of.
+> This machine doesn't run 2.6.24 (yet) due to other incompatibilities.
 
-> > My conclusion is different.  We should make kobject_init() not consume
-> > any resources at all; just initialize various fields.  That way it
-> > would be okay to call either kfree() or kobject_put() on an initialized
-> > kobject.  And then when something like device_register() fails, the
-> > caller would know the proper thing to do would be to call the put()  
-> > routine, always.
-> > 
-> > Of course, once the name has been assigned, only kobject_put() should
-> > be used.
-> 
-> Now we just move the exactly the same problem from _init() to
-> _set_name(). To free the name of an unregistered we would need to call
-> _put() which free()'s the whole object again. :) 
+Incompatibilities in the 2.4.24-rc tree?  Have they been reported so
+that they can be fixed?
 
-I don't see that as a problem and it's not clear why you do.
+I'll hold off on adding this patch for now.
 
-It doesn't matter whether a kobject has been registered or not; once
-it has been initialized you _should_ call kobject_put().  (Although
-it's okay to call kfree() if the name hasn't been set yet.)
+thanks,
 
-The same is true of larger objects.  Once you have called
-device_initialize(), you _should_ call device_put() (although it's okay
-to call kfree()).  Provided init routines don't consume resources, this
-will work.
-
-The only remaining problem is that somebody might set the name first
-and then decide to abandon the object before calling kobject_init().  
-However this probably never happens anywhere.
-
-> > There's another good reason for not assigning the name in
-> > kobject_init(): Code that uses kobjects (like the driver core) doesn't
-> > set the name until later.
-> 
-> That can be done at any stage, I guess. We will rip out the name in the
-> struct device anyway.
-
-Are you also going to change all the places in the kernel where the
-device name (.bus_id) isn't set until after device_initialize() has
-been called?
-
-Alan Stern
-
+greg k-h
