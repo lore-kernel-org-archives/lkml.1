@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXK2ICV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXK2ICu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXK2ICV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 03:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXK2ICM
+	id S1761497AbXK2ICu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 03:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbXK2ICm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 03:02:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51821 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755450AbXK2ICL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 03:02:11 -0500
-Date: Thu, 29 Nov 2007 00:01:49 -0800
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
-       linux-usb@vger.kernel.org, preining@logic.at,
-       kristoffer.ericson@gmail.com, drussell@redhat.com,
-       linux-kernel@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: Add the infamous Huawei E220 to option.c
-Message-Id: <20071129000149.7569eab1.zaitcev@redhat.com>
-In-Reply-To: <200711290844.39428.oliver@neukum.org>
-References: <20071128161305.b01167b3.zaitcev@redhat.com>
-	<20071129073303.1913505tnv2m8v0g@webmail.tugraz.at>
-	<200711290844.39428.oliver@neukum.org>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 03:02:42 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:50643 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754610AbXK2ICk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 03:02:40 -0500
+Date: Thu, 29 Nov 2007 09:02:33 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: kernel list <linux-kernel@vger.kernel.org>,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: RTC wakealarm write-only, still has 644 permissions
+Message-ID: <20071129080233.GA9434@dose.home.local>
+Mail-Followup-To: kernel list <linux-kernel@vger.kernel.org>,
+	Alessandro Zummo <alessandro.zummo@towertech.it>
+References: <20070920103225.GA4410@elf.ucw.cz> <20070920105002.GA4611@elf.ucw.cz> <200709212238.05130.david-b@pacbell.net> <20071128232647.GC4947@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128232647.GC4947@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 08:44:38 +0100, Oliver Neukum <oliver@neukum.org> wrote:
+On Thu, Nov 29, 2007 at 00:26:47 +0100, Pavel Machek wrote:
 
-> 3. Make sure usbcore doesn't probe the devices in the wrong mode with the 
-> option driver
+[...]
 
-This fixes duplication. And to take it further, why don't we turn this
-idea around and let usb-storage fail to attach with some "ignore" quirk?
-I suspect that someone put the initializer into usb-storage in order
-to let the generic usb serial to work, but this simply was a bad idea.
+> > > Also, is there some documentation for wakealarm?
+> > 
+> > "git show 3925a5ce44330767f7f0de5c58c6a797009f0f75" has some.
+> 
+> Thanks. Will put it into Doc*/rtc.txt.
 
--- Pete
+It would be nice if you mention the differences to the old
+/proc/acpi/alarm, to help users who want to migrate. Something like in
+http://lkml.org/lkml/2007/6/19/264.
+
+Regards,
+Tino
