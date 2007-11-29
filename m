@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbXK2IDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbXK2IFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758551AbXK2IDL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 03:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756681AbXK2IC4
+	id S1761314AbXK2IFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 03:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbXK2IFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 03:02:56 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:7755 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756534AbXK2ICz (ORCPT
+	Thu, 29 Nov 2007 03:05:04 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:35853 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755501AbXK2IFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 03:02:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=lXHwyyChlHbXf/eDAycYd4DDk/3AA2I9XbJjup455XnJwe3B7sjG3P4XwrJAA/HdgfZiMzJluFrZ2Y5IpdcPBLAPQaZ4Cg0KUjmMjQpU4S3O/YndYeFREa0GX4I7Tv36NbLTL2xoAC9UCVTTg1rqjc0KDcUTvjV5al6Aw7g1K3s=
-Message-ID: <84144f020711290002p290e91a4ubc40f1efbc877f75@mail.gmail.com>
-Date: Thu, 29 Nov 2007 10:02:55 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [RFC] kmemcheck: trap uses of uninitialized memory (v2)
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <474C34CC.6060509@gmail.com>
+	Thu, 29 Nov 2007 03:05:01 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: Add the infamous Huawei E220 to option.c
+Date: Thu, 29 Nov 2007 09:04:28 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-usb@vger.kernel.org, preining@logic.at, kristoffer.ericson@gmail.com,
+       drussell@redhat.com, johann.wilhelm@student.tugraz.at,
+       linux-kernel@vger.kernel.org
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <200711290839.00625.oliver@neukum.org> <20071128235237.152753e0.zaitcev@redhat.com>
+In-Reply-To: <20071128235237.152753e0.zaitcev@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <474C34CC.6060509@gmail.com>
-X-Google-Sender-Auth: 2f4aef53b5e8a8b3
+Message-Id: <200711290904.29761.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vegard,
+Am Donnerstag, 29. November 2007 08:52:37 schrieb Pete Zaitcev:
+> On Thu, 29 Nov 2007 08:38:59 +0100, Oliver Neukum <oliver@neukum.org> wrote:
+> > Am Donnerstag, 29. November 2007 01:13:05 schrieb Pete Zaitcev:
+> > > The problem stems from the fact that both option and usb-storage can
+> > > bind to the modem when in storage mode: the former binds because of the
+> > > storage class, the latter binds because of VID/PID match. The modprobe
+> > > loads both,
+> >
+> > Isn't it possible to fix this in option's module table?
+>
+> At first thought it'll need adding a field to struct usb_serial to save
+> the driver_info from the ID table in usb_serial_probe. It's something I'd
 
-On Nov 27, 2007 5:16 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> +config KMEMCHECK
-> +       bool "Trap use of uninitialized memory"
-> +       depends on X86_32 && !CC_OPTIMIZE_FOR_SIZE
-> +       help
-> +         This option enables tracing of dynamically allocated kernel memory
-> +         to see if memory is used before it has been given an initial value.
-> +         Be aware that this requires half of your memory for bookkeeping and
-> +         will insert extra code at *every* read and write to tracked memory
-> +         thus slow down the kernel code (but user code is unaffected).
+Why? It is passed to the subdrivers in their probe().
+Maybe it should simply be passed in attach(), too?
 
-Is it really necessary to track every memory address? Tracking slab
-objects would require far less memory. You might also want to make
-kzalloc() and GFP_ZERO mark the memory area as initialized to avoid
-some page faults.
+> like to discuss actually. I hate fields which store information this
+> way: filled in one place, used in another place... From the perspective
+> of code prettiness I would rather add another method for usb_serial_probe
+> to call. But I'm not sure really.
 
-On Nov 27, 2007 5:16 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> +       /* Actually allocate twice as much, since we need to track the
-> +        * status of each byte within the allocation. */
-> +       if (!(flags & __GFP_NOTRACK)) {
+Does the device remain a storage class device after the crucial control 
+message?
 
-If you change __GFP_NOTRACK to __GFP_TRACK, you can avoid the double
-negation here.
+	Regards
+		Oliver
 
-                                    Pekka
