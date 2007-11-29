@@ -1,106 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbXK2SwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933209AbXK2Sx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933095AbXK2SwF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:52:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759873AbXK2Svv
+	id S933209AbXK2Sx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761809AbXK2SxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:51:51 -0500
-Received: from hu-out-0506.google.com ([72.14.214.225]:32313 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758834AbXK2Svu (ORCPT
+	Thu, 29 Nov 2007 13:53:17 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:29599 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761934AbXK2SxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:51:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=pHzWxQ9XWHGtUsloewlK3onVMqx+LgeYLl5mkC2/az0QGSh18KEcplmcQ9L+XoY6kwGxvg9zzQOJXXpLV3/PkApHG/PybXGDf9XeOLSFcXPHzQrNm7QDRlXbm1PT/GHK4yHcJqAiCZWY9hS4qAq0WtJfvnAK3AjvW+MA+nNHt+8=
-Date: Thu, 29 Nov 2007 18:53:39 +0000
-From: Jaime Velasco Juan <jsagarribay@gmail.com>
-To: Johann Wilhelm <johann.wilhelm@student.tugraz.at>
-Cc: Oliver Neukum <oliver@neukum.org>, Rui Santos <rsantos@grupopie.com>,
-       Pete Zaitcev <zaitcev@redhat.com>, linux-usb@vger.kernel.org,
-       preining@logic.at, kristoffer.ericson@gmail.com, drussell@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Add the infamous Huawei E220 to option.c
-Message-ID: <20071129185339.GA10445@singular.local>
-References: <20071128161305.b01167b3.zaitcev@redhat.com> <200711291149.46326.oliver@neukum.org> <474E9D7E.4040007@grupopie.com> <200711291255.08603.oliver@neukum.org> <20071129150550.86453nubw8i5xi68@webmail.tugraz.at>
+	Thu, 29 Nov 2007 13:53:16 -0500
+Message-ID: <474F0A68.1080809@oracle.com>
+Date: Thu, 29 Nov 2007 10:52:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071129150550.86453nubw8i5xi68@webmail.tugraz.at>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Joe Perches <joe@perches.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Remove #define hex_asc from kernel.h, update	lib/hexdump.c
+References: <1196359724.22120.22.camel@localhost>	 <20071129102400.dac158d8.randy.dunlap@oracle.com> <1196361860.22120.27.camel@localhost>
+In-Reply-To: <1196361860.22120.27.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Joe Perches wrote:
+> On Thu, 2007-11-29 at 10:24 -0800, Randy Dunlap wrote:
+>> I don't care for the mixed spaces/tabs.
+> 
+> I like myself, but I removed it just for you...
 
-El jue. 29 de nov. de 2007, a las 15:05:50 +0100, Johann Wilhelm escribió:
-> If everything's working please also add code to also support the other E220 
-> device... so both PID 0x1003 and 0x1004 should be treaded the same way...
->
-> to test the device with the 0x1004-PID maybe Jaime Velasco 
-> <jsagarribay@gmail.com> could be asked.. he initialy added the lines for 
-> this device in option.c
->
+Thanks.  Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-The following patch works for me (on kernel 2.6.23).
+but needs an S-O-B:
 
 
-diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index a18659e..352c94c 100644
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -158,8 +158,8 @@ static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_NETWORK) },
- 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
--	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
--	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel Merlin XS620/S640 */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel Merlin S620 */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1120) }, /* Novatel Merlin EX720 */
+>> What does (j < len) < linebuflen; do?
+> 
+> Nothing good.  It's a silly mistake.  I fixed it.
+> 
+> Size before/after:
+> 
+>    text    data     bss     dec     hex filename
+>    1037       0       0    1037     40d lib/hexdump.o
+>    1004       0       0    1004     3ec lib/hexdump.o
+> 
+> ---
+> 
+>  include/linux/kernel.h |    1 -
+>  lib/hexdump.c          |   23 ++++++++++-------------
+>  2 files changed, 10 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index 94bc996..77b187f 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -256,7 +256,6 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
+>  				const void *buf, size_t len, bool ascii);
+>  extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+>  			const void *buf, size_t len);
+> -#define hex_asc(x)	"0123456789abcdef"[x]
+>  
+>  #define pr_emerg(fmt, arg...) \
+>  	printk(KERN_EMERG fmt, ##arg)
+> diff --git a/lib/hexdump.c b/lib/hexdump.c
+> index bd5edae..125c137 100644
+> --- a/lib/hexdump.c
+> +++ b/lib/hexdump.c
+> @@ -41,7 +41,6 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+>  			bool ascii)
+>  {
+>  	const u8 *ptr = buf;
+> -	u8 ch;
+>  	int j, lx = 0;
+>  	int ascii_column;
+>  
+> @@ -62,7 +61,9 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+>  
+>  		for (j = 0; j < ngroups; j++)
+>  			lx += scnprintf(linebuf + lx, linebuflen - lx,
+> -				"%16.16llx ", (unsigned long long)*(ptr8 + j));
+> +					"%016llx ",
+> +					(unsigned long long)*(ptr8 + j) &
+> +					0xffffffffffffffffULL);
+>  		ascii_column = 17 * ngroups + 2;
+>  		break;
+>  	}
+> @@ -73,7 +74,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+>  
+>  		for (j = 0; j < ngroups; j++)
+>  			lx += scnprintf(linebuf + lx, linebuflen - lx,
+> -				"%8.8x ", *(ptr4 + j));
+> +					"%08x ", *(ptr4 + j) & 0xffffffffU);
+>  		ascii_column = 9 * ngroups + 2;
+>  		break;
+>  	}
+> @@ -84,19 +85,15 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+>  
+>  		for (j = 0; j < ngroups; j++)
+>  			lx += scnprintf(linebuf + lx, linebuflen - lx,
+> -				"%4.4x ", *(ptr2 + j));
+> +					"%04x ", *(ptr2 + j) & 0xffff);
+>  		ascii_column = 5 * ngroups + 2;
+>  		break;
+>  	}
+>  
+>  	default:
+> -		for (j = 0; (j < rowsize) && (j < len) && (lx + 4) < linebuflen;
+> -		     j++) {
+> -			ch = ptr[j];
+> -			linebuf[lx++] = hex_asc(ch >> 4);
+> -			linebuf[lx++] = hex_asc(ch & 0x0f);
+> -			linebuf[lx++] = ' ';
+> -		}
+> +		for (j = 0; j < rowsize; j++)
+> +			lx += scnprintf(linebuf + lx, linebuflen - lx,
+> +					"%02x ", ptr[j] & 0xff);
+>  		ascii_column = 3 * rowsize + 2;
+>  		break;
+>  	}
+> @@ -192,6 +189,6 @@ void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+>  			const void *buf, size_t len)
+>  {
+>  	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
+> -			buf, len, 1);
+> +			buf, len, true);
+>  }
+>  EXPORT_SYMBOL(print_hex_dump_bytes);
+> 
+> 
 
-> 73
->
-> Zitat von Oliver Neukum <oliver@neukum.org>:
->
->> Am Donnerstag 29 November 2007 schrieb Rui Santos:
->>> >> Just to remember that that specific flag was one SET and, was removed,
->>> >> in part, because of what I state. Of course we aim at perfection but, if
->>> >> the benefits are only for a few situations and, will cause all this
->>> >> problems for all other, perhaps the reinsert of that flag would be a
->>> >> positive action.
->>> >>
->>> >
->>> > OK, can you provide "lsusb -v" for the device in the CD mode and in
->>> > the modem mode?
->>> >
->>> Of course. Heri it is.
->>
->> Thanks. Please try this patch.
->>
->> 	Regards
->> 		Oliver
->>
->> ----
->>
->> --- a/drivers/usb/serial/option.c	2007-11-29 12:35:09.000000000 +0100
->> +++ b/drivers/usb/serial/option.c	2007-11-29 12:47:34.000000000 +0100
->> @@ -158,7 +158,7 @@ static struct usb_device_id option_ids[]
->>  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
->>  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_NETWORK) },
->>  	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
->> -	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
->> +	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 
->> 0xff, 0xff, 0xff) },
->>  	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS) },
->>  	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel Merlin 
->> XS620/S640 */
->>  	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel Merlin 
->> S620 */
->>
->>
->
+
+-- 
+~Randy
