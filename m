@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934496AbXK2Xbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934437AbXK2Xco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934496AbXK2Xbf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 18:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934366AbXK2XbU
+	id S934437AbXK2Xco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 18:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbXK2Xcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 18:31:20 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:1076 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934351AbXK2XbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 18:31:18 -0500
-Subject: Re: [PATCH] Reduce stack used by lib/hexdump.c
-From: Joe Perches <joe@perches.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr>
-References: <1196359724.22120.22.camel@localhost>
-	 <20071129102400.dac158d8.randy.dunlap@oracle.com>
-	 <1196361860.22120.27.camel@localhost> <474F0A68.1080809@oracle.com>
-	 <1196369873.22120.69.camel@localhost> <474F28EB.20608@oracle.com>
-	 <Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr>
+	Thu, 29 Nov 2007 18:32:35 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:55412 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933154AbXK2Xce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 18:32:34 -0500
+Subject: Re: Out of tree module using LSM
+From: Jon Masters <jonathan@jonmasters.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Ray Lee <ray-lk@madrabbit.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       tvrtko.ursulin@sophos.com, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <2812.1196369788@turing-police.cc.vt.edu>
+References: <20071128183040.GW8181@ftp.linux.org.uk>
+	 <OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
+	 <20071129173601.34273083@the-village.bc.nu>
+	 <2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
+	 <1196362612.6473.98.camel@perihelion>
+	 <2c0942db0711291111t16a4eb49h6b1e83ddf7bb4cf9@mail.gmail.com>
+	 <1196365551.6473.103.camel@perihelion>
+	 <2812.1196369788@turing-police.cc.vt.edu>
 Content-Type: text/plain
-Date: Thu, 29 Nov 2007 15:28:42 -0800
-Message-Id: <1196378922.22120.72.camel@localhost>
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Thu, 29 Nov 2007 18:31:39 -0500
+Message-Id: <1196379099.6473.118.camel@perihelion>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 22:07 +0100, Jan Engelhardt wrote:
-> I'd add GFP_ATOMIC here. Who knows whether tomorrow, the oops dumper
-> or warn_on will use print_hex_dump.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+On Thu, 2007-11-29 at 15:56 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 29 Nov 2007 14:45:51 EST, Jon Masters said:
+> > Ah, but I could write a sequence of pages that on their own looked
+> > garbage, but in reality, when executed would print out a copy of the
+> > Jargon File in all its glory. And if you still think you could look for
+> > patterns, how about executable code that self-modifies in random ways
+> > but when executed as a whole actually has the functionality of fetchmail
+> > embedded within it? How would you guard against that?
+> 
+> So, just because Fred Cohen showed in his PhD thesis that *perfect* virus/malware
+> scanning is equivalent to the Turing Halting Problem, we should abandon
+> efforts to make a 99.9998% workable system?
 
-diff --git a/lib/hexdump.c b/lib/hexdump.c
-index 70e23fb..be94934 100644
---- a/lib/hexdump.c
-+++ b/lib/hexdump.c
-@@ -140,13 +140,20 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
-  * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
-  * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
-  */
-+
-+#define HEX_LINE_SIZE 200
-+
- void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
- 			int rowsize, int groupsize,
- 			const void *buf, size_t len, bool ascii)
- {
- 	const u8 *ptr = buf;
- 	int i, linelen, remaining = len;
--	unsigned char linebuf[200];
-+	unsigned char *linebuf;
-+
-+	linebuf = kmalloc(HEX_LINE_SIZE, GFP_ATOMIC);
-+	if (!linebuf) {
-+		WARN_ON(1);
-+		return;
-+	}
- 
- 	if (rowsize != 16 && rowsize != 32)
- 		rowsize = 16;
-@@ -155,7 +162,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
- 		linelen = min(remaining, rowsize);
- 		remaining -= rowsize;
- 		hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
--				linebuf, sizeof(linebuf), ascii);
-+				linebuf, HEX_LINE_SIZE, ascii);
- 
- 		switch (prefix_type) {
- 		case DUMP_PREFIX_ADDRESS:
-@@ -170,6 +177,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
- 			break;
- 		}
- 	}
-+	kfree(linebuf);
- }
- EXPORT_SYMBOL(print_hex_dump);
- 
+I think you misread what I said. I implied the exact opposite :-)
+
+I'm trying to show that I understand the problem by saying the above,
+that doing this perfectly is impossible, but I also happen to believe
+that there are those who have solutions that provide a level of
+protection to their users, who ask for such things. Hence my point is
+that it's not really our place to debate whether virus scanning is
+good/bad but more how to provide a sane API. I'll get a spec.
+
+Jon.
 
 
