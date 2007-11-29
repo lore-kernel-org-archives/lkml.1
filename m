@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbXK2Aln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbXK2AmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762589AbXK2Aln (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759274AbXK2Al0
+	id S1762303AbXK2AmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbXK2AmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:41:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51441 "EHLO mx1.redhat.com"
+	Wed, 28 Nov 2007 19:42:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51456 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759416AbXK2AlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:41:25 -0500
+	id S1759082AbXK2AmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:42:12 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,15 +19,13 @@ Cc: linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH x86/mm 4/6] x86-64 ptrace get/putreg current task
+Subject: [PATCH x86/mm 5/6] x86-32 ptrace get/putreg current task
 In-Reply-To: Roland McGrath's message of  Wednesday, 28 November 2007 16:38:49 -0800 <20071129003849.428E026F8E7@magilla.localdomain>
 References: <20071129003849.428E026F8E7@magilla.localdomain>
-X-Shopping-List: (1) Fictitious inhibitions
-   (2) Fresh-frozen chocolate
-   (3) Bucolic inquisition goats
-   (4) Geopolitical dwarf ripping-cats
-Message-Id: <20071129004118.D317B26F8E7@magilla.localdomain>
-Date: Wed, 28 Nov 2007 16:41:18 -0800 (PST)
+X-Zippy-Says: ..Wait 'til those ITALIAN TEENAGERS get back to their HONDAS &
+    discover them to be FILLED to the BRIM with MAZOLA!!
+Message-Id: <20071129004205.B4BFD26F8E7@magilla.localdomain>
+Date: Wed, 28 Nov 2007 16:42:05 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -39,97 +37,32 @@ machine state access, not just ptrace.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/kernel/ptrace_64.c |   36 ++++++++++++++++++++++++++++++++++--
- 1 files changed, 34 insertions(+), 2 deletions(-)
+ arch/x86/kernel/ptrace_32.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace_64.c b/arch/x86/kernel/ptrace_64.c
-index 2427548..5979dbe 100644
---- a/arch/x86/kernel/ptrace_64.c
-+++ b/arch/x86/kernel/ptrace_64.c
-@@ -67,21 +67,29 @@ static int putreg(struct task_struct *child,
+diff --git a/arch/x86/kernel/ptrace_32.c b/arch/x86/kernel/ptrace_32.c
+index 5aca84e..2607130 100644
+--- a/arch/x86/kernel/ptrace_32.c
++++ b/arch/x86/kernel/ptrace_32.c
+@@ -55,6 +55,12 @@ static int putreg(struct task_struct *child,
  		if (value && (value & 3) != 3)
  			return -EIO;
- 		child->thread.fsindex = value & 0xffff;
+ 		child->thread.gs = value;
 +		if (child == current)
-+			loadsegment(fs, child->thread.fsindex);
++			/*
++			 * The user-mode %gs is not affected by
++			 * kernel entry, so we must update the CPU.
++			 */
++			loadsegment(gs, value);
  		return 0;
- 	case offsetof(struct user_regs_struct,gs):
- 		if (value && (value & 3) != 3)
- 			return -EIO;
- 		child->thread.gsindex = value & 0xffff;
+ 	case DS:
+ 	case ES:
+@@ -104,6 +110,8 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
+ 		break;
+ 	case GS:
+ 		retval = child->thread.gs;
 +		if (child == current)
-+			load_gs_index(child->thread.gsindex);
- 		return 0;
- 	case offsetof(struct user_regs_struct,ds):
- 		if (value && (value & 3) != 3)
- 			return -EIO;
- 		child->thread.ds = value & 0xffff;
-+		if (child == current)
-+			loadsegment(ds, child->thread.ds);
- 		return 0;
- 	case offsetof(struct user_regs_struct,es):
- 		if (value && (value & 3) != 3)
- 			return -EIO;
- 		child->thread.es = value & 0xffff;
-+		if (child == current)
-+			loadsegment(es, child->thread.es);
- 		return 0;
- 	case offsetof(struct user_regs_struct,ss):
- 		if ((value & 3) != 3)
-@@ -135,14 +143,32 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
- {
- 	struct pt_regs *regs = task_pt_regs(child);
- 	unsigned long val;
-+	unsigned int seg;
- 	switch (regno) {
- 	case offsetof(struct user_regs_struct, fs):
-+		if (child == current) {
-+			/* Older gas can't assemble movq %?s,%r?? */
-+			asm("movl %%fs,%0" : "=r" (seg));
-+			return seg;
-+		}
- 		return child->thread.fsindex;
- 	case offsetof(struct user_regs_struct, gs):
-+		if (child == current) {
-+			asm("movl %%gs,%0" : "=r" (seg));
-+			return seg;
-+		}
- 		return child->thread.gsindex;
- 	case offsetof(struct user_regs_struct, ds):
-+		if (child == current) {
-+			asm("movl %%ds,%0" : "=r" (seg));
-+			return seg;
-+		}
- 		return child->thread.ds;
- 	case offsetof(struct user_regs_struct, es):
-+		if (child == current) {
-+			asm("movl %%es,%0" : "=r" (seg));
-+			return seg;
-+		}
- 		return child->thread.es;
- 	case offsetof(struct user_regs_struct, fs_base):
- 		/*
-@@ -152,7 +178,10 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
- 		 */
- 		if (child->thread.fs != 0)
- 			return child->thread.fs;
--		if (child->thread.fsindex != FS_TLS_SEL)
-+		seg = child->thread.fsindex;
-+		if (child == current)
-+			asm("movl %%fs,%0" : "=r" (seg));
-+		if (seg != FS_TLS_SEL)
- 			return 0;
- 		return get_desc_base(&child->thread.tls_array[FS_TLS]);
- 	case offsetof(struct user_regs_struct, gs_base):
-@@ -161,7 +190,10 @@ static unsigned long getreg(struct task_struct *child, unsigned long regno)
- 		 */
- 		if (child->thread.gs != 0)
- 			return child->thread.gs;
--		if (child->thread.gsindex != GS_TLS_SEL)
-+		seg = child->thread.gsindex;
-+		if (child == current)
-+			asm("movl %%gs,%0" : "=r" (seg));
-+		if (seg != GS_TLS_SEL)
- 			return 0;
- 		return get_desc_base(&child->thread.tls_array[GS_TLS]);
- 	case offsetof(struct user_regs_struct, flags):
++			savesegment(gs, retval);
+ 		break;
+ 	case DS:
+ 	case ES:
