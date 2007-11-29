@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934199AbXK2Wbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933861AbXK2WgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934199AbXK2Wbm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760702AbXK2Wb3
+	id S933861AbXK2WgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbXK2Wf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:31:29 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47897 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759881AbXK2Wb2 (ORCPT
+	Thu, 29 Nov 2007 17:35:56 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45195 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754965AbXK2Wfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:31:28 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <474F3D9C.3080701@s5r6.in-berlin.de>
-Date: Thu, 29 Nov 2007 23:30:52 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.9) Gecko/20071122 SeaMonkey/1.1.6
+	Thu, 29 Nov 2007 17:35:55 -0500
+Date: Thu, 29 Nov 2007 14:34:52 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
+ task
+In-Reply-To: <20071129222531.EFEA826F8E7@magilla.localdomain>
+Message-ID: <alpine.LFD.0.9999.0711291434270.8458@woody.linux-foundation.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <20071129222531.EFEA826F8E7@magilla.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Torsten Kaiser <just.for.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, trond.myklebust@fys.uio.no,
-       "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: 2.6.24-rc3-mm2
-References: <20071128034140.648383f0.akpm@linux-foundation.org>	<64bb37e0711291258v1a51598bm36a1b953eab9fdd1@mail.gmail.com> <20071129130756.7550ce13.akpm@linux-foundation.org>
-In-Reply-To: <20071129130756.7550ce13.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 29 Nov 2007 21:58:16 +0100
-> "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
->> First crash:
->>
->> [ 1116.083651] Unable to handle kernel NULL pointer dereference at
->> 0000000000000378 RIP:
->> [ 1116.089216]  [<ffffffff8047cb88>] ether1394_dg_complete+0x28/0xa0
-...
-> Yep, looks like a genuine 1394 bug.
 
-I can't make head or tail of it.
 
-FWIW, eth1394 and the entire rest of the 1394 stack beneath eth1394 are
-identical between -mm and Linus' tree.
--- 
-Stefan Richter
--=====-=-=== =-== ===-=
-http://arcgraph.de/sr/
+On Thu, 29 Nov 2007, Roland McGrath wrote:
+> 
+> Um, really?  This is x86-64 code.  AIUI those values don't have any effect
+> at all in 64-bit mode (as the kernel is).  I haven't found any code in
+> entry_64.S or ia32entry.S that touches them.  __switch_to uses direct
+> access to the segment registers just as I've done.
+
+Yes, you're right, I just looked at the ia32 part and didn't read your 
+patches right.
+
+		Linus
