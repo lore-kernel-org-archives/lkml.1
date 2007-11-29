@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXK2TBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbXK2TEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932857AbXK2TBo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbXK2TBf
+	id S932877AbXK2TEx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbXK2TEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:01:35 -0500
-Received: from rtr.ca ([76.10.145.34]:2859 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758684AbXK2TBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:01:34 -0500
-Message-ID: <474F0C8D.3090604@rtr.ca>
-Date: Thu, 29 Nov 2007 14:01:33 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 29 Nov 2007 14:04:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60611 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757719AbXK2TEm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 14:04:42 -0500
+Message-ID: <474F0D47.7020006@zytor.com>
+Date: Thu, 29 Nov 2007 11:04:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Raymano Garibaldi <raymano@faunos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       kirk@faunos.com
-Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
-References: <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: =?UTF-8?B?IlBhdWwgUm9sbGFuZCAo44Od44O844Or44O744Ot44Op44OzKSI=?= 
+	<rol@witbe.net>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: constant_tsc and TSC unstable
+References: <20071129171142.56c7890a@tux.DEF.witbe.net>
+In-Reply-To: <20071129171142.56c7890a@tux.DEF.witbe.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Thu, 29 Nov 2007, Raymano Garibaldi wrote:
+Paul Rolland (ポール・ロラン) wrote:
+> Hello,
 > 
->> The feature does work as long as the device remains plugged in and
->> that is what I have said in my previous postings too. What I'm saying
->> that should work and worked under 2.6.21 and is not working currently
->> is the ability to unplug and plug back in the device while the
->> computer is suspended before resuming without losing the mount.
+> I've a machine with a Core2Duo CPU. /proc/cpuinfo reports the flag
+> constant_tsc, but at boot time, I have the log :
 > 
-> Okay, guess I misunderstood what you wrote before.
+> ...
+> Total of 2 processors activated (6919.15 BogoMIPS).
+> ENABLING IO-APIC IRQs
+> ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+> checking TSC synchronization [CPU#0 -> CPU#1]:
+> Measured 3978592228 cycles TSC warp between CPUs, turning off TSC clock.
+> Marking TSC unstable due to: check_tsc_sync_source failed.
+> Brought up 2 CPUs
+> ...
 > 
-> The patch below for 2.6.23 should do what you want (and more besides).  
-> It forces the USB Persist feature to apply to all persist-enabled 
-> devices, whether they were unplugged or not.
+> This machine is running 2.6.23.1-21.fc7. I know I should report to Fedora,
+> but I was wondering if this is a bug or a feature ;)
 > 
-> There's no chance of this getting accepted into the official kernel in 
-> such a simple form, but at least it will allow you to do what you want.
-> 
-> Alan Stern
-> 
-> 
-> --- 2.6.23/drivers/usb/core/driver.c1	2007-11-29 10:57:36.000000000 -0500
-> +++ 2.6.23/drivers/usb/core/driver.c	2007-11-29 11:01:44.000000000 -0500
-> @@ -1550,6 +1550,9 @@
->  		if (!(udev->reset_resume && udev->do_remote_wakeup))
->  			return -EPERM;
->  	}
-> +
-> +	/* Force all system resumes to be reset-resumes */
-> +	udev->reset_resume = 1;
->  	return usb_external_resume_device(udev);
->  }
-..
 
-Mmm.. how about a nice sysfs attr that the suspend scripts can write
-that value to as needed ?
+constant_tsc means the TSC doesn't change with CPU core frequency.
+
+The problem you're having is that the TSCs of your two cores are 
+completely different, over a second apart.  This is a bug, unrelated to 
+constant_tsc.
+
+	-hpa
+
+
+
