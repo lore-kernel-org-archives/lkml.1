@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXK2BDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762068AbXK2BHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762190AbXK2BDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 20:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760183AbXK2BD3
+	id S1762068AbXK2BHX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 20:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760183AbXK2BHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 20:03:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55515 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760074AbXK2BD2 (ORCPT
+	Wed, 28 Nov 2007 20:07:11 -0500
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:51886 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759679AbXK2BHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 20:03:28 -0500
-Date: Wed, 28 Nov 2007 17:07:53 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Valdis.Kletnieks@vt.edu, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071129010753.GA19106@kroah.com>
-References: <20071128144156.GA14106@infradead.org> <416908.77038.qm@web36613.mail.mud.yahoo.com> <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com> <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+	Wed, 28 Nov 2007 20:07:10 -0500
+Message-ID: <474E10BA.8020704@tiscali.nl>
+Date: Thu, 29 Nov 2007 02:07:06 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: lkml <linux-kernel@vger.kernel.org>
+CC: kernel@wantstofly.org, Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: [PATCH] asm-arm/{arch-omap,arch-ixp23xx}: parentheses around NR_IRQS
+ definition
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 01:53:46AM +0100, Jan Engelhardt wrote:
-> 
-> On Nov 28 2007 16:38, Greg KH wrote:
-> >> 
-> >> And if we are talking about the situation when files are written to
-> >> in controlled way (i.e. we are not concerned with malware running on
-> >> the box in question and just want to stop it from passing through
-> >> mailsewer, etc.), then there's no damn need to play with LSM - just
-> >> have e.g. coda with its commit-on-close and run the scanner on
-> >> commit.  End of story.  Mind you, in such setups one would be much
-> >> better off just having the mail server run the tests explicitly in
-> >> the userland, along with the rest of anti-spam, etc. filters.
-> >
-> >I've repeated the above statements so many times to a number of the
-> >anti-virus companies, and other people that really should know better,
-> >that I'm really sick of it.  For some reason, they keep trying to do
-> >things like this in the kernel, despite it being trivial to do in
-> >userspace properly.
-> >
-> Do you mean something along the lines of FUSE?
+in include/asm-arm/arch-omap/board-innovator.h:40
+#define NR_IRQS    IH_BOARD_BASE + NR_FPGA_IRQS
 
-That is one way, but not the simplest or nicest (people don't want to
-run their whole fs on FUSE just yet).
+in include/asm-arm/arch-ixp23xx/irqs.h:156:
+#define NR_IRQS      NR_IXP23XX_IRQS + NR_IXP23XX_MACH_IRQS
 
-The easiest way is as Al described above, just have the userspace
-program that wrote the file to disk, check it then.
+This could lead to problems when this definition is used in:
 
-There are some nice SAMBA plugins that do just that already out there...
+arch/ia64/sn/kernel/irq.c:516:
+sn_irq_lh = kmalloc(sizeof(struct list_head *) * NR_IRQS, GFP_KERNEL);
+arch/x86/kernel/io_apic_32.c:693:
+irq_cpu_data[i].irq_delta = kmalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+694:
+irq_cpu_data[i].last_irq = kmalloc(sizeof(unsigned long) * NR_IRQS, GFP_KERNEL);
+699:
+memset(irq_cpu_data[i].irq_delta,0,sizeof(unsigned long) * NR_IRQS);
+700:
+memset(irq_cpu_data[i].last_irq,0,sizeof(unsigned long) * NR_IRQS);
+fs/proc/proc_misc.c:464:
+per_irq_sum = kzalloc(sizeof(unsigned int)*NR_IRQS, GFP_KERNEL);
 
-thanks,
+I am not sure whether this definition actually is used in any of these files.
+Am I being paranoya? anyway, adding parentheses should be safe.
+--
+Add parentheses to prevent operator precedence errors
 
-greg k-h
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/include/asm-arm/arch-ixp23xx/irqs.h b/include/asm-arm/arch-ixp23xx/irqs.h
+index e696395..27c5808 100644
+--- a/include/asm-arm/arch-ixp23xx/irqs.h
++++ b/include/asm-arm/arch-ixp23xx/irqs.h
+@@ -153,7 +153,7 @@
+  */
+ #define NR_IXP23XX_MACH_IRQS 		32
+ 
+-#define NR_IRQS				NR_IXP23XX_IRQS + NR_IXP23XX_MACH_IRQS
++#define NR_IRQS				(NR_IXP23XX_IRQS + NR_IXP23XX_MACH_IRQS)
+ 
+ #define IXP23XX_MACH_IRQ(irq) 		(NR_IXP23XX_IRQ + (irq))
+ 
+diff --git a/include/asm-arm/arch-omap/board-innovator.h b/include/asm-arm/arch-omap/board-innovator.h
+index b3cf334..56d2c98 100644
+--- a/include/asm-arm/arch-omap/board-innovator.h
++++ b/include/asm-arm/arch-omap/board-innovator.h
+@@ -37,7 +37,7 @@
+ #define OMAP1510P1_EMIFF_PRI_VALUE		0x00
+ 
+ #define NR_FPGA_IRQS		24
+-#define NR_IRQS                 IH_BOARD_BASE + NR_FPGA_IRQS
++#define NR_IRQS                 (IH_BOARD_BASE + NR_FPGA_IRQS)
+ 
+ #ifndef __ASSEMBLY__
+ void fpga_write(unsigned char val, int reg);
