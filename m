@@ -1,61 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbXK2VKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933595AbXK2VPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932885AbXK2VKM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbXK2VJv
+	id S933595AbXK2VPK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:15:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760151AbXK2VO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:09:51 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47808 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933726AbXK2VJu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:09:50 -0500
-Date: Thu, 29 Nov 2007 13:09:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [BUG] 2.6.24-rc3-mm2 soft lockup while running tbench
-Message-Id: <20071129130905.c31431f3.akpm@linux-foundation.org>
-In-Reply-To: <474D7C32.1070809@linux.vnet.ibm.com>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<474D7C32.1070809@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 16:14:58 -0500
+Received: from mx1.suse.de ([195.135.220.2]:35662 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760374AbXK2VO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:14:57 -0500
+Subject: patch kobject-drop-child-parent-ref-at-unregistration.patch added to gregkh-2.6 tree
+To: stern@rowland.harvard.edu, greg@kroah.com, gregkh@suse.de,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Thu, 29 Nov 2007 13:14:06 -0800
+In-Reply-To: <Pine.LNX.4.44L0.0711191047230.4806-100000@iolanthe.rowland.org>
+Message-Id: <20071129211455.774181448C80@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007 20:03:22 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> Hi Andrew,
-> 
-> while running tbench on the powerpc with 2.6.24-rc3-mm2 softlock up occurs
-> 
-> BUG: soft lockup - CPU#0 stuck for 11s! [tbench:12183]
-> NIP: c0000000000ac978 LR: c0000000000acff0 CTR: c00000000005c648
-> REGS: C00000076F0F3200 TRAP: 0901   Not tainted  (2.6.24-rc3-mm2-autotest)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44000482  XER: 00000000
-> TASK = C00000076F4BC000[12183] 'tbench' THREAD: C00000076F0F0000 CPU: 0
-> NIP [c0000000000ac978] .get_page_from_freelist+0x1cc/0x754
-> LR [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
-> Call Trace:
-> [c00000076f0f3480] [c00000076f0f3560] 0xc00000076f0f3560 (unreliable)
-> [c00000076f0f3590] [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
-> [c00000076f0f3680] [c0000000000ce2e4] .alloc_pages_current+0xa8/0xc8
-> [c00000076f0f3710] [c0000000000ac6ec] .__get_free_pages+0x20/0x70
-> [c00000076f0f3790] [c0000000000d75c8] .__kmalloc_node_track_caller+0x60/0x148
-> [c00000076f0f3840] [c0000000002c22b0] .__alloc_skb+0x98/0x184
-> [c00000076f0f38f0] [c000000000306cd8] .tcp_sendmsg+0x1fc/0xe24
-> [c00000076f0f3a10] [c0000000002b963c] .sock_sendmsg+0xe4/0x128
-> [c00000076f0f3c10] [c0000000002ba4ec] .sys_sendto+0xd4/0x120
-> [c00000076f0f3d90] [c0000000002df2f8] .compat_sys_socketcall+0x148/0x214
-> [c00000076f0f3e30] [c00000000000872c] syscall_exit+0x0/0x40
-> Instruction dump:
-> 720b0001 eb970000 40820070 72000002 4182000c e8bc0000 48000018 72080004 
-> 4182000c e8bc0008 48000008 e8bc0010 <e8c10078> 7f83e378 7de407b4 7e078378 
-> 
+This is a note to let you know that I've just added the patch titled
 
-hm.  Beats me.  Does the machine recover OK?
+     Subject: Kobject: drop child->parent ref at unregistration
+
+to my gregkh-2.6 tree.  Its filename is
+
+     kobject-drop-child-parent-ref-at-unregistration.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From stern@rowland.harvard.edu  Thu Nov 29 13:12:08 2007
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Mon, 19 Nov 2007 10:53:40 -0500 (EST)
+Subject: Kobject: drop child->parent ref at unregistration
+To: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>
+Message-ID: <Pine.LNX.4.44L0.0711191047230.4806-100000@iolanthe.rowland.org>
+
+
+This patch (as1015) reverts changes that were made to the driver core
+about four years ago.  The intent back then was to avoid certain kinds
+of invalid memory accesses by leaving kernel objects allocated as long
+as any of their children were still allocated.  The original and
+correct approach was to wait only as long as any children were still
+_registered_; that's what this patch reinstates.
+
+This fixes a problem in the SCSI core made visible by the class_device
+to regular device conversion: A reference loop (scsi_device holds
+reference to request_queue, which is the child of a gendisk, which is
+the child of the scsi_device) prevents the data structures from being
+released, even though they are deregistered okay.
+
+It's possible that this change will cause a few bugs to surface,
+things that have been hidden for several years.  They can be fixed
+easily enough by having the child device take an explicit reference to
+the parent whenever needed.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+
+---
+ lib/kobject.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -149,12 +149,16 @@ void kobject_init(struct kobject * kobj)
+ 
+ static void unlink(struct kobject * kobj)
+ {
++	struct kobject *parent = kobj->parent;
++
+ 	if (kobj->kset) {
+ 		spin_lock(&kobj->kset->list_lock);
+ 		list_del_init(&kobj->entry);
+ 		spin_unlock(&kobj->kset->list_lock);
+ 	}
++	kobj->parent = NULL;
+ 	kobject_put(kobj);
++	kobject_put(parent);
+ }
+ 
+ /**
+@@ -208,7 +212,6 @@ int kobject_add(struct kobject * kobj)
+ 	if (error) {
+ 		/* unlink does the kobject_put() for us */
+ 		unlink(kobj);
+-		kobject_put(parent);
+ 
+ 		/* be noisy on error issues */
+ 		if (error == -EEXIST)
+@@ -463,7 +466,6 @@ void kobject_cleanup(struct kobject * ko
+ {
+ 	struct kobj_type * t = get_ktype(kobj);
+ 	struct kset * s = kobj->kset;
+-	struct kobject * parent = kobj->parent;
+ 	const char *name = kobj->k_name;
+ 
+ 	pr_debug("kobject: '%s' (%p): %s\n",
+@@ -477,7 +479,6 @@ void kobject_cleanup(struct kobject * ko
+ 	}
+ 	if (s)
+ 		kset_put(s);
+-	kobject_put(parent);
+ }
+ 
+ static void kobject_release(struct kref *kref)
+
+
+Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
+
+driver/pm-acquire-device-locks-prior-to-suspending.patch
+driver/create-sys-...-power-when-config_pm-is-set.patch
+driver/driver-core-fix-race-in-__device_release_driver.patch
+driver/driver-core-fix-class-glue-dir-cleanup-logic.patch
+driver/kobject-drop-child-parent-ref-at-unregistration.patch
+usb/usb-add-support-for-an-older-firmware-revision-for-the-nikon-d200.patch
+usb/usb-fix-priority-mistakes-in-drivers-usb-core-hub.c.patch
+usb/usb-fix-signr-comment-in-usbdevice_fs.h.patch
+usb/usb-mailing-lists-have-changed.patch
+usb/usb-power-management-documenation-update.patch
+usb/usb-hcd-avoid-duplicate-local_irq_disable.patch
+usb/usb-usb-mon-mon_bin.c-cleanups.patch
+usb/usb-keep-track-of-whether-interface-sysfs-files-exist.patch
+usb/usb-uevent-environment-key-fix.patch
+usb/usb-autosuspend-for-cdc-acm.patch
+usb/usb-fix-up-ehci-startup-synchronization.patch
+usb/usb-usb-storage-new-lockable-subclass-0x07.patch
+usb/usb-don-t-change-hc-power-state-for-a-freeze.patch
+usb/usb-dummy_hcd-don-t-register-drivers-on-the-platform-bus.patch
+usb/usb-force-handover-port-to-companion-when-hub_port_connect_change-fails.patch
+usb/usb-make-ksuspend_usbd-thread-non-freezable.patch
+usb/usb-usb-storage-unusual_devs-entry-for-jetflash-ts1gjf2a.patch
+usb/usb-storage-always-set-the-allow_restart-flag.patch
