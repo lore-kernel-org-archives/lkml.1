@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbXK2WjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934074AbXK2Wnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933258AbXK2WjI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761976AbXK2Wii
+	id S934074AbXK2Wnm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932532AbXK2Wn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:38:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58069 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760151AbXK2Wig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:38:36 -0500
+	Thu, 29 Nov 2007 17:43:28 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35708 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932268AbXK2Wn1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 17:43:27 -0500
+Date: Thu, 29 Nov 2007 17:43:26 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
+ insert/remove race (v3)
+In-Reply-To: <474F3D27.8050200@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0711291741200.6336-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Jeff Dike <jdike@addtoit.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 11/11] x86 ptrace merge removals
-In-Reply-To: Jeff Dike's message of  Thursday, 29 November 2007 09:04:12 -0500 <20071129140412.GA5412@c2.user-mode-linux.org>
-References: <20071129115711.9FC8526F8E7@magilla.localdomain>
-	<20071129120057.5301426F8E7@magilla.localdomain>
-	<20071129140412.GA5412@c2.user-mode-linux.org>
-X-Windows: the first fully modular software disaster.
-Message-Id: <20071129223803.C69A526F8E7@magilla.localdomain>
-Date: Thu, 29 Nov 2007 14:38:03 -0800 (PST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Nov 29, 2007 at 04:00:57AM -0800, Roland McGrath wrote:
-> ...lots of ptrace merging...
-> 
-> Can you make sure that UML still runs when you're done with ptrace?
+On Thu, 29 Nov 2007, Mark Lord wrote:
 
-I'd be glad to, especially if you give me some advice on testing (.config
-for um-i386 and um-x86_64, what do try that constitutes "UML still runs").
-My patches are going into the x86/mm tree.  Right now (before these), UML
-doesn't build for x86_64 or i386 from this tree to begin with.
+> Alan Stern wrote:
+> > On Thu, 29 Nov 2007, Mark Lord wrote:
+> > 
+> >>> So again, the problem is in the higher up scsi layer, and that is where
+> >>> the problem should already be fixed.
+> >> ..
+> >>
+> >> Ahhh.. so you figure the Oops should also have been fixed
+> >> as part of the 2.6.24 SCSI fixes ?  That's what I was missing here.
+> > 
+> > Yes indeed.  I wish I could point you to the exact patch containing the 
+> > fix, but the git software seems to have lost track of it (it's combined
+> > in with a large number of other patches with no obvious way to separate 
+> > it out).  It's also available in the various mailing list archives, but 
+> > I don't have a pointer to it and there's no reasonable way to search 
+> > for it.
+> > 
+> > The patch in question was written by Matthew Wilcox; it added code to 
+> > the SCSI async-scanning routines to utilize the scan_mutex.  IMO it 
+> > should have been applied to 2.6.23 but it wasn't.
 
+Wait -- I found it:
 
-Thanks,
-Roland
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6b7f123f378743d739377871c0cbfbaf28c7d25a
+
+Try applying that to 2.6.23 (it should merge with minimal problems)
+and do your stress testing again.  Note also the date the patch was 
+submitted: June 26.
+
+> Ahh.  Well, thanks for the *great* followup, Alan!
+
+You're welcome.
+
+Alan Stern
 
