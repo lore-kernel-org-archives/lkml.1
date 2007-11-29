@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbXK2Vvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764076AbXK2Vvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763959AbXK2Vvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763820AbXK2VvT
+	id S1764076AbXK2Vvx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764020AbXK2Vvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:51:19 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50131 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763725AbXK2VvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:51:18 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Cedric Le Goater <clg@fr.ibm.com>, Pavel Emelyanov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch -mm 2/4] mqueue namespace : add unshare support
-References: <20071128163728.177495768@fr.ibm.com>
-	<20071128164349.196734045@fr.ibm.com> <474DA61B.5030301@openvz.org>
-	<474E944C.4020809@fr.ibm.com> <474F1D96.3060606@cs.columbia.edu>
-Date: Thu, 29 Nov 2007 14:49:40 -0700
-In-Reply-To: <474F1D96.3060606@cs.columbia.edu> (Oren Laadan's message of
-	"Thu, 29 Nov 2007 15:14:14 -0500")
-Message-ID: <m1d4tsbu2z.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 29 Nov 2007 16:51:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59096 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763725AbXK2Vvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:51:38 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: jan.kratochvil@redhat.com
+Subject: Re: [PATCH x86/mm 01/11] x86-32 thread_struct.debugreg
+In-Reply-To: Ingo Molnar's message of  Thursday, 29 November 2007 13:23:24 +0100 <20071129122324.GA11414@elte.hu>
+References: <20071129115711.9FC8526F8E7@magilla.localdomain>
+	<20071129122324.GA11414@elte.hu>
+Emacs: no job too big... no job.
+Message-Id: <20071129215055.3A79D26F8E7@magilla.localdomain>
+Date: Thu, 29 Nov 2007 13:50:55 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan <orenl@cs.columbia.edu> writes:
+> thanks, i've merged your 11 patches - they passed a basic build and boot 
+> test as well.
 
-> Two comments:
->
-> 1) Does it ever make any sense to clone the IPC namespace *without* doing
-> so also for the MQ namespace or vice versa ?  Unless there is a good
-> reason for doing so, a single CLONE_IPCMQ flag would suffice.
+Thanks!
 
-SYSVIPC and POSIX IPC are different, and I don't see any argument for why
-they would be in the same namespace.  So for maintenance, testing, and
-the fact that we have already shipped a stable version of the IPC
-namespace and we would be breaking the ABI if we were to add messages
-queues into it now.
+> Roland, you've done a lot of gdb / strace / glibc development, what 
+> would you suggest for us to use as a ptrace regression checker? The 
+> problem is that ptrace is not normally used on a default bootup of a 
+> distro, and some of the ptrace features are really arcane. UML is an 
+> extensive ptrace user, so running it might be a good start, but do you 
+> know of any, more directed testsuite that is expected to hit all (or at 
+> least a substantial percentage of) the various ptrace features that we 
+> are affecting with these ptrace patches?
 
-Frankly I find it a shame that we had to do more then implement multiple
-mounts of the mq filesystem to make this work.
+Jan Kratochvil has helped me a great deal with ptrace testing lately.
+We have started to collect a small regression test suite, see
+http://sourceware.org/systemtap/wiki/utrace/tests for pointers.  That
+has tests for individual problems that have come up, and not anything
+exhaustive for testing all ptrace functionality.  The gdb test suite
+is moderately torturous and more or less the standard big smoke test.
+UML is also a good test, though I have never been set up to verify
+anything beyond "UML seems to boot far enough to complain I don't
+have a userland filesystem for it".  
 
-In general when we use the filesystem namespace for new global objects
-visible to user space is a design bug.
+Most of the changes I've submitted lately are just moving code around
+and not changing its logic substantially.  So for most iterations
+I've been reaosnably confident after just a few quick smoke tests
+with simple manual uses of strace and gdb.
 
-> 2) Before coming up with a new clone2() or other solution, what about the
-> proposed (and debated) sys_indrect() -- if it gets merged it can provide
-> the solution.
 
-Bleh.  We have to have the flag parameters and modify all of the code anyway
-so I'm not quite certain that sys_indirect make sense.
-
-Certainly in this case if we have namespaces that can not be combined with
-CLONE_THREAD we could double assign a field really easily.  Trouble is that
-is just a bit icky.
-
-Eric
+Thanks,
+Roland
