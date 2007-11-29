@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbXK2PH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbXK2PNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932431AbXK2PH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbXK2PG7
+	id S932393AbXK2PNw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbXK2PNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:06:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35481 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932499AbXK2PG5 (ORCPT
+	Thu, 29 Nov 2007 10:13:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:36404 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756567AbXK2PNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:06:57 -0500
-Date: Tue, 27 Nov 2007 15:06:11 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Konrad Rzeszutek <konrad@darnok.org>
-Cc: Doug Maxey <dwm@enoyolf.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
-       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com
-Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
-Message-ID: <20071127150611.26a9575f@laptopd505.fenrus.org>
-In-Reply-To: <200711262350.13100.konrad@darnok.org>
-References: <20071126225642.GA7973@andromeda.dapyr.net>
-	<20071127033138.GB30770@kroah.com>
-	<11870.1196136773@bebe.enoyolf.org>
-	<200711262350.13100.konrad@darnok.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 10:13:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=v0C+VMIX3JMq+jbzSDPhP5qtAUOJ4hHplP7P6L1eiCl7LiwCJc6otR2thczcTk+tCNxrC4NgrU3m5gEush936YHBcmZ7ULRqWCL/88tD6O8nHlabekctNVNoq2OXu3AgpfePA6uLPs8zDMKCYq0LVlNmAJqOgaDcpd24zDpbDr4=
+Message-ID: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
+Date: Thu, 29 Nov 2007 07:13:41 -0800
+From: "Dan Kegel" <dank@kegel.com>
+To: linux-kernel@vger.kernel.org
+Subject: Relax permissions for reading hard drive serial number?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+X-Google-Sender-Auth: 5798c39bfc2dbd49
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Nov 2007 23:50:10 -0500
-Konrad Rzeszutek <konrad@darnok.org> wrote:
+On 2000-09-07, in
+http://marc.info/?l=linux-kernel&m=96836765403118&w=2, Linus wrote:
+> Hmm.. I have this feeling that it would be much nicer to
+> just implement the NT system calls directly.
+> ...
+> I wouldn't be adverse to supporting Wine better...
 
-> > >
-> > > sysfs files have ONE VALUE PER FILE, not a whole bunch of
-> > > different things in a single file.  Please fix this.
-> >
-> > The subparameters _are_ actually part of a single value, that value
-> > being associated with the initiator instance.
-> >
-> > Konrad is trying to implement a "work-alike" for what open firmware
-> > does. open-iscsi already has the ability to extract the same format
-> > bits from real OFW.
-> >
-> > See open-iscsi.git/utils/fwparam_ppc.
-> 
-> 
-> Greg,
-> 
-> In light of what Doug says (which is all true), should I go ahead
-> with a new version of this module which would export one value per
-> file? The problem that will be encountered is that a ethernetX sysfs
-> directory would have (for example):
-> 
-> /sys/firmware/ibft/ethernet0/pci-bdf
-> 5:1:0
+A few years on, Wine has matured to the point where it's
+ready to run quite a few apps, even some protected by Safedisc.
+One sticking point is that apps like Photoshop and probably
+Punkbuster want to retrieve the hard drive's serial number,
+but Linux restricts access to that info:
+$ ls -l /proc/ide/hda/identify
+-r-------- 1 root root 0 2007-11-29 07:05 /proc/ide/hda/identify
+(And even if /proc/ide goes away, the other ways of retrieving
+this info are similarly restricted to root.)
 
-shouldn't this somehow also have a symlink to the kernels ethX view of
-ethernet devices?
-(and if so.. how much of the info is duplicated..)
+Any reason the access control on this info shouldn't be eased a bit,
+e.g. make /proc/ide/*/identify be mode 444?
 
+An alternative might be for Wine to simply fake the serial number,
+but I would like to avoid that if possible.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+See also http://bugs.winehq.org/show_bug.cgi?id=10018
+- Dan
