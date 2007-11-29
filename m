@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbXK2Twi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbXK2Tw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933911AbXK2Twi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933795AbXK2Tvx
+	id S932953AbXK2Tw5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:52:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbXK2TwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:51:53 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:36812 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933794AbXK2Tvv (ORCPT
+	Thu, 29 Nov 2007 14:52:05 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:63358 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933852AbXK2TwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:51:51 -0500
-Subject: Re: Peculiar out-of-sync boot log lines
-From: Jon Masters <jonathan@jonmasters.org>
-To: Nick Warne <nick@ukfsn.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <20071129193728.2f1c237e@linuxamd.linicks.net>
-References: <20071129193728.2f1c237e@linuxamd.linicks.net>
+	Thu, 29 Nov 2007 14:52:00 -0500
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
+	kobject_init
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711291358200.4712-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0711291358200.4712-100000@iolanthe.rowland.org>
 Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Thu, 29 Nov 2007 14:51:11 -0500
-Message-Id: <1196365871.6473.107.camel@perihelion>
+Date: Thu, 29 Nov 2007 20:51:23 +0100
+Message-Id: <1196365883.7903.11.camel@lov.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+X-Provags-ID: V01U2FsdGVkX1/VIsnDTF0rnTLj4RPCXHOK86XeGhHopwfmP4y
+ eHgJP2CdWP9+xjoGefGNhtd+nTzCRRETHUHbZcIv3dWjgCbExN
+ uwUoS5W4XlEauB/XMqbFnXuNNheOm+S
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-11-29 at 14:05 -0500, Alan Stern wrote:
+> On Thu, 29 Nov 2007, Kay Sievers wrote:
+> 
+> > Your error scenario confirmed my initial concern about suggesting
+> > kobject_put() to clean up an initialized kobject.
+> > 
+> > We should probably make kobject_cleanup() free only the resources taken
+> > by kobject_init(), and use kobject_cleanup() instead of kobject_put()?
+> 
+> My conclusion is different.  We should make kobject_init() not consume
+> any resources at all; just initialize various fields.  That way it
+> would be okay to call either kfree() or kobject_put() on an initialized
+> kobject.  And then when something like device_register() fails, the
+> caller would know the proper thing to do would be to call the put()  
+> routine, always.
+> 
+> Of course, once the name has been assigned, only kobject_put() should
+> be used.
 
-On Thu, 2007-11-29 at 19:37 +0000, Nick Warne wrote:
-> Hi all,
-> 
-> 2.6.23.9
-> 
-> I have noticed after applying Bart's patch to word93 blacklist my new
-> DVD drive:
-> 
-> http://lkml.org/lkml/2007/10/23/475
-> 
-> I see now in logs (look at the hdd line:
-> 
-> [dmesg]
-> hdc: 39876480 sectors (20416 MB) w/2048KiB Cache, CHS=39560/16/63,
-> UDMA(66)
-> hdc: cache flushes not supported
->  hdc: hdc1
-> hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache<7>hdd:
-> skipping word 93 validity check
-> , UDMA(66)
-> Uniform CD-ROM driver Revision: 3.20
+Now we just move the exactly the same problem from _init() to
+_set_name(). To free the name of an unregistered we would need to call
+_put() which free()'s the whole object again. :) 
 
-Only very early in boot are you guaranteed for things to execute
-sequentially, and for logs to look nice and pretty.
+> There's another good reason for not assigning the name in
+> kobject_init(): Code that uses kobjects (like the driver core) doesn't
+> set the name until later.
 
-Jon.
+That can be done at any stage, I guess. We will rip out the name in the
+struct device anyway.
 
+Kay
 
