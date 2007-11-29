@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933284AbXK2THu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbXK2TK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933284AbXK2THu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932318AbXK2THm
+	id S932973AbXK2TK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbXK2TKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:07:42 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37558 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932303AbXK2THl (ORCPT
+	Thu, 29 Nov 2007 14:10:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36504 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762006AbXK2TKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:07:41 -0500
-Date: Thu, 29 Nov 2007 14:07:41 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mark Lord <lkml@rtr.ca>
-cc: Raymano Garibaldi <raymano@faunos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       <kirk@faunos.com>
-Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
-In-Reply-To: <474F0C8D.3090604@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0711291406460.5666-100000@iolanthe.rowland.org>
+	Thu, 29 Nov 2007 14:10:13 -0500
+Date: Thu, 29 Nov 2007 11:08:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Chuck Ebbert <cebbert@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current
+ task
+In-Reply-To: <474F08E1.2090806@zytor.com>
+Message-ID: <alpine.LFD.0.9999.0711291057320.8458@woody.linux-foundation.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <474F01F6.2030509@zytor.com>
+ <alpine.LFD.0.9999.0711291027070.8458@woody.linux-foundation.org> <474F08E1.2090806@zytor.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Mark Lord wrote:
 
-> Alan Stern wrote:
-> > On Thu, 29 Nov 2007, Raymano Garibaldi wrote:
+
+On Thu, 29 Nov 2007, H. Peter Anvin wrote:
+> Linus Torvalds wrote:
 > > 
-> >> The feature does work as long as the device remains plugged in and
-> >> that is what I have said in my previous postings too. What I'm saying
-> >> that should work and worked under 2.6.21 and is not working currently
-> >> is the ability to unplug and plug back in the device while the
-> >> computer is suspended before resuming without losing the mount.
+> > > It is advantageous for user space to use the register the kernel typically
+> > > won't, in order to speed up system call entry/exit.
 > > 
-> > Okay, guess I misunderstood what you wrote before.
-> > 
-> > The patch below for 2.6.23 should do what you want (and more besides).  
-> > It forces the USB Persist feature to apply to all persist-enabled 
-> > devices, whether they were unplugged or not.
-> > 
-> > There's no chance of this getting accepted into the official kernel in 
-> > such a simple form, but at least it will allow you to do what you want.
-> > 
-> > Alan Stern
-> > 
-> > 
-> > --- 2.6.23/drivers/usb/core/driver.c1	2007-11-29 10:57:36.000000000 -0500
-> > +++ 2.6.23/drivers/usb/core/driver.c	2007-11-29 11:01:44.000000000 -0500
-> > @@ -1550,6 +1550,9 @@
-> >  		if (!(udev->reset_resume && udev->do_remote_wakeup))
-> >  			return -EPERM;
-> >  	}
-> > +
-> > +	/* Force all system resumes to be reset-resumes */
-> > +	udev->reset_resume = 1;
-> >  	return usb_external_resume_device(udev);
-> >  }
-> ..
+> > but I'm not seeing the reason for that one. Care to comment more? (Yes,
+> > there is often a latency from segment reload to use, but the reload latency
+> > for system call exit *should* be entirely covered by the cost of doing the
+> > system call return itself, no?)
 > 
-> Mmm.. how about a nice sysfs attr that the suspend scripts can write
-> that value to as needed ?
+> I do seem to recall that some processor implementations can load a NULL
+> segment faster than a non-NULL segment.  This was significant enough that we
+> wanted to use %fs in x86-64 userspace, as opposed to the original ABI which
+> used %gs both in userspace and in the kernel.
 
-Write what value to?  Besides, there already _is_ a sysfs attribute
-scripts can use to enable or disable USB-Persist for each device.
+Ahh, I think you may be right for some CPUs. The zero selector is indeed 
+potentially faster to load, since it doesn't have to even bother looking 
+at the GDT/LDT.
 
-Alan Stern
+That said, I doubt it's very noticeable. I just ran tests on both an old 
+P4 and on a more modern Core 2 machine, and for both of those the 
+performance was identical between loading a NUL selector and loading it 
+with a non-zero one.
 
+But I could well imagine that it matters a few cycles on other CPU's. But 
+from my testing, it definitely isn't noticeable, and I think the 
+maintenance advantage of using the same segment setup would more than make 
+up for the fact that maybe some odd CPU can see a difference.
+
+			Linus
