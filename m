@@ -1,95 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbXK2SKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbXK2SKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758684AbXK2SKJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbXK2SJ4
+	id S1763589AbXK2SKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbXK2SKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:09:56 -0500
-Received: from rtr.ca ([76.10.145.34]:3714 "EHLO mail.rtr.ca"
+	Thu, 29 Nov 2007 13:10:23 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4807 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756598AbXK2SJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:09:55 -0500
-Message-ID: <474F0071.5010507@rtr.ca>
-Date: Thu, 29 Nov 2007 13:09:53 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: [PATCH] base/class.c: prevent ooops due to insert/remove race (v3)
-References: <474E3964.7040200@rtr.ca> <20071129043307.GA4766@suse.de> <474EDDA9.1040205@rtr.ca> <20071129162727.GA8352@suse.de> <474EFAC1.1010100@rtr.ca> <474EFB61.8090803@rtr.ca> <474EFBFF.9090400@rtr.ca>
-In-Reply-To: <474EFBFF.9090400@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S932327AbXK2SKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:10:21 -0500
+Subject: [PATCH] Remove #define hex_asc from kernel.h, update lib/hexdump.c
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 10:08:44 -0800
+Message-Id: <1196359724.22120.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Mark Lord wrote:
->> Mark Lord wrote:
->> ...
->> And here is a "prevented" oops, courtesy of the patch (2.6.23.8).
->> These are easy to reproduce (just jiggle the connection on an
->> attached USB multi-card reader with a CF card inserted):
-> ...
->> [  347.099562] usb 5-6: USB disconnect, address 10
->> [  347.101077] BUG: unable to handle kernel NULL pointer dereference 
->> at virtual address 00000000
-> 
-> ...
-> 
-> 
-> Mmmm.. that's odd.  It *did* Oops there.  I wonder how/why ?
-...
+It's only use is in lib/hexdump.c
+Instead, use scnprintf in lib/hexdump.c
 
-Ahh.. it was the *other* call to strlen() that was crapping out.
-Here's an updated patch to prevent the Oops:
+Use "%0nx" not "%n.nx" (Smaller kernel, one byte at a time, woohoo!)
+Use true not 1 for print_hex_dump
+A bit of indentation style in lib/hexdump.c
 
-* * * *
+Size before/after
+   text    data     bss     dec     hex filename
+   1037       0       0    1037     40d lib/hexdump.o
 
-While doing insert/remove (quickly) tests on USB,
-I managed to trigger an Oops on 2.6.23.8 on a call
-to strlen() in make_class_name().
+   text    data     bss     dec     hex filename
+   1019       0       0    1019     3fb lib/hexdump.o
 
-USB maintainers can try this themselves, by plugging in an
-external USB XX-in-1 flash reader, with a CF card inserted.
-Then just jiggle the connection so that the device connects
-and disconnects rapidly.  This may not sound realistic,
-but there's definitely a race in there, and this is a quick
-way to reproduce it if need be.
+Signed-off-by: Joe Perches <joe@perches.com>
 
-The patch below prevents the oops, but still keeps the bug visible.
-
-Signed-off-by:  Mark Lord <mlord@pobox.com> 
 ---
 
-Patch applies to both 2.6.24 and 2.6.23.
+ include/linux/kernel.h |    1 -
+ lib/hexdump.c          |   23 ++++++++++-------------
+ 2 files changed, 10 insertions(+), 14 deletions(-)
 
---- old/drivers/base/class.c	2007-11-29 10:51:43.000000000 -0500
-+++ linux/drivers/base/class.c	2007-11-29 13:00:15.000000000 -0500
-@@ -352,9 +352,22 @@
- char *make_class_name(const char *name, struct kobject *kobj)
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 94bc996..77b187f 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -256,7 +256,6 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
+ 				const void *buf, size_t len, bool ascii);
+ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ 			const void *buf, size_t len);
+-#define hex_asc(x)	"0123456789abcdef"[x]
+ 
+ #define pr_emerg(fmt, arg...) \
+ 	printk(KERN_EMERG fmt, ##arg)
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index bd5edae..70e23fb 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -41,7 +41,6 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 			bool ascii)
  {
- 	char *class_name;
-+	const char *kname;
- 	int size;
+ 	const u8 *ptr = buf;
+-	u8 ch;
+ 	int j, lx = 0;
+ 	int ascii_column;
  
--	size = strlen(name) + strlen(kobject_name(kobj)) + 2;
-+	/* Rapidly inserting/removing a USB device (others?)
-+	 * can trigger an Oops on the strlen() call.
-+	 * Cause unknown yet, so prevent the Oops
-+	 * but don't mask the issue.
-+	 */
-+	kname = kobject_name(kobj);
-+	if (!kname || !name) {
-+		printk(KERN_ERR "make_class_name: name=%p kname=%p\n",
-+						name, kname);
-+		BUG_ON(1);
-+		return NULL;
-+	}
-+	size = strlen(name) + strlen(kname) + 2;
+@@ -62,7 +61,9 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
  
- 	class_name = kmalloc(size, GFP_KERNEL);
- 	if (!class_name)
+ 		for (j = 0; j < ngroups; j++)
+ 			lx += scnprintf(linebuf + lx, linebuflen - lx,
+-				"%16.16llx ", (unsigned long long)*(ptr8 + j));
++					"%016llx ",
++					(unsigned long long)*(ptr8 + j) &
++					0xffffffffffffffffULL);
+ 		ascii_column = 17 * ngroups + 2;
+ 		break;
+ 	}
+@@ -73,7 +74,7 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 
+ 		for (j = 0; j < ngroups; j++)
+ 			lx += scnprintf(linebuf + lx, linebuflen - lx,
+-				"%8.8x ", *(ptr4 + j));
++					"%08x ", *(ptr4 + j) & 0xffffffffU);
+ 		ascii_column = 9 * ngroups + 2;
+ 		break;
+ 	}
+@@ -84,19 +85,15 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 
+ 		for (j = 0; j < ngroups; j++)
+ 			lx += scnprintf(linebuf + lx, linebuflen - lx,
+-				"%4.4x ", *(ptr2 + j));
++					"%04x ", *(ptr2 + j) & 0xffff);
+ 		ascii_column = 5 * ngroups + 2;
+ 		break;
+ 	}
+ 
+ 	default:
+-		for (j = 0; (j < rowsize) && (j < len) && (lx + 4) < linebuflen;
+-		     j++) {
+-			ch = ptr[j];
+-			linebuf[lx++] = hex_asc(ch >> 4);
+-			linebuf[lx++] = hex_asc(ch & 0x0f);
+-			linebuf[lx++] = ' ';
+-		}
++		for (j = 0; (j < rowsize) && (j < len) < linebuflen; j++)
++			lx += scnprintf(linebuf + lx, linebuflen - lx,
++					"%02x ", ptr[j] & 0xff);
+ 		ascii_column = 3 * rowsize + 2;
+ 		break;
+ 	}
+@@ -163,7 +160,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 		switch (prefix_type) {
+ 		case DUMP_PREFIX_ADDRESS:
+ 			printk("%s%s%*p: %s\n", level, prefix_str,
+-				(int)(2 * sizeof(void *)), ptr + i, linebuf);
++			       (int)(2 * sizeof(void *)), ptr + i, linebuf);
+ 			break;
+ 		case DUMP_PREFIX_OFFSET:
+ 			printk("%s%s%.8x: %s\n", level, prefix_str, i, linebuf);
+@@ -192,6 +189,6 @@ void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ 			const void *buf, size_t len)
+ {
+ 	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
+-			buf, len, 1);
++		       buf, len, true);
+ }
+ EXPORT_SYMBOL(print_hex_dump_bytes);
+
+
