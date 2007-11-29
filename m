@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbXK2RfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbXK2RgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757721AbXK2RfN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:35:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759713AbXK2RfA
+	id S1762635AbXK2RgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbXK2RgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:35:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46414 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758962AbXK2Re7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:34:59 -0500
-Message-ID: <474EF824.3020806@redhat.com>
-Date: Thu, 29 Nov 2007 12:34:28 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 29 Nov 2007 12:36:11 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:54961 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759057AbXK2RgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 12:36:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XGIlFp7/26g8JMXfkWt34qx33Gwf36WZpmb6rWG52GUOTvw1bGMzd40qOUkF9zPKeGWK6sMZXkT0W4nxDzvRr35ezd9RwAeHTxxzJyU3FYfWQ6nQT1n2rkfvvTNoBHmy6Sj/TvH0FtTkOmi5IdumtFrpdLdW6L5JUUuCS1VyNYQ=
+Message-ID: <2c0942db0711290935l56d28b70v2b35dfb1663e4d2b@mail.gmail.com>
+Date: Thu, 29 Nov 2007 09:35:56 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: Out of tree module using LSM
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Jon Masters" <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Al Viro" <viro@ftp.linux.org.uk>,
+       "Casey Schaufler" <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071129170326.GA10024@kroah.com>
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain>
-In-Reply-To: <20071129004222.E49AD26F8E7@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <416908.77038.qm@web36613.mail.mud.yahoo.com>
+	 <25290.1196273705@turing-police.cc.vt.edu>
+	 <20071128183040.GW8181@ftp.linux.org.uk>
+	 <20071129003840.GA22530@kroah.com>
+	 <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+	 <20071129010753.GA19106@kroah.com>
+	 <1196354172.6473.52.camel@perihelion>
+	 <20071129164746.GB9664@kroah.com>
+	 <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
+	 <20071129170326.GA10024@kroah.com>
+X-Google-Sender-Auth: 9790632e526eb5a6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/28/2007 07:42 PM, Roland McGrath wrote:
-> --- a/arch/x86/ia32/ptrace32.c
-> +++ b/arch/x86/ia32/ptrace32.c
-> @@ -48,19 +48,27 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 val)
->  		if (val && (val & 3) != 3)
->  			return -EIO;
->  		child->thread.fsindex = val & 0xffff;
-> +		if (child == current)
-> +			loadsegment(fs, child->thread.fsindex);
->  		break;
->  	case offsetof(struct user32, regs.gs):
->  		if (val && (val & 3) != 3)
->  			return -EIO;
->  		child->thread.gsindex = val & 0xffff;
-> +		if (child == current)
-> +			load_gs_index(child->thread.gsindex);
->  		break;
->  	case offsetof(struct user32, regs.ds):
->  		if (val && (val & 3) != 3)
->  			return -EIO;
->  		child->thread.ds = val & 0xffff;
-> +		if (child == current)
-> +			loadsegment(ds, child->thread.ds);
->  		break;
->  	case offsetof(struct user32, regs.es):
->  		child->thread.es = val & 0xffff;
-> +		if (child == current)
-> +			loadsegment(es, child->thread.ds);
+On Nov 29, 2007 9:03 AM, Greg KH <greg@kroah.com> wrote:
+> On Thu, Nov 29, 2007 at 05:53:33PM +0100, Jan Engelhardt wrote:
+> >
+> > On Nov 29 2007 08:47, Greg KH wrote:
+> > >On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
+> > >> On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
+> > >>
+> > >> > The easiest way is as Al described above, just have the userspace
+> > >> > program that wrote the file to disk, check it then.
+> > >>
+> > >> But the problem is that this isn't just Samba, this is a countless
+> > >> myriad of different applications. And if one of them doesn't support
+> > >> on-access scanning, then the whole solution isn't worth using.
+> > >
+> > >Ok, which specific applications do they care about?  Last time I asked
+> > >it was still limited to a very small handful, all of which would be
+> > >trivial to add such a hook to.
+> > >
+> > Well, think bash, syscalls. While you can add a plugin to samba "easily",
+> > it seems overkill to do the same for rm, mv, cp, bash.
+>
+> Again, these are not things that these companies care about.
 
-                                        child->thread.es ??
+Perhaps if you looked at this outside of a file-server scenario, the
+problem would be clearer? Anti-malware companies want to check
+anything written to disk on a system, either at write time or blocking
+the open/mmap. That means proactively protecting email programs with
+known vulnerabilities that have yet to be patched, web browsers
+writing and reading their caches, an Apache instance running WebDAV,
+the list goes on. And these are on desktop systems, with no attached
+file/network server.
 
-> @@ -129,15 +137,23 @@ static int getreg32(struct task_struct *child, unsigned regno, u32 *val)
->  	switch (regno) {
->  	case offsetof(struct user32, regs.fs):
->  		*val = child->thread.fsindex;
-> +		if (child == current)
-> +			asm("movl %%fs,%0" : "=r" (*val));
->  		break;
->  	case offsetof(struct user32, regs.gs):
->  		*val = child->thread.gsindex;
-> +		if (child == current)
-> +			asm("movl %%gs,%0" : "=r" (*val));
-
-Won't this return the kernel's GS instead of the user's?
+Yes, each and every one of these programs could have a malware
+scanning engine slapped inside of them. But that proves what? That's
+like saying each an every program on a system should have the SELinux
+policies built into them, and yet we have that in-kernel instead.
