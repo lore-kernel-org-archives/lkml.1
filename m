@@ -1,40 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763152AbXK2S5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbXK2S5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763152AbXK2S5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760818AbXK2S53
+	id S1763445AbXK2S5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763162AbXK2S5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:57:29 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4846 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760466AbXK2S52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:57:28 -0500
-Subject: Re: [PATCH] Remove #define hex_asc from kernel.h,
-	update	lib/hexdump.c
-From: Joe Perches <joe@perches.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <474F0A68.1080809@oracle.com>
-References: <1196359724.22120.22.camel@localhost>
-	 <20071129102400.dac158d8.randy.dunlap@oracle.com>
-	 <1196361860.22120.27.camel@localhost>  <474F0A68.1080809@oracle.com>
+	Thu, 29 Nov 2007 13:57:39 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:34304 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763121AbXK2S5i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 13:57:38 -0500
+Subject: Re: Out of tree module using LSM
+From: Jon Masters <jonathan@jonmasters.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, tvrtko.ursulin@sophos.com,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu
+In-Reply-To: <2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
+References: <20071128183040.GW8181@ftp.linux.org.uk>
+	 <OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
+	 <20071129173601.34273083@the-village.bc.nu>
+	 <2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 29 Nov 2007 10:55:38 -0800
-Message-Id: <1196362538.22120.36.camel@localhost>
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Thu, 29 Nov 2007 13:56:51 -0500
+Message-Id: <1196362612.6473.98.camel@perihelion>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 10:52 -0800, Randy Dunlap wrote:
-> Joe Perches wrote:
-> > On Thu, 2007-11-29 at 10:24 -0800, Randy Dunlap wrote:
-> >> I don't care for the mixed spaces/tabs.
-> I like myself, but I removed it just for you...
-> Thanks.  Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-> but needs an S-O-B:
 
-Signed-off-by: Joe Perches <joe@perches.com>
+On Thu, 2007-11-29 at 10:40 -0800, Ray Lee wrote:
+> On Nov 29, 2007 9:36 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > > closed. But more importantly further access to it can be blocked until
+> > > appropriate actions are taken which also applies with your example, no? Is
+> >
+> > That bit is hard- very hard.
+> 
+> In some sense it seems like the same problem faced by dynamic
+> translators such as Qemu. They really want to vet a dirtied or faulted
+> page before allowing the app to run unhindered. It's be nice to have
+> some way to do that without virtualizing the whole of userspace.
+
+Like I hinted at, you can't just "vet a page". Because a page alone is
+meaningless garbage, unless it happens to be an extremely small program,
+with headers, all nicely aligned. Most likely you don't know if a random
+page of data is code from a COFF file, ELF file, or some random crap I
+typed in at a terminal after having too much coffee.
+
+So. You'd need to scan *all the pages* of *the entire file*, every time
+that you performed any type of operation. Hence, that idea is completely
+out right away. The on-access scanning isn't perfect, but it's probably
+about as good as you can get and still have a reasonably usable system.
+
+Jon.
+
 
