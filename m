@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbXK2QVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbXK2QWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760142AbXK2QVO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758808AbXK2QUz
+	id S932415AbXK2QWX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbXK2QWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:20:55 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:47697 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757003AbXK2QUx (ORCPT
+	Thu, 29 Nov 2007 11:22:12 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:4468 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755230AbXK2QWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:20:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BqIU+0EtOGIbpaH/a7fBxRgS5DQ21g8iJV0w91E6pSrSPX0xf1yYcskHgDq2vTZXf02VOwYwMEE/KLThWkiOyS0nec2gZSSwdpiYRozZxmjUUKaALAJk0EtioUyoiDTMMCsXsGBpvi/dMCMF6WxXIBYghRoeajh1JWUYhDYCl0U=
-Message-ID: <3efb10970711290820x5441669fi7f846b0a47004d10@mail.gmail.com>
-Date: Thu, 29 Nov 2007 17:20:52 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <3efb10970711290733m59e30b5eyf96b914d63a72058@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Nov 2007 11:22:10 -0500
+Date: Thu, 29 Nov 2007 17:21:34 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before
+ kobject_init
+Message-ID: <20071129172134.74849579@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1196352280.3118.11.camel@lov.site>
+References: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org>
+	<1196352280.3118.11.camel@lov.site>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com>
-	 <20071128200550.GA3494@flint.arm.linux.org.uk>
-	 <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com>
-	 <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
-	 <20071129102506.GB22793@flint.arm.linux.org.uk>
-	 <3efb10970711290327s3c60da1ey3b6fae738090ca5@mail.gmail.com>
-	 <20071129133604.GA23845@flint.arm.linux.org.uk>
-	 <3efb10970711290618v2bd93edfrbc53d9df4b73b33b@mail.gmail.com>
-	 <20071129142920.GB23845@flint.arm.linux.org.uk>
-	 <3efb10970711290733m59e30b5eyf96b914d63a72058@mail.gmail.com>
-X-Google-Sender-Auth: b5f3742261ac5d00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All,
+On Thu, 29 Nov 2007 17:04:40 +0100,
+Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-I tested some more with the edge_triggered interrupt handler on AT91,
-and I had already a long time a problem with the AT91SAM9261-EK kit,
-that the DM9000 Ethernet controller did not work _at all_ on RT. I
-just tried if the edge triggered interrupt handler works on that board
-also. And now that board also works properly on RT. (my first patch
-did not solve this problem either, so apparantly that one still misses
-interrupts.)
+> On Thu, 2007-11-29 at 10:54 -0500, Alan Stern wrote:
+> > On Thu, 29 Nov 2007, Kay Sievers wrote:
+> > 
+> > > > And if someone calls kobject_put() after kobject_init() to clean up,
+> > > > their release function will not be called if they didn't set the ktype.
+> > > > So the check really belongs into kobject_init() IMO.
+> > 
+> > Right.  And even though cleaning up no longer needs to drop a reference
+> > to the kset, it still might need to free the kobject's name.  So for 
+> > example, either of these sequences:
+> > 
+> > 	kobject_init();			kobject_set_name();
+> > 	kobject_set_name();		kobject_init();
+> > 	...				...
+> > 	kobject_free();			kobject_free();
+> > 
+> > would leak memory.
+> 
+> Yeah, only the kobject_put() would free the name.
+> 
+> > In fact, if we were designing the kobject API from scratch, I'd suggest 
+> > making the ktype value an argument to kobject_init() so that it 
+> > _couldn't_ be omitted.
+> 
+> Sounds fine, maybe we should also pass the name along, so it will be
+> obvious what happens here:
+>   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
 
-This proves again that the simple_irq usage on AT91 is just crap...
-
-Russell, Thanks again for the latest (and greatest) hint. This saves
-me a lot of debug time on that board.
-
-Kind Regards,
-
-Remy
-
-2007/11/29, Remy Bohmer <linux@bohmer.net>:
-> Hello Russell,
->
-> > While I realise that, I'm telling you that the _problem_ is being
-> > caused by the wrong handler being used.
->
-> Okay, I believe you... (someone told me once, Russell is right, and if
-> you do not believe him, he is still right ;-)
->
-> > SA1100 and PXA have exactly the same setup.  They use the correct
-> > handler.  Why is AT91 special?
->
-> This remark is what convinced me :-))
->
-> I changed the interrupt handler from the simple_irq to the edge_irq,
-> and it works...!!
-> (I added a noop routine for that .ack part, because there is no ack)
->
-> I believe I was too focussed on the masking bug in the RT kernel on
-> the simple_irq() that I did not see that for the AT91 series the edge
-> type interrupt handler also works... (even better...) What I thought
-> was 1 single bug in the RT-kernel turned out to be a number of things
-> together that aren't correct, even for mainline.
->
-> So, to come to a conclusion: The masking bug in RT is still there in
-> the simple_irq path, and masking has to be removed from the simple_irq
-> code. Also for mainline. AT91 can live without simple_irq.
-> I think we are in sync again...
->
-> I will post a patch for the AT91 later on, after some more testing.
->
->
-> Kind Regards,
->
-> Remy
->
+Agreed. Better don't hide too much.
