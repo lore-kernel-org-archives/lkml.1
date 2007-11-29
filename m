@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbXK2Ptt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXK2Pyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761565AbXK2Ptt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbXK2Ptl
+	id S1760760AbXK2Pyf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:54:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbXK2Py1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:49:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36249 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756159AbXK2Ptk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:49:40 -0500
-Date: Thu, 29 Nov 2007 10:47:26 -0500
-From: Rik van Riel <riel@redhat.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in
- 2.6.25
-Message-ID: <20071129104726.5698321f@cuia.boston.redhat.com>
-In-Reply-To: <474ED005.7060300@linux.vnet.ibm.com>
-References: <474ED005.7060300@linux.vnet.ibm.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 10:54:27 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35692 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755230AbXK2Py1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 10:54:27 -0500
+Date: Thu, 29 Nov 2007 10:54:26 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
+In-Reply-To: <1196333946.3242.214.camel@lov.site>
+Message-ID: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 20:13:17 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, 29 Nov 2007, Kay Sievers wrote:
 
-> They say better strike when the iron is hot.
-> 
-> Since we have so many people discussing the memory controller, I would
-> like to access the readiness of the memory controller for mainline
-> merge.
+> > And if someone calls kobject_put() after kobject_init() to clean up,
+> > their release function will not be called if they didn't set the ktype.
+> > So the check really belongs into kobject_init() IMO.
 
-> At the VM-Summit we decided to try the current double LRU approach for
-> memory control. At this juncture in the space-time continuum, I seek
-> your support, feedback, comments and help to move the memory controller
+Right.  And even though cleaning up no longer needs to drop a reference
+to the kset, it still might need to free the kobject's name.  So for 
+example, either of these sequences:
 
-The memory controller code currently in -mm seems fine to me,
-especially with the changes that got committed over the last
-days making reclaim more efficient.
+	kobject_init();			kobject_set_name();
+	kobject_set_name();		kobject_init();
+	...				...
+	kobject_free();			kobject_free();
 
-I don't think there are any bugs left that can be found by
-code inspection - only the kind of testing that the mainline
-kernel gets might shake out more bugs.
+would leak memory.
 
-I would like to see the memory controller code go into the
-mainline kernel ASAP.
+In fact, if we were designing the kobject API from scratch, I'd suggest 
+making the ktype value an argument to kobject_init() so that it 
+_couldn't_ be omitted.
 
--- 
-All Rights Reversed
+> Hmm, will one expect that the whole object will also be free'd when we
+> suggest to call kobject_put() to cleanup? That might be pretty
+> unexpected, right?
+
+I don't understand the question.  People _already_ expect the cleanup 
+routine to free the kobject when the last reference is dropped.  Why 
+should there be any confusion over this?
+
+Alan Stern
+
