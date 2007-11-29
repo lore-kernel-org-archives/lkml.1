@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933696AbXK2XX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934074AbXK2X3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933696AbXK2XX6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 18:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760762AbXK2XXn
+	id S934074AbXK2X3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 18:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932841AbXK2X3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 18:23:43 -0500
-Received: from smtp-out001.kontent.com ([81.88.40.215]:36600 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756215AbXK2XXm convert rfc822-to-8bit (ORCPT
+	Thu, 29 Nov 2007 18:29:06 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:21955 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762728AbXK2X3C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 18:23:42 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Jaime Velasco Juan <jsagarribay@gmail.com>
-Subject: Re: Add the infamous Huawei E220 to option.c
-Date: Fri, 30 Nov 2007 00:23:07 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
-       Rui Santos <rsantos@grupopie.com>, Pete Zaitcev <zaitcev@redhat.com>,
-       linux-usb@vger.kernel.org, preining@logic.at,
-       kristoffer.ericson@gmail.com, drussell@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129150550.86453nubw8i5xi68@webmail.tugraz.at> <20071129185339.GA10445@singular.local>
-In-Reply-To: <20071129185339.GA10445@singular.local>
+	Thu, 29 Nov 2007 18:29:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IuEs4B+7IViisP6xNxH4mGa6DdfBl9f6EFM/08SeTpLKWuCzhwZCiqTlOnaqS1uOSRpFNtX1hT+qGihYR04XIcESIxqEbfQ8HLKH9bNQHJ18sxC5vROMULz5796Qn99a0cJIfTysWEPCdovkQPOcHabJMUyWjqyBfV2g3Cz7kGk=
+Message-ID: <5501535d0711291529n67283fe3we5e516c23ab2d2a9@mail.gmail.com>
+Date: Fri, 30 Nov 2007 00:29:01 +0100
+From: "Bjoern Olausson" <lkmlist@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: sata NCQ blacklist entry
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <474F43C0.6080008@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200711300023.08999.oliver@neukum.org>
+References: <20071107111813.GA9064@dudweiler.stuttgart.redhat.com>
+	 <4731B5DD.1060203@gmail.com>
+	 <5501535d0711290917r16a16b0dx36669de89f829231@mail.gmail.com>
+	 <474F43C0.6080008@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 29. November 2007 19:53:39 schrieb Jaime Velasco Juan:
-> Hi,
+On 11/29/07, Tejun Heo <htejun@gmail.com> wrote:
 >
-> El jue. 29 de nov. de 2007, a las 15:05:50 +0100, Johann Wilhelm escribió:
-> > If everything's working please also add code to also support the other
-> > E220 device... so both PID 0x1003 and 0x1004 should be treaded the same
-> > way...
-> >
-> > to test the device with the 0x1004-PID maybe Jaime Velasco
-> > <jsagarribay@gmail.com> could be asked.. he initialy added the lines for
-> > this device in option.c
+> I now have affected drives on my desk and am gonna try reproduce it.  My
+> gut feeling says it's timing related problem on controller / driver
+> side.  Please wait a bit.
 >
-> The following patch works for me (on kernel 2.6.23).
+Okay, no problem, I am just curious.
 
-Jaime, please add your signed off by line and resend the patch with
-both lines to Greg.
+> > by the way, and OT, did the Plextor DVD-RW drive reach you, Tejun?
+>
+> No, not yet.  Do you have a tracking number or something?
+>
+No, I havn't... all I got is the bill... but that doesn't help because
+we choosed to use shipment without enshurance... there is no tracking
+number. Mhhh that sucks... i can't get rid of the bad feeling that it
+got lost. But I'll try to make some checks.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
-
-	Regards
-		Oliver
+CU
+Bjoern
