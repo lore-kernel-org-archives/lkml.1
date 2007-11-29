@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbXK2Pr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbXK2Ptt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbXK2Pr2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbXK2PrU
+	id S1761565AbXK2Ptt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:49:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbXK2Ptl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:47:20 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:50909 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755115AbXK2PrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:47:20 -0500
-Date: Thu, 29 Nov 2007 10:47:19 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Greg KH <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-In-Reply-To: <20071129111251.35b3b17d@gondolin.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0711291042240.4516-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Nov 2007 10:49:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36249 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756159AbXK2Ptk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 10:49:40 -0500
+Date: Thu, 29 Nov 2007 10:47:26 -0500
+From: Rik van Riel <riel@redhat.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh@veritas.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@sw.ru>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Christoph Lameter <clameter@sgi.com>,
+       "Martin J. Bligh" <mbligh@google.com>,
+       Andy Whitcroft <andyw@uk.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: What can we do to get ready for memory controller merge in
+ 2.6.25
+Message-ID: <20071129104726.5698321f@cuia.boston.redhat.com>
+In-Reply-To: <474ED005.7060300@linux.vnet.ibm.com>
+References: <474ED005.7060300@linux.vnet.ibm.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Cornelia Huck wrote:
+On Thu, 29 Nov 2007 20:13:17 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> > The only problem arises when a child's driver retains a reference to 
-> > the parent kobject.  If things are done properly, this reference should 
-> > involve incrementing the module count -- which would prevent the module 
-> > from being unloaded in the first place.
+> They say better strike when the iron is hot.
 > 
-> This still leaves the possibility that random code may grab a reference
-> once the kobject is present in the tree and lookupable. You gave up the
-> control of the number of references to your object once you made it
-> public.
+> Since we have so many people discussing the memory controller, I would
+> like to access the readiness of the memory controller for mainline
+> merge.
 
-I don't agree with this argument.  Code should never grab random
-references without insuring that the owner of the referenced object is
-pinned.  This rule applies to everything, not just kobjects.
+> At the VM-Summit we decided to try the current double LRU approach for
+> memory control. At this juncture in the space-time continuum, I seek
+> your support, feedback, comments and help to move the memory controller
 
-Unfortunately kobjects don't have an owner field.  In practice this 
-means that it isn't possible to pin the owner of some random kobject -- 
-you have to know where the kobject came from or what it's embedded in.  
-All users of kobjects need to work this way.
+The memory controller code currently in -mm seems fine to me,
+especially with the changes that got committed over the last
+days making reclaim more efficient.
 
-Alan Stern
+I don't think there are any bugs left that can be found by
+code inspection - only the kind of testing that the mainline
+kernel gets might shake out more bugs.
 
+I would like to see the memory controller code go into the
+mainline kernel ASAP.
+
+-- 
+All Rights Reversed
