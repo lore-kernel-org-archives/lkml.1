@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbXK2AFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbXK2AIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761653AbXK2AFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbXK2AFl
+	id S1761707AbXK2AIc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758594AbXK2AIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:05:41 -0500
-Received: from smtp.ono.com ([62.42.230.12]:15829 "EHLO resmaa02.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754866AbXK2AFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:05:40 -0500
-Date: Thu, 29 Nov 2007 01:05:31 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: void* arithmnetic
-Message-ID: <20071129010531.22b3a71f@werewolf>
-X-Mailer: Claws Mail 3.1.0cvs43 (GTK+ 2.12.2; i686-pc-linux-gnu)
+	Wed, 28 Nov 2007 19:08:22 -0500
+Received: from mga01.intel.com ([192.55.52.88]:39250 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755372AbXK2AIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:08:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,225,1194249600"; 
+   d="scan'208";a="406992207"
+Date: Wed, 28 Nov 2007 16:02:38 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, Alex Chiang <achiang@hp.com>,
+       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de, lenb@kernel.org,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, kaneshige.kenji@jp.fujitsu.com,
+       pcihpd-discuss@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
+Message-ID: <20071128160238.3c8685e5@orpington>
+In-Reply-To: <20071128213147.GA6199@us.ibm.com>
+References: <20071117182954.GA25003@ldl.fc.hp.com>
+	<20071119233225.GA6931@us.ibm.com>
+	<20071126222253.GA31708@ldl.fc.hp.com>
+	<20071127030454.GC23277@us.ibm.com>
+	<20071127111136.77cb61fc@appleyard>
+	<20071128213147.GA6199@us.ibm.com>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
+On Wed, 28 Nov 2007 13:31:47 -0800
+Gary Hade <garyhade@us.ibm.com> wrote:
 
-Since begin of the ages the build of the nvidia driver says things like
-this:
+> FYI, the node contains 2 hotpluggable PCIe slots and 5
+> non-hotpluggable PCIe slots but 'pci_slot' only exposed
+> the 2 hotpluggable slots.  This does not appear to be due
+> to a 'pci_slot' driver problem since I looked at the DSDT
+> and SSDT and found that there are currently no _SUN methods
+> for the non-hotpluggable slots.
 
-include/asm/compat.h:210: warning: pointer of type 'void *' used in arithmetic
-
-There are several of this warnings. The code in question for this example
-is:
-
-static __inline__ void __user *compat_alloc_user_space(long len)
-{
-    struct pt_regs *regs = task_pt_regs(current);
-    return (void __user *)regs->rsp - len;
-}
-
-As this is dealing with mem blocks, I suppose it's counting in bytes, so
-we could do something like:
-
-   return (void __user *)((u8*)regs->rsp - len);
-
-so the arithmetic knows how to inc/dec for each unity...
-I think the warning is correct and that void* arithmetic is undefined in C,
-isn't it ?
-
-TIA
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam01 (gcc 4.2.2 20070909 (4.2.2-0.RC.1mdv2008.0)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+Thanks for testing Gary.  I would think this situation would be the
+common case, since I doubt most firmware writers would bother to
+implement _SUN for non-hotpluggable slots -- at least on other DSDT
+I've seen this has been the case as well.  
