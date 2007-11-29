@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbXK1X7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbXK2ADb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761473AbXK1X7Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 18:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbXK1X7N
+	id S1761155AbXK2ADb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbXK2ADW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 18:59:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34511 "EHLO mx1.redhat.com"
+	Wed, 28 Nov 2007 19:03:22 -0500
+Received: from mail.anarazel.de ([217.115.131.40]:55348 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758116AbXK1X7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 18:59:11 -0500
+	id S1758280AbXK2ADV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:03:21 -0500
+From: Andres Freund <andres@anarazel.de>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: "hwcap 0 nosegneg" doesnt work with paravirt_ops xen as of 2.6.23.9
+Date: Thu, 29 Nov 2007 01:03:03 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com,
+       linux-kernel@vger.kernel.org
+References: <200711281829.25532.andres@anarazel.de> <474DAF78.8040300@goop.org> <20071128224359.2B5CA26F8E7@magilla.localdomain>
+In-Reply-To: <20071128224359.2B5CA26F8E7@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1284155.bDMNp29YMR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: David Wilder <dwilder@us.ibm.com>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 20/27] ptrace: arch_has_block_step
-In-Reply-To: David Wilder's message of  Wednesday, 28 November 2007 15:39:55 -0800 <474DFC4B.5060006@us.ibm.com>
-References: <20071125215507.4B89226F8C5@magilla.localdomain>
-	<20071125220552.C8D5126F8C5@magilla.localdomain>
-	<474DFC4B.5060006@us.ibm.com>
-X-Shopping-List: (1) Impotent socks
-   (2) Clairvoyant mountains
-   (3) Infectious socks
-   (4) Big bacon
-Message-Id: <20071128235834.A34AB26F8E7@magilla.localdomain>
-Date: Wed, 28 Nov 2007 15:58:34 -0800 (PST)
+Message-Id: <200711290103.08324.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Roland McGrath wrote:
-> <snip>
-> > 
-> > +#ifndef arch_has_block_step
-> > +/**
-> > + * arch_has_block_step - does this CPU support user-mode block-step?
-> > + *
-> > + * If this is defined, then there must be a function declaration or inline
-> > + * for user_enable_block_step(), and arch_has_single_step() must be defined
-> > + * too.  arch_has_block_step() should evaluate to nonzero iff the machine
-> > + * supports step-until-branch for user mode.  It can be a constant or it
-> > + * can test a CPU feature bit.
-> > + */
-> > +#define arch_has_single_step()		(0)
-> 
-> should this be #define arch_has_block_step()		(0)
+--nextPart1284155.bDMNp29YMR
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Oops, yes it should.
+Hi,
 
+On Wednesday 28 November 2007, Roland McGrath wrote in "Re: "hwcap 0 nosegn=
+eg"=20
+doesnt work with paravirt_ops xen as of 2.6.23.9":
+> > > /etc/ld.so.conf.d/xen.conf:
+> > > hwcap 0 nosegneg
+> >
+> > This looks OK. [...]
+>
+> No, it does not match this:
+> 	/* Bit used for the pseudo-hwcap for non-negative segments.  We use
+> 	   bit 1 to avoid bugs in some versions of glibc when bit 0 is
+> 	   used; the choice is otherwise arbitrary. */
+> 	#define VDSO_NOTE_NONEGSEG_BIT	1
+> You really want "hwcap 1 nosegneg" given that.
+> Yes, we've been over this several times already.
+Thanks for the information. I guess it would be nice to document this=20
+somewhere (except in code)... At least I could not find any information abo=
+ut=20
+it beside some patch (Not directed at you, Roland). Any idea where?
 
-Thanks,
-Roland
+Besides, it has one Problem: It is not backwards compatible. Using it on=20
+earlier Xen Versions yields the normal tls versions (xen 3.1). Isnt the=20
+userbase of existing xen installations bigger than the one of some point in=
+=20
+=46C5 test releases?
+Ugh. Leaning a bit far out of the door with that one considering my knowled=
+ge=20
+about it... Sorry about that.
+
+Greetings,
+
+Andres
+
+--nextPart1284155.bDMNp29YMR
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHTgG8porPraT14igRAtGtAJwNh810eYXl/q46UHeTgqQ+XfcoHQCgmV0N
+UNb+hASovRIA8OfZBTnHr2o=
+=/zpC
+-----END PGP SIGNATURE-----
+
+--nextPart1284155.bDMNp29YMR--
