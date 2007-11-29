@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761960AbXK2Cuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759625AbXK2DPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761960AbXK2Cuw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 21:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbXK2Cuo
+	id S1759625AbXK2DPx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 22:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbXK2DPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 21:50:44 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:35728 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752602AbXK2Cun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 21:50:43 -0500
-Date: Wed, 28 Nov 2007 20:50:39 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] (2.4.26-rc3-mm2) -mm Update CAP_LAST_CAP to reflect
-	CAP_MAC_ADMIN
-Message-ID: <20071129025039.GA31726@sergelap.austin.ibm.com>
-References: <474E0749.9080305@schaufler-ca.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474E0749.9080305@schaufler-ca.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 28 Nov 2007 22:15:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54848 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756241AbXK2DPo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 22:15:44 -0500
+Date: Thu, 29 Nov 2007 12:18:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH][for -mm] per-zone and reclaim enhancements for memory
+ controller take 3 [3/10] per-zone active inactive counter
+Message-Id: <20071129121834.c18ff796.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071129112406.c6820a5e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071127115525.e9779108.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
+	<1196284799.5318.34.camel@localhost>
+	<20071129103702.cbc5cf73.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071129112406.c6820a5e.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Casey Schaufler (casey@schaufler-ca.com):
-> From: Casey Schaufler <casey@schaufler-ca.com>
-> 
-> Bump the value of CAP_LAST_CAP to reflect the current last cap value.
-> It appears that the patch that introduced CAP_LAST_CAP and the patch
-> that introduced CAP_MAC_ADMIN came in more or less at the same time.
-> 
-> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+On Thu, 29 Nov 2007 11:24:06 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+> On Thu, 29 Nov 2007 10:37:02 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > Maybe zonelists of NODE_DATA() is not initialized. you are right.
+> > I think N_HIGH_MEMORY will be suitable here...(I'll consider node-hotplug case later.)
+> > 
+> > Thank you for test!
+> > 
+> Could you try this ? 
+> 
+Sorry..this can be a workaround but I noticed I miss something..
 
+ok, just use N_HIGH_MEMORY here and add comment for hotplugging support is not yet.
 
-> 
-> ---
-> 
->  include/linux/capability.h |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> 
-> diff -uprN -X linux-2.6.24-rc3-mm2-base/Documentation/dontdiff linux-2.6.24-rc3-mm2-base/include/linux/capability.h linux-2.6.24-rc3-mm2-lastcap/include/linux/capability.h
-> --- linux-2.6.24-rc3-mm2-base/include/linux/capability.h	2007-11-27 16:47:02.000000000 -0800
-> +++ linux-2.6.24-rc3-mm2-lastcap/include/linux/capability.h	2007-11-28 14:04:57.000000000 -0800
-> @@ -315,10 +315,6 @@ typedef struct kernel_cap_struct {
-> 
->  #define CAP_SETFCAP	     31
-> 
-> -#define CAP_LAST_CAP         CAP_SETFCAP
-> -
-> -#define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
-> -
->  /* Override MAC access.
->     The base kernel enforces no MAC policy.
->     An LSM may enforce a MAC policy, and if it does and it chooses
-> @@ -336,6 +332,10 @@ typedef struct kernel_cap_struct {
-> 
->  #define CAP_MAC_ADMIN        33
-> 
-> +#define CAP_LAST_CAP         CAP_MAC_ADMIN
-> +
-> +#define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
-> +
->  /*
->   * Bit location of each capability (used by user-space library and kernel)
->   */
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Christoph-san, Lee-san, could you confirm following ?
+
+- when SLAB is used, kmalloc_node() against offline node will success.
+- when SLUB is used, kmalloc_node() against offline node will panic.
+
+Then, the caller should take care that node is online before kmalloc().
+
+Regards,
+-Kame 
+
