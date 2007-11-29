@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbXLFMpC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbXLFMpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752310AbXLFMpC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 07:45:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbXLFMmn
+	id S1755362AbXLFMpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 07:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbXLFMmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 07:42:43 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:53706 "EHLO
+	Thu, 6 Dec 2007 07:42:44 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:53707 "EHLO
 	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753175AbXLFMmM (ORCPT
+	with ESMTP id S1753196AbXLFMmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 6 Dec 2007 07:42:12 -0500
 From: Jesper Nilsson <jesper.nilsson@axis.com>
-Message-Id: <d7bc4025253f0f2df8f6ad0554e2340b9cc53197.1196848533.git.jesper.nilsson@axis.com>
+Message-Id: <b703fe57ecba57fc7fd3c9f0521e5acf5c6a340a.1196848533.git.jesper.nilsson@axis.com>
 In-Reply-To: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Mikael Starvik <mikael.starvik@axis.com>,
        Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Date: Thu, 29 Nov 2007 17:58:06 +0100
-Subject: [PATCH 10/47] Merge axisflashmap.h with Axis internal changes.
+Date: Thu, 29 Nov 2007 18:11:12 +0100
+Subject: [PATCH 11/47] Minor fixes to CRISv32 irq defines.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Add partition table struct to be used to parse partition table in flash.
-- Add JFFS2 as a type, and add readoly flag.
-- Improve some comments.
-- Lindent has been run, fixing whitespace and formatting issues.
+- Include files using <>
+- Change NR_REAL_IRQS to be calculated from the other defines.
+- Set MACH_IRQS depending on the value of NR_REAL_IRQS.
+- Remove unused mask parameter to BUILD_IRQ macro.
 
 Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 ---
- include/asm-cris/axisflashmap.h |   39 +++++++++++++++++++++++++++------------
- 1 files changed, 27 insertions(+), 12 deletions(-)
+ include/asm-cris/arch-v32/irq.h |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/include/asm-cris/axisflashmap.h b/include/asm-cris/axisflashmap.h
-index 7a8d311..015ca54 100644
---- a/include/asm-cris/axisflashmap.h
-+++ b/include/asm-cris/axisflashmap.h
-@@ -10,23 +10,23 @@
+diff --git a/include/asm-cris/arch-v32/irq.h b/include/asm-cris/arch-v32/irq.h
+index bac94ee..9e4c9fb 100644
+--- a/include/asm-cris/arch-v32/irq.h
++++ b/include/asm-cris/arch-v32/irq.h
+@@ -1,12 +1,17 @@
+ #ifndef _ASM_ARCH_IRQ_H
+ #define _ASM_ARCH_IRQ_H
+ 
+-#include "hwregs/intr_vect.h"
++#include <hwregs/intr_vect.h>
+ 
+ /* Number of non-cpu interrupts. */
+-#define NR_IRQS 0x50 /* Exceptions + IRQs */
+-#define NR_REAL_IRQS 0x20 /* IRQs */
++#define NR_IRQS NBR_INTR_VECT /* Exceptions + IRQs */
+ #define FIRST_IRQ 0x31 /* Exception number for first IRQ */
++#define NR_REAL_IRQS (NBR_INTR_VECT - FIRST_IRQ) /* IRQs */
++#if NR_REAL_IRQS > 32
++#define MACH_IRQS 64
++#else
++#define MACH_IRQS 32
++#endif
+ 
+ #ifndef __ASSEMBLY__
+ /* Global IRQ vector. */
+@@ -73,7 +78,7 @@ void set_exception_vector(int n, irqvectptr addr);
+  * which will acknowledge the interrupt, is run. The actual blocking is made
+  * by crisv32_do_IRQ.
   */
- 
- #define PARTITION_TABLE_OFFSET 10
--#define PARTITION_TABLE_MAGIC 0xbeef /* Not a good magic */
-+#define PARTITION_TABLE_MAGIC 0xbeef	/* Not a good magic */
- 
- /* The partitiontable_head is located at offset +10: */
- struct partitiontable_head {
--	__u16 magic; /* PARTITION_TABLE_MAGIC */ 
--	__u16 size;  /* Length of ptable block (not header) */
--	__u32 checksum; /* simple longword sum */
-+	__u16 magic;	/* PARTITION_TABLE_MAGIC */
-+	__u16 size;	/* Length of ptable block (entries + end marker) */
-+	__u32 checksum;	/* simple longword sum, over entries + end marker  */
- };
- 
- /* And followed by partition table entries */
- struct partitiontable_entry {
--	__u32 offset;   /* Offset is relative to the sector the ptable is in */
--	__u32 size;
--	__u32 checksum; /* simple longword sum */
--	__u16 type;
--	__u16 flags;   /* bit 0: ro/rw = 1/0 */
--	__u32 future0; /* 16 bytes reserved for future use */
-+	__u32 offset;		/* relative to the sector the ptable is in */
-+	__u32 size;		/* in bytes */
-+	__u32 checksum;		/* simple longword sum */
-+	__u16 type;		/* see type codes below */
-+	__u16 flags;		/* bit 0: ro/rw = 1/0 */
-+	__u32 future0;		/* 16 bytes reserved for future use */
- 	__u32 future1;
- 	__u32 future2;
- 	__u32 future3;
-@@ -35,12 +35,27 @@ struct partitiontable_entry {
- #define PARTITIONTABLE_END_MARKER 0xFFFFFFFF
- #define PARTITIONTABLE_END_MARKER_SIZE 4
- 
--/*#define PARTITION_TYPE_RESCUE 0x0000?*/  /* Not used, maybe it should? */
-+#define PARTITIONTABLE_END_PAD	10
-+
-+/* Complete structure for whole partition table */
-+/* note that table may end before CONFIG_ETRAX_PTABLE_ENTRIES by setting
-+ * offset of the last entry + 1 to PARTITIONTABLE_END_MARKER.
-+ */
-+struct partitiontable {
-+	__u8 skip[PARTITION_TABLE_OFFSET];
-+	struct partitiontable_head head;
-+	struct partitiontable_entry entries[];
-+};
-+
- #define PARTITION_TYPE_PARAM  0x0001
- #define PARTITION_TYPE_KERNEL 0x0002
- #define PARTITION_TYPE_JFFS   0x0003
-+#define PARTITION_TYPE_JFFS2  0x0000
-+
-+#define	PARTITION_FLAGS_READONLY_MASK	0x0001
-+#define	PARTITION_FLAGS_READONLY	0x0001
- 
- /* The master mtd for the entire flash. */
--extern struct mtd_info* axisflash_mtd;
-+extern struct mtd_info *axisflash_mtd;
- 
- #endif
+-#define BUILD_IRQ(nr, mask)		\
++#define BUILD_IRQ(nr)		        \
+ void IRQ_NAME(nr);			\
+ __asm__ (				\
+ 	".text\n\t"			\
+@@ -81,7 +86,7 @@ __asm__ (				\
+ 	SAVE_ALL			\
+ 	KGDB_FIXUP                      \
+ 	"move.d "#nr",$r10\n\t"		\
+-	"move.d $sp,$r12\n\t"		\
++	"move.d $sp, $r12\n\t"          \
+ 	"jsr crisv32_do_IRQ\n\t"       	\
+ 	"moveq 1, $r11\n\t"		\
+ 	"jump ret_from_intr\n\t"	\
 -- 
 1.5.3.6.970.gd25430
 
