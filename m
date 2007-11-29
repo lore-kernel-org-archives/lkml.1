@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbXK2Q2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932756AbXK2Q2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbXK2Q2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932080AbXK2Q16
+	id S932756AbXK2Q2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932594AbXK2Q2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:27:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51774 "EHLO mx1.redhat.com"
+	Thu, 29 Nov 2007 11:28:23 -0500
+Received: from mx1.suse.de ([195.135.220.2]:49155 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932070AbXK2Q15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:27:57 -0500
-Subject: Re: Out of tree module using LSM
-From: Jon Masters <jcm@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: tvrtko.ursulin@sophos.com,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-In-Reply-To: <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
-References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
-	 <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
-Content-Type: text/plain
-Organization: Red Hat, Inc.
-Date: Thu, 29 Nov 2007 11:27:45 -0500
-Message-Id: <1196353666.6473.43.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S932442AbXK2Q2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 11:28:22 -0500
+Date: Thu, 29 Nov 2007 08:27:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] base/class.c: prevent ooops due to insert/remove race
+Message-ID: <20071129162727.GA8352@suse.de>
+References: <474E3964.7040200@rtr.ca> <20071129043307.GA4766@suse.de> <474EDDA9.1040205@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <474EDDA9.1040205@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 11:12 +1100, James Morris wrote:
-> On Wed, 28 Nov 2007, tvrtko.ursulin@sophos.com wrote:
-> 
-> > So as there is no question the current code does some ugly things it is 
-> > even more true that we would be even more happy to use an official API. 
-> 
-> How about becoming involved in creating that official API ?
+On Thu, Nov 29, 2007 at 10:41:29AM -0500, Mark Lord wrote:
+> Greg KH wrote:
+>> On Wed, Nov 28, 2007 at 11:00:36PM -0500, Mark Lord wrote:
+>>> While doing insert/remove (quickly) tests on USB, I managed to trigger
+>>> an Oops on 2.6.23.1 on the call to strlen() in make_class_name().
+>>>
+>>> This patch prevents this oops.
+>>>
+>>> There is still the larger problem of the overall race
+>>> that caused this in the first place, but much of the rest
+>>> of the code in class.c appears to also do NULL checks to
+>>> avoid Oops'ing, so this continues the tradition.
+>>>
+>>> Signed-off-by:  Mark Lord <mlord@pobox.com>
+>> As this is a bandage over the real problem, I'd prefer to not apply this
+>> one right now until we find the root cause.
+> ...
+>
+> Ahh.. but the problem there, is that you've already said you will
+> not be looking for any cause.
 
-Sophos are interested in doing so, and we have spoken about this several
-times recently over the phone. This is why they sent the email in
-question yesterday, to kickstart debate. And that's awesome. I am trying
-to bring a few of these folks together at the moment, so that we can get
-a solution that is acceptable to upstream at some point in the future.
+I will not be looking for any cause _while_ you can only reproduce this
+with a closed source kernel module loaded.
 
-So, rather than criticise their current code, or their intentions, or
-blanketly dismiss the virus protection market, perhaps we can focus
-instead on the fact that there is a known third party who wishes to
-perform a task that is not well supportable at this moment. We can all
-agree the syscall table hacking isn't such a good idea - but these guys
-are *very* open to listening to useful alternative suggestions.
+> This patch prevents the Oops,
+> in the same manner as existing code in that same file.
+>
+> Would you perhaps prefer a second patch to remove all of the other
+> existing bandages from that file?  I don't think so.
+>
+> This patch fixes a *real* ooops that can occur on servers, desktops,
+> and portables whenever a USB device is connected.
 
-They (virus protection folks) generally think they want to intercept
-various system calls, such as open() and block until they have performed
-a scan operation on the file. I explained the mmap issue to several of
-these companies recently, in quite some detail, and I know they are
-interested in listening this time around :-) At the end of the day, what
-I have been lead to believe is that they don't care whether they
-intercept syscall entries, or use a better method, they just want to
-scan files and take some action if a file is "bad". That's it really.
+You have seen this oops on all of these types of machines?  So far you
+are the only one reporting it, and only on one machine, right?
 
-I have been trying to put together an exact feature set that is needed
-from these different vendors, so we can discuss it further here, and
-hopefully actually get somewhere, too. There have been a few delays
-after I pointed out the mmap issues at some length.
+Again, please reproduce this on a non-tainted machine and send the oops
+to the linux-usb mailing list so that the developers there can help you
+out.
 
-Jon.
+thanks,
 
-
+greg k-h
