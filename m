@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933685AbXK2ULn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933887AbXK2UMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933685AbXK2ULn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762379AbXK2ULe
+	id S933887AbXK2UMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXK2UMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:11:34 -0500
-Received: from mail.suse.de ([195.135.220.2]:50421 "EHLO mx1.suse.de"
+	Thu, 29 Nov 2007 15:12:23 -0500
+Received: from rtr.ca ([76.10.145.34]:1945 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761832AbXK2ULd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:11:33 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
-Date: Thu, 29 Nov 2007 21:11:26 +0100
-User-Agent: KMail/1.9.6
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, zach@vmware.com
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129192721.GP24223@one.firstfloor.org> <alpine.LFD.0.9999.0711291139290.8458@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0711291139290.8458@woody.linux-foundation.org>
+	id S932519AbXK2UMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:12:22 -0500
+Message-ID: <474F1D24.4070009@rtr.ca>
+Date: Thu, 29 Nov 2007 15:12:20 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Nick Warne <nick@ukfsn.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: Peculiar out-of-sync boot log lines
+References: <20071129193728.2f1c237e@linuxamd.linicks.net>
+In-Reply-To: <20071129193728.2f1c237e@linuxamd.linicks.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711292111.26661.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> HOWEVER. That is actually not the right (well, "complete") conditional, 
-> since it's only one sub-case of the thing that matters. The right 
-> conditional is probably
+Nick Warne wrote:
+> Hi all,
 > 
-> 	/*
-> 	 * Restore %gs if needed (which is common).
-> 	 * We can avoid it if they are identical, and
-> 	 * point to the GDT.
-
-How would you catch (common) the case of them having different bases in the 
-GDT TLS entries? At some point the selector has to be reloaded, otherwise 
-it won't be picked up by the CPU.
-
-I think the original condition is correct. You could maybe merge it with the 
-TLS entry rewrite and only do it if something changes there. Not
-sure it is worth it though.
-
--Andi
-> 	 */
-> 	if ((prev->gs ^ next->gs) | (next->gs & 4))
-> 		loadsegment(gs, next->gs);
+> 2.6.23.9
 > 
-> At that point, we would only have to reload stuff if the user actually 
-> uses a local descriptor table entry (which does happen for threaded apps, 
-> I guess, but at least we avoid it for all the common traditional UNIX 
-> processes).
+> I have noticed after applying Bart's patch to word93 blacklist my new
+> DVD drive:
 > 
-> 			Linus
+> http://lkml.org/lkml/2007/10/23/475
 > 
+> I see now in logs (look at the hdd line:
+> 
+> [dmesg]
+> hdc: 39876480 sectors (20416 MB) w/2048KiB Cache, CHS=39560/16/63,
+> UDMA(66)
+> hdc: cache flushes not supported
+>  hdc: hdc1
+> hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache<7>hdd:
+> skipping word 93 validity check
+> , UDMA(66)
+> Uniform CD-ROM driver Revision: 3.20
+> 
+> 
+> <7> ??  And the ", UDMA(66)" gets new lined, so in syslog it appears all
+> by itself:
+...
 
+That's a minor bug with the patch.
 
+The code does this:
+
+ide_dma_verbose::printk( ... "2048kB Cache");
+eighty_ninty_three::printk(KERN_DEBUG "%s: skipping word 93 validity check\n");
+ide_dma_verbose::printk(", UDMA(66)"
+
+Something in there needs to insert a '\n' before the "skipping word" message.
+Since it doesn't do that right now, the KERN_DEBUG string appears as "<7>"
