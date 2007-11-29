@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763672AbXK2RHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbXK2RKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763672AbXK2RHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:07:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbXK2RGw
+	id S1761320AbXK2RKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbXK2RJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:06:52 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35403 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762177AbXK2RGv (ORCPT
+	Thu, 29 Nov 2007 12:09:55 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:45881 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754345AbXK2RJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:06:51 -0500
-Date: Thu, 29 Nov 2007 12:06:50 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
-In-Reply-To: <1196352280.3118.11.camel@lov.site>
-Message-ID: <Pine.LNX.4.44L0.0711291202570.4712-100000@iolanthe.rowland.org>
+	Thu, 29 Nov 2007 12:09:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iYlDxVqL8niTA/88aCSegnoUs7kWTWkz/iSKqCfouNCHr7atldJ5uEsNgPpG4i6tf8Dm0YLY0O7P5gAYOZIfGP2pHdBAlAcC//5utfeqA3AUP8E5orJEjsaqU9uKegmFzqToZZBEpc3q6kODc+rT5lMqLSOah0vMWldofBs2I7g=
+Message-ID: <35fbaa3e0711290909k1965ca75v622f7a36e409d57d@mail.gmail.com>
+Date: Thu, 29 Nov 2007 19:09:51 +0200
+From: "Vitaliy Ivanov" <vitalivanov@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Something similar to inotify in 2.4.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Kay Sievers wrote:
+Hi all,
 
-> > In fact, if we were designing the kobject API from scratch, I'd suggest 
-> > making the ktype value an argument to kobject_init() so that it 
-> > _couldn't_ be omitted.
-> 
-> Sounds fine, maybe we should also pass the name along, so it will be
-> obvious what happens here:
->   int kobject_init(struct kobject *kobj, struct kobj_type *type, const char *fmt, ...)
+Can anyone advice whether there is something similar to inotify in 2.4 kernel?
 
-I don't know...  Normally *_init() routines can't fail, but this could.  
-Then things like device_register() would run into trouble: The caller 
-wouldn't know whether a failure occurred before or after the 
-kobject_init() call, so it wouldn't know what sort of cleanup action 
-was needed: kfree() or device_put().
+Need efficient way to track file system changes.
 
-> Oh, if you want to rewind on error and have an initialized but still
-> unregistered kobject, and just want to free the allocated name by
-> calling kobject_cleanup() or kobject_put() you might not expect, that
-> your whole object that embeds the kobject will be gone. Just something
-> we need to document ...
+Maybe some other tools, approaches under 2.4?
 
-When that sort of thing happens, the unwinding should be done by the   
-code responsible for whole object.  For example, if device_add() fails
-then the caller should go on to call device_put() rather than
-kfree(dev).
-
-That's how you would expect things to work in most cases.  There aren't
-many bare kobjects in the kernel.
-
-I agree that documenting this behavior would be good.
-
-Alan Stern
-
+TIA,
+Vitaliy
