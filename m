@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763428AbXK2Uo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbXK2UqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763428AbXK2Uo2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760151AbXK2UoR
+	id S1763514AbXK2UqY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761354AbXK2UqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:44:17 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:54756 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756775AbXK2UoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:44:17 -0500
-Date: Thu, 29 Nov 2007 21:43:58 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: Dave Young <hidave.darkstar@gmail.com>, bgsmith@bendcable.com,
-       BlueZ users <bluez-users@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bluez-users] Lost connections - mouse and keyboard
-In-Reply-To: <6EE8D368-C303-400A-B4FE-811228391639@holtmann.org>
-Message-ID: <Pine.LNX.4.64.0711292141220.19853@twin.jikos.cz>
-References: <1196009038.14897.6.camel@pico> <1196056187.4217.54.camel@aeonflux>
- <1196305426.23029.12.camel@pico> <a8e1da0711290006x4bd3cc45x1ae8dcaa9c0ab462@mail.gmail.com>
- <6EE8D368-C303-400A-B4FE-811228391639@holtmann.org>
+	Thu, 29 Nov 2007 15:46:13 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36120 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760151AbXK2UqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:46:12 -0500
+Date: Thu, 29 Nov 2007 12:39:00 -0800
+From: Greg KH <greg@kroah.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] Sample kset/ktype/kobject implementation
+Message-ID: <20071129203900.GA27877@kroah.com>
+References: <20071127230252.GB10038@kroah.com> <20071127230406.GD10038@kroah.com> <20071128173532.00bc72af@gondolin.boeblingen.de.ibm.com> <20071129061139.GI26327@kroah.com> <20071129103907.0b404071@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071129103907.0b404071@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Marcel Holtmann wrote:
+On Thu, Nov 29, 2007 at 10:39:07AM +0100, Cornelia Huck wrote:
+> On Wed, 28 Nov 2007 22:11:39 -0800,
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > > > 	foo->kobj.kset = example_kset;
+> > > > 	foo->kobj.ktype = &foo_ktype;
+> > > > 
+> > > > 	/*
+> > > > 	 * Register the kobject with the kernel, all the default files will
+> > > > 	 * be created here and the uevent will be sent out.  If we were to
+> > > > 	 * call kobject_init() and then kobject_add() we would be
+> > > > 	 * responsible for sending out the initial KOBJ_ADD uevent.
+> > > > 	 */
+> > > > 	retval = kobject_register(&foo->kobj);
+> > > > 	if (retval) {
+> > > > 		kfree(foo);
+> > > 
+> > > kobject_put(foo) is needed since it gets you through kobject_cleanup()
+> > > where the name can be freed.
+> > 
+> > No, kobject_register() should have handled that for us, right?
+> 
+> kobject_register() doesn't do a kobject_put() if kobject_add() failed.
 
-> > >Nov 28 18:53:39 pico kernel: WARNING: at drivers/hid/hid-core.c:784
-[ ... ]
+Crap.  If I can't get this code right in an example, the API is messed
+up.  Time to take Kay seriously and start to revamp the basic kobject
+api :)
 
-> > Does bluetooth input devices have something to do with usbhid? I don't 
-> > know, perhaps this is another problem in kernel.
-> in case you have a HID proxy dongle the usbhid driver can be involved. And
-> since this is hiddev, then it will be caused by the hid2hci program.
+thanks,
 
-Absolutely.
-
-This particular warning means, that someone (usually indeed hid2hci) 
-passed usage through hiddev that was out of bounds, with respect to the 
-device's report descriptor.
-
-This usually means that hid2hci has chosen the wrong method to switch the 
-modes. Unfortunately, it's not easy to implement always the switching 
-properly, if we don't know the vendor-specific packet that has to be sent.
-
--- 
-Jiri Kosina
+greg k-h
