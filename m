@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbXK2UH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbXK2UJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbXK2UH3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762502AbXK2UGu
+	id S933571AbXK2UJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXK2UJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:06:50 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:44699 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932204AbXK2UGs (ORCPT
+	Thu, 29 Nov 2007 15:09:13 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:54418 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759497AbXK2UJM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:06:48 -0500
-Date: Fri, 30 Nov 2007 01:01:10 +0530
-From: "K. Prasad" <prasad@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: dipankar@in.ibm.com, ego@in.ibm.com, mathieu.desnoyers@polymtl.ca,
-       mingo@elte.hu, paulmck@linux.vnet.ibm.com
-Subject: [PATCH 0/2] Markers Implementation for RCU Tracing
-Message-ID: <20071129193110.GA5345@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Thu, 29 Nov 2007 15:09:12 -0500
+Date: Thu, 29 Nov 2007 15:09:10 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
+In-Reply-To: <1196365883.7903.11.camel@lov.site>
+Message-ID: <Pine.LNX.4.44L0.0711291455410.5666-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-	Please review the ensuing set of patches which convert the
-existing RCU tracing mechanism for Preempt RCU and RCU Boost into
-markers.
+On Thu, 29 Nov 2007, Kay Sievers wrote:
 
-These patches are based upon the 2.6.24-rc2-rt1 kernel tree.
+> > My conclusion is different.  We should make kobject_init() not consume
+> > any resources at all; just initialize various fields.  That way it
+> > would be okay to call either kfree() or kobject_put() on an initialized
+> > kobject.  And then when something like device_register() fails, the
+> > caller would know the proper thing to do would be to call the put()  
+> > routine, always.
+> > 
+> > Of course, once the name has been assigned, only kobject_put() should
+> > be used.
+> 
+> Now we just move the exactly the same problem from _init() to
+> _set_name(). To free the name of an unregistered we would need to call
+> _put() which free()'s the whole object again. :) 
 
-Along with marker transition, the RCU Tracing infrastructure has also
-been modularised to be built as a kernel module, thereby enabling
-runtime changes to the RCU Tracing infrastructure.
+I don't see that as a problem and it's not clear why you do.
 
-Patch [1/2] - Patch that converts the Preempt RCU tracing in
-rcupreempt.c into markers.
+It doesn't matter whether a kobject has been registered or not; once
+it has been initialized you _should_ call kobject_put().  (Although
+it's okay to call kfree() if the name hasn't been set yet.)
 
-Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
-rcupreempt-boost.c into markers.
+The same is true of larger objects.  Once you have called
+device_initialize(), you _should_ call device_put() (although it's okay
+to call kfree()).  Provided init routines don't consume resources, this
+will work.
 
-Thanks,
-K.Prasad
+The only remaining problem is that somebody might set the name first
+and then decide to abandon the object before calling kobject_init().  
+However this probably never happens anywhere.
+
+> > There's another good reason for not assigning the name in
+> > kobject_init(): Code that uses kobjects (like the driver core) doesn't
+> > set the name until later.
+> 
+> That can be done at any stage, I guess. We will rip out the name in the
+> struct device anyway.
+
+Are you also going to change all the places in the kernel where the
+device name (.bus_id) isn't set until after device_initialize() has
+been called?
+
+Alan Stern
 
