@@ -1,44 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762088AbXK2WRF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933685AbXK2WSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762088AbXK2WRF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 17:17:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762978AbXK2WQk
+	id S933685AbXK2WSi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 17:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760442AbXK2WS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 17:16:40 -0500
-Received: from iriserv.iradimed.com ([72.242.190.170]:59343 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762957AbXK2WQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 17:16:38 -0500
-Message-ID: <474F3A4B.3080304@cfl.rr.com>
-Date: Thu, 29 Nov 2007 17:16:43 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       noah <noah123@gmail.com>,
+	Thu, 29 Nov 2007 17:18:26 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44715 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756686AbXK2WSZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 17:18:25 -0500
+Date: Thu, 29 Nov 2007 23:18:23 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: kaber@trash.net
+cc: Netfilter Developer Mailing List 
+	<netfilter-devel@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: Possibly SATA related freeze killed networking and RAID
-References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com>
-In-Reply-To: <474CCA82.7030000@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Nov 2007 22:16:52.0886 (UTC) FILETIME=[8B701360:01C832D5]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15576.001
-X-TM-AS-Result: No--4.341400-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+       davem@davemloft.net, stable@kernel.org
+Subject: [PATCH] Fix forgotten module release in xt_CONNMARK and xt_CONNSECMARK
+Message-ID: <Pine.LNX.4.64.0711292314110.3089@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Agreed.  Nobody cared on ATA controllers is usually very effective at
-> taking the whole machine down.  Is there any reason why we don't turn on
-> irqpoll on turned off IRQs automatically?
 
-Why does a single spurious interrupt cause it to be shut down?  I can 
-see if the interrupt is stuck on and keeps interrupting constantly, but 
-if it's just the occasional spurious interrupt, why not just ignore it 
-and move on?
+This one is against davem's net-2.6.25 branch.
+
+===Begins here===
+
+Fix forgotten module release in xt_CONNMARK and xt_CONNSECMARK
+
+
+When xt_CONNMARK is used outside the mangle table and the user specified
+"--restore-mark", the connmark_tg_check() function will (correctly)
+error out, but (incorrectly) forgets to release the L3 conntrack module.
+Same for xt_CONNSECMARK.
+Fix is to move the call to acquire the L3 module after the basic 
+constraint checks.
+
+Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+
+---
+ net/netfilter/xt_CONNMARK.c    |   10 +++++-----
+ net/netfilter/xt_CONNSECMARK.c |   10 +++++-----
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/net/netfilter/xt_CONNMARK.c
+===================================================================
+--- linux-2.6.orig/net/netfilter/xt_CONNMARK.c
++++ linux-2.6/net/netfilter/xt_CONNMARK.c
+@@ -81,11 +81,6 @@ connmark_tg_check(const char *tablename,
+ {
+ 	const struct xt_connmark_target_info *matchinfo = targinfo;
+ 
+-	if (nf_ct_l3proto_try_module_get(target->family) < 0) {
+-		printk(KERN_WARNING "can't load conntrack support for "
+-				    "proto=%d\n", target->family);
+-		return false;
+-	}
+ 	if (matchinfo->mode == XT_CONNMARK_RESTORE) {
+ 		if (strcmp(tablename, "mangle") != 0) {
+ 			printk(KERN_WARNING "CONNMARK: restore can only be "
+@@ -98,6 +93,11 @@ connmark_tg_check(const char *tablename,
+ 		printk(KERN_WARNING "CONNMARK: Only supports 32bit mark\n");
+ 		return false;
+ 	}
++	if (nf_ct_l3proto_try_module_get(target->family) < 0) {
++		printk(KERN_WARNING "can't load conntrack support for "
++				    "proto=%d\n", target->family);
++		return false;
++	}
+ 	return true;
+ }
+ 
+Index: linux-2.6/net/netfilter/xt_CONNSECMARK.c
+===================================================================
+--- linux-2.6.orig/net/netfilter/xt_CONNSECMARK.c
++++ linux-2.6/net/netfilter/xt_CONNSECMARK.c
+@@ -91,11 +91,6 @@ connsecmark_tg_check(const char *tablena
+ {
+ 	const struct xt_connsecmark_target_info *info = targinfo;
+ 
+-	if (nf_ct_l3proto_try_module_get(target->family) < 0) {
+-		printk(KERN_WARNING "can't load conntrack support for "
+-				    "proto=%d\n", target->family);
+-		return false;
+-	}
+ 	switch (info->mode) {
+ 	case CONNSECMARK_SAVE:
+ 	case CONNSECMARK_RESTORE:
+@@ -106,6 +101,11 @@ connsecmark_tg_check(const char *tablena
+ 		return false;
+ 	}
+ 
++	if (nf_ct_l3proto_try_module_get(target->family) < 0) {
++		printk(KERN_WARNING "can't load conntrack support for "
++				    "proto=%d\n", target->family);
++		return false;
++	}
+ 	return true;
+ }
+ 
 
