@@ -1,141 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbXK2Qqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXK2Qso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761577AbXK2Qqn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbXK2Qqf
+	id S1762609AbXK2Qso (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbXK2Qse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:46:35 -0500
-Received: from mxintern.schlund.de ([212.227.126.204]:58721 "EHLO
-	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757301AbXK2Qqe (ORCPT
+	Thu, 29 Nov 2007 11:48:34 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:48152 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756234AbXK2Qsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:46:34 -0500
-Date: Thu, 29 Nov 2007 17:45:57 +0100
-From: Anders Henke <anders.henke@1und1.de>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: jack@ucw.cz, fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory) (fwd)
-Message-ID: <20071129164557.GD30957@1und1.de>
-References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz> <20071129235813Y.tomof@acm.org>
-MIME-Version: 1.0
+	Thu, 29 Nov 2007 11:48:33 -0500
+Date: Thu, 29 Nov 2007 11:48:21 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 2/3] UML - Fix command-line CFLAGS and LDFLAGS support
+Message-ID: <20071129164821.GA7284@c2.user-mode-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071129235813Y.tomof@acm.org>
-Organization: 1&1 Internet AG
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-UI-Msg-Verification: 1930381e29ea237c38110e61e587bd08
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29 2007, FUJITA Tomonori wrote:
-> On Thu, 29 Nov 2007 14:03:19 +0100
-> Jan Kara <jack@ucw.cz> wrote:
-> 
-> >   Adding relevant people and lists to CC...
-> > 
-> > 									Honza
-> > 
-> > ----- Forwarded message from Anders Henke <anders.henke@1und1.de> -----
-> > 
-> > Date:	Thu, 29 Nov 2007 13:31:50 +0100
-> > From: Anders Henke <anders.henke@1und1.de>
-> > To: linux-kernel@vger.kernel.org
-> > Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory)
-> > User-Agent: Mutt/1.5.13 (2006-08-11)
-> > 
-> > On November 28 2007, Anders Henke wrote:
-> > > As "everything is reported as being zero" is quite odd an Jan took a
-> > > guess that it might be block-layer or driver-related, I've assumed
-> > > that the driver is responsible for this; just out of the curiousity, 
-> > > I've manually replaced the dpt_i2o driver by the 2.6.19 one by copying 
-> > > driver/scsi/dpt_i2o.c driver/scsi/dpti.h and driver/scsi/dpt/ into a 
-> > > vanilla 2.6.23.1. kernel; using this kernel fixed the issue for me.
-> > > 
-> > > I haven't yet fine-tested from which kernel release on the dpt_i2o driver 
-> > > behaves like this and spews out zeroed blocks when trying to mount
-> > > the rootfs. Maybe this is just some timing issue.
-> > 
-> > I've started the fine-tests and can say so far that dpt_i2o from 
-> > 2.6.22 is still fine. Test is simple:
-> > 
-> > anders@ista:/usr/src/linux-2.6.22/drivers/scsi/dpt$ cp -r dpt/ dpt_i2o.c dpti.h /usr/src/linux-2.6.23.1/drivers/scsi/
-> > 
-> > ... recompile the kernel, reboot: works.
-> > 
-> > 2.6.22 and 2.6.23 differ in terms of the dpt_i2o driver by two different
-> > patch sets:
-> > -one 2 Kb small set of patches from 2.6.22 to 2.6.22-rc1
-> > -one 7 Kb set of patches from 2.6.23-rc2 to 2.6.23-rc3
-> > -one 162 Kb set of patches from 2.6.23-rc9 to 2.6.23-rc10.
-> > 
-> > When applying the 2.6.23-rc1-based driver to "my" 2.6.31.1 kernel,
-> > the "zero blocks"-symptom show up, so it's the "lucky" situation
-> > that the smallest patch actually seams to be the broken one.
-> > 
-> > According to the 2.6.23-rc1 short-form changelog, there is
-> > one major edit on the dpt_i2o driver:
-> > 
-> > FUJITA Tomonori 
-> > 
-> >       [SCSI] dpt_i2o: convert to use the data buffer accessors
-> > 
-> > Stephen Rothwell 
-> >       dpt_i2o depends on virt_to_bus
-> > 
-> > Fujita, would you please take a look at this?
-> 
-> Sorry about the bug. Can you try this?
-> 
-> 
-> diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-> index 8258506..1255b26 100644
-> --- a/drivers/scsi/dpt_i2o.c
-> +++ b/drivers/scsi/dpt_i2o.c
-> @@ -3295,7 +3295,7 @@ static struct scsi_host_template adpt_template = {
->  	.this_id		= 7,
->  	.cmd_per_lun		= 1,
->  	.use_clustering		= ENABLE_CLUSTERING,
-> -	.use_sg_chaining	= ENABLE_SG_CHAINING,
-> +	.use_sg_chaining	= DISABLE_SG_CHAINING,
->  };
->  
->  static s32 adpt_scsi_register(adpt_hba* pHba)
+[ 2.6.25 material ]
 
-The structure to patch does look different and doesn't include an
-tag "use_sg_chaining":
+UML still needed some work in order to allow CFLAGS to be passed in
+from the command line.
 
----cut
-static struct scsi_host_template adpt_template = {
-        .name                   = "dpt_i2o",
-        .proc_name              = "dpt_i2o",
-        .proc_info              = adpt_proc_info,
-        .info                   = adpt_info,
-        .queuecommand           = adpt_queue,
-        .eh_abort_handler       = adpt_abort,
-        .eh_device_reset_handler = adpt_device_reset,
-        .eh_bus_reset_handler   = adpt_bus_reset,
-        .eh_host_reset_handler  = adpt_reset,
-        .bios_param             = adpt_bios_param,
-        .slave_configure        = adpt_slave_configure,
-        .can_queue              = MAX_TO_IOP_MESSAGES,
-        .this_id                = 7,
-        .cmd_per_lun            = 1,
-        .use_clustering         = ENABLE_CLUSTERING,
-};
+USER_CFLAGS is produced from KBUILD_CFLAGS in part by removing all the
+-I switches.  This is so that kernel headers don't accidentally get
+pulled into libc files.  However, a common use of command-line CFLAGS
+would be to add -I switches to the build.  This patch specifically
+adds any command-line -I flags back to USER_CFLAGS.
 
-static s32 adpt_scsi_register(adpt_hba* pHba)
----cut
+I also corrected the spelling of LFLAGS to LDFLAGS.
 
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/Makefile |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-
-Anders
--- 
-1&1 Internet AG              System Design
-Brauerstrasse 48             v://49.721.91374.50
-D-76135 Karlsruhe            f://49.721.91374.225
-
-Amtsgericht Montabaur HRB 6484
-Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
-Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Norbert Lang, Achim Weiss
-Aufsichtsratsvorsitzender: Michael Scheeren
+Index: linux-2.6.22/arch/um/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/um/Makefile	2007-11-14 12:58:04.000000000 -0500
++++ linux-2.6.22/arch/um/Makefile	2007-11-18 11:10:02.000000000 -0500
+@@ -49,7 +49,7 @@ SYS_DIR		:= $(ARCH_DIR)/include/sysdep-$
+ #
+ # These apply to USER_CFLAGS to.
+ 
+-KBUILD_CFLAGS += $(CFLAGS-y) -D__arch_um__ -DSUBARCH=\"$(SUBARCH)\"	\
++KBUILD_CFLAGS += $(CFLAGS) $(CFLAGS-y) -D__arch_um__ -DSUBARCH=\"$(SUBARCH)\" \
+ 	$(ARCH_INCLUDE) $(MODE_INCLUDE) -Dvmap=kernel_vmap	\
+ 	-Din6addr_loopback=kernel_in6addr_loopback \
+ 	-Din6addr_any=kernel_in6addr_any
+@@ -58,7 +58,7 @@ KBUILD_AFLAGS += $(ARCH_INCLUDE)
+ 
+ USER_CFLAGS = $(patsubst $(KERNEL_DEFINES),,$(patsubst -D__KERNEL__,,\
+ 	$(patsubst -I%,,$(KBUILD_CFLAGS)))) $(ARCH_INCLUDE) $(MODE_INCLUDE) \
+-	-D_FILE_OFFSET_BITS=64
++	$(filter -I%,$(CFLAGS)) -D_FILE_OFFSET_BITS=64
+ 
+ include $(srctree)/$(ARCH_DIR)/Makefile-$(SUBARCH)
+ 
+@@ -130,7 +130,7 @@ CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DST
+ # The wrappers will select whether using "malloc" or the kernel allocator.
+ LINK_WRAPS = -Wl,--wrap,malloc -Wl,--wrap,free -Wl,--wrap,calloc
+ 
+-LD_FLAGS_CMDLINE = $(foreach opt,$(LFLAGS),-Wl,$(opt))
++LD_FLAGS_CMDLINE = $(foreach opt,$(LDFLAGS),-Wl,$(opt))
+ 
+ CFLAGS_vmlinux := $(LINK-y) $(LINK_WRAPS) $(LD_FLAGS_CMDLINE)
+ define cmd_vmlinux__
