@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbXK2Ajk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760437AbXK2Ajw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762063AbXK2Ajk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758682AbXK2Ajc
+	id S1760437AbXK2Ajw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXK2Ajo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:39:32 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53498 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbXK2Ajb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:39:31 -0500
-Date: Wed, 28 Nov 2007 15:24:15 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] Oops in USB / dev code plugging/unplugging multi flash
-	reader
-Message-ID: <20071128232415.GA11926@suse.de>
-References: <474DC95B.7000201@rtr.ca> <20071128202708.GA3809@suse.de> <474DF713.5070102@rtr.ca>
+	Wed, 28 Nov 2007 19:39:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41964 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762154AbXK2Ajn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:39:43 -0500
+Date: Wed, 28 Nov 2007 16:38:40 -0800
+From: Greg KH <greg@kroah.com>
+To: Valdis.Kletnieks@vt.edu, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071129003840.GA22530@kroah.com>
+References: <20071128144156.GA14106@infradead.org> <416908.77038.qm@web36613.mail.mud.yahoo.com> <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <474DF713.5070102@rtr.ca>
+In-Reply-To: <20071128183040.GW8181@ftp.linux.org.uk>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 06:17:39PM -0500, Mark Lord wrote:
-> Greg KH wrote:
->> On Wed, Nov 28, 2007 at 03:02:35PM -0500, Mark Lord wrote:
->>> While testing a new USB reader/cable today,
->>> I was plugging/unplugging the USB multi-flash reader (22 in 1),
->>> and produced this weird oops.
->>>
->>> There's a locking problem in there somewhere, Greg.
->>>
->>> 2.6.23.8
->> Can you duplicate this without the closed source ATI graphics driver 
->> loaded?
-> ..
->
-> I don't know if I can reproduce it easily regardless.
-> But that fglrx module has ZERO users, so it was completely benign here
-> (I've now deleted it from my system).
->
-> The tracebacks clearly show USB/dev error.
+On Wed, Nov 28, 2007 at 06:30:40PM +0000, Al Viro wrote:
+> On Wed, Nov 28, 2007 at 01:15:05PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> > (Note that the concept has interesting implications in the other direction as
+> > well - rather than stopping you from reading a file that has malware, you could
+> > in theory write an anti-export package that would let you write onto external
+> > memory or outbound e-mail, but prevent the write if it was corporate-sensitive
+> > data, or whatever.
+> 
+> You _can_ _not_ do that.  If shared mapping gets dirtied, you have no way to
+> intercept that.  At all.  Especially since the page stays mapped while it is
+> written out, so the next modification can come when hardware had already
+> started outbound DMA and there's no way to abort it, no matter what your
+> external scanner would do.
+> 
+> Folks, really, that doesn't work.  At all.  You can intercept all system
+> calls you want and it will not be enough to prevent the "bad" contents
+> from hitting the disk.
+> 
+> And if we are talking about the situation when files are written to in
+> controlled way (i.e. we are not concerned with malware running on the box
+> in question and just want to stop it from passing through mailsewer, etc.),
+> then there's no damn need to play with LSM - just have e.g. coda with its
+> commit-on-close and run the scanner on commit.  End of story.  Mind you,
+> in such setups one would be much better off just having the mail server run
+> the tests explicitly in the userland, along with the rest of anti-spam, etc.
+> filters.
 
-I'm not disagreeing, but I've seen some very strange crap over the years
-come from those closed source video drivers so I do not trust them at
-all.
+I've repeated the above statements so many times to a number of the
+anti-virus companies, and other people that really should know better,
+that I'm really sick of it.  For some reason, they keep trying to do
+things like this in the kernel, despite it being trivial to do in
+userspace properly.
 
-If you can reproduce this without it loaded, please send the new oops
-message to the linux-usb mailing list and the developers there will be
-glad to work with you to track this down.
+In the end, I even got one company to agree that it should be done in
+userspace (McAfee), but they ignored this and went off to update their
+kernel code again :(
 
-Oh, can you also reproduce it with 2.6.24-rc3?
+Just because other operating systems require you to do things like this
+within the kernel, doesn't mean that you have to do the same thing on
+Linux...
 
-thanks,
+so sad,
 
 greg k-h
