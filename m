@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762039AbXK2QIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXK2QNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762039AbXK2QIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 11:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbXK2QIH
+	id S1760951AbXK2QNQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 11:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbXK2QNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 11:08:07 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37532 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756234AbXK2QIE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 11:08:04 -0500
-Date: Thu, 29 Nov 2007 11:08:03 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Raymano Garibaldi <raymano@faunos.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       <kirk@faunos.com>
-Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
-In-Reply-To: <1618816c0711290353h3c0e4192we5909725d1aff3e9@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
+	Thu, 29 Nov 2007 11:13:01 -0500
+Received: from pmx2.sophos.com ([213.31.172.17]:51579 "EHLO pmx2.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756159AbXK2QNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 11:13:00 -0500
+In-Reply-To: <20071128195042.047049fc@the-village.bc.nu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: Out of tree module using LSM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailer: Lotus Notes Release 6.5.5 November 30, 2005
+Message-ID: <OFEBCE2F50.DE7D5873-ON802573A2.00555E0F-802573A2.00590DA4@sophos.com>
+From: tvrtko.ursulin@sophos.com
+Date: Thu, 29 Nov 2007 16:12:56 +0000
+X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.2FP1|January 10, 2007) at
+ 29/11/2007 16:12:58,
+	Serialize complete at 29/11/2007 16:12:58
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Raymano Garibaldi wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote on 28/11/2007 19:50:42:
 
-> The feature does work as long as the device remains plugged in and
-> that is what I have said in my previous postings too. What I'm saying
-> that should work and worked under 2.6.21 and is not working currently
-> is the ability to unplug and plug back in the device while the
-> computer is suspended before resuming without losing the mount.
+> > So as there is no question the current code does some ugly things it 
+is 
+> > even more true that we would be even more happy to use an official 
+API. 
+> > LSM was that and we were happily using it which we won't be able to do 
+if 
+> > it abruptly goes away. Yes it is not a perfect match but until it is 
+> > modified to be better, or until something appropriate is designed and 
+> > implemented, it would be very nice if it could stay.
+> 
+> So for an SELinux based system what you are saying is you want to be 
+able
+> to stack your module with the SELinux module and after SELinux has
+> considered policy rules still be able to veto them on the grounds that
+> you are say about to serve a virus to a windows box ?
 
-Okay, guess I misunderstood what you wrote before.
+Basically yes but the effective scenario is a bit wider. Local actions 
+like disallowing execution of rootkits, exploits and other similar malware 
+are also interesting. Another example would be enforcing a corporate 
+policy on which IM clients shouldn't be used so it is not just fileserver 
+scenario in which Linux machines can be compromised.
 
-The patch below for 2.6.23 should do what you want (and more besides).  
-It forces the USB Persist feature to apply to all persist-enabled 
-devices, whether they were unplugged or not.
+But really I am not the best person to know all current attack vectors. 
+Overall set of requirements and ideas is something we are working on with 
+other vendors and hopefully with the community. This is one of the two 
+main things my original post was about.
 
-There's no chance of this getting accepted into the official kernel in 
-such a simple form, but at least it will allow you to do what you want.
+--
+Tvrtko August Ursulin
+Senior Software Engineer, Sophos
 
-Alan Stern
+"Views and opinions expressed in this email are strictly those of the 
+author.
+ The contents has not been reviewed or approved by Sophos."
+
+Tel: 01235 559933
+Web: www.sophos.com
+Protecting business against viruses, spyware, spam and policy abuse
 
 
---- 2.6.23/drivers/usb/core/driver.c1	2007-11-29 10:57:36.000000000 -0500
-+++ 2.6.23/drivers/usb/core/driver.c	2007-11-29 11:01:44.000000000 -0500
-@@ -1550,6 +1550,9 @@
- 		if (!(udev->reset_resume && udev->do_remote_wakeup))
- 			return -EPERM;
- 	}
-+
-+	/* Force all system resumes to be reset-resumes */
-+	udev->reset_resume = 1;
- 	return usb_external_resume_device(udev);
- }
- 
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
 
