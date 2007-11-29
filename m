@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbXK2Aef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXK2Aet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761309AbXK2Aef (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXK2Ae1
+	id S1762103AbXK2Aet (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXK2Aej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:34:27 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:49365 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbXK2Ae0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:34:26 -0500
-Date: Wed, 28 Nov 2007 18:33:55 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: How to map user space's virtual memory into kernel logical address
-  space
-In-reply-to: <25b1e0c5-c6f4-43e6-a168-7cb701ef9018@e10g2000prf.googlegroups.com>
-To: Maitre Bart <maitrebart@excite.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <474E08F3.6020508@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <25b1e0c5-c6f4-43e6-a168-7cb701ef9018@e10g2000prf.googlegroups.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 28 Nov 2007 19:34:39 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:47005 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1761638AbXK2Aeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:34:37 -0500
+Message-ID: <396296481.07368@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 29 Nov 2007 08:34:33 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Michael Rubin <mrubin@google.com>
+Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [patch 1/1] Writeback fix for concurrent large and small file
+	writes
+References: <20071128192957.511EAB8310@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128192957.511EAB8310@localhost>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <E1IxXMP-0002i8-4S@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maitre Bart wrote:
-> A given app is allocating a large amount of memory (~10M) with
-> malloc().
-> It passes this pointer to the kernel (device driver) via an custom
-> ioctl.
-> I would like the driver to work on that memory with a pointer (as if
-> it was allocated with vmalloc) as well as the user space too (upon
-> return of the syscall).
-> Is there a way to map a user space's virtual memory range into the
-> kernel logical address space?
+On Wed, Nov 28, 2007 at 11:29:57AM -0800, Michael Rubin wrote:
+> >From mrubin@matchstick.corp.google.com Wed Nov 28 11:10:06 2007
+> Message-Id: <20071128190121.716364000@matchstick.corp.google.com>
+> Date: Wed, 28 Nov 2007 11:01:21 -0800
+> From: mrubin@google.com
+> To: mrubin@google.com
+> Subject: [patch 1/1] Writeback fix for concurrent large and small file writes.
 > 
-> As far as I learned from my readings, using the user-space pointer
-> directly in kernel space will not work.
+> From: Michael Rubin <mrubin@google.com>
 > 
-> Of course, copy_from_user() is out of question for efficiency
-> purposes.
-> 
-> ioremap() is pretty close to what I wish to do except that it accepts
-> a physical address and I don't how to get it from a user space
-> pointer. And since a physical address is required, I assume the range
-> is considered contiguous, which is not really the case for malloc().
-> 
-> mmap()/remap_pfn_range() are interesting but I don't know how to get a
-> kernel pointer out of them.
-> 
-> kmap() does the job for a single page (and anyway, I wouldn't know how
-> to  feed it with a struct page from the userland pointer).
-> 
-> get_user_pages() looks promising but it seems I have to call kmap() on
-> each page, so it looks like I cannot operate on the buffer with a
-> single pointer.
-> 
-> Does any one know if it is possible? And if so, how can I do it?
+> Fixing a bug where writing to large files while concurrently writing to
+> smaller ones creates a situation where writeback cannot keep up with the
 
-10MB is an awfully big mapping to put into kernel virtual memory space. 
-I suspect it might be easier to allocate the memory in the kernel and 
-map it in from userspace, but then you have the same problem (and 10MB 
-is awfully big for vmalloc).
+Could you demonstrate the situation? Or if I guess it right, could it
+be fixed by the following patch? (not a nack: If so, your patch could
+also be considered as a general purpose improvement, instead of a bug
+fix.)
 
-Is there a good reason why you have to be able to do this? There's 
-likely a better way.
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 0fca820..62e62e2 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -301,7 +301,7 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 			 * Someone redirtied the inode while were writing back
+ 			 * the pages.
+ 			 */
+-			redirty_tail(inode);
++			requeue_io(inode);
+ 		} else if (atomic_read(&inode->i_count)) {
+ 			/*
+ 			 * The inode is clean, inuse
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Thank you,
+Fengguang
+
+> traffic and memory baloons until the we hit the threshold watermark. This
+> can result in surprising latency spikes when syncing. This latency
+> can take minutes on large memory systems. Upon request I can provide
+> a test to reproduce this situation. The flush tree fixes this issue and
+> fixes several other minor issues with fairness also.
+> 
+> 1) Adding a data structure to guarantee fairness when writing inodes
+> to disk.  The flush_tree is based on an rbtree. The only difference is
+> how duplicate keys are chained off the same rb_node.
+> 
+> 2) Added a FS flag to mark file systems that are not disk backed so we
+> don't have to flush them. Not sure I marked all of them. But just marking
+> these improves writeback performance.
+> 
+> 3) Added an inode flag to allow inodes to be marked so that they are
+> never written back to disk. See get_pipe_inode.
+> 
+> Under autotest this patch has passed: fsx, bonnie, and iozone. I am
+> currently writing more writeback focused tests (which so far have been
+> passed) to add into autotest.
+> 
+> Signed-off-by: Michael Rubin <mrubin@google.com>
+> ---
 
