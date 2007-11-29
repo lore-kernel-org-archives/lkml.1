@@ -1,117 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXK2OhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbXK2Ohq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436AbXK2OhN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 09:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbXK2Ogq
+	id S932472AbXK2Ohq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 09:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXK2OhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 09:36:46 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:37510 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755108AbXK2Ogp (ORCPT
+	Thu, 29 Nov 2007 09:37:07 -0500
+Received: from gw-lon-cluster.cmcnet.net ([195.20.122.6]:49870 "EHLO
+	emearelay1.cmcmarkets.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932407AbXK2OhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 09:36:45 -0500
-Message-ID: <474ECE6A.3010500@linux.vnet.ibm.com>
-Date: Thu, 29 Nov 2007 20:06:26 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       samba-technical@lists.samba.org, nfs@lists.sourceforge.net,
-       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
-References: <20071128034140.648383f0.akpm@linux-foundation.org> <474E7F9E.9000601@linux.vnet.ibm.com> <20071129010906.772e0c15.akpm@linux-foundation.org> <474EA914.1060502@linux.vnet.ibm.com> <20071129121001.GD16558@duck.suse.cz>
-In-Reply-To: <20071129121001.GD16558@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Nov 2007 09:37:04 -0500
+X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 09:37:04 EST
+Subject: Re: [PATCH 4/6] time: fix typo in comments
+From: Chris Malley <mail@chrismalley.co.uk>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
+       trivial@kernel.org
+Date: Thu, 29 Nov 2007 14:31:55 +0000
+Message-Id: <1196346715.6461.11.camel@gutsy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-MIMETrack: Itemize by SMTP Server on smtp3/CMC(Release 7.0.2FP1|January 10, 2007) at
+ 11/29/2007 02:31:51 PM,
+	Serialize by Router on emearelay1/UK/CMC(Release 7.0.2FP1|January 10, 2007) at
+ 29/11/2007 02:37:04 PM,
+	Serialize complete at 29/11/2007 02:37:04 PM
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> On Thu 29-11-07 17:27:08, Kamalesh Babulal wrote:
->> Andrew Morton wrote:
->>> On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>>
->>>> Hi Andrew,
->>>>
->>>> While running file system stress on nfs and cifs mounted partitions, the machine
->>>> drops to xmon
->>>>
->>>> 1:mon> e
->>>> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
->>>>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
->>>>     lr: c0000000001074d0: .vfs_link+0x204/0x298
->>>>     sp: c000000080a9fb00
->>>>    msr: 8000000000009032
->>>>    dar: 280 
->>>>  dsisr: 40010000
->>>>   current = 0xc0000000c8e6f670
->>>>   paca    = 0xc000000000512c00
->>>>     pid   = 2848, comm = fsstress
->>>> 1:mon> t
->>>> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
->>>> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
->>>> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
->>>> --- Exception: c00 (System Call) at 000000000ff1bdfc
->>>> SP (ffeaed10) is in userspace
->>>> 1:mon> r
->>>> R00 = c0000000001074d0   R16 = 0000000000000000
->>>> R01 = c000000080a9fb00   R17 = 0000000000000000
->>>> R02 = c00000000060c380   R18 = 0000000000000000
->>>> R03 = 0000000000000000   R19 = 0000000000000000
->>>> R04 = 0000000000000004   R20 = 0000000000000000
->>>> R05 = 0000000000000000   R21 = 0000000000000000
->>>> R06 = 0000000000000000   R22 = 0000000000000000
->>>> R07 = 0000000000000000   R23 = 0000000000000004
->>>> R08 = 0000000000000000   R24 = 0000000000000280
->>>> R09 = 0000000000000000   R25 = fffffffffffff000
->>>> R10 = 0000000000000001   R26 = c000000082827790
->>>> R11 = c0000000003963e8   R27 = c0000000828275a0
->>>> R12 = d000000000deec78   R28 = 0000000000000000
->>>> R13 = c000000000512c00   R29 = c00000007b18fcf0
->>>> R14 = 0000000000000000   R30 = c0000000005bc088
->>>> R15 = 0000000000000000   R31 = 0000000000000000
->>>> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
->>>> lr  = c0000000001074d0 .vfs_link+0x204/0x298
->>>> msr = 8000000000009032   cr  = 24000882
->>>> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
->>>> dar = 0000000000000280   dsisr = 40010000
->>>>
->>>>
->>>> The gdb output shows 
->>>>
->>>> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
->>>> 103      * fsnotify_create - 'name' was linked in
->>>> 104      */  
->>>> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
->>>> 106     {   
->>>> 107             inode_dir_notify(inode, DN_CREATE);
->>>> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
->>>> 109                                       dentry->d_inode);
->>>> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
->>>> 111     }   
->>>> 112
->>>>
->>> If it is reproducible can you please try reverting
->>> inotify-send-in_attrib-events-when-link-count-changes.patch?
->> Hi Andrew,
->>
->> reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
->> bug is not reproduced.
->   OK, thanks for testing. I was trying to reproduce the problem locally but
-> without success so far - I guess it's either NFS or CIFS which makes the
-> problem appear. I'll investigate more.
+On Thu, 29 Nov 2007 15:35:32 +0800, Li Zefan wrote:
 > 
-> 									Honza
+> Fix typo in comments.
+> 
+> BTW: I have to fix coding style in arch/ia64/kernel/time.c also,
+> otherwise checkpatch.pl will be complaining.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> ---
+>  arch/ia64/kernel/time.c   |   14 +++++++-------
+>  arch/x86/kernel/time_64.c |    2 +-
+>  include/linux/hrtimer.h   |    2 +-
+>  include/linux/jiffies.h   |    6 +++---
+>  kernel/time.c             |    4 ++--
+>  kernel/time/clockevents.c |    2 +-
+>  kernel/time/timekeeping.c |    2 +-
+>  7 files changed, 16 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+> index 2bb8421..5fc8c89 100644
+> --- a/arch/ia64/kernel/time.c
+> +++ b/arch/ia64/kernel/time.c
+> @@ -49,13 +49,13 @@ EXPORT_SYMBOL(last_cli_ip);
+>  #endif
+>  
+>  static struct clocksource clocksource_itc = {
+> -        .name           = "itc",
+> -        .rating         = 350,
+> -        .read           = itc_get_cycles,
+> -        .mask           = CLOCKSOURCE_MASK(64),
+> -        .mult           = 0, /*to be caluclated*/
+> -        .shift          = 16,
+> -        .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
+> +	.name           = "itc",
+> +	.rating         = 350,
+> +	.read           = itc_get_cycles,
+> +	.mask           = CLOCKSOURCE_MASK(64),
+> +	.mult           = 0, /*to be calculated*/
+> +	.shift          = 16,
+> +	.flags          = CLOCK_SOURCE_IS_CONTINUOUS,
+>  };
+>  static struct clocksource *itc_clocksource;
+>  
+> diff --git a/arch/x86/kernel/time_64.c b/arch/x86/kernel/time_64.c
+> index 368b194..2cc7570 100644
+> --- a/arch/x86/kernel/time_64.c
+> +++ b/arch/x86/kernel/time_64.c
+> @@ -235,7 +235,7 @@ static unsigned int __init tsc_calibrate_cpu_khz(void)
+>  		reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+>  	}
+>  	local_irq_save(flags);
+> -	/* start meauring cycles, incrementing from 0 */
+> +	/* start measuring cycles, incrementing from 0 */
+>  	wrmsrl(MSR_K7_PERFCTR0 + i, 0);
+>  	wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
+>  	rdtscl(tsc_start);
+> diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+> index 80c7e98..d42c6be 100644
+> --- a/include/linux/hrtimer.h
+> +++ b/include/linux/hrtimer.h
+> @@ -78,7 +78,7 @@ enum hrtimer_cb_mode {
+>   * as otherwise the timer could be removed before the softirq code finishes the
+>   * the handling of the timer.
+>   *
+> - * The HRTIMER_STATE_ENQUEUE bit is always or'ed to the current state to
+> + * The HRTIMER_STATE_ENQUEUED bit is always or'ed to the current state to
+>   * preserve the HRTIMER_STATE_CALLBACK bit in the above scenario.
+>   *
+>   * All state transitions are protected by cpu_base->lock.
+> diff --git a/include/linux/jiffies.h b/include/linux/jiffies.h
+> index 8b08002..b071f46 100644
+> --- a/include/linux/jiffies.h
+> +++ b/include/linux/jiffies.h
+> @@ -36,7 +36,7 @@
+>  /* LATCH is used in the interval timer and ftape setup. */
+>  #define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
+>  
+> -/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, the we can
+> +/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, then we can
 
-Hi Jan,
+divide
 
-I was running file system stress parallely on NFS and CIFS mounted partitions.
-  
+>   * improve accuracy by shifting LSH bits, hence calculating:
+>   *     (NOM << LSH) / DEN
+>   * This however means trouble for large NOM, because (NOM << LSH) may no
+> @@ -154,7 +154,7 @@ extern unsigned long preset_lpj;
+>   * We want to do realistic conversions of time so we need to use the same
+>   * values the update wall clock code uses as the jiffies size.  This value
+>   * is: TICK_NSEC (which is defined in timex.h).  This
+> - * is a constant and is in nanoseconds.  We will used scaled math
+> + * is a constant and is in nanoseconds.  We will use scaled math
+>   * with a set of scales defined here as SEC_JIFFIE_SC,  USEC_JIFFIE_SC and
+>   * NSEC_JIFFIE_SC.  Note that these defines contain nothing but
+>   * constants and so are computed at compile time.  SHIFT_HZ (computed in
+> @@ -198,7 +198,7 @@ extern unsigned long preset_lpj;
+>   * operator if the result is a long long AND at least one of the
+>   * operands is cast to long long (usually just prior to the "*" so as
+>   * not to confuse it into thinking it really has a 64-bit operand,
+> - * which, buy the way, it can do, but it take more code and at least 2
+> + * which, buy the way, it can do, but it takes more code and at least 2
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+by the way 
+(and does this really add anything to the sentence?)
+
+>   * mpys).
+>  
+>   * We also need to be aware that one second in nanoseconds is only a
+> diff --git a/kernel/time.c b/kernel/time.c
+> index 09d3c45..c25f472 100644
+> --- a/kernel/time.c
+> +++ b/kernel/time.c
+> @@ -266,7 +266,7 @@ EXPORT_SYMBOL(jiffies_to_usecs);
+>   *
+>   * This function should be only used for timestamps returned by
+>   * current_kernel_time() or CURRENT_TIME, not with do_gettimeofday() because
+> - * it doesn't handle the better resolution of the later.
+> + * it doesn't handle the better resolution of the latter.
+>   */
+>  struct timespec timespec_trunc(struct timespec t, unsigned gran)
+>  {
+> @@ -314,7 +314,7 @@ EXPORT_SYMBOL_GPL(getnstimeofday);
+>   * This algorithm was first published by Gauss (I think).
+>   *
+>   * WARNING: this function will overflow on 2106-02-07 06:28:16 on
+> - * machines were long is 32-bit! (However, as time_t is signed, we
+> + * machines where long is 32-bit! (However, as time_t is signed, we
+>   * will already get problems at other places on 2038-01-19 03:14:08)
+>   */
+>  unsigned long
+> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+> index 68fbe73..6e2b7ef 100644
+> --- a/kernel/time/clockevents.c
+> +++ b/kernel/time/clockevents.c
+> @@ -123,7 +123,7 @@ static void clockevents_do_notify(unsigned long reason, void *dev)
+>  }
+>  
+>  /*
+> - * Called after a notify add to make devices availble which were
+> + * Called after a notify add to make devices available which were
+>   * released from the notifier call.
+>   */
+>  static void clockevents_notify_released(void)
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index e112dc4..cd26cbe 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -372,7 +372,7 @@ static __always_inline int clocksource_bigadjust(s64 error, s64 *interval,
+>  	 * with losing too many ticks, otherwise we would overadjust and
+>  	 * produce an even larger error.  The smaller the adjustment the
+>  	 * faster we try to adjust for it, as lost ticks can do less harm
+> -	 * here.  This is tuned so that an error of about 1 msec is adusted
+> +	 * here.  This is tuned so that an error of about 1 msec is adjusted
+>  	 * within about 1 sec (or 2^20 nsec in 2^SHIFT_HZ ticks).
+>  	 */
+>  	error2 = clock->error >> (TICK_LENGTH_SHIFT + 22 - 2 * SHIFT_HZ);
+> -- 
+> 1.5.3.rc7
+> 
+
+
+--
+Chris
+
