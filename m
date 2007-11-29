@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762619AbXK2KWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbXK2KZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762619AbXK2KWr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 05:22:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbXK2KW2
+	id S1762245AbXK2KZy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 05:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXK2KZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 05:22:28 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:49748 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762490AbXK2KW0 (ORCPT
+	Thu, 29 Nov 2007 05:25:45 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55621 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758024AbXK2KZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 05:22:26 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH RFC] [1/9] Core module symbol namespaces code and intro.
-Date: Thu, 29 Nov 2007 11:21:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       rusty@rustcorp.com.au
-References: <20071122343.446909000@suse.de> <200711291055.02056.arnd@arndb.de> <200711291100.46598.ak@suse.de>
-In-Reply-To: <200711291100.46598.ak@suse.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 05:25:44 -0500
+Date: Thu, 29 Nov 2007 10:25:06 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Remy Bohmer <linux@bohmer.net>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Daniel Walker <dwalker@mvista.com>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
+Message-ID: <20071129102506.GB22793@flint.arm.linux.org.uk>
+References: <3efb10970711260545i419a8352o4ca5248b10d81db5@mail.gmail.com> <1196176294.13982.58.camel@localhost.localdomain> <1196177122.23808.7.camel@imap.mvista.com> <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com> <20071128172509.GA30173@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com> <20071128200550.GA3494@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com> <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711291122.00324.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/6CJXO+yq+1oykei1p+uGmkf2TyrZlqaqLRDX
- eyR/pD67pHpVfHaR7W5alH1Q22T43owF9kuLjcoMwSqOazllf8
- jjORHLuEKqUWNnQeJEjAQ==
+In-Reply-To: <3efb10970711290214v37d85a27k9a84876d9099d7c5@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 November 2007, Andi Kleen wrote:
-> > I think it would be good if you could specify a default namespace
-> > per module, that could reduce the amount of necessary changes significantly.
-> 
-> But also give less documentation. It's also not that difficult to mark
-> the exports once. I've forward ported such patches over a few kernels
-> and didn't run into significant me
+On Thu, Nov 29, 2007 at 11:14:30AM +0100, Remy Bohmer wrote:
+> I do not think Russell is right here with assuming that the wrong
+> interrupt handler type is used. Looking at the behaviour of the
+> mainline kernel (non-RT), the implementation is quite different: On
+> mainline the handle_simple_irq() in chip.c is not re-entrant, the
+> masking is **only** done in case of errors, and therefor never
+> unmasked again, of course.
 
-Part of your sentence seems to be missing, but I guess I understand your
-point. How many files did you annotate this way? I can see it as being
-useful to have the namespace explicit in each symbol, but doing it once
-per module sounds like the 80% solution for 20% of the work, and the
-two don't even conflict. In the current kernel, I count 12644 exported
-symbols in 1646 files, in 540 directories.
+The issue comes down to a very simple question:
 
-One problem I can see with annotating every symbol is that it conflicts
-with other patches that add more exported functions to a file without
-adding the namespace, or that simply break because of context changes.
+  Are you using handle_simple_irq() with an interrupt which can be masked?
 
-	Arnd <><
+If the answer to that question is 'yes' then you're using the wrong handler.
+If 'no' then it's the right handler and the mask/unmask methods associated
+with the interrupt will be no-ops.
+
+Therefore, if you have mask/unmask methods for a simple IRQ which actually
+do something, clearly the first answer is the one which applies.  You're
+using the wrong handler.  Use the level or edge handlers instead.
