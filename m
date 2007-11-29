@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbXK2TEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbXK2TFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932877AbXK2TEx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbXK2TEn
+	id S1758454AbXK2TFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761302AbXK2TFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:04:43 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60611 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757719AbXK2TEm (ORCPT
+	Thu, 29 Nov 2007 14:05:17 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:52653 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758938AbXK2TFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:04:42 -0500
-Message-ID: <474F0D47.7020006@zytor.com>
-Date: Thu, 29 Nov 2007 11:04:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 29 Nov 2007 14:05:15 -0500
+Date: Thu, 29 Nov 2007 12:05:13 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] Fix kmem_cache_free performance regression in slab
+Message-ID: <20071129190513.GD2584@parisc-linux.org>
 MIME-Version: 1.0
-To: =?UTF-8?B?IlBhdWwgUm9sbGFuZCAo44Od44O844Or44O744Ot44Op44OzKSI=?= 
-	<rol@witbe.net>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: constant_tsc and TSC unstable
-References: <20071129171142.56c7890a@tux.DEF.witbe.net>
-In-Reply-To: <20071129171142.56c7890a@tux.DEF.witbe.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Rolland (ポール・ロラン) wrote:
-> Hello,
-> 
-> I've a machine with a Core2Duo CPU. /proc/cpuinfo reports the flag
-> constant_tsc, but at boot time, I have the log :
-> 
-> ...
-> Total of 2 processors activated (6919.15 BogoMIPS).
-> ENABLING IO-APIC IRQs
-> ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> checking TSC synchronization [CPU#0 -> CPU#1]:
-> Measured 3978592228 cycles TSC warp between CPUs, turning off TSC clock.
-> Marking TSC unstable due to: check_tsc_sync_source failed.
-> Brought up 2 CPUs
-> ...
-> 
-> This machine is running 2.6.23.1-21.fc7. I know I should report to Fedora,
-> but I was wondering if this is a bug or a feature ;)
-> 
 
-constant_tsc means the TSC doesn't change with CPU core frequency.
+The database performance group have found that half the cycles spent
+in kmem_cache_free are spent in this one call to BUG_ON.  Moving it
+into the CONFIG_SLAB_DEBUG-only function cache_free_debugcheck() is a
+performance win of almost 0.5% on their particular benchmark.
 
-The problem you're having is that the TSCs of your two cores are 
-completely different, over a second apart.  This is a bug, unrelated to 
-constant_tsc.
+The call was added as part of commit ddc2e812d592457747c4367fb73edcaa8e1e49ff
+with the comment that "overhead should be minimal".  It may have been
+minimal at the time, but it isn't now.
 
-	-hpa
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
+diff --git a/mm/slab.c b/mm/slab.c
+index cfa6be4..6e16431 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2881,6 +2881,8 @@ static void *cache_free_debugcheck(struct kmem_cache *cachep, void *objp,
+ 	unsigned int objnr;
+ 	struct slab *slabp;
+ 
++	BUG_ON(virt_to_cache(objp) != cachep);
++
+ 	objp -= obj_offset(cachep);
+ 	kfree_debugcheck(objp);
+ 	page = virt_to_head_page(objp);
+@@ -3759,8 +3761,6 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
+ {
+ 	unsigned long flags;
+ 
+-	BUG_ON(virt_to_cache(objp) != cachep);
+-
+ 	local_irq_save(flags);
+ 	debug_check_no_locks_freed(objp, obj_size(cachep));
+ 	__cache_free(cachep, objp);
 
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
