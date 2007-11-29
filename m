@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763653AbXK2Rj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763636AbXK2RlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763653AbXK2Rj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761931AbXK2Rju
+	id S1763636AbXK2RlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759693AbXK2RlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:39:50 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53880 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754325AbXK2Rjt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:39:49 -0500
-Date: Thu, 29 Nov 2007 17:39:44 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 4/6] x86-64 ptrace get/putreg current task
-Message-ID: <20071129173944.GB556@infradead.org>
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004118.D317B26F8E7@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129004118.D317B26F8E7@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 29 Nov 2007 12:41:11 -0500
+Received: from [81.2.110.250] ([81.2.110.250]:38998 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758938AbXK2RlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 12:41:10 -0500
+Date: Thu, 29 Nov 2007 17:36:01 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: tvrtko.ursulin@sophos.com
+Cc: Al Viro <viro@ftp.linux.org.uk>, Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071129173601.34273083@the-village.bc.nu>
+In-Reply-To: <OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
+References: <20071128183040.GW8181@ftp.linux.org.uk>
+	<OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 04:41:18PM -0800, Roland McGrath wrote:
-> 
-> This generalizes the getreg and putreg functions so they can be used on the
-> current task, as well as on a task stopped in TASK_TRACED and switched off.
-> This lays the groundwork to share this code for all kinds of user-mode
-> machine state access, not just ptrace.
+> closed. But more importantly further access to it can be blocked until 
+> appropriate actions are taken which also applies with your example, no? Is 
 
-Not sure it's a that good idea as it means almost every case now has
-a branch for two entirely separate cases.  Wouldn't it be better to have
-a separate helper for the looking at the current proces case?
+That bit is hard- very hard.
 
-Either way support for looking at the current thread should only be
-merged together with an actual user for that.
+> it possible to open for execute and have dirty mappings (or open for 
+> write) on a file at the same time?
 
+If I want I can have 16 threads executing code in a shared object being
+written to by ten other programs at once and shared over a network while
+we are at it. Its probably not a good idea but I can do it if I have
+reason to.
+
+Unix and Linux likewise take the basic view that locking is a problem for
+the user, while file permissions prevent it being made a problem for
+other users.
