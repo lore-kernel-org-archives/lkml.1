@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbXLFMm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbXLFMmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754359AbXLFMm0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 07:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbXLFMlo
+	id S1754539AbXLFMmr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 07:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbXLFMlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 07:41:44 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:53673 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753490AbXLFMlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 07:41:37 -0500
+	Thu, 6 Dec 2007 07:41:46 -0500
+Received: from nic2.axis.se ([193.13.178.10]:35707 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753854AbXLFMlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 07:41:40 -0500
 From: Jesper Nilsson <jesper.nilsson@axis.com>
-Message-Id: <12cbfaacef5f6845538315485219e13b3b973eeb.1196848533.git.jesper.nilsson@axis.com>
+Message-Id: <fd0eefc8e227068ff3641a869ebde0d860ea1046.1196848533.git.jesper.nilsson@axis.com>
 In-Reply-To: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Mikael Starvik <mikael.starvik@axis.com>,
        Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Date: Thu, 29 Nov 2007 17:03:41 +0100
-Subject: [PATCH 02/47] Add new driver files for Artpec-3.
+Date: Thu, 29 Nov 2007 17:05:58 +0100
+Subject: [PATCH 03/47] Add new driver files for Etrax-FS
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds gpio and nandflash handling for Artpec-3.
+Adds gpio and nandflash handling for Etrax-FS
 
 Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 ---
- arch/cris/arch-v32/drivers/mach-a3/Makefile    |    6 +
- arch/cris/arch-v32/drivers/mach-a3/gpio.c      |  984 ++++++++++++++++++++++++
- arch/cris/arch-v32/drivers/mach-a3/nandflash.c |  178 +++++
- 3 files changed, 1168 insertions(+), 0 deletions(-)
- create mode 100644 arch/cris/arch-v32/drivers/mach-a3/Makefile
- create mode 100644 arch/cris/arch-v32/drivers/mach-a3/gpio.c
- create mode 100644 arch/cris/arch-v32/drivers/mach-a3/nandflash.c
+ arch/cris/arch-v32/drivers/mach-fs/Makefile    |    6 +
+ arch/cris/arch-v32/drivers/mach-fs/gpio.c      |  971 ++++++++++++++++++++++++
+ arch/cris/arch-v32/drivers/mach-fs/nandflash.c |  172 +++++
+ 3 files changed, 1149 insertions(+), 0 deletions(-)
+ create mode 100644 arch/cris/arch-v32/drivers/mach-fs/Makefile
+ create mode 100644 arch/cris/arch-v32/drivers/mach-fs/gpio.c
+ create mode 100644 arch/cris/arch-v32/drivers/mach-fs/nandflash.c
 
-diff --git a/arch/cris/arch-v32/drivers/mach-a3/Makefile b/arch/cris/arch-v32/drivers/mach-a3/Makefile
+diff --git a/arch/cris/arch-v32/drivers/mach-fs/Makefile b/arch/cris/arch-v32/drivers/mach-fs/Makefile
 new file mode 100644
 index 0000000..5c6d2a2
 --- /dev/null
-+++ b/arch/cris/arch-v32/drivers/mach-a3/Makefile
++++ b/arch/cris/arch-v32/drivers/mach-fs/Makefile
 @@ -0,0 +1,6 @@
 +#
 +# Makefile for Etrax-specific drivers
@@ -47,22 +46,21 @@ index 0000000..5c6d2a2
 +
 +obj-$(CONFIG_ETRAX_NANDFLASH)   += nandflash.o
 +obj-$(CONFIG_ETRAX_GPIO)        += gpio.o
-diff --git a/arch/cris/arch-v32/drivers/mach-a3/gpio.c b/arch/cris/arch-v32/drivers/mach-a3/gpio.c
+diff --git a/arch/cris/arch-v32/drivers/mach-fs/gpio.c b/arch/cris/arch-v32/drivers/mach-fs/gpio.c
 new file mode 100644
-index 0000000..4c48065
+index 0000000..56caafd
 --- /dev/null
-+++ b/arch/cris/arch-v32/drivers/mach-a3/gpio.c
-@@ -0,0 +1,984 @@
++++ b/arch/cris/arch-v32/drivers/mach-fs/gpio.c
+@@ -0,0 +1,971 @@
 +/*
-+ * Artec-3 general port I/O device
++ * ETRAX CRISv32 general port I/O device
 + *
-+ * Copyright (c) 2007 Axis Communications AB
++ * Copyright (c) 1999-2006 Axis Communications AB
 + *
 + * Authors:    Bjorn Wesen      (initial version)
 + *             Ola Knutsson     (LED handling)
 + *             Johan Adolfsson  (read/set directions, write, port G,
 + *                               port to ETRAX FS.
-+ *             Ricard Wanderlof (PWM for Artpec-3)
 + *
 + */
 +
@@ -87,7 +85,6 @@ index 0000000..4c48065
 +#include <asm/io.h>
 +#include <asm/system.h>
 +#include <asm/irq.h>
-+#include <asm/arch/mach/pinmux.h>
 +
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
 +#include "../i2c.h"
@@ -95,16 +92,16 @@ index 0000000..4c48065
 +#define VIRT_I2C_ADDR 0x40
 +#endif
 +
-+/* The following gio ports on ARTPEC-3 is available:
-+ * pa 32 bits
-+ * pb 32 bits
-+ * pc 16 bits
++/* The following gio ports on ETRAX FS is available:
++ * pa  8 bits, supports interrupts off, hi, low, set, posedge, negedge anyedge
++ * pb 18 bits
++ * pc 18 bits
++ * pd 18 bits
++ * pe 18 bits
 + * each port has a rw_px_dout, r_px_din and rw_px_oe register.
 + */
 +
 +#define GPIO_MAJOR 120  /* experimental MAJOR number */
-+
-+#define I2C_INTERRUPT_BITS 0x300 /* i2c0_done and i2c1_done bits */
 +
 +#define D(x)
 +
@@ -122,18 +119,22 @@ index 0000000..4c48065
 +
 +static char gpio_name[] = "etrax gpio";
 +
++#if 0
++static wait_queue_head_t *gpio_wq;
++#endif
++
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
 +static int virtual_gpio_ioctl(struct file *file, unsigned int cmd,
-+			      unsigned long arg);
++	unsigned long arg);
 +#endif
 +static int gpio_ioctl(struct inode *inode, struct file *file,
-+		      unsigned int cmd, unsigned long arg);
++	unsigned int cmd, unsigned long arg);
 +static ssize_t gpio_write(struct file *file, const char *buf, size_t count,
-+			  loff_t *off);
++	loff_t *off);
 +static int gpio_open(struct inode *inode, struct file *filp);
 +static int gpio_release(struct inode *inode, struct file *filp);
 +static unsigned int gpio_poll(struct file *filp,
-+			      struct poll_table_struct *wait);
++	struct poll_table_struct *wait);
 +
 +/* private data per open() of this driver */
 +
@@ -150,13 +151,13 @@ index 0000000..4c48065
 +	int minor;
 +};
 +
-+static void gpio_set_alarm(struct gpio_private *priv);
-+
 +/* linked list of alarms to check for */
 +
 +static struct gpio_private *alarmlist;
 +
-+static int wanted_interrupts;
++static int gpio_some_alarms; /* Set if someone uses alarm */
++static unsigned long gpio_pa_high_alarms;
++static unsigned long gpio_pa_low_alarms;
 +
 +static DEFINE_SPINLOCK(alarm_lock);
 +
@@ -164,10 +165,8 @@ index 0000000..4c48065
 +#define GIO_REG_RD_ADDR(reg) \
 +	(volatile unsigned long *)(regi_gio + REG_RD_ADDR_gio_##reg)
 +#define GIO_REG_WR_ADDR(reg) \
-+	(volatile unsigned long *)(regi_gio + REG_WR_ADDR_gio_##reg)
++	(volatile unsigned long *)(regi_gio + REG_RD_ADDR_gio_##reg)
 +unsigned long led_dummy;
-+unsigned long port_d_dummy;	/* Only input on Artpec-3 */
-+unsigned long port_e_dummy;	/* Non existent on Artpec-3 */
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
 +static unsigned long virtual_dummy;
 +static unsigned long virtual_rw_pv_oe = CONFIG_ETRAX_DEF_GIO_PV_OE;
@@ -179,9 +178,9 @@ index 0000000..4c48065
 +	GIO_REG_WR_ADDR(rw_pb_dout),
 +	&led_dummy,
 +	GIO_REG_WR_ADDR(rw_pc_dout),
-+	&port_d_dummy,
++	GIO_REG_WR_ADDR(rw_pd_dout),
++	GIO_REG_WR_ADDR(rw_pe_dout),
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+	&port_e_dummy,
 +	&virtual_dummy,
 +#endif
 +};
@@ -192,8 +191,8 @@ index 0000000..4c48065
 +	&led_dummy,
 +	GIO_REG_RD_ADDR(r_pc_din),
 +	GIO_REG_RD_ADDR(r_pd_din),
++	GIO_REG_RD_ADDR(r_pe_din),
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+	&port_e_dummy,
 +	&virtual_dummy,
 +#endif
 +};
@@ -203,9 +202,9 @@ index 0000000..4c48065
 +	CONFIG_ETRAX_PB_CHANGEABLE_DIR,
 +	0,
 +	CONFIG_ETRAX_PC_CHANGEABLE_DIR,
-+	0,
++	CONFIG_ETRAX_PD_CHANGEABLE_DIR,
++	CONFIG_ETRAX_PE_CHANGEABLE_DIR,
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+	0,
 +	CONFIG_ETRAX_PV_CHANGEABLE_DIR,
 +#endif
 +};
@@ -215,9 +214,9 @@ index 0000000..4c48065
 +	CONFIG_ETRAX_PB_CHANGEABLE_BITS,
 +	0,
 +	CONFIG_ETRAX_PC_CHANGEABLE_BITS,
-+	0,
++	CONFIG_ETRAX_PD_CHANGEABLE_BITS,
++	CONFIG_ETRAX_PE_CHANGEABLE_BITS,
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+	0,
 +	CONFIG_ETRAX_PV_CHANGEABLE_BITS,
 +#endif
 +};
@@ -227,76 +226,77 @@ index 0000000..4c48065
 +	GIO_REG_WR_ADDR(rw_pb_oe),
 +	&led_dummy,
 +	GIO_REG_WR_ADDR(rw_pc_oe),
-+	&port_d_dummy,
++	GIO_REG_WR_ADDR(rw_pd_oe),
++	GIO_REG_WR_ADDR(rw_pe_oe),
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+	&port_e_dummy,
 +	&virtual_rw_pv_oe,
 +#endif
 +};
 +
-+static void
-+gpio_set_alarm(struct gpio_private *priv)
-+{
-+	int bit;
-+	int intr_cfg;
-+	int mask;
-+	int pins;
-+	unsigned long flags;
 +
-+	local_irq_save(flags);
-+	intr_cfg = REG_RD_INT(gio, regi_gio, rw_intr_cfg);
-+	pins = REG_RD_INT(gio, regi_gio, rw_intr_pins);
-+	mask = REG_RD_INT(gio, regi_gio, rw_intr_mask) & I2C_INTERRUPT_BITS;
 +
-+	for (bit = 0; bit < 32; bit++) {
-+		int intr = bit % 8;
-+		int pin = bit / 8;
-+		if (priv->minor < GPIO_MINOR_LEDS)
-+			pin += priv->minor * 4;
-+		else
-+			pin += (priv->minor - 1) * 4;
-+
-+		if (priv->highalarm & (1<<bit)) {
-+			intr_cfg |= (regk_gio_hi << (intr * 3));
-+			mask |= 1 << intr;
-+			wanted_interrupts = mask & 0xff;
-+			pins |= pin << (intr * 4);
-+		} else if (priv->lowalarm & (1<<bit)) {
-+			intr_cfg |= (regk_gio_lo << (intr * 3));
-+			mask |= 1 << intr;
-+			wanted_interrupts = mask & 0xff;
-+			pins |= pin << (intr * 4);
-+		}
-+	}
-+
-+	REG_WR_INT(gio, regi_gio, rw_intr_cfg, intr_cfg);
-+	REG_WR_INT(gio, regi_gio, rw_intr_pins, pins);
-+	REG_WR_INT(gio, regi_gio, rw_intr_mask, mask);
-+
-+	local_irq_restore(flags);
-+}
-+
-+static unsigned int
-+gpio_poll(struct file *file, struct poll_table_struct *wait)
++static unsigned int gpio_poll(struct file *file, struct poll_table *wait)
 +{
 +	unsigned int mask = 0;
 +	struct gpio_private *priv = (struct gpio_private *)file->private_data;
 +	unsigned long data;
-+	unsigned long tmp;
-+
-+	if (priv->minor >= GPIO_MINOR_PWM0 &&
-+	    priv->minor <= GPIO_MINOR_LAST_PWM)
-+		return 0;
-+
 +	poll_wait(file, &priv->alarm_wq, wait);
-+	if (priv->minor <= GPIO_MINOR_D) {
++	if (priv->minor == GPIO_MINOR_A) {
++		reg_gio_rw_intr_cfg intr_cfg;
++		unsigned long tmp;
++		unsigned long flags;
++
++		local_irq_save(flags);
++		data = REG_TYPE_CONV(unsigned long, reg_gio_r_pa_din,
++			REG_RD(gio, regi_gio, r_pa_din));
++		/* PA has support for interrupt
++		 * lets activate high for those low and with highalarm set
++		 */
++		intr_cfg = REG_RD(gio, regi_gio, rw_intr_cfg);
++
++		tmp = ~data & priv->highalarm & 0xFF;
++		if (tmp & (1 << 0))
++			intr_cfg.pa0 = regk_gio_hi;
++		if (tmp & (1 << 1))
++			intr_cfg.pa1 = regk_gio_hi;
++		if (tmp & (1 << 2))
++			intr_cfg.pa2 = regk_gio_hi;
++		if (tmp & (1 << 3))
++			intr_cfg.pa3 = regk_gio_hi;
++		if (tmp & (1 << 4))
++			intr_cfg.pa4 = regk_gio_hi;
++		if (tmp & (1 << 5))
++			intr_cfg.pa5 = regk_gio_hi;
++		if (tmp & (1 << 6))
++			intr_cfg.pa6 = regk_gio_hi;
++		if (tmp & (1 << 7))
++			intr_cfg.pa7 = regk_gio_hi;
++		/*
++		 * lets activate low for those high and with lowalarm set
++		 */
++		tmp = data & priv->lowalarm & 0xFF;
++		if (tmp & (1 << 0))
++			intr_cfg.pa0 = regk_gio_lo;
++		if (tmp & (1 << 1))
++			intr_cfg.pa1 = regk_gio_lo;
++		if (tmp & (1 << 2))
++			intr_cfg.pa2 = regk_gio_lo;
++		if (tmp & (1 << 3))
++			intr_cfg.pa3 = regk_gio_lo;
++		if (tmp & (1 << 4))
++			intr_cfg.pa4 = regk_gio_lo;
++		if (tmp & (1 << 5))
++			intr_cfg.pa5 = regk_gio_lo;
++		if (tmp & (1 << 6))
++			intr_cfg.pa6 = regk_gio_lo;
++		if (tmp & (1 << 7))
++			intr_cfg.pa7 = regk_gio_lo;
++
++		REG_WR(gio, regi_gio, rw_intr_cfg, intr_cfg);
++		local_irq_restore(flags);
++	} else if (priv->minor <= GPIO_MINOR_E)
 +		data = *data_in[priv->minor];
-+		REG_WR_INT(gio, regi_gio, rw_ack_intr, wanted_interrupts);
-+		tmp = REG_RD_INT(gio, regi_gio, rw_intr_mask);
-+		tmp &= I2C_INTERRUPT_BITS;
-+		tmp |= wanted_interrupts;
-+		REG_WR_INT(gio, regi_gio, rw_intr_mask, tmp);
-+	} else
++	else
 +		return 0;
 +
 +	if ((data & priv->highalarm) || (~data & priv->lowalarm))
@@ -306,8 +306,49 @@ index 0000000..4c48065
 +	return mask;
 +}
 +
++int etrax_gpio_wake_up_check(void)
++{
++	struct gpio_private *priv;
++	unsigned long data = 0;
++	unsigned long flags;
++	int ret = 0;
++	spin_lock_irqsave(&alarm_lock, flags);
++	priv = alarmlist;
++	while (priv) {
++#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
++		if (priv->minor == GPIO_MINOR_V)
++			data = (unsigned long)cached_virtual_gpio_read;
++		else {
++			data = *data_in[priv->minor];
++			if (priv->minor == GPIO_MINOR_A)
++				priv->lowalarm |= (1 << CONFIG_ETRAX_VIRTUAL_GPIO_INTERRUPT_PA_PIN);
++		}
++#else
++		data = *data_in[priv->minor];
++#endif
++		if ((data & priv->highalarm) ||
++		    (~data & priv->lowalarm)) {
++			DP(printk(KERN_DEBUG
++				"etrax_gpio_wake_up_check %i\n", priv->minor));
++			wake_up_interruptible(&priv->alarm_wq);
++			ret = 1;
++		}
++		priv = priv->next;
++	}
++	spin_unlock_irqrestore(&alarm_lock, flags);
++	return ret;
++}
++
 +static irqreturn_t
-+gpio_interrupt(int irq, void *dev_id)
++gpio_poll_timer_interrupt(int irq, void *dev_id)
++{
++	if (gpio_some_alarms)
++		return IRQ_RETVAL(etrax_gpio_wake_up_check());
++	return IRQ_NONE;
++}
++
++static irqreturn_t
++gpio_pa_interrupt(int irq, void *dev_id)
 +{
 +	reg_gio_rw_intr_mask intr_mask;
 +	reg_gio_r_masked_intr masked_intr;
@@ -324,7 +365,7 @@ index 0000000..4c48065
 +
 +	/* Find those that we have enabled */
 +	spin_lock(&alarm_lock);
-+	tmp &= wanted_interrupts;
++	tmp &= (gpio_pa_high_alarms | gpio_pa_low_alarms);
 +	spin_unlock(&alarm_lock);
 +
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
@@ -356,7 +397,9 @@ index 0000000..4c48065
 +	intr_mask = REG_TYPE_CONV(reg_gio_rw_intr_mask, unsigned long, tmp2);
 +	REG_WR(gio, regi_gio, rw_intr_mask, intr_mask);
 +
-+	return IRQ_RETVAL(tmp);
++	if (gpio_some_alarms)
++		return IRQ_RETVAL(etrax_gpio_wake_up_check());
++	return IRQ_NONE;
 +}
 +
 +
@@ -378,24 +421,17 @@ index 0000000..4c48065
 +	if (priv->minor == GPIO_MINOR_LEDS)
 +		return -EFAULT;
 +
-+	if (priv->minor >= GPIO_MINOR_PWM0 &&
-+	    priv->minor <= GPIO_MINOR_LAST_PWM)
-+		return -EFAULT;
-+
 +	if (!access_ok(VERIFY_READ, buf, count))
 +		return -EFAULT;
-+
 +	clk_mask = priv->clk_mask;
 +	data_mask = priv->data_mask;
 +	/* It must have been configured using the IO_CFG_WRITE_MODE */
 +	/* Perhaps a better error code? */
 +	if (clk_mask == 0 || data_mask == 0)
 +		return -EPERM;
-+
 +	write_msb = priv->write_msb;
 +	D(printk(KERN_DEBUG "gpio_write: %lu to data 0x%02X clk 0x%02X "
-+		"msb: %i\n",
-+		count, data_mask, clk_mask, write_msb));
++		"msb: %i\n", count, data_mask, clk_mask, write_msb));
 +	port = data_out[priv->minor];
 +
 +	while (count--) {
@@ -432,14 +468,15 @@ index 0000000..4c48065
 +	return retval;
 +}
 +
++
++
 +static int
 +gpio_open(struct inode *inode, struct file *filp)
 +{
 +	struct gpio_private *priv;
 +	int p = iminor(inode);
 +
-+	if (p > GPIO_MINOR_LAST_PWM ||
-+	    (p > GPIO_MINOR_LAST && p < GPIO_MINOR_PWM0))
++	if (p > GPIO_MINOR_LAST)
 +		return -EINVAL;
 +
 +	priv = kmalloc(sizeof(struct gpio_private), GFP_KERNEL);
@@ -449,24 +486,22 @@ index 0000000..4c48065
 +	memset(priv, 0, sizeof(*priv));
 +
 +	priv->minor = p;
++
++	/* initialize the io/alarm struct */
++
++	priv->clk_mask = 0;
++	priv->data_mask = 0;
++	priv->highalarm = 0;
++	priv->lowalarm = 0;
++	init_waitqueue_head(&priv->alarm_wq);
++
 +	filp->private_data = (void *)priv;
 +
-+	/* initialize the io/alarm struct, not for PWM ports though  */
-+	if (p <= GPIO_MINOR_LAST) {
-+
-+		priv->clk_mask = 0;
-+		priv->data_mask = 0;
-+		priv->highalarm = 0;
-+		priv->lowalarm = 0;
-+
-+		init_waitqueue_head(&priv->alarm_wq);
-+
-+		/* link it into our alarmlist */
-+		spin_lock_irq(&alarm_lock);
-+		priv->next = alarmlist;
-+		alarmlist = priv;
-+		spin_unlock_irq(&alarm_lock);
-+	}
++	/* link it into our alarmlist */
++	spin_lock_irq(&alarm_lock);
++	priv->next = alarmlist;
++	alarmlist = priv;
++	spin_unlock_irq(&alarm_lock);
 +
 +	return 0;
 +}
@@ -478,49 +513,54 @@ index 0000000..4c48065
 +	struct gpio_private *todel;
 +	/* local copies while updating them: */
 +	unsigned long a_high, a_low;
++	unsigned long some_alarms;
 +
-+	/* prepare to free private structure */
++	/* unlink from alarmlist and free the private structure */
++
++	spin_lock_irq(&alarm_lock);
++	p = alarmlist;
 +	todel = (struct gpio_private *)filp->private_data;
 +
-+	/* unlink from alarmlist - only for non-PWM ports though */
-+	if (todel->minor <= GPIO_MINOR_LAST) {
-+		spin_lock_irq(&alarm_lock);
-+		p = alarmlist;
-+
-+		if (p == todel)
-+			alarmlist = todel->next;
-+		 else {
-+			while (p->next != todel)
-+				p = p->next;
-+			p->next = todel->next;
-+		}
-+
-+		/* Check if there are still any alarms set */
-+		p = alarmlist;
-+		a_high = 0;
-+		a_low = 0;
-+		while (p) {
-+			if (p->minor == GPIO_MINOR_A) {
-+#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+				p->lowalarm |= (1 << CONFIG_ETRAX_VIRTUAL_GPIO_INTERRUPT_PA_PIN);
-+#endif
-+				a_high |= p->highalarm;
-+				a_low |= p->lowalarm;
-+			}
-+
++	if (p == todel) {
++		alarmlist = todel->next;
++	} else {
++		while (p->next != todel)
 +			p = p->next;
++		p->next = todel->next;
++	}
++
++	kfree(todel);
++	/* Check if there are still any alarms set */
++	p = alarmlist;
++	some_alarms = 0;
++	a_high = 0;
++	a_low = 0;
++	while (p) {
++		if (p->minor == GPIO_MINOR_A) {
++#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
++			p->lowalarm |= (1 << CONFIG_ETRAX_VIRTUAL_GPIO_INTERRUPT_PA_PIN);
++#endif
++			a_high |= p->highalarm;
++			a_low |= p->lowalarm;
 +		}
 +
++		if (p->highalarm | p->lowalarm)
++			some_alarms = 1;
++		p = p->next;
++	}
++
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
-+	/* Variable 'a_low' needs to be set here again
++	/* Variables 'some_alarms' and 'a_low' needs to be set here again
 +	 * to ensure that interrupt for virtual GPIO is handled.
 +	 */
-+		a_low |= (1 << CONFIG_ETRAX_VIRTUAL_GPIO_INTERRUPT_PA_PIN);
++	some_alarms = 1;
++	a_low |= (1 << CONFIG_ETRAX_VIRTUAL_GPIO_INTERRUPT_PA_PIN);
 +#endif
 +
-+		spin_unlock_irq(&alarm_lock);
-+	}
-+	kfree(todel);
++	gpio_some_alarms = some_alarms;
++	gpio_pa_high_alarms = a_high;
++	gpio_pa_low_alarms = a_low;
++	spin_unlock_irq(&alarm_lock);
 +
 +	return 0;
 +}
@@ -543,15 +583,14 @@ index 0000000..4c48065
 +	*dir_oe[priv->minor] = dir_shadow;
 +	local_irq_restore(flags);
 +
-+	if (priv->minor == GPIO_MINOR_C)
-+		dir_shadow ^= 0xFFFF;		/* Only 16 bits */
++	if (priv->minor == GPIO_MINOR_A)
++		dir_shadow ^= 0xFF;    /* Only 8 bits */
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
 +	else if (priv->minor == GPIO_MINOR_V)
-+		dir_shadow ^= 0xFFFF;		/* Only 16 bits */
++		dir_shadow ^= 0xFFFF;  /* Only 16 bits */
 +#endif
 +	else
-+		dir_shadow ^= 0xFFFFFFFF;	/* PA, PB and PD 32 bits */
-+
++		dir_shadow ^= 0x3FFFF; /* Only 18 bits */
 +	return dir_shadow;
 +
 +} /* setget_input */
@@ -573,9 +612,6 @@ index 0000000..4c48065
 +gpio_leds_ioctl(unsigned int cmd, unsigned long arg);
 +
 +static int
-+gpio_pwm_ioctl(struct gpio_private *priv, unsigned int cmd, unsigned long arg);
-+
-+static int
 +gpio_ioctl(struct inode *inode, struct file *file,
 +	   unsigned int cmd, unsigned long arg)
 +{
@@ -583,23 +619,13 @@ index 0000000..4c48065
 +	unsigned long val;
 +	unsigned long shadow;
 +	struct gpio_private *priv = (struct gpio_private *)file->private_data;
-+
 +	if (_IOC_TYPE(cmd) != ETRAXGPIO_IOCTYPE)
 +		return -EINVAL;
-+
-+	/* Check for special ioctl handlers first */
 +
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
 +	if (priv->minor == GPIO_MINOR_V)
 +		return virtual_gpio_ioctl(file, cmd, arg);
 +#endif
-+
-+	if (priv->minor == GPIO_MINOR_LEDS)
-+		return gpio_leds_ioctl(cmd, arg);
-+
-+	if (priv->minor >= GPIO_MINOR_PWM0 &&
-+	    priv->minor <= GPIO_MINOR_LAST_PWM)
-+		return gpio_pwm_ioctl(priv, cmd, arg);
 +
 +	switch (_IOC_NR(cmd)) {
 +	case IO_READBITS: /* Use IO_READ_INBITS and IO_READ_OUTBITS instead */
@@ -625,18 +651,33 @@ index 0000000..4c48065
 +	case IO_HIGHALARM:
 +		/* Set alarm when bits with 1 in arg go high. */
 +		priv->highalarm |= arg;
-+		gpio_set_alarm(priv);
++		spin_lock_irqsave(&alarm_lock, flags);
++		gpio_some_alarms = 1;
++		if (priv->minor == GPIO_MINOR_A)
++			gpio_pa_high_alarms |= arg;
++		spin_unlock_irqrestore(&alarm_lock, flags);
 +		break;
 +	case IO_LOWALARM:
 +		/* Set alarm when bits with 1 in arg go low. */
 +		priv->lowalarm |= arg;
-+		gpio_set_alarm(priv);
++		spin_lock_irqsave(&alarm_lock, flags);
++		gpio_some_alarms = 1;
++		if (priv->minor == GPIO_MINOR_A)
++			gpio_pa_low_alarms |= arg;
++		spin_unlock_irqrestore(&alarm_lock, flags);
 +		break;
 +	case IO_CLRALARM:
 +		/* Clear alarm for bits with 1 in arg. */
 +		priv->highalarm &= ~arg;
 +		priv->lowalarm  &= ~arg;
-+		gpio_set_alarm(priv);
++		spin_lock_irqsave(&alarm_lock, flags);
++		if (priv->minor == GPIO_MINOR_A) {
++			if (gpio_pa_high_alarms & arg ||
++			    gpio_pa_low_alarms & arg)
++				/* Must update the gpio_pa_*alarms masks */
++				;
++		}
++		spin_unlock_irqrestore(&alarm_lock, flags);
 +		break;
 +	case IO_READDIR: /* Use IO_SETGET_INPUT/OUTPUT instead! */
 +		/* Read direction 0=input 1=output */
@@ -708,7 +749,10 @@ index 0000000..4c48065
 +			return -EFAULT;
 +		break;
 +	default:
-+		return -EINVAL;
++		if (priv->minor == GPIO_MINOR_LEDS)
++			return gpio_leds_ioctl(cmd, arg);
++		else
++			return -EINVAL;
 +	} /* switch */
 +
 +	return 0;
@@ -745,15 +789,23 @@ index 0000000..4c48065
 +	case IO_HIGHALARM:
 +		/* Set alarm when bits with 1 in arg go high. */
 +		priv->highalarm |= arg;
++		spin_lock(&alarm_lock);
++		gpio_some_alarms = 1;
++		spin_unlock(&alarm_lock);
 +		break;
 +	case IO_LOWALARM:
 +		/* Set alarm when bits with 1 in arg go low. */
 +		priv->lowalarm |= arg;
++		spin_lock(&alarm_lock);
++		gpio_some_alarms = 1;
++		spin_unlock(&alarm_lock);
 +		break;
 +	case IO_CLRALARM:
 +		/* Clear alarm for bits with 1 in arg. */
 +		priv->highalarm &= ~arg;
 +		priv->lowalarm  &= ~arg;
++		spin_lock(&alarm_lock);
++		spin_unlock(&alarm_lock);
 +		break;
 +	case IO_CFG_WRITE_MODE:
 +	{
@@ -829,7 +881,7 @@ index 0000000..4c48065
 +	default:
 +		return -EINVAL;
 +	} /* switch */
-+	return 0;
++  return 0;
 +}
 +#endif /* CONFIG_ETRAX_VIRTUAL_GPIO */
 +
@@ -851,81 +903,6 @@ index 0000000..4c48065
 +		return -EINVAL;
 +	} /* switch */
 +
-+	return 0;
-+}
-+
-+static int gpio_pwm_set_mode(unsigned long arg, int pwm_port)
-+{
-+	int pinmux_pwm = pinmux_pwm0 + pwm_port;
-+	int mode;
-+	reg_gio_rw_pwm0_ctrl rw_pwm_ctrl = {
-+		.ccd_val = 0,
-+		.ccd_override = regk_gio_no,
-+		.mode = regk_gio_no
-+	};
-+	int allocstatus;
-+
-+	if (get_user(mode, &((struct io_pwm_set_mode *) arg)->mode))
-+		return -EFAULT;
-+	rw_pwm_ctrl.mode = mode;
-+	if (mode != PWM_OFF)
-+		allocstatus = crisv32_pinmux_alloc_fixed(pinmux_pwm);
-+	else
-+		allocstatus = crisv32_pinmux_dealloc_fixed(pinmux_pwm);
-+	if (allocstatus)
-+		return allocstatus;
-+	REG_WRITE(reg_gio_rw_pwm0_ctrl, REG_ADDR(gio, regi_gio, rw_pwm0_ctrl) +
-+		12 * pwm_port, rw_pwm_ctrl);
-+	return 0;
-+}
-+
-+static int gpio_pwm_set_period(unsigned long arg, int pwm_port)
-+{
-+	struct io_pwm_set_period periods;
-+	reg_gio_rw_pwm0_var rw_pwm_widths;
-+
-+	if (copy_from_user(&periods, (struct io_pwm_set_period *) arg,
-+			sizeof(periods)))
-+		return -EFAULT;
-+	if (periods.lo > 8191 || periods.hi > 8191)
-+		return -EINVAL;
-+	rw_pwm_widths.lo = periods.lo;
-+	rw_pwm_widths.hi = periods.hi;
-+	REG_WRITE(reg_gio_rw_pwm0_var, REG_ADDR(gio, regi_gio, rw_pwm0_var) +
-+		12 * pwm_port, rw_pwm_widths);
-+	return 0;
-+}
-+
-+static int gpio_pwm_set_duty(unsigned long arg, int pwm_port)
-+{
-+	unsigned int duty;
-+	reg_gio_rw_pwm0_data rw_pwm_duty;
-+
-+	if (get_user(duty, &((struct io_pwm_set_duty *) arg)->duty))
-+		return -EFAULT;
-+	if (duty > 255)
-+		return -EINVAL;
-+	rw_pwm_duty.data = duty;
-+	REG_WRITE(reg_gio_rw_pwm0_data, REG_ADDR(gio, regi_gio, rw_pwm0_data) +
-+		12 * pwm_port, rw_pwm_duty);
-+	return 0;
-+}
-+
-+static int
-+gpio_pwm_ioctl(struct gpio_private *priv, unsigned int cmd, unsigned long arg)
-+{
-+	int pwm_port = priv->minor - GPIO_MINOR_PWM0;
-+
-+	switch (_IOC_NR(cmd)) {
-+	case IO_PWM_SET_MODE:
-+		return gpio_pwm_set_mode(arg, pwm_port);
-+	case IO_PWM_SET_PERIOD:
-+		return gpio_pwm_set_period(arg, pwm_port);
-+	case IO_PWM_SET_DUTY:
-+		return gpio_pwm_set_duty(arg, pwm_port);
-+	default:
-+		return -EINVAL;
-+	}
 +	return 0;
 +}
 +
@@ -988,11 +965,14 @@ index 0000000..4c48065
 +	case 7:
 +		intr_cfg.pa7 = regk_gio_lo;
 +		intr_mask.pa7 = regk_gio_yes;
-+		break;
++	break;
 +	}
 +
 +	REG_WR(gio, regi_gio, rw_intr_cfg, intr_cfg);
 +	REG_WR(gio, regi_gio, rw_intr_mask, intr_mask);
++
++	gpio_pa_low_alarms |= (1 << CONFIG_ETRAX_VIRTUAL_GPIO_INTERRUPT_PA_PIN);
++	gpio_some_alarms = 1;
 +}
 +#endif
 +
@@ -1018,14 +998,20 @@ index 0000000..4c48065
 +	LED_DISK_READ(0);
 +	LED_DISK_WRITE(0);
 +
-+	printk(KERN_INFO "ETRAX FS GPIO driver v2.6, (c) 2003-2007 "
++	printk(KERN_INFO "ETRAX FS GPIO driver v2.5, (c) 2003-2007 "
 +		"Axis Communications AB\n");
-+	if (request_irq(GIO_INTR_VECT, gpio_interrupt,
-+			IRQF_SHARED | IRQF_DISABLED, "gpio", &alarmlist))
-+		printk(KERN_ERR "err: irq for gpio\n");
++	/* We call etrax_gpio_wake_up_check() from timer interrupt and
++	 * from cpu_idle() in kernel/process.c
++	 * The check in cpu_idle() reduces latency from ~15 ms to ~6 ms
++	 * in some tests.
++	 */
++	if (request_irq(TIMER0_INTR_VECT, gpio_poll_timer_interrupt,
++			IRQF_SHARED | IRQF_DISABLED, "gpio poll", &alarmlist))
++		printk(KERN_ERR "timer0 irq for gpio\n");
 +
-+	/* No IRQs by default. */
-+	REG_WR_INT(gio, regi_gio, rw_intr_pins, 0);
++	if (request_irq(GIO_INTR_VECT, gpio_pa_interrupt,
++			IRQF_SHARED | IRQF_DISABLED, "gpio PA", &alarmlist))
++		printk(KERN_ERR "PA irq for gpio\n");
 +
 +#ifdef CONFIG_ETRAX_VIRTUAL_GPIO
 +	virtual_gpio_init();
@@ -1037,16 +1023,16 @@ index 0000000..4c48065
 +/* this makes sure that gpio_init is called during kernel boot */
 +
 +module_init(gpio_init);
-diff --git a/arch/cris/arch-v32/drivers/mach-a3/nandflash.c b/arch/cris/arch-v32/drivers/mach-a3/nandflash.c
+diff --git a/arch/cris/arch-v32/drivers/mach-fs/nandflash.c b/arch/cris/arch-v32/drivers/mach-fs/nandflash.c
 new file mode 100644
-index 0000000..2fda3db
+index 0000000..5898ac7
 --- /dev/null
-+++ b/arch/cris/arch-v32/drivers/mach-a3/nandflash.c
-@@ -0,0 +1,178 @@
++++ b/arch/cris/arch-v32/drivers/mach-fs/nandflash.c
+@@ -0,0 +1,172 @@
 +/*
 + *  arch/cris/arch-v32/drivers/nandflash.c
 + *
-+ *  Copyright (c) 2007
++ *  Copyright (c) 2004
 + *
 + *  Derived from drivers/mtd/nand/spia.c
 + *	  Copyright (C) 2000 Steven J. Hill (sjhill@realitydiluted.com)
@@ -1066,22 +1052,21 @@ index 0000000..2fda3db
 +#include <asm/arch/memmap.h>
 +#include <hwregs/reg_map.h>
 +#include <hwregs/reg_rdwr.h>
-+#include <hwregs/pio_defs.h>
-+#include <pinmux.h>
++#include <hwregs/gio_defs.h>
++#include <hwregs/bif_core_defs.h>
 +#include <asm/io.h>
 +
-+#define MANUAL_ALE_CLE_CONTROL 1
-+
-+#define regf_ALE	a0
-+#define regf_CLE	a1
-+#define regf_NCE	ce0_n
-+
-+#define CLE_BIT 10
-+#define ALE_BIT 11
-+#define CE_BIT 12
++#define CE_BIT 4
++#define CLE_BIT 5
++#define ALE_BIT 6
++#define BY_BIT 7
 +
 +/* Bitmask for control pins */
 +#define PIN_BITMASK ((1 << CE_BIT) | (1 << CLE_BIT) | (1 << ALE_BIT))
++
++/* Bitmask for mtd nand control bits */
++#define CTRL_BITMASK (NAND_NCE | NAND_CLE | NAND_ALE)
++
 +
 +static struct mtd_info *crisv32_mtd;
 +/*
@@ -1091,36 +1076,32 @@ index 0000000..2fda3db
 +			      unsigned int ctrl)
 +{
 +	unsigned long flags;
-+	reg_pio_rw_dout dout;
++	reg_gio_rw_pa_dout dout;
 +	struct nand_chip *this = mtd->priv;
 +
 +	local_irq_save(flags);
 +
 +	/* control bits change */
 +	if (ctrl & NAND_CTRL_CHANGE) {
-+		dout = REG_RD(pio, regi_pio, rw_dout);
-+		dout.regf_NCE = (ctrl & NAND_NCE) ? 0 : 1;
++		dout = REG_RD(gio, regi_gio, rw_pa_dout);
++		dout.data &= ~PIN_BITMASK;
 +
-+#if !MANUAL_ALE_CLE_CONTROL
-+		if (ctrl & NAND_ALE) {
-+			/* A0 = ALE high */
-+			this->IO_ADDR_W = (void __iomem *)REG_ADDR(pio,
-+				regi_pio, rw_io_access1);
-+		} else if (ctrl & NAND_CLE) {
-+			/* A1 = CLE high */
-+			this->IO_ADDR_W = (void __iomem *)REG_ADDR(pio,
-+				regi_pio, rw_io_access2);
-+		} else {
-+			/* A1 = CLE and A0 = ALE low */
-+			this->IO_ADDR_W = (void __iomem *)REG_ADDR(pio,
-+				regi_pio, rw_io_access0);
-+		}
++#if (CE_BIT == 4 && NAND_NCE == 1 &&  \
++     CLE_BIT == 5 && NAND_CLE == 2 && \
++     ALE_BIT == 6 && NAND_ALE == 4)
++		/* Pins in same order as control bits, but shifted.
++		 * Optimize for this case; works for 2.6.18 */
++		dout.data |= ((ctrl & CTRL_BITMASK) ^ NAND_NCE) << CE_BIT;
 +#else
-+
-+		dout.regf_CLE = (ctrl & NAND_CLE) ? 1 : 0;
-+		dout.regf_ALE = (ctrl & NAND_ALE) ? 1 : 0;
++		/* the slow way */
++		if (!(ctrl & NAND_NCE))
++			dout.data |= (1 << CE_BIT);
++		if (ctrl & NAND_CLE)
++			dout.data |= (1 << CLE_BIT);
++		if (ctrl & NAND_ALE)
++			dout.data |= (1 << ALE_BIT);
 +#endif
-+		REG_WR(pio, regi_pio, rw_dout, dout);
++		REG_WR(gio, regi_gio, rw_pa_dout, dout);
 +	}
 +
 +	/* command to chip */
@@ -1135,8 +1116,8 @@ index 0000000..2fda3db
 +*/
 +int crisv32_device_ready(struct mtd_info *mtd)
 +{
-+	reg_pio_r_din din = REG_RD(pio, regi_pio, r_din);
-+	return din.rdy;
++	reg_gio_r_pa_din din = REG_RD(gio, regi_gio, r_pa_din);
++	return ((din.data & (1 << BY_BIT)) >> BY_BIT);
 +}
 +
 +/*
@@ -1147,31 +1128,11 @@ index 0000000..2fda3db
 +	void __iomem *read_cs;
 +	void __iomem *write_cs;
 +
++	reg_bif_core_rw_grp3_cfg bif_cfg = REG_RD(bif_core, regi_bif_core,
++		rw_grp3_cfg);
++	reg_gio_rw_pa_oe pa_oe = REG_RD(gio, regi_gio, rw_pa_oe);
 +	struct nand_chip *this;
 +	int err = 0;
-+
-+	reg_pio_rw_man_ctrl man_ctrl = {
-+		.regf_NCE = regk_pio_yes,
-+#if MANUAL_ALE_CLE_CONTROL
-+		.regf_ALE = regk_pio_yes,
-+		.regf_CLE = regk_pio_yes
-+#endif
-+	};
-+	reg_pio_rw_oe oe = {
-+		.regf_NCE = regk_pio_yes,
-+#if MANUAL_ALE_CLE_CONTROL
-+		.regf_ALE = regk_pio_yes,
-+		.regf_CLE = regk_pio_yes
-+#endif
-+	};
-+	reg_pio_rw_dout dout = { .regf_NCE = 1 };
-+
-+	/* Allocate pio pins to pio */
-+	crisv32_pinmux_alloc_fixed(pinmux_pio);
-+	/* Set up CE, ALE, CLE (ce0_n, a0, a1) for manual control and output */
-+	REG_WR(pio, regi_pio, rw_man_ctrl, man_ctrl);
-+	REG_WR(pio, regi_pio, rw_dout, dout);
-+	REG_WR(pio, regi_pio, rw_oe, oe);
 +
 +	/* Allocate memory for MTD device structure and private data */
 +	crisv32_mtd = kmalloc(sizeof(struct mtd_info) +
@@ -1183,11 +1144,27 @@ index 0000000..2fda3db
 +		return NULL;
 +	}
 +
-+	read_cs = write_cs = (void __iomem *)REG_ADDR(pio, regi_pio,
-+		rw_io_access0);
++	read_cs = ioremap(MEM_CSP0_START | MEM_NON_CACHEABLE, 8192);
++	write_cs = ioremap(MEM_CSP1_START | MEM_NON_CACHEABLE, 8192);
++
++	if (!read_cs || !write_cs) {
++		printk(KERN_ERR "CRISv32 NAND ioremap failed\n");
++		err = -EIO;
++		goto out_mtd;
++	}
 +
 +	/* Get pointer to private data */
 +	this = (struct nand_chip *) (&crisv32_mtd[1]);
++
++	pa_oe.oe |= 1 << CE_BIT;
++	pa_oe.oe |= 1 << ALE_BIT;
++	pa_oe.oe |= 1 << CLE_BIT;
++	pa_oe.oe &= ~(1 << BY_BIT);
++	REG_WR(gio, regi_gio, rw_pa_oe, pa_oe);
++
++	bif_cfg.gated_csp0 = regk_bif_core_rd;
++	bif_cfg.gated_csp1 = regk_bif_core_wr;
++	REG_WR(bif_core, regi_bif_core, rw_grp3_cfg, bif_cfg);
 +
 +	/* Initialize structures */
 +	memset((char *) crisv32_mtd, 0, sizeof(struct mtd_info));
@@ -1211,11 +1188,14 @@ index 0000000..2fda3db
 +	/* Scan to find existance of the device */
 +	if (nand_scan(crisv32_mtd, 1)) {
 +		err = -ENXIO;
-+		goto out_mtd;
++		goto out_ior;
 +	}
 +
 +	return crisv32_mtd;
 +
++out_ior:
++	iounmap((void *)read_cs);
++	iounmap((void *)write_cs);
 +out_mtd:
 +	kfree(crisv32_mtd);
 +	return NULL;
