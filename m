@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbXK2DTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbXK2DV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760257AbXK2DTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 22:19:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbXK2DTi
+	id S1760762AbXK2DV1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 22:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbXK2DVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 22:19:38 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:58519 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755601AbXK2DTi (ORCPT
+	Wed, 28 Nov 2007 22:21:19 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55067 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755761AbXK2DVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 22:19:38 -0500
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH][for -mm] per-zone and reclaim enhancements for memory
- controller take 3 [3/10] per-zone active inactive counter
-In-Reply-To: Your message of "Tue, 27 Nov 2007 12:00:48 +0900"
-	<20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20071127120048.ef5f2005.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Cue version 0.8 (070404-1613/takashi)
+	Wed, 28 Nov 2007 22:21:18 -0500
+Date: Thu, 29 Nov 2007 12:23:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
+Subject: Re: 2.6.24-rc3-mm2
+Message-Id: <20071129122329.4c56c052.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071128034140.648383f0.akpm@linux-foundation.org>
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20071129031937.3C86F1CFE80@siro.lan>
-Date: Thu, 29 Nov 2007 12:19:37 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -651,10 +758,11 @@
->  		/* Avoid race with charge */
->  		atomic_set(&pc->ref_cnt, 0);
->  		if (clear_page_cgroup(page, pc) == pc) {
-> +			int active;
->  			css_put(&mem->css);
-> +			active = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
->  			res_counter_uncharge(&mem->res, PAGE_SIZE);
-> -			list_del_init(&pc->lru);
-> -			mem_cgroup_charge_statistics(mem, pc->flags, false);
-> +			__mem_cgroup_remove_list(pc);
->  			kfree(pc);
->  		} else 	/* being uncharged ? ...do relax */
->  			break;
 
-'active' seems unused.
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-add-scan_global_lru-macro.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-nid-zid-helper-function-for-cgroup.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-active-inactive-counter.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-calculate-mapper_ratio-per-cgroup.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-calculate-active-inactive-imbalance-per-cgroup.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-remember-reclaim-priority-in-memory-cgroup.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-remember-reclaim-priority-in-memory-cgroup-fix.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-remember-reclaim-priority-in-memory-cgroup-fix-2.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-calculate-the-number-of-pages-to-be-scanned-per-cgroup.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-modifies-vmscanc-for-isolate-globa-cgroup-lru-activity.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-modifies-vmscanc-for-isolate-globa-cgroup-lru-activity-fix.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-lru-for-cgroup.patch
+> +per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-lock-for-cgroup.patch
+> 
+>  cgroup memeory controller updates
+> 
+I noticed CONFIG_NUMA + CONFIG_CGROUP_MEM_CONT + CONFIG_SLUB cannot boot because of my patch.
+(SLAB is ok.)
+I'll post workaround soon.
 
-YAMAMOTO Takashi
+Sorry,
+-Kame
+
+
