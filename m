@@ -1,226 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbXK2Rvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbXK2RwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbXK2Rvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932068AbXK2Rvc
+	id S1763445AbXK2RwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761261AbXK2RwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:51:32 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33845 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761089AbXK2Rva (ORCPT
+	Thu, 29 Nov 2007 12:52:08 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37933 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761132AbXK2RwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:51:30 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Serge Hallyn <serue@us.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Olaf Kirch <okir@suse.de>, Olaf Hering <olaf@aepfle.de>
-Subject: [PATCH 1/4] sysctl: Add register_sysctl_paths function
-References: <4742C73C.3010904@openvz.org>
-	<m1odddc5mf.fsf@ebiederm.dsl.xmission.com>
-Date: Thu, 29 Nov 2007 10:45:10 -0700
-In-Reply-To: <m1odddc5mf.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Thu, 29 Nov 2007 10:40:24 -0700")
-Message-ID: <m1k5o1c5eh.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 29 Nov 2007 12:52:07 -0500
+Date: Thu, 29 Nov 2007 17:51:55 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Greg KH <greg@kroah.com>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Jon Masters <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
+       Christoph Hellwig <hch@infradead.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071129175155.GY8181@ftp.linux.org.uk>
+References: <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com> <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr> <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion> <20071129164746.GB9664@kroah.com> <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr> <20071129170326.GA10024@kroah.com> <2c0942db0711290935l56d28b70v2b35dfb1663e4d2b@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2c0942db0711290935l56d28b70v2b35dfb1663e4d2b@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 29, 2007 at 09:35:56AM -0800, Ray Lee wrote:
 
-There are a number of modules that register a sysctl table
-somewhere deeply nested in the sysctl hierarchy, such as
-fs/nfs, fs/xfs, dev/cdrom, etc.
+> Perhaps if you looked at this outside of a file-server scenario, the
+> problem would be clearer? Anti-malware companies want to check
+> anything written to disk on a system, either at write time or blocking
+> the open/mmap. That means proactively protecting email programs with
+> known vulnerabilities that have yet to be patched, web browsers
+> writing and reading their caches, an Apache instance running WebDAV,
+> the list goes on. And these are on desktop systems, with no attached
+> file/network server.
 
-They all specify several dummy ctl_tables for the path name.
-This patch implements register_sysctl_path that takes
-an additional path name, and makes up dummy sysctl nodes
-for each component.
-
-This patch was originally written by Olaf Kirch and
-brought to my attention and reworked some by Olaf Hering.
-I have changed a few additional things so the bugs are mine.
-
-After converting all of the easy callers Olaf Hering observed
-allyesconfig ARCH=i386, the patch reduces the final binary size by 9369 bytes.
-
-.text +897
-.data -7008
-
-   text    data     bss     dec     hex filename
-   26959310        4045899 4718592 35723801        2211a19 ../vmlinux-vanilla
-   26960207        4038891 4718592 35717690        221023a ../O-allyesconfig/vmlinux
-
-So this change is both a space savings and a code simplification.
-
-CC: Olaf Kirch <okir@suse.de>
-CC: Olaf Hering <olaf@aepfle.de>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- include/linux/sysctl.h |    9 +++++
- kernel/sysctl.c        |   90 ++++++++++++++++++++++++++++++++++++++++--------
- 2 files changed, 84 insertions(+), 15 deletions(-)
-
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index e99171f..eb522bf 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -1065,7 +1065,16 @@ struct ctl_table_header
- 	struct completion *unregistering;
- };
- 
-+/* struct ctl_path describes where in the hierarchy a table is added */
-+struct ctl_path
-+{
-+	const char *procname;
-+	int ctl_name;
-+};
-+
- struct ctl_table_header *register_sysctl_table(struct ctl_table * table);
-+struct ctl_table_header *register_sysctl_paths(const struct ctl_path *path,
-+						struct ctl_table *table);
- 
- void unregister_sysctl_table(struct ctl_table_header * table);
- int sysctl_check_table(struct ctl_table *table);
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 0deed82..fa92e70 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1490,11 +1490,12 @@ static __init int sysctl_init(void)
- core_initcall(sysctl_init);
- 
- /**
-- * register_sysctl_table - register a sysctl hierarchy
-+ * register_sysctl_paths - register a sysctl hierarchy
-+ * @path: The path to the directory the sysctl table is in.
-  * @table: the top-level table structure
-  *
-  * Register a sysctl table hierarchy. @table should be a filled in ctl_table
-- * array. An entry with a ctl_name of 0 terminates the table. 
-+ * array. A completely 0 filled entry terminates the table.
-  *
-  * The members of the &struct ctl_table structure are used as follows:
-  *
-@@ -1557,28 +1558,80 @@ core_initcall(sysctl_init);
-  * This routine returns %NULL on a failure to register, and a pointer
-  * to the table header on success.
-  */
--struct ctl_table_header *register_sysctl_table(struct ctl_table * table)
-+struct ctl_table_header *register_sysctl_paths(const struct ctl_path *path,
-+						struct ctl_table *table)
- {
--	struct ctl_table_header *tmp;
--	tmp = kmalloc(sizeof(struct ctl_table_header), GFP_KERNEL);
--	if (!tmp)
-+	struct ctl_table_header *header;
-+	struct ctl_table *new, **prevp;
-+	unsigned int n, npath;
-+
-+	/* Count the path components */
-+	for (npath = 0; path[npath].ctl_name || path[npath].procname; ++npath)
-+		;
-+
-+	/*
-+	 * For each path component, allocate a 2-element ctl_table array.
-+	 * The first array element will be filled with the sysctl entry
-+	 * for this, the second will be the sentinel (ctl_name == 0).
-+	 *
-+	 * We allocate everything in one go so that we don't have to
-+	 * worry about freeing additional memory in unregister_sysctl_table.
-+	 */
-+	header = kzalloc(sizeof(struct ctl_table_header) +
-+			 (2 * npath * sizeof(struct ctl_table)), GFP_KERNEL);
-+	if (!header)
- 		return NULL;
--	tmp->ctl_table = table;
--	INIT_LIST_HEAD(&tmp->ctl_entry);
--	tmp->used = 0;
--	tmp->unregistering = NULL;
--	sysctl_set_parent(NULL, table);
--	if (sysctl_check_table(tmp->ctl_table)) {
--		kfree(tmp);
-+
-+	new = (struct ctl_table *) (header + 1);
-+
-+	/* Now connect the dots */
-+	prevp = &header->ctl_table;
-+	for (n = 0; n < npath; ++n, ++path) {
-+		/* Copy the procname */
-+		new->procname = path->procname;
-+		new->ctl_name = path->ctl_name;
-+		new->mode     = 0555;
-+
-+		*prevp = new;
-+		prevp = &new->child;
-+
-+		new += 2;
-+	}
-+	*prevp = table;
-+
-+	INIT_LIST_HEAD(&header->ctl_entry);
-+	header->used = 0;
-+	header->unregistering = NULL;
-+	sysctl_set_parent(NULL, header->ctl_table);
-+	if (sysctl_check_table(header->ctl_table)) {
-+		kfree(header);
- 		return NULL;
- 	}
- 	spin_lock(&sysctl_lock);
--	list_add_tail(&tmp->ctl_entry, &root_table_header.ctl_entry);
-+	list_add_tail(&header->ctl_entry, &root_table_header.ctl_entry);
- 	spin_unlock(&sysctl_lock);
--	return tmp;
-+
-+	return header;
- }
- 
- /**
-+ * register_sysctl_table - register a sysctl table hierarchy
-+ * @table: the top-level table structure
-+ *
-+ * Register a sysctl table hierarchy. @table should be a filled in ctl_table
-+ * array. A completely 0 filled entry terminates the table.
-+ *
-+ * See register_sysctl_paths for more details.
-+ */
-+struct ctl_table_header *register_sysctl_table(struct ctl_table * table)
-+{
-+	static const struct ctl_path null_path[] = { {} };
-+
-+	return register_sysctl_paths(null_path, table);
-+}
-+
-+
-+/**
-  * unregister_sysctl_table - unregister a sysctl table hierarchy
-  * @header: the header returned from register_sysctl_table
-  *
-@@ -1600,6 +1653,12 @@ struct ctl_table_header *register_sysctl_table(struct ctl_table * table)
- 	return NULL;
- }
- 
-+struct ctl_table_header *register_sysctl_paths(const struct ctl_path *path,
-+						    struct ctl_table *table)
-+{
-+	return NULL;
-+}
-+
- void unregister_sysctl_table(struct ctl_table_header * table)
- {
- }
-@@ -2658,6 +2717,7 @@ EXPORT_SYMBOL(proc_dostring);
- EXPORT_SYMBOL(proc_doulongvec_minmax);
- EXPORT_SYMBOL(proc_doulongvec_ms_jiffies_minmax);
- EXPORT_SYMBOL(register_sysctl_table);
-+EXPORT_SYMBOL(register_sysctl_paths);
- EXPORT_SYMBOL(sysctl_intvec);
- EXPORT_SYMBOL(sysctl_jiffies);
- EXPORT_SYMBOL(sysctl_ms_jiffies);
--- 
-1.5.3.rc6.17.g1911
-
+... and anything promising that is a grade-A snake oil.
