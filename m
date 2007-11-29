@@ -1,152 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbXK2R4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbXK2R7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763061AbXK2R4L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbXK2Rzy
+	id S932496AbXK2R7Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759302AbXK2R66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:55:54 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48119 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759739AbXK2Rzw (ORCPT
+	Thu, 29 Nov 2007 12:58:58 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36383 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756750AbXK2R65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:55:52 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Serge Hallyn <serue@us.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: [PATCH 4/4] net: Implement the per network namespace sysctl infrastructure
-References: <4742C73C.3010904@openvz.org>
-	<m1odddc5mf.fsf@ebiederm.dsl.xmission.com>
-	<m1k5o1c5eh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fxypc5cd.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bq9dc53d.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Thu, 29 Nov 2007 10:53:29 -0700
-In-Reply-To: <m1bq9dc53d.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Thu, 29 Nov 2007 10:51:50 -0700")
-Message-ID: <m17ik1c50m.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 29 Nov 2007 12:58:57 -0500
+To: mingo@elte.hu
+CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20071129171647.GA1326@elte.hu> (message from Ingo Molnar on Thu,
+	29 Nov 2007 18:16:47 +0100)
+Subject: Re: scheduling anomaly on uml (was: -rt doesn't compile for UML)
+References: <E1IxMK0-0006ae-2s@dorka.pomaz.szeredi.hu> <20071128150637.GA5518@c2.user-mode-linux.org> <E1IxOwS-000752-HF@dorka.pomaz.szeredi.hu> <20071128182935.GA8048@c2.user-mode-linux.org> <E1IxRv7-0007e8-Dq@dorka.pomaz.szeredi.hu> <E1IxgUe-00011b-Sl@dorka.pomaz.szeredi.hu> <20071129170205.GA7415@c2.user-mode-linux.org> <20071129171647.GA1326@elte.hu>
+Message-Id: <E1Ixner-0002Ct-IQ@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 29 Nov 2007 18:58:41 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > On Thu, Nov 29, 2007 at 11:19:40AM +0100, Miklos Szeredi wrote:
+> > >     date-7119  0.... 15636591us!: schedule <bash-502> (0 0)
+> > >     bash-502   0.... 15643908us!: schedule <date-7119> (0 0)
+> > >     bash-502   0.... 15646250us!: schedule <date-7120> (0 0)
+> > 
+> > How exactly did you end up getting this data?
 
-The user interface is: register_net_sysctl_table and
-unregister_net_sysctl_table.  Very much like the current
-interface except there is a network namespace parameter.
+This:
 
-With this any sysctl registered with register_net_sysctl_table
-will only show up to tasks in the same network namespace.
+http://people.redhat.com/mingo/latency-tracing-patches/tracing-QuickStart.txt
 
-All other sysctls continue to be globally visible.
+and some hacking, which is probably not very useful:
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- include/net/net_namespace.h |    9 +++++++
- net/sysctl_net.c            |   57 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+), 0 deletions(-)
-
-diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
-index 4d0d634..235214c 100644
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -25,6 +25,8 @@ struct net {
- 	struct proc_dir_entry 	*proc_net_stat;
- 	struct proc_dir_entry 	*proc_net_root;
+Index: linux/include/asm-um/rtc.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/asm-um/rtc.h	2007-11-28 17:41:42.000000000 +0100
+@@ -0,0 +1 @@
++/* stub for the latency tracer */
+Index: linux/include/asm-um/irqflags.h
+===================================================================
+--- linux.orig/include/asm-um/irqflags.h	2007-11-28 17:36:21.000000000 +0100
++++ linux/include/asm-um/irqflags.h	2007-11-28 17:41:42.000000000 +0100
+@@ -1,6 +1,9 @@
+ #ifndef __UM_IRQFLAGS_H
+ #define __UM_IRQFLAGS_H
  
-+	struct list_head	sysctl_table_headers;
-+
- 	struct net_device       *loopback_dev;          /* The loopback */
- 
- 	struct list_head 	dev_base_head;
-@@ -144,4 +146,11 @@ extern void unregister_pernet_subsys(struct pernet_operations *);
- extern int register_pernet_device(struct pernet_operations *);
- extern void unregister_pernet_device(struct pernet_operations *);
- 
-+struct ctl_path;
-+struct ctl_table;
-+struct ctl_table_header;
-+extern struct ctl_table_header *register_net_sysctl_table(struct net *net,
-+	const struct ctl_path *path, struct ctl_table *table);
-+extern void unregister_net_sysctl_table(struct ctl_table_header *header);
-+
- #endif /* __NET_NET_NAMESPACE_H */
-diff --git a/net/sysctl_net.c b/net/sysctl_net.c
-index cd4eafb..c50c793 100644
---- a/net/sysctl_net.c
-+++ b/net/sysctl_net.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/mm.h>
- #include <linux/sysctl.h>
-+#include <linux/nsproxy.h>
- 
- #include <net/sock.h>
- 
-@@ -54,3 +55,59 @@ struct ctl_table net_table[] = {
- #endif
- 	{ 0 },
- };
-+
-+static struct list_head *
-+net_ctl_header_lookup(struct ctl_table_root *root, struct nsproxy *namespaces)
+-/* Empty for now */
++static inline int raw_irqs_disabled_flags(unsigned long flags)
 +{
-+	return &namespaces->net_ns->sysctl_table_headers;
-+}
-+
-+static struct ctl_table_root net_sysctl_root = {
-+	.lookup = net_ctl_header_lookup,
-+};
-+
-+static int sysctl_net_init(struct net *net)
-+{
-+	INIT_LIST_HEAD(&net->sysctl_table_headers);
 +	return 0;
 +}
-+
-+static void sysctl_net_exit(struct net *net)
+ 
+ #endif
+Index: linux/kernel/latency_trace.c
+===================================================================
+--- linux.orig/kernel/latency_trace.c	2007-11-28 17:41:35.000000000 +0100
++++ linux/kernel/latency_trace.c	2007-11-29 16:05:45.000000000 +0100
+@@ -26,6 +26,7 @@
+ #include <asm/unistd.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/rtc.h>
++#include <asm/irqflags.h>
+ #include <linux/stacktrace.h>
+ 
+ #ifndef DEFINE_RAW_SPINLOCK
+@@ -59,6 +60,8 @@ static unsigned long notrace cycles_to_u
+ 	delta = mulhwu(tb_to_us, delta);
+ #elif defined(CONFIG_ARM)
+ 	delta = mach_cycles_to_usecs(delta);
++#elif defined(CONFIG_UML)
++	/* Dunno */
+ #else
+ 	#error Implement cycles_to_usecs.
+ #endif
+@@ -188,7 +191,7 @@ static int report_latency(cycle_t delta)
+ /*
+  * Number of per-CPU trace entries:
+  */
+-#define MAX_TRACE (65536UL*16UL)
++#define MAX_TRACE (1024UL*16UL)
+ 
+ #define CMDLINE_BYTES 16
+ 
+@@ -655,7 +658,7 @@ again:
+ 	entry->cpu = cpu;
+ #endif
+ 	entry->flags = (irqs_off() ? TRACE_FLAG_IRQS_OFF : 0) |
+-		(irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_HARD_OFF : 0)|
++		(raw_irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_HARD_OFF : 0)|
+ 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
+ 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
+ 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0) |
+@@ -2709,7 +2712,7 @@ void __init init_tracer(void)
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		tr = cpu_traces + cpu;
+-		array = tracer_alloc_bootmem(size);
++		array = alloc_bootmem(size);
+ 		if (!array) {
+ 			printk(KERN_ERR
+ 			"CPU#%d: failed to allocate %ld bytes trace buffer!\n",
+@@ -2723,7 +2726,7 @@ void __init init_tracer(void)
+ 		tr->cpu = cpu;
+ 		tr->trace = array;
+ 
+-		array = tracer_alloc_bootmem(size);
++		array = alloc_bootmem(size);
+ 		if (!array) {
+ 			printk(KERN_ERR
+ 			"CPU#%d: failed to allocate %ld bytes max-trace buffer!\n",
+@@ -2742,7 +2745,7 @@ void __init init_tracer(void)
+ 	 * trace entries for the first cpu-trace structure:
+ 	 */
+ 	size = sizeof(struct trace_entry)*MAX_TRACE*num_possible_cpus();
+-	array = tracer_alloc_bootmem(size);
++	array = alloc_bootmem(size);
+ 	if (!array) {
+ 		printk(KERN_ERR
+ 			"failed to allocate %ld bytes out-trace buffer!\n",
+Index: linux/arch/um/sys-i386/sysrq.c
+===================================================================
+--- linux.orig/arch/um/sys-i386/sysrq.c	2007-10-09 22:31:38.000000000 +0200
++++ linux/arch/um/sys-i386/sysrq.c	2007-11-29 16:20:12.000000000 +0100
+@@ -7,6 +7,7 @@
+ #include "linux/smp.h"
+ #include "linux/sched.h"
+ #include "linux/kallsyms.h"
++#include "linux/stacktrace.h"
+ #include "asm/ptrace.h"
+ #include "sysrq.h"
+ 
+@@ -99,3 +100,26 @@ void show_trace(struct task_struct* task
+ 	printk("\n");
+ }
+ 
++void save_stack_trace(struct stack_trace *trace)
 +{
-+	WARN_ON(!list_empty(&net->sysctl_table_headers));
-+	return;
++	unsigned long ebp;
++	struct thread_info *tinfo;
++	unsigned long stack;
++	unsigned long addr;
++
++	asm ("movl %%ebp, %0" : "=r" (ebp) : );
++
++	tinfo = (struct thread_info *)
++		((unsigned long)(&stack) & (~(THREAD_SIZE - 1)));
++
++	while (valid_stack_ptr(tinfo, (void *)ebp)) {
++		addr = *(unsigned long *)(ebp + 4);
++		if (trace->skip > 0) {
++			trace->skip--;
++		} else if (trace->nr_entries < trace->max_entries) {
++			trace->entries[trace->nr_entries++] = addr;
++		}
++		ebp = *(unsigned long *)ebp;
++	}
 +}
 +
-+static struct pernet_operations sysctl_pernet_ops = {
-+	.init = sysctl_net_init,
-+	.exit = sysctl_net_exit,
-+};
-+
-+static __init int sysctl_init(void)
-+{
-+	int ret;
-+	ret = register_pernet_subsys(&sysctl_pernet_ops);
-+	if (ret)
-+		goto out;
-+	register_sysctl_root(&net_sysctl_root);
-+out:
-+	return ret;
-+}
-+subsys_initcall(sysctl_init);
-+
-+struct ctl_table_header *register_net_sysctl_table(struct net *net,
-+	const struct ctl_path *path, struct ctl_table *table)
-+{
-+	struct nsproxy namespaces;
-+	namespaces = *current->nsproxy;
-+	namespaces.net_ns = net;
-+	return __register_sysctl_paths(&net_sysctl_root,
-+					&namespaces, path, table);
-+}
-+EXPORT_SYMBOL_GPL(register_net_sysctl_table);
-+
-+void unregister_net_sysctl_table(struct ctl_table_header *header)
-+{
-+	return unregister_sysctl_table(header);
-+}
-+EXPORT_SYMBOL_GPL(unregister_net_sysctl_table);
--- 
-1.5.3.rc6.17.g1911
-
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c	2007-11-29 16:29:08.000000000 +0100
++++ linux/kernel/sched.c	2007-11-29 16:29:20.000000000 +0100
+@@ -3658,6 +3658,7 @@ need_resched_nonpreemptible:
+ 	next = pick_next_task(rq, prev);
+ 
+ 	trace_all_runnable_tasks(rq);
++	trace_special_sym();
+ 
+ 	sched_info_switch(prev, next);
+ 
