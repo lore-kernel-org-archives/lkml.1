@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXK2Uqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763844AbXK2Ur3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbXK2Uqz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 15:46:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762093AbXK2Uqp
+	id S1763844AbXK2Ur3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 15:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbXK2UrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 15:46:45 -0500
-Received: from rtr.ca ([76.10.145.34]:4841 "EHLO mail.rtr.ca"
+	Thu, 29 Nov 2007 15:47:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55887 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760136AbXK2Uqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 15:46:45 -0500
-Message-ID: <474F2532.5090708@rtr.ca>
-Date: Thu, 29 Nov 2007 15:46:42 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1761354AbXK2UrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 15:47:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: XFS related Oops (suspend/resume related)
+Date: Thu, 29 Nov 2007 22:05:24 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+References: <20071112064706.GA23595@dose.home.local> <20071127211155.GK119954183@sgi.com> <200711272253.01136.rjw@sisk.pl>
+In-Reply-To: <200711272253.01136.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
- insert/remove race (v3)
-References: <Pine.LNX.4.44L0.0711291417530.5666-100000@iolanthe.rowland.org> <474F1AAC.7040908@rtr.ca> <20071129201224.GA25356@suse.de> <474F1DB3.4030900@rtr.ca> <474F2020.7020004@rtr.ca> <20071129203225.GA5383@suse.de>
-In-Reply-To: <20071129203225.GA5383@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711292205.25431.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Nov 29, 2007 at 03:25:04PM -0500, Mark Lord wrote:
->> (resending .. somebody trimmed the CC: list earlier)
->>
->> Greg KH wrote:
->>>>>> Mark Lord wrote:
->>>>>>> ..
->>>>>>>
->>>>>>> While doing insert/remove (quickly) tests on USB,
->>>>>>> I managed to trigger an Oops on 2.6.23.8 on a call
->>>>>>> to strlen() in make_class_name().
->> ...
->>
->>> I'll hold off on adding this patch for now.
->> ..
->>
->> Why?
->>
->> Bugs that result in Oops in core code (class.c) can bite
->> just about any subsystem that does hotplug, and should get
->> prompt attention.  Or so one might think.
+On Tuesday, 27 of November 2007, Rafael J. Wysocki wrote:
+> On Tuesday, 27 of November 2007, David Chinner wrote:
+> > On Tue, Nov 27, 2007 at 04:51:38PM +0100, Rafael J. Wysocki wrote:
+> > > On Monday, 26 of November 2007, Rafael J. Wysocki wrote:
+> > > > On Monday, 26 of November 2007, David Chinner wrote:
+> > > > > Now there's a message that I haven't seen in about 3 years.
+> > > > > 
+> > > > > It indicates that the linux inode connected to the xfs_inode is not
+> > > > > the correct one. i.e. that the linux inode cache is out of step with
+> > > > > the XFS inode cache.
+> > > > > 
+> > > > > Basically, that is not supposed to happen. I suspect that the way
+> > > > > threads are frozen is resulting in an inode lookup racing with
+> > > > > a reclaim. The reclaim thread gets stopped after any use threads,
+> > > > > and so we could have the situation that a process blocked in lookup
+> > > > > has the XFS inode reclaimed and reused before it gets unblocked.
+> > > > > 
+> > > > > The question is why is it happening now when none of that code in
+> > > > > XFS has changed?
+> > > > > 
+> > > > > Rafael, when are threads frozen? Only when they schedule or call
+> > > > > try_to_freeze()?
+> > > > 
+> > > > Kernel threads freeze only when they call try_to_freeze().  User space tasks
+> > > > freeze while executing the signals handling code.
+> > > > 
+> > > > > Did the freezer mechanism change in 2.6.23 (this is on 2.6.23.1)?
+> > > > 
+> > > > Yes.  Kernel threads are not sent fake signals by the freezer any more.
+> > > 
+> > > Ah, sorry, this change has been merged after 2.6.23.  However, before 2.6.23
+> > > we had another important change that caused all kernel threads to have
+> > > PF_NOFREEZE set by default, unless they call set_freezable() explicitly.
+> > 
+> > So try_to_freeze() will never freeze a thread if it has not been
+> > set_freezable()? And xfsbufd will never be frozen?
 > 
-> And they have, the 2.6.24 kernel should have the correct fix for this
-> problem, right?  The fact that you oopsed out in this function enabled
-> people to find and fix the problem already.  Adding a BUG_ON() does the
-> same exact thing :)
-..
+> No, it won't.
+> 
+> I must have overlooked it, probably because it calls refrigerator() directly
+> and not try_to_freeze() ...
+> 
+> I think something like the appended patch will help, then.
 
-Well, actually BUG_ON() allows the system to continue running
-while still not masking the issue.  But close enough.
+Tino, can you check if this patch helps, please?
+
+Greetings,
+Rafael
 
 
-> So again, the problem is in the higher up scsi layer, and that is where
-> the problem should already be fixed.
-..
+> ---
+> Fix breakage caused by commit 831441862956fffa17b9801db37e6ea1650b0f69
+> that did not introduce the necessary call to set_freezable() in
+> xfs/linux-2.6/xfs_buf.c .
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  fs/xfs/linux-2.6/xfs_buf.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+> ===================================================================
+> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c
+> +++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+> @@ -1750,6 +1750,8 @@ xfsbufd(
+>  
+>  	current->flags |= PF_MEMALLOC;
+>  
+> +	set_freezable();
+> +
+>  	do {
+>  		if (unlikely(freezing(current))) {
+>  			set_bit(XBT_FORCE_SLEEP, &target->bt_flags);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-Ahhh.. so you figure the Oops should also have been fixed
-as part of the 2.6.24 SCSI fixes ?  That's what I was missing here.
 
-Thanks.
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
