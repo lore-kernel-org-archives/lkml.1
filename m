@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbXK2Hj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbXK2Hkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761586AbXK2Hj6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 02:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbXK2HiT
+	id S1761283AbXK2Hkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 02:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbXK2HjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 02:38:19 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:53877 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758574AbXK2HiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 02:38:17 -0500
-Message-ID: <474E6BBD.3050604@cn.fujitsu.com>
-Date: Thu, 29 Nov 2007 15:35:25 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 29 Nov 2007 02:39:04 -0500
+Received: from sa15.bezeqint.net ([192.115.104.30]:38337 "EHLO
+	sa15.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbXK2HjB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 02:39:01 -0500
+Message-ID: <474E6C86.8090209@panasas.com>
+Date: Thu, 29 Nov 2007 09:38:46 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, tglx@linutronix.de
-Subject: [PATCH 3/6] timekeeping: rename timekeeping_is_continuous to timekeeping_valid_for_hres
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Ming Lei <tom.leiming@gmail.com>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       =?ISO-8859-1?Q?=22J=2EA=2E_?= =?ISO-8859-1?Q?Magall=F3n=22?= 
+	<jamagallon@ono.com>,
+       "Linux-Kernel," <linux-kernel@vger.kernel.org>
+Subject: Re: void* arithmnetic
+References: <20071129010531.22b3a71f@werewolf>	 <Pine.LNX.4.64.0711290130170.22052@fbirervta.pbzchgretzou.qr> <d82e647a0711281719s74035e98pc228ce0da4f3b00d@mail.gmail.com>
+In-Reply-To: <d82e647a0711281719s74035e98pc228ce0da4f3b00d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Nov. 29, 2007, 3:19 +0200, "Ming Lei" <tom.leiming@gmail.com> wrote:
+> 2007/11/29, Jan Engelhardt <jengelh@computergmbh.de>:
+>> On Nov 29 2007 01:05, J.A. Magallón wrote:
+>>> Since begin of the ages the build of the nvidia driver says things like
+>>> this:
+>>>
+>> Explicitly adding -Wpointer-arith to ones own Makefile is like
+>> admitting the code might be problematic. :->
+>>
+>>
+>> I think sizeof(void *) == 1 is taken as granted as sizeof(int) >= 4
+>> these days. Sigh.
+> sizeof(void *) == 4, sizeof(void)==1, :)
+well, sizeof(void *) == sizeof(unsigned long) maybe :)
 
-Function timekeeping_is_continuous() no longer checks flag
-CLOCK_IS_CONTINUOUS, and it checks CLOCK_SOURCE_VALID_FOR_HRES
-now. So rename the function accordingly.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
----
- include/linux/time.h      |    2 +-
- kernel/time/tick-sched.c  |    2 +-
- kernel/time/timekeeping.c |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/include/linux/time.h b/include/linux/time.h
-index b04136d..fa21fe5 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -120,7 +120,7 @@ extern void getboottime(struct timespec *ts);
- extern void monotonic_to_bootbased(struct timespec *ts);
- 
- extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
--extern int timekeeping_is_continuous(void);
-+extern int timekeeping_valid_for_hres(void);
- extern void update_wall_time(void);
- 
- /**
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 27a2338..fb69787 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -654,7 +654,7 @@ int tick_check_oneshot_change(int allow_nohz)
- 	if (ts->nohz_mode != NOHZ_MODE_INACTIVE)
- 		return 0;
- 
--	if (!timekeeping_is_continuous() || !tick_is_oneshot_available())
-+	if (!timekeeping_valid_for_hres() || !tick_is_oneshot_available())
- 		return 0;
- 
- 	if (!allow_nohz)
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index e5e466b..e112dc4 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -211,9 +211,9 @@ static inline s64 __get_nsec_offset(void) { return 0; }
- #endif
- 
- /**
-- * timekeeping_is_continuous - check to see if timekeeping is free running
-+ * timekeeping_valid_for_hres - Check if timekeeping is suitable for hres
-  */
--int timekeeping_is_continuous(void)
-+int timekeeping_valid_for_hres(void)
- {
- 	unsigned long seq;
- 	int ret;
--- 
-1.5.3.rc7
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
