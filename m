@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXK2Pyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761859AbXK2P4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbXK2Pyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 10:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbXK2Py1
+	id S1761859AbXK2P4W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 10:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbXK2P4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 10:54:27 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35692 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755230AbXK2Py1 (ORCPT
+	Thu, 29 Nov 2007 10:56:15 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:60639 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754645AbXK2P4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 10:54:27 -0500
-Date: Thu, 29 Nov 2007 10:54:26 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] kobject: make sure kobj->ktype is set before kobject_init
-In-Reply-To: <1196333946.3242.214.camel@lov.site>
-Message-ID: <Pine.LNX.4.44L0.0711291047300.4516-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Nov 2007 10:56:14 -0500
+Subject: Re: [patch 06/10] s390: Use generic percpu
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071128211527.373111512@sgi.com>
+References: <20071128210926.008783214@sgi.com>
+	 <20071128211527.373111512@sgi.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 29 Nov 2007 16:56:01 +0100
+Message-Id: <1196351761.23168.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Kay Sievers wrote:
+On Wed, 2007-11-28 at 13:09 -0800, Christoph Lameter wrote:
+> s390 has a special way to determine the pointer to a per cpu area
+> plus there is a way to access the base of the per cpu area of the
+> currently executing processor.
+> 
+> Note: I had to do a minor change to ASM code. Please check that
+> this was done right.
 
-> > And if someone calls kobject_put() after kobject_init() to clean up,
-> > their release function will not be called if they didn't set the ktype.
-> > So the check really belongs into kobject_init() IMO.
+Hi Christoph,
 
-Right.  And even though cleaning up no longer needs to drop a reference
-to the kset, it still might need to free the kobject's name.  So for 
-example, either of these sequences:
+after fixing the trainwreck with Gregs kset changes I've got rc3-mm2
+compiled with your percpu patches. The new s390 percpu code works fine:
 
-	kobject_init();			kobject_set_name();
-	kobject_set_name();		kobject_init();
-	...				...
-	kobject_free();			kobject_free();
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-would leak memory.
+-- 
+blue skies,
+  Martin.
 
-In fact, if we were designing the kobject API from scratch, I'd suggest 
-making the ktype value an argument to kobject_init() so that it 
-_couldn't_ be omitted.
+"Reality continues to ruin my life." - Calvin.
 
-> Hmm, will one expect that the whole object will also be free'd when we
-> suggest to call kobject_put() to cleanup? That might be pretty
-> unexpected, right?
-
-I don't understand the question.  People _already_ expect the cleanup 
-routine to free the kobject when the last reference is dropped.  Why 
-should there be any confusion over this?
-
-Alan Stern
 
