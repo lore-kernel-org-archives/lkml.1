@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbXK2VhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbXK2Vhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbXK2VhB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 16:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbXK2Vgx
+	id S1763906AbXK2Vhd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 16:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763614AbXK2VhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 16:36:53 -0500
-Received: from stinky.trash.net ([213.144.137.162]:57250 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760374AbXK2Vgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 16:36:52 -0500
-Message-ID: <474F30D5.8070404@trash.net>
-Date: Thu, 29 Nov 2007 22:36:21 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Thu, 29 Nov 2007 16:37:15 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57739 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763749AbXK2VhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 16:37:13 -0500
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: =?UTF-8?B?IlBhdWwgUm9sbGFuZCAo44Od44O844Or44O744Ot44Op44OzKSI=?= 
-	<rol@witbe.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: constant_tsc and TSC unstable
-References: <20071129171142.56c7890a@tux.DEF.witbe.net> <474F0D47.7020006@zytor.com>
-In-Reply-To: <474F0D47.7020006@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86/mm 09/11] x86 ia32 ptrace arch merge
+In-Reply-To: Alexey Dobriyan's message of  Thursday, 29 November 2007 23:58:52 +0300 <20071129205852.GA1726@martell.zuzino.mipt.ru>
+References: <20071129115711.9FC8526F8E7@magilla.localdomain>
+	<20071129120041.8621A26F989@magilla.localdomain>
+	<20071129205852.GA1726@martell.zuzino.mipt.ru>
+X-Windows: putting new limits on productivity.
+Message-Id: <20071129213705.35E2826F8E7@magilla.localdomain>
+Date: Thu, 29 Nov 2007 13:37:05 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Paul Rolland (ポール・ロラン) wrote:
->> Hello,
->>
->> I've a machine with a Core2Duo CPU. /proc/cpuinfo reports the flag
->> constant_tsc, but at boot time, I have the log :
->>
->> ...
->> Total of 2 processors activated (6919.15 BogoMIPS).
->> ENABLING IO-APIC IRQs
->> ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
->> checking TSC synchronization [CPU#0 -> CPU#1]:
->> Measured 3978592228 cycles TSC warp between CPUs, turning off TSC clock.
->> Marking TSC unstable due to: check_tsc_sync_source failed.
->> Brought up 2 CPUs
->> ...
->>
->> This machine is running 2.6.23.1-21.fc7. I know I should report to 
->> Fedora,
->> but I was wondering if this is a bug or a feature ;)
->>
->
-> constant_tsc means the TSC doesn't change with CPU core frequency.
->
-> The problem you're having is that the TSCs of your two cores are 
-> completely different, over a second apart.  This is a bug, unrelated 
-> to constant_tsc.
+> On Thu, Nov 29, 2007 at 04:00:41AM -0800, Roland McGrath wrote:
+> > This moves the sys32_ptrace code into arch/x86/kernel/ptrace.c,
+> > verbatim except for a few hard-coded sizes replaced with sizeof.
+    ^^^^^^^^
+>[...]
 
-On my core2duo I noticed that the TSC of the second core doesn't
-start counting until the CPU is activated. Since they're not
-synchronized manually anymore this makes the TSC check fail.
+I just moved this code, I didn't change it.  So let's leave style (or
+other) problems with the existing code for a next round and not hold
+up the moving/merging because of them.
 
 
+Thanks,
+Roland
