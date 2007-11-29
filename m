@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761027AbXK2JAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbXK2JF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761027AbXK2JAj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 04:00:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXK2JAb
+	id S1760278AbXK2JF0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 04:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbXK2JFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 04:00:31 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:56624 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754268AbXK2JAa (ORCPT
+	Thu, 29 Nov 2007 04:05:08 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33586 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755783AbXK2JFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 04:00:30 -0500
-Message-ID: <474E7F9E.9000601@linux.vnet.ibm.com>
-Date: Thu, 29 Nov 2007 14:30:14 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, samba-technical@lists.samba.org,
-       nfs@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-In-Reply-To: <20071128034140.648383f0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Nov 2007 04:05:07 -0500
+Date: Thu, 29 Nov 2007 09:04:00 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Remy Bohmer <linux@bohmer.net>,
+       RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH PREEMPT_RT]: On AT91 ARM: GPIO Interrupt handling can/will stall forever
+Message-ID: <20071129090359.GA14728@flint.arm.linux.org.uk>
+References: <1196178834.23808.11.camel@imap.mvista.com> <3efb10970711280638l3f57104y8cf9f2e58235c3@mail.gmail.com> <20071128172509.GA30173@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281402210.3341@gandalf.stny.rr.com> <20071128200550.GA3494@flint.arm.linux.org.uk> <Pine.LNX.4.58.0711281510580.4247@gandalf.stny.rr.com> <1196282672.27964.32.camel@imap.mvista.com> <Pine.LNX.4.58.0711281608490.26365@gandalf.stny.rr.com> <20071128230331.GA31730@flint.arm.linux.org.uk> <1196291955.27964.47.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196291955.27964.47.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Wed, Nov 28, 2007 at 03:19:14PM -0800, Daniel Walker wrote:
+> On Wed, 2007-11-28 at 23:03 +0000, Russell King - ARM Linux wrote:
+> > On Wed, Nov 28, 2007 at 04:13:07PM -0500, Steven Rostedt wrote:
+> > > 
+> > > 
+> > > On Wed, 28 Nov 2007, Daniel Walker wrote:
+> > > 
+> > > >
+> > > > Ignoring the ARM side of things for a sec, handle_simple_irq() will
+> > > > mask() the interrupt in the special case that an interrupt is already in
+> > > > the processes of being handled.. handle_simple_irq() also unmasks when
+> > > > it finishes handling an interrupt (something real time adds for some
+> > > > reason) ..
+> > > >
+> > > > In terms of threading the irq everything is the same except there is no
+> > > > unmask() call when the thread finishes ..
+> > > >
+> > > 
+> > > OK, to be honest, I never fully understood the concept of this
+> > > "simple_irq". I figured it was because of the ARM architecture.
+> > 
+> > If you read what I said compared with what Daniel said, you'll see that
+> > adding the mask/unmask is _pointless_ because for the case where the
+> > simple handler should be used, there is _no_ hardware masking available
+> > except via the parent interrupt signal.
+> > 
+> > So actually Daniel's argument misses the basic point - that using
+> > handle_simple_irq for non-simple IRQs is just WRONG.
+> 
+> Well we've got at least two ARM boards which need the additional unmask
+> to work correctly with interrupt threading .. So there must be at least
+> two ARM boards using handle_simple_irq incorrectly .. It sounds like you
+> would prefer we send patches to move those handle_simple_irq users into
+> another method ?
 
-While running file system stress on nfs and cifs mounted partitions, the machine
-drops to xmon
+If you read my explaination of the purpose of handle_simple_irq() you'll
+see that for the _correct_ case where this handler should be used, the
+mask and unmask can only be empty.  To repeat for the third time - it's
+for the case where the hardware supplies NO way to mask the interrupt.
 
-1:mon> e
-cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
-    pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
-    lr: c0000000001074d0: .vfs_link+0x204/0x298
-    sp: c000000080a9fb00
-   msr: 8000000000009032
-   dar: 280 
- dsisr: 40010000
-  current = 0xc0000000c8e6f670
-  paca    = 0xc000000000512c00
-    pid   = 2848, comm = fsstress
-1:mon> t
-[c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
-[c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
-[c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
---- Exception: c00 (System Call) at 000000000ff1bdfc
-SP (ffeaed10) is in userspace
-1:mon> r
-R00 = c0000000001074d0   R16 = 0000000000000000
-R01 = c000000080a9fb00   R17 = 0000000000000000
-R02 = c00000000060c380   R18 = 0000000000000000
-R03 = 0000000000000000   R19 = 0000000000000000
-R04 = 0000000000000004   R20 = 0000000000000000
-R05 = 0000000000000000   R21 = 0000000000000000
-R06 = 0000000000000000   R22 = 0000000000000000
-R07 = 0000000000000000   R23 = 0000000000000004
-R08 = 0000000000000000   R24 = 0000000000000280
-R09 = 0000000000000000   R25 = fffffffffffff000
-R10 = 0000000000000001   R26 = c000000082827790
-R11 = c0000000003963e8   R27 = c0000000828275a0
-R12 = d000000000deec78   R28 = 0000000000000000
-R13 = c000000000512c00   R29 = c00000007b18fcf0
-R14 = 0000000000000000   R30 = c0000000005bc088
-R15 = 0000000000000000   R31 = 0000000000000000
-pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
-lr  = c0000000001074d0 .vfs_link+0x204/0x298
-msr = 8000000000009032   cr  = 24000882
-ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
-dar = 0000000000000280   dsisr = 40010000
+So adding calls to the mask/unmask methods would be pointless for the
+correct use case.
 
-
-The gdb output shows 
-
-0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
-103      * fsnotify_create - 'name' was linked in
-104      */  
-105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
-106     {   
-107             inode_dir_notify(inode, DN_CREATE);
-108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
-109                                       dentry->d_inode);
-110             audit_inode_child(dentry->d_name.name, dentry, inode);
-111     }   
-112
-
-
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+If you do have the ability to mask, then you should be using the level or
+edge handlers.
