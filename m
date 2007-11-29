@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761952AbXK2ROX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762802AbXK2RQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761952AbXK2ROX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 12:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbXK2ROF
+	id S1762802AbXK2RQR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 12:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbXK2RQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 12:14:05 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:38682 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759877AbXK2ROC (ORCPT
+	Thu, 29 Nov 2007 12:16:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44174 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758126AbXK2RQC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 12:14:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=D9pg6vDmDN28nQ9b2dOKhSYWb1CbHsGUn3s8nJeODlF1oLx8kqV4cu8PTtJhZqWwIEuZ8QbOxoVRaUpo9+P0dKcFRZ24prq93/lag7bRXZTB9GXQ3PKT6n/Cf6i/gTbKY0d3WvpwADGBQ6L5CNAhPxKtF0JCkR5LxfzoH/hNeIA=
-Message-ID: <3ae72650711290914q162e81a8l9fbecf1a1196ba79@mail.gmail.com>
-Date: Thu, 29 Nov 2007 18:14:02 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: does /proc/sys/kernel/modprobe actually do anything?
-Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.9999.0711290756090.29674@localhost.localdomain>
+	Thu, 29 Nov 2007 12:16:02 -0500
+Date: Thu, 29 Nov 2007 09:14:26 -0800
+From: Greg KH <greg@kroah.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Valdis.Kletnieks@vt.edu,
+       Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071129171426.GD10024@kroah.com>
+References: <416908.77038.qm@web36613.mail.mud.yahoo.com> <20071128164613.GA21815@infradead.org> <25290.1196273705@turing-police.cc.vt.edu> <20071128183040.GW8181@ftp.linux.org.uk> <20071129003840.GA22530@kroah.com> <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr> <20071129010753.GA19106@kroah.com> <1196354172.6473.52.camel@perihelion> <20071129164746.GB9664@kroah.com> <1196355936.6473.74.camel@perihelion>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.0.9999.0711290438060.13461@localhost.localdomain>
-	 <b6fcc0a0711290207jf82e618uccecf922a22c4f33@mail.gmail.com>
-	 <alpine.LFD.0.9999.0711290756090.29674@localhost.localdomain>
-X-Google-Sender-Auth: 9abb5e0f243e8e3e
+In-Reply-To: <1196355936.6473.74.camel@perihelion>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2007 1:58 PM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> On Thu, 29 Nov 2007, Alexey Dobriyan wrote:
->
-> > On 11/29/07, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> > > echo '#! /bin/sh' > /tmp/modprobe
-> > > echo 'echo "$@" >> /tmp/modprobe.log' >> /tmp/modprobe
-> > > echo 'exec /sbin/modprobe "$@"' >> /tmp/modprobe
-> > > chmod a+x /tmp/modprobe
-> > > echo /tmp/modprobe > /proc/sys/kernel/modprobe
-> > >
-> > >   i've tried that and i don't see that it does anything whatsoever.  i
-> > > ran modprobe under "strace" and it doesn't appear to make any effort
-> > > to check /proc/sys/kernel/modprobe.
-> >
-> > Kernel, not modprobe, checks /proc/sys/kernel/modprobe .
->
-> actually, ignore that earlier query of mine, i've found the relevant
-> code under kernel/ in sysctl.c and sysctl_check.c and kmod.c.  but
-> it's still not clear why what is described in
-> Documentation/debugging-modules.txt (and shown above) doesn't work, so
-> i'm still open to suggestions.  thanks.
+On Thu, Nov 29, 2007 at 12:05:36PM -0500, Jon Masters wrote:
+> 
+> On Thu, 2007-11-29 at 08:47 -0800, Greg KH wrote:
+> > On Thu, Nov 29, 2007 at 11:36:12AM -0500, Jon Masters wrote:
+> > > On Wed, 2007-11-28 at 17:07 -0800, Greg KH wrote:
+> > > 
+> > > > The easiest way is as Al described above, just have the userspace
+> > > > program that wrote the file to disk, check it then.
+> > > 
+> > > But the problem is that this isn't just Samba, this is a countless
+> > > myriad of different applications. And if one of them doesn't support
+> > > on-access scanning, then the whole solution isn't worth using.
+> > 
+> > Ok, which specific applications do they care about?  Last time I asked
+> > it was still limited to a very small handful, all of which would be
+> > trivial to add such a hook to.
+> 
+> Like I said, I'm trying to put together a set of "feature requirements"
+> that we can publish to LKML and get feedback.
 
-Kernel code can request a module to be loaded by calling request_module().
-The /proc/sys/kernel/modprobe value is the path to the binary which the kernel
-executes when this function is called. It is used by some modules, or if you
-open an existing device node which has no actual driver loaded.
+Heh, ok, I did this a while ago, but I'd be interested in seeing this
+done in public, on lkml this time around so that we have a thread to
+point people at in the future when it comes up again :)
 
-Most modules are loaded by device id's (modalias) of  a device.
-The module is loaded by pure userspace tools and not by the kernel and
-therefore /proc/sys/kernel/modprobe is not involved at all in most module
-loading.
+good luck,
 
-The text in Documentation/debugging-modules.txt is purely about kernel
-module loading requests, and not helpful for the common module loading
-case.
-
-Kay
+greg k-h
