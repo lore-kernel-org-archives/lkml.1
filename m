@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763636AbXK2SBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763551AbXK2SDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763636AbXK2SBH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 13:01:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763134AbXK2SAy
+	id S1763551AbXK2SDZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 13:03:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761575AbXK2SDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 13:00:54 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50053 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762602AbXK2SAy (ORCPT
+	Thu, 29 Nov 2007 13:03:14 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:24220 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761574AbXK2SDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 13:00:54 -0500
-Date: Thu, 29 Nov 2007 19:00:52 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
-       avuton@gmail.com, hancockr@shaw.ca, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, mrmacman_g4@mac.com, dean@arctic.org,
-       argggh@dolphinics.no, shdl@zakalwe.fi, vlobanov@speakeasy.net,
-       drzeus-list@drzeus.cx, strange@nsk.no-ip.org, dm.n9107@gmail.com,
-       johannes@sipsolutions.net
-Subject: Re: [RFC v2] Documentation about unaligned memory access
-In-Reply-To: <20071129170436.GA2754@fattire.cabal.ca>
-Message-ID: <Pine.LNX.4.64.0711291859330.13075@fbirervta.pbzchgretzou.qr>
-References: <20071129161523.E0C349D4B52@zog.reactivated.net>
- <20071129170436.GA2754@fattire.cabal.ca>
+	Thu, 29 Nov 2007 13:03:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Q9E5Sm+M1wK0LwaiZ3jau64uOuJs7t/S6YqOQu4I302YjJQdCtMQqJHTtSW+hCNbJ7IHQHOqqQSlxy9ydyf3wEXr7/69gzvr50QZBm5NaScnAETRvy5DoTf5kh2JrQPldH05rrywObAJzaOGFqDGjbzqWN+PTNk0Bwk1sRgknik=
+Message-ID: <2c0942db0711291003h45177f3cr5496cf30bdb01996@mail.gmail.com>
+Date: Thu, 29 Nov 2007 10:03:09 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: Out of tree module using LSM
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Jon Masters" <jonathan@jonmasters.org>, Valdis.Kletnieks@vt.edu,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Al Viro" <viro@ftp.linux.org.uk>,
+       "Casey Schaufler" <casey@schaufler-ca.com>,
+       "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071129174528.GA14431@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <25290.1196273705@turing-police.cc.vt.edu>
+	 <20071129003840.GA22530@kroah.com>
+	 <Pine.LNX.4.64.0711290152470.22052@fbirervta.pbzchgretzou.qr>
+	 <20071129010753.GA19106@kroah.com>
+	 <1196354172.6473.52.camel@perihelion>
+	 <20071129164746.GB9664@kroah.com>
+	 <Pine.LNX.4.64.0711291752550.13075@fbirervta.pbzchgretzou.qr>
+	 <20071129170326.GA10024@kroah.com>
+	 <2c0942db0711290935l56d28b70v2b35dfb1663e4d2b@mail.gmail.com>
+	 <20071129174528.GA14431@kroah.com>
+X-Google-Sender-Auth: 677ae7423a8bdbb5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Nov 29 2007 12:04, Kyle McMartin wrote:
+On Nov 29, 2007 9:45 AM, Greg KH <greg@kroah.com> wrote:
+> > Perhaps if you looked at this outside of a file-server scenario, the
+> > problem would be clearer? Anti-malware companies want to check
+> > anything written to disk on a system, either at write time or blocking
+> > the open/mmap. That means proactively protecting email programs with
+> > known vulnerabilities that have yet to be patched, web browsers
+> > writing and reading their caches, an Apache instance running WebDAV,
+> > the list goes on. And these are on desktop systems, with no attached
+> > file/network server.
 >
->For example, if you had 4GB of virtual memory, picture it as an
->array of bytes,
->	u8 memory[4096 * (1024 * 1024)];	/* 4G bytes */
+> Ok, if they want to check on every open/mmap then just hook in glibc to
+> do this.  Especially as they want to run userspace code at this point in
+> time.
 
-uint8_t memory[4096UL * 1024 * 1024];
+Doesn't help statically linked binaries, or anything else that bypases glibc.
 
->Aligned accesses would be accessing this array in this manner,
->	u16 memory[(4096 * (1024 * 1024)) / sizeof(u16)] /* 2G bytes */
->	u32 memory[(4096 * (1024 * 1024)) / sizeof(u32)] /* 1G bytes */
->	u64 memory[(4096 * (1024 * 1024)) / sizeof(u64)] /* 512M bytes */
-
-	u64 memory[4096UL * 1024 * 1024 / sizeof(u64)] /* 4G too */
+But yes, I'll let them argue their point from here.
