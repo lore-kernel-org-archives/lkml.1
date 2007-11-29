@@ -1,112 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbXK2AN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762088AbXK2ANn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761637AbXK2AN3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Nov 2007 19:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXK2ANU
+	id S1762088AbXK2ANn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Nov 2007 19:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761726AbXK2AN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Nov 2007 19:13:20 -0500
-Received: from namei.org ([69.55.235.186]:35867 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750850AbXK2ANT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Nov 2007 19:13:19 -0500
-Date: Thu, 29 Nov 2007 11:12:40 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: tvrtko.ursulin@sophos.com
-cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: Out of tree module using LSM
-In-Reply-To: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
-Message-ID: <Xine.LNX.4.64.0711291000590.21270@us.intercode.com.au>
-References: <OF74C1FF25.986585E9-ON802573A1.006239BF-802573A1.0064DE96@sophos.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Nov 2007 19:13:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47563 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761479AbXK2AN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Nov 2007 19:13:27 -0500
+Date: Wed, 28 Nov 2007 16:13:05 -0800
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: linux-usb@vger.kernel.org
+Cc: zaitcev@redhat.com, <preining@logic.at>, <kristoffer.ericson@gmail.com>,
+       <drussell@redhat.com>, <johann.wilhelm@student.tugraz.at>,
+       linux-kernel@vger.kernel.org
+Subject: Add the infamous Huawei E220 to option.c
+Message-Id: <20071128161305.b01167b3.zaitcev@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Nov 2007, tvrtko.ursulin@sophos.com wrote:
+Hi, All:
 
-> So as there is no question the current code does some ugly things it is 
-> even more true that we would be even more happy to use an official API. 
+It looks like the Huawei E220 saga is not over yet. A collegue of mine,
+David Russll, reported that the modem does not work reliably on Fedora 8,
+which does have the initializer in usb-storage.
 
-How about becoming involved in creating that official API ?
+The problem stems from the fact that both option and usb-storage can bind
+to the modem when in storage mode: the former binds because of the storage
+class, the latter binds because of VID/PID match. The modprobe loads both,
+it's random which wins. If usb-storage wins, everything is fine. If option
+wins, it binds to modem still in storage mode and does not work.
 
-"A person will stand on the top of a hill for a very long time with their 
-mouth open before a roast duck will fly in"
+I propose we add the same initializer that usb-storage has to the option.
+This way no matter which driver wins the modem gets initialized. The
+patch is tested on David's modem, but I would like someone give it more
+testing.
 
-> LSM was that and we were happily using it which we won't be able to do if 
-> it abruptly goes away. Yes it is not a perfect match but until it is 
-> modified to be better, or until something appropriate is designed and 
-> implemented, it would be very nice if it could stay.
+I dunno, do we want some kind of code sharing between storage and option?
+They both could use the normal usb_control_msg, I think.
 
-So, what you're asking for is for us to maintain infrastructure in the 
-kernel, for your out of tree code, which we could not have even known 
-about until it was dumped on sourceforge a couple of days ago ?
+Also, from archives it looks like Johann may need PID 0x1004 added.
 
-And you're expecting us to modify it to be "better", for you, but without 
-us possibly knowing what you want ?
+Since we're on topic, David's modem has exactly same IDs as Norbert's,
+but works fine with the length of 1. Although it's possible that the
+firmware is different without different firmware reported in USB desc-
+riptors. Does anyone know a magic AT command? ATI or something?
+Norbert, please try my patch, maybe it'll work this time.
 
-How is this sustainable?  Every time we make a change in the kernel code, 
-do we have to wait for months while all of the (unknown) out of tree users 
-discover their code is broken and then complain to Linus ?
+And finally, pleas stop using that script from the polish website and
+above all quit using the generic serial subdriver. The option must
+work now with the patch. Please let me know if it fails.
 
-Do you really thing we should be supporting developers who make zero 
-effort to engage with the kernel community, and instead abuse kernel APIs 
-and ship out of tree code to customers?
+Thanks in advance,
+-- Pete
 
-You are essentially demanding that we provide you with a stable kernel 
-API.  I suggest you review Greg KH's excellent document on the issue: 
-<http://os.cqu.edu.au/docs/kernel-doc/Documentation/stable_api_nonsense.txt>
-
-Also, your users are likely unaware of the risks associated with these 
-techniques, such as, that they are not actually running "linux" any more, 
-and that their kernel is made unsupportable by both the community and 
-their OS vendors when code like this is being used:
-
-/*
- * hidden vfsmnt_lock handling
- */
-#ifdef TALPA_USE_VFSMOUNT_LOCK
-static inline void talpa_vfsmount_lock(void)
-{
-    spinlock_t* talpa_vfsmount_lock_addr = (spinlock_t *)TALPA_VFSMOUNT_LOCK_ADDR;
-
-    spin_lock(talpa_vfsmount_lock_addr);
-}
-
-Code quality and correctness issues are definitely relevant, and in fact  
-are directly linked to the fact that out of tree code receives no
-community peer review, and is not able to be considered in the general
-kernel design & development process.
-
-Hacks like this effectively void support from the community, which is 
-another way of saying that the user's kernel becomes proprietary once the 
-module containing it is loaded.
-
-Actually, it's worse than that, as not only is the kernel no longer "open 
-source", but also lacks even the level of support provided by proprietary 
-OS vendors (who provide stable interfaces for such purposes).
-
-If you want to resolve this properly, you'll need to do more than complain 
-to Linus when the upstream APIs (which you are abusing) change.
-
-You'll need to become productively engaged in designing, developing and 
-maintaining appropriate APIs, which suit not only your specific needs, but 
-likely those of others, and submit your code for review and upstream 
-inclusion.
-
-What I'd suggest, is that you create a public mailing list, get the other 
-AV projects involved, and then work on a set of requirements so that the 
-general problem can be understood.  Then, propose a solution to the 
-problem and have it reviewed by core kernel folk (cc it to lkml), so that 
-it can be evaluated in terms of e.g. VFS correctness, maintainability etc.  
-
-That would be at least a useful first step in taking this issue seriously.
-
-Thanks,
-
-
-- James 
--- 
-James Morris 
-<jmorris@namei.org>
+diff -urp -X dontdiff linux-2.6.23.1-42.fc8/drivers/usb/serial/option.c linux-2.6.23.1-42.fc8.e220.1/drivers/usb/serial/option.c
+--- linux-2.6.23.1-42.fc8/drivers/usb/serial/option.c	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23.1-42.fc8.e220.1/drivers/usb/serial/option.c	2007-11-27 21:36:11.000000000 -0800
+@@ -448,7 +448,7 @@ static void option_indat_callback(struct
+ 			err = usb_submit_urb(urb, GFP_ATOMIC);
+ 			if (err)
+ 				printk(KERN_ERR "%s: resubmit read urb failed. "
+-					"(%d)", __FUNCTION__, err);
++					"(%d)\n", __FUNCTION__, err);
+ 		}
+ 	}
+ 	return;
+@@ -728,6 +728,35 @@ static int option_send_setup(struct usb_
+ 	return 0;
+ }
+ 
++static void option_start_huawei(struct usb_serial *serial)
++{
++	struct usb_device *dev = serial->dev;
++	char *buf;
++	int rc;
++
++	if (!(le16_to_cpu(dev->descriptor.idVendor) == HUAWEI_VENDOR_ID &&
++	    le16_to_cpu(dev->descriptor.idProduct) == HUAWEI_PRODUCT_E220))
++		return;
++
++	if ((buf = kmalloc(1, GFP_KERNEL)) == 0)
++		goto err_buf;
++
++	buf[0] = 0x1;
++	rc = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
++		USB_REQ_SET_FEATURE, USB_TYPE_STANDARD | USB_RECIP_DEVICE,
++		0x01, 0x0, buf, 1, 1000);
++	if (rc) {
++		printk(KERN_ERR "%s: HUAWEI E220 setup failed (%d)\n",
++		    __FUNCTION__, rc);
++	}
++
++	kfree(buf);
++	return;
++
++err_buf:
++	;
++}
++
+ static int option_startup(struct usb_serial *serial)
+ {
+ 	int i, err;
+@@ -736,6 +765,8 @@ static int option_startup(struct usb_ser
+ 
+ 	dbg("%s", __FUNCTION__);
+ 
++	option_start_huawei(serial);
++
+ 	/* Now setup per port private data */
+ 	for (i = 0; i < serial->num_ports; i++) {
+ 		port = serial->port[i];
