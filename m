@@ -1,226 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbXK2F5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXK2GI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbXK2F5O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 00:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXK2F47
+	id S1756690AbXK2GI3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 01:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbXK2GIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 00:56:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54684 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbXK2F46 (ORCPT
+	Thu, 29 Nov 2007 01:08:20 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35795 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751957AbXK2GIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 00:56:58 -0500
-Date: Wed, 28 Nov 2007 21:59:02 -0800
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] New kobject/kset/ktype documentation and example code
-Message-ID: <20071129055902.GC26327@kroah.com>
-References: <20071127230252.GB10038@kroah.com> <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
+	Thu, 29 Nov 2007 01:08:19 -0500
+Date: Wed, 28 Nov 2007 22:08:18 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 05/14] percpu: Use a Kconfig variable to configure arch
+ specific percpu setup
+In-Reply-To: <474E4E2F.9010801@goop.org>
+Message-ID: <Pine.LNX.4.64.0711282206510.21631@schroedinger.engr.sgi.com>
+References: <20071127001407.859743255@sgi.com> <200711281236.02014.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0711281050470.11968@schroedinger.engr.sgi.com>
+ <200711291017.52727.rusty@rustcorp.com.au> <474DFD7E.907@goop.org>
+ <Pine.LNX.4.64.0711281604560.17738@schroedinger.engr.sgi.com>
+ <474E163E.2070702@goop.org> <Pine.LNX.4.64.0711281731410.19914@schroedinger.engr.sgi.com>
+ <474E1900.1010209@goop.org> <Pine.LNX.4.64.0711281800100.20125@schroedinger.engr.sgi.com>
+ <474E4E2F.9010801@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128100108.45fcbf15@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 10:01:08AM +0100, Cornelia Huck wrote:
-> On Tue, 27 Nov 2007 15:02:52 -0800,
-> Greg KH <greg@kroah.com> wrote:
-> > So, for example, UIO code has a structure that defines the memory region
-> > associated with a uio device:
-> > 
-> > struct uio_mem {
-> > 	struct kobject kobj;
-> > 	unsigned long addr;
-> > 	unsigned long size;
-> > 	int memtype;
-> > 	void __iomem *internal_addr;
-> > };
-> > 
-> > If you have a struct uio_mem structure, finding its embedded kobject is just a
-> > matter of using the kobj pointer.  
-> 
-> Pointer may be a confusing term, how about "structure member"?
+Here is the first of two patches for x86_64 that move the pda into the per 
+cpu area and then make the x86 percpu macros work for x86_64. This needs 
+to be generalized for other arches. The __per_cpu_start offsets can be 
+taken care of by the linker. We can also tell the linker to completely 
+relocate the percpu area to 0.
 
-thanks, now fixed.
 
-> > Code that works with kobjects will often
-> > have the opposite problem, however: given a struct kobject pointer, what is
-> > the pointer to the containing structure?  You must avoid tricks (such as
-> > assuming that the kobject is at the beginning of the structure) and,
-> > instead, use the container_of() macro, found in <linux/kernel.h>:
-> > 
-> > 	container_of(pointer, type, member)
-> > 
-> > where pointer is the pointer to the embedded kobject, type is the type of
-> > the containing structure, and member is the name of the structure field to
-> > which pointer points.  The return value from container_of() is a pointer to
-> > the given type. So, for example, a pointer to a struct kobject embedded
-> > within a struct cdev called "kp" could be converted to a pointer to the
-> 
-> "struct uio_mem", I guess.
 
-yes, now fixed.
+X86_64: Declare pda as per cpu data thereby moving it into the cpu area
 
-> > containing structure with:
-> > 
-> >     struct uio_mem *u_mem = container_of(kp, struct uio_mem, kobj);
-> > 
-> > Programmers will often define a simple macro for "back-casting" kobject
-> > pointers to the containing type.
-> > 
-> > 
-> > Initialization of kobjects
-> > 
-> > Code which creates a kobject must, of course, initialize that object. Some
-> > of the internal fields are setup with a (mandatory) call to kobject_init():
-> > 
-> >     void kobject_init(struct kobject *kobj);
-> > 
-> > Among other things, kobject_init() sets the kobject's reference count to
-> > one.  Calling kobject_init() is not sufficient, however. Kobject users
-> > must, at a minimum, set the name of the kobject; this is the name that will
-> > be used in sysfs entries. 
-> 
-> Unless they don't register their kobject. (But they should always set a
-> name anyway to avoid funny debug messages, so it is probably a good
-> idea to call this a "must").
+Declare the pda as a per cpu variable. This will have the effect of moving
+the pda data into the cpu area managed by cpu alloc.
 
-Yeah, I'll leave this in.
+The boot_pdas are only needed in head64.c so move the declaration
+over there and make it static.
 
-> > To set the name of a kobject properly, do not
-> > attempt to manipulate the internal name field, but instead use:
-> > 
-> >     int kobject_set_name(struct kobject *kobj, const char *format, ...);
-> > 
-> > This function takes a printk-style variable argument list. Believe it or
-> > not, it is actually possible for this operation to fail; conscientious code
-> > should check the return value and react accordingly.
-> > 
-> > The other kobject fields which should be set, directly or indirectly, by
-> > the creator are its ktype, kset, and parent. We will get to those shortly,
-> > however please note that the ktype and kset must be set before the
-> > kobject_init() function is called.
-> > 
-> > 
-> > 
-> > Reference counts
-> > 
-> > One of the key functions of a kobject is to serve as a reference counter
-> > for the object in which it is embedded. 
-> 
-> Hm, I thought that was the purpose of struct kref?
+Remove the code that allocates special pda data structures.
 
-Yes, I'll add a reference to kref now.
+The pda is moved to the beginning of the per cpu area. gs is pointing to the
+pda. And therefore gs: is now pointing to the per cpu area of the current
+processor. A per cpu variable can then be reached at
 
-> > As long as references to the object
-> > exist, the object (and the code which supports it) must continue to exist.
-> > The low-level functions for manipulating a kobject's reference counts are:
-> > 
-> >     struct kobject *kobject_get(struct kobject *kobj);
-> >     void kobject_put(struct kobject *kobj);
-> > 
-> > A successful call to kobject_get() will increment the kobject's reference
-> > counter and return the pointer to the kobject. If, however, the kobject is
-> > already in the process of being destroyed, the operation will fail and
-> > kobject_get() will return NULL. 
-> 
-> Eh, no. We'll always return !NULL if the kobject is !NULL to start
-> with. If the reference count is already 0, the code will moan, but the
-> caller will still get a pointer.
+%gs:[&per_cpu_xxxx - __per_cpu_start]
 
-Good point, this was the way things used to work a long time ago, I'll remove
-this.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-> > This return value must always be tested, or
-> > no end of unpleasant race conditions could result.
-> > 
-> > When a reference is released, the call to kobject_put() will decrement the
-> > reference count and, possibly, free the object. Note that kobject_init()
-> > sets the reference count to one, so the code which sets up the kobject will
-> > need to do a kobject_put() eventually to release that reference.
-> > 
-> > Because kobjects are dynamic, they must not be declared statically or on
-> > the stack, but instead, always from the heap.  Future versions of the
-> > kernel will contain a run-time check for kobjects that are created
-> > statically and will warn the developer of this improper usage.
-> > 
-> > 
-> > Hooking into sysfs
-> > 
-> > An initialized kobject will perform reference counting without trouble, but
-> > it will not appear in sysfs. To create sysfs entries, kernel code must pass
-> > the object to kobject_add():
-> > 
-> >     int kobject_add(struct kobject *kobj);
-> > 
-> > As always, this operation can fail. The function:
-> > 
-> >     void kobject_del(struct kobject *kobj);
-> > 
-> > will remove the kobject from sysfs.
-> > 
-> > There is a kobject_register() function, which is really just the
-> > combination of the calls to kobject_init() and kobject_add().
-> 
-> Plus the uevent.
-> 
-> >  Similarly,
-> > kobject_unregister() will call kobject_del(), then call kobject_put() to
-> > release the initial reference created with kobject_register() (or really
-> > kobject_init()).
-> 
-> And also throw a uevent :)
+---
+ arch/x86/kernel/head64.c          |    6 ++++++
+ arch/x86/kernel/setup64.c         |   13 ++++++++++---
+ arch/x86/kernel/smpboot_64.c      |   16 ----------------
+ include/asm-generic/vmlinux.lds.h |    1 +
+ include/asm-x86/pda.h             |    1 -
+ include/linux/percpu.h            |    4 ++++
+ 6 files changed, 21 insertions(+), 20 deletions(-)
 
-Heh, ok, I've now added this for both :)
+Index: linux-2.6.24-rc3-mm2/arch/x86/kernel/setup64.c
+===================================================================
+--- linux-2.6.24-rc3-mm2.orig/arch/x86/kernel/setup64.c	2007-11-28 20:59:13.124188194 -0800
++++ linux-2.6.24-rc3-mm2/arch/x86/kernel/setup64.c	2007-11-28 21:08:50.473347382 -0800
+@@ -30,7 +30,9 @@ cpumask_t cpu_initialized __cpuinitdata 
+ 
+ struct x8664_pda *_cpu_pda[NR_CPUS] __read_mostly;
+ EXPORT_SYMBOL(_cpu_pda);
+-struct x8664_pda boot_cpu_pda[NR_CPUS] __cacheline_aligned;
++
++DEFINE_PER_CPU_FIRST(struct x8664_pda, pda);
++EXPORT_PER_CPU_SYMBOL(pda);
+ 
+ struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
+ 
+@@ -109,10 +111,15 @@ void __init setup_per_cpu_areas(void)
+ 		}
+ 		if (!ptr)
+ 			panic("Cannot allocate cpu data for CPU %d\n", i);
+-		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++		/* Relocate the pda */
++		memcpy(ptr, cpu_pda(i), sizeof(struct x8664_pda));
++		cpu_pda(i) = (struct x8664_pda *)ptr;
++		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
+ 	}
+-} 
++	/* Fix up pda for this processor .... */
++	pda_init(0);
++}
+ 
+ void pda_init(int cpu)
+ { 
+Index: linux-2.6.24-rc3-mm2/arch/x86/kernel/smpboot_64.c
+===================================================================
+--- linux-2.6.24-rc3-mm2.orig/arch/x86/kernel/smpboot_64.c	2007-11-28 20:59:13.136188167 -0800
++++ linux-2.6.24-rc3-mm2/arch/x86/kernel/smpboot_64.c	2007-11-28 20:59:35.399937395 -0800
+@@ -556,22 +556,6 @@ static int __cpuinit do_boot_cpu(int cpu
+ 		return -1;
+ 	}
+ 
+-	/* Allocate node local memory for AP pdas */
+-	if (cpu_pda(cpu) == &boot_cpu_pda[cpu]) {
+-		struct x8664_pda *newpda, *pda;
+-		int node = cpu_to_node(cpu);
+-		pda = cpu_pda(cpu);
+-		newpda = kmalloc_node(sizeof (struct x8664_pda), GFP_ATOMIC,
+-				      node);
+-		if (newpda) {
+-			memcpy(newpda, pda, sizeof (struct x8664_pda));
+-			cpu_pda(cpu) = newpda;
+-		} else
+-			printk(KERN_ERR
+-		"Could not allocate node local PDA for CPU %d on node %d\n",
+-				cpu, node);
+-	}
+-
+ 	alternatives_smp_switch(1);
+ 
+ 	c_idle.idle = get_idle_for_cpu(cpu);
+Index: linux-2.6.24-rc3-mm2/arch/x86/kernel/head64.c
+===================================================================
+--- linux-2.6.24-rc3-mm2.orig/arch/x86/kernel/head64.c	2007-11-28 20:59:13.152187359 -0800
++++ linux-2.6.24-rc3-mm2/arch/x86/kernel/head64.c	2007-11-28 20:59:35.403937534 -0800
+@@ -22,6 +22,12 @@
+ #include <asm/sections.h>
+ #include <asm/kdebug.h>
+ 
++/*
++ * Only used before the per cpu areas are setup. The use for the non possible
++ * cpus continues after boot
++ */
++static struct x8664_pda boot_cpu_pda[NR_CPUS] __cacheline_aligned;
++
+ static void __init zap_identity_mappings(void)
+ {
+ 	pgd_t *pgd = pgd_offset_k(0UL);
+Index: linux-2.6.24-rc3-mm2/include/asm-x86/pda.h
+===================================================================
+--- linux-2.6.24-rc3-mm2.orig/include/asm-x86/pda.h	2007-11-28 20:59:13.164187921 -0800
++++ linux-2.6.24-rc3-mm2/include/asm-x86/pda.h	2007-11-28 20:59:35.403937534 -0800
+@@ -39,7 +39,6 @@ struct x8664_pda {
+ } ____cacheline_aligned_in_smp;
+ 
+ extern struct x8664_pda *_cpu_pda[];
+-extern struct x8664_pda boot_cpu_pda[];
+ extern void pda_init(int);
+ 
+ #define cpu_pda(i) (_cpu_pda[i])
+Index: linux-2.6.24-rc3-mm2/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.24-rc3-mm2.orig/include/asm-generic/vmlinux.lds.h	2007-11-28 20:59:13.176187886 -0800
++++ linux-2.6.24-rc3-mm2/include/asm-generic/vmlinux.lds.h	2007-11-28 20:59:35.403937534 -0800
+@@ -259,6 +259,7 @@
+ 	. = ALIGN(align);						\
+ 	__per_cpu_start = .;						\
+ 	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
++		*(.data.percpu.first)					\
+ 		*(.data.percpu)						\
+ 		*(.data.percpu.shared_aligned)				\
+ 	}								\
+Index: linux-2.6.24-rc3-mm2/include/linux/percpu.h
+===================================================================
+--- linux-2.6.24-rc3-mm2.orig/include/linux/percpu.h	2007-11-28 20:59:13.188187940 -0800
++++ linux-2.6.24-rc3-mm2/include/linux/percpu.h	2007-11-28 21:09:23.399307556 -0800
+@@ -23,6 +23,10 @@
+ 	DEFINE_PER_CPU(type, name)
+ #endif
+ 
++#define DEFINE_PER_CPU_FIRST(type, name)				\
++	__attribute__((__section__(".data.percpu.first")))		\
++	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+ #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
+ 
 
-> > Creating "simple" kobjects
-> > 
-> > Sometimes all that a developer wants is a way to create a simple directory
-> > in the sysfs heirachy, and not have to mess with the whole complication of
-> 
-> hierarchy
-
-thanks.
-
-> > ktypes and release methods
-> > 
-> > One important thing still missing from the discussion is what happens to a
-> > kobject when its reference count reaches zero. The code which created the
-> > kobject generally does not know when that will happen; if it did, there
-> > would be little point in using a kobject in the first place. Even
-> > predicatable object lifecycles become more complicated when sysfs is
-> > brought in; user-space programs can keep a reference to a kobject (by
-> > keeping one of its associated sysfs files open) for an arbitrary period of
-> > time.
-> 
-> This is no longer true?
-> 
-> The major problem is that registered kobjects can be looked-up by other
-> kernel code that can get a reference.
-
-yes, you are right.
-
-> > The end result is that a structure protected by a kobject cannot be freed
-> > before its reference count goes to zero. The reference count is not under
-> > the direct control of the code which created the kobject. So that code must
-> > be notified asynchronously whenever the last reference to one of its
-> > kobjects goes away.
-> 
-> We should perhaps add a bit fat warning here:
-> 
-> Note that once you registered your kobject via kobject_add(), you must
-> never use kfree() to free it directly. The only safe way is to use
-> kobject_put(). It is good practice to always use kobject_put() after
-> kobject_init() to avoid errors creeping in.
-
-Now added, thanks.
-
-thanks for the review, I really appreciate it.
-
-greg k-h
