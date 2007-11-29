@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbXK2T1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933510AbXK2T1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbXK2T1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 14:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXK2T0z
+	id S933510AbXK2T1s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 14:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXK2T1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 14:26:55 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42284 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932333AbXK2T0y (ORCPT
+	Thu, 29 Nov 2007 14:27:25 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52938 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933352AbXK2T1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 14:26:54 -0500
-Date: Fri, 30 Nov 2007 01:09:20 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, skumar@linux.vnet.ibm.com,
-       Paul Menage <menage@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: cpu accounting controller
-Message-ID: <20071129193920.GI5681@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129192058.GC5238@elte.hu>
+	Thu, 29 Nov 2007 14:27:24 -0500
+Date: Thu, 29 Nov 2007 20:27:21 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, zach@vmware.com
+Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
+Message-ID: <20071129192721.GP24223@one.firstfloor.org>
+References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <474F01F6.2030509@zytor.com> <alpine.LFD.0.9999.0711291027070.8458@woody.linux-foundation.org> <474F08E1.2090806@zytor.com> <alpine.LFD.0.9999.0711291057320.8458@woody.linux-foundation.org> <474F1027.2020801@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071129192058.GC5238@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <474F1027.2020801@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 08:20:58PM +0100, Ingo Molnar wrote:
-> ok, this looks certainly doable for v2.6.24. I've added it to the 
-> scheduler fixes queue and will let it brew there for a few days and send 
-> it to Linus after that if everything goes fine - unless anyone objects. 
+On Thu, Nov 29, 2007 at 11:16:55AM -0800, H. Peter Anvin wrote:
+> Andi, do you happen to remember the details on this?
 
-Thanks.
+x86-64 has to use GS because there is no SWAPFS
+We decided to make it opposite on user space back then, but not
+based on benchmarks (there were only simulators back then)  Oh yes
+the reason was that the GS context switch is slightly more expensive
+than the FS one and the code does lazy optimization.
 
--- 
-Regards,
-vatsa
+For i386 iirc Jeremy/Zach did the benchmarking and they settled
+on %fs because it was faster for something (originally it was %gs too) 
+
+-Andi
