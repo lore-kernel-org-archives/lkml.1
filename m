@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763793AbXK3R64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763945AbXK3SAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763793AbXK3R64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 12:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760359AbXK3R6o
+	id S1763945AbXK3SAq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 13:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbXK3SAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 12:58:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46005 "EHLO mx3.mail.elte.hu"
+	Fri, 30 Nov 2007 13:00:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46308 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757587AbXK3R6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 12:58:43 -0500
-Date: Fri, 30 Nov 2007 18:58:25 +0100
+	id S1756601AbXK3SAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 13:00:36 -0500
+Date: Fri, 30 Nov 2007 19:00:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 03/10] percpu: Make the asm-generic/percpu.h more
-	"generic"
-Message-ID: <20071130175825.GA19571@elte.hu>
-References: <20071128210926.008783214@sgi.com> <20071128211526.640694725@sgi.com> <20071130111000.GA32431@elte.hu> <Pine.LNX.4.64.0711300908320.32071@schroedinger.engr.sgi.com> <20071130171419.GA18808@elte.hu> <Pine.LNX.4.64.0711300915460.32253@schroedinger.engr.sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 0/3] Per cpu relocation to ZERO and x86_32 percpu ops
+	on x86_64
+Message-ID: <20071130180002.GB19571@elte.hu>
+References: <20071130064305.459255715@sgi.com> <20071130112429.GA3605@elte.hu> <20071130112645.GA7565@elte.hu> <Pine.LNX.4.64.0711300918250.32294@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711300915460.32253@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0711300918250.32294@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,26 +40,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > On Fri, 30 Nov 2007, Ingo Molnar wrote:
 > 
-> > > This is a core change against Andrew's tree. It needs to go into mm 
-> > > and not into the x86 tree. It is no surprise that this does not apply 
-> > > cleanly to the x86 tree.
 > > 
-> > well since they affect the x86 tree quite heavily (and a dependent 
-> > patchset you sent is basically for x86 only), it looked quite plausible 
-> > to check how they fare.
+> > and the patches dont even build on 64-bit x86:
+> > 
+> > kernel/module.c: In function 'load_module':
+> > kernel/module.c:1989: error: '__per_cpu_offset' undeclared (first use in this function)
+> > kernel/module.c:1989: error: (Each undeclared identifier is reported only once
+> > kernel/module.c:1989: error: for each function it appears in.)
+> > 
+> > config below. I'm dropping the patches for now. (again, this might be my 
+> > mismerge)
 > 
-> Yes that can be done by downloading 2.6.24-rc3-mm2 and applying the 
-> patches on top of it. There are various earlier cleanup patches in mm 
-> that fix various core issues that make all of this possible.
+> Right. The above is a result of your missing a cleanup patch from mm 
+> that fixes the module issue. Again running mm will take care of all of 
+> these things.
 
-which are those patches? I found only a single relevant patch:
+you mean this single patch:
 
  modules-fold-percpu_modcopy-into-modulec-and-get-rid-of-the-macro-from-hell.patch
 
-anything else i missed?
-
-this patch should have no relevance to the crash i reported. (i use a 
-bzImage) It's also a cleanup patch only, it should not affect 
-correctness.
+that's the only patch i missed AFAICS.
 
 	Ingo
