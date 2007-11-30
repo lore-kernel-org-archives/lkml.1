@@ -1,82 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933829AbXK3LLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934172AbXK3LLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933829AbXK3LLd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 06:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbXK3LLX
+	id S934172AbXK3LLv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 06:11:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932154AbXK3LLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 06:11:23 -0500
-Received: from natgw.netstream.ch ([62.65.128.28]:54367 "EHLO
-	denkbrett.schottelius.org" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752660AbXK3LLW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 06:11:22 -0500
-X-Greylist: delayed 5399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Nov 2007 06:11:21 EST
-Date: Thu, 29 Nov 2007 23:13:00 +0100
-From: Nico Schottelius <nico-linux-20071129@schottelius.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Thanks for /dev/input/* and acpi!
-Message-ID: <20071129221300.GC27659@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20071129@schottelius.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Fri, 30 Nov 2007 06:11:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40273 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761627AbXK3LLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 06:11:24 -0500
+Date: Fri, 30 Nov 2007 12:11:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, ak@suse.de
+Subject: Re: [patch 04/10] x86_32: Use generic percpu.h
+Message-ID: <20071130111100.GB32431@elte.hu>
+References: <20071128210926.008783214@sgi.com> <20071128211526.880137420@sgi.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Q0rSlbzrZN6k9QnT"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: denkbrett running Linux 2.6.23.9 on i686
+In-Reply-To: <20071128211526.880137420@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---Q0rSlbzrZN6k9QnT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+merge to x86.git below. Please check.
 
-Hello everybody!
+	Ingo
 
-I'm just playing around with netlink and all the interesting event
-devices in 2.6.23.9, because I see that acpid still uses
-/proc/acpi/event.
+---->
+Subject: x86_32: Use generic percpu.h
+From: Christoph Lameter <clameter@sgi.com>
 
-And I must say that the whole event system is pretty fun:
-Easy to use, mostly documentated in linux/input.h and
-helpful ioctl()s.
+x86_32 only provides a special way to obtain the local per cpu area offset
+via x86_read_percpu. Otherwise it can fully use the generic handling.
 
-I did some hacking on it and if somebody wants to see his / her
-acpi events without /proc/acpi/event, she / he can try some of the hacks
-under
+Cc: ak@suse.de
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/asm-x86/percpu_32.h |   30 +++++++++---------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
 
-http://unix.schottelius.org/cgi-bin/gitweb.cgi?p=3Dlinux-event-netlink.git;=
-a=3Dsummary
-
-Many greetings,
-
-Nico
-
-P.S.: If you reply, CC me, not subscribed.
-P.P.S.: If I see how easy it is, I really think of spending some time on
-        gpm again, to resurrect it and the work on gpm2...
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---Q0rSlbzrZN6k9QnT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHTzlsuL75KpiFGIwRAleQAJ4gDZXsc1ttHmbAJ5LtRONOBQOUOQCgxvm3
-tKwP2+ft9qygG4RtiLTS2X4=
-=2SMP
------END PGP SIGNATURE-----
-
---Q0rSlbzrZN6k9QnT--
+Index: linux-x86.q/include/asm-x86/percpu_32.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/percpu_32.h
++++ linux-x86.q/include/asm-x86/percpu_32.h
+@@ -42,26 +42,7 @@
+  */
+ #ifdef CONFIG_SMP
+ 
+-/* This is used for other cpus to find our section. */
+-extern unsigned long __per_cpu_offset[];
+-
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
+-/* We can use this directly for local CPU (faster). */
+-DECLARE_PER_CPU(unsigned long, this_cpu_off);
+-
+-/* var is in discarded region: offset to particular copy we want */
+-#define per_cpu(var, cpu) (*({				\
+-	extern int simple_indentifier_##var(void);	\
+-	RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]); }))
+-
+-#define __raw_get_cpu_var(var) (*({					\
+-	extern int simple_indentifier_##var(void);			\
+-	RELOC_HIDE(&per_cpu__##var, x86_read_percpu(this_cpu_off));	\
+-}))
+-
+-#define __get_cpu_var(var) __raw_get_cpu_var(var)
++#define __my_cpu_offset x86_read_percpu(this_cpu_off)
+ 
+ /* A macro to avoid #include hell... */
+ #define percpu_modcopy(pcpudst, src, size)			\
+@@ -74,11 +55,18 @@ do {								\
+ 
+ /* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
+ #define __percpu_seg "%%fs:"
++
+ #else  /* !SMP */
+-#include <asm-generic/percpu.h>
++
+ #define __percpu_seg ""
++
+ #endif	/* SMP */
+ 
++#include <asm-generic/percpu.h>
++
++/* We can use this directly for local CPU (faster). */
++DECLARE_PER_CPU(unsigned long, this_cpu_off);
++
+ /* For arch-specific code, we can use direct single-insn ops (they
+  * don't give an lvalue though). */
+ extern void __bad_percpu_size(void);
