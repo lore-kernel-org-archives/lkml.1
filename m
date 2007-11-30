@@ -1,56 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934968AbXK3PBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935100AbXK3PD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934968AbXK3PBN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 10:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbXK3PA6
+	id S935100AbXK3PD0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 10:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932875AbXK3PDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 10:00:58 -0500
-Received: from rtr.ca ([76.10.145.34]:3030 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754383AbXK3PA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 10:00:57 -0500
-Message-ID: <475025A7.9010107@rtr.ca>
-Date: Fri, 30 Nov 2007 10:00:55 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Phillip Susi <psusi@cfl.rr.com>,
-       Tejun Heo <htejun@gmail.com>, noah <noah123@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: Possibly SATA related freeze killed networking and RAID
-References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com> <474F3A4B.3080304@cfl.rr.com> <20071130131344.07b75f45@the-village.bc.nu> <20071126075517.GA4141@ucw.cz>
-In-Reply-To: <20071126075517.GA4141@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 Nov 2007 10:03:16 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:31556 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932765AbXK3PDP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 10:03:15 -0500
+X-YMail-OSG: otj1vAgVM1mCJSMHrk7SrZGHcCDN6pgWcgng8xorfnSRPvDjyAd_hSdxZ3eivyBjQdS7XIuplu2MAyQ1TqcocUVAqJsaEuZ2EZRqWwZ5GgPb_s086g--
+Subject: LIO-VM Demo Images available for download!
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       iet-dev <iscsitarget-devel@lists.sourceforge.net>
+Content-Type: text/plain
+Date: Fri, 30 Nov 2007 07:03:14 -0800
+Message-Id: <1196434994.7468.22.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Fri 2007-11-30 13:13:44, Alan Cox wrote:
->>> Why does a single spurious interrupt cause it to be shut down?  I can 
->> It doesn't.
->>
->>> see if the interrupt is stuck on and keeps interrupting constantly, but 
->>> if it's just the occasional spurious interrupt, why not just ignore it 
->>> and move on?
->> The interrupt is usually level triggered so it continues to create
->> interrupts until you silence it. The thresholds are about 10,000
->> interrupt events and on newer kernels we also reset the count if we don't
->> see any for a while. That works for most stuff except the thinkpad
->> bluetooth problem.
-> 
-> Which is confirmed hw problem now, btw.
-...
+Grettings all,
 
-What problem is that, exactly?
+It is my great honor to announce that the LIO-VM Target images are now
+online and available for download:
 
-My Dell has an internal USB BT adapter that briefly appears
-and then disappears again on resume (or stays if I have "enabled" it
-via the BIOS key).
+http://linux-iscsi.org/builds/LIO-VM/vmware/
 
-I wonder if that has anything to do with the (new in) 2.6.23 pauses
-that machine has on resume (about every 10th time).
+and the wiki entry (which is basically the README now) is also online:
 
-Cheers
+http://linux-iscsi.org/index.php/LIO-VM
+
+Please check the wiki for the complete release information.  Here are
+the bullets from the README.
+
+Have Fun!!! :-)
+
+--nab
+
+-----------------------------------------------------------------------
+
+Introduction:
+
+The LIO-VM Storage Engine demo is a set of  VMware compatible virtual
+machine images that contains a self-configuring iSCSI storage engine
+that runs on with a very large and diverse amount of PC storage
+software and hardware.  When the LIO-VM image boots, the host local
+storage hardware that is made available to the guest is exported as
+iSCSI target ports, and made available to both local and remote
+iSCSI Initiator clients.
+
+Note that the iSCSI target is configured to allow _ALL_ iSCSI Initiators
+to access _ALL_ iSCSI Target Ports across all available iSCSI Network
+Portals.  By default, the storage devices with filesystems will be
+exported as READ-ONLY to prevent multiple accesses by non-cluster
+filesystems.  Support for production R/W configurations of this demo are
+in the works, please stay tuned to the site and lists for more
+information as this unfolds.  Also, if you really know what you are
+doing when it comes to non cluster filesystem + RW access, please see
+section IX) below.
+
+I) The .vmx LIO-VM images:
+
+        There are two VMware Workstation 6.x/Fusion compatible image 
+	available:
+
+        Debian Etch 4 i386: (2.6.18-5-686)
+        JeOS / Ubuntu 7.10 i386: (2.6.22-14-virtual)
+
+II) What are the host OS requirements to run the LIO-VM Demo?
+
+        Any i386 or x86_64 Linux v2.6 host that can run VMware
+	Workstation 6.
+        Any Apple Mac-tel hardware that can run VMware Fusion.
+        Any XP or NT compatible host that can run VMware Workstation 6.
+
+III) What has been tested?
+
+        The LIO-VM has been successfully run on Linux v2.6, MacOSX 
+	Leopard, and WinXP/NT.
+
+        USB connected flash and SATA/PATA devices.
+        Internal SATA DVD and External SATA HD drives
+        External USB DVD/HD devices are also supported.
+
+IV) What should work?
+
+        All USB Direct-Access (flash, USB external PATA/SATA disk 
+	drives)
+        All USB optical drives (CD, DVD, HD/DVD and BD)
+        All PATA/SATA disk drives
+        All PATA/SATA optical drives (CD, DVD, HD/DVD and BD)
+        All PSCSI / FC / SAS hardware with correct host OS drivers.
+
+        Basically, if it works locally, and you can bring it into the 
+	guest,  you can export it.
+
+V) Why are there two images?
+
+        The Debian image has a work around to allow optical devices to 
+	work properly.  Other than this difference, the two images 
+	should function as identical for other devices, host OS storage 
+	driver requirements not withstanding.  See VI) for more 
+	information.
+
+
