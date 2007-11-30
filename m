@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935514AbXK3RYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935500AbXK3R2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935514AbXK3RYO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 12:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762955AbXK3RX4
+	id S935500AbXK3R2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 12:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbXK3R2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 12:23:56 -0500
-Received: from smtp151.sat.emailsrvr.com ([66.216.121.151]:39805 "EHLO
-	smtp151.sat.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762936AbXK3RXz (ORCPT
+	Fri, 30 Nov 2007 12:28:14 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:43598 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763144AbXK3R2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 12:23:55 -0500
-Message-ID: <4750471F.5050007@keyspan.com>
-Date: Fri, 30 Nov 2007 09:23:43 -0800
-From: Lucy McCoy <lucy@keyspan.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 30 Nov 2007 12:28:13 -0500
+Message-ID: <4750480B.9010909@keyaccess.nl>
+Date: Fri, 30 Nov 2007 18:27:39 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: bbpetkov@yahoo.de
-CC: Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] keyspan: init termios properly
-References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71> <20071118131130.GA3991@gollum.tnic> <20071126141852.a609cdb6.akpm@linux-foundation.org> <20071130054500.GB17350@gollum.tnic>
-In-Reply-To: <20071130054500.GB17350@gollum.tnic>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: trenn@suse.de
+CC: Shaohua Li <shaohua.li@intel.com>, Dave Young <hidave.darkstar@gmail.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Zhao Yakui <yakui.zhao@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Set pnp_init_resource_table, pnp_resource_change,	pnp_manual_config_dev
+ deprecated
+References: <a8e1da0711290111m65b071cft90b4361ec0155096@mail.gmail.com>	 <474F72E3.4040608@keyaccess.nl>	 <1196389939.7234.1.camel@sli10-desk.sh.intel.com> <1196417657.23251.293.camel@queen.suse.de>
+In-Reply-To: <1196417657.23251.293.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On 30-11-07 11:14, Thomas Renninger wrote:
 
-I've been too busy to get to this but i'd rather not use the code 
-fragment i sent Boris to try.  It would be better to go ahead with the 
-tty setup if the pointer is not NULL, otherwise use the defaults and not 
-reference the NULL pointer. I'll see if I can get to this today.
+> This should be 2.6.24 material:
+> 
+> Mark pnp_init_resource_table, pnp_resource_change, pnp_manual_config_dev deprecated
+> 
+> Thanks to Rene Herman, the remaining calls to those functions got eliminated
+> in the sound/isa layer recently.
+> Those functions are a workaround for wrong BIOS pnp information and give
+> drivers the possibility to override BIOS exported PNP resources.
+> This can be done through sysfs since 2.6, therefore these functions should
+> vanish rather soon, as dynamic allocation for PNP resources is depending
+> on it.
 
-Lucy
+I'll withhold an ack on this for now. The ALSA side patch has hit the ALSA 
+repositories but wouldn't seem likely to end up in 2.6.24 at this point in 
+the development cycle.
 
+Can't have it deprecated with ALSA still using them...
 
-Borislav Petkov wrote:
-> On Mon, Nov 26, 2007 at 02:18:52PM -0800, Andrew Morton wrote:
->   
->> On Sun, 18 Nov 2007 14:11:30 +0100
->> Borislav Petkov <bbpetkov@yahoo.de> wrote:
->>
->>     
->>> On Thu, Nov 15, 2007 at 01:10:16PM -0800, Lucy McCoy wrote:
->>>       
->
-> ...
->
->   
->>> yes, after testing this i can confirm that this one fixes the NULL ptr
->>> problem here so you might want to submit a proper patch to Greg.
->>>       
->> I'll merge revert-keyspan-init-termios-properly.patch soon, but afaik we
->> are still awaiting the real fix for this problem?
->>     
->
-> Hi Andrew,
-> sorry for the late reply - i was away from the country and couldn't read mail.
-> Yes, we are still awaiting the real fix afaik but the code fragment above
-> removes the NULL ptr deref so we should at least merge that. Will prepare a
-> patch for this later today...
->
->   
+Rene.
