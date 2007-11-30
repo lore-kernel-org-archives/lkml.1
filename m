@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764113AbXK3Tdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763706AbXK3Tfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764113AbXK3Tdj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:33:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXK3Tdb
+	id S1763706AbXK3Tfu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbXK3Tfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:33:31 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46818 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755222AbXK3Tdb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:33:31 -0500
-Date: Fri, 30 Nov 2007 11:33:30 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 03/10] percpu: Make the asm-generic/percpu.h more "generic"
-In-Reply-To: <20071130184952.GC9928@elte.hu>
-Message-ID: <Pine.LNX.4.64.0711301117590.2129@schroedinger.engr.sgi.com>
-References: <20071128210926.008783214@sgi.com> <20071128211526.640694725@sgi.com>
- <20071130111000.GA32431@elte.hu> <Pine.LNX.4.64.0711300908320.32071@schroedinger.engr.sgi.com>
- <20071130171419.GA18808@elte.hu> <Pine.LNX.4.64.0711300915460.32253@schroedinger.engr.sgi.com>
- <20071130175825.GA19571@elte.hu> <20071130181206.GA1586@elte.hu>
- <Pine.LNX.4.64.0711301033580.1806@schroedinger.engr.sgi.com>
- <20071130184952.GC9928@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Nov 2007 14:35:42 -0500
+Received: from smtpoutm.mac.com ([17.148.16.71]:62230 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755196AbXK3Tfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 14:35:41 -0500
+In-Reply-To: <47505907.5030409@zytor.com>
+References: <474EAD18.6040408@stellatravel.co.uk> <20071130143445.GA2310@csclub.uwaterloo.ca> <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com> <47505907.5030409@zytor.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <02B4DDE5-3D53-4BA5-BB79-52788CEBB9AF@mac.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
+       linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Kernel Development & Objective-C
+Date: Fri, 30 Nov 2007 14:35:34 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahh this is a UP configuration! For that case we do not rebase the percpu 
-area to address 0. And all the reports of success are until now for 
-SMP/NUMA. Switching SMP on makes your config boot fine.
+On Nov 30, 2007, at 13:40:07, H. Peter Anvin wrote:
+> Kyle Moffett wrote:
+>> With that said, there is a significant performance penalty as all  
+>> Objective-C method calls are looked up symbolically at runtime for  
+>> every single call.
+>
+> GACK!
+>
+> At least C++ has vtables.
 
-I thought I left UP handling unchanged. There must be some subtle 
-change. Looking for it now.
+In a tight loop there is a way to do a single symbolic lookup and  
+just call directly through a function pointer, but typically it isn't  
+necessary for GUI programs and the like.  The flexibility of being  
+able to dynamically add new methods to an existing class (at least  
+for desktop user interfaces) significantly outweighs the performance  
+cost.  Any performance-sensitive code is typically written in  
+straight C anyways.
 
+Cheers,
+Kyle Moffett
 
