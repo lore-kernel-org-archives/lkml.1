@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934419AbXK3SMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbXK3SUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934419AbXK3SMr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 13:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761731AbXK3SMd
+	id S1763558AbXK3SUl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 13:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbXK3SU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 13:12:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42798 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761724AbXK3SMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 13:12:32 -0500
-Date: Fri, 30 Nov 2007 19:12:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 03/10] percpu: Make the asm-generic/percpu.h more
-	"generic"
-Message-ID: <20071130181206.GA1586@elte.hu>
-References: <20071128210926.008783214@sgi.com> <20071128211526.640694725@sgi.com> <20071130111000.GA32431@elte.hu> <Pine.LNX.4.64.0711300908320.32071@schroedinger.engr.sgi.com> <20071130171419.GA18808@elte.hu> <Pine.LNX.4.64.0711300915460.32253@schroedinger.engr.sgi.com> <20071130175825.GA19571@elte.hu>
+	Fri, 30 Nov 2007 13:20:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41646 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754928AbXK3SU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 13:20:27 -0500
+Message-ID: <4750545A.2030605@zytor.com>
+Date: Fri, 30 Nov 2007 10:20:10 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071130175825.GA19571@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jarek Poplawski <jarkao2@o2.pl>
+Subject: Re: [PATCH] Documentation/Changes -> Documentation/Requirements
+References: <20071130071647.GA2017@ff.dom.local> <200711301747.lAUHlDdM006716@tazenda.hos.anvin.org> <alpine.LFD.0.9999.0711301256520.7197@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0711301256520.7197@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> which are those patches? I found only a single relevant patch:
+Robert P. J. Day wrote:
+>> +
+>> +Kernel Compilation Requirements
+>> +===============================
+>> +
+>> +On all systems, minimal requirements (see below for additional notes):
+>> +
+>> +o  Gnu C                  3.2                     # gcc --version
+>> +o  Gnu make               3.79.1                  # make --version
+>> +o  binutils               2.12                    # ld -v
+>> +o  Gnu bc                 1.06                    # bc -v
 > 
->  modules-fold-percpu_modcopy-into-modulec-and-get-rid-of-the-macro-from-hell.patch
+> you need bc?  for what?  i just did a defconfig build for x86 with no
+> need for bc.
 > 
-> anything else i missed?
+
+The whole motivation for this was to get a place to document that a 
+previous patch uses bc.
+
+>> +o  Perl                   5.6.0(?)                # perl -v
 > 
-> this patch should have no relevance to the crash i reported. (i use a 
-> bzImage) It's also a cleanup patch only, it should not affect 
-> correctness.
+> if you mention perl, you should also mention sed and awk, no?  and
+> perhaps suggest running scripts/ver_linux.
 
-as expected, with that patch applied, the kernel crashes and reboots 
-(with no message this time). If you could point out any other dependent 
-patches besides the one above (if any) that would be great.
+Please submit patches.
 
-	Ingo
+	-hpa
