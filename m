@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbXK3U1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbXK3UfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbXK3U1M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 15:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXK3U06
+	id S1754000AbXK3UfU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 15:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbXK3UfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 15:26:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60020 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752052AbXK3U05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 15:26:57 -0500
-Date: Fri, 30 Nov 2007 21:26:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 0/3] Per cpu relocation to ZERO and x86_32 percpu ops
-	on x86_64
-Message-ID: <20071130202622.GA15006@elte.hu>
-References: <20071130064305.459255715@sgi.com> <20071130112429.GA3605@elte.hu> <20071130112645.GA7565@elte.hu> <Pine.LNX.4.64.0711300918250.32294@schroedinger.engr.sgi.com> <20071130180002.GB19571@elte.hu> <Pine.LNX.4.64.0711301019590.1743@schroedinger.engr.sgi.com> <20071130183512.GA8985@elte.hu> <Pine.LNX.4.64.0711301043380.1919@schroedinger.engr.sgi.com> <20071130194517.GD9928@elte.hu> <Pine.LNX.4.64.0711301147100.2242@schroedinger.engr.sgi.com>
+	Fri, 30 Nov 2007 15:35:04 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51883 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750720AbXK3UfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 15:35:02 -0500
+Date: Fri, 30 Nov 2007 21:35:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: rtc-linux@googlegroups.com, kernel list <linux-kernel@vger.kernel.org>,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: RTC wakealarm write-only, still has 644 permissions
+Message-ID: <20071130203544.GB1677@elf.ucw.cz>
+References: <20070920103225.GA4410@elf.ucw.cz> <200709212238.05130.david-b@pacbell.net> <20071128232647.GC4947@elf.ucw.cz> <200711291010.12707.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711301147100.2242@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200711291010.12707.david-b@pacbell.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Fri, 30 Nov 2007, Ingo Molnar wrote:
+> > rtc-sysfs.c: why this?
+> > 
+> >         if (alarm > now) {
+> >                 /* Avoid accidentally clobbering active alarms; we can't
+> >                  * entirely prevent that here, without even the minimal
+> >                  * locking from the /dev/rtcN api.
+> >                  */
+> >                 retval = rtc_read_alarm(rtc, &alm);
+> >                 if (retval < 0)
+> >                         return retval;
+> >                 if (alm.enabled)
+> >                         return -EBUSY;
+> > 
+> >                 alm.enabled = 1;
+> > 
+> > People should not be "accidentally" writing to sysfs files...
 > 
-> > This was not any "formal" x86 maintainance activity - your patches are 
-> > still cooking. But i was thinking about maybe putting these patches into 
-> > the x86 test grind to get them shaken out some more the random 1000 
-> > bootup tests a day that it does. When integrating your patches I found a 
-> > bug and tentatively reported it to you, pointing out that it could 
-> > easily be my merge fault. Basically i was offering you to let your 
-> > patches cook in another kitchen as well. I never before had a negative 
-> > response to that :-/
+> It's not an issue of accidental writes, it's an issue of there being
+> no other synchronization for setting those alarms.  Remember that both
+> RTC_WKALM_SET and RTC_ALM_SET ioctls can set that same alarm, and so
+> could a different userspace activity ...
+
+We have 3 interfaces to one hardware resource. I do not think kernel
+should try to arbitrate it here. There's just one alarm clock with
+three interfaces.
+
+> If there's no alarm set, it's clear that changing the (single) alarm
+> can't cause event lossage.  But if an alarm *is* set it sure seems
+> that changing it would discard an event that something was expecting,
+> and thus cause breakage.
+
+I do not believe current interface has any users. ...or any users that
+would break anyway.
+
+> As written, this allows one userspace activity to clobber another if
+> it does so explicitly, by first disabling the other one and then
+> setting its own alarm.  But the idea is to minimize "accidents" like
+> unintentionally clobbering an alarm set by someone else.
+
+Well, I could not get it to work with this "avoid-clobber" feature.
+
+> > If I remove "accidental alarm modify" logic, I can actually use rtc to
+> > wake up more than once per boot.
 > 
-> You could have asked me for a patch against the x86 tree instead of 
-> forcing these into your tree. [...]
+> Evidently the alarm isn't being disabled then...
+> 
+> I think the issue there is that the alarm isn't acting as a one-shot
+> event.  There are some model questions lurking there ... if the RTC
+> has a sane alarm model, "fire at YYYY-MM-DD at HH:MM:SS", then it's
+> naturally one-shot.
+> 
+> But if the YYYY-MM-DD part is a wildcard (or equivalently, ignored)
+> at the hardware level, that model is awkward.  You can't easily look
+> at such alarms and know if they already triggered -- especially after
+> hibernation.  With respect to rtc-cmos, it'd always be practical to
+> disable the alarm after it triggers while the system is running.
+> (Not currently done, pending resolution of such issues.)  And there's
+> an ACPI flag -- currently ignored by Linux, or maybe trashed -- to
+> report whether the system wakeup was triggered by an alarm; that
+> could be read, and used to disable the alarm.
 
-ugh? What i did was something even better: i merged your patches myself 
-(with some caveats, which i pointed out). That's something that people 
-consider as a "cool, you just saved me some work!" moment, not a "hey, 
-dont you dare forcing MY patches into your tree" incident ;-) At least 
-that's how 99.9% of the people on lkml typically see it.
+I think we should just remove the 'avoid-clobber' logic. If userland
+wants to somehow arbitrate access, it can.
 
-You really need to take a vacation ASAP! =B-)
+Now, if we want to provide "nice" interface for timed sleep, I think
+we can. Actually, I'd like to use normal select() as such an
+interface, and enable kernel to automatically detect when it can sleep
+and when it has to wake up.
 
-	Ingo
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
