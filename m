@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934731AbXK3Nq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXK3Nye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934731AbXK3Nq5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbXK3Nqt
+	id S932929AbXK3Nye (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbXK3NyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:46:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60916 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbXK3Nqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:46:48 -0500
-Subject: Re: [PATCH 9/9] MN10300: Fix MTD JEDEC probe so that the ASB2303
-	bootprom can be detected [2.6.24-rc3-mm2]
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Howells <dhowells@redhat.com>, tharbaugh@lnxi.com
-Cc: akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071129225301.21536.91506.stgit@warthog.procyon.org.uk>
-References: <20071129225219.21536.58653.stgit@warthog.procyon.org.uk>
-	 <20071129225301.21536.91506.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain
-Date: Fri, 30 Nov 2007 13:46:40 +0000
-Message-Id: <1196430400.13978.26.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 30 Nov 2007 08:54:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51262 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754098AbXK3NyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:54:21 -0500
+Date: Fri, 30 Nov 2007 14:53:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: vatsa@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, skumar@linux.vnet.ibm.com,
+       menage@google.com, torvalds@linux-foundation.org
+Subject: Re: [PATCH] sched: cpu accounting controller (V2)
+Message-ID: <20071130135331.GA7145@elte.hu>
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129113035.bbdf35db.akpm@linux-foundation.org> <20071129201833.GA18023@linux.vnet.ibm.com> <20071130124225.GM5681@linux.vnet.ibm.com> <475005F7.7080702@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <475005F7.7080702@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 22:53 +0000, David Howells wrote:
+
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> Srivatsa Vaddagiri wrote:
+> [snip]
 > 
-> +       /* the MN10300 ASB2303 board doesn't detect its bootprom if this test
-> +        * is allowed to take place, presumably because the flash is
-> +        * write-protected and so cannot be commanded for the purposes of
-> +        * probing
-> +        */
-> +#ifndef CONFIG_MN10300_UNIT_ASB2303
->         if (uaddr != MTD_UADDR_NOT_SUPPORTED ) {
->                 /* ASSERT("The unlock addresses for non-8-bit mode
->                    are bollocks. We don't really need an array."); */
->                 uaddr = finfo->uaddr[0];
->         }
-> +#endif
->  
->   uaddr_done:
->         return uaddr;
+> > Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> > 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-I don't like this -- it shouldn't be necessary.
+thx. Have you done targeted testing of it as well? The (v2) patch is in 
+sched-devel.git:
 
-The 'uaddr' field represents the magic 'unlock address'; the address to
-which you have to send a sequence of write cycles before you're allowed
-to send certain commands.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
 
-Although we can use 16-bit chips in 8-bit mode, the unlock address
-doesn't change when we do that -- it's still the same levels on the same
-pins of the address bus. Having an array of uaddr[] in the chip
-definition was a mistake, and that 'assert' you've just removed for your
-board was added within a few months of Thayne doing the array thing. I
-really should have followed up by _removing_ the array again, by now. 
-
-We _used_ to mangle (shift) the unlock address based on the mode, but
-now we don't (I turned that off at the same time I added the above
-assert. I think the definition in the table for the LV800TA is wrong,
-and it should be 
-                        [0] = MTD_UADDR_0x0555_0x02AA,
-
--- 
-dwmw2
-
+	Ingo
