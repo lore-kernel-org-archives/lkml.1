@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXK3WWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbXK3WXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbXK3WWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXK3WWX
+	id S1758187AbXK3WXc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbXK3WXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:22:23 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33201 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753322AbXK3WWW (ORCPT
+	Fri, 30 Nov 2007 17:23:23 -0500
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:54130 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753043AbXK3WXX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:22:22 -0500
-Date: Fri, 30 Nov 2007 14:20:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: lkml@rtr.ca, abelay@novell.com, lenb@kernel.org, mlord@pobox.com,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
-Message-Id: <20071130142058.816d1693.akpm@linux-foundation.org>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com>
-References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org>
-	<924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Nov 2007 17:23:23 -0500
+Message-ID: <47508D3C.9050507@keyaccess.nl>
+Date: Fri, 30 Nov 2007 23:22:52 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Chris Holvenstot <cholvenstot@comcast.net>
+CC: linux-kernel@vger.kernel.org, hidave.darkstar@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, bjorn.helgaas@hp.com,
+       trenn@suse.de
+Subject: Re: pnpacpi : exceeded the max number of IO resources
+References: <1196428488.7066.6.camel@localhost>
+In-Reply-To: <1196428488.7066.6.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007 14:06:55 -0800
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+On 30-11-07 14:14, Chris Holvenstot wrote:
 
-Please dont go off-list like this.  I put Mark's original mailing list cc's
-back.
-
+> For what it is worth I too have seen this problem this morning and it
+> DOES appear to be new (in contrast to a previous comment)
 > 
-> I will have to Nack this. The reason max_cstate was initentionally
-> removed due to couple of reasons:
-
-It broke userspace without any warning or migration period, afaict.
-
-> 1) All in kernel users of max_cstate should rather be using
-> pm_qos/latency interfaces. All such max_cstate usages must already be
-> migrated.
-
-That code isn't merged.
-
-> 2) Supporting max_cstate as a dynamic parameter cleanly is no longer
-> possible in acpi/processor_idle.c as the C-state policy has moved to
-> cpuidle instead. It can be done if it is needed. But, just below patch
-> will not really work with cpuidle.
+> The message:  pnpacpi: exceeded the max number of mem resources: 12
 > 
-> Selecting max_cstate at boot time as a debug option still works without
-> this patch.
+> is displayed each time the system is booted with the 2.6.24-rc3-git5
+> kernel but is NOT displayed when booting 2.6.24-rc3-git4
 > 
-> So, just this patch will not get back the functionality with cpuidle.
-> Infact changing it at run time will have no effect. Question however is:
-> Is there a real need to revive this parameter so that user can change
-> max_cstate at run time?
+> I have made no changes in my config file between these two kernels other
+> than to accept any new defaults when running make oldconfig.
+> 
+> If you had already narrowed it down to a change between git4 and git5 I
+> apologize for wasting your time.  Have to run to work now.
 
-It is not known whether Mark is actually writing to this thing.  Perhaps
-read-only permissions would be a suitable fix?
+Thanks, and re-added the proper CCs. Sigh...
 
+Well, yes, the warning is actually new as well. Previously your kernel just 
+silently ignored 8 more mem resources than it does now it seems.
 
+Given that people are hitting these limits, it might make sense to just do 
+away with the warning for 2.6.24 again while waiting for the dynamic code?
+
+Rene.
