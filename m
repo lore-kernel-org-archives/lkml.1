@@ -1,102 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934922AbXK3O6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934968AbXK3PBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934922AbXK3O6X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 09:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbXK3O6D
+	id S934968AbXK3PBN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 10:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbXK3PA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 09:58:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58165 "EHLO mx1.redhat.com"
+	Fri, 30 Nov 2007 10:00:58 -0500
+Received: from rtr.ca ([76.10.145.34]:3030 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756364AbXK3O6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 09:58:01 -0500
-Date: Fri, 30 Nov 2007 09:51:31 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071130145131.GB5822@hmsendeavour.rdu.redhat.com>
-References: <474C64CB.7080004@redhat.com> <20071127194220.GG14887@hmsendeavour.rdu.redhat.com> <20071127200011.GA3703@redhat.com> <20071127222408.GH24223@one.firstfloor.org> <474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com> <20071128160206.GA21286@hmsendeavour.rdu.redhat.com> <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com>
+	id S1754383AbXK3PA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 10:00:57 -0500
+Message-ID: <475025A7.9010107@rtr.ca>
+Date: Fri, 30 Nov 2007 10:00:55 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071130144250.GC23810@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Phillip Susi <psusi@cfl.rr.com>,
+       Tejun Heo <htejun@gmail.com>, noah <noah123@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com> <474F3A4B.3080304@cfl.rr.com> <20071130131344.07b75f45@the-village.bc.nu> <20071126075517.GA4141@ucw.cz>
+In-Reply-To: <20071126075517.GA4141@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 09:42:50AM -0500, Vivek Goyal wrote:
-> [..]
-> >> Can you print the LAPIC registers (print_local_APIC) during normal boot
-> >> and during kdump boot and paste here?
-> >
-> > Here are the ones from a normal bootup.
-> >
-> > I was unable to get info from a kdump boot. I haven't figured out why yet. 
-> > With the same patch that I used to capture this, when I tried to kdump the 
-> > kernel, it paused a second or two after the backtrace and then dropped to 
-> > BIOS and came up normally.
-> >
-> > Here is a little trick, at the point where we are trying to get the info to 
-> > print out, the kernel command line hasn't been completely parsed yet. That 
-> > tricked me for part of the day. I had apic=debug on the command line but 
-> > the logic in print_local_APIC saw the default value because the kernel 
-> > command line had yet to be parsed.
-> >
-> > 2007-11-29 17:58:07 ***Here is the info you requested
-> > 2007-11-29 17:58:07
-> > 2007-11-29 17:58:07 printing local APIC contents on CPU#0/0:
-> > 2007-11-29 17:58:07 ... APIC ID:      00000000 (0)
-> > 2007-11-29 17:58:07 ... APIC VERSION: 80050010
-> > 2007-11-29 17:58:07 ... APIC TASKPRI: 00000000 (00)
-> > 2007-11-29 17:58:07 ... APIC ARBPRI: 00000000 (00)
-> > 2007-11-29 17:58:07 ... APIC PROCPRI: 00000000
-> > 2007-11-29 17:58:07 ... APIC EOI: 00000000
-> > 2007-11-29 17:58:07 ... APIC RRR: 00000002
-> > 2007-11-29 17:58:07 ... APIC LDR: 00000000
-> > 2007-11-29 17:58:07 ... APIC DFR: ffffffff
-> > 2007-11-29 17:58:07 ... APIC SPIV: 0000010f
-> > 2007-11-29 17:58:07 ... APIC ISR field:
-> > 2007-11-29 17:58:07 ... APIC TMR field:
-> > 2007-11-29 17:58:07 ... APIC IRR field:
-> > 2007-11-29 17:58:07 ... APIC ESR: 00000000
-> > 2007-11-29 17:58:07 ... APIC ICR: 00004630
-> > 2007-11-29 17:58:07 ... APIC ICR2: 07000000
-> > 2007-11-29 17:58:07 ... APIC LVTT: 00010000
-> > 2007-11-29 17:58:07 ... APIC LVTPC: 00010000
-> > 2007-11-29 17:58:07 ... APIC LVT0: 00000700
+Pavel Machek wrote:
+> On Fri 2007-11-30 13:13:44, Alan Cox wrote:
+>>> Why does a single spurious interrupt cause it to be shut down?  I can 
+>> It doesn't.
+>>
+>>> see if the interrupt is stuck on and keeps interrupting constantly, but 
+>>> if it's just the occasional spurious interrupt, why not just ignore it 
+>>> and move on?
+>> The interrupt is usually level triggered so it continues to create
+>> interrupts until you silence it. The thresholds are about 10,000
+>> interrupt events and on newer kernels we also reset the count if we don't
+>> see any for a while. That works for most stuff except the thinkpad
+>> bluetooth problem.
 > 
-> Ok so here boot cpu LVT0 has been set to deliver any interrupt on pin
-> LINT0 as ExtInt. We do the same thing for kdump cpu local apic too.
-> 
-> I am not sure who is the guy in system who encodes the interrupt message
-> from 8259 to be put on hypertransport and on what basis do they decide
-> whether it should go to only cpu0 or a broadcast one. Looks like in this
-> case it is going to cpu0 only. That means we are left with no choice but
-> to work on patch to initialize IOAPIC early.
-> 
+> Which is confirmed hw problem now, btw.
+...
 
-Thats what I'm doing at the moment.  I'm working on a RHEL5 patch at the moment
-(since thats whats on the production system thats failing), and will forward
-port it once its working
+What problem is that, exactly?
 
-And not to split hairs, but techically thats not our _only_ choice.  We could
-force kdump boots on cpu0 as well ;)
+My Dell has an internal USB BT adapter that briefly appears
+and then disappears again on resume (or stays if I have "enabled" it
+via the BIOS key).
 
-Thanks
-Neil
+I wonder if that has anything to do with the (new in) 2.6.23 pauses
+that machine has on resume (about every 10th time).
 
-> Thanks
-> Vivek
-
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Cheers
