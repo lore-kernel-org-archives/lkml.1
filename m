@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935044AbXK3Nhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934608AbXK3Nh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935044AbXK3Nhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934889AbXK3Ng7
+	id S934608AbXK3Nh4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934558AbXK3Nh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:36:59 -0500
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4595 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933811AbXK3Ng6 (ORCPT
+	Fri, 30 Nov 2007 08:37:29 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:4195 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762699AbXK3Nh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:36:58 -0500
-Date: Fri, 30 Nov 2007 14:36:54 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: David Brownell <david-b@pacbell.net>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Felipe Balbi <felipebalbi@users.sourceforge.net>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <andrew@sanpeople.com>, Tony Lindgren <tony@atomide.com>,
-       eric miao <eric.y.miao@gmail.com>, Kevin Hilman <khilman@mvista.com>,
-       Paul Mundt <lethal@linux-sh.org>, Ben Dooks <ben@trinity.fluff.org>
-Subject: Re: [patch/rfc 2/4] pcf875x I2C GPIO expander driver
-Message-ID: <20071130143654.3fd39ffe@hyperion.delvare>
-In-Reply-To: <47500A4A.10006@billgatliff.com>
-References: <200710291809.29936.david-b@pacbell.net>
-	<200710291851.49057.david-b@pacbell.net>
-	<20071130133256.72385ea8@hyperion.delvare>
-	<47500A4A.10006@billgatliff.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Nov 2007 08:37:27 -0500
+Date: Fri, 30 Nov 2007 14:37:24 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jaswinder Singh <jaswinderlinux@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Glauber <jan.glauber@de.ibm.com>
+Subject: Re: [PATCH] Re: [BUG] 2.6.24-rc3 x86 make depends on s390 arch
+Message-ID: <20071130133724.GE11682@osiris.boeblingen.de.ibm.com>
+References: <3f9a31f40711300014y576e83dldfafa340eec257f0@mail.gmail.com> <3f9a31f40711300303l3260c3e7s4c35884f5e1fa6e1@mail.gmail.com> <20071130115015.GC11682@osiris.boeblingen.de.ibm.com> <3f9a31f40711300408s4341a338n33e5b6dbaee05813@mail.gmail.com> <20071130124958.GD11682@osiris.boeblingen.de.ibm.com> <3f9a31f40711300500h6d13625ua08417ae53acbbea@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f9a31f40711300500h6d13625ua08417ae53acbbea@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill,
-
-On Fri, 30 Nov 2007 07:04:10 -0600, Bill Gatliff wrote:
-> Jean Delvare wrote:
-> > !!(value & (1 << offset))
-> > is more efficiently written
-> > (value >> offset) & 1
+On Fri, Nov 30, 2007 at 06:30:45PM +0530, Jaswinder Singh wrote:
+> We have two options:
 > 
-> ... but not more efficiently implemented.
+> 1. Either move arch/s390/crypto/Kconfig to drivers/crypto/Kconfig
 > 
-> Your version requires code to do the shift on live data at runtime.  
-> David's version lets the compiler create the mask once, at compile-time.
+> OR
+> 
+> 2. In arch/s390/crypto/Kconfig , replace "depends on S390" to "depends
+> on CRYPRO_HW"
+> 
+> I think 2nd option is better for everyone.
 
-I don't understand. How could the compiler create the mask at
-compile-time when "offset" is only known at runtime?
+2) won't work and doesn't make too much sense. So it's 1).
+This isn't worth discussing any furter.
 
-Anyway, I just checked and gcc (4.1.2 on x86_86) generates the same
-code for both expressions, so there's not much to argue about. David,
-feel free to ignore my comment if you prefer your implementation :)
-
--- 
-Jean Delvare
+Thanks.
