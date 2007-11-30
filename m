@@ -1,383 +1,693 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbXLFMsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbXLFMsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbXLFMsh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 07:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbXLFMmz
+	id S1756027AbXLFMsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 07:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXLFMm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 07:42:55 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:53724 "EHLO
+	Thu, 6 Dec 2007 07:42:56 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:53726 "EHLO
 	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754265AbXLFMmv (ORCPT
+	with ESMTP id S1754576AbXLFMmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 07:42:51 -0500
+	Thu, 6 Dec 2007 07:42:53 -0500
 From: Jesper Nilsson <jesper.nilsson@axis.com>
-Message-Id: <1756cef44b33372567336fe3f7ec3f7896e67644.1196848533.git.jesper.nilsson@axis.com>
+Message-Id: <72519df9fab2995bd91c2d0bb88294f748b5a86c.1196848533.git.jesper.nilsson@axis.com>
 In-Reply-To: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Mikael Starvik <mikael.starvik@axis.com>,
        Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Date: Fri, 30 Nov 2007 15:54:01 +0100
-Subject: [PATCH 21/47] New version of CRISv32 I2C driver.
+Date: Fri, 30 Nov 2007 16:01:53 +0100
+Subject: [PATCH 22/47] Update and improve axisflashmap for CRISv32.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Add i2c_write and i2c_read as functions.
-- Use spinlocks for critical regions.
-- Add config item to set I2C data and clock port.
-- Put unneeded testcode inside #if 0.
-- Remove CVS id tag.
+- Use default partition table when no partition is found (for initial tests)
+- Add config ETRAX_AXISFLASHMAP_MTD0WHOLE to allow whole flash as mtd0.
+- Add config for VCS simulator connection.
 
 Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 ---
- arch/cris/arch-v32/drivers/i2c.c |  199 +++++++++++++++++++++++++++++++++++---
- arch/cris/arch-v32/drivers/i2c.h |    2 +
- 2 files changed, 187 insertions(+), 14 deletions(-)
+ arch/cris/arch-v32/drivers/axisflashmap.c |  488 ++++++++++++++++++++---------
+ 1 files changed, 345 insertions(+), 143 deletions(-)
 
-diff --git a/arch/cris/arch-v32/drivers/i2c.c b/arch/cris/arch-v32/drivers/i2c.c
-index f1edd2e..4eda323 100644
---- a/arch/cris/arch-v32/drivers/i2c.c
-+++ b/arch/cris/arch-v32/drivers/i2c.c
-@@ -19,10 +19,10 @@
- *!
- *! ---------------------------------------------------------------------------
- *!
--*! (C) Copyright 1999-2002 Axis Communications AB, LUND, SWEDEN
-+*! (C) Copyright 1999-2007 Axis Communications AB, LUND, SWEDEN
- *!
- *!***************************************************************************/
--/* $Id: i2c.c,v 1.2 2005/05/09 15:29:49 starvik Exp $ */
-+
- /****************** INCLUDE FILES SECTION ***********************************/
+diff --git a/arch/cris/arch-v32/drivers/axisflashmap.c b/arch/cris/arch-v32/drivers/axisflashmap.c
+index c5ff95e..51e1e85 100644
+--- a/arch/cris/arch-v32/drivers/axisflashmap.c
++++ b/arch/cris/arch-v32/drivers/axisflashmap.c
+@@ -1,7 +1,7 @@
+ /*
+  * Physical mapping layer for MTD using the Axis partitiontable format
+  *
+- * Copyright (c) 2001, 2002, 2003 Axis Communications AB
++ * Copyright (c) 2001-2007 Axis Communications AB
+  *
+  * This file is under the GPL.
+  *
+@@ -10,9 +10,6 @@
+  * tells us what other partitions to define. If there isn't, we use a default
+  * partition split defined below.
+  *
+- * Copy of os/lx25/arch/cris/arch-v10/drivers/axisflashmap.c 1.5
+- * with minor changes.
+- *
+  */
  
  #include <linux/module.h>
-@@ -79,6 +79,8 @@ static const char i2c_name[] = "i2c";
+@@ -27,7 +24,8 @@
+ #include <linux/mtd/mtdram.h>
+ #include <linux/mtd/partitions.h>
  
- #define i2c_delay(usecs) udelay(usecs)
- 
-+static DEFINE_SPINLOCK(i2c_lock); /* Protect directions etc */
+-#include <asm/arch/hwregs/config_defs.h>
++#include <linux/cramfs_fs.h>
 +
- /****************** VARIABLE SECTION ************************************/
+ #include <asm/axisflashmap.h>
+ #include <asm/mmu.h>
  
- static struct crisv32_iopin cris_i2c_clk;
-@@ -252,6 +254,7 @@ i2c_getack(void)
- 	 * generate ACK clock pulse
- 	 */
- 	i2c_clk(I2C_CLOCK_HIGH);
-+#if 0
- 	/*
- 	 * Use PORT PB instead of I2C
- 	 * for input. (I2C not working)
-@@ -264,6 +267,8 @@ i2c_getack(void)
- 	i2c_data(1);
- 	i2c_disable();
- 	i2c_dir_in();
+@@ -37,16 +35,24 @@
+ #define FLASH_UNCACHED_ADDR  KSEG_E
+ #define FLASH_CACHED_ADDR    KSEG_F
+ 
++#define PAGESIZE (512)
++
+ #if CONFIG_ETRAX_FLASH_BUSWIDTH==1
+ #define flash_data __u8
+ #elif CONFIG_ETRAX_FLASH_BUSWIDTH==2
+ #define flash_data __u16
+ #elif CONFIG_ETRAX_FLASH_BUSWIDTH==4
+-#define flash_data __u16
++#define flash_data __u32
+ #endif
+ 
+ /* From head.S */
+-extern unsigned long romfs_start, romfs_length, romfs_in_flash;
++extern unsigned long romfs_in_flash; /* 1 when romfs_start, _length in flash */
++extern unsigned long romfs_start, romfs_length;
++extern unsigned long nand_boot; /* 1 when booted from nand flash */
++
++struct partition_name {
++	char name[6];
++};
+ 
+ /* The master mtd for the entire flash. */
+ struct mtd_info* axisflash_mtd = NULL;
+@@ -112,32 +118,20 @@ static struct map_info map_cse1 = {
+ 	.map_priv_1 = FLASH_UNCACHED_ADDR + MEM_CSE0_SIZE
+ };
+ 
+-/* If no partition-table was found, we use this default-set. */
+-#define MAX_PARTITIONS         7
+-#define NUM_DEFAULT_PARTITIONS 3
++#define MAX_PARTITIONS			7
++#ifdef CONFIG_ETRAX_NANDBOOT
++#define NUM_DEFAULT_PARTITIONS		4
++#define DEFAULT_ROOTFS_PARTITION_NO	2
++#define DEFAULT_MEDIA_SIZE              0x2000000 /* 32 megs */
++#else
++#define NUM_DEFAULT_PARTITIONS		3
++#define DEFAULT_ROOTFS_PARTITION_NO	(-1)
++#define DEFAULT_MEDIA_SIZE              0x800000 /* 8 megs */
++#endif
+ 
+-/*
+- * Default flash size is 2MB. CONFIG_ETRAX_PTABLE_SECTOR is most likely the
+- * size of one flash block and "filesystem"-partition needs 5 blocks to be able
+- * to use JFFS.
+- */
+-static struct mtd_partition axis_default_partitions[NUM_DEFAULT_PARTITIONS] = {
+-	{
+-		.name = "boot firmware",
+-		.size = CONFIG_ETRAX_PTABLE_SECTOR,
+-		.offset = 0
+-	},
+-	{
+-		.name = "kernel",
+-		.size = 0x200000 - (6 * CONFIG_ETRAX_PTABLE_SECTOR),
+-		.offset = CONFIG_ETRAX_PTABLE_SECTOR
+-	},
+-	{
+-		.name = "filesystem",
+-		.size = 5 * CONFIG_ETRAX_PTABLE_SECTOR,
+-		.offset = 0x200000 - (5 * CONFIG_ETRAX_PTABLE_SECTOR)
+-	}
+-};
++#if (MAX_PARTITIONS < NUM_DEFAULT_PARTITIONS)
++#error MAX_PARTITIONS must be >= than NUM_DEFAULT_PARTITIONS
++#endif
+ 
+ /* Initialize the ones normally used. */
+ static struct mtd_partition axis_partitions[MAX_PARTITIONS] = {
+@@ -178,6 +172,56 @@ static struct mtd_partition axis_partitions[MAX_PARTITIONS] = {
+ 	},
+ };
+ 
++
++/* If no partition-table was found, we use this default-set.
++ * Default flash size is 8MB (NOR). CONFIG_ETRAX_PTABLE_SECTOR is most
++ * likely the size of one flash block and "filesystem"-partition needs
++ * to be >=5 blocks to be able to use JFFS.
++ */
++static struct mtd_partition axis_default_partitions[NUM_DEFAULT_PARTITIONS] = {
++	{
++		.name = "boot firmware",
++		.size = CONFIG_ETRAX_PTABLE_SECTOR,
++		.offset = 0
++	},
++	{
++		.name = "kernel",
++		.size = 10 * CONFIG_ETRAX_PTABLE_SECTOR,
++		.offset = CONFIG_ETRAX_PTABLE_SECTOR
++	},
++#define FILESYSTEM_SECTOR (11 * CONFIG_ETRAX_PTABLE_SECTOR)
++#ifdef CONFIG_ETRAX_NANDBOOT
++	{
++		.name = "rootfs",
++		.size = 10 * CONFIG_ETRAX_PTABLE_SECTOR,
++		.offset = FILESYSTEM_SECTOR
++	},
++#undef FILESYSTEM_SECTOR
++#define FILESYSTEM_SECTOR (21 * CONFIG_ETRAX_PTABLE_SECTOR)
++#endif
++	{
++		.name = "rwfs",
++		.size = DEFAULT_MEDIA_SIZE - FILESYSTEM_SECTOR,
++		.offset = FILESYSTEM_SECTOR
++	}
++};
++
++#ifdef CONFIG_ETRAX_AXISFLASHMAP_MTD0WHOLE
++/* Main flash device */
++static struct mtd_partition main_partition = {
++	.name = "main",
++	.size = 0,
++	.offset = 0
++};
 +#endif
 +
- 	/*
- 	 * now wait for ack
- 	 */
-@@ -271,11 +276,11 @@ i2c_getack(void)
- 	/*
- 	 * check for ack
- 	 */
--	if(i2c_getbit())
-+	if (i2c_getbit())
- 		ack = 0;
- 	i2c_delay(CLOCK_HIGH_TIME/2);
--	if(!ack){
--		if(!i2c_getbit()) /* receiver pulled SDA low */
-+	if (!ack) {
-+		if (!i2c_getbit()) /* receiver pulld SDA low */
- 			ack = 1;
- 		i2c_delay(CLOCK_HIGH_TIME/2);
- 	}
-@@ -285,6 +290,7 @@ i2c_getack(void)
-     * before we enable our output. If we keep data high
-     * and enable output, we would generate a stop condition.
-     */
-+#if 0
-    i2c_data(I2C_DATA_LOW);
++/* Auxilliary partition if we find another flash */
++static struct mtd_partition aux_partition = {
++	.name = "aux",
++	.size = 0,
++	.offset = 0
++};
++
+ /*
+  * Probe a chip select for AMD-compatible (JEDEC) or CFI-compatible flash
+  * chips in that order (because the amd_flash-driver is faster).
+@@ -191,7 +235,7 @@ static struct mtd_info *probe_cs(struct map_info *map_cs)
+ 	       map_cs->name, map_cs->size, map_cs->map_priv_1);
  
- 	/*
-@@ -292,6 +298,7 @@ i2c_getack(void)
- 	 */
- 	i2c_enable();
- 	i2c_dir_out();
-+#endif
- 	i2c_clk(I2C_CLOCK_LOW);
- 	i2c_delay(CLOCK_HIGH_TIME/4);
- 	/*
-@@ -375,6 +382,137 @@ i2c_sendnack(void)
- 
- /*#---------------------------------------------------------------------------
- *#
-+*# FUNCTION NAME: i2c_write
-+*#
-+*# DESCRIPTION  : Writes a value to an I2C device
-+*#
-+*#--------------------------------------------------------------------------*/
-+int
-+i2c_write(unsigned char theSlave, void *data, size_t nbytes)
-+{
-+	int error, cntr = 3;
-+	unsigned char bytes_wrote = 0;
-+	unsigned char value;
-+	unsigned long flags;
-+
-+	spin_lock(&i2c_lock);
-+
-+	do {
-+		error = 0;
-+		/*
-+		 * we don't like to be interrupted
-+		 */
-+		local_irq_save(flags);
-+
-+		i2c_start();
-+		/*
-+		 * send slave address
-+		 */
-+		i2c_outbyte((theSlave & 0xfe));
-+		/*
-+		 * wait for ack
-+		 */
-+		if (!i2c_getack())
-+			error = 1;
-+		/*
-+		 * send data
-+		 */
-+		for (bytes_wrote = 0; bytes_wrote < nbytes; bytes_wrote++) {
-+			memcpy(&value, data + bytes_wrote, sizeof value);
-+			i2c_outbyte(value);
-+			/*
-+			 * now it's time to wait for ack
-+			 */
-+			if (!i2c_getack())
-+				error |= 4;
-+		}
-+		/*
-+		 * end byte stream
-+		 */
-+		i2c_stop();
-+		/*
-+		 * enable interrupt again
-+		 */
-+		local_irq_restore(flags);
-+
-+	} while (error && cntr--);
-+
-+	i2c_delay(CLOCK_LOW_TIME);
-+
-+	spin_unlock(&i2c_lock);
-+
-+	return -error;
-+}
-+
-+/*#---------------------------------------------------------------------------
-+*#
-+*# FUNCTION NAME: i2c_read
-+*#
-+*# DESCRIPTION  : Reads a value from an I2C device
-+*#
-+*#--------------------------------------------------------------------------*/
-+int
-+i2c_read(unsigned char theSlave, void *data, size_t nbytes)
-+{
-+	unsigned char b = 0;
-+	unsigned char bytes_read = 0;
-+	int error, cntr = 3;
-+	unsigned long flags;
-+
-+	spin_lock(&i2c_lock);
-+
-+	do {
-+		error = 0;
-+		memset(data, 0, nbytes);
-+		/*
-+		 * we don't like to be interrupted
-+		 */
-+		local_irq_save(flags);
-+		/*
-+		 * generate start condition
-+		 */
-+		i2c_start();
-+		/*
-+		 * send slave address
-+		 */
-+		i2c_outbyte((theSlave | 0x01));
-+		/*
-+		 * wait for ack
-+		 */
-+		if (!i2c_getack())
-+			error = 1;
-+		/*
-+		 * fetch data
-+		 */
-+		for (bytes_read = 0; bytes_read < nbytes; bytes_read++) {
-+			b = i2c_inbyte();
-+			memcpy(data + bytes_read, &b, sizeof b);
-+
-+			if (bytes_read < (nbytes - 1))
-+				i2c_sendack();
-+		}
-+		/*
-+		 * last received byte needs to be nacked
-+		 * instead of acked
-+		 */
-+		i2c_sendnack();
-+		/*
-+		 * end sequence
-+		 */
-+		i2c_stop();
-+		/*
-+		 * enable interrupt again
-+		 */
-+		local_irq_restore(flags);
-+	} while (error && cntr--);
-+
-+	spin_unlock(&i2c_lock);
-+
-+	return -error;
-+}
-+
-+/*#---------------------------------------------------------------------------
-+*#
- *# FUNCTION NAME: i2c_writereg
- *#
- *# DESCRIPTION  : Writes a value to an I2C device
-@@ -387,6 +525,8 @@ i2c_writereg(unsigned char theSlave, unsigned char theReg,
- 	int error, cntr = 3;
- 	unsigned long flags;
- 
-+	spin_lock(&i2c_lock);
-+
- 	do {
- 		error = 0;
- 		/*
-@@ -431,11 +571,12 @@ i2c_writereg(unsigned char theSlave, unsigned char theReg,
- 		 * enable interrupt again
- 		 */
- 		local_irq_restore(flags);
--
- 	} while(error && cntr--);
- 
- 	i2c_delay(CLOCK_LOW_TIME);
- 
-+	spin_unlock(&i2c_lock);
-+
- 	return -error;
- }
- 
-@@ -453,6 +594,8 @@ i2c_readreg(unsigned char theSlave, unsigned char theReg)
- 	int error, cntr = 3;
- 	unsigned long flags;
- 
-+	spin_lock(&i2c_lock);
-+
- 	do {
- 		error = 0;
- 		/*
-@@ -482,7 +625,7 @@ i2c_readreg(unsigned char theSlave, unsigned char theReg)
- 		 * now it's time to wait for ack
- 		 */
- 		if(!i2c_getack())
--			error = 1;
-+			error |= 2;
- 		/*
- 		 * repeat start condition
- 		 */
-@@ -496,7 +639,7 @@ i2c_readreg(unsigned char theSlave, unsigned char theReg)
- 		 * wait for ack
- 		 */
- 		if(!i2c_getack())
--			error = 1;
-+			error |= 4;
- 		/*
- 		 * fetch register
- 		 */
-@@ -517,6 +660,8 @@ i2c_readreg(unsigned char theSlave, unsigned char theReg)
- 
- 	} while(error && cntr--);
- 
-+	spin_unlock(&i2c_lock);
-+
- 	return b;
- }
- 
-@@ -583,12 +728,37 @@ static const struct file_operations i2c_fops = {
- int __init
- i2c_init(void)
+ #ifdef CONFIG_MTD_CFI
+-		mtd_cs = do_map_probe("cfi_probe", map_cs);
++	mtd_cs = do_map_probe("cfi_probe", map_cs);
+ #endif
+ #ifdef CONFIG_MTD_JEDECPROBE
+ 	if (!mtd_cs)
+@@ -204,7 +248,7 @@ static struct mtd_info *probe_cs(struct map_info *map_cs)
+ /*
+  * Probe each chip select individually for flash chips. If there are chips on
+  * both cse0 and cse1, the mtd_info structs will be concatenated to one struct
+- * so that MTD partitions can cross chip boundaries.
++ * so that MTD partitions can cross chip boundries.
+  *
+  * The only known restriction to how you can mount your chips is that each
+  * chip select must hold similar flash chips. But you need external hardware
+@@ -216,9 +260,8 @@ static struct mtd_info *flash_probe(void)
  {
--	int res;
-+	static int res;
-+	static int first = 1;
+ 	struct mtd_info *mtd_cse0;
+ 	struct mtd_info *mtd_cse1;
+-	struct mtd_info *mtd_nand = NULL;
+ 	struct mtd_info *mtd_total;
+-	struct mtd_info *mtds[3];
++	struct mtd_info *mtds[2];
+ 	int count = 0;
  
--	/* Setup and enable the Port B I2C interface */
-+	if (!first)
-+		return res;
-+
-+	first = 0;
-+
-+	/* Setup and enable the DATA and CLK pins */
-+
-+	res = crisv32_io_get_name(&cris_i2c_data,
-+		CONFIG_ETRAX_V32_I2C_DATA_PORT);
-+	if (res < 0)
-+		return res;
-+
-+	res = crisv32_io_get_name(&cris_i2c_clk, CONFIG_ETRAX_V32_I2C_CLK_PORT);
-+	crisv32_io_set_dir(&cris_i2c_clk, crisv32_io_dir_out);
-+
-+	return res;
-+}
+ 	if ((mtd_cse0 = probe_cs(&map_cse0)) != NULL)
+@@ -226,12 +269,7 @@ static struct mtd_info *flash_probe(void)
+ 	if ((mtd_cse1 = probe_cs(&map_cse1)) != NULL)
+ 		mtds[count++] = mtd_cse1;
  
--        crisv32_io_get_name(&cris_i2c_data, CONFIG_ETRAX_I2C_DATA_PORT);
--        crisv32_io_get_name(&cris_i2c_clk, CONFIG_ETRAX_I2C_CLK_PORT);
-+
-+int __init
-+i2c_register(void)
-+{
-+
-+	int res;
-+
-+	res = i2c_init();
-+	if (res < 0)
-+		return res;
- 
- 	/* register char device */
- 
-@@ -598,13 +768,14 @@ i2c_init(void)
- 		return res;
+-#ifdef CONFIG_ETRAX_NANDFLASH
+-	if ((mtd_nand = crisv32_nand_flash_probe()) != NULL)
+-		mtds[count++] = mtd_nand;
+-#endif
+-
+-	if (!mtd_cse0 && !mtd_cse1 && !mtd_nand) {
++	if (!mtd_cse0 && !mtd_cse1) {
+ 		/* No chip found. */
+ 		return NULL;
  	}
+@@ -245,9 +283,7 @@ static struct mtd_info *flash_probe(void)
+ 		 * So we use the MTD concatenation layer instead of further
+ 		 * complicating the probing procedure.
+ 		 */
+-		mtd_total = mtd_concat_create(mtds,
+-		                              count,
+-		                              "cse0+cse1+nand");
++		mtd_total = mtd_concat_create(mtds, count, "cse0+cse1");
+ #else
+ 		printk(KERN_ERR "%s and %s: Cannot concatenate due to kernel "
+ 		       "(mis)configuration!\n", map_cse0.name, map_cse1.name);
+@@ -255,61 +291,162 @@ static struct mtd_info *flash_probe(void)
+ #endif
+ 		if (!mtd_total) {
+ 			printk(KERN_ERR "%s and %s: Concatenation failed!\n",
+-			       map_cse0.name, map_cse1.name);
++				map_cse0.name, map_cse1.name);
  
--	printk(KERN_INFO "I2C driver v2.2, (c) 1999-2001 Axis Communications AB\n");
-+	printk(KERN_INFO
-+		"I2C driver v2.2, (c) 1999-2007 Axis Communications AB\n");
+ 			/* The best we can do now is to only use what we found
+-			 * at cse0.
+-			 */
++			 * at cse0. */
+ 			mtd_total = mtd_cse0;
+ 			map_destroy(mtd_cse1);
+ 		}
+-	} else {
+-		mtd_total = mtd_cse0? mtd_cse0 : mtd_cse1 ? mtd_cse1 : mtd_nand;
+-
+-	}
++	} else
++		mtd_total = mtd_cse0 ? mtd_cse0 : mtd_cse1;
  
- 	return 0;
+ 	return mtd_total;
  }
  
- /* this makes sure that i2c_init is called during boot */
+-extern unsigned long crisv32_nand_boot;
+-extern unsigned long crisv32_nand_cramfs_offset;
+-
+ /*
+  * Probe the flash chip(s) and, if it succeeds, read the partition-table
+  * and register the partitions with MTD.
+  */
+ static int __init init_axis_flash(void)
+ {
+-	struct mtd_info *mymtd;
++	struct mtd_info *main_mtd;
++	struct mtd_info *aux_mtd = NULL;
+ 	int err = 0;
+ 	int pidx = 0;
+ 	struct partitiontable_head *ptable_head = NULL;
+ 	struct partitiontable_entry *ptable;
+-	int use_default_ptable = 1; /* Until proven otherwise. */
+-	const char *pmsg = KERN_INFO "  /dev/flash%d at 0x%08x, size 0x%08x\n";
+-	static char page[512];
++	int ptable_ok = 0;
++	static char page[PAGESIZE];
+ 	size_t len;
++	int ram_rootfs_partition = -1; /* -1 => no RAM rootfs partition */
++	int part;
++
++	/* We need a root fs. If it resides in RAM, we need to use an
++	 * MTDRAM device, so it must be enabled in the kernel config,
++	 * but its size must be configured as 0 so as not to conflict
++	 * with our usage.
++	 */
++#if !defined(CONFIG_MTD_MTDRAM) || (CONFIG_MTDRAM_TOTAL_SIZE != 0) || (CONFIG_MTDRAM_ABS_POS != 0)
++	if (!romfs_in_flash && !nand_boot) {
++		printk(KERN_EMERG "axisflashmap: Cannot create an MTD RAM "
++		       "device; configure CONFIG_MTD_MTDRAM with size = 0!\n");
++		panic("This kernel cannot boot from RAM!\n");
++	}
++#endif
++
++#ifndef CONFIG_ETRAX_VCS_SIM
++	main_mtd = flash_probe();
++	if (main_mtd)
++		printk(KERN_INFO "%s: 0x%08x bytes of NOR flash memory.\n",
++		       main_mtd->name, main_mtd->size);
++
++#ifdef CONFIG_ETRAX_NANDFLASH
++	aux_mtd = crisv32_nand_flash_probe();
++	if (aux_mtd)
++		printk(KERN_INFO "%s: 0x%08x bytes of NAND flash memory.\n",
++			aux_mtd->name, aux_mtd->size);
++
++#ifdef CONFIG_ETRAX_NANDBOOT
++	{
++		struct mtd_info *tmp_mtd;
  
--module_init(i2c_init);
-+module_init(i2c_register);
+-#ifndef CONFIG_ETRAXFS_SIM
+-	mymtd = flash_probe();
+-	mymtd->read(mymtd, CONFIG_ETRAX_PTABLE_SECTOR, 512, &len, page);
+-	ptable_head = (struct partitiontable_head *)(page + PARTITION_TABLE_OFFSET);
++		printk(KERN_INFO "axisflashmap: Set to boot from NAND flash, "
++		       "making NAND flash primary device.\n");
++		tmp_mtd = main_mtd;
++		main_mtd = aux_mtd;
++		aux_mtd = tmp_mtd;
++	}
++#endif /* CONFIG_ETRAX_NANDBOOT */
++#endif /* CONFIG_ETRAX_NANDFLASH */
  
- /****************** END OF FILE i2c.c ********************************/
-diff --git a/arch/cris/arch-v32/drivers/i2c.h b/arch/cris/arch-v32/drivers/i2c.h
-index bfe1a13..c073cf4 100644
---- a/arch/cris/arch-v32/drivers/i2c.h
-+++ b/arch/cris/arch-v32/drivers/i2c.h
-@@ -3,6 +3,8 @@
+-	if (!mymtd) {
++	if (!main_mtd && !aux_mtd) {
+ 		/* There's no reason to use this module if no flash chip can
+ 		 * be identified. Make sure that's understood.
+ 		 */
+ 		printk(KERN_INFO "axisflashmap: Found no flash chip.\n");
+-	} else {
+-		printk(KERN_INFO "%s: 0x%08x bytes of flash memory.\n",
+-		       mymtd->name, mymtd->size);
+-		axisflash_mtd = mymtd;
+ 	}
  
- /* High level I2C actions */
- int __init i2c_init(void);
-+int i2c_write(unsigned char theSlave, void *data, size_t nbytes);
-+int i2c_read(unsigned char theSlave, void *data, size_t nbytes);
- int i2c_writereg(unsigned char theSlave, unsigned char theReg, unsigned char theValue);
- unsigned char i2c_readreg(unsigned char theSlave, unsigned char theReg);
+-	if (mymtd) {
+-		mymtd->owner = THIS_MODULE;
++#if 0 /* Dump flash memory so we can see what is going on */
++	if (main_mtd) {
++		int sectoraddr, i;
++		for (sectoraddr = 0; sectoraddr < 2*65536+4096;
++				sectoraddr += PAGESIZE) {
++			main_mtd->read(main_mtd, sectoraddr, PAGESIZE, &len,
++				page);
++			printk(KERN_INFO
++			       "Sector at %d (length %d):\n",
++			       sectoraddr, len);
++			for (i = 0; i < PAGESIZE; i += 16) {
++				printk(KERN_INFO
++				       "%02x %02x %02x %02x "
++				       "%02x %02x %02x %02x "
++				       "%02x %02x %02x %02x "
++				       "%02x %02x %02x %02x\n",
++				       page[i] & 255, page[i+1] & 255,
++				       page[i+2] & 255, page[i+3] & 255,
++				       page[i+4] & 255, page[i+5] & 255,
++				       page[i+6] & 255, page[i+7] & 255,
++				       page[i+8] & 255, page[i+9] & 255,
++				       page[i+10] & 255, page[i+11] & 255,
++				       page[i+12] & 255, page[i+13] & 255,
++				       page[i+14] & 255, page[i+15] & 255);
++			}
++		}
++	}
++#endif
++
++	if (main_mtd) {
++		main_mtd->owner = THIS_MODULE;
++		axisflash_mtd = main_mtd;
++
++		loff_t ptable_sector = CONFIG_ETRAX_PTABLE_SECTOR;
++
++		/* First partition (rescue) is always set to the default. */
++		pidx++;
++#ifdef CONFIG_ETRAX_NANDBOOT
++		/* We know where the partition table should be located,
++		 * it will be in first good block after that.
++		 */
++		int blockstat;
++		do {
++			blockstat = main_mtd->block_isbad(main_mtd,
++				ptable_sector);
++			if (blockstat < 0)
++				ptable_sector = 0; /* read error */
++			else if (blockstat)
++				ptable_sector += main_mtd->erasesize;
++		} while (blockstat && ptable_sector);
++#endif
++		if (ptable_sector) {
++			main_mtd->read(main_mtd, ptable_sector, PAGESIZE,
++				&len, page);
++			ptable_head = &((struct partitiontable *) page)->head;
++		}
++
++#if 0 /* Dump partition table so we can see what is going on */
++		printk(KERN_INFO
++		       "axisflashmap: flash read %d bytes at 0x%08x, data: "
++		       "%02x %02x %02x %02x %02x %02x %02x %02x\n",
++		       len, CONFIG_ETRAX_PTABLE_SECTOR,
++		       page[0] & 255, page[1] & 255,
++		       page[2] & 255, page[3] & 255,
++		       page[4] & 255, page[5] & 255,
++		       page[6] & 255, page[7] & 255);
++		printk(KERN_INFO
++		       "axisflashmap: partition table offset %d, data: "
++		       "%02x %02x %02x %02x %02x %02x %02x %02x\n",
++		       PARTITION_TABLE_OFFSET,
++		       page[PARTITION_TABLE_OFFSET+0] & 255,
++		       page[PARTITION_TABLE_OFFSET+1] & 255,
++		       page[PARTITION_TABLE_OFFSET+2] & 255,
++		       page[PARTITION_TABLE_OFFSET+3] & 255,
++		       page[PARTITION_TABLE_OFFSET+4] & 255,
++		       page[PARTITION_TABLE_OFFSET+5] & 255,
++		       page[PARTITION_TABLE_OFFSET+6] & 255,
++		       page[PARTITION_TABLE_OFFSET+7] & 255);
++#endif
+ 	}
+-	pidx++;  /* First partition is always set to the default. */
  
+ 	if (ptable_head && (ptable_head->magic == PARTITION_TABLE_MAGIC)
+ 	    && (ptable_head->size <
+@@ -322,7 +459,6 @@ static int __init init_axis_flash(void)
+ 		/* Looks like a start, sane length and end of a
+ 		 * partition table, lets check csum etc.
+ 		 */
+-		int ptable_ok = 0;
+ 		struct partitiontable_entry *max_addr =
+ 			(struct partitiontable_entry *)
+ 			((unsigned long)ptable_head + sizeof(*ptable_head) +
+@@ -346,104 +482,170 @@ static int __init init_axis_flash(void)
+ 		ptable_ok = (csum == ptable_head->checksum);
+ 
+ 		/* Read the entries and use/show the info.  */
+-		printk(KERN_INFO " Found a%s partition table at 0x%p-0x%p.\n",
++		printk(KERN_INFO "axisflashmap: "
++		       "Found a%s partition table at 0x%p-0x%p.\n",
+ 		       (ptable_ok ? " valid" : "n invalid"), ptable_head,
+ 		       max_addr);
+ 
+ 		/* We have found a working bootblock.  Now read the
+-		 * partition table.  Scan the table.  It ends when
+-		 * there is 0xffffffff, that is, empty flash.
++		 * partition table.  Scan the table.  It ends with 0xffffffff.
+ 		 */
+ 		while (ptable_ok
+-		       && ptable->offset != 0xffffffff
++		       && ptable->offset != PARTITIONTABLE_END_MARKER
+ 		       && ptable < max_addr
+-		       && pidx < MAX_PARTITIONS) {
++		       && pidx < MAX_PARTITIONS - 1) {
+ 
+-			axis_partitions[pidx].offset = offset + ptable->offset + (crisv32_nand_boot ? 16384 : 0);
+-			axis_partitions[pidx].size = ptable->size;
+-
+-			printk(pmsg, pidx, axis_partitions[pidx].offset,
+-			       axis_partitions[pidx].size);
++			axis_partitions[pidx].offset = offset + ptable->offset;
++#ifdef CONFIG_ETRAX_NANDFLASH
++			if (main_mtd->type == MTD_NANDFLASH) {
++				axis_partitions[pidx].size =
++					(((ptable+1)->offset ==
++					  PARTITIONTABLE_END_MARKER) ?
++					  main_mtd->size :
++					  ((ptable+1)->offset + offset)) -
++					(ptable->offset + offset);
++
++			} else
++#endif /* CONFIG_ETRAX_NANDFLASH */
++				axis_partitions[pidx].size = ptable->size;
++#ifdef CONFIG_ETRAX_NANDBOOT
++			/* Save partition number of jffs2 ro partition.
++			 * Needed if RAM booting or root file system in RAM.
++			 */
++			if (!nand_boot &&
++			    ram_rootfs_partition < 0 && /* not already set */
++			    ptable->type == PARTITION_TYPE_JFFS2 &&
++			    (ptable->flags & PARTITION_FLAGS_READONLY_MASK) ==
++				PARTITION_FLAGS_READONLY)
++				ram_rootfs_partition = pidx;
++#endif /* CONFIG_ETRAX_NANDBOOT */
+ 			pidx++;
+ 			ptable++;
+ 		}
+-		use_default_ptable = !ptable_ok;
+ 	}
+ 
+-	if (romfs_in_flash) {
+-		/* Add an overlapping device for the root partition (romfs). */
++	/* Decide whether to use default partition table. */
++	/* Only use default table if we actually have a device (main_mtd) */
+ 
+-		axis_partitions[pidx].name = "romfs";
+-		if (crisv32_nand_boot) {
+-			char* data = kmalloc(1024, GFP_KERNEL);
+-			int len;
+-			int offset = crisv32_nand_cramfs_offset & ~(1024-1);
+-			char* tmp;
+-
+-			mymtd->read(mymtd, offset, 1024, &len, data);
+-			tmp = &data[crisv32_nand_cramfs_offset % 512];
+-			axis_partitions[pidx].size = *(unsigned*)(tmp + 4);
+-			axis_partitions[pidx].offset = crisv32_nand_cramfs_offset;
+-			kfree(data);
+-		} else {
+-			axis_partitions[pidx].size = romfs_length;
+-			axis_partitions[pidx].offset = romfs_start - FLASH_CACHED_ADDR;
+-		}
++	struct mtd_partition *partition = &axis_partitions[0];
++	if (main_mtd && !ptable_ok) {
++		memcpy(axis_partitions, axis_default_partitions,
++		       sizeof(axis_default_partitions));
++		pidx = NUM_DEFAULT_PARTITIONS;
++		ram_rootfs_partition = DEFAULT_ROOTFS_PARTITION_NO;
++	}
+ 
++	/* Add artificial partitions for rootfs if necessary */
++	if (romfs_in_flash) {
++		/* rootfs is in directly accessible flash memory = NOR flash.
++		   Add an overlapping device for the rootfs partition. */
++		printk(KERN_INFO "axisflashmap: Adding partition for "
++		       "overlapping root file system image\n");
++		axis_partitions[pidx].size = romfs_length;
++		axis_partitions[pidx].offset = romfs_start - FLASH_CACHED_ADDR;
++		axis_partitions[pidx].name = "romfs";
+ 		axis_partitions[pidx].mask_flags |= MTD_WRITEABLE;
+-
+-		printk(KERN_INFO
+-                       " Adding readonly flash partition for romfs image:\n");
+-		printk(pmsg, pidx, axis_partitions[pidx].offset,
+-		       axis_partitions[pidx].size);
++		ram_rootfs_partition = -1;
+ 		pidx++;
+-	}
+-
+-        if (mymtd) {
+-		if (use_default_ptable) {
+-			printk(KERN_INFO " Using default partition table.\n");
+-			err = add_mtd_partitions(mymtd, axis_default_partitions,
+-						 NUM_DEFAULT_PARTITIONS);
+-		} else {
+-			err = add_mtd_partitions(mymtd, axis_partitions, pidx);
++	} else if (romfs_length && !nand_boot) {
++		/* romfs exists in memory, but not in flash, so must be in RAM.
++		 * Configure an MTDRAM partition. */
++		if (ram_rootfs_partition < 0) {
++			/* None set yet, put it at the end */
++			ram_rootfs_partition = pidx;
++			pidx++;
+ 		}
++		printk(KERN_INFO "axisflashmap: Adding partition for "
++		       "root file system image in RAM\n");
++		axis_partitions[ram_rootfs_partition].size = romfs_length;
++		axis_partitions[ram_rootfs_partition].offset = romfs_start;
++		axis_partitions[ram_rootfs_partition].name = "romfs";
++		axis_partitions[ram_rootfs_partition].mask_flags |=
++			MTD_WRITEABLE;
++	}
+ 
+-		if (err) {
+-			panic("axisflashmap could not add MTD partitions!\n");
+-		}
++#ifdef CONFIG_ETRAX_AXISFLASHMAP_MTD0WHOLE
++	if (main_mtd) {
++		main_partition.size = main_mtd->size;
++		err = add_mtd_partitions(main_mtd, &main_partition, 1);
++		if (err)
++			panic("axisflashmap: Could not initialize "
++			      "partition for whole main mtd device!\n");
+ 	}
+-/* CONFIG_EXTRAXFS_SIM */
+ #endif
+ 
+-	if (!romfs_in_flash) {
+-		/* Create an RAM device for the root partition (romfs). */
++	/* Now, register all partitions with mtd.
++	 * We do this one at a time so we can slip in an MTDRAM device
++	 * in the proper place if required. */
++
++	for (part = 0; part < pidx; part++) {
++		if (part == ram_rootfs_partition) {
++			/* add MTDRAM partition here */
++			struct mtd_info *mtd_ram;
++
++			mtd_ram = kmalloc(sizeof(struct mtd_info), GFP_KERNEL);
++			if (!mtd_ram)
++				panic("axisflashmap: Couldn't allocate memory "
++				      "for mtd_info!\n");
++			printk(KERN_INFO "axisflashmap: Adding RAM partition "
++			       "for rootfs image.\n");
++			err = mtdram_init_device(mtd_ram,
++						 (void *)partition[part].offset,
++						 partition[part].size,
++						 partition[part].name);
++			if (err)
++				panic("axisflashmap: Could not initialize "
++				      "MTD RAM device!\n");
++			/* JFFS2 likes to have an erasesize. Keep potential
++			 * JFFS2 rootfs happy by providing one. Since image
++			 * was most likely created for main mtd, use that
++			 * erasesize, if available. Otherwise, make a guess. */
++			mtd_ram->erasesize = (main_mtd ? main_mtd->erasesize :
++				CONFIG_ETRAX_PTABLE_SECTOR);
++		} else {
++			err = add_mtd_partitions(main_mtd, &partition[part], 1);
++			if (err)
++				panic("axisflashmap: Could not add mtd "
++					"partition %d\n", part);
++		}
++	}
++#endif /* CONFIG_EXTRAX_VCS_SIM */
++
++#ifdef CONFIG_ETRAX_VCS_SIM
++	/* For simulator, always use a RAM partition.
++	 * The rootfs will be found after the kernel in RAM,
++	 * with romfs_start and romfs_end indicating location and size.
++	 */
++	struct mtd_info *mtd_ram;
++
++	mtd_ram = kmalloc(sizeof(struct mtd_info), GFP_KERNEL);
++	if (!mtd_ram) {
++		panic("axisflashmap: Couldn't allocate memory for "
++		      "mtd_info!\n");
++	}
+ 
+-#if !defined(CONFIG_MTD_MTDRAM) || (CONFIG_MTDRAM_TOTAL_SIZE != 0) || (CONFIG_MTDRAM_ABS_POS != 0)
+-		/* No use trying to boot this kernel from RAM. Panic! */
+-		printk(KERN_EMERG "axisflashmap: Cannot create an MTD RAM "
+-		       "device due to kernel (mis)configuration!\n");
+-		panic("This kernel cannot boot from RAM!\n");
+-#else
+-		struct mtd_info *mtd_ram;
++	printk(KERN_INFO "axisflashmap: Adding RAM partition for romfs, "
++	       "at %u, size %u\n",
++	       (unsigned) romfs_start, (unsigned) romfs_length);
+ 
+-		mtd_ram = kmalloc(sizeof(struct mtd_info),
+-						     GFP_KERNEL);
+-		if (!mtd_ram) {
+-			panic("axisflashmap couldn't allocate memory for "
+-			      "mtd_info!\n");
+-		}
++	err = mtdram_init_device(mtd_ram, (void *)romfs_start,
++				 romfs_length, "romfs");
++	if (err) {
++		panic("axisflashmap: Could not initialize MTD RAM "
++		      "device!\n");
++	}
++#endif /* CONFIG_EXTRAX_VCS_SIM */
+ 
+-		printk(KERN_INFO " Adding RAM partition for romfs image:\n");
+-		printk(pmsg, pidx, romfs_start, romfs_length);
++#ifndef CONFIG_ETRAX_VCS_SIM
++	if (aux_mtd) {
++		aux_partition.size = aux_mtd->size;
++		err = add_mtd_partitions(aux_mtd, &aux_partition, 1);
++		if (err)
++			panic("axisflashmap: Could not initialize "
++			      "aux mtd device!\n");
+ 
+-		err = mtdram_init_device(mtd_ram, (void*)romfs_start,
+-		                         romfs_length, "romfs");
+-		if (err) {
+-			panic("axisflashmap could not initialize MTD RAM "
+-			      "device!\n");
+-		}
+-#endif
+ 	}
++#endif /* CONFIG_EXTRAX_VCS_SIM */
+ 
+ 	return err;
+ }
 -- 
 1.5.3.6.970.gd25430
 
