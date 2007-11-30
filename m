@@ -1,31 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbXK3TVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbXK3TXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763934AbXK3TVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXK3TVm
+	id S1758187AbXK3TXV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXK3TXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:21:42 -0500
-Received: from rtr.ca ([76.10.145.34]:4218 "EHLO mail.rtr.ca"
+	Fri, 30 Nov 2007 14:23:14 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:1845 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752910AbXK3TVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:21:41 -0500
-Message-ID: <475062C4.9090906@rtr.ca>
-Date: Fri, 30 Nov 2007 14:21:40 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: VMware on 2.6.34:  patches to enable vmmon and vmet to build/run
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753062AbXK3TXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 14:23:13 -0500
+Subject: Re: RFC - organize include/linux/kernel.h, add
+	include/linux/logging.h
+From: Joe Perches <joe@perches.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0711301908430.18767@fbirervta.pbzchgretzou.qr>
+References: <20071130092842.GA6221@localhost.sw.ru>
+	 <1196445871.22120.178.camel@localhost>
+	 <Pine.LNX.4.64.0711301908430.18767@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Fri, 30 Nov 2007 11:20:53 -0800
+Message-Id: <1196450453.22120.199.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've hacked my copy of VMware-6.01 to work with kernel 2.6.24-rc*,
-and dumped my patches for vmmon and vmnet onto my server at:
+On Fri, 2007-11-30 at 19:09 +0100, Jan Engelhardt wrote:
+> While you are at that, PFX should probably be KBUILD_MODNAME,
+> for simplicity. Then it will be easy to consolidate since
+> they all use KBUILD_MODNAME rather than their own PFX.
+> Just btw :)
 
-   http://rtr.ca/vmware-2.6.24/
+I think that nearly all private logging functions
+could be eliminated by having a new macro defined
+especially for logging.
 
-Feel free to use them or ignore them.  Flames to /dev/null
+Something akin to:
 
-Cheers
+#define PRINTK_MODNAME  1
+#define PRINTK_FILE     2
+#define PRINTK_FUNCTION 4
+#define PRINTK_LINE     8
+
+#define PRINTK_PREFIX (your choice)
+#include <linux/logging.h>
+
+then all uses of pr_<level> could get modified for free.
+
+
