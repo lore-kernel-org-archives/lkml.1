@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbXK3SqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764257AbXK3SrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764366AbXK3SqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 13:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763739AbXK3Spx
+	id S1764257AbXK3SrX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 13:47:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761716AbXK3SrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 13:45:53 -0500
-Received: from iriserv.iradimed.com ([72.242.190.170]:10009 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764039AbXK3Spv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 13:45:51 -0500
-Message-ID: <47505A63.8070507@cfl.rr.com>
-Date: Fri, 30 Nov 2007 13:45:55 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 30 Nov 2007 13:47:07 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39686 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761671AbXK3SrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 13:47:04 -0500
+Date: Fri, 30 Nov 2007 10:47:03 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 0/3] Per cpu relocation to ZERO and x86_32 percpu ops on
+ x86_64
+In-Reply-To: <20071130183512.GA8985@elte.hu>
+Message-ID: <Pine.LNX.4.64.0711301043380.1919@schroedinger.engr.sgi.com>
+References: <20071130064305.459255715@sgi.com> <20071130112429.GA3605@elte.hu>
+ <20071130112645.GA7565@elte.hu> <Pine.LNX.4.64.0711300918250.32294@schroedinger.engr.sgi.com>
+ <20071130180002.GB19571@elte.hu> <Pine.LNX.4.64.0711301019590.1743@schroedinger.engr.sgi.com>
+ <20071130183512.GA8985@elte.hu>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       noah <noah123@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: Possibly SATA related freeze killed networking and RAID
-References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com> <474F3A4B.3080304@cfl.rr.com> <474F530D.8090302@gmail.com>
-In-Reply-To: <474F530D.8090302@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Nov 2007 18:46:02.0901 (UTC) FILETIME=[41DF4C50:01C83381]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15578.000
-X-TM-AS-Result: No--12.354000-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Because SFF ATA controller don't have IRQ pending bit.  You don't know
-> whether IRQ is raised or not.  Plus, accessing the status register which
-> clears pending IRQ can be very slow on PATA machines.  It has to go
-> through the PCI and ATA bus and come back.  So, unconditionally trying
-> to clear IRQ by accessing Status can incur noticeable overhead if the
-> IRQ is shared with devices which raise a lot of IRQs.
+On Fri, 30 Nov 2007, Ingo Molnar wrote:
 
-There HAS to be a way to determine if that device generated the 
-interrupt, or the interrupt can not be shared.  Since the kernel said 
-nobody cared about the interrupt, that indicates that the sata driver 
-checked the status register and realized the sata chip didn't generate 
-the interrupt, and returned to the kernel letting it know that the 
-interrupt was not for it.
+> if you treat testing and review efforts like that they might have to 
+> wait even longer :-( "My stuff is there somewhere amongst 1415 -mm 
+> patches. Thank you for your interest and buzz off already."
+
+Well I guess you have to get used to maintainership I think. F.e. the 
+s390 people tested this patchset without requiring a backport. 
+Typically arch maintainers test mm and do not force the patches back into 
+mainline. I am a bit surprised since Andi and I never had this issue.
 
