@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934946AbXK3NSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935025AbXK3NSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934946AbXK3NSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXK3NSU
+	id S935025AbXK3NSy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763481AbXK3NSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:18:20 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:49970 "EHLO mail.dvmed.net"
+	Fri, 30 Nov 2007 08:18:44 -0500
+Received: from sacred.ru ([62.205.161.221]:55435 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755810AbXK3NST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:18:19 -0500
-Message-ID: <47500D95.4020009@garzik.org>
-Date: Fri, 30 Nov 2007 08:18:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1761708AbXK3NSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:18:43 -0500
+Message-ID: <47500D8C.3000407@openvz.org>
+Date: Fri, 30 Nov 2007 16:18:04 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: dsterba@suse.cz
-CC: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       akpm@linux-foundation.org, jkosina@suse.cz, jslaby@suse.cz,
-       stephen@symmetric.co.nz, benm@symmetric.co.nz
-Subject: Re: [PATCH] ipwireless_cs driver for 4G PC Card
-References: <20071130125555.GA10977@ds.suse.cz>
-In-Reply-To: <20071130125555.GA10977@ds.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH 7/7][MQUEUE] Use the ctl paths to register tables
+References: <475008F5.3000506@openvz.org>
+In-Reply-To: <475008F5.3000506@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 30 Nov 2007 16:18:02 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Sterba wrote:
-> Hi,
-> 
-> I'm submitting driver for IPWireless PC Card, used for 4G
-> internet connection.
-> The driver has been in -mm series as ipwireless_cs.git tree for
-> some time, is actively used and there are currently no
-> outstanding bugs.
-> 
-> I'd like to let the driver pass through LKML and then let it
-> queue for 2.6.25.
-> 
-> Driver is released under GPL, original authorship belongs to
-> Symmetric co. Jiri Kosina has fixed some bugs and made it work
-> with recent kernels, and I work on improving the code to
-> match linux kernel standards.
-> 
-> When merged, please drop ipwireless_cs.git tree from -mm and
-> include the patch instead. Patches should be sent to me and I'll
-> push them to mainline via Jeff Garzik's driver tree, if there's
-> no objection.
-> 
-> Driver lives in drivers/char/pcmcia directory, it's a serial
-> driver.  I'm not sure if this is the right place, since it's a
-> networking driver too and therefore should be in
-> drivers/net/pcmcia.
-> 
-> There will be a wiki with info for users and developers, todo etc.
+Noting special - just build the "fs/mqueue/" path and use it.
 
-If the -main- purpose of the hardware is wireless, it should go in via 
-John Linville, wireless maintainer...
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-	Jeff
+---
 
-
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index 9ff4abf..22cb219 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -1229,21 +1229,13 @@ static ctl_table mq_sysctls[] = {
+ 	{ .ctl_name = 0 }
+ };
+ 
+-static ctl_table mq_sysctl_dir[] = {
++static struct ctl_path mq_sysctl_path[] = {
+ 	{
+-		.procname	= "mqueue",
+-		.mode		= 0555,
+-		.child		= mq_sysctls,
++		.procname	= "fs",
++		.ctl_name	= CTL_FS,
+ 	},
+-	{ .ctl_name = 0 }
+-};
+-
+-static ctl_table mq_sysctl_root[] = {
+ 	{
+-		.ctl_name	= CTL_FS,
+-		.procname	= "fs",
+-		.mode		= 0555,
+-		.child		= mq_sysctl_dir,
++		.procname	= "mqueue",
+ 	},
+ 	{ .ctl_name = 0 }
+ };
+@@ -1262,7 +1254,7 @@ static int __init init_mqueue_fs(void)
+ 		return -ENOMEM;
+ #ifdef CONFIG_SYSCTL
+ 	/* ignore failues - they are not fatal */
+-	mq_sysctl_table = register_sysctl_table(mq_sysctl_root);
++	mq_sysctl_table = register_sysctl_paths(mq_sysctl_path, mq_sysctls);
+ #endif
+ 	error = register_filesystem(&mqueue_fs_type);
+ 	if (error)
+-- 
+1.5.3.4
 
