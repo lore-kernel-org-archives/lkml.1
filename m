@@ -1,382 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934239AbXK3LPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934498AbXK3LQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934239AbXK3LPu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 06:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761576AbXK3LPc
+	id S934498AbXK3LQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 06:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbXK3LPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 06:15:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35464 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761042AbXK3LPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 06:15:31 -0500
-Date: Fri, 30 Nov 2007 12:14:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, tglx@linutronix.de,
-       mingo@redhat.com
-Subject: Re: [patch 10/10] x86: Unify percpu.h
-Message-ID: <20071130111457.GD32431@elte.hu>
-References: <20071128210926.008783214@sgi.com> <20071128211528.333696455@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071128211528.333696455@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 30 Nov 2007 06:15:34 -0500
+Received: (root@vger.kernel.org) by vger.kernel.org id S1756393AbXK3LPd
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 06:15:33 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:37593 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXK3Kdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 05:33:37 -0500
+Date: Fri, 30 Nov 2007 19:03:55 +0900 (JST)
+Message-Id: <20071130.190355.77044305.tshibata@ab.jp.nec.com>
+To: greg@kroah.com, mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
+Cc: tshibata@ab.jp.nec.com
+Subject: [patch] Change man-page maintainer address for Japanese HOWTO
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Fri_Nov_30_19_03_55_2007_314)--"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----Next_Part(Fri_Nov_30_19_03_55_2007_314)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-* Christoph Lameter <clameter@sgi.com> wrote:
+Hello,
 
-> Form a single percpu.h from percpu_32.h and percpu_64.h. Both are now 
-> pretty small so this is simply adding them together.
+Below is a patch to change email address of man-page maintainer for
+Japanese HOWTO document (Documentation/ja_JP/HOWTO).
+This is for sync to Documentation/HOWTO that Michael Kerrisk mentioned
+to me.
+Thanks >Michael
 
-lots of rejects - merging this was pretty icky. Hopefully i got it right 
-- see below.
 
-	Ingo
+----Next_Part(Fri_Nov_30_19_03_55_2007_314)--
+Content-Type: Application/Octet-Stream
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="Change-manpage-maintainer-address-HOWTO-ja-JP.txt"
 
------------------>
-Subject: x86: Unify percpu.h
-From: Christoph Lameter <clameter@sgi.com>
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vamFfSlAvSE9XVE8gYi9Eb2N1bWVudGF0aW9uL2ph
+X0pQL0hPV1RPCmluZGV4IGQ5ZDgzMmMuLjQ4OGM3N2YgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRp
+b24vamFfSlAvSE9XVE8KKysrIGIvRG9jdW1lbnRhdGlvbi9qYV9KUC9IT1dUTwpAQCAtMTEsMTQg
+KzExLDE0IEBAIGZvciBub24gRW5nbGlzaCAocmVhZDogSmFwYW5lc2UpIHNwZWFrZXJzIGFuZCBp
+cyBub3QgaW50ZW5kZWQgYXMgYQogZm9yay4gU28gaWYgeW91IGhhdmUgYW55IGNvbW1lbnRzIG9y
+IHVwZGF0ZXMgZm9yIHRoaXMgZmlsZSwgcGxlYXNlIHRyeQogdG8gdXBkYXRlIHRoZSBvcmlnaW5h
+bCBFbmdsaXNoIGZpbGUgZmlyc3QuCiAKLUxhc3QgVXBkYXRlZDogMjAwNy8wOS8yMworTGFzdCBV
+cGRhdGVkOiAyMDA3LzExLzE2CiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiDj
+gZPjgozjga/jgIEKLWxpbnV4LTIuNi4yMy9Eb2N1bWVudGF0aW9uL0hPV1RPCitsaW51eC0yLjYu
+MjQvRG9jdW1lbnRhdGlvbi9IT1dUTwog44Gu5ZKM6Kiz44Gn44GZ44CCCiAKIOe/u+ios+Wbo+S9
+k++8miBKRiDjg5fjg63jgrjjgqfjgq/jg4ggPCBodHRwOi8vd3d3LmxpbnV4Lm9yLmpwL0pGLyA+
+Ci3nv7voqLPml6XvvJogMjAwNy8wOS8xOQor57+76Kiz5pel77yaIDIwMDcvMTEvMTAKIOe/u+io
+s+iAhe+8miBUc3VnaWthenUgU2hpYmF0YSA8dHNoaWJhdGEgYXQgYWIgZG90IGpwIGRvdCBuZWMg
+ZG90IGNvbT4KIOagoeato+iAhe+8miDmnb7lgInjgZXjgpMgPG5iaC0tbWF0cyBhdCBuaWZ0eSBk
+b3QgY29tPgogICAgICAgICAg5bCP5p6XIOmbheWFuOOBleOCkyAoTWFzYW5vcmkgS29iYXlhc2kp
+IDx6YXAwMzIxNiBhdCBuaWZ0eSBkb3QgbmUgZG90IGpwPgpAQCAtMTEwLDcgKzExMCw3IEBAIExp
+bnV4IOOCq+ODvOODjeODq+OCveODvOOCueODhOODquODvOOBr+W5heW6g+OBhOevhOWbsuOBruOD
+ieOCreODpeODoeODs+ODiOOCkuWQCiDmlrDjgZfjgYTjg4njgq3jg6Xjg6Hjg7Pjg4jjg5XjgqHj
+gqTjg6vjgoLov73liqDjgZnjgovjgZPjgajjgpLli6fjgoHjgb7jgZnjgIIKIOOCq+ODvOODjeOD
+q+OBruWkieabtOOBjOOAgeOCq+ODvOODjeODq+OBjOODpuODvOOCtuepuumWk+OBq+WFrOmWi+OB
+l+OBpuOBhOOCi+OCpOODs+OCv+ODvOODleOCp+OCpOOCueOBrgog5aSJ5pu044KS5byV44GN6LW3
+44GT44GZ5aC05ZCI44CB44Gd44Gu5aSJ5pu044KS6Kqs5piO44GZ44KL44Oe44OL44Ol44Ki44Or
+44Oa44O844K444Gu44OR44OD44OB44KE5oOF5aCxCi3jgpLjg57jg4vjg6XjgqLjg6vjg5rjg7zj
+grjjga7jg6Hjg7Pjg4bjg4ogbXRrLW1hbnBhZ2VzQGdteC5uZXQg44Gr6YCB44KL44GT44Go44KS
+5Yun44KB44G+CivjgpLjg57jg4vjg6XjgqLjg6vjg5rjg7zjgrjjga7jg6Hjg7Pjg4bjg4ogbXRr
+Lm1hbnBhZ2VzQGdtYWlsLmNvbSDjgavpgIHjgovjgZPjgajjgpLli6fjgoHjgb4KIOOBmeOAggog
+CiDku6XkuIvjga/jgqvjg7zjg43jg6vjgr3jg7zjgrnjg4Tjg6rjg7zjgavlkKvjgb7jgozjgabj
+gYTjgovoqq3jgpPjgafjgYrjgY/jgbnjgY3jg5XjgqHjgqTjg6vjga7kuIDopqfjgacK
 
-Form a single percpu.h from percpu_32.h and percpu_64.h. Both are now pretty
-small so this is simply adding them together.
-
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/asm-x86/percpu.h    |  145 ++++++++++++++++++++++++++++++++++++++++++--
- include/asm-x86/percpu_32.h |  128 --------------------------------------
- include/asm-x86/percpu_64.h |   29 --------
- 3 files changed, 141 insertions(+), 161 deletions(-)
-
-Index: linux-x86.q/include/asm-x86/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/percpu.h
-+++ linux-x86.q/include/asm-x86/percpu.h
-@@ -1,5 +1,142 @@
--#ifdef CONFIG_X86_32
--# include "percpu_32.h"
--#else
--# include "percpu_64.h"
-+#ifndef _ASM_X86_PERCPU_H_
-+#define _ASM_X86_PERCPU_H_
-+
-+#ifdef CONFIG_X86_64
-+#include <linux/compiler.h>
-+
-+/* Same as asm-generic/percpu.h, except that we store the per cpu offset
-+   in the PDA. Longer term the PDA and every per cpu variable
-+   should be just put into a single section and referenced directly
-+   from %gs */
-+
-+#ifdef CONFIG_SMP
-+#include <asm/pda.h>
-+
-+#define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
-+#define __my_cpu_offset read_pda(data_offset)
-+
-+#define per_cpu_offset(x) (__per_cpu_offset(x))
-+
- #endif
-+#include <asm-generic/percpu.h>
-+
-+DECLARE_PER_CPU(struct x8664_pda, pda);
-+
-+#else /* CONFIG_X86_64 */
-+
-+#ifdef __ASSEMBLY__
-+
-+/*
-+ * PER_CPU finds an address of a per-cpu variable.
-+ *
-+ * Args:
-+ *    var - variable name
-+ *    reg - 32bit register
-+ *
-+ * The resulting address is stored in the "reg" argument.
-+ *
-+ * Example:
-+ *    PER_CPU(cpu_gdt_descr, %ebx)
-+ */
-+#ifdef CONFIG_SMP
-+#define PER_CPU(var, reg)				\
-+	movl %fs:per_cpu__##this_cpu_off, reg;		\
-+	lea per_cpu__##var(reg), reg
-+#define PER_CPU_VAR(var)	%fs:per_cpu__##var
-+#else /* ! SMP */
-+#define PER_CPU(var, reg)			\
-+	movl $per_cpu__##var, reg
-+#define PER_CPU_VAR(var)	per_cpu__##var
-+#endif	/* SMP */
-+
-+#else /* ...!ASSEMBLY */
-+
-+/*
-+ * PER_CPU finds an address of a per-cpu variable.
-+ *
-+ * Args:
-+ *    var - variable name
-+ *    cpu - 32bit register containing the current CPU number
-+ *
-+ * The resulting address is stored in the "cpu" argument.
-+ *
-+ * Example:
-+ *    PER_CPU(cpu_gdt_descr, %ebx)
-+ */
-+#ifdef CONFIG_SMP
-+
-+#define __my_cpu_offset x86_read_percpu(this_cpu_off)
-+
-+/* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
-+#define __percpu_seg "%%fs:"
-+
-+#else  /* !SMP */
-+
-+#define __percpu_seg ""
-+
-+#endif	/* SMP */
-+
-+#include <asm-generic/percpu.h>
-+
-+/* We can use this directly for local CPU (faster). */
-+DECLARE_PER_CPU(unsigned long, this_cpu_off);
-+
-+/* For arch-specific code, we can use direct single-insn ops (they
-+ * don't give an lvalue though). */
-+extern void __bad_percpu_size(void);
-+
-+#define percpu_to_op(op,var,val)				\
-+	do {							\
-+		typedef typeof(var) T__;			\
-+		if (0) { T__ tmp__; tmp__ = (val); }		\
-+		switch (sizeof(var)) {				\
-+		case 1:						\
-+			asm(op "b %1,"__percpu_seg"%0"		\
-+			    : "+m" (var)			\
-+			    :"ri" ((T__)val));			\
-+			break;					\
-+		case 2:						\
-+			asm(op "w %1,"__percpu_seg"%0"		\
-+			    : "+m" (var)			\
-+			    :"ri" ((T__)val));			\
-+			break;					\
-+		case 4:						\
-+			asm(op "l %1,"__percpu_seg"%0"		\
-+			    : "+m" (var)			\
-+			    :"ri" ((T__)val));			\
-+			break;					\
-+		default: __bad_percpu_size();			\
-+		}						\
-+	} while (0)
-+
-+#define percpu_from_op(op,var)					\
-+	({							\
-+		typeof(var) ret__;				\
-+		switch (sizeof(var)) {				\
-+		case 1:						\
-+			asm(op "b "__percpu_seg"%1,%0"		\
-+			    : "=r" (ret__)			\
-+			    : "m" (var));			\
-+			break;					\
-+		case 2:						\
-+			asm(op "w "__percpu_seg"%1,%0"		\
-+			    : "=r" (ret__)			\
-+			    : "m" (var));			\
-+			break;					\
-+		case 4:						\
-+			asm(op "l "__percpu_seg"%1,%0"		\
-+			    : "=r" (ret__)			\
-+			    : "m" (var));			\
-+			break;					\
-+		default: __bad_percpu_size();			\
-+		}						\
-+		ret__; })
-+
-+#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
-+#define x86_write_percpu(var,val) percpu_to_op("mov", per_cpu__##var, val)
-+#define x86_add_percpu(var,val) percpu_to_op("add", per_cpu__##var, val)
-+#define x86_sub_percpu(var,val) percpu_to_op("sub", per_cpu__##var, val)
-+#define x86_or_percpu(var,val) percpu_to_op("or", per_cpu__##var, val)
-+#endif /* !__ASSEMBLY__ */
-+#endif /* !CONFIG_X86_64 */
-+#endif /* _ASM_X86_PERCPU_H_ */
-Index: linux-x86.q/include/asm-x86/percpu_32.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/percpu_32.h
-+++ /dev/null
-@@ -1,128 +0,0 @@
--#ifndef __ARCH_I386_PERCPU__
--#define __ARCH_I386_PERCPU__
--
--#ifdef __ASSEMBLY__
--
--/*
-- * PER_CPU finds an address of a per-cpu variable.
-- *
-- * Args:
-- *    var - variable name
-- *    reg - 32bit register
-- *
-- * The resulting address is stored in the "reg" argument.
-- *
-- * Example:
-- *    PER_CPU(cpu_gdt_descr, %ebx)
-- */
--#ifdef CONFIG_SMP
--#define PER_CPU(var, reg)				\
--	movl %fs:per_cpu__##this_cpu_off, reg;		\
--	lea per_cpu__##var(reg), reg
--#define PER_CPU_VAR(var)	%fs:per_cpu__##var
--#else /* ! SMP */
--#define PER_CPU(var, reg)			\
--	movl $per_cpu__##var, reg
--#define PER_CPU_VAR(var)	per_cpu__##var
--#endif	/* SMP */
--
--#else /* ...!ASSEMBLY */
--
--/*
-- * PER_CPU finds an address of a per-cpu variable.
-- *
-- * Args:
-- *    var - variable name
-- *    cpu - 32bit register containing the current CPU number
-- *
-- * The resulting address is stored in the "cpu" argument.
-- *
-- * Example:
-- *    PER_CPU(cpu_gdt_descr, %ebx)
-- */
--#ifdef CONFIG_SMP
--
--#define __my_cpu_offset x86_read_percpu(this_cpu_off)
--
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset[__i],		\
--		       (src), (size));				\
--} while (0)
--
--/* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
--#define __percpu_seg "%%fs:"
--
--#else  /* !SMP */
--
--#define __percpu_seg ""
--
--#endif	/* SMP */
--
--#include <asm-generic/percpu.h>
--
--/* We can use this directly for local CPU (faster). */
--DECLARE_PER_CPU(unsigned long, this_cpu_off);
--
--/* For arch-specific code, we can use direct single-insn ops (they
-- * don't give an lvalue though). */
--extern void __bad_percpu_size(void);
--
--#define percpu_to_op(op,var,val)				\
--	do {							\
--		typedef typeof(var) T__;			\
--		if (0) { T__ tmp__; tmp__ = (val); }		\
--		switch (sizeof(var)) {				\
--		case 1:						\
--			asm(op "b %1,"__percpu_seg"%0"		\
--			    : "+m" (var)			\
--			    :"ri" ((T__)val));			\
--			break;					\
--		case 2:						\
--			asm(op "w %1,"__percpu_seg"%0"		\
--			    : "+m" (var)			\
--			    :"ri" ((T__)val));			\
--			break;					\
--		case 4:						\
--			asm(op "l %1,"__percpu_seg"%0"		\
--			    : "+m" (var)			\
--			    :"ri" ((T__)val));			\
--			break;					\
--		default: __bad_percpu_size();			\
--		}						\
--	} while (0)
--
--#define percpu_from_op(op,var)					\
--	({							\
--		typeof(var) ret__;				\
--		switch (sizeof(var)) {				\
--		case 1:						\
--			asm(op "b "__percpu_seg"%1,%0"		\
--			    : "=r" (ret__)			\
--			    : "m" (var));			\
--			break;					\
--		case 2:						\
--			asm(op "w "__percpu_seg"%1,%0"		\
--			    : "=r" (ret__)			\
--			    : "m" (var));			\
--			break;					\
--		case 4:						\
--			asm(op "l "__percpu_seg"%1,%0"		\
--			    : "=r" (ret__)			\
--			    : "m" (var));			\
--			break;					\
--		default: __bad_percpu_size();			\
--		}						\
--		ret__; })
--
--#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
--#define x86_write_percpu(var,val) percpu_to_op("mov", per_cpu__##var, val)
--#define x86_add_percpu(var,val) percpu_to_op("add", per_cpu__##var, val)
--#define x86_sub_percpu(var,val) percpu_to_op("sub", per_cpu__##var, val)
--#define x86_or_percpu(var,val) percpu_to_op("or", per_cpu__##var, val)
--#endif /* !__ASSEMBLY__ */
--
--#endif /* __ARCH_I386_PERCPU__ */
-Index: linux-x86.q/include/asm-x86/percpu_64.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/percpu_64.h
-+++ /dev/null
-@@ -1,29 +0,0 @@
--#ifndef _ASM_X8664_PERCPU_H_
--#define _ASM_X8664_PERCPU_H_
--#include <linux/compiler.h>
--
--/* Same as asm-generic/percpu.h, except that we store the per cpu offset
--   in the PDA. Longer term the PDA and every per cpu variable
--   should be just put into a single section and referenced directly
--   from %gs */
--
--#ifdef CONFIG_SMP
--#include <asm/pda.h>
--
--#define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
--#define __my_cpu_offset read_pda(data_offset)
--
--#define per_cpu_offset(x) (__per_cpu_offset(x))
--
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset(__i),		\
--		       (src), (size));				\
--} while (0)
--
--#endif
--#include <asm-generic/percpu.h>
--#endif /* _ASM_X8664_PERCPU_H_ */
+----Next_Part(Fri_Nov_30_19_03_55_2007_314)----
