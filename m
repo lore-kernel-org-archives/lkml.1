@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933907AbXK3AAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764063AbXK3ACr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933907AbXK3AAx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 19:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbXK3AAk
+	id S1764063AbXK3ACr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 19:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763582AbXK3ACf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 19:00:40 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52064 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753733AbXK3AAj (ORCPT
+	Thu, 29 Nov 2007 19:02:35 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:50210 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763578AbXK3ACd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 19:00:39 -0500
-Date: Thu, 29 Nov 2007 15:59:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, ak@suse.de, suresh.b.siddha@intel.com,
-       markus.t.metzger@intel.com, Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: [patch 0/2] x86, ptrace:  support for branch trace store(BTS)
-Message-Id: <20071129155940.7df70ac2.akpm@linux-foundation.org>
-In-Reply-To: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com>
-References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 19:02:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=SmZ1tUuWMrWCObuojCk5YbWk+Qul2ONjKeSLpJ6TxUaSxdaVcWrlTIfTiyrXmUz/80Nm0kaWRGRhovgq/rDPHJrvD7Pb9tNgs0LoH3XMVcusYdSur0vt0XkFZFjy8n6jHNdAyk7+aAxTZIqTfcNJGoJXHCW49Gy5WrQ7xx9J+Xk=
+Message-ID: <474F530D.8090302@gmail.com>
+Date: Fri, 30 Nov 2007 09:02:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Phillip Susi <psusi@cfl.rr.com>
+CC: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       noah <noah123@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com> <474F3A4B.3080304@cfl.rr.com>
+In-Reply-To: <474F3A4B.3080304@cfl.rr.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 08:14:10 -0000
-"Metzger, Markus T" <markus.t.metzger@intel.com> wrote:
-
-> Support for Intel's last branch recording to ptrace. This gives
-> debuggers
-> access to this hardware feature and allows them to show an execution
-> trace
-> of the debugged application.
+Phillip Susi wrote:
+> Tejun Heo wrote:
+>> Agreed.  Nobody cared on ATA controllers is usually very effective at
+>> taking the whole machine down.  Is there any reason why we don't turn on
+>> irqpoll on turned off IRQs automatically?
 > 
-> Last branch recording (see section 18.5 in the Intel 64 and IA-32
-> Architectures Software Developer's Manual) allows taking an execution
-> trace of the running application without instrumentation. When a branch
-> is executed, the hardware logs the source and destination address in a
-> cyclic buffer given to it by the OS.
-> 
-> This can be a great debugging aid. It shows you how exactly you got
-> where you currently are without requiring you to do lots of single
-> stepping and rerunning.
-> 
-> This patch manages the various buffers, configures the trace
-> hardware, disentangles the trace, and provides a user interface via
-> ptrace. On the high-level design:
-> - there is one optional trace buffer per thread_struct
-> - upon a context switch, the trace hardware is reconfigured to either
->   disable tracing or to use the appropriate buffer for the new task.
->   - tracing induces ~20% overhead as branch records are sent out on
->     the bus. 
->   - the hardware collects trace per processor. To disentangle the
->     traces for different tasks, we use separate buffers and reconfigure
->     the trace hardware.
-> - the low-level data layout is configured at cpu initialization time
->   - different processors use different branch record formats
-> 
-> 
-> patch 1/2 contains the kernel changes
-> patch 2/2 contains changes to the ptrace man pages
-> 
-> 
+> Why does a single spurious interrupt cause it to be shut down?  I can
+> see if the interrupt is stuck on and keeps interrupting constantly, but
+> if it's just the occasional spurious interrupt, why not just ignore it
+> and move on?
 
-Is there any userspace code avaialble which people can use to play with
-this?
+Because SFF ATA controller don't have IRQ pending bit.  You don't know
+whether IRQ is raised or not.  Plus, accessing the status register which
+clears pending IRQ can be very slow on PATA machines.  It has to go
+through the PCI and ATA bus and come back.  So, unconditionally trying
+to clear IRQ by accessing Status can incur noticeable overhead if the
+IRQ is shared with devices which raise a lot of IRQs.
 
-How do you envisage it being used in the long term?  Do you expect any of
-the standard performance tuning tools will be tweaked to understand this
-feature and if so which ones?
-
-I'm generally wondering "how will developers be using this in a year or
-two's time?"
-
-Please cc Michael Kerrisk <mtk-manpages@gmx.net> on future versions of
-these patches.
-
-The patches were horridly wordwrapped.
-
-Is there any likelihood that any other CPUs do now or will in the future
-support any similar feature to this?  If so, is an implementation which is
-100% contained to arch/x86 appropriate?  
-
+-- 
+tejun
