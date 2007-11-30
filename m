@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbXK3NMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932459AbXK3NNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934032AbXK3NMT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXK3NMB
+	id S932459AbXK3NNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbXK3NNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:12:01 -0500
-Received: from styx.suse.cz ([82.119.242.94]:36283 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754098AbXK3NMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:12:00 -0500
-Message-ID: <47500C1F.7080803@suse.cz>
-Date: Fri, 30 Nov 2007 14:11:59 +0100
-From: Jiri Slaby <jslaby@suse.cz>
+	Fri, 30 Nov 2007 08:13:34 -0500
+Received: from sacred.ru ([62.205.161.221]:49722 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbXK3NNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:13:33 -0500
+Message-ID: <47500C74.10605@openvz.org>
+Date: Fri, 30 Nov 2007 16:13:24 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: dsterba@suse.cz
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       akpm@linux-foundation.org, jeff@garzik.org, jkosina@suse.cz,
-       stephen@symmetric.co.nz, benm@symmetric.co.nz
-Subject: Re: [PATCH] ipwireless_cs driver for 4G PC Card
-References: <20071130125555.GA10977@ds.suse.cz>
-In-Reply-To: <20071130125555.GA10977@ds.suse.cz>
-X-Enigmail-Version: 0.95.5
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH 5/7][UTS] Use the ctl paths to register tables
+References: <475008F5.3000506@openvz.org>
+In-Reply-To: <475008F5.3000506@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 30 Nov 2007 16:13:21 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/30/2007 01:55 PM, David Sterba wrote:
-> Hi,
-> 
-> I'm submitting driver for IPWireless PC Card, used for 4G
-> internet connection.
-> The driver has been in -mm series as ipwireless_cs.git tree for
-> some time, is actively used and there are currently no
-> outstanding bugs.
+Same as with the IPC sysctls - I do not add any ctl roots
+to handle multiple UTS namespaces, since we already track
+this case in ctl handlers.
 
-Almost :).
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-[...]
-> Rewieved-by: Jiri Slaby <jslaby@suse.cz>
-[...]
-> diff --git a/drivers/char/pcmcia/ipwireless_cs_hardware.c b/drivers/char/pcmcia/ipwireless_cs_hardware.c
-> new file mode 100644
-> index 0000000..d67ce2e
-> --- /dev/null
-> +++ b/drivers/char/pcmcia/ipwireless_cs_hardware.c
-[...]
-> +static struct ipw_rx_packet *pool_allocate(struct ipw_hardware *hw,
-> +					   struct ipw_rx_packet *packet,
-> +					   int minimum_free_space)
-> +{
-> +
-> +	if (!packet) {
-> +		unsigned long flags;
-> +
-> +		/*
-> +		 * If this is the first fragment, then we will need to fetch a
-> +		 * packet to put it in.
-> +		 */
-> +		spin_lock_irqsave(&hw->spinlock, flags);
-> +		/* If we have one in our pool, then pull it out. */
-> +		if (!list_empty(&hw->rx_pool)) {
-> +			packet = list_first_entry(&hw->rx_pool,
-> +					struct ipw_rx_packet, queue);
-> +			list_del(&packet->queue);
-> +			hw->rx_pool_size--;
-> +			spin_unlock_irqrestore(&hw->spinlock, flags);
-> +		} else {
-> +			/* Otherwise allocate a new one. */
-> +			static int min_capacity = 256;
-> +			int new_capacity;
-> +
-> +			spin_unlock_irqrestore(&hw->spinlock, flags);
-> +			new_capacity =
-> +			    minimum_free_space > min_capacity
-> +			    ? minimum_free_space
-> +			    : min_capacity;
-> +			packet = kmalloc(sizeof(struct ipw_rx_packet)
-> +					+ new_capacity, GFP_ATOMIC);
+---
 
-These not-testing-alloc-retvals remain unresolved. Please post a -fix or patch
-v2 if any other comments come.
+diff --git a/kernel/utsname_sysctl.c b/kernel/utsname_sysctl.c
+index fe3a56c..568ff0b 100644
+--- a/kernel/utsname_sysctl.c
++++ b/kernel/utsname_sysctl.c
+@@ -128,19 +128,17 @@ static struct ctl_table uts_kern_table[] = {
+ 	{}
+ };
+ 
+-static struct ctl_table uts_root_table[] = {
++static struct ctl_path uts_root_path[] = {
+ 	{
+-		.ctl_name	= CTL_KERN,
+ 		.procname	= "kernel",
+-		.mode		= 0555,
+-		.child		= uts_kern_table,
++		.ctl_name	= CTL_KERN,
+ 	},
+ 	{}
+ };
+ 
+ static int __init utsname_sysctl_init(void)
+ {
+-	register_sysctl_table(uts_root_table);
++	register_sysctl_paths(uts_root_path, uts_kern_table);
+ 	return 0;
+ }
+ 
+-- 
+1.5.3.4
 
-> +			packet->capacity = new_capacity;
-...
-
-thanks.
