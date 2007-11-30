@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbXK3Ehn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbXK3FHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764271AbXK3Ehn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 23:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXK3Eha
+	id S1757102AbXK3FHw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 00:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbXK3FHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 23:37:30 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:30959 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754873AbXK3Eh3 (ORCPT
+	Fri, 30 Nov 2007 00:07:38 -0500
+Received: from rn-out-0910.google.com ([64.233.170.189]:36406 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750726AbXK3FHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 23:37:29 -0500
-Message-ID: <1618816c0711292037w34bd383av6cf32bfbd8d45707@mail.gmail.com>
-Date: Thu, 29 Nov 2007 21:37:28 -0700
-From: "Raymano Garibaldi" <raymano@faunos.com>
+	Fri, 30 Nov 2007 00:07:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UVa3V2RxX7ppyrIzSQ5PsZxI2330pLsYoiUgEMooXOtKrdEn7KJfHo3XGvqoTvOu5Qj+djdPAOuR9rcpUD/BR2pORaG7EK9zWpQ/yL0Dlz/S6XvnzbFLKUzc98B9bo0TyAGtJYeAIqL6/H3SBwUrDxIUnuUDy7xBYWc+WlgJKh0=
+Message-ID: <a8e1da0711292107q4e2e0282o2d37798dc529288c@mail.gmail.com>
+Date: Fri, 30 Nov 2007 13:07:37 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
 To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Denys Vlasenko" <vda.linux@googlemail.com>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>,
-       "USB development list" <linux-usb-devel@lists.sourceforge.net>,
-       kirk@faunos.com
-In-Reply-To: <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
+Subject: Re: [RFC] Sample kset/ktype/kobject implementation
+Cc: "Greg KH" <greg@kroah.com>, "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       linux-kernel@vger.kernel.org, "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Jonathan Corbet" <corbet@lwn.net>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711291708080.5666-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1618816c0711290353h3c0e4192we5909725d1aff3e9@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
+References: <20071129203900.GA27877@kroah.com>
+	 <Pine.LNX.4.44L0.0711291708080.5666-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 29 Nov 2007, Raymano Garibaldi wrote:
+On Nov 30, 2007 6:11 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 29 Nov 2007, Greg KH wrote:
 >
-> > The feature does work as long as the device remains plugged in and
-> > that is what I have said in my previous postings too. What I'm saying
-> > that should work and worked under 2.6.21 and is not working currently
-> > is the ability to unplug and plug back in the device while the
-> > computer is suspended before resuming without losing the mount.
+> > > > > kobject_put(foo) is needed since it gets you through kobject_cleanup()
+> > > > > where the name can be freed.
+> > > >
+> > > > No, kobject_register() should have handled that for us, right?
+> > >
+> > > kobject_register() doesn't do a kobject_put() if kobject_add() failed.
+> >
+> > Crap.  If I can't get this code right in an example, the API is messed
+> > up.  Time to take Kay seriously and start to revamp the basic kobject
+> > api :)
 >
-> Okay, guess I misunderstood what you wrote before.
+> The rule is simple enough.  After calling kobject_register() you should
+> always use kobject_put() -- even if kobject_register() failed.
 >
-> The patch below for 2.6.23 should do what you want (and more besides).
-> It forces the USB Persist feature to apply to all persist-enabled
-> devices, whether they were unplugged or not.
+> In fact, after calling kobject_init() you should use kobject_put().
+> The first rule follows from this one, since kobject_register() calls
+> kobject_init() internally.
 >
-> There's no chance of this getting accepted into the official kernel in
-> such a simple form, but at least it will allow you to do what you want.
->
+Hi,
+The behavior is not very clear here, the root problem is that :
+
+1. Should we call kobject_put so cleanup work can be done by refcount
+touch zero or call kfree every time after kobject_register failed?
+
+2. If kobject_put calling is true, should this be done in
+kobject_register error handling codes or by hand after
+kobject_register failed?
+
+Regards
+dave
 > Alan Stern
 >
 >
-> --- 2.6.23/drivers/usb/core/driver.c1   2007-11-29 10:57:36.000000000 -0500
-> +++ 2.6.23/drivers/usb/core/driver.c    2007-11-29 11:01:44.000000000 -0500
-> @@ -1550,6 +1550,9 @@
->                 if (!(udev->reset_resume && udev->do_remote_wakeup))
->                         return -EPERM;
->         }
-> +
-> +       /* Force all system resumes to be reset-resumes */
-> +       udev->reset_resume = 1;
->         return usb_external_resume_device(udev);
->  }
 >
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
->
-
-Alan,
-
-Thank you! Thank you! Thank you!
-
-Who'd have thought such a simple patch could make someone so happy?
-
-That did the trick. I just tried it and it works beautifully whether
-the device remains plugged in during suspend or if it's unplugged and
-plugged back in during suspend and before resume.
-
-Now if this could only become the default behavior ;-)
-
-Thanks again,
-Raymano G.
