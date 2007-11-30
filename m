@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbXK3Lee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934302AbXK3LhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933271AbXK3Lee (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 06:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbXK3LeW
+	id S934302AbXK3LhA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 06:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbXK3Lgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 06:34:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34196 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755322AbXK3LeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 06:34:21 -0500
-Date: Fri, 30 Nov 2007 12:34:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 09/11] x86 ia32 ptrace arch merge
-Message-ID: <20071130113403.GA8190@elte.hu>
-References: <20071129115711.9FC8526F8E7@magilla.localdomain> <20071129120041.8621A26F989@magilla.localdomain> <20071129205852.GA1726@martell.zuzino.mipt.ru> <20071129213705.35E2826F8E7@magilla.localdomain>
+	Fri, 30 Nov 2007 06:36:50 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:8696 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759512AbXK3Lgu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 06:36:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eSssJd16R3pUoZNCfmAw5IwlGz/cyQhxdWKmVqFhv7GsSFG7P/aWa8Qt1+MUZ2BLz6rqlWTBrFgL8Sio1abpDIgmKiz2HmX3Qnt7/z/kAcNOrSMGBTIDSkzaDNjIhukZhBKaac9DRN9ZH/mJIcasmrxuFQDUg5pix6WQmy79Z2k=
+Message-ID: <ea9232d10711300336m24cabafbk18a8b131f561348a@mail.gmail.com>
+Date: Fri, 30 Nov 2007 12:36:49 +0100
+From: "Karol Swietlicki" <magotari@gmail.com>
+To: Ben.Crowhurst@stellatravel.co.uk
+Subject: Re: Kernel Development & Objective-C
+Cc: loic.grenie@gmail.com, linux-kernel@vger.kernel.org
+In-Reply-To: <474FF0FE.50208@stellatravel.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20071129213705.35E2826F8E7@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <474EAD18.6040408@stellatravel.co.uk>
+	 <9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
+	 <474FF0FE.50208@stellatravel.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 30/11/2007, Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk> wrote:
+> Loïc Grenié wrote:
+> > 2007/11/29, Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>:
+> >
+> >> Has Objective-C ever been considered for kernel development?
+> >>
 
-* Roland McGrath <roland@redhat.com> wrote:
+<snip>
 
-> > On Thu, Nov 29, 2007 at 04:00:41AM -0800, Roland McGrath wrote:
-> > > This moves the sys32_ptrace code into arch/x86/kernel/ptrace.c,
-> > > verbatim except for a few hard-coded sizes replaced with sizeof.
->     ^^^^^^^^
-> >[...]
-> 
-> I just moved this code, I didn't change it.  So let's leave style (or 
-> other) problems with the existing code for a next round and not hold 
-> up the moving/merging because of them.
+> >     Lots of people will think of better reasons why ObjC is not used...
+> >
+> >         Loïc Grenié
+> >
+> Which I'm looking forward to hear :)
+>
+> Thank you for your appropriate response.
 
-yep - cleanups should then be posted against the unified codebase. (it's 
-simpler that way)
+Here are a few reasons off the top of my head:
+1. Adding extra unneeded complexity. Debugging would be harder.
+2. Not many people can code ObjC when compared to the number of C coders.
+3. If it ain't broken... Why fix it. The kernel works, right? Good.
 
-	Ingo
+You can find a great explanation somewhere out there, I'm not sure who
+wrote it and the thing was explaining why C++ is not a great choice
+for the Linux kernel. Some things going against C++ will also go
+against ObjC. I cannot find it, but it is out there somewhere.
+
+I'm a newbie and I might be wrong, but the above is what I believe to be true.
+
+Karol Swietlicki
