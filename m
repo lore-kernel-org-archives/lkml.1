@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbXK3X0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbXK3X1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbXK3X0t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbXK3X0f
+	id S1759597AbXK3X1Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbXK3X1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:26:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43696 "EHLO mx1.redhat.com"
+	Fri, 30 Nov 2007 18:27:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43724 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758751AbXK3X0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:26:32 -0500
-Date: Fri, 30 Nov 2007 18:25:24 -0500 (EST)
-Message-Id: <20071130.182524.45176489.k-ueda@ct.jp.nec.com>
+	id S1757940AbXK3X1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:27:05 -0500
+Date: Fri, 30 Nov 2007 18:26:35 -0500 (EST)
+Message-Id: <20071130.182635.31637441.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, bharrosh@panasas.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
        k-ueda@ct.jp.nec.com
-Subject: [PATCH 03/28] blk_end_request: changing block layer core (take 3)
+Subject: [PATCH 05/28] blk_end_request: changing um (take 3)
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -25,94 +25,32 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts core parts of block layer to use blk_end_request().
-
-'dequeue' argument was originally introduced for end_dequeued_request(),
-where no attempt should be made to dequeue the request as it's already
-dequeued.
-However, it's not necessary as it can be checked with
-list_empty(&rq->queuelist).
-(Dequeued request has empty list and queued request doesn't.)
-
-As a result of this patch, end_queued_request() and
-end_dequeued_request() become identical.  Later patch will merge
-and rename them and change users of those functions.
+This patch converts um to use blk_end_request().
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- block/ll_rw_blk.c |   25 ++++++++++---------------
- 1 files changed, 10 insertions(+), 15 deletions(-)
+ arch/um/drivers/ubd_kern.c |   10 +---------
+ 1 files changed, 1 insertion(+), 9 deletions(-)
 
-Index: 2.6.24-rc3-mm2/block/ll_rw_blk.c
+Index: 2.6.24-rc3-mm2/arch/um/drivers/ubd_kern.c
 ===================================================================
---- 2.6.24-rc3-mm2.orig/block/ll_rw_blk.c
-+++ 2.6.24-rc3-mm2/block/ll_rw_blk.c
-@@ -368,8 +368,8 @@ void blk_ordered_complete_seq(struct req
- 	q->ordseq = 0;
- 	rq = q->orig_bar_rq;
+--- 2.6.24-rc3-mm2.orig/arch/um/drivers/ubd_kern.c
++++ 2.6.24-rc3-mm2/arch/um/drivers/ubd_kern.c
+@@ -481,15 +481,7 @@ int thread_fd = -1;
  
--	end_that_request_first(rq, uptodate, rq->hard_nr_sectors);
--	end_that_request_last(rq, uptodate);
-+	if (__blk_end_request(rq, uptodate, blk_rq_bytes(rq)))
-+		BUG();
- }
- 
- static void pre_flush_end_io(struct request *rq, int error)
-@@ -486,9 +486,9 @@ int blk_do_ordered(struct request_queue 
- 			 * ORDERED_NONE while this request is on it.
- 			 */
- 			blkdev_dequeue_request(rq);
--			end_that_request_first(rq, -EOPNOTSUPP,
--					       rq->hard_nr_sectors);
--			end_that_request_last(rq, -EOPNOTSUPP);
-+			if (__blk_end_request(rq, -EOPNOTSUPP,
-+					      blk_rq_bytes(rq)))
-+				BUG();
- 			*rqp = NULL;
- 			return 0;
- 		}
-@@ -3691,14 +3691,9 @@ void end_that_request_last(struct reques
- EXPORT_SYMBOL(end_that_request_last);
- 
- static inline void __end_request(struct request *rq, int uptodate,
--				 unsigned int nr_bytes, int dequeue)
-+				 unsigned int nr_bytes)
+ static void ubd_end_request(struct request *req, int bytes, int uptodate)
  {
--	if (!end_that_request_chunk(rq, uptodate, nr_bytes)) {
--		if (dequeue)
--			blkdev_dequeue_request(rq);
--		add_disk_randomness(rq->rq_disk);
--		end_that_request_last(rq, uptodate);
+-	if (!end_that_request_first(req, uptodate, bytes >> 9)) {
+-		struct ubd *dev = req->rq_disk->private_data;
+-		unsigned long flags;
+-
+-		add_disk_randomness(req->rq_disk);
+-		spin_lock_irqsave(&dev->lock, flags);
+-		end_that_request_last(req, uptodate);
+-		spin_unlock_irqrestore(&dev->lock, flags);
 -	}
-+	__blk_end_request(rq, uptodate, nr_bytes);
++	blk_end_request(req, uptodate, bytes);
  }
  
- /**
-@@ -3741,7 +3736,7 @@ EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
-  **/
- void end_queued_request(struct request *rq, int uptodate)
- {
--	__end_request(rq, uptodate, blk_rq_bytes(rq), 1);
-+	__end_request(rq, uptodate, blk_rq_bytes(rq));
- }
- EXPORT_SYMBOL(end_queued_request);
- 
-@@ -3758,7 +3753,7 @@ EXPORT_SYMBOL(end_queued_request);
-  **/
- void end_dequeued_request(struct request *rq, int uptodate)
- {
--	__end_request(rq, uptodate, blk_rq_bytes(rq), 0);
-+	__end_request(rq, uptodate, blk_rq_bytes(rq));
- }
- EXPORT_SYMBOL(end_dequeued_request);
- 
-@@ -3784,7 +3779,7 @@ EXPORT_SYMBOL(end_dequeued_request);
-  **/
- void end_request(struct request *req, int uptodate)
- {
--	__end_request(req, uptodate, req->hard_cur_sectors << 9, 1);
-+	__end_request(req, uptodate, req->hard_cur_sectors << 9);
- }
- EXPORT_SYMBOL(end_request);
- 
+ /* Callable only from interrupt context - otherwise you need to do
