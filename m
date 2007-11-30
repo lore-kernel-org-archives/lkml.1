@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763489AbXK3XdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbXK3Xdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763489AbXK3XdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763556AbXK3Xcw
+	id S1762345AbXK3Xdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762362AbXK3XdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:32:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47372 "EHLO mx1.redhat.com"
+	Fri, 30 Nov 2007 18:33:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:32824 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761777AbXK3Xcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:32:50 -0500
-Date: Fri, 30 Nov 2007 18:32:26 -0500 (EST)
-Message-Id: <20071130.183226.131913635.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com, bharrosh@panasas.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: [PATCH 19/28] blk_end_request: changing scsi (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1762924AbXK3XdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:33:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [lm-sensors] [PATCH 1/1] HWMON: coretemp, suspend fix
+Date: Sat, 1 Dec 2007 00:51:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+References: <661416096128474967.slaby@pripojeni.net> <47508C72.8050703@gmail.com> <200712010045.50297.rjw@sisk.pl>
+In-Reply-To: <200712010045.50297.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712010051.41227.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts scsi mid-layer to use blk_end_request().
+On Saturday, 1 of December 2007, Rafael J. Wysocki wrote:
+> On Friday, 30 of November 2007, Jiri Slaby wrote:
+> > On 11/30/2007 11:15 PM, Jean Delvare wrote:
+> > > Hi Jiri,
+> > 
+[--snip--]
+> > > 
+> > > Should this change go to the stable tree(s) as well?
+> > 
+> > Sorry, I have no idea. Rafael?
+> 
+> Well, actually, having looked once again at the patch, I think that it's
+> slightly wrong.  Namely, it looks like we just should drop all of the _FROZEN
+> actions from there.
+> 
+> Fixed patch follows and I think it's also a candidate for -stable.
 
-The comment above scsi_next_command() is not related to this change.
-It had originally been there before scsi_next_command() was included
-in scsi_finalize_request().
+Crap, I forgot to add the sign-off, so here it goes again:
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- drivers/scsi/scsi_lib.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+Subject: HWMON: coretemp, suspend fix
+ 
+It's not permitted to unregister a device after devices have been suspended.
+It causes deadlocks to appear on systems with coretemp hwmon loaded.  To avoid
+this, we can make coretemp_cpu_callback() do nothing if the _FROZEN bit is set
+in action.
+ 
+Also, in other cases it's generally to late to unregister the coretemp device
+if the CPU is already dead, so it should be unregistered on CPU_DOWN_PREPARE.
+ 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl> (frozen fix)
+Cc: Mark M. Hoffman <mhoffman@lightlink.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Index: 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
+ drivers/hwmon/coretemp.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/hwmon/coretemp.c
 ===================================================================
---- 2.6.24-rc3-mm2.orig/drivers/scsi/scsi_lib.c
-+++ 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
-@@ -683,7 +683,7 @@ static struct scsi_cmnd *scsi_end_reques
- 	 * If there are blocks left over at the end, set up the command
- 	 * to queue the remainder of them.
- 	 */
--	if (end_that_request_chunk(req, uptodate, bytes)) {
-+	if (blk_end_request(req, uptodate, bytes)) {
- 		int leftover = (req->hard_nr_sectors << 9);
+--- linux-2.6.orig/drivers/hwmon/coretemp.c
++++ linux-2.6/drivers/hwmon/coretemp.c
+@@ -337,11 +337,10 @@ static int coretemp_cpu_callback(struct 
  
- 		if (blk_pc_request(req))
-@@ -691,7 +691,7 @@ static struct scsi_cmnd *scsi_end_reques
- 
- 		/* kill remainder if no retrys */
- 		if (!uptodate && blk_noretry_request(req))
--			end_that_request_chunk(req, 0, leftover);
-+			blk_end_request(req, 0, leftover);
- 		else {
- 			if (requeue) {
- 				/*
-@@ -706,7 +706,11 @@ static struct scsi_cmnd *scsi_end_reques
- 		}
+ 	switch (action) {
+ 	case CPU_ONLINE:
+-	case CPU_ONLINE_FROZEN:
++	case CPU_DOWN_FAILED:
+ 		coretemp_device_add(cpu);
+ 		break;
+-	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
++	case CPU_DOWN_PREPARE:
+ 		coretemp_device_remove(cpu);
+ 		break;
  	}
- 
--	scsi_finalize_request(cmd, uptodate);
-+	/*
-+	 * This will goose the queue request function at the end, so we don't
-+	 * need to worry about launching another command.
-+	 */
-+	scsi_next_command(cmd);
- 	return NULL;
- }
- 
