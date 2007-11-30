@@ -1,92 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933458AbXK3H2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933399AbXK3Hfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933458AbXK3H2g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 02:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXK3H2U
+	id S933399AbXK3Hfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 02:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbXK3HfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 02:28:20 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:33663 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754163AbXK3H2T (ORCPT
+	Fri, 30 Nov 2007 02:35:19 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44120 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756652AbXK3HfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 02:28:19 -0500
-Message-ID: <474FBB86.5000004@linux.vnet.ibm.com>
-Date: Fri, 30 Nov 2007 12:58:06 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Fri, 30 Nov 2007 02:35:17 -0500
+Date: Fri, 30 Nov 2007 13:04:46 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: ext4 development <linux-ext4@vger.kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: circular locking dependency detected 
+Message-ID: <20071130073446.GA7864@skywalker>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@debian.org>
-Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
-References: <474D0AAC.5010005@linux.vnet.ibm.com> <20071127225328.9e3f3827.akpm@linux-foundation.org> <474D15FF.5080508@linux.vnet.ibm.com> <20071127232552.ad16e95c.akpm@linux-foundation.org> <474E5CAC.9000108@linux.vnet.ibm.com> <20071129003533.54b4b20e.akpm@linux-foundation.org> <20071130063929.GD2754@fattire.cabal.ca> <20071129230047.1b482562.akpm@linux-foundation.org> <20071129230204.8698f47e.akpm@linux-foundation.org>
-In-Reply-To: <20071129230204.8698f47e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 29 Nov 2007 23:00:47 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
->> On Fri, 30 Nov 2007 01:39:29 -0500 Kyle McMartin <kyle@mcmartin.ca> wrote:
->>
->>> On Thu, Nov 29, 2007 at 12:35:33AM -0800, Andrew Morton wrote:
->>>> ten million is close enough to infinity for me to assume that we broke the
->>>> driver and that's never going to terminate.
->>>>
->>> how about this? doesn't break things on my pa8800:
->>>
->>> diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.c b/drivers/scsi/sym53c8xx_2/sym_hipd.c
->>> index 463f119..ef01cb1 100644
->>> --- a/drivers/scsi/sym53c8xx_2/sym_hipd.c
->>> +++ b/drivers/scsi/sym53c8xx_2/sym_hipd.c
->>> @@ -1037,10 +1037,13 @@ restart_test:
->>>  	/*
->>>  	 *  Wait 'til done (with timeout)
->>>  	 */
->>> -	for (i=0; i<SYM_SNOOP_TIMEOUT; i++)
->>> +	do {	
->>>  		if (INB(np, nc_istat) & (INTF|SIP|DIP))
->>>  			break;
->>> -	if (i>=SYM_SNOOP_TIMEOUT) {
->>> +		msleep(10);
->>> +	} while (i++ < SYM_SNOOP_TIMEOUT);
->>> +
->>> +	if (i >= SYM_SNOOP_TIMEOUT) {
->>>  		printf ("CACHE TEST FAILED: timeout.\n");
->>>  		return (0x20);
->>>  	}
->>> diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.h b/drivers/scsi/sym53c8xx_2/sym_hipd.h
->>> index ad07880..85c483b 100644
->>> --- a/drivers/scsi/sym53c8xx_2/sym_hipd.h
->>> +++ b/drivers/scsi/sym53c8xx_2/sym_hipd.h
->>> @@ -339,7 +339,7 @@
->>>  /*
->>>   *  Misc.
->>>   */
->>> -#define SYM_SNOOP_TIMEOUT (10000000)
->>> +#define SYM_SNOOP_TIMEOUT (1000)
->>>  #define BUS_8_BIT	0
->>>  #define BUS_16_BIT	1
->>>  
->> That might be the fix, but do we know what we're actually fixing?  afaik
->> 2.6.24-rc3 doesn't get this timeout, 2.6.24-rc3-mm2 does get it and we
->> don't know why?
->>
-> 
-> <looks at Subject:>
-> 
-> <Checks that Rafael was cc'ed>
-> 
-> So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
 
-Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.24-rc3 #6
+-------------------------------------------------------
+bash/2294 is trying to acquire lock:
+(&journal->j_list_lock){--..}, at: [<c01eee2f>] journal_try_to_free_buffers+0x76/0x10c
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+but task is already holding lock:
+(inode_lock){--..}, at: [<c01864b6>] drop_pagecache+0x48/0xd8
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (inode_lock){--..}:
+[<c0143929>] __lock_acquire+0xa31/0xc1a
+[<c0143b8c>] lock_acquire+0x7a/0x94
+[<c0447ae5>] _spin_lock+0x2e/0x58
+[<c0185fae>] __mark_inode_dirty+0xd8/0x15e
+[<c018996f>] __set_page_dirty+0xfb/0x10a
+[<c01899fe>] mark_buffer_dirty+0x80/0x86
+[<c01ed1b6>] __journal_temp_unlink_buffer+0xc1/0xc5
+[<c01ed2f3>] __journal_unfile_buffer+0xb/0x15
+[<c01ed338>] __journal_refile_buffer+0x3b/0x85
+[<c01efe1b>] journal_commit_transaction+0xe7f/0x10ec
+[<c01f34b0>] kjournald+0x131/0x35f
+[<c0138ee9>] kthread+0x3b/0x62
+[<c0105c7f>] kernel_thread_helper+0x7/0x10
+[<ffffffff>] 0xffffffff
+
+-> #0 (&journal->j_list_lock){--..}:
+[<c0143819>] __lock_acquire+0x921/0xc1a
+[<c0143b8c>] lock_acquire+0x7a/0x94
+[<c0447ae5>] _spin_lock+0x2e/0x58
+[<c01eee2f>] journal_try_to_free_buffers+0x76/0x10c
+[<c01cb7a2>] ext3_releasepage+0x68/0x74
+[<c0151ff1>] try_to_release_page+0x33/0x44
+[<c01578b0>] __invalidate_mapping_pages+0x74/0xe0
+[<c01864de>] drop_pagecache+0x70/0xd8
+[<c018657c>] drop_caches_sysctl_handler+0x36/0x4e
+[<c019efaa>] proc_sys_write+0x6b/0x85
+[<c016da2b>] vfs_write+0x90/0x119
+[<c016dfe2>] sys_write+0x3d/0x61
+[<c0104f6e>] sysenter_past_esp+0x5f/0xa5
+[<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+2 locks held by bash/2294:
+#0:  (&type->s_umount_key#16){----}, at: [<c01864a6>] drop_pagecache+0x38/0xd8
+#1:  (inode_lock){--..}, at: [<c01864b6>] drop_pagecache+0x48/0xd8
+
+stack backtrace:
+[<c0105ffb>] show_trace_log_lvl+0x1a/0x2f
+[<c0106875>] show_trace+0x12/0x14
+[<c0106967>] dump_stack+0x16/0x18
+[<c0141b33>] print_circular_bug_tail+0x5f/0x68
+[<c0143819>] __lock_acquire+0x921/0xc1a
+[<c0143b8c>] lock_acquire+0x7a/0x94
+[<c0447ae5>] _spin_lock+0x2e/0x58
+[<c01eee2f>] journal_try_to_free_buffers+0x76/0x10c
+[<c01cb7a2>] ext3_releasepage+0x68/0x74
+[<c0151ff1>] try_to_release_page+0x33/0x44
+[<c01578b0>] __invalidate_mapping_pages+0x74/0xe0
+[<c01864de>] drop_pagecache+0x70/0xd8
+[<c018657c>] drop_caches_sysctl_handler+0x36/0x4e
+[<c019efaa>] proc_sys_write+0x6b/0x85
+[<c016da2b>] vfs_write+0x90/0x119
+[<c016dfe2>] sys_write+0x3d/0x61
+[<c0104f6e>] sysenter_past_esp+0x5f/0xa5
+=======================
