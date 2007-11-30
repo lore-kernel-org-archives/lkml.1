@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbXK3JHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbXK3JOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbXK3JHt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 04:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXK3JH3
+	id S1760198AbXK3JOR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 04:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXK3JOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 04:07:29 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:37740 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbXK3JH0 (ORCPT
+	Fri, 30 Nov 2007 04:14:06 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48653 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXK3JOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 04:07:26 -0500
-Date: Fri, 30 Nov 2007 14:37:08 +0530
-From: "K. Prasad" <prasad@linux.vnet.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       dipankar@in.ibm.com, ego@in.ibm.com, mathieu.desnoyers@polymtl.ca,
-       mingo@elte.hu
-Subject: Re: [PATCH 0/2] Markers Implementation for RCU Tracing
-Message-ID: <20071130090708.GA8208@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20071129184128.GA26466@in.ibm.com> <20071130013605.GK9059@linux.vnet.ibm.com>
+	Fri, 30 Nov 2007 04:14:04 -0500
+Date: Fri, 30 Nov 2007 11:14:01 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Fix kmem_cache_free performance regression in slab
+In-Reply-To: <20071129184539.ba6342b8.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711301110540.28494@sbz-30.cs.Helsinki.FI>
+References: <20071129190513.GD2584@parisc-linux.org>
+ <20071129184539.ba6342b8.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071130013605.GK9059@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 05:36:05PM -0800, Paul E. McKenney wrote:
-> On Fri, Nov 30, 2007 at 12:11:28AM +0530, K. Prasad wrote:
-> > Hi,
-> > 	Please review the ensuing set of patches which convert the
-> > existing RCU tracing mechanism for Preempt RCU and RCU Boost into
-> > markers.
+Hi,
+
+On Thu, 29 Nov 2007 12:05:13 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
+> > The database performance group have found that half the cycles spent
+> > in kmem_cache_free are spent in this one call to BUG_ON.  Moving it
+> > into the CONFIG_SLAB_DEBUG-only function cache_free_debugcheck() is a
+> > performance win of almost 0.5% on their particular benchmark.
 > > 
-> > These patches are based upon the 2.6.24-rc2-rt1 kernel tree.
+> > The call was added as part of commit ddc2e812d592457747c4367fb73edcaa8e1e49ff
+> > with the comment that "overhead should be minimal".  It may have been
+> > minimal at the time, but it isn't now.
 > > 
-> > Along with marker transition, the RCU Tracing infrastructure has also
-> > been modularised to be built as a kernel module, thereby enabling
-> > runtime changes to the RCU Tracing infrastructure.
-> > 
-> > Patch [1/2] - Patch that converts the Preempt RCU tracing in
-> > rcupreempt.c into markers.
-> > 
-> > Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
-> > rcupreempt-boost.c into markers.
+
+On Thu, 29 Nov 2007, Andrew Morton wrote:
+> It is worth noting that the offending commit hit mainline in June 2006.
 > 
-> Looks good to me, though I do not pretend to understand the markers
-> implementation.  I presume that the markers implementation forces the
-> varargs usage -- though the markers do seem quite a bit nicer in allowing
-> the formatting to be specified more naturally.
-> 
+> It takes a very long time for some performance regressions to be
+> discovered.  By which time it is effectively too late to fix it.
 
-Paul,
-	Thanks for the quick review.
-Yes, varargs are required for marker handlers even with fixed set of
-arguments.
+What architecture is this? x86_64? I don't think the BUG_ON per se caused 
+the performance regression but rather the virt_to_head_page() changes to 
+virt_to_cache() that were added later. But reverting the BUG_ON is fine by 
+me.
 
-Ingo,
-	Can you please include these patches in your rt patchset?
+Thanks Matthew and others for tracking this down!
 
-Thanks,
-K.Prasad
-
+				Pekka
