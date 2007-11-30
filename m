@@ -1,212 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764777AbXK3XiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764829AbXK3Xic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764777AbXK3XiJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:38:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764534AbXK3Xhh
+	id S1764829AbXK3Xic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764353AbXK3XiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:37:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41353 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764240AbXK3Xhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:37:34 -0500
-Date: Fri, 30 Nov 2007 18:35:12 -0500 (EST)
-Message-Id: <20071130.183512.120442861.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com, bharrosh@panasas.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: [PATCH 27/28] blk_end_request: changing scsi mid-layer for bidi
- (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 30 Nov 2007 18:38:04 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:35788 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764763AbXK3XiA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:38:00 -0500
+Message-ID: <47509EB6.20300@keyaccess.nl>
+Date: Sat, 01 Dec 2007 00:37:26 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, akpm <akpm@linux-foundation.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>
+Subject: Re: [PATCH] Declare PNP option parsing functions as __init
+References: <1196442277.23251.318.camel@queen.suse.de>
+In-Reply-To: <1196442277.23251.318.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts bidi of scsi mid-layer to use blk_end_request().
+On 30-11-07 18:04, Thomas Renninger wrote:
 
-rq->next_rq represents a pair of bidi requests.
-(There are no other use of 'next_rq' of struct request.)
-For both requests in the pair, end_that_request_chunk() should be
-called before end_that_request_last() is called for one of them.
-Since the calls to end_that_request_first()/chunk() and
-end_that_request_last() are packaged into blk_end_request(),
-the handling of next_rq completion has to be moved into
-blk_end_request(), too.
+> If I have not overseen something, it should be rather obvious that those
+> can all be declared __init...
+> ---------------
+> 
+> Declare PNP option parsing functions as __init
+> 
+> There are three kind of parse functions provided by PNP acpi/bios:
+>  - get current resources
+>  - set resources
+>  - get possible resources
+> The first two may be needed later at runtime.
+> The possible resource settings should never change dynamically.
+> And even if this would make any sense (I doubt it), the current implementation
+> only parses possible resource settings at early init time:
+>   -> declare all the option parsing __init
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
 
-Bidi sets its specific value to rq->data_len before the request is
-completed so that upper-layer can read it.
-This setting must be between end_that_request_chunk() and
-end_that_request_last(), because rq->data_len may be used
-in end_that_request_chunk() by blk_trace and so on.
-To satisfy the requirement, use blk_end_request_callback() which
-is added in PATCH 25 only for the tricky drivers.
+Yes. Obviousness aside,
 
-If bidi didn't reuse rq->data_len and added new members to request
-for the specific value, it could set before end_that_request_chunk()
-and use the standard blk_end_request() like below.
+(0) pnpacpi_add_device                          is only caller of
+(1)   pnpacpi_parse_resource_option_data        is only caller of
+(2)     pnpacpi_option_resource                 is only caller of
+(3)       pnpacpi_parse_irq_option
+(3)       pnpacpi_parse_dma_option
+(3)       pnpacpi_parse_port_option
+(3)       pnpacpi_parse_fixed_port_option
+(3)       pnpacpi_parse_mem24_option
+(3)       pnpacpi_parse_mem32_option
+(3)       pnpacpi_parse_fixed_mem32_option
+(3)       pnpacpi_parse_address_option
+(3)       pnpacpi_parse_ext_irq_option
 
-void scsi_end_bidi_request(struct scsi_cmnd *cmd)
-{
-	struct request *req = cmd->request;
+and
 
-	rq->resid = scsi_out(cmd)->resid;
-	rq->next_rq->resid = scsi_in(cmd)->resid;
+(0) build_devlist                               is only caller of
+(1)   insert_device                             is only caller of
+(2)     pnpbios_parse_data_stream               is only caller of
+(3)       pnpbios_parse_resource_option_data    is only caller of
+(4)         pnpbios_parse_mem_option
+(4)         pnpbios_parse_mem32_option
+(4)         pnpbios_parse_fixed_mem32_option
+(4)         pnpbios_parse_irq_option
+(4)         pnpbios_parse_dma_option
+(4)         pnpbios_parse_port_option
+(4)         pnpbios_parse_fixed_port_option
 
-	if (blk_end_request(req, 1, req->data_len))
-		BUG();
+which given that both (0)s are __init already, means all are fine indeed.
 
-	scsi_release_buffers(cmd);
-	scsi_next_command(cmd);
-}
+Acked-By: Rene Herman <rene.herman@gmail.com>
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- block/ll_rw_blk.c       |   18 +++++++++++++
- drivers/scsi/scsi_lib.c |   66 ++++++++++++++++++++++++------------------------
- 2 files changed, 52 insertions(+), 32 deletions(-)
+Rene.
 
-Index: 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
-===================================================================
---- 2.6.24-rc3-mm2.orig/drivers/scsi/scsi_lib.c
-+++ 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
-@@ -629,28 +629,6 @@ void scsi_run_host_queues(struct Scsi_Ho
- 		scsi_run_queue(sdev->request_queue);
- }
- 
--static void scsi_finalize_request(struct scsi_cmnd *cmd, int uptodate)
--{
--	struct request_queue *q = cmd->device->request_queue;
--	struct request *req = cmd->request;
--	unsigned long flags;
--
--	add_disk_randomness(req->rq_disk);
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	if (blk_rq_tagged(req))
--		blk_queue_end_tag(q, req);
--
--	end_that_request_last(req, uptodate);
--	spin_unlock_irqrestore(q->queue_lock, flags);
--
--	/*
--	 * This will goose the queue request function at the end, so we don't
--	 * need to worry about launching another command.
--	 */
--	scsi_next_command(cmd);
--}
--
- /*
-  * Function:    scsi_end_request()
-  *
-@@ -921,6 +899,20 @@ void scsi_release_buffers(struct scsi_cm
- EXPORT_SYMBOL(scsi_release_buffers);
- 
- /*
-+ * Called from blk_end_request_callback() after all DATA in rq and its next_rq
-+ * are completed before rq is completed/freed.
-+ */
-+static int scsi_end_bidi_request_cb(struct request *rq)
-+{
-+	struct scsi_cmnd *cmd = rq->special;
-+
-+	rq->data_len = scsi_out(cmd)->resid;
-+	rq->next_rq->data_len = scsi_in(cmd)->resid;
-+
-+	return 0;
-+}
-+
-+/*
-  * Bidi commands Must be complete as a whole, both sides at once.
-  * If part of the bytes were written and lld returned
-  * scsi_in()->resid and/or scsi_out()->resid this information will be left
-@@ -931,22 +923,32 @@ void scsi_end_bidi_request(struct scsi_c
- {
- 	struct request *req = cmd->request;
- 
--	end_that_request_chunk(req, 1, req->data_len);
--	req->data_len = scsi_out(cmd)->resid;
--
--	end_that_request_chunk(req->next_rq, 1, req->next_rq->data_len);
--	req->next_rq->data_len = scsi_in(cmd)->resid;
--
--	scsi_release_buffers(cmd);
--
- 	/*
- 	 *FIXME: If ll_rw_blk.c is changed to also put_request(req->next_rq)
--	 *       in end_that_request_last() then this WARN_ON must be removed.
-+	 *       in blk_end_request() then this WARN_ON must be removed.
- 	 *       for now, upper-driver must have registered an end_io.
- 	 */
- 	WARN_ON(!req->end_io);
- 
--	scsi_finalize_request(cmd, 1);
-+	/*
-+	 * blk_end_request() family take care of data completion of next_rq.
-+	 *
-+	 * req->data_len and req->next_rq->data_len must be set after
-+	 * all data are completed, since they may be referenced during
-+	 * the data completion process.
-+	 * So use the callback feature of blk_end_request() here.
-+	 *
-+	 * NOTE: If bidi doesn't reuse the data_len field for upper-layer's
-+	 *       reference (e.g. adds new members for it to struct request),
-+	 *       we can use the standard blk_end_request() interface here.
-+	 */
-+	if (blk_end_request_callback(req, 1, req->data_len,
-+				     scsi_end_bidi_request_cb))
-+		/* req has not been completed */
-+		BUG();
-+
-+	scsi_release_buffers(cmd);
-+	scsi_next_command(cmd);
- }
- 
- /*
-Index: 2.6.24-rc3-mm2/block/ll_rw_blk.c
-===================================================================
---- 2.6.24-rc3-mm2.orig/block/ll_rw_blk.c
-+++ 2.6.24-rc3-mm2/block/ll_rw_blk.c
-@@ -3817,6 +3817,12 @@ int blk_end_request(struct request *rq, 
- 	if (blk_fs_request(rq) || blk_pc_request(rq)) {
- 		if (__end_that_request_first(rq, uptodate, nr_bytes))
- 			return 1;
-+
-+		/* Bidi request must be completed as a whole */
-+		if (blk_bidi_rq(rq) &&
-+		    __end_that_request_first(rq->next_rq, uptodate,
-+					     blk_rq_bytes(rq->next_rq)))
-+			return 1;
- 	}
- 
- 	add_disk_randomness(rq->rq_disk);
-@@ -3840,6 +3846,12 @@ int __blk_end_request(struct request *rq
- 	if (blk_fs_request(rq) || blk_pc_request(rq)) {
- 		if (__end_that_request_first(rq, uptodate, nr_bytes))
- 			return 1;
-+
-+		/* Bidi request must be completed as a whole */
-+		if (blk_bidi_rq(rq) &&
-+		    __end_that_request_first(rq->next_rq, uptodate,
-+					     blk_rq_bytes(rq->next_rq)))
-+			return 1;
- 	}
- 
- 	add_disk_randomness(rq->rq_disk);
-@@ -3884,6 +3896,12 @@ int blk_end_request_callback(struct requ
- 	if (blk_fs_request(rq) || blk_pc_request(rq)) {
- 		if (__end_that_request_first(rq, uptodate, nr_bytes))
- 			return 1;
-+
-+		/* Bidi request must be completed as a whole */
-+		if (blk_bidi_rq(rq) &&
-+		    __end_that_request_first(rq->next_rq, uptodate,
-+					     blk_rq_bytes(rq->next_rq)))
-+			return 1;
- 	}
- 
- 	/* Special feature for tricky drivers */
