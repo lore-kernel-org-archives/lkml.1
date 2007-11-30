@@ -1,282 +1,357 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbXLFMq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbXLFMrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbXLFMq5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 07:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbXLFMmt
+	id S1755724AbXLFMrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 07:47:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXLFMmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 07:42:49 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:53716 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754437AbXLFMma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 07:42:30 -0500
+	Thu, 6 Dec 2007 07:42:50 -0500
+Received: from nic2.axis.se ([193.13.178.10]:35731 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754153AbXLFMmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 07:42:32 -0500
 From: Jesper Nilsson <jesper.nilsson@axis.com>
-Message-Id: <1cafe3040d64fbc0094c804d0840a282f71644e0.1196848533.git.jesper.nilsson@axis.com>
+Message-Id: <933a9803fffedcffcfd9d89a7a3250b4e5453ad1.1196848533.git.jesper.nilsson@axis.com>
 In-Reply-To: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Mikael Starvik <mikael.starvik@axis.com>,
        Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Date: Fri, 30 Nov 2007 13:59:57 +0100
-Subject: [PATCH 15/47] Minor fixes to mm/fault.c for CRIS.
+Date: Fri, 30 Nov 2007 14:11:29 +0100
+Subject: [PATCH 16/47] Minor CRIS generic kernel/traps.c changes.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Only disallow oops if we're in_interrupt context (was in_atomic before)
-- Use the generic oops_in_progress instead of the raw_printk hack.
-- Fix whitespace/formatting.
-- Remove CVS log entries.
+- Collect extern declarations at top of file.
+- Change raw_printk to printk, use oops_in_progress instead.
+- Fix formatting and whitespace.
+- Allow the watchdog to be disabled during oops.
 
 Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 ---
- arch/cris/mm/fault.c |  169 ++++++++-----------------------------------------
- 1 files changed, 28 insertions(+), 141 deletions(-)
+ arch/cris/kernel/traps.c |  226 ++++++++++++++++++++++++++++------------------
+ 1 files changed, 139 insertions(+), 87 deletions(-)
 
-diff --git a/arch/cris/mm/fault.c b/arch/cris/mm/fault.c
-index 3034f3f..c4c76db 100644
---- a/arch/cris/mm/fault.c
-+++ b/arch/cris/mm/fault.c
-@@ -1,130 +1,9 @@
- /*
-  *  linux/arch/cris/mm/fault.c
-  *
-- *  Copyright (C) 2000, 2001  Axis Communications AB
+diff --git a/arch/cris/kernel/traps.c b/arch/cris/kernel/traps.c
+index 520d922..541efbf 100644
+--- a/arch/cris/kernel/traps.c
++++ b/arch/cris/kernel/traps.c
+@@ -1,66 +1,78 @@
+-/* $Id: traps.c,v 1.11 2005/01/24 16:03:19 orjanf Exp $
 - *
-- *  Authors:  Bjorn Wesen 
++/*
+  *  linux/arch/cris/traps.c
+  *
+- *  Here we handle the break vectors not used by the system call 
+- *  mechanism, as well as some general stack/register dumping 
++ *  Here we handle the break vectors not used by the system call
++ *  mechanism, as well as some general stack/register dumping
+  *  things.
 - * 
-- *  $Log: fault.c,v $
-- *  Revision 1.20  2005/03/04 08:16:18  starvik
-- *  Merge of Linux 2.6.11.
-- *
-- *  Revision 1.19  2005/01/14 10:07:59  starvik
-- *  Fixed warning.
-- *
-- *  Revision 1.18  2005/01/12 08:10:14  starvik
-- *  Re-added the change of frametype when handling kernel page fault fixup
-- *  for v10. This is necessary to avoid that the CPU remakes the faulting
-- *  access.
-- *
-- *  Revision 1.17  2005/01/11 13:53:05  starvik
-- *  Use raw_printk.
-- *
-- *  Revision 1.16  2004/12/17 11:39:41  starvik
-- *  SMP support.
-- *
-- *  Revision 1.15  2004/11/23 18:36:18  starvik
-- *  Stack is now non-executable.
-- *  Signal handler trampolines are placed in a reserved page mapped into all
-- *  processes.
-- *
-- *  Revision 1.14  2004/11/23 07:10:21  starvik
-- *  Moved find_fixup_code to generic code.
-- *
-- *  Revision 1.13  2004/11/23 07:00:54  starvik
-- *  Actually use the execute permission bit in the MMU. This makes it possible
-- *  to prevent e.g. attacks where executable code is put on the stack.
-- *
-- *  Revision 1.12  2004/09/29 06:16:04  starvik
-- *  Use instruction_pointer
-- *
-- *  Revision 1.11  2004/05/14 07:58:05  starvik
-- *  Merge of changes from 2.4
-- *
-- *  Revision 1.10  2003/10/27 14:51:24  starvik
-- *  Removed debugcode
-- *
-- *  Revision 1.9  2003/10/27 14:50:42  starvik
-- *  Changed do_page_fault signature
-- *
-- *  Revision 1.8  2003/07/04 13:02:48  tobiasa
-- *  Moved code snippet from arch/cris/mm/fault.c that searches for fixup code
-- *  to separate function in arch-specific files.
-- *
-- *  Revision 1.7  2003/01/22 06:48:38  starvik
-- *  Fixed warnings issued by GCC 3.2.1
-- *
-- *  Revision 1.6  2003/01/09 14:42:52  starvik
-- *  Merge of Linux 2.5.55
-- *
-- *  Revision 1.5  2002/12/11 14:44:48  starvik
-- *  Extracted v10 (ETRAX 100LX) specific stuff to arch/cris/arch-v10/mm
-- *
-- *  Revision 1.4  2002/11/13 15:10:28  starvik
-- *  pte_offset has been renamed to pte_offset_kernel
-- *
-- *  Revision 1.3  2002/11/05 06:45:13  starvik
-- *  Merge of Linux 2.5.45
-- *
-- *  Revision 1.2  2001/12/18 13:35:22  bjornw
-- *  Applied the 2.4.13->2.4.16 CRIS patch to 2.5.1 (is a copy of 2.4.15).
-- *
-- *  Revision 1.20  2001/11/22 13:34:06  bjornw
-- *  * Bug workaround (LX TR89): force a rerun of the whole of an interrupted
-- *    unaligned write, because the second half of the write will be corrupted
-- *    otherwise. Affected unaligned writes spanning not-yet mapped pages.
-- *  * Optimization: use the wr_rd bit in R_MMU_CAUSE to know whether a miss
-- *    was due to a read or a write (before we didn't know this until the next
-- *    restart of the interrupted instruction, thus wasting one fault-irq)
-- *
-- *  Revision 1.19  2001/11/12 19:02:10  pkj
-- *  Fixed compiler warnings.
-- *
-- *  Revision 1.18  2001/07/18 22:14:32  bjornw
-- *  Enable interrupts in the bulk of do_page_fault
-- *
-- *  Revision 1.17  2001/07/18 13:07:23  bjornw
-- *  * Detect non-existant PTE's in vmalloc pmd synchronization
-- *  * Remove comment about fast-paths for VMALLOC_START etc, because all that
-- *    was totally bogus anyway it turned out :)
-- *  * Fix detection of vmalloc-area synchronization
-- *  * Add some comments
-- *
-- *  Revision 1.16  2001/06/13 00:06:08  bjornw
-- *  current_pgd should be volatile
-- *
-- *  Revision 1.15  2001/06/13 00:02:23  bjornw
-- *  Use a separate variable to store the current pgd to avoid races in schedule
-- *
-- *  Revision 1.14  2001/05/16 17:41:07  hp
-- *  Last comment tweak further tweaked.
-- *
-- *  Revision 1.13  2001/05/15 00:58:44  hp
-- *  Expand a bit on the comment why we compare address >= TASK_SIZE rather
-- *  than >= VMALLOC_START.
-- *
-- *  Revision 1.12  2001/04/04 10:51:14  bjornw
-- *  mmap_sem is grabbed for reading
-- *
-- *  Revision 1.11  2001/03/23 07:36:07  starvik
-- *  Corrected according to review remarks
-- *
-- *  Revision 1.10  2001/03/21 16:10:11  bjornw
-- *  CRIS_FRAME_FIXUP not needed anymore, use FRAME_NORMAL
-- *
-- *  Revision 1.9  2001/03/05 13:22:20  bjornw
-- *  Spell-fix and fix in vmalloc_fault handling
-- *
-- *  Revision 1.8  2000/11/22 14:45:31  bjornw
-- *  * 2.4.0-test10 removed the set_pgdir instantaneous kernel global mapping
-- *    into all processes. Instead we fill in the missing PTE entries on demand.
-- *
-- *  Revision 1.7  2000/11/21 16:39:09  bjornw
-- *  fixup switches frametype
-- *
-- *  Revision 1.6  2000/11/17 16:54:08  bjornw
-- *  More detailed siginfo reporting
-+ *  Copyright (C) 2000-2006  Axis Communications AB
+- *  Copyright (C) 2000-2002 Axis Communications AB
++ *
++ *  Copyright (C) 2000-2007 Axis Communications AB
   *
-+ *  Authors:  Bjorn Wesen
+  *  Authors:   Bjorn Wesen
+- *  	       Hans-Peter Nilsson
++ *             Hans-Peter Nilsson
   *
   */
  
-@@ -135,7 +14,6 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
++
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
  
- extern int find_fixup_code(struct pt_regs *);
- extern void die_if_kernel(const char *, struct pt_regs *, long);
++extern void arch_enable_nmi(void);
++extern void stop_watchdog(void);
++extern void reset_watchdog(void);
++extern void show_registers(struct pt_regs *regs);
++
++#ifdef CONFIG_DEBUG_BUGVERBOSE
++extern void handle_BUG(struct pt_regs *regs);
++#else
++#define handle_BUG(regs)
++#endif
++
+ static int kstack_depth_to_print = 24;
+ 
 -extern int raw_printk(const char *fmt, ...);
++void (*nmi_handler)(struct pt_regs *);
  
- /* debug of low-level TLB reload */
- #undef DEBUG
-@@ -164,8 +42,8 @@ unsigned long cris_signal_return_page;
-  * address.
-  *
-  * error_code:
-- *	bit 0 == 0 means no page found, 1 means protection fault
-- *	bit 1 == 0 means read, 1 means write
-+ *      bit 0 == 0 means no page found, 1 means protection fault
-+ *      bit 1 == 0 means read, 1 means write
-  *
-  * If this routine detects a bad access, it returns 1, otherwise it
-  * returns 0.
-@@ -181,9 +59,10 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
- 	siginfo_t info;
- 	int fault;
+-void show_trace(unsigned long * stack)
++void
++show_trace(unsigned long *stack)
+ {
+ 	unsigned long addr, module_start, module_end;
+ 	extern char _stext, _etext;
+ 	int i;
  
--        D(printk("Page fault for %lX on %X at %lX, prot %d write %d\n",
--                 address, smp_processor_id(), instruction_pointer(regs),
--                 protection, writeaccess));
-+	D(printk(KERN_DEBUG
-+		 "Page fault for %lX on %X at %lX, prot %d write %d\n",
-+		 address, smp_processor_id(), instruction_pointer(regs),
-+		 protection, writeaccess));
+-        raw_printk("\nCall Trace: ");
++	printk("\nCall Trace: ");
  
- 	tsk = current;
+-        i = 1;
+-        module_start = VMALLOC_START;
+-        module_end = VMALLOC_END;
++	i = 1;
++	module_start = VMALLOC_START;
++	module_end = VMALLOC_END;
  
-@@ -233,7 +112,7 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
- 	 * context, we must not take the fault..
+-        while (((long) stack & (THREAD_SIZE-1)) != 0) {
+-		if (__get_user (addr, stack)) {
++	while (((long)stack & (THREAD_SIZE-1)) != 0) {
++		if (__get_user(addr, stack)) {
+ 			/* This message matches "failing address" marked
+ 			   s390 in ksymoops, so lines containing it will
+ 			   not be filtered out by ksymoops.  */
+-			raw_printk ("Failing address 0x%lx\n", (unsigned long)stack);
++			printk("Failing address 0x%lx\n", (unsigned long)stack);
+ 			break;
+ 		}
+ 		stack++;
+ 
+-                /*
+-                 * If the address is either in the text segment of the
+-                 * kernel, or in the region which contains vmalloc'ed
+-                 * memory, it *may* be the address of a calling
+-                 * routine; if so, print it so that someone tracing
+-                 * down the cause of the crash will be able to figure
+-                 * out the call path that was taken.
+-                 */
+-                if (((addr >= (unsigned long) &_stext) &&
+-                     (addr <= (unsigned long) &_etext)) ||
+-                    ((addr >= module_start) && (addr <= module_end))) {
+-                        if (i && ((i % 8) == 0))
+-                                raw_printk("\n       ");
+-                        raw_printk("[<%08lx>] ", addr);
+-                        i++;
+-                }
+-        }
++		/*
++		 * If the address is either in the text segment of the
++		 * kernel, or in the region which contains vmalloc'ed
++		 * memory, it *may* be the address of a calling
++		 * routine; if so, print it so that someone tracing
++		 * down the cause of the crash will be able to figure
++		 * out the call path that was taken.
++		 */
++		if (((addr >= (unsigned long)&_stext) &&
++		     (addr <= (unsigned long)&_etext)) ||
++		    ((addr >= module_start) && (addr <= module_end))) {
++			if (i && ((i % 8) == 0))
++				printk("\n       ");
++			printk("[<%08lx>] ", addr);
++			i++;
++		}
++	}
+ }
+ 
+ /*
+@@ -78,109 +90,149 @@ void show_trace(unsigned long * stack)
+  * with the ksymoops maintainer.
+  */
+ 
+-void 
++void
+ show_stack(struct task_struct *task, unsigned long *sp)
+ {
+-        unsigned long *stack, addr;
+-        int i;
++	unsigned long *stack, addr;
++	int i;
+ 
+ 	/*
+ 	 * debugging aid: "show_stack(NULL);" prints a
+ 	 * back trace.
  	 */
  
--	if (in_atomic() || !mm)
-+	if (in_interrupt() || !mm)
- 		goto no_context;
- 
- 	down_read(&mm->mmap_sem);
-@@ -319,6 +198,9 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
- 		/* info.si_code has been set above */
- 		info.si_addr = (void *)address;
- 		force_sig_info(SIGSEGV, &info, tsk);
-+		printk(KERN_NOTICE "%s (pid %d) segfaults for page "
-+		       "address %08lx at pc %08lx\n",
-+		       tsk->comm, tsk->pid, address, instruction_pointer(regs));
- 		return;
+-        if(sp == NULL) {
++	if (sp == NULL) {
+ 		if (task)
+ 			sp = (unsigned long*)task->thread.ksp;
+ 		else
+ 			sp = (unsigned long*)rdsp();
  	}
  
-@@ -326,7 +208,7 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
+-        stack = sp;
++	stack = sp;
  
- 	/* Are we prepared to handle this kernel fault?
- 	 *
--	 * (The kernel has valid exception-points in the source 
-+	 * (The kernel has valid exception-points in the source
- 	 *  when it acesses user-memory. When it fails in one
- 	 *  of those points, we find it in a table and do a jump
- 	 *  to some fixup code that loads an appropriate error
-@@ -341,13 +223,18 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
- 	 * terminate things with extreme prejudice.
- 	 */
- 
--	if ((unsigned long) (address) < PAGE_SIZE)
--		raw_printk(KERN_ALERT "Unable to handle kernel NULL pointer dereference");
--	else
--		raw_printk(KERN_ALERT "Unable to handle kernel access");
--	raw_printk(" at virtual address %08lx\n",address);
--
--	die_if_kernel("Oops", regs, (writeaccess << 1) | protection);
-+	if (!oops_in_progress) {
-+		oops_in_progress = 1;
-+		if ((unsigned long) (address) < PAGE_SIZE)
-+			printk(KERN_ALERT "Unable to handle kernel NULL "
-+				"pointer dereference");
-+		else
-+			printk(KERN_ALERT "Unable to handle kernel access"
-+				" at virtual address %08lx\n", address);
-+
-+		die_if_kernel("Oops", regs, (writeaccess << 1) | protection);
-+		oops_in_progress = 0;
+-	raw_printk("\nStack from %08lx:\n       ", (unsigned long)stack);
+-        for(i = 0; i < kstack_depth_to_print; i++) {
+-                if (((long) stack & (THREAD_SIZE-1)) == 0)
+-                        break;
+-                if (i && ((i % 8) == 0))
+-                        raw_printk("\n       ");
+-		if (__get_user (addr, stack)) {
++	printk("\nStack from %08lx:\n       ", (unsigned long)stack);
++	for (i = 0; i < kstack_depth_to_print; i++) {
++		if (((long)stack & (THREAD_SIZE-1)) == 0)
++			break;
++		if (i && ((i % 8) == 0))
++			printk("\n       ");
++		if (__get_user(addr, stack)) {
+ 			/* This message matches "failing address" marked
+ 			   s390 in ksymoops, so lines containing it will
+ 			   not be filtered out by ksymoops.  */
+-			raw_printk ("Failing address 0x%lx\n", (unsigned long)stack);
++			printk("Failing address 0x%lx\n", (unsigned long)stack);
+ 			break;
+ 		}
+ 		stack++;
+-		raw_printk("%08lx ", addr);
+-        }
++		printk("%08lx ", addr);
 +	}
+ 	show_trace(sp);
+ }
  
- 	do_exit(SIGKILL);
+-static void (*nmi_handler)(struct pt_regs*);
+-extern void arch_enable_nmi(void);
++#if 0
++/* displays a short stack trace */
  
-@@ -360,7 +247,7 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
- 	up_read(&mm->mmap_sem);
- 	printk("VM: killing process %s\n", tsk->comm);
- 	if (user_mode(regs))
--		do_group_exit(SIGKILL);
-+		do_exit(SIGKILL);
- 	goto no_context;
+-void set_nmi_handler(void (*handler)(struct pt_regs*))
++int
++show_stack(void)
+ {
+-  nmi_handler = handler;
+-  arch_enable_nmi();
++	unsigned long *sp = (unsigned long *)rdusp();
++	int i;
++
++	printk("Stack dump [0x%08lx]:\n", (unsigned long)sp);
++	for (i = 0; i < 16; i++)
++		printk("sp + %d: 0x%08lx\n", i*4, sp[i]);
++	return 0;
+ }
++#endif
  
-  do_sigbus:
-@@ -406,8 +293,8 @@ vmalloc_fault:
- 		/* Since we're two-level, we don't need to do both
- 		 * set_pgd and set_pmd (they do the same thing). If
- 		 * we go three-level at some point, do the right thing
--		 * with pgd_present and set_pgd here. 
--		 * 
-+		 * with pgd_present and set_pgd here.
-+		 *
- 		 * Also, since the vmalloc area is global, we don't
- 		 * need to copy individual PTE's, it is enough to
- 		 * copy the pgd pointer into the pte page of the
+-void handle_nmi(struct pt_regs* regs)
++void
++dump_stack(void)
+ {
+-  if (nmi_handler)
+-    nmi_handler(regs);
++	show_stack(NULL, NULL);
++}
++EXPORT_SYMBOL(dump_stack);
++
++void
++set_nmi_handler(void (*handler)(struct pt_regs *))
++{
++	nmi_handler = handler;
++	arch_enable_nmi();
+ }
+ 
+ #ifdef CONFIG_DEBUG_NMI_OOPS
+-void oops_nmi_handler(struct pt_regs* regs)
++void
++oops_nmi_handler(struct pt_regs *regs)
+ {
+-  stop_watchdog();
+-  raw_printk("NMI!\n");
+-  show_registers(regs);
++	stop_watchdog();
++	oops_in_progress = 1;
++	printk("NMI!\n");
++	show_registers(regs);
++	oops_in_progress = 0;
+ }
+ 
+-static int
+-__init oops_nmi_register(void)
++static int __init
++oops_nmi_register(void)
+ {
+-  set_nmi_handler(oops_nmi_handler);
+-  return 0;
++	set_nmi_handler(oops_nmi_handler);
++	return 0;
+ }
+ 
+ __initcall(oops_nmi_register);
+ 
+ #endif
+ 
+-#if 0
+-/* displays a short stack trace */
+-
+-int 
+-show_stack()
++/*
++ * This gets called from entry.S when the watchdog has bitten. Show something
++ * similiar to an Oops dump, and if the kernel is configured to be a nice
++ * doggy, then halt instead of reboot.
++ */
++void
++watchdog_bite_hook(struct pt_regs *regs)
+ {
+-	unsigned long *sp = (unsigned long *)rdusp();
+-	int i;
+-	raw_printk("Stack dump [0x%08lx]:\n", (unsigned long)sp);
+-	for(i = 0; i < 16; i++)
+-		raw_printk("sp + %d: 0x%08lx\n", i*4, sp[i]);
+-	return 0;
+-}
++#ifdef CONFIG_ETRAX_WATCHDOG_NICE_DOGGY
++	local_irq_disable();
++	stop_watchdog();
++	show_registers(regs);
++
++	while (1)
++		; /* Do nothing. */
++#else
++	show_registers(regs);
+ #endif
++}
+ 
+-void dump_stack(void)
++/* This is normally the Oops function. */
++void
++die_if_kernel(const char *str, struct pt_regs *regs, long err)
+ {
+-	show_stack(NULL, NULL);
+-}
++	if (user_mode(regs))
++		return;
+ 
+-EXPORT_SYMBOL(dump_stack);
++#ifdef CONFIG_ETRAX_WATCHDOG_NICE_DOGGY
++	/*
++	 * This printout might take too long and could trigger
++	 * the watchdog normally. If NICE_DOGGY is set, simply
++	 * stop the watchdog during the printout.
++	 */
++	stop_watchdog();
++#endif
+ 
+-void __init 
+-trap_init(void)
+-{
+-	/* Nothing needs to be done */
++	handle_BUG(regs);
++
++	printk("%s: %04lx\n", str, err & 0xffff);
++
++	show_registers(regs);
++
++	oops_in_progress = 0;
++
++#ifdef CONFIG_ETRAX_WATCHDOG_NICE_DOGGY
++	reset_watchdog();
++#endif
++	do_exit(SIGSEGV);
+ }
+ 
+-void spinning_cpu(void* addr)
++void __init
++trap_init(void)
+ {
+-  raw_printk("CPU %d spinning on %X\n", smp_processor_id(), addr);
+-  dump_stack();
++	/* Nothing needs to be done */
+ }
 -- 
 1.5.3.6.970.gd25430
 
