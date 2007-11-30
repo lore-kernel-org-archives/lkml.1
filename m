@@ -1,851 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934741AbXK3D1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934844AbXK3D3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934741AbXK3D1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 22:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762406AbXK3D1c
+	id S934844AbXK3D3n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 22:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763216AbXK3D3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 22:27:32 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45322 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762399AbXK3D1a (ORCPT
+	Thu, 29 Nov 2007 22:29:34 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:47099 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762406AbXK3D3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 22:27:30 -0500
-Date: Thu, 29 Nov 2007 19:27:21 -0800
-Message-Id: <200711300327.lAU3RLfR024033@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] Documentation/Changes -> Documentation/Requirements
-In-Reply-To: <20071129175440.ead82de6.akpm@linux-foundation.org>
-References: <20071129175440.ead82de6.akpm@linux-foundation.org>
+	Thu, 29 Nov 2007 22:29:34 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=nMXuscf3tJZDMuMVAY68W1NrZ9getlmczv/LBvY/Vi23LhOeKOQCxGiU+nx5aO16ef3NBI40NfhaNaJS3oHxeNQMpMHzQ8vKE0kdYD/8QuT2wFRRoHrui4nfDAcZK4JBdk5jFDIez6zAhZXr7Ny1GM7d2bMcRDy25tjsLBLTiOo=  ;
+X-YMail-OSG: Py8x_VcVM1lH6N5Lw5r1fiIcPEH50va5lYYLSA3NvXksTx1YrQV0_qnasycEy6Y_dj9NRawuOA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Date: Fri, 30 Nov 2007 14:29:15 +1100
+User-Agent: KMail/1.9.5
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1196155985.25646.31.camel@ymzhang> <200711301346.22573.nickpiggin@yahoo.com.au> <1196392527.25646.65.camel@ymzhang>
+In-Reply-To: <1196392527.25646.65.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711301429.15664.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change Documentation/Changes to Documentation/Requirements, and at
-least begin to separate the runtime requirements from the kernel
-compilation requirements.
+On Friday 30 November 2007 14:15, Zhang, Yanmin wrote:
+> On Fri, 2007-11-30 at 13:46 +1100, Nick Piggin wrote:
+> > On Wednesday 28 November 2007 09:57, Arjan van de Ven wrote:
 
-There are definitely kernel compilation requirements that are not
-listed in this file.  It would be good to get them uncovered.
+> > > sounds like a bad idea; volanomark (well, technically the jvm behind
+> > > it) is abusing sched_yield() by assuming it does something it really
+> > > doesn't do, and as it happens some of the earlier 2.6 schedulers
+> > > accidentally happened to behave in a way that was nice for this
+> > > benchmark.
+> >
+> > OK, why is this still happening? Haven't we been asking JVMs to use
+> > futexes or posix locking for years and years now? Are there any sane
+> > jvms that _don't_ use yield?
+>
+> I think it's an issue of volanomark (a kind of java application) instead of
+> JVM.
 
-This document is obviously woefully incomplete, for one thing it has
-absolutely no per-architecture information, except "may depend on the
-CPU in your system."  Hopefully this will encourage people to
----
+volanomark itself and not the jvm is calling sched_yield()? Do we have
+any non-toy threaded java apps? (what's JAVA in the kernel-perf tests?)
 
-As far as I can tell, Documentation/Changes is the only thing we have
-that even attempts to document the basic requirements.  This attempts
-to formalize that fact.
 
- Documentation/Changes      |  396 --------------------------------------------
- Documentation/Requirements |  394 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 394 insertions(+), 396 deletions(-)
- delete mode 100644 Documentation/Changes
- create mode 100644 Documentation/Requirements
+> > > Todays kernel has a different behavior somewhat (and before people
+> > > scream "regression"; sched_yield() behavior isn't really specified and
+> > > doesn't make any sense at all, whatever you get is what you get....
+> > > it's pretty much an insane defacto behavior that is incredibly tied to
+> > > which decisions the scheduler makes how, and no app can depend on that
+> >
+> > It is a performance regression. Is there any reason *not* to use the
+> > "compat" yield by default?
+>
+> There is no, so I suggest to set sched_compat_yield=1 by default.
+> If sched_compat_yield=0, kernel almost does nothing but returns. When
+> sched_compat_yield=1, it is closer to the meaning of sched_yield man page.
 
-diff --git a/Documentation/Changes b/Documentation/Changes
-deleted file mode 100644
-index cb2b141..0000000
---- a/Documentation/Changes
-+++ /dev/null
-@@ -1,396 +0,0 @@
--Intro
--=====
--
--This document is designed to provide a list of the minimum levels of
--software necessary to run the 2.6 kernels, as well as provide brief
--instructions regarding any other "Gotchas" users may encounter when
--trying life on the Bleeding Edge.  If upgrading from a pre-2.4.x
--kernel, please consult the Changes file included with 2.4.x kernels for
--additional information; most of that information will not be repeated
--here.  Basically, this document assumes that your system is already
--functional and running at least 2.4.x kernels.
--
--This document is originally based on my "Changes" file for 2.0.x kernels
--and therefore owes credit to the same people as that file (Jared Mauch,
--Axel Boldt, Alessandro Sigala, and countless other users all over the
--'net).
--
--Current Minimal Requirements
--============================
--
--Upgrade to at *least* these software revisions before thinking you've
--encountered a bug!  If you're unsure what version you're currently
--running, the suggested command should tell you.
--
--Again, keep in mind that this list assumes you are already
--functionally running a Linux 2.4 kernel.  Also, not all tools are
--necessary on all systems; obviously, if you don't have any ISDN
--hardware, for example, you probably needn't concern yourself with
--isdn4k-utils.
--
--o  Gnu C                  3.2                     # gcc --version
--o  Gnu make               3.79.1                  # make --version
--o  binutils               2.12                    # ld -v
--o  util-linux             2.10o                   # fdformat --version
--o  module-init-tools      0.9.10                  # depmod -V
--o  e2fsprogs              1.29                    # tune2fs
--o  jfsutils               1.1.3                   # fsck.jfs -V
--o  reiserfsprogs          3.6.3                   # reiserfsck -V 2>&1|grep reiserfsprogs
--o  xfsprogs               2.6.0                   # xfs_db -V
--o  pcmciautils            004                     # pccardctl -V
--o  quota-tools            3.09                    # quota -V
--o  PPP                    2.4.0                   # pppd --version
--o  isdn4k-utils           3.1pre1                 # isdnctrl 2>&1|grep version
--o  nfs-utils              1.0.5                   # showmount --version
--o  procps                 3.2.0                   # ps --version
--o  oprofile               0.9                     # oprofiled --version
--o  udev                   081                     # udevinfo -V
--o  grub                   0.93                    # grub --version
--
--Kernel compilation
--==================
--
--GCC
-----
--
--The gcc version requirements may vary depending on the type of CPU in your
--computer.
--
--Make
------
--
--You will need Gnu make 3.79.1 or later to build the kernel.
--
--Binutils
----------
--
--Linux on IA-32 has recently switched from using as86 to using gas for
--assembling the 16-bit boot code, removing the need for as86 to compile
--your kernel.  This change does, however, mean that you need a recent
--release of binutils.
--
--System utilities
--================
--
--Architectural changes
-----------------------
--
--DevFS has been obsoleted in favour of udev
--(http://www.kernel.org/pub/linux/utils/kernel/hotplug/)
--
--32-bit UID support is now in place.  Have fun!
--
--Linux documentation for functions is transitioning to inline
--documentation via specially-formatted comments near their
--definitions in the source.  These comments can be combined with the
--SGML templates in the Documentation/DocBook directory to make DocBook
--files, which can then be converted by DocBook stylesheets to PostScript,
--HTML, PDF files, and several other formats.  In order to convert from
--DocBook format to a format of your choice, you'll need to install Jade as
--well as the desired DocBook stylesheets.
--
--Util-linux
------------
--
--New versions of util-linux provide *fdisk support for larger disks,
--support new options to mount, recognize more supported partition
--types, have a fdformat which works with 2.4 kernels, and similar goodies.
--You'll probably want to upgrade.
--
--Ksymoops
----------
--
--If the unthinkable happens and your kernel oopses, you may need the
--ksymoops tool to decode it, but in most cases you don't.
--In the 2.6 kernel it is generally preferred to build the kernel with
--CONFIG_KALLSYMS so that it produces readable dumps that can be used as-is
--(this also produces better output than ksymoops).
--If for some reason your kernel is not build with CONFIG_KALLSYMS and
--you have no way to rebuild and reproduce the Oops with that option, then
--you can still decode that Oops with ksymoops.
--
--Module-Init-Tools
-------------------
--
--A new module loader is now in the kernel that requires module-init-tools
--to use.  It is backward compatible with the 2.4.x series kernels.
--
--Mkinitrd
----------
--
--These changes to the /lib/modules file tree layout also require that
--mkinitrd be upgraded.
--
--E2fsprogs
-----------
--
--The latest version of e2fsprogs fixes several bugs in fsck and
--debugfs.  Obviously, it's a good idea to upgrade.
--
--JFSutils
----------
--
--The jfsutils package contains the utilities for the file system.
--The following utilities are available:
--o fsck.jfs - initiate replay of the transaction log, and check
--  and repair a JFS formatted partition.
--o mkfs.jfs - create a JFS formatted partition.
--o other file system utilities are also available in this package.
--
--Reiserfsprogs
---------------
--
--The reiserfsprogs package should be used for reiserfs-3.6.x
--(Linux kernels 2.4.x). It is a combined package and contains working
--versions of mkreiserfs, resize_reiserfs, debugreiserfs and
--reiserfsck. These utils work on both i386 and alpha platforms.
--
--Xfsprogs
----------
--
--The latest version of xfsprogs contains mkfs.xfs, xfs_db, and the
--xfs_repair utilities, among others, for the XFS filesystem.  It is
--architecture independent and any version from 2.0.0 onward should
--work correctly with this version of the XFS kernel code (2.6.0 or
--later is recommended, due to some significant improvements).
--
--PCMCIAutils
-------------
--
--PCMCIAutils replaces pcmcia-cs (see below). It properly sets up
--PCMCIA sockets at system startup and loads the appropriate modules
--for 16-bit PCMCIA devices if the kernel is modularized and the hotplug
--subsystem is used.
--
--Pcmcia-cs
-----------
--
--PCMCIA (PC Card) support is now partially implemented in the main
--kernel source. The "pcmciautils" package (see above) replaces pcmcia-cs
--for newest kernels.
--
--Quota-tools
-------------
--
--Support for 32 bit uid's and gid's is required if you want to use
--the newer version 2 quota format.  Quota-tools version 3.07 and
--newer has this support.  Use the recommended version or newer
--from the table above.
--
--Intel IA32 microcode
----------------------
--
--A driver has been added to allow updating of Intel IA32 microcode,
--accessible as a normal (misc) character device.  If you are not using
--udev you may need to:
--
--mkdir /dev/cpu
--mknod /dev/cpu/microcode c 10 184
--chmod 0644 /dev/cpu/microcode
--
--as root before you can use this.  You'll probably also want to
--get the user-space microcode_ctl utility to use with this.
--
--Powertweak
------------
--
--If you are running v0.1.17 or earlier, you should upgrade to
--version v0.99.0 or higher. Running old versions may cause problems
--with programs using shared memory.
--
--udev
------
--udev is a userspace application for populating /dev dynamically with
--only entries for devices actually present.  udev replaces the basic
--functionality of devfs, while allowing persistent device naming for
--devices.
--
--FUSE
------
--
--Needs libfuse 2.4.0 or later.  Absolute minimum is 2.3.0 but mount
--options 'direct_io' and 'kernel_cache' won't work.
--
--Networking
--==========
--
--General changes
-----------------
--
--If you have advanced network configuration needs, you should probably
--consider using the network tools from ip-route2.
--
--Packet Filter / NAT
---------------------
--The packet filtering and NAT code uses the same tools like the previous 2.4.x
--kernel series (iptables).  It still includes backwards-compatibility modules
--for 2.2.x-style ipchains and 2.0.x-style ipfwadm.
--
--PPP
-----
--
--The PPP driver has been restructured to support multilink and to
--enable it to operate over diverse media layers.  If you use PPP,
--upgrade pppd to at least 2.4.0.
--
--If you are not using udev, you must have the device file /dev/ppp
--which can be made by:
--
--mknod /dev/ppp c 108 0
--
--as root.
--
--Isdn4k-utils
--------------
--
--Due to changes in the length of the phone number field, isdn4k-utils
--needs to be recompiled or (preferably) upgraded.
--
--NFS-utils
-----------
--
--In 2.4 and earlier kernels, the nfs server needed to know about any
--client that expected to be able to access files via NFS.  This
--information would be given to the kernel by "mountd" when the client
--mounted the filesystem, or by "exportfs" at system startup.  exportfs
--would take information about active clients from /var/lib/nfs/rmtab.
--
--This approach is quite fragile as it depends on rmtab being correct
--which is not always easy, particularly when trying to implement
--fail-over.  Even when the system is working well, rmtab suffers from
--getting lots of old entries that never get removed.
--
--With 2.6 we have the option of having the kernel tell mountd when it
--gets a request from an unknown host, and mountd can give appropriate
--export information to the kernel.  This removes the dependency on
--rmtab and means that the kernel only needs to know about currently
--active clients.
--
--To enable this new functionality, you need to:
--
--  mount -t nfsd nfsd /proc/fs/nfsd
--
--before running exportfs or mountd.  It is recommended that all NFS
--services be protected from the internet-at-large by a firewall where
--that is possible.
--
--Getting updated software
--========================
--
--Kernel compilation
--******************
--
--gcc
-----
--o  <ftp://ftp.gnu.org/gnu/gcc/>
--
--Make
------
--o  <ftp://ftp.gnu.org/gnu/make/>
--
--Binutils
----------
--o  <ftp://ftp.kernel.org/pub/linux/devel/binutils/>
--
--System utilities
--****************
--
--Util-linux
------------
--o  <ftp://ftp.kernel.org/pub/linux/utils/util-linux/>
--
--Ksymoops
----------
--o  <ftp://ftp.kernel.org/pub/linux/utils/kernel/ksymoops/v2.4/>
--
--Module-Init-Tools
-------------------
--o  <ftp://ftp.kernel.org/pub/linux/kernel/people/rusty/modules/>
--
--Mkinitrd
----------
--o  <ftp://rawhide.redhat.com/pub/rawhide/SRPMS/SRPMS/>
--
--E2fsprogs
-----------
--o  <http://prdownloads.sourceforge.net/e2fsprogs/e2fsprogs-1.29.tar.gz>
--
--JFSutils
----------
--o  <http://jfs.sourceforge.net/>
--
--Reiserfsprogs
---------------
--o  <http://www.namesys.com/pub/reiserfsprogs/reiserfsprogs-3.6.3.tar.gz>
--
--Xfsprogs
----------
--o  <ftp://oss.sgi.com/projects/xfs/download/>
--
--Pcmciautils
-------------
--o  <ftp://ftp.kernel.org/pub/linux/utils/kernel/pcmcia/>
--
--Pcmcia-cs
-----------
--o  <http://pcmcia-cs.sourceforge.net/>
--
--Quota-tools
------------
--o  <http://sourceforge.net/projects/linuxquota/>
--
--DocBook Stylesheets
---------------------
--o  <http://nwalsh.com/docbook/dsssl/>
--
--XMLTO XSLT Frontend
---------------------
--o  <http://cyberelk.net/tim/xmlto/>
--
--Intel P6 microcode
--------------------
--o  <http://www.urbanmyth.org/microcode/>
--
--Powertweak
------------
--o  <http://powertweak.sourceforge.net/>
--
--udev
------
--o <http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html>
--
--FUSE
------
--o <http://sourceforge.net/projects/fuse>
--
--Networking
--**********
--
--PPP
-----
--o  <ftp://ftp.samba.org/pub/ppp/ppp-2.4.0.tar.gz>
--
--Isdn4k-utils
--------------
--o  <ftp://ftp.isdn4linux.de/pub/isdn4linux/utils/isdn4k-utils.v3.1pre1.tar.gz>
--
--NFS-utils
-----------
--o  <http://sourceforge.net/project/showfiles.php?group_id=14>
--
--Iptables
----------
--o  <http://www.iptables.org/downloads.html>
--
--Ip-route2
-----------
--o  <ftp://ftp.tux.org/pub/net/ip-routing/iproute2-2.2.4-now-ss991023.tar.gz>
--
--OProfile
----------
--o  <http://oprofile.sf.net/download/>
--
--NFS-Utils
-----------
--o  <http://nfs.sourceforge.net/>
--
-diff --git a/Documentation/Requirements b/Documentation/Requirements
-new file mode 100644
-index 0000000..bd7bc2c
---- /dev/null
-+++ b/Documentation/Requirements
-@@ -0,0 +1,394 @@
-+Intro
-+=====
-+
-+This document is designed to provide a list of the minimum levels of
-+software necessary to run the 2.6 kernels, as well as provide brief
-+instructions regarding any other "Gotchas" users may encounter when
-+trying life on the Bleeding Edge.  If upgrading from a pre-2.4.x
-+kernel, please consult the Changes file included with 2.4.x kernels for
-+additional information; most of that information will not be repeated
-+here.  Basically, this document assumes that your system is already
-+functional and running at least 2.4.x kernels.
-+
-+This document is originally based on my "Changes" file for 2.0.x kernels
-+and therefore owes credit to the same people as that file (Jared Mauch,
-+Axel Boldt, Alessandro Sigala, and countless other users all over the
-+'net).
-+
-+
-+Minimal Runtime Requirements
-+============================
-+
-+Upgrade to at *least* these software revisions before thinking you've
-+encountered a bug!  If you're unsure what version you're currently
-+running, the suggested command should tell you.
-+
-+Again, keep in mind that this list assumes you are already
-+functionally running a Linux 2.4 kernel.  Also, not all tools are
-+necessary on all systems; obviously, if you don't have any ISDN
-+hardware, for example, you probably needn't concern yourself with
-+isdn4k-utils.
-+
-+o  util-linux             2.10o                   # fdformat --version
-+o  module-init-tools      0.9.10                  # depmod -V
-+o  e2fsprogs              1.29                    # tune2fs
-+o  jfsutils               1.1.3                   # fsck.jfs -V
-+o  reiserfsprogs          3.6.3                   # reiserfsck -V 2>&1|grep reiserfsprogs
-+o  xfsprogs               2.6.0                   # xfs_db -V
-+o  pcmciautils            004                     # pccardctl -V
-+o  quota-tools            3.09                    # quota -V
-+o  PPP                    2.4.0                   # pppd --version
-+o  isdn4k-utils           3.1pre1                 # isdnctrl 2>&1|grep version
-+o  nfs-utils              1.0.5                   # showmount --version
-+o  procps                 3.2.0                   # ps --version
-+o  oprofile               0.9                     # oprofiled --version
-+o  udev                   081                     # udevinfo -V
-+o  grub                   0.93                    # grub --version
-+
-+
-+Kernel Compilation Requirements
-+===============================
-+
-+On all systems, minimal requirements (see below for additional notes):
-+
-+o  Gnu C                  3.2                     # gcc --version
-+o  Gnu make               3.79.1                  # make --version
-+o  binutils               2.12                    # ld -v
-+o  Gnu bc                 1.06                    # bc -v
-+o  Perl                   5.6.0(?)                # perl -v
-+
-+Not all tools may be required for all kernel configurations.
-+
-+
-+GCC/Binutils
-+------------
-+
-+The gcc or binutils version requirements may vary depending on the
-+type of CPU in your computer.  (Need to add a list here...)
-+
-+
-+System utilities
-+================
-+
-+Architectural changes
-+---------------------
-+
-+DevFS has been obsoleted in favour of udev
-+(http://www.kernel.org/pub/linux/utils/kernel/hotplug/)
-+
-+32-bit UID support is now in place.  Have fun!
-+
-+Linux documentation for functions is transitioning to inline
-+documentation via specially-formatted comments near their
-+definitions in the source.  These comments can be combined with the
-+SGML templates in the Documentation/DocBook directory to make DocBook
-+files, which can then be converted by DocBook stylesheets to PostScript,
-+HTML, PDF files, and several other formats.  In order to convert from
-+DocBook format to a format of your choice, you'll need to install Jade as
-+well as the desired DocBook stylesheets.
-+
-+Util-linux
-+----------
-+
-+New versions of util-linux provide *fdisk support for larger disks,
-+support new options to mount, recognize more supported partition
-+types, have a fdformat which works with 2.4 kernels, and similar goodies.
-+You'll probably want to upgrade.
-+
-+Ksymoops
-+--------
-+
-+If the unthinkable happens and your kernel oopses, you may need the
-+ksymoops tool to decode it, but in most cases you don't.
-+In the 2.6 kernel it is generally preferred to build the kernel with
-+CONFIG_KALLSYMS so that it produces readable dumps that can be used as-is
-+(this also produces better output than ksymoops).
-+If for some reason your kernel is not build with CONFIG_KALLSYMS and
-+you have no way to rebuild and reproduce the Oops with that option, then
-+you can still decode that Oops with ksymoops.
-+
-+Module-Init-Tools
-+-----------------
-+
-+A new module loader is now in the kernel that requires module-init-tools
-+to use.  It is backward compatible with the 2.4.x series kernels.
-+
-+Mkinitrd
-+--------
-+
-+These changes to the /lib/modules file tree layout also require that
-+mkinitrd be upgraded.
-+
-+E2fsprogs
-+---------
-+
-+The latest version of e2fsprogs fixes several bugs in fsck and
-+debugfs.  Obviously, it's a good idea to upgrade.
-+
-+JFSutils
-+--------
-+
-+The jfsutils package contains the utilities for the file system.
-+The following utilities are available:
-+o fsck.jfs - initiate replay of the transaction log, and check
-+  and repair a JFS formatted partition.
-+o mkfs.jfs - create a JFS formatted partition.
-+o other file system utilities are also available in this package.
-+
-+Reiserfsprogs
-+-------------
-+
-+The reiserfsprogs package should be used for reiserfs-3.6.x
-+(Linux kernels 2.4.x). It is a combined package and contains working
-+versions of mkreiserfs, resize_reiserfs, debugreiserfs and
-+reiserfsck. These utils work on both i386 and alpha platforms.
-+
-+Xfsprogs
-+--------
-+
-+The latest version of xfsprogs contains mkfs.xfs, xfs_db, and the
-+xfs_repair utilities, among others, for the XFS filesystem.  It is
-+architecture independent and any version from 2.0.0 onward should
-+work correctly with this version of the XFS kernel code (2.6.0 or
-+later is recommended, due to some significant improvements).
-+
-+PCMCIAutils
-+-----------
-+
-+PCMCIAutils replaces pcmcia-cs (see below). It properly sets up
-+PCMCIA sockets at system startup and loads the appropriate modules
-+for 16-bit PCMCIA devices if the kernel is modularized and the hotplug
-+subsystem is used.
-+
-+Pcmcia-cs
-+---------
-+
-+PCMCIA (PC Card) support is now partially implemented in the main
-+kernel source. The "pcmciautils" package (see above) replaces pcmcia-cs
-+for newest kernels.
-+
-+Quota-tools
-+-----------
-+
-+Support for 32 bit uid's and gid's is required if you want to use
-+the newer version 2 quota format.  Quota-tools version 3.07 and
-+newer has this support.  Use the recommended version or newer
-+from the table above.
-+
-+Intel IA32 microcode
-+--------------------
-+
-+A driver has been added to allow updating of Intel IA32 microcode,
-+accessible as a normal (misc) character device.  If you are not using
-+udev you may need to:
-+
-+mkdir /dev/cpu
-+mknod /dev/cpu/microcode c 10 184
-+chmod 0644 /dev/cpu/microcode
-+
-+as root before you can use this.  You'll probably also want to
-+get the user-space microcode_ctl utility to use with this.
-+
-+Powertweak
-+----------
-+
-+If you are running v0.1.17 or earlier, you should upgrade to
-+version v0.99.0 or higher. Running old versions may cause problems
-+with programs using shared memory.
-+
-+udev
-+----
-+udev is a userspace application for populating /dev dynamically with
-+only entries for devices actually present.  udev replaces the basic
-+functionality of devfs, while allowing persistent device naming for
-+devices.
-+
-+FUSE
-+----
-+
-+Needs libfuse 2.4.0 or later.  Absolute minimum is 2.3.0 but mount
-+options 'direct_io' and 'kernel_cache' won't work.
-+
-+Networking
-+==========
-+
-+General changes
-+---------------
-+
-+If you have advanced network configuration needs, you should probably
-+consider using the network tools from ip-route2.
-+
-+Packet Filter / NAT
-+-------------------
-+The packet filtering and NAT code uses the same tools like the previous 2.4.x
-+kernel series (iptables).  It still includes backwards-compatibility modules
-+for 2.2.x-style ipchains and 2.0.x-style ipfwadm.
-+
-+PPP
-+---
-+
-+The PPP driver has been restructured to support multilink and to
-+enable it to operate over diverse media layers.  If you use PPP,
-+upgrade pppd to at least 2.4.0.
-+
-+If you are not using udev, you must have the device file /dev/ppp
-+which can be made by:
-+
-+mknod /dev/ppp c 108 0
-+
-+as root.
-+
-+Isdn4k-utils
-+------------
-+
-+Due to changes in the length of the phone number field, isdn4k-utils
-+needs to be recompiled or (preferably) upgraded.
-+
-+NFS-utils
-+---------
-+
-+In 2.4 and earlier kernels, the nfs server needed to know about any
-+client that expected to be able to access files via NFS.  This
-+information would be given to the kernel by "mountd" when the client
-+mounted the filesystem, or by "exportfs" at system startup.  exportfs
-+would take information about active clients from /var/lib/nfs/rmtab.
-+
-+This approach is quite fragile as it depends on rmtab being correct
-+which is not always easy, particularly when trying to implement
-+fail-over.  Even when the system is working well, rmtab suffers from
-+getting lots of old entries that never get removed.
-+
-+With 2.6 we have the option of having the kernel tell mountd when it
-+gets a request from an unknown host, and mountd can give appropriate
-+export information to the kernel.  This removes the dependency on
-+rmtab and means that the kernel only needs to know about currently
-+active clients.
-+
-+To enable this new functionality, you need to:
-+
-+  mount -t nfsd nfsd /proc/fs/nfsd
-+
-+before running exportfs or mountd.  It is recommended that all NFS
-+services be protected from the internet-at-large by a firewall where
-+that is possible.
-+
-+Getting updated software
-+========================
-+
-+Kernel compilation
-+******************
-+
-+gcc
-+---
-+o  <ftp://ftp.gnu.org/gnu/gcc/>
-+
-+Make
-+----
-+o  <ftp://ftp.gnu.org/gnu/make/>
-+
-+Binutils
-+--------
-+o  <ftp://ftp.kernel.org/pub/linux/devel/binutils/>
-+
-+System utilities
-+****************
-+
-+Util-linux
-+----------
-+o  <ftp://ftp.kernel.org/pub/linux/utils/util-linux/>
-+
-+Ksymoops
-+--------
-+o  <ftp://ftp.kernel.org/pub/linux/utils/kernel/ksymoops/v2.4/>
-+
-+Module-Init-Tools
-+-----------------
-+o  <ftp://ftp.kernel.org/pub/linux/kernel/people/rusty/modules/>
-+
-+Mkinitrd
-+--------
-+o  <ftp://rawhide.redhat.com/pub/rawhide/SRPMS/SRPMS/>
-+
-+E2fsprogs
-+---------
-+o  <http://prdownloads.sourceforge.net/e2fsprogs/e2fsprogs-1.29.tar.gz>
-+
-+JFSutils
-+--------
-+o  <http://jfs.sourceforge.net/>
-+
-+Reiserfsprogs
-+-------------
-+o  <http://www.namesys.com/pub/reiserfsprogs/reiserfsprogs-3.6.3.tar.gz>
-+
-+Xfsprogs
-+--------
-+o  <ftp://oss.sgi.com/projects/xfs/download/>
-+
-+Pcmciautils
-+-----------
-+o  <ftp://ftp.kernel.org/pub/linux/utils/kernel/pcmcia/>
-+
-+Pcmcia-cs
-+---------
-+o  <http://pcmcia-cs.sourceforge.net/>
-+
-+Quota-tools
-+----------
-+o  <http://sourceforge.net/projects/linuxquota/>
-+
-+DocBook Stylesheets
-+-------------------
-+o  <http://nwalsh.com/docbook/dsssl/>
-+
-+XMLTO XSLT Frontend
-+-------------------
-+o  <http://cyberelk.net/tim/xmlto/>
-+
-+Intel P6 microcode
-+------------------
-+o  <http://www.urbanmyth.org/microcode/>
-+
-+Powertweak
-+----------
-+o  <http://powertweak.sourceforge.net/>
-+
-+udev
-+----
-+o <http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html>
-+
-+FUSE
-+----
-+o <http://sourceforge.net/projects/fuse>
-+
-+Networking
-+**********
-+
-+PPP
-+---
-+o  <ftp://ftp.samba.org/pub/ppp/ppp-2.4.0.tar.gz>
-+
-+Isdn4k-utils
-+------------
-+o  <ftp://ftp.isdn4linux.de/pub/isdn4linux/utils/isdn4k-utils.v3.1pre1.tar.gz>
-+
-+NFS-utils
-+---------
-+o  <http://sourceforge.net/project/showfiles.php?group_id=14>
-+
-+Iptables
-+--------
-+o  <http://www.iptables.org/downloads.html>
-+
-+Ip-route2
-+---------
-+o  <ftp://ftp.tux.org/pub/net/ip-routing/iproute2-2.2.4-now-ss991023.tar.gz>
-+
-+OProfile
-+--------
-+o  <http://oprofile.sf.net/download/>
-+
-+NFS-Utils
-+---------
-+o  <http://nfs.sourceforge.net/>
-+
--- 
-1.5.3.4
+sched_yield() is really only defined for posix realtime scheduling
+AFAIK, which talks about priority lists. 
 
+SCHED_OTHER is defined to be a single priority, below the rest of the
+realtime priorities. So at first you *might* say that the process
+should then be made to run only after all other SCHED_OTHER processes,
+however there is no such ordering requirement for SCHED_OTHER
+scheduling. The SCHED_OTHER scheduler can run any task at any time.
+
+That said, I think people would *expect* that call be much closer to
+the compat behaviour than the current default. And that's definitely
+what Linux has done in the past. So there really does need to be a
+good reason to change it like this IMO.
+
+
+> > As you say, for SCHED_OTHER tasks, yield
+> > can do almost anything. We may as well do something that isn't a
+> > regression...
+>
+> I just found SCHED_OTHER in man sched_setscheduler. Is it SCHED_NORMAL in
+> the latest kernel?
+
+Yes, SCHED_NORMAL is SCHED_OTHER. Don't know why it got renamed...
