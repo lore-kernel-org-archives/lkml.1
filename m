@@ -1,83 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbXK3KeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763311AbXK3KfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762831AbXK3KeY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 05:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbXK3KeK
+	id S1763311AbXK3KfL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 05:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXK3Kez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 05:34:10 -0500
-Received: from ns.suse.de ([195.135.220.2]:60087 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbXK3KeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 05:34:08 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>, tglx@linutronix.de
-Subject: Re: [patch 0/2] x86, ptrace:  support for branch trace store(BTS)
-Date: Fri, 30 Nov 2007 11:34:03 +0100
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, hpa@zytor.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Michael Kerrisk" <mtk-manpages@gmx.net>
-References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com> <20071129155940.7df70ac2.akpm@linux-foundation.org> <029E5BE7F699594398CA44E3DDF5544401051EEF@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <029E5BE7F699594398CA44E3DDF5544401051EEF@swsmsx413.ger.corp.intel.com>
+	Fri, 30 Nov 2007 05:34:55 -0500
+Received: from mxintern.schlund.de ([212.227.126.204]:51948 "EHLO
+	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455AbXK3Key (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 05:34:54 -0500
+Date: Fri, 30 Nov 2007 11:34:50 +0100
+From: Anders Henke <anders.henke@1und1.de>
+To: FUJITA Tomonori <tomof@acm.org>, matthew@wil.cx
+Cc: jack@ucw.cz, fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in directory) (fwd)
+Message-ID: <20071130103450.GC7697@1und1.de>
+References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz> <20071129235813Y.tomof@acm.org> <20071129164557.GD30957@1und1.de> <20071130021226T.tomof@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711301134.04719.ak@suse.de>
+In-Reply-To: <20071130021226T.tomof@acm.org>
+Organization: 1&1 Internet AG
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-UI-Msg-Verification: a69a0fc10fe8159bfe0e102aa6b22e47
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 November 2007 10:57:22 Metzger, Markus T wrote:
+Am 30.11.2007 schrieb FUJITA Tomonori:
+> > > > According to the 2.6.23-rc1 short-form changelog, there is
+> > > > one major edit on the dpt_i2o driver:
+> > > > 
+> > > > FUJITA Tomonori 
+> > > > 
+> > > >       [SCSI] dpt_i2o: convert to use the data buffer accessors
+> > > > 
+> > > > Stephen Rothwell 
+> > > >       dpt_i2o depends on virt_to_bus
+> > > > 
+> > > > Fujita, would you please take a look at this?
+> > > 
+> > > Sorry about the bug. Can you try this?
+> > > 
+> > > 
+> > > diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
+> > > index 8258506..1255b26 100644
+> > > --- a/drivers/scsi/dpt_i2o.c
+> > > +++ b/drivers/scsi/dpt_i2o.c
+> > > @@ -3295,7 +3295,7 @@ static struct scsi_host_template adpt_template = {
+> > >  	.this_id		= 7,
+> > >  	.cmd_per_lun		= 1,
+> > >  	.use_clustering		= ENABLE_CLUSTERING,
+> > > -	.use_sg_chaining	= ENABLE_SG_CHAINING,
+> > > +	.use_sg_chaining	= DISABLE_SG_CHAINING,
+> > >  };
+> > >  
+> > >  static s32 adpt_scsi_register(adpt_hba* pHba)
+> > 
+> > The structure to patch does look different and doesn't include an
+> > tag "use_sg_chaining":
 > 
-> >Is there any userspace code avaialble which people can use to play with
-> >this?
+> Sorry, I misread your bug report. If you use 2.6.23, the sg chaining
+> is unrelated.
 > 
-> Not yet. We are talking to internal teams regarding gdb support.
+> What architecture do you use?
 
-But you already have reasonably realistic test code right?
+"Mainstream" 32-bit-x86, the affected boxes are running Intel Xeons (P4)
+at 2.66 or 2.8 GHz. 
 
-We were burned a few times recently with new interfaces that turned
-out to be not really usable from the user perspective.
+In between, I've ruled out that the static assignment isn't
+source of the problem.  And due to some manually made "make clean" which 
+didn't clean enough, I've also pointed out the wrong patch - sorry,
+Fujita, definitely the right one which breaks my boxes is the dpt_i2o patch 
+from 2.6.23-rc2 to 2.6.23-rc3 (7 kb in Size) from Matthew Wilcox.
 
-Ideal situation to avoid that would be that at least one person other than 
-the patch submitter has successfully written a program using it first.
+commit 55d9fcf57ba5ec427544fca7abc335cf3da78160
+Author: Matthew Wilcox <matthew@wil.cx>
+Date:   Mon Jul 30 15:19:18 2007 -0600
 
-e.g. I'm still feeling a bit uneasy about that global sysctl
-embedded in the interface.
+    [SCSI] dpt_i2o: convert to SCSI hotplug model
+    
+     - Delete refereces to HOSTS_C
+     - Switch to module_init/module_exit instead of detect/release
+     - Don't pass around the host template and rename it to
+       adpt_template
+     - Switch from scsi_register/scsi_unregister to scsi_host_alloc,
+       scsi_add_host, scsi_scan_host and scsi_host_put.
+    
+    Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+    Acked-by: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-> 
-> >How do you envisage it being used in the long term?  Do you 
-> >expect any of
-> >the standard performance tuning tools will be tweaked to 
-> >understand this
-> >feature and if so which ones?
-> 
-> I would expect debuggers to use it to show an execution trace of the 
-> debuggee. The ptrace interface targets application debuggers;
+"Definitely" as in
+-applied the diff-patch onto 2.6.23.1 with a dpt_i2o from 2.6.23-rc1
+ to verify that booting failes.
+-Recompiled a clean unpacked 2.6.23-rc2 to verify that the driver
+ from -rc2 still works.
+-Recompiled a clean unpacked 2.6.23-rc3 to verify that the driver
+ from -rc3 breaks booting on my boxes.
 
-application debuggers and possible performance tools. There are certainly
-a lot of possibilities from this.
+So sorry for mispointing the bug to you, it's an issue for Matthew.
 
 
-> If the feature turns out to be really useful, I would, of course, expect
-> (or at least hope) that other CPU's would provide a similar feature.
+Anders
+-- 
+1&1 Internet AG              System Design
+Brauerstrasse 48             v://49.721.91374.50
+D-76135 Karlsruhe            f://49.721.91374.225
 
-I think some others do. But the details are always CPU specific. I doubt
-much low level code will be possible to share. But it would be good
-if the ptrace interface is generic enough for everybody (I think it was
-though) 
-
- 
-> Most of the code is arch specific. If other CPU's share the general BTS
-> layout,
-> some of the ptrace_bts.c code could be shared.
-> Since the implementation only supports x86, I think the code should go
-> into
-> arch/x86 - at least until other CPU's are supported.
-
-Agreed.
-
--Andi
+Amtsgericht Montabaur HRB 6484
+Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
+Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Norbert Lang, Achim Weiss
+Aufsichtsratsvorsitzender: Michael Scheeren
