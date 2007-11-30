@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXK3WeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbXK3WgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbXK3WeQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbXK3WeA
+	id S1758167AbXK3WgR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbXK3WgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:34:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60774 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbXK3Wd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:33:59 -0500
-Date: Fri, 30 Nov 2007 14:33:04 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
-	functions
-Message-ID: <20071130223304.GA7916@kroah.com>
-References: <20071130214819.GA7326@kroah.com> <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
+	Fri, 30 Nov 2007 17:36:09 -0500
+Received: from waste.org ([66.93.16.53]:46127 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754942AbXK3WgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 17:36:07 -0500
+Date: Fri, 30 Nov 2007 16:35:37 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Allan Stephens <allan.stephens@windriver.com>,
+       Jon Paul Maloy <jon.maloy@ericsson.com>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [bug] SLOB, tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52 kmap_atomic_prot()
+Message-ID: <20071130223537.GT19691@waste.org>
+References: <20071129142546.GA27719@elte.hu> <20071129143920.GA32146@elte.hu> <20071129213217.GW19691@waste.org> <20071130091418.GA2201@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071130091418.GA2201@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 05:10:33PM -0500, Alan Stern wrote:
-> On Fri, 30 Nov 2007, Greg KH wrote:
+On Fri, Nov 30, 2007 at 10:14:18AM +0100, Ingo Molnar wrote:
 > 
-> > Ok, how about this:
-> > 	void kobject_init(struct kobject *kobj, struct ktype *ktype);
-> > 
-> > and then:
-> > 	int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
-> > 
-> > After we call kobject_init() we HAVE to call kobject_put() to clean up
-> > properly.  So, if kobject_add() fails, we still need to clean up with
-> > kobject_put();
+> * Matt Mackall <mpm@selenic.com> wrote:
 > 
-> You could put that a little less strongly.  After kobject_init() you
-> SHOULD call kobject_put() to clean up properly, and after kobject_add()
-> you MUST call kobject_del() and kobject_put().
+> > > plus, and this is a slob question i guess, how come we drop into 
+> > > clear_highpage() for a kzalloc()??
+> > 
+> > Good question. Looks like kzalloc switched from doing a memset to
+> > passing a GFP_ZERO flag down to kmalloc. Slob didn't get completely
+> > updated to reflect this, so it blindly propagates the flag onto
+> > __alloc_pages and does a harmless double-clear.
+> > 
+> > Someone should remind us what the point of moving the kzalloc memset
+> > down into the allocators was. We now have all three allocators doing:
+> > 
+> >         if (unlikely((flags & __GFP_ZERO) && ptr))
+> >                 memset(ptr, 0, obj_size(cachep));
+> > 
+> > and needing to mask flags before passing them to page allocators,
+> > which hardly seems better than kzalloc unconditionally doing the
+> > memset. Wouldn't it be better/faster/smaller to make kzalloc a
+> > non-inline?
+> > 
+> > Slob also has a nice second path for large kmallocs where it just 
+> > calls the page allocator directly which also needs this treatment. 
+> > Which does the right thing with non-highmem systems, but can hit this 
+> > bug otherwise.
+> > 
+> > Below is a totally untested patch. Alternately, we could simply tweak 
+> > clear_highpage to remove the limitation, but that would leave slob 
+> > doing an extra clear.
+> 
+> ok, this fixes the debug warning.
+> 
 
-No, in looking at the code, you only need to call kobject_del() to clean
-everything up properly, if kobject_add() succeeds.  No need to call
-kobject_put() yet again.
+But the question remains: is this the right fix? The commit in
+question is here:
 
-Can someone else verify that this really is correct?
+http://www.kernel.org/hg/linux-2.6/rev/13683609d67a
 
-thanks,
+Christoph, remind us what's the upside here? It seems to me it would
+be better to have separate non-inline kzalloc and kcalloc functions
+that did the memset instead.
 
-greg k-h
+Another smaller open question is whether we want to remove the
+in_interrupt restriction from clear_pagehigh.
 
-p.s. I think it's time to start a "travel to .nz and kick a certain
-ex-kernel-developer around a bit" fund...
+-- 
+Mathematics is the supreme nostalgia of our time.
