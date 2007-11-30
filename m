@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934608AbXK3Nh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934894AbXK3Njg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934608AbXK3Nh4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934558AbXK3Nh3
+	id S934894AbXK3Njg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXK3Nj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:37:29 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:4195 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762699AbXK3Nh1 (ORCPT
+	Fri, 30 Nov 2007 08:39:26 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52763 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757166AbXK3NjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:37:27 -0500
-Date: Fri, 30 Nov 2007 14:37:24 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Jaswinder Singh <jaswinderlinux@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jan Glauber <jan.glauber@de.ibm.com>
-Subject: Re: [PATCH] Re: [BUG] 2.6.24-rc3 x86 make depends on s390 arch
-Message-ID: <20071130133724.GE11682@osiris.boeblingen.de.ibm.com>
-References: <3f9a31f40711300014y576e83dldfafa340eec257f0@mail.gmail.com> <3f9a31f40711300303l3260c3e7s4c35884f5e1fa6e1@mail.gmail.com> <20071130115015.GC11682@osiris.boeblingen.de.ibm.com> <3f9a31f40711300408s4341a338n33e5b6dbaee05813@mail.gmail.com> <20071130124958.GD11682@osiris.boeblingen.de.ibm.com> <3f9a31f40711300500h6d13625ua08417ae53acbbea@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f9a31f40711300500h6d13625ua08417ae53acbbea@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 30 Nov 2007 08:39:25 -0500
+Date: Fri, 30 Nov 2007 13:30:52 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Valdis.Kletnieks@vt.edu
+Cc: Jon Masters <jonathan@jonmasters.org>, Ray Lee <ray-lk@madrabbit.org>,
+       tvrtko.ursulin@sophos.com, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071130133052.5fdab6f4@the-village.bc.nu>
+In-Reply-To: <21029.1196403614@turing-police.cc.vt.edu>
+References: <20071128183040.GW8181@ftp.linux.org.uk>
+	<OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
+	<20071129173601.34273083@the-village.bc.nu>
+	<2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
+	<1196362612.6473.98.camel@perihelion>
+	<2c0942db0711291111t16a4eb49h6b1e83ddf7bb4cf9@mail.gmail.com>
+	<1196365551.6473.103.camel@perihelion>
+	<20071129214527.1d62056c@the-village.bc.nu>
+	<1196379273.6473.121.camel@perihelion>
+	<21029.1196403614@turing-police.cc.vt.edu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 06:30:45PM +0530, Jaswinder Singh wrote:
-> We have two options:
-> 
-> 1. Either move arch/s390/crypto/Kconfig to drivers/crypto/Kconfig
-> 
-> OR
-> 
-> 2. In arch/s390/crypto/Kconfig , replace "depends on S390" to "depends
-> on CRYPRO_HW"
-> 
-> I think 2nd option is better for everyone.
+> Fortunately for all concerned, although Alan's self-modifying code is indeed a
+> possibility, it's much less of an issue than the sort of malware that can be
+> found with a simple "find this 27-byte sequence, which will be found in either
+> block 36 or 37 of the file"
 
-2) won't work and doesn't make too much sense. So it's 1).
-This isn't worth discussing any furter.
+Thats a very old model of detection ;)
 
-Thanks.
+
+There is another usage case for this stuff as well - which is on the fly
+indexing of material. An indexer has the same basic needs as a virus
+checker (without the blocking aspect) and doesn't have to be robust
+against sneaky material.
+
+Alan
