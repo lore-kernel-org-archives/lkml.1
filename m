@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934641AbXK3BV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934432AbXK3BdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934641AbXK3BV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 20:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933223AbXK3BVT
+	id S934432AbXK3BdP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 20:33:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759739AbXK3Bc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 20:21:19 -0500
-Received: from hierophant.serpentine.com ([64.81.58.173]:59484 "EHLO
-	hierophant.serpentine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933072AbXK3BVS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 20:21:18 -0500
-X-Greylist: delayed 471 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Nov 2007 20:21:18 EST
-Message-ID: <474F63A5.2000907@serpentine.com>
-Date: Thu, 29 Nov 2007 17:13:09 -0800
-From: "Bryan O'Sullivan" <bos@serpentine.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Question regarding mutex locking
-References: <474CF06C.8020208@lwfinger.net>
-In-Reply-To: <474CF06C.8020208@lwfinger.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 29 Nov 2007 20:32:58 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:1153 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758190AbXK3Bc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 20:32:57 -0500
+Subject: Re: Trailing periods in kernel messages
+From: Joe Perches <joe@perches.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org
+In-Reply-To: <474F6372.70705@cn.fujitsu.com>
+References: <474E6BD0.20103@cn.fujitsu.com>
+	 <E1IxfE8-0000Sr-9w@faramir.fjphome.nl>	<474E8669.6060409@cn.fujitsu.com>
+	 <200711291120.19595.elendil@planet.nl>
+	 <20071129032036.4c021617.akpm@linux-foundation.org>
+	 <474F6372.70705@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 17:30:59 -0800
+Message-Id: <1196386259.22120.101.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger wrote:
-> If a particular routine needs to lock a mutex, but it may be entered with that mutex already locked,
-> would the following code be SMP safe?
-> 
-> hold_lock = mutex_trylock()
+On Fri, 2007-11-30 at 09:12 +0800, Li Zefan wrote:
+> Just a roughly grep:
+> # grep -r -P --include=*.[ch] 'printk.*\.\\n' * | wc -l
+> 6025
+> # grep -r -P --include=*.[ch] '\.\\n' * | wc -l
+> 12723
 
-The common way to deal with this is first to restructure your function 
-into two.  One always acquires the lock, and the other (often written 
-with a "__" prefix) never acquires it.  The never-acquire code does the 
-actual work, and the always-acquire function calls it.
+Inequivalent.
 
-You then refactor the callers so that you don't have any code paths on 
-which you can't predict whether or not the lock will be held.
+Try:
+	grep -rP --include=*.[ch] 'printk.*\.\\n' * | wc -l
+and
+	grep -rp --include=*.[ch] 'printk.*[^\.]\\n' * | wc -l
 
-	<b
+6k/38k
+
+cheers, Joe
+
