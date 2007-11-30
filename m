@@ -1,134 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbXK3WSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbXK3WTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbXK3WSd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbXK3WS1
+	id S1758104AbXK3WTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXK3WTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:18:27 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:23496 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753130AbXK3WS0 (ORCPT
+	Fri, 30 Nov 2007 17:19:36 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:47702 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbXK3WTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:18:26 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=abP7Y5KPfAwQDlfDRh6iFFHoqFfLGKVbhgdN85EG4yXQOLcmuxudfFzGTVMWT3etHafHfYUwHN8Iby2Hiz7H2z+1FSYYzobzF3vrSIGUQ592Bue5OuoP3RKQrxkB0+3UjCwoZ3t5px7PxumlWBttL2d91C3+iVXeVkiNgotFyG8=  ;
-X-YMail-OSG: cZQJwuwVM1mgtv0Bg8q6vyQqI60iPatINX8MUC2bQbWO72_zuctra_jEP7HhqGzWNfZGKp.4uQ--
-From: David Brownell <david-b@pacbell.net>
-To: rtc-linux@googlegroups.com
-Subject: [patch 2.6.24-rc3] rtc-cmos alarm acts as oneshot
-Date: Fri, 30 Nov 2007 14:18:23 -0800
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
+	Fri, 30 Nov 2007 17:19:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=NCLRiykdrUxNQ88Qn3lw6ccq2jQLmYN4n+9qk5b7yihybbLS0ESM3CKGeSTeYUo5wEs/LpyIakwriO0LHUtfFJyeJK9TcYeKUCOq1h4hUCJgX02vDviTk1qvJAujdPD7/EAXP7VXy+5dmti7UEKd0hll0XHJcMk0bpX+QCSV3Xc=
+Message-ID: <47508C72.8050703@gmail.com>
+Date: Fri, 30 Nov 2007 23:19:30 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jean Delvare <khali@linux-fr.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH 1/1] HWMON: coretemp, suspend fix
+References: <661416096128474967.slaby@pripojeni.net> <20071130231512.1111d558@hyperion.delvare>
+In-Reply-To: <20071130231512.1111d558@hyperion.delvare>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200711301418.24033.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Start making the rtc-cmos alarm act more like a oneshot alarm by disabling
-that alarm after its IRQ fires.  (ACPI hooks are also needed.)
+On 11/30/2007 11:15 PM, Jean Delvare wrote:
+> Hi Jiri,
 
-The Linux RTC framework has previously been a bit vague in this area,
-but any other behavior is problematic and not very portable.  RTCs with
-full YYYY-MM-DD HH:MM[:SS] alarms won't have a problem here.  Only ones
-with partial match criteria, with the most visible example being the PC
-RTC, get confused.  (Because the criteria will match repeatedly.)
+Hi.
 
-Update comments relating to that oneshot behavior and timezone handling.
-(Timezones are another issue that's mostly visible with rtc-cmos.  That's
-because PCs often dual-boot MS-Windows, which likes its RTC to match local
-wall-clock time instead of UTC.)
+> On Fri, 30 Nov 2007 15:12:46 +0100, Jiri Slaby wrote:
+>> Ok, I don't see it merged in the latest -mm (mmotm). Could you, Mark, Rafael,
+>> sign off this version of the patch (Mark's + Rafael's fix)?
+>>
+>> --
+>>
+>> From: Mark M. Hoffman <mhoffman@lightlink.com>
+>>
+>> coretemp, suspend fix
+>>
+>> It's not permitted to unregister device/cpu if frozen and going to sleep.
+>> It causes deadlock on systems, where coretemp hwmon is loaded. Do it only
+>> in non-freezed states instead.
+>>
+>> Cc: Rafael J. Wysocki <rjw@sisk.pl> (frozen fix)
+>> Cc: Mark M. Hoffman <mhoffman@lightlink.com>
+>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>>
+>> ---
+>> commit 4f0e19b172ed18fb29e8006c4470fd37aa245a7a
+>> tree bec1cc4f7a499efe94c5f9d2d208db325914f28e
+>> parent 877dcc2ef6c7c17a64155cf201886c49622250e9
+>> author Jiri Slaby <jirislaby@gmail.com> Tue, 27 Nov 2007 20:19:47 +0100
+>> committer Jiri Slaby <ku@bellona.localdomain> Thu, 29 Nov 2007 23:41:11 +0100
+>>
+>>  drivers/hwmon/coretemp.c |    6 ++++--
+>>  1 files changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+>> index 5c82ec7..ce7457d 100644
+>> --- a/drivers/hwmon/coretemp.c
+>> +++ b/drivers/hwmon/coretemp.c
+>> @@ -338,11 +338,13 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
+>>  	switch (action) {
+>>  	case CPU_ONLINE:
+>>  	case CPU_ONLINE_FROZEN:
+>> +	case CPU_DOWN_FAILED:
+>>  		coretemp_device_add(cpu);
+>> +	case CPU_DOWN_FAILED_FROZEN:
+>>  		break;
+>> -	case CPU_DEAD:
+>> -	case CPU_DEAD_FROZEN:
+>> +	case CPU_DOWN_PREPARE:
+>>  		coretemp_device_remove(cpu);
+>> +	case CPU_DOWN_PREPARE_FROZEN:
+>>  		break;
+>>  	}
+>>  	return NOTIFY_OK;
+> 
+> Should this change go to the stable tree(s) as well?
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/rtc/rtc-cmos.c  |   14 +++++++++++++-
- drivers/rtc/rtc-dev.c   |    9 +++++++++
- drivers/rtc/rtc-sysfs.c |   19 +++++++++++++------
- 3 files changed, 35 insertions(+), 7 deletions(-)
-
---- g26.orig/drivers/rtc/rtc-cmos.c	2007-11-30 13:49:14.000000000 -0800
-+++ g26/drivers/rtc/rtc-cmos.c	2007-11-30 14:12:20.000000000 -0800
-@@ -472,10 +472,22 @@ static struct cmos_rtc	cmos_rtc;
- static irqreturn_t cmos_interrupt(int irq, void *p)
- {
- 	u8		irqstat;
-+	u8		rtc_control;
- 
- 	spin_lock(&rtc_lock);
- 	irqstat = CMOS_READ(RTC_INTR_FLAGS);
--	irqstat &= (CMOS_READ(RTC_CONTROL) & RTC_IRQMASK) | RTC_IRQF;
-+	rtc_control = CMOS_READ(RTC_CONTROL);
-+	irqstat &= (rtc_control & RTC_IRQMASK) | RTC_IRQF;
-+
-+	/* All Linux RTC alarms should be treated as if they were oneshot.
-+	 * Similar code may be needed in system wakeup paths, in case the
-+	 * alarm woke the system.
-+	 */
-+	if (irqstat & RTC_AIE) {
-+		rtc_control &= ~RTC_AIE;
-+		CMOS_WRITE(rtc_control, RTC_CONTROL);
-+		CMOS_READ(RTC_INTR_FLAGS);
-+	}
- 	spin_unlock(&rtc_lock);
- 
- 	if (is_intr(irqstat)) {
---- g26.orig/drivers/rtc/rtc-dev.c	2007-11-30 13:49:14.000000000 -0800
-+++ g26/drivers/rtc/rtc-dev.c	2007-11-30 14:12:20.000000000 -0800
-@@ -246,6 +246,15 @@ static int rtc_dev_ioctl(struct inode *i
- 	/* if the driver does not provide the ioctl interface
- 	 * or if that particular ioctl was not implemented
- 	 * (-ENOIOCTLCMD), we will try to emulate here.
-+	 *
-+	 * Drivers *SHOULD NOT* provide ioctl implementations
-+	 * for these requests.  Instead, provide methods to
-+	 * support the following code, so that the RTC's main
-+	 * features are accessible without using ioctls.
-+	 *
-+	 * RTC and alarm times will be in UTC, by preference,
-+	 * but dual-booting with MS-Windows implies RTCs must
-+	 * use the local wall clock time.
- 	 */
- 
- 	switch (cmd) {
---- g26.orig/drivers/rtc/rtc-sysfs.c	2007-11-30 13:49:15.000000000 -0800
-+++ g26/drivers/rtc/rtc-sysfs.c	2007-11-30 14:12:20.000000000 -0800
-@@ -17,6 +17,13 @@
- 
- /* device attributes */
- 
-+/*
-+ * NOTE:  RTC times displayed in sysfs use the RTC's timezone.  That's
-+ * ideally UTC.  However, PCs that also boot to MS-Windows normally use
-+ * the local time and change to match daylight savings time.  That affects
-+ * attributes including date, time, since_epoch, and wakealarm.
-+ */
-+
- static ssize_t
- rtc_sysfs_show_name(struct device *dev, struct device_attribute *attr,
- 		char *buf)
-@@ -113,13 +120,13 @@ rtc_sysfs_show_wakealarm(struct device *
- 	unsigned long alarm;
- 	struct rtc_wkalrm alm;
- 
--	/* Don't show disabled alarms; but the RTC could leave the
--	 * alarm enabled after it's already triggered.  Alarms are
--	 * conceptually one-shot, even though some common hardware
--	 * (PCs) doesn't actually work that way.
-+	/* Don't show disabled alarms.  For uniformity, RTC alarms are
-+	 * conceptually one-shot, even though some common RTCs (on PCs)
-+	 * don't actually work that way.
- 	 *
--	 * REVISIT maybe we should require RTC implementations to
--	 * disable the RTC alarm after it triggers, for uniformity.
-+	 * NOTE: RTC implementations where the alarm doesn't match an
-+	 * exact YYYY-MM-DD HH:MM[:SS] date *must* disable their RTC
-+	 * alarms after they trigger, to ensure one-shot semantics.
- 	 */
- 	retval = rtc_read_alarm(to_rtc_device(dev), &alm);
- 	if (retval == 0 && alm.enabled) {
+Sorry, I have no idea. Rafael?
