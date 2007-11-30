@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbXK3UOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbXK3UZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756974AbXK3UOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 15:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbXK3UOR
+	id S1755508AbXK3UZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 15:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbXK3UZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 15:14:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50523 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752357AbXK3UOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 15:14:16 -0500
-Date: Fri, 30 Nov 2007 21:13:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 03/10] percpu: Make the asm-generic/percpu.h more
-	"generic"
-Message-ID: <20071130201351.GA8789@elte.hu>
-References: <20071128211526.640694725@sgi.com> <20071130111000.GA32431@elte.hu> <Pine.LNX.4.64.0711300908320.32071@schroedinger.engr.sgi.com> <20071130171419.GA18808@elte.hu> <Pine.LNX.4.64.0711300915460.32253@schroedinger.engr.sgi.com> <20071130175825.GA19571@elte.hu> <20071130181206.GA1586@elte.hu> <Pine.LNX.4.64.0711301033580.1806@schroedinger.engr.sgi.com> <20071130184952.GC9928@elte.hu> <Pine.LNX.4.64.0711301117590.2129@schroedinger.engr.sgi.com>
+	Fri, 30 Nov 2007 15:25:03 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60248 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750990AbXK3UZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 15:25:00 -0500
+Date: Fri, 30 Nov 2007 21:25:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Phillip Susi <psusi@cfl.rr.com>,
+       Tejun Heo <htejun@gmail.com>, noah <noah123@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Possibly SATA related freeze killed networking and RAID
+Message-ID: <20071130202541.GA1677@elf.ucw.cz>
+References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com> <474F3A4B.3080304@cfl.rr.com> <20071130131344.07b75f45@the-village.bc.nu> <20071126075517.GA4141@ucw.cz> <475025A7.9010107@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0711301117590.2129@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <475025A7.9010107@rtr.ca>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri 2007-11-30 10:00:55, Mark Lord wrote:
+> Pavel Machek wrote:
+>> On Fri 2007-11-30 13:13:44, Alan Cox wrote:
+>>>> Why does a single spurious interrupt cause it to be shut down?  I can 
+>>> It doesn't.
+>>>
+>>>> see if the interrupt is stuck on and keeps interrupting constantly, but 
+>>>> if it's just the occasional spurious interrupt, why not just ignore it 
+>>>> and move on?
+>>> The interrupt is usually level triggered so it continues to create
+>>> interrupts until you silence it. The thresholds are about 10,000
+>>> interrupt events and on newer kernels we also reset the count if we don't
+>>> see any for a while. That works for most stuff except the thinkpad
+>>> bluetooth problem.
+>> Which is confirmed hw problem now, btw.
+> ...
+>
+> What problem is that, exactly?
 
-* Christoph Lameter <clameter@sgi.com> wrote:
+Spurious interrupt, interrupt link is disabled after ~15 minutes. It
+seems pretty unique to t61.
 
-> Ahh this is a UP configuration! [...]
+> My Dell has an internal USB BT adapter that briefly appears
+> and then disappears again on resume (or stays if I have "enabled" it
+> via the BIOS key).
+>
+> I wonder if that has anything to do with the (new in) 2.6.23 pauses
+> that machine has on resume (about every 10th time).
 
-yes, as mentioned in the first sentence of my (tentative) bugreport:
+No idea, but t61 problem seems different.
+									Pavel
 
-  http://lkml.org/lkml/2007/11/30/78
-
-| i've picked up your cleanup series and this relocation series as well, 
-| but it crashed on x86 32-bit UP, with:
-                              ^^^^
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
