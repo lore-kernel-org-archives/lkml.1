@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935563AbXK3RIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935489AbXK3RJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935563AbXK3RIp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 12:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935435AbXK3RIM
+	id S935489AbXK3RJN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 12:09:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934642AbXK3RIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 12:08:12 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:43066
+	Fri, 30 Nov 2007 12:08:17 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:43070
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S935429AbXK3RIJ (ORCPT
+	by vger.kernel.org with ESMTP id S935437AbXK3RIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 12:08:09 -0500
+	Fri, 30 Nov 2007 12:08:14 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 1/4] Subject: SCHED - Make the wake-up priority a config option
+Subject: [PATCH 2/4] Subject: SCHED - Add sched-domain roots
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: LKML 
 	<"linux-kernel@vger.kernel.org>, linux-rt-users"@vger.kernel.org>,
        mingo@elte.hu
-Date: Fri, 30 Nov 2007 11:46:49 -0500
-Message-ID: <20071130164649.30588.20031.stgit@novell1.haskins.net>
+Date: Fri, 30 Nov 2007 11:46:54 -0500
+Message-ID: <20071130164654.30588.29181.stgit@novell1.haskins.net>
 In-Reply-To: <20071130163638.30588.47845.stgit@novell1.haskins.net>
 References: <20071130163638.30588.47845.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,115 +27,259 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We recently changed the behavior of the wake-up logic such that a higher
-priority task does not preempt a lower-priority task if that task is RT.
-Instead, it tries to pre-route the higher task to a different cpu.
+We add the notion of a root-domain which will be used later to rescope
+global variables to per-domain variables.  Each exclusive cpuset
+essentially defines an island domain by fully partitioning the member cpus
+from any other cpuset.  However, we currently still maintain some
+policy/state as global variables which transcend all cpusets.  Consider,
+for instance, rt-overload state.
 
-This causes a performance regression for me in at least preempt-test.  I
-suspect there may be other regressions as well.  We make it easier on people
-to select which method they want by making the algorithm a config option,
-with the default being the current behavior.
+Whenever a new exclusive cpuset is created, we also create a new
+root-domain object and move each cpu member to the root-domain's span.
+By default the system creates a single root-domain with all cpus as
+members (mimicking the global state we have today).
+
+We add some plumbing for storing class specific data in our root-domain.
+Whenever a RQ is switching root-domains (because of repartitioning) we
+give each sched_class the opportunity to remove any state from its old
+domain and add state to the new one.  This logic doesn't have any clients
+yet but it will later in the series.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Christoph Lameter <clameter@sgi.com>
+CC: Paul Jackson <pj@sgi.com>
+CC: Simon Derr <simon.derr@bull.net>
 ---
 
- kernel/Kconfig.preempt |   31 +++++++++++++++++++++++++++++++
- kernel/sched_rt.c      |   32 ++++++++++++++++++++++++++++----
- 2 files changed, 59 insertions(+), 4 deletions(-)
+ include/linux/sched.h |    3 +
+ kernel/sched.c        |  121 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 121 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-index c64ce9c..c35b1d3 100644
---- a/kernel/Kconfig.preempt
-+++ b/kernel/Kconfig.preempt
-@@ -52,6 +52,37 @@ config PREEMPT
- 
- endchoice
- 
-+choice 
-+	prompt "Realtime Wakeup Policy"
-+	default RTWAKEUP_FAVOR_HOT_TASK
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 809658c..b891d81 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -849,6 +849,9 @@ struct sched_class {
+ 	void (*task_tick) (struct rq *rq, struct task_struct *p);
+ 	void (*task_new) (struct rq *rq, struct task_struct *p);
+ 	void (*set_cpus_allowed)(struct task_struct *p, cpumask_t *newmask);
 +
-+config RTWAKEUP_FAVOR_HOT_TASK
-+	bool "Favor hot tasks"
-+	help
-+	 This setting strives to avoid creating an RT overload condition
-+         by always favoring a hot RT task over a high priority RT task. The
-+	 idea is that a newly woken RT task is not likely to be cache hot
-+	 anyway.  Therefore it's cheaper to migrate the new task to some
-+	 other processor rather than to preempt a currently executing RT
-+	 task, even if the new task is of higher priority than the current.
-+	 
-+	 RT tasks behave differently than other tasks. If one gets preempted,
-+	 we try to push it off to another queue. So trying to keep a
-+	 preempting RT task on the same cache hot CPU will force the
-+	 running RT task to a cold CPU. So we waste all the cache for the lower
-+	 RT task in hopes of saving some of a RT task that is just being
-+	 woken and probably will have cold cache anyway.
-+
-+config RTWAKEUP_FAVOR_HIGHER_TASK
-+	bool "Favor highest priority"
-+	help
-+	  This setting strives to make sure the highest priority task has 
-+	  the shortest wakeup latency possible by honoring its affinity when
-+	  possible.  Some tests reveal that this results in higher
-+	  performance, but this is still experimental.
-+
-+endchoice
-+
- config PREEMPT_BKL
- 	bool "Preempt The Big Kernel Lock"
- 	depends on SMP || PREEMPT
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 0bd14bd..a9675dc 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -150,12 +150,19 @@ yield_task_rt(struct rq *rq)
- }
++	void (*join_domain)(struct rq *rq);
++	void (*leave_domain)(struct rq *rq);
+ };
  
- #ifdef CONFIG_SMP
--static int find_lowest_rq(struct task_struct *task);
+ struct load_weight {
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 19973a0..9fcf36a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -276,6 +276,28 @@ struct rt_rq {
+ 	int overloaded;
+ };
  
--static int select_task_rq_rt(struct task_struct *p, int sync)
-+#ifdef CONFIG_RTWAKEUP_FAVOR_HIGHER_TASK
-+static inline int rt_wakeup_premigrate(struct task_struct *p, struct rq *rq)
- {
--	struct rq *rq = task_rq(p);
-+	if ((p->prio >= rq->rt.highest_prio) &&
-+	    (p->nr_cpus_allowed > 1))
-+		return 1;
- 
-+	return 0;
-+}
-+#else
-+static inline int rt_wakeup_premigrate(struct task_struct *p, struct rq *rq)
-+{
- 	/*
- 	 * If the current task is an RT task, then
- 	 * try to see if we can wake this RT task up on another
-@@ -174,7 +181,24 @@ static int select_task_rq_rt(struct task_struct *p, int sync)
- 	 * cold cache anyway.
- 	 */
- 	if (unlikely(rt_task(rq->curr)) &&
--	    (p->nr_cpus_allowed > 1)) {
-+	    (p->nr_cpus_allowed > 1))
-+		return 1;
++#ifdef CONFIG_SMP
 +
-+	return 0;
-+}
++/*
++ * We add the notion of a root-domain which will be used to define per-domain
++ * variables.  Each exclusive cpuset essentially defines an island domain by
++ * fully partitioning the member cpus from any other cpuset.  Whenever a new
++ * exclusive cpuset is created, we also create and attach a new root-domain
++ * object.
++ *
++ * By default the system creates a single root-domain with all cpus as
++ * members (mimicking the global state we have today).
++ */
++struct root_domain {
++	atomic_t refcount;
++	cpumask_t span;
++	cpumask_t online;
++};
++
++static struct root_domain def_root_domain;
++
 +#endif
 +
-+static int find_lowest_rq(struct task_struct *task);
-+
-+static int select_task_rq_rt(struct task_struct *p, int sync)
-+{
-+	struct rq *rq = task_rq(p);
-+
-+	/*
-+	 * Check to see if we should move this task away from its affined
-+	 * RQ before we even initially wake it
-+	 */
-+	if (rt_wakeup_premigrate(p, rq)) {
- 		int cpu = find_lowest_rq(p);
+ /*
+  * This is the main, per-CPU runqueue data structure.
+  *
+@@ -333,6 +355,7 @@ struct rq {
+ 	atomic_t nr_iowait;
  
- 		return (cpu == -1) ? task_cpu(p) : cpu;
+ #ifdef CONFIG_SMP
++	struct root_domain  *rd;
+ 	struct sched_domain *sd;
+ 
+ 	/* For active balancing */
+@@ -5479,6 +5502,15 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	case CPU_ONLINE_FROZEN:
+ 		/* Strictly unnecessary, as first user will wake it. */
+ 		wake_up_process(cpu_rq(cpu)->migration_thread);
++
++		/* Update our root-domain */
++		rq = cpu_rq(cpu);
++		spin_lock_irqsave(&rq->lock, flags);
++		if (rq->rd) {
++			BUG_ON(!cpu_isset(cpu, rq->rd->span));
++			cpu_set(cpu, rq->rd->online);
++		}
++		spin_unlock_irqrestore(&rq->lock, flags);
+ 		break;
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -5527,6 +5559,17 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		}
+ 		spin_unlock_irq(&rq->lock);
+ 		break;
++
++	case CPU_DOWN_PREPARE:
++		/* Update our root-domain */
++		rq = cpu_rq(cpu);
++		spin_lock_irqsave(&rq->lock, flags);
++		if (rq->rd) {
++			BUG_ON(!cpu_isset(cpu, rq->rd->span));
++			cpu_clear(cpu, rq->rd->online);
++		}
++		spin_unlock_irqrestore(&rq->lock, flags);
++		break;
+ #endif
+ 	case CPU_LOCK_RELEASE:
+ 		mutex_unlock(&sched_hotcpu_mutex);
+@@ -5718,11 +5761,69 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+ 	return 1;
+ }
+ 
++static void rq_attach_root(struct rq *rq, struct root_domain *rd)
++{
++	unsigned long flags;
++	const struct sched_class *class;
++
++	spin_lock_irqsave(&rq->lock, flags);
++
++	if (rq->rd) {
++		struct root_domain *old_rd = rq->rd;
++
++		for (class = sched_class_highest; class; class = class->next)
++			if (class->leave_domain)
++				class->leave_domain(rq);
++
++		if (atomic_dec_and_test(&old_rd->refcount))
++			kfree(old_rd);
++	}
++
++	atomic_inc(&rd->refcount);
++	rq->rd = rd;
++
++	for (class = sched_class_highest; class; class = class->next)
++		if (class->join_domain)
++			class->join_domain(rq);
++
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
++static void init_rootdomain(struct root_domain *rd, const cpumask_t *map)
++{
++	memset(rd, 0, sizeof(*rd));
++
++	rd->span = *map;
++	cpus_and(rd->online, rd->span, cpu_online_map);
++}
++
++static void init_defrootdomain(void)
++{
++	cpumask_t cpus = CPU_MASK_ALL;
++
++	init_rootdomain(&def_root_domain, &cpus);
++	atomic_set(&def_root_domain.refcount, 1);
++}
++
++static struct root_domain *alloc_rootdomain(const cpumask_t *map)
++{
++	struct root_domain *rd;
++
++	rd = kmalloc(sizeof(*rd), GFP_KERNEL);
++	if (!rd)
++		return NULL;
++
++	init_rootdomain(rd, map);
++
++	return rd;
++}
++
+ /*
+  * Attach the domain 'sd' to 'cpu' as its base domain.  Callers must
+  * hold the hotplug lock.
+  */
+-static void cpu_attach_domain(struct sched_domain *sd, int cpu)
++static void cpu_attach_domain(struct sched_domain *sd,
++			      struct root_domain *rd, int cpu)
+ {
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct sched_domain *tmp;
+@@ -5747,6 +5848,7 @@ static void cpu_attach_domain(struct sched_domain *sd, int cpu)
+ 
+ 	sched_domain_debug(sd, cpu);
+ 
++	rq_attach_root(rq, rd);
+ 	rcu_assign_pointer(rq->sd, sd);
+ }
+ 
+@@ -6115,6 +6217,7 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+ static int build_sched_domains(const cpumask_t *cpu_map)
+ {
+ 	int i;
++	struct root_domain *rd;
+ #ifdef CONFIG_NUMA
+ 	struct sched_group **sched_group_nodes = NULL;
+ 	int sd_allnodes = 0;
+@@ -6131,6 +6234,12 @@ static int build_sched_domains(const cpumask_t *cpu_map)
+ 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
+ #endif
+ 
++	rd = alloc_rootdomain(cpu_map);
++	if (!rd) {
++		printk(KERN_WARNING "Cannot alloc root domain\n");
++		return -ENOMEM;
++	}
++
+ 	/*
+ 	 * Set up domains for cpus specified by the cpu_map.
+ 	 */
+@@ -6347,7 +6456,7 @@ static int build_sched_domains(const cpumask_t *cpu_map)
+ #else
+ 		sd = &per_cpu(phys_domains, i);
+ #endif
+-		cpu_attach_domain(sd, i);
++		cpu_attach_domain(sd, rd, i);
+ 	}
+ 
+ 	return 0;
+@@ -6405,7 +6514,7 @@ static void detach_destroy_domains(const cpumask_t *cpu_map)
+ 	unregister_sched_domain_sysctl();
+ 
+ 	for_each_cpu_mask(i, *cpu_map)
+-		cpu_attach_domain(NULL, i);
++		cpu_attach_domain(NULL, &def_root_domain, i);
+ 	synchronize_sched();
+ 	arch_destroy_sched_domains(cpu_map);
+ }
+@@ -6638,6 +6747,10 @@ void __init sched_init(void)
+ 	int highest_cpu = 0;
+ 	int i, j;
+ 
++#ifdef CONFIG_SMP
++	init_defrootdomain();
++#endif
++
+ 	for_each_possible_cpu(i) {
+ 		struct rt_prio_array *array;
+ 		struct rq *rq;
+@@ -6677,6 +6790,8 @@ void __init sched_init(void)
+ 			rq->cpu_load[j] = 0;
+ #ifdef CONFIG_SMP
+ 		rq->sd = NULL;
++		rq->rd = NULL;
++		rq_attach_root(rq, &def_root_domain);
+ 		rq->active_balance = 0;
+ 		rq->next_balance = jiffies;
+ 		rq->push_cpu = 0;
 
