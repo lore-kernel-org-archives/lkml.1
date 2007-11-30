@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbXK3WaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXK3WeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757799AbXK3WaA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXK3W3x
+	id S1757545AbXK3WeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbXK3WeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:29:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:42005 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbXK3W3w (ORCPT
+	Fri, 30 Nov 2007 17:34:00 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60774 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130AbXK3Wd7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:29:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=LgFl4TXmoBVuyr9ZiWt36jzMz9UwlCRyd8bxPwomnGSP/dPTJCST6WZLJ3r4iFeEU/OjNYC4Ou7PuT+rOYGP8G84T2pqS3Pmf5Tab/h6Jzlfx5IG5c2DD4nxs5IUpGZFO9oqf6opORJBU3n7YjKyONq7Mt9Has+72Ir8w0+WLSw=
-Message-ID: <47508EDB.7080205@gmail.com>
-Date: Fri, 30 Nov 2007 23:29:47 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 30 Nov 2007 17:33:59 -0500
+Date: Fri, 30 Nov 2007 14:33:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
+	functions
+Message-ID: <20071130223304.GA7916@kroah.com>
+References: <20071130214819.GA7326@kroah.com> <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Andrew Morton <akpm@osdl.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: capabilities-introduce-per-process-capability-bounding-set.patch
- breaks FC6 Avahi
-References: <20071130194134.GA7536@c2.user-mode-linux.org>
-In-Reply-To: <20071130194134.GA7536@c2.user-mode-linux.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/30/2007 08:41 PM, Jeff Dike wrote:
-> avahi-daemon fails to start on FC6 when
-> capabilities-introduce-per-process-capability-bounding-set.patch is
-> applied.
+On Fri, Nov 30, 2007 at 05:10:33PM -0500, Alan Stern wrote:
+> On Fri, 30 Nov 2007, Greg KH wrote:
 > 
-> strace shows
-> 	capset(0x19980330, 0, {CAP_SETGID|CAP_SETUID|CAP_SYS_CHROOT, CAP_SETGID|CAP_SETUID|CAP_SYS_CHROOT, 0}) = -1 EPERM (Operation not permitted)
+> > Ok, how about this:
+> > 	void kobject_init(struct kobject *kobj, struct ktype *ktype);
+> > 
+> > and then:
+> > 	int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
+> > 
+> > After we call kobject_init() we HAVE to call kobject_put() to clean up
+> > properly.  So, if kobject_add() fails, we still need to clean up with
+> > kobject_put();
 > 
-> I don't know if this is expected, but the changelog doesn't seem to
-> imply that this will break things.
+> You could put that a little less strongly.  After kobject_init() you
+> SHOULD call kobject_put() to clean up properly, and after kobject_add()
+> you MUST call kobject_del() and kobject_put().
 
-Nope, try this :):
-http://lkml.org/lkml/2007/11/28/390
+No, in looking at the code, you only need to call kobject_del() to clean
+everything up properly, if kobject_add() succeeds.  No need to call
+kobject_put() yet again.
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Can someone else verify that this really is correct?
+
+thanks,
+
+greg k-h
+
+p.s. I think it's time to start a "travel to .nz and kick a certain
+ex-kernel-developer around a bit" fund...
