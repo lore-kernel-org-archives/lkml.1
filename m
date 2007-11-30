@@ -1,120 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbXK3JOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761883AbXK3JQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbXK3JOy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 04:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXK3JOl
+	id S1761883AbXK3JQE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 04:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXK3JPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 04:14:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37722 "EHLO mx3.mail.elte.hu"
+	Fri, 30 Nov 2007 04:15:49 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:47446 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752286AbXK3JOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 04:14:38 -0500
-Date: Fri, 30 Nov 2007 10:14:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Allan Stephens <allan.stephens@windriver.com>,
-       Jon Paul Maloy <jon.maloy@ericsson.com>
-Subject: Re: [bug] SLOB, tipc_init(), WARNING: at
-	arch/x86/mm/highmem_32.c:52 kmap_atomic_prot()
-Message-ID: <20071130091418.GA2201@elte.hu>
-References: <20071129142546.GA27719@elte.hu> <20071129143920.GA32146@elte.hu> <20071129213217.GW19691@waste.org>
+	id S1752943AbXK3JPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 04:15:48 -0500
+Date: Fri, 30 Nov 2007 10:15:33 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: Marcel Holtmann <marcel@holtmann.org>, bgsmith@bendcable.com,
+       BlueZ users <bluez-users@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Bluez-users] Lost connections - mouse and keyboard
+In-Reply-To: <a8e1da0711291706h68d1d19ajc3819f8836cf51e8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0711301011330.19853@twin.jikos.cz>
+References: <1196009038.14897.6.camel@pico> <1196056187.4217.54.camel@aeonflux>
+  <1196305426.23029.12.camel@pico>  <a8e1da0711290006x4bd3cc45x1ae8dcaa9c0ab462@mail.gmail.com>
+  <6EE8D368-C303-400A-B4FE-811228391639@holtmann.org> 
+ <Pine.LNX.4.64.0711292141220.19853@twin.jikos.cz>
+ <a8e1da0711291706h68d1d19ajc3819f8836cf51e8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129213217.GW19691@waste.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 Nov 2007, Dave Young wrote:
 
-* Matt Mackall <mpm@selenic.com> wrote:
+> > This particular warning means, that someone (usually indeed hid2hci) 
+> > passed usage through hiddev that was out of bounds, with respect to 
+> > the device's report descriptor.
+> Is this behaviour the normal one? IMHO, userspace program should not
+> cause kernel warnings like this no mater what input from users.
 
-> On Thu, Nov 29, 2007 at 03:39:20PM +0100, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > i'm getting this on 32-bit (with the kmap-atomic debugging patch 
-> > > applied):
-> > > 
-> > >  ---------------->
-> > >  Calling initcall 0x78b67c00: tipc_init+0x0/0xc0()
-> > >  TIPC: Activated (version 1.6.2 compiled Nov 29 2007 15:04:36)
-> > >  WARNING: at arch/x86/mm/highmem_32.c:52 kmap_atomic_prot()
-> > >  Pid: 1, comm: swapper Not tainted 2.6.24-rc3-cfs-v24 #45
-> > >   [<78107272>] show_trace_log_lvl+0x12/0x40
-> > >   [<781072ad>] show_trace+0xd/0x20
-> > >   [<781086f8>] dump_stack+0x58/0x60
-> > >   [<7811541f>] kmap_atomic_prot+0x1bf/0x240
-> > >   [<781154ae>] kmap_atomic+0xe/0x20
-> > >   [<78157be5>] get_page_from_freelist+0x225/0x420
-> > >   [<78157e4d>] __alloc_pages+0x6d/0x3a0
-> > >   [<78169a7b>] slob_new_page+0x1b/0x60
-> > >   [<78169be4>] slob_alloc+0x124/0x1e0
-> > >   [<78169e0f>] __kmalloc_node+0x6f/0xa0
-> > >   [<7884f7c2>] reg_init+0x42/0x80
-> > >   [<7884f80a>] tipc_reg_start+0xa/0x40
-> > >   [<7883e6c6>] tipc_core_start+0x66/0xc0
-> > >   [<78b67c81>] tipc_init+0x81/0xc0
-> > 
-> > this is due to the kzalloc() here:
-> > 
-> > 0x7884f1d0 is in reg_init (net/tipc/user_reg.c:88).
-> > 83              spin_lock_bh(&reg_lock);
-> > 84              if (!users) {
-> > 85                      users = kzalloc(USER_LIST_SIZE, GFP_ATOMIC);
-> > 86                      if (users) {
-> > 87                              for (i = 1; i <= MAX_USERID; i++) {
-> > 88                                      users[i].next = i - 1;
-> > 
-> > which does a:
-> > 
-> > 120     static inline void clear_highpage(struct page *page)
-> > 121     {
-> > 122             void *kaddr = kmap_atomic(page, KM_USER0);
-> > 123             clear_page(kaddr);
-> > 124             kunmap_atomic(kaddr, KM_USER0);
-> > 125     }
-> > 
-> > but ... why does the debug code think it's in softirq context?
-> > 
-> > plus, and this is a slob question i guess, how come we drop into 
-> > clear_highpage() for a kzalloc()??
-> 
-> Good question. Looks like kzalloc switched from doing a memset to
-> passing a GFP_ZERO flag down to kmalloc. Slob didn't get completely
-> updated to reflect this, so it blindly propagates the flag onto
-> __alloc_pages and does a harmless double-clear.
-> 
-> Someone should remind us what the point of moving the kzalloc memset
-> down into the allocators was. We now have all three allocators doing:
-> 
->         if (unlikely((flags & __GFP_ZERO) && ptr))
->                 memset(ptr, 0, obj_size(cachep));
-> 
-> and needing to mask flags before passing them to page allocators,
-> which hardly seems better than kzalloc unconditionally doing the
-> memset. Wouldn't it be better/faster/smaller to make kzalloc a
-> non-inline?
-> 
-> Slob also has a nice second path for large kmallocs where it just 
-> calls the page allocator directly which also needs this treatment. 
-> Which does the right thing with non-highmem systems, but can hit this 
-> bug otherwise.
-> 
-> Below is a totally untested patch. Alternately, we could simply tweak 
-> clear_highpage to remove the limitation, but that would leave slob 
-> doing an extra clear.
+It has been on my todo list to convert that WARN_ON() to something that 
+won't scare users that much, especially the stacktrace shouldn't certainly 
+be there. I will do it.
 
-ok, this fixes the debug warning.
-
-	Ingo
+-- 
+Jiri Kosina
