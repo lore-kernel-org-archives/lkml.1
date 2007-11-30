@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934625AbXK3Bdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934548AbXK3BgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934625AbXK3Bdf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 20:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934182AbXK3BdH
+	id S934548AbXK3BgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 20:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761825AbXK3BgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 20:33:07 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:60735 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S934041AbXK3BdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 20:33:04 -0500
-Message-ID: <396386387.18082@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 30 Nov 2007 09:32:59 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Michael Rubin <mrubin@google.com>
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [patch 1/1] Writeback fix for concurrent large and small file
-	writes
-References: <20071128192957.511EAB8310@localhost> <396296481.07368@ustc.edu.cn> <532480950711291216l181b0bej17db6c42067aa832@mail.gmail.com>
+	Thu, 29 Nov 2007 20:36:09 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39371 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760917AbXK3BgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 20:36:07 -0500
+Date: Thu, 29 Nov 2007 17:36:05 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "K. Prasad" <prasad@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       mathieu.desnoyers@polymtl.ca, mingo@elte.hu
+Subject: Re: [PATCH 0/2] Markers Implementation for RCU Tracing
+Message-ID: <20071130013605.GK9059@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20071129184128.GA26466@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <532480950711291216l181b0bej17db6c42067aa832@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.17 (2007-11-01)
-Message-Id: <E1IxukV-0003Ns-5C@localhost>
+In-Reply-To: <20071129184128.GA26466@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 12:16:36PM -0800, Michael Rubin wrote:
-> Due to my faux pas of top posting (see
-> http://www.zip.com.au/~akpm/linux/patches/stuff/top-posting.txt) I am
-> resending this email.
+On Fri, Nov 30, 2007 at 12:11:28AM +0530, K. Prasad wrote:
+> Hi,
+> 	Please review the ensuing set of patches which convert the
+> existing RCU tracing mechanism for Preempt RCU and RCU Boost into
+> markers.
 > 
-> On Nov 28, 2007 4:34 PM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > Could you demonstrate the situation? Or if I guess it right, could it
-> > be fixed by the following patch? (not a nack: If so, your patch could
-> > also be considered as a general purpose improvement, instead of a bug
-> > fix.)
-> >
-> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> > index 0fca820..62e62e2 100644
-> > --- a/fs/fs-writeback.c
-> > +++ b/fs/fs-writeback.c
-> > @@ -301,7 +301,7 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
-> >                          * Someone redirtied the inode while were writing back
-> >                          * the pages.
-> >                          */
-> > -                       redirty_tail(inode);
-> > +                       requeue_io(inode);
-> >                 } else if (atomic_read(&inode->i_count)) {
-> >                         /*
-> >                          * The inode is clean, inuse
-> >
+> These patches are based upon the 2.6.24-rc2-rt1 kernel tree.
 > 
-> By testing the situation I can confirm that the one line patch above
-> fixes the problem.
+> Along with marker transition, the RCU Tracing infrastructure has also
+> been modularised to be built as a kernel module, thereby enabling
+> runtime changes to the RCU Tracing infrastructure.
 > 
-> I will continue testing some other cases to see if it cause any other
-> issues but I don't expect it to.
+> Patch [1/2] - Patch that converts the Preempt RCU tracing in
+> rcupreempt.c into markers.
+> 
+> Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
+> rcupreempt-boost.c into markers.
 
-One major concern could be whether a continuous writer dirting pages
-at the 'right' pace will generate a steady flow of write I/Os which are
-_tiny_hence_inefficient_.
+Looks good to me, though I do not pretend to understand the markers
+implementation.  I presume that the markers implementation forces the
+varargs usage -- though the markers do seem quite a bit nicer in allowing
+the formatting to be specified more naturally.
 
-I have gathered some timing info about writeback speed in
-http://lkml.org/lkml/2007/10/4/468. For ext3, it takes wb_kupdate()
-~15ms to submit 4MB. Whereas one disk I/O typically takes ~5ms. So if
-there are too many tiny write I/Os, they will simply get delayed and
-merged into bigger ones.
-
-So it's not a problem in *theory* :-)
-
-> I will post this change for 2.6.24 and list Feng as author. If that's
-> ok with Feng.
-
-Thank you.
-
-> As for the original patch I will resubmit it for 2.6.25 as a general
-> purpose improvement.
-
-There are some discussions and patches on inode number based writeback
-clustering which you may want to reference/compare with:
-                http://lkml.org/lkml/2007/8/21/396
-                http://lkml.org/lkml/2007/8/27/45
-
-Cheers,
-Fengguang
-
+							Thanx, Paul
