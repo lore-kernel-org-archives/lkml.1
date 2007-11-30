@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934489AbXK3OWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934749AbXK3OfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934489AbXK3OWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 09:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXK3OWI
+	id S934749AbXK3OfA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 09:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393AbXK3Oeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 09:22:08 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:35725 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756234AbXK3OWH (ORCPT
+	Fri, 30 Nov 2007 09:34:46 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:34874 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754383AbXK3Oeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 09:22:07 -0500
-Message-ID: <47501C86.1020907@davidnewall.com>
-Date: Sat, 01 Dec 2007 00:51:58 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Xavier Bestel <xavier.bestel@free.fr>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ben.Crowhurst@stellatravel.co.uk, linux-kernel@vger.kernel.org
+	Fri, 30 Nov 2007 09:34:46 -0500
+Date: Fri, 30 Nov 2007 09:34:45 -0500
+To: Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: Kernel Development & Objective-C
-References: <474EAD18.6040408@stellatravel.co.uk>  <1196416960.20567.205.camel@skunk.anacadf.mentorg.com>  <20071130190742.4B7C.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1196418013.20567.211.camel@skunk.anacadf.mentorg.com> <Pine.LNX.4.64.0711301154070.3089@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0711301154070.3089@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071130143445.GA2310@csclub.uwaterloo.ca>
+References: <474EAD18.6040408@stellatravel.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <474EAD18.6040408@stellatravel.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Nov 30 2007 11:20, Xavier Bestel wrote:
->   
->> On Fri, 2007-11-30 at 19:09 +0900, KOSAKI Motohiro wrote:
->>     
->>>>> Has Objective-C ever been considered for kernel development?
->>>>>           
->>>> Why not C# instead ?
->>>>         
->>> Why not Haskell nor Erlang instead ? :-D
->>>       
->> I heard of a bash compiler. That would enable development time
->> rationalization and maximize the collaborative convergence of a
->> community-oriented synergy.
->>
->>     
-> Fortran90 it has to be.
+On Thu, Nov 29, 2007 at 12:14:16PM +0000, Ben Crowhurst wrote:
+> Has Objective-C ever been considered for kernel development?
 
-It used to be written in BCPL; or was that Multics?
+Doesn't objective C essentially require a runtime to provide a lot of
+the features of the language?  If it does (as I suspect) then it is
+totally unsiatable for kernel development.
+
+That and object oriented languages in general are badly designed and a
+bad idea.  Having not used objective C I have no idea if it qualifies as
+badly designed or not.  Certainly C++ and java are both very badly
+designed.
+
+Besides the kernel does a wonderful job doing object oriented design
+where apropriate using C without any of the stupidities added by the
+common OO languages.
+
+--
+Len Sorensen
