@@ -1,73 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbXK3C6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764279AbXK3DCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764021AbXK3C6p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 21:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764043AbXK3C6W
+	id S1764279AbXK3DCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 22:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763916AbXK3DCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 21:58:22 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2972 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1764019AbXK3C6V (ORCPT
+	Thu, 29 Nov 2007 22:02:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33520 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762768AbXK3DCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 21:58:21 -0500
-Date: Thu, 29 Nov 2007 21:58:20 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Mark Lord <lkml@rtr.ca>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [PATCH] base/class.c: prevent ooops due to
- insert/remove race (v3)
-In-Reply-To: <alpine.LFD.0.9999.0711291505440.8458@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0711292155360.12541-100000@netrider.rowland.org>
+	Thu, 29 Nov 2007 22:02:04 -0500
+Message-ID: <474F7D05.9020109@zytor.com>
+Date: Thu, 29 Nov 2007 19:01:25 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Avoid overflows in kernel/time.c
+References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org> <20071129175440.ead82de6.akpm@linux-foundation.org>
+In-Reply-To: <20071129175440.ead82de6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007, Linus Torvalds wrote:
-
-> Heh. It definitely hasn't gotten lost by "the git software".
-
-No, it sure hasn't.  In fact it was staring me right in the face and I 
-didn't realize it.
-
-> In fact, with 
-> the kinds of hints you already gave, git makes it really _trivial_ to find 
-> it.
+Andrew Morton wrote:
+>>
+>> NOTE: This patch uses a bc(1) script to compute the appropriate
+>> constants.
 > 
-> Here's what you do:
-> 
-> 	git log v2.6.23.. --author=Wilcox
-> 
-> and then just search for "scan_mutex", in the hope that Matthew wrote a 
-> nice commit message. And yes, he did, so in less than a blink you get:
-> 
-> 	commit 6b7f123f378743d739377871c0cbfbaf28c7d25a
-> 	Author: Matthew Wilcox <matthew@wil.cx>
-> 	Date:   Tue Jun 26 15:18:51 2007 -0600
-> 	
-> 	    [SCSI] Fix async scanning double-add problems
-> 
-> 	    Stress-testing and some thought has revealed some places where
-> 	    asynchronous scanning needs some more attention to locking.
-> 	
-> 	     - Since async_scan is a bit, we need to hold the host_lock while
-> 	       modifying it to prevent races against other CPUs modifying the word
-> 	       that bit is in.  This is probably a theoretical race for the moment,
-> 	       but other patches may change that.
-> 	     - The async_scan bit means not only that this host is being scanned
-> 	       asynchronously, but that all the devices attached to this host are not
-> 	       yet added to sysfs.  So we must ensure that this bit is always in sync.
-> 	       I've chosen to do this with the scan_mutex since it's already acquired
-> 	       in most of the right places.
-> 		...
-> 
-> which I assume is the commit you're talking about.
+> Does this add the first dependency upon the availability of bc?
 
-Yep, that's the one.
+I believe it does.  I used bc because doing it C would have required 
+arbitrary-precision code or have added a dependency on libgmp.
 
-Alan Stern
-
+	-hpa
