@@ -1,330 +1,549 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXK3M3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbXK3MdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbXK3M3x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 07:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXK3M3m
+	id S1758751AbXK3MdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 07:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXK3MdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 07:29:42 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51893 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752943AbXK3M3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 07:29:38 -0500
-Date: Fri, 30 Nov 2007 18:12:25 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, skumar@linux.vnet.ibm.com,
-       menage@google.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       balbir@linux.vnet.ibm.com
-Subject: [PATCH] sched: cpu accounting controller (V2)
-Message-ID: <20071130124225.GM5681@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129113035.bbdf35db.akpm@linux-foundation.org> <20071129201833.GA18023@linux.vnet.ibm.com>
+	Fri, 30 Nov 2007 07:33:05 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2725 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752944AbXK3MdB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 07:33:01 -0500
+Date: Fri, 30 Nov 2007 13:32:56 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipebalbi@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>, Tony Lindgren <tony@atomide.com>,
+       "eric miao" <eric.y.miao@gmail.com>, Kevin Hilman <khilman@mvista.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [patch/rfc 2/4] pcf875x I2C GPIO expander driver
+Message-ID: <20071130133256.72385ea8@hyperion.delvare>
+In-Reply-To: <200710291851.49057.david-b@pacbell.net>
+References: <200710291809.29936.david-b@pacbell.net>
+	<200710291851.49057.david-b@pacbell.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071129201833.GA18023@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 01:48:33AM +0530, Srivatsa Vaddagiri wrote:
-> It is indeed an important todo. Right now we take a per-group global
-> lock on every accounting update (which can be very frequent) and hence
-> it is pretty bad.
+Hi David,
+
+Sorry for the late review.
+
+Note that I can't test your code.
+
+On Mon, 29 Oct 2007 18:51:48 -0700, David Brownell wrote:
+> This is a new-style I2C driver for some common 8 and 16 bit I2C based
+> GPIO expanders:  pcf8574 and pcf8575.  Since it's a new-style driver,
+> it's configured as part of board-specific init ... eliminating the
+> need for error-prone manual configuration of module parameters.
 > 
-> Ingo had expressed the need to reintroduce this patch asap and hence I resent 
-> it w/o attacking the scalability part. I will take a shot at scalability
-> enhancements tomorrow and send it as a separate patch.
+> The driver exposes the GPIO signals using the platform-neutral GPIO
+> programming interface, so they are easily accessed by other kernel
+> code.  The lack of such a flexible kernel API is what has ensured
+> the proliferation of board-specific hacks for these chips... stuff
+> that rarely makes it upstream since it's so ugly.  This driver will
+> let such board-specific code use standard GPIO calls.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+> Note that there's currently a drivers/i2c/chips/pcf8574.c driver.
 
-Here's V2 of the cpu acccounting controller patch, which makes
-accounting scale better on SMP systems by splitting the usage counter to
-be per-cpu.
+By now there's also a drivers/i2c/chips/pcf8575.c driver.
 
----->
+> 
+> Key differences include:  this one talks to other kernel code so
+> it can use the GPIOs "normally", but that one talks to userspace
+> through sysfs.  Also, this one is a "new style" I2C driver, so it's
+> smaller and doesn't need all those error-prone module parameters.
+> Plus, this one handles both 8 and 16 bit chip versions.
+> 
+>  drivers/i2c/chips/Kconfig   |   18 ++
+>  drivers/i2c/chips/Makefile  |    1 
+>  drivers/i2c/chips/pcf857x.c |  309 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pcf857x.h     |   43 ++++++
+>  4 files changed, 371 insertions(+)
+> 
+> --- a/drivers/i2c/chips/Kconfig	2007-10-28 21:04:06.000000000 -0700
+> +++ b/drivers/i2c/chips/Kconfig	2007-10-29 14:16:01.000000000 -0700
+> @@ -51,6 +51,24 @@ config SENSORS_EEPROM
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called eeprom.
+>  
+> +config GPIO_PCF857X
+> +	tristate "PCF875x GPIO expanders"
+> +	depends on GPIO_LIB
+> +	help
+> +	  Say yes here to provide access to some I2C GPIO expanders which
+> +	  may be used for additional digital outputs or inputs:
+> +
+> +	    - pcf8574, pcf8574a ... 8 bits, from NXP or TI
+> +	    - pcf8575, pcf8575c ... 16 bits, from NXP or TI
+> +
+> +	  Your board setup code will need to declare the expanders in
+> +	  use, and assign numbers to the GPIOs they expose.  Those GPIOs
+> +	  can then be used from drivers and other kernel code, just like
+> +	  other GPIOs, but only accessible from task contexts.
+> +
+> +	  This driver provides only an in-kernel interface to those GPIOs.
+> +	  Any sysfs interface to userspace would be provided separately.
 
-Commit cfb5285660aad4931b2ebbfa902ea48a37dfffa1 removed a useful feature for 
-us, which provided a cpu accounting resource controller.  This feature would be 
-useful if someone wants to group tasks only for accounting purpose and doesnt 
-really want to exercise any control over their cpu consumption.
+How?
 
-The patch below reintroduces the feature. It is based on Paul Menage's
-original patch (Commit 62d0df64065e7c135d0002f069444fbdfc64768f), with
-these differences:
+> +
+>  config SENSORS_PCF8574
+>  	tristate "Philips PCF8574 and PCF8574A"
+>  	depends on EXPERIMENTAL
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/include/linux/pcf857x.h	2007-10-28 21:09:49.000000000 -0700
+> @@ -0,0 +1,43 @@
+> +#ifndef __LINUX_PCF857X_H
+> +#define __LINUX_PCF857X_H
+> +
+> +/**
+> + * struct pcf857x_platform_data - data to set up pcf857x driver
+> + * @gpio_base: number of the chip's first GPIO
+> + * @n_latch: optional bit-inverse of initial output state
 
-        - Removed load average information. I felt it needs more thought (esp 
-	  to deal with SMP and virtualized platforms) and can be added for 
- 	  2.6.25 after more discussions.
-        - Convert group cpu usage to be nanosecond accurate (as rest of the cfs 
-	  stats are) and invoke cpuacct_charge() from the respective scheduler 
-	  classes
-	- Make accounting scalable on SMP systems by splitting the usage 
-	  counter to be per-cpu
-	- Move the code from kernel/cpu_acct.c to kernel/sched.c (since the 
-	  code is not big enough to warrant a new file and also this rightly 
-	  needs to live inside the scheduler. Also things like accessing 
-	  rq->lock while reading cpu usage becomes easier if the code lived in 
-	  kernel/sched.c)
+Strange name, and I can't make much sense of the description either.
 
-The patch also modifies the cpu controller not to provide the same accounting 
-information.
+> + * @context: optional parameter passed to setup() and teardown()
+> + * @setup: optional callback issued once the GPIOs are valid
+> + * @teardown: optional callback issued before the GPIOs are invvalidated
 
+Would make more sense to list setup and teardown before context?
 
-Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Typo: invalidated.
 
----
- include/linux/cgroup_subsys.h |    7 +
- init/Kconfig                  |    7 +
- kernel/sched.c                |  155 ++++++++++++++++++++++++++++++++++--------
- kernel/sched_fair.c           |    6 +
- kernel/sched_rt.c             |    1 
- 5 files changed, 150 insertions(+), 26 deletions(-)
+> + *
+> + * In addition to the I2C_BOARD_INFO() state appropriate to each chip,
+> + * the i2c_board_info used with the pcf875x driver must provide the
+> + * chip "type" ("pcf8574", "pcf8574a", "pcf8575", "pcf8575c") and its
+> + * platform_data (pointer to one of these structures) with at least
+> + * the gpio_base value initialized.
+> + *
+> + * The @setup callback may be used with the kind of board-specific glue
+> + * which hands the (now-valid) GPIOs to other drivers, or which puts
+> + * devices in their initial states using these GPIOs.
+> + *
+> + * Since these GPIO chips don't have conventional registers recording
+> + * whether a pin is used for input or output, or an output latch to
+> + * record the values being driven, the n_latch value may be used to
+> + * avoid intialization glitches.  Its inverted value initializes the
 
-Index: current/include/linux/cgroup_subsys.h
-===================================================================
---- current.orig/include/linux/cgroup_subsys.h
-+++ current/include/linux/cgroup_subsys.h
-@@ -30,3 +30,10 @@ SUBSYS(cpu_cgroup)
- #endif
- 
- /* */
-+
-+#ifdef CONFIG_CGROUP_CPUACCT
-+SUBSYS(cpuacct)
-+#endif
-+
-+/* */
-+
-Index: current/init/Kconfig
-===================================================================
---- current.orig/init/Kconfig
-+++ current/init/Kconfig
-@@ -354,6 +354,13 @@ config FAIR_CGROUP_SCHED
- 
- endchoice
- 
-+config CGROUP_CPUACCT
-+	bool "Simple CPU accounting cgroup subsystem"
-+	depends on CGROUPS
-+	help
-+	  Provides a simple Resource Controller for monitoring the
-+	  total CPU consumed by the tasks in a cgroup
-+
- config SYSFS_DEPRECATED
- 	bool "Create deprecated sysfs files"
- 	default y
-Index: current/kernel/sched.c
-===================================================================
---- current.orig/kernel/sched.c
-+++ current/kernel/sched.c
-@@ -854,6 +854,12 @@ iter_move_one_task(struct rq *this_rq, i
- 		   struct rq_iterator *iterator);
- #endif
- 
-+#ifdef CONFIG_CGROUP_CPUACCT
-+static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
-+#else
-+static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
-+#endif
-+
- #include "sched_stats.h"
- #include "sched_idletask.c"
- #include "sched_fair.c"
-@@ -7221,38 +7227,12 @@ static u64 cpu_shares_read_uint(struct c
- 	return (u64) tg->shares;
- }
- 
--static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
--{
--	struct task_group *tg = cgroup_tg(cgrp);
--	unsigned long flags;
--	u64 res = 0;
--	int i;
--
--	for_each_possible_cpu(i) {
--		/*
--		 * Lock to prevent races with updating 64-bit counters
--		 * on 32-bit arches.
--		 */
--		spin_lock_irqsave(&cpu_rq(i)->lock, flags);
--		res += tg->se[i]->sum_exec_runtime;
--		spin_unlock_irqrestore(&cpu_rq(i)->lock, flags);
--	}
--	/* Convert from ns to ms */
--	do_div(res, NSEC_PER_MSEC);
--
--	return res;
--}
--
- static struct cftype cpu_files[] = {
- 	{
- 		.name = "shares",
- 		.read_uint = cpu_shares_read_uint,
- 		.write_uint = cpu_shares_write_uint,
- 	},
--	{
--		.name = "usage",
--		.read_uint = cpu_usage_read,
--	},
- };
- 
- static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-@@ -7272,3 +7252,126 @@ struct cgroup_subsys cpu_cgroup_subsys =
- };
- 
- #endif	/* CONFIG_FAIR_CGROUP_SCHED */
-+
-+#ifdef CONFIG_CGROUP_CPUACCT
-+
-+/*
-+ * CPU accounting code for task groups.
-+ *
-+ * Based on the work by Paul Menage (menage@google.com) and Balbir Singh
-+ * (balbir@in.ibm.com).
-+ */
-+
-+/* track cpu usage of a group of tasks */
-+struct cpuacct {
-+	struct cgroup_subsys_state css;
-+	/* cpuusage holds pointer to a u64-type object on every cpu */
-+	u64 *cpuusage;
-+};
-+
-+struct cgroup_subsys cpuacct_subsys;
-+
-+/* return cpu accounting group corresponding to this container */
-+static inline struct cpuacct *cgroup_ca(struct cgroup *cont)
-+{
-+	return container_of(cgroup_subsys_state(cont, cpuacct_subsys_id),
-+			    struct cpuacct, css);
-+}
-+
-+/* return cpu accounting group to which this task belongs */
-+static inline struct cpuacct *task_ca(struct task_struct *tsk)
-+{
-+	return container_of(task_subsys_state(tsk, cpuacct_subsys_id),
-+			    struct cpuacct, css);
-+}
-+
-+/* create a new cpu accounting group */
-+static struct cgroup_subsys_state *cpuacct_create(
-+	struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+
-+	if (!ca)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ca->cpuusage = alloc_percpu(u64);
-+	if (!ca->cpuusage) {
-+		kfree(ca);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	return &ca->css;
-+}
-+
-+/* destroy an existing cpu accounting group */
-+static void cpuacct_destroy(struct cgroup_subsys *ss,
-+			    struct cgroup *cont)
-+{
-+	struct cpuacct *ca = cgroup_ca(cont);
-+
-+	free_percpu(ca->cpuusage);
-+	kfree(ca);
-+}
-+
-+/* return total cpu usage (in nanoseconds) of a group */
-+static u64 cpuusage_read(struct cgroup *cont, struct cftype *cft)
-+{
-+	struct cpuacct *ca = cgroup_ca(cont);
-+	u64 totalcpuusage = 0;
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		u64 *cpuusage = percpu_ptr(ca->cpuusage, i);
-+
-+		/*
-+		 * Take rq->lock to make 64-bit addition safe on 32-bit
-+		 * platforms.
-+		 */
-+		spin_lock_irq(&cpu_rq(i)->lock);
-+		totalcpuusage += *cpuusage;
-+		spin_unlock_irq(&cpu_rq(i)->lock);
-+	}
-+
-+	return totalcpuusage;
-+}
-+
-+static struct cftype files[] = {
-+	{
-+		.name = "usage",
-+		.read_uint = cpuusage_read,
-+	},
-+};
-+
-+static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
-+}
-+
-+/*
-+ * charge this task's execution time to its accounting group.
-+ *
-+ * called with rq->lock held.
-+ */
-+static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
-+{
-+	struct cpuacct *ca;
-+
-+	if (!cpuacct_subsys.active)
-+		return;
-+
-+	ca = task_ca(tsk);
-+	if (ca) {
-+		u64 *cpuusage = percpu_ptr(ca->cpuusage, task_cpu(tsk));
-+
-+		*cpuusage += cputime;
-+	}
-+}
-+
-+struct cgroup_subsys cpuacct_subsys = {
-+	.name = "cpuacct",
-+	.create = cpuacct_create,
-+	.destroy = cpuacct_destroy,
-+	.populate = cpuacct_populate,
-+	.subsys_id = cpuacct_subsys_id,
-+};
-+#endif	/* CONFIG_CGROUP_CPUACCT */
-Index: current/kernel/sched_fair.c
-===================================================================
---- current.orig/kernel/sched_fair.c
-+++ current/kernel/sched_fair.c
-@@ -351,6 +351,12 @@ static void update_curr(struct cfs_rq *c
- 
- 	__update_curr(cfs_rq, curr, delta_exec);
- 	curr->exec_start = now;
-+
-+	if (entity_is_task(curr)) {
-+		struct task_struct *curtask = task_of(curr);
-+
-+		cpuacct_charge(curtask, delta_exec);
-+	}
- }
- 
- static inline void
-Index: current/kernel/sched_rt.c
-===================================================================
---- current.orig/kernel/sched_rt.c
-+++ current/kernel/sched_rt.c
-@@ -23,6 +23,7 @@ static void update_curr_rt(struct rq *rq
- 
- 	curr->se.sum_exec_runtime += delta_exec;
- 	curr->se.exec_start = rq->clock;
-+	cpuacct_charge(curr, delta_exec);
- }
- 
- static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+Typo: initialization.
+
+> + * value into which bits are masked before they're written to the PCF
+> + * chip.  That means that if it's left at zero, the chip is treated as
+> + * if it came from power-up reset.
+
+After reading this paragraph I still have no idea what n_latch does.
+But maybe that's just me.
+
+> + */
+> +struct pcf857x_platform_data {
+> +	unsigned	gpio_base;
+> +	unsigned	n_latch;
+> +
+> +	void		*context;
+> +	int		(*setup)(struct i2c_client *client,
+> +					int gpio, unsigned ngpio,
+> +					void *context);
+> +	int		(*teardown)(struct i2c_client *client,
+> +					int gpio, unsigned ngpio,
+> +					void *context);
+> +};
+> +
+> +#endif /* __LINUX_PCF857X_H */
+> --- a/drivers/i2c/chips/Makefile	2007-10-28 21:04:06.000000000 -0700
+> +++ b/drivers/i2c/chips/Makefile	2007-10-28 21:09:49.000000000 -0700
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
+>  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
+>  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
+>  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
+> +obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+
+For alphabetical order, it would go one line above.
+
+>  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
+>  obj-$(CONFIG_TPS65010)		+= tps65010.o
+>  obj-$(CONFIG_SENSORS_TLV320AIC23) += tlv320aic23.o
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/drivers/i2c/chips/pcf857x.c	2007-10-29 14:12:21.000000000 -0700
+> @@ -0,0 +1,309 @@
+> +/*
+> + * pcf857x - driver for pcf857{4,4a,5,5c} I2C GPIO expanders
+
+I recommend spelling out chip names completely, as it lets people grep
+the kernel tree for chip names when they look for support.
+
+> + *
+> + * Copyright (C) 2007 David Brownell
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/i2c.h>
+> +#include <linux/pcf857x.h>
+
+I suspect that there will be many more such header files in the future.
+Would it make sense to move them to include/linux/gpio?
+
+> +
+> +#include <asm/gpio.h>
+> +
+> +
+> +/*
+> + * The pcf857x chips only expose a one read register and one write register.
+
+Typo: extra "a".
+
+> + * Writing a "one" bit (to match the reset state) lets that pin be used as
+> + * an input; it's not an open-drain model, but it acts a bit like that.
+> + *
+> + * Some other I2C GPIO expander chips (like the pca9534, pca9535, pca9555,
+> + * pca9539, mcp23008, and mc23017) have a more complex register model with
+> + * more conventional input circuitry, often using 0x20..0x27 addresses.
+> + */
+> +struct pcf857x {
+> +	struct gpio_chip	chip;
+> +	struct i2c_client	*client;
+> +	unsigned		out;		/* software latch */
+> +};
+> +
+> +/*-------------------------------------------------------------------------*/
+> +
+> +/* Talk to 8-bit I/O expander */
+> +
+> +static int pcf857x_input8(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +
+> +	gpio->out |= (1 << offset);
+> +	return i2c_smbus_write_byte(gpio->client, (u8) gpio->out);
+
+Useless cast.
+
+> +}
+> +
+> +static int pcf857x_get8(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	s32		value;
+> +
+> +	value = i2c_smbus_read_byte(gpio->client);
+> +	return (value < 0) ? 0 : !!(value & (1 << offset));
+
+!!(value & (1 << offset))
+is more efficiently written
+(value >> offset) & 1
+
+> +}
+> +
+> +static int pcf857x_output8(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	unsigned	bit = 1 << offset;
+> +
+> +	if (value)
+> +		gpio->out |= bit;
+> +	else
+> +		gpio->out &= ~bit;
+> +	return i2c_smbus_write_byte(gpio->client, (u8) gpio->out);
+
+Useless cast.
+
+> +}
+> +
+> +static void pcf857x_set8(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	pcf857x_output8(chip, offset, value);
+> +}
+
+It would be more efficient to drop pcf857x_set8 altogether and do
+gpio->chip.set = pcf857x_output8.
+
+Many of the comments above apply to the 16-bit functions below as well.
+
+> +
+> +/*-------------------------------------------------------------------------*/
+> +
+> +/* Talk to 16-bit I/O expander */
+> +
+> +static int i2c_write_le16(struct i2c_client *client, u16 word)
+> +{
+> +	u8 buf[2] = { word & 0xff, word >> 8, };
+
+Stray comma.
+
+> +	int status;
+> +
+> +	status = i2c_master_send(client, buf, 2);
+> +	return (status < 0) ? status : 0;
+> +}
+> +
+> +static int i2c_read_le16(struct i2c_client *client)
+> +{
+> +	u8 buf[2];
+> +	int status;
+> +
+> +	status = i2c_master_recv(client, buf, 2);
+> +	if (status < 0)
+> +		return status;
+> +	return (buf[1] << 8) | buf[0];
+> +}
+> +
+> +static int pcf857x_input16(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +
+> +	gpio->out |= (1 << offset);
+> +	return i2c_write_le16(gpio->client, (u16) gpio->out);
+> +}
+> +
+> +static int pcf857x_get16(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	int		value;
+> +
+> +	value = i2c_read_le16(gpio->client);
+> +	return (value < 0) ? 0 : !!(value & (1 << offset));
+> +}
+> +
+> +static int pcf857x_output16(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	unsigned	bit = 1 << offset;
+> +
+> +	if (value)
+> +		gpio->out |= bit;
+> +	else
+> +		gpio->out &= ~bit;
+> +	return i2c_write_le16(gpio->client, (u16) gpio->out);
+> +}
+> +
+> +static void pcf857x_set16(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	pcf857x_output16(chip, offset, value);
+> +}
+> +
+> +/*-------------------------------------------------------------------------*/
+> +
+> +static int pcf857x_probe(struct i2c_client *client)
+> +{
+> +	struct pcf857x_platform_data	*pdata;
+> +	struct pcf857x			*gpio;
+> +	int				status = 0;
+
+Useless initialization.
+
+> +
+> +	pdata = client->dev.platform_data;
+> +	if (!pdata)
+> +		return -ENODEV;
+> +
+> +	/* Allocate, initialize, and register this gpio_chip. */
+> +	gpio = kzalloc(sizeof *gpio, GFP_KERNEL);
+
+You need to include <linux/slab.h> to have access to this function.
+
+> +	if (!gpio)
+> +		return -ENOMEM;
+> +
+> +	gpio->chip.base = pdata->gpio_base;
+> +	gpio->chip.can_sleep = 1;
+> +
+> +	/* NOTE:  the OnSemi jlc1562b is also largely compatible with
+> +	 * these parts, notably for output.  It has a low-resolution
+> +	 * DAC instead of pin change IRQs; and its inputs can be the
+> +	 * result of comparators.
+> +	 */
+> +
+> +	/* '74a addresses are 0x38..0x3f; '74 uses 0x20..0x27 */
+> +	if (strcmp(client->name, "pcf8574a") == 0
+> +			|| strcmp(client->name, "pcf8574") == 0) {
+> +		gpio->chip.ngpio = 8;
+> +		gpio->chip.direction_input = pcf857x_input8;
+> +		gpio->chip.get = pcf857x_get8;
+> +		gpio->chip.direction_output = pcf857x_output8;
+> +		gpio->chip.set = pcf857x_set8;
+> +
+> +		if (!i2c_check_functionality(client->adapter,
+> +				I2C_FUNC_SMBUS_BYTE))
+> +			status = -EIO;
+
+You set status here...
+
+> +
+> +		/* fail if there's no chip present */
+> +		status = i2c_smbus_read_byte(client);
+
+... but overwrite it immediately.
+
+> +
+> +	/* '75/'75c addresses are 0x20..0x27, just like the '74;
+> +	 * the '75c doesn't have a current source pulling high.
+> +	 */
+> +	} else if (strcmp(client->name, "pcf8575c") == 0
+> +			|| strcmp(client->name, "pcf8575") == 0) {
+> +		gpio->chip.ngpio = 16;
+> +		gpio->chip.direction_input = pcf857x_input16;
+> +		gpio->chip.get = pcf857x_get16;
+> +		gpio->chip.direction_output = pcf857x_output16;
+> +		gpio->chip.set = pcf857x_set16;
+> +
+> +		if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
+> +			status = -EIO;
+> +
+> +		/* fail if there's no chip present */
+> +		status = i2c_read_le16(client);
+
+Same problem here.
+
+> +
+> +	} else
+> +		status = -ENODEV;
+> +
+> +	if (status < 0) {
+> +		dev_dbg(&client->dev, "probe error %d for '%s'\n",
+> +				status, client->name);
+> +		kfree(gpio);
+> +		return status;
+
+Might make sense to move this to a common error path, as you do it more
+than once.
+
+> +	}
+> +
+> +	gpio->chip.label = client->name;
+> +
+> +	gpio->client = client;
+> +	i2c_set_clientdata(client, gpio);
+> +
+> +	/* NOTE:  these chips have strange "pseudo-bidirectional" I/O pins.
+> +	 * We can't actually know whether a pin is configured (a) as output
+> +	 * and driving the signal low, or (b) as input and reporting a low
+> +	 * value ... without knowing the last value written since the chip
+> +	 * came out of reset (if any).  We can't read the latched output.
+> +	 *
+> +	 * In short, the only reliable solution for setting up pin direction
+> +	 * is to do it explicitly.  The setup() method can do that.
+> +	 *
+> +	 * We use pdata->n_latch to avoid trouble.  In the typical case it's
+> +	 * left initialized to zero; our software copy of the "latch" then
+> +	 * matches the chip's reset state.  But there may be cases where a
+> +	 * system must drive some pins low, without transient glitching.
+> +	 * Handle those cases by assigning n_latch to a nonzero value.
+> +	 */
+> +	gpio->out = ~pdata->n_latch;
+> +
+> +	status = gpiochip_add(&gpio->chip);
+> +	if (status < 0) {
+> +		kfree(gpio);
+> +		return status;
+> +	}
+> +
+> +	/* NOTE: these chips can issue "some pin-changed" IRQs, which we
+> +	 * don't yet even try to use.  Among other issues, the relevant
+> +	 * genirq state isn't available to modular drivers; and most irq
+> +	 * methods can't be called from sleeping contexts.
+> +	 */
+> +
+> +	dev_info(&client->dev, "gpios %d..%d on a %s%s\n",
+> +			gpio->chip.base,
+> +			gpio->chip.base + gpio->chip.ngpio - 1,
+> +			client->name,
+> +			client->irq ? " (irq ignored)" : "");
+> +
+> +	/* Let platform code set up the GPIOs and their users.
+> +	 * Now is the first time anyone can use them.
+> +	 */
+> +	if (pdata->setup) {
+> +		status = pdata->setup(client,
+> +				gpio->chip.base, gpio->chip.ngpio,
+> +				pdata->context);
+> +		if (status < 0)
+> +			dev_dbg(&client->dev, "setup --> %d\n", status);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int pcf857x_remove(struct i2c_client *client)
+> +{
+> +	struct pcf857x_platform_data	*pdata = client->dev.platform_data;
+> +	struct pcf857x			*gpio = i2c_get_clientdata(client);
+> +	int				status = 0;
+> +
+> +	if (pdata->teardown) {
+> +		status = pdata->teardown(client,
+> +				gpio->chip.base, gpio->chip.ngpio,
+> +				pdata->context);
+> +		if (status < 0) {
+> +			dev_err(&client->dev, "%s --> %d\n",
+> +					"teardown", status);
+
+Why %s instead of hard-coding "teardown"?
+
+Why is this an error message while a failing setup() at initialization
+time only deserves a debug message?
+
+> +			return status;
+> +		}
+> +	}
+> +
+> +	status = gpiochip_remove(&gpio->chip);
+> +	if (status == 0)
+> +		kfree(gpio);
+> +	else
+> +		dev_err(&client->dev, "%s --> %d\n", "remove", status);
+> +	return status;
+> +}
+> +
+> +static struct i2c_driver pcf857x_driver = {
+> +	.driver = {
+> +		.name	= "pcf857x",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe	= pcf857x_probe,
+> +	.remove	= pcf857x_remove,
+> +};
+> +
+> +static int __init pcf857x_init(void)
+> +{
+> +	return i2c_add_driver(&pcf857x_driver);
+> +}
+> +/* we want GPIOs to be ready at device_initcall() time */
+> +subsys_initcall(pcf857x_init);
+> +
+> +static void __exit pcf857x_exit(void)
+> +{
+> +	i2c_del_driver(&pcf857x_driver);
+> +}
+> +module_exit(pcf857x_exit);
+> +
+> +MODULE_LICENSE("GPL");
+
+No MODULE_AUTHOR? No entry in MAINTAINERS?
+
 -- 
-Regards,
-vatsa
+Jean Delvare
