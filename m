@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbXK3Xdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbXK3XeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762345AbXK3Xdp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762362AbXK3XdP
+	id S1764227AbXK3XeA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764037AbXK3Xde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:33:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:32824 "EHLO ogre.sisk.pl"
+	Fri, 30 Nov 2007 18:33:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47395 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762924AbXK3XdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:33:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [lm-sensors] [PATCH 1/1] HWMON: coretemp, suspend fix
-Date: Sat, 1 Dec 2007 00:51:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-References: <661416096128474967.slaby@pripojeni.net> <47508C72.8050703@gmail.com> <200712010045.50297.rjw@sisk.pl>
-In-Reply-To: <200712010045.50297.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1764016AbXK3Xdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:33:32 -0500
+Date: Fri, 30 Nov 2007 18:32:43 -0500 (EST)
+Message-Id: <20071130.183243.66055473.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, bharrosh@panasas.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [PATCH 20/28] blk_end_request: changing ide-scsi (take 3)
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712010051.41227.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 1 of December 2007, Rafael J. Wysocki wrote:
-> On Friday, 30 of November 2007, Jiri Slaby wrote:
-> > On 11/30/2007 11:15 PM, Jean Delvare wrote:
-> > > Hi Jiri,
-> > 
-[--snip--]
-> > > 
-> > > Should this change go to the stable tree(s) as well?
-> > 
-> > Sorry, I have no idea. Rafael?
-> 
-> Well, actually, having looked once again at the patch, I think that it's
-> slightly wrong.  Namely, it looks like we just should drop all of the _FROZEN
-> actions from there.
-> 
-> Fixed patch follows and I think it's also a candidate for -stable.
+This patch converts ide-scsi to use blk_end_request().
 
-Crap, I forgot to add the sign-off, so here it goes again:
-
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
-Subject: HWMON: coretemp, suspend fix
- 
-It's not permitted to unregister a device after devices have been suspended.
-It causes deadlocks to appear on systems with coretemp hwmon loaded.  To avoid
-this, we can make coretemp_cpu_callback() do nothing if the _FROZEN bit is set
-in action.
- 
-Also, in other cases it's generally to late to unregister the coretemp device
-if the CPU is already dead, so it should be unregistered on CPU_DOWN_PREPARE.
- 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl> (frozen fix)
-Cc: Mark M. Hoffman <mhoffman@lightlink.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
+ drivers/scsi/ide-scsi.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
- drivers/hwmon/coretemp.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/drivers/hwmon/coretemp.c
+Index: 2.6.24-rc3-mm2/drivers/scsi/ide-scsi.c
 ===================================================================
---- linux-2.6.orig/drivers/hwmon/coretemp.c
-+++ linux-2.6/drivers/hwmon/coretemp.c
-@@ -337,11 +337,10 @@ static int coretemp_cpu_callback(struct 
- 
- 	switch (action) {
- 	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
-+	case CPU_DOWN_FAILED:
- 		coretemp_device_add(cpu);
- 		break;
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
-+	case CPU_DOWN_PREPARE:
- 		coretemp_device_remove(cpu);
- 		break;
+--- 2.6.24-rc3-mm2.orig/drivers/scsi/ide-scsi.c
++++ 2.6.24-rc3-mm2/drivers/scsi/ide-scsi.c
+@@ -918,8 +918,8 @@ static int idescsi_eh_reset (struct scsi
  	}
+ 
+ 	/* kill current request */
+-	blkdev_dequeue_request(req);
+-	end_that_request_last(req, 0);
++	if (__blk_end_request(req, 0, 0))
++		BUG();
+ 	if (blk_sense_request(req))
+ 		kfree(scsi->pc->buffer);
+ 	kfree(scsi->pc);
+@@ -928,8 +928,8 @@ static int idescsi_eh_reset (struct scsi
+ 
+ 	/* now nuke the drive queue */
+ 	while ((req = elv_next_request(drive->queue))) {
+-		blkdev_dequeue_request(req);
+-		end_that_request_last(req, 0);
++		if (__blk_end_request(req, 0, 0))
++			BUG();
+ 	}
+ 
+ 	HWGROUP(drive)->rq = NULL;
