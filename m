@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXK3UJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbXK3UM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbXK3UJj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 15:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXK3UJb
+	id S1755985AbXK3UM1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 15:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXK3UMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 15:09:31 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46266 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753062AbXK3UJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 15:09:30 -0500
-Date: Fri, 30 Nov 2007 12:09:30 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 0/3] Per cpu relocation to ZERO and x86_32 percpu ops on
- x86_64
-In-Reply-To: <20071130200641.GA385@elte.hu>
-Message-ID: <Pine.LNX.4.64.0711301208300.2369@schroedinger.engr.sgi.com>
-References: <20071130064305.459255715@sgi.com> <20071130112429.GA3605@elte.hu>
- <20071130112645.GA7565@elte.hu> <Pine.LNX.4.64.0711300918250.32294@schroedinger.engr.sgi.com>
- <20071130180002.GB19571@elte.hu> <Pine.LNX.4.64.0711301019590.1743@schroedinger.engr.sgi.com>
- <20071130183512.GA8985@elte.hu> <Pine.LNX.4.64.0711301043380.1919@schroedinger.engr.sgi.com>
- <20071130194517.GD9928@elte.hu> <Pine.LNX.4.64.0711301147100.2242@schroedinger.engr.sgi.com>
- <20071130200641.GA385@elte.hu>
+	Fri, 30 Nov 2007 15:12:13 -0500
+Received: from rtr.ca ([76.10.145.34]:3970 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751437AbXK3UMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 15:12:12 -0500
+Message-ID: <47506E9A.7080500@rtr.ca>
+Date: Fri, 30 Nov 2007 15:12:10 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu> <473CC6D4.2010909@rtr.ca>
+In-Reply-To: <473CC6D4.2010909@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, Ingo Molnar wrote:
+Mark Lord wrote:
+> Ingo Molnar wrote:
+>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>> pick up the latest latency tracer patch from:
+>>
+>> sorry, wrong URLs, the correct links are:
+>>
+>>    
+>> http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.24-rc2-git5-combo.patch 
+>>
+>>    http://redhat.com/~mingo/latency-tracing-patches/trace-cmd.c
+> ..
+> 
+> Is there a version of these that works with 2.6.23.1 ?
+> 
+> I'm not using 2.6.24-* on this machine because:
+>  (a) behaviour may be different, and
+>  (b) something broke VMware compatibility again.
+..
 
-> which answers your question: i only pointed out that this is very 
-> similar to what i saw, spontaneous reboots. So why did you call this a 
-> "side swipe"? I connected up different bugreports. I do not claim that 
-> Andrew's reboot was necessarily due to the percpu patches, i just 
-> pointed out the similarity of the symptoms.
+An update:
 
-Ahh. Ok. I was also wrong to assume hostility.
+Ingo's 2.6.23 version of the latency-tracing-patches only lock-up on resume here.
+
+But now that I've hacked vmware to work on 2.6.24,
+my notebook is now running the newer kernels.
+
+So now to see if the "strange 1-second pauses" ever happen here,
+and if they do I'll patch in Ingo's stuff to try and find out why.
