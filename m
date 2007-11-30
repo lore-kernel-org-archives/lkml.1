@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbXK3MHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbXK3MIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758751AbXK3MHo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 07:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbXK3MHc
+	id S932639AbXK3MIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 07:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbXK3MIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 07:07:32 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3790 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752420AbXK3MHb (ORCPT
+	Fri, 30 Nov 2007 07:08:42 -0500
+Received: from nz-out-0506.google.com ([64.233.162.225]:12317 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbXK3MIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 07:07:31 -0500
-Date: Fri, 30 Nov 2007 23:07:16 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Howells <dhowells@redhat.com>
-Cc: mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] AF_RXRPC: Configure crypto correctly for AF_RXRPC
-Message-ID: <20071130120716.GB26848@gondor.apana.org.au>
-References: <20071128143753.15234.29444.stgit@warthog.procyon.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 30 Nov 2007 07:08:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hcn2ztfic2qH9de5hWcCDnfhSP0a+xRN0XXXtI5zEo2KHYO4UgCdZ/erZifOgx6wPZCaPk9XC/e+7FQgDOqkqiWmj2NUsA0CGUBgELgPhNFEZw0u4V3jsrPsovPt0iRN9bX5I4nLrYCZ6Sx/T44O+sAEbvCNGYevPm+a+R8ufro=
+Message-ID: <3f9a31f40711300408s4341a338n33e5b6dbaee05813@mail.gmail.com>
+Date: Fri, 30 Nov 2007 17:38:39 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Heiko Carstens" <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] Re: [BUG] 2.6.24-rc3 x86 make depends on s390 arch
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Jan Glauber" <jan.glauber@de.ibm.com>
+In-Reply-To: <20071130115015.GC11682@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071128143753.15234.29444.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.9i
+References: <3f9a31f40711300014y576e83dldfafa340eec257f0@mail.gmail.com>
+	 <3f9a31f40711300303l3260c3e7s4c35884f5e1fa6e1@mail.gmail.com>
+	 <20071130115015.GC11682@osiris.boeblingen.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 02:37:53PM +0000, David Howells wrote:
-> AF_RXRPC uses the crypto services, so should depend on or select CRYPTO.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+On 11/30/07, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> On Fri, Nov 30, 2007 at 04:33:19PM +0530, Jaswinder Singh wrote:
+> > This patch fixes s390 dependency for x86
+> >
+> > Signed-off-by: Jaswinder Singh <jaswinderlinux@gmail.com>
+>
+> Deleting random parts of the kernel tree is actually not
+> supported.
+>
 
-Patch applied to net-2.6.  Thanks.
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I agree with you. I just did this to same some space because I keep
+many kernel trees.
+
+But i am curious if other arch do not depends on x86 then s390 ?
+
+> > diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> > index 1330061..b699ed5 100644
+> > --- a/arch/s390/Kconfig
+> > +++ b/arch/s390/Kconfig
+> > @@ -537,4 +537,6 @@ source "security/Kconfig"
+> >
+> >  source "crypto/Kconfig"
+> >
+> > +source "arch/s390/crypto/Kconfig"
+> > +
+>
+> With this there's no dependency on CRYPTO_HW anymore.
+>
+
+Anyhow "if CRYPTO_HW" is not working in drivers/crypto/Kconfig
+
+have you tested this patch on S390. Is this giving errors ?
+
+And you can also add depends with CRYPTO_HW in arch/s390/crypto/Kconfig
+
+Thank you,
+
+Jaswinder Singh.
+
+
+> > +#ifdef CONFIG_S390
+> >  #include "../arch/s390/appldata/appldata.h"
+> > +#endif
+>
+> This include can go away.
+>
+> Since this pops up again and again we'll come up with a patch to fix this.
+>
