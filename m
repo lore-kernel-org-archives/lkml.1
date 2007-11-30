@@ -1,47 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXK3TUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbXK3TVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbXK3TUs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXK3TUi
+	id S1763934AbXK3TVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXK3TVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:20:38 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:64791 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbXK3TUh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:20:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wc8oG93bzXW/tnLpng/gx7Kk0GycFMtd1iISzut/odUw9O0biovV2wTh7g5F71gZOEGaywK+yLEbmerMLvAoHv+Yy6G6L0TdjI6vjqDN/D/T+KG3zrC/LwkqgC6Le3p/nU0BK95l2xL7M1arz1xLKK9WK/ZVAmOTlI/wAVq4x5A=
-Message-ID: <75b57c110711301120r7deff435oc010229b2b84b6a8@mail.gmail.com>
-Date: Fri, 30 Nov 2007 14:20:24 -0500
-From: "Gerb Stralko" <gerb.stralko@gmail.com>
-To: "Michael Tokarev" <mjt@tls.msk.ru>
-Subject: Re: 2.6.23: does it supposed to work on an i486?
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-In-Reply-To: <475059D6.2080900@msgid.tls.msk.ru>
+	Fri, 30 Nov 2007 14:21:42 -0500
+Received: from rtr.ca ([76.10.145.34]:4218 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752910AbXK3TVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 14:21:41 -0500
+Message-ID: <475062C4.9090906@rtr.ca>
+Date: Fri, 30 Nov 2007 14:21:40 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: VMware on 2.6.34:  patches to enable vmmon and vmet to build/run
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47504923.9030309@msgid.tls.msk.ru> <4750519C.2000907@zytor.com>
-	 <475059D6.2080900@msgid.tls.msk.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, I applied the patch (in 2.6.23 it's
->  arch/i386/boot/pmjump.S,
-> not
->  arch/x86/boot/pmjump.S,
-> but that's minor) - still the same behavior, it still reboots
-> instantly right when bootloader gave control to the kernel.
-> So it must be something else.. ;)
+I've hacked my copy of VMware-6.01 to work with kernel 2.6.24-rc*,
+and dumped my patches for vmmon and vmnet onto my server at:
 
-It should be x86, they merged the i386 and x86_64 code into one arch
-called x86.   Try it again and see if it works
+   http://rtr.ca/vmware-2.6.24/
 
-Thanks,
+Feel free to use them or ignore them.  Flames to /dev/null
 
-- Jerry
+Cheers
