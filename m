@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935406AbXK3Q2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935231AbXK3QrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935406AbXK3Q2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 11:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933612AbXK3Q2W
+	id S935231AbXK3QrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 11:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbXK3Qq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 11:28:22 -0500
-Received: from ag-out-0708.google.com ([72.14.246.241]:52978 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932685AbXK3Q2U (ORCPT
+	Fri, 30 Nov 2007 11:46:59 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34083 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753120AbXK3Qq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 11:28:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IRf6Fqppr/a2C4PkdviM7q97uhlWg0dBYglfIOnO6RfuPTfS3hhNA5J5vToNKH0wljqU03CSqfX3mA+Pkb9MyDDFz8QdN2W1GhdQ0EONSaHFuYMgpkorOhfrHkcznDO1RHrQPqEXn98TuvWejB6eZHChcCQ+vN3ho5P2iJWLRtY=
-Date: Fri, 30 Nov 2007 16:30:11 +0000
-From: Jaime Velasco Juan <jsagarribay@gmail.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
-       Rui Santos <rsantos@grupopie.com>, Pete Zaitcev <zaitcev@redhat.com>,
-       linux-usb@vger.kernel.org, preining@logic.at,
-       kristoffer.ericson@gmail.com, drussell@redhat.com,
-       linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: [PATCH] USB: option: Bind to the correct interface of the Huawei
-	E220
-Message-ID: <20071130163011.GA4223@singular.local>
-References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129150550.86453nubw8i5xi68@webmail.tugraz.at> <20071129185339.GA10445@singular.local> <200711300023.08999.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711300023.08999.oliver@neukum.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 30 Nov 2007 11:46:58 -0500
+Subject: Re: [RFC PATCH] LTTng instrumentation mm (updated)
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071130161155.GA29634@Krystal>
+References: <20071113194025.150641834@polymtl.ca>
+	 <1195160783.7078.203.camel@localhost> <20071115215142.GA7825@Krystal>
+	 <1195164977.27759.10.camel@localhost> <20071116143019.GA16082@Krystal>
+	 <1195495485.27759.115.camel@localhost> <20071128140953.GA8018@Krystal>
+	 <1196268856.18851.20.camel@localhost> <20071129023421.GA711@Krystal>
+	 <1196317552.18851.47.camel@localhost>  <20071130161155.GA29634@Krystal>
+Content-Type: text/plain
+Date: Fri, 30 Nov 2007 09:46:41 -0800
+Message-Id: <1196444801.18851.127.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-11-30 at 11:11 -0500, Mathieu Desnoyers wrote:
+> +static inline swp_entry_t page_swp_entry(struct page *page)
+> +{
+> +       swp_entry_t entry;
+> +       VM_BUG_ON(!PageSwapCache(page));
+> +       entry.val = page_private(page);
+> +       return entry;
+> +}
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Jaime Velasco Juan <jsagarribay@gmail.com>
----
+This probably needs to be introduced (and used) in a separate patch.
+Please fix up those other places in the code that can take advantage of
+it.
 
-diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index a18659e..352c94c 100644
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -158,8 +158,8 @@ static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_NETWORK) },
- 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
--	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
--	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel Merlin XS620/S640 */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel Merlin S620 */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1120) }, /* Novatel Merlin EX720 */
+>  #ifdef CONFIG_MIGRATION
+>  static inline swp_entry_t make_migration_entry(struct page *page, int
+> write)
+>  {
+> Index: linux-2.6-lttng/mm/swapfile.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/mm/swapfile.c  2007-11-30 09:18:38.000000000
+> -0500
+> +++ linux-2.6-lttng/mm/swapfile.c       2007-11-30 10:21:50.000000000
+> -0500
+> @@ -1279,6 +1279,7 @@ asmlinkage long sys_swapoff(const char _
+>         swap_map = p->swap_map;
+>         p->swap_map = NULL;
+>         p->flags = 0;
+> +       trace_mark(mm_swap_file_close, "filp %p", swap_file);
+>         spin_unlock(&swap_lock);
+>         mutex_unlock(&swapon_mutex);
+>         vfree(swap_map);
+> @@ -1660,6 +1661,8 @@ asmlinkage long sys_swapon(const char __
+>         } else {
+>                 swap_info[prev].next = p - swap_info;
+>         }
+> +       trace_mark(mm_swap_file_open, "filp %p filename %s",
+> +               swap_file, name); 
+
+You print out the filp a number of times here, but how does that help in
+a trace?  If I was trying to figure out which swapfile, I'd probably
+just want to know the swp_entry_t->type, then I could look at this:
+
+dave@foo:~/garbage$ cat /proc/swaps 
+Filename                                Type            Size    Used    Priority
+/dev/sda2                               partition       1992052 649336  -1
+
+to see the ordering.
+
+-- Dave
+
