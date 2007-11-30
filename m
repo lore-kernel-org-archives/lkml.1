@@ -1,79 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbXK3WgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbXK3Wmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758167AbXK3WgR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbXK3WgJ
+	id S1757144AbXK3Wmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbXK3Wm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:36:09 -0500
-Received: from waste.org ([66.93.16.53]:46127 "EHLO waste.org"
+	Fri, 30 Nov 2007 17:42:28 -0500
+Received: from mga09.intel.com ([134.134.136.24]:61089 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754942AbXK3WgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:36:07 -0500
-Date: Fri, 30 Nov 2007 16:35:37 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Allan Stephens <allan.stephens@windriver.com>,
-       Jon Paul Maloy <jon.maloy@ericsson.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [bug] SLOB, tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52 kmap_atomic_prot()
-Message-ID: <20071130223537.GT19691@waste.org>
-References: <20071129142546.GA27719@elte.hu> <20071129143920.GA32146@elte.hu> <20071129213217.GW19691@waste.org> <20071130091418.GA2201@elte.hu>
+	id S1752768AbXK3Wm1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 17:42:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,236,1194249600"; 
+   d="scan'208";a="219248780"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071130091418.GA2201@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
+Date: Fri, 30 Nov 2007 14:37:46 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <20071130142058.816d1693.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
+Thread-Index: Acgzn5T8e8/KH4cCSgWNyjFp3ve8FAAAJW2Q
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org><924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com> <20071130142058.816d1693.akpm@linux-foundation.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <lkml@rtr.ca>, <abelay@novell.com>, <lenb@kernel.org>, <mlord@pobox.com>,
+       <rjw@sisk.pl>, <linux-kernel@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>
+X-OriginalArrivalTime: 30 Nov 2007 22:37:30.0185 (UTC) FILETIME=[9756AB90:01C833A1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 10:14:18AM +0100, Ingo Molnar wrote:
-> 
-> * Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > > plus, and this is a slob question i guess, how come we drop into 
-> > > clear_highpage() for a kzalloc()??
-> > 
-> > Good question. Looks like kzalloc switched from doing a memset to
-> > passing a GFP_ZERO flag down to kmalloc. Slob didn't get completely
-> > updated to reflect this, so it blindly propagates the flag onto
-> > __alloc_pages and does a harmless double-clear.
-> > 
-> > Someone should remind us what the point of moving the kzalloc memset
-> > down into the allocators was. We now have all three allocators doing:
-> > 
-> >         if (unlikely((flags & __GFP_ZERO) && ptr))
-> >                 memset(ptr, 0, obj_size(cachep));
-> > 
-> > and needing to mask flags before passing them to page allocators,
-> > which hardly seems better than kzalloc unconditionally doing the
-> > memset. Wouldn't it be better/faster/smaller to make kzalloc a
-> > non-inline?
-> > 
-> > Slob also has a nice second path for large kmallocs where it just 
-> > calls the page allocator directly which also needs this treatment. 
-> > Which does the right thing with non-highmem systems, but can hit this 
-> > bug otherwise.
-> > 
-> > Below is a totally untested patch. Alternately, we could simply tweak 
-> > clear_highpage to remove the limitation, but that would leave slob 
-> > doing an extra clear.
-> 
-> ok, this fixes the debug warning.
-> 
+ 
 
-But the question remains: is this the right fix? The commit in
-question is here:
+>On Fri, 30 Nov 2007 14:06:55 -0800
+>"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+>
+>Please dont go off-list like this.  I put Mark's original 
+>mailing list cc's
+>back.
 
-http://www.kernel.org/hg/linux-2.6/rev/13683609d67a
+Sorry for missing some cc's earlier. I blindly did a reply-all to the
+mm-commits mail I got.
 
-Christoph, remind us what's the upside here? It seems to me it would
-be better to have separate non-inline kzalloc and kcalloc functions
-that did the memset instead.
+>> I will have to Nack this. The reason max_cstate was initentionally
+>> removed due to couple of reasons:
+>
+>It broke userspace without any warning or migration period, afaict.
 
-Another smaller open question is whether we want to remove the
-in_interrupt restriction from clear_pagehigh.
+Yes. That's true. I will have to take the blame for that. It has been
+known for a while during cpuidle development. But, it was never
+documented as deprecating.
+ 
+>> 1) All in kernel users of max_cstate should rather be using
+>> pm_qos/latency interfaces. All such max_cstate usages must already be
+>> migrated.
+>
+>That code isn't merged.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+All kernel part is already merged. I mean, there are do drivers that
+depend on max_cstate. They use latency_notifier thing today and their
+migration to pm_qos part is not merged yet.
+
+>> 2) Supporting max_cstate as a dynamic parameter cleanly is no longer
+>> possible in acpi/processor_idle.c as the C-state policy has moved to
+>> cpuidle instead. It can be done if it is needed. But, just 
+>below patch
+>> will not really work with cpuidle.
+>> 
+>> Selecting max_cstate at boot time as a debug option still 
+>works without
+>> this patch.
+>> 
+>> So, just this patch will not get back the functionality with cpuidle.
+>> Infact changing it at run time will have no effect. Question 
+>however is:
+>> Is there a real need to revive this parameter so that user can change
+>> max_cstate at run time?
+>
+>It is not known whether Mark is actually writing to this 
+>thing.  Perhaps
+>read-only permissions would be a suitable fix?
+>
+
+Exporting it as read only should be OK. We also need to know if there
+are hard user space dependency on writing to this from userspace.
+
+Thanks,
+Venki  
