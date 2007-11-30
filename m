@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbXK3KaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbXK3Kbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbXK3KaP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 05:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXK3K34
+	id S932816AbXK3Kbq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 05:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXK3Kbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 05:29:56 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:29338 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbXK3K34 convert rfc822-to-8bit (ORCPT
+	Fri, 30 Nov 2007 05:31:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:6491 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXK3Kbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 05:29:56 -0500
+	Fri, 30 Nov 2007 05:31:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xT8Zt/Dh91to8uTb/yCH5P0hj+5B6SPn+QBZZTxat88fYSa1N+QeHVlWlbg17/hn4Xik9h/HJxFyQYnX+83VaWLTryOQ2+v/7Zpy1Xde4D3BxapUF6R2p1JBwJDJ6UsgaT8umD+ucL6t2wwZbs5o10kh76NaOdcXrVlkJCDfS78=
-Message-ID: <9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
-Date: Fri, 30 Nov 2007 11:29:55 +0100
-From: "=?ISO-8859-1?Q?Lo=EFc_Greni=E9?=" <loic.grenie@gmail.com>
-To: Ben.Crowhurst@stellatravel.co.uk
-Subject: Re: Kernel Development & Objective-C
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <474EAD18.6040408@stellatravel.co.uk>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=k/yU3TpNJfNvDTdGJWQqQ3hdWjKPVbv4MyAOgDM4rx0cGI1EM3VgX47EFauSbucN/rUyj4Yg9GUg67er2froRuOXL69WLFEZOhrXbNaox8lQmYYyVgMRDYZPMYObhFpcVXuQsvs/URvDElqwncQD/Ui0ZW56UTiaX53jo6AsFL4=
+Message-ID: <474FE681.9080101@gmail.com>
+Date: Fri, 30 Nov 2007 11:31:29 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
+To: Chris Rutherford <chrismrutherford@googlemail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ldd irq problem
+References: <40dfeece0711291447m2efa4f40i5c2c22a4273ecbc0@mail.gmail.com> <40dfeece0711300128s731b3227xaa0b5982193e4b12@mail.gmail.com>
+In-Reply-To: <40dfeece0711300128s731b3227xaa0b5982193e4b12@mail.gmail.com>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <474EAD18.6040408@stellatravel.co.uk>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/11/29, Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>:
-> Has Objective-C ever been considered for kernel development?
->
-> regards,
-> BPC
+On 11/30/2007 10:28 AM, Chris Rutherford wrote:
+> Helo lkml,
+> 
+> I'm trying to write a LDD but I have got a bug.  Any ideas what i
+> might be doing wrong?
+> 
+> ret = request_irq(12, handler, SA_INTERRUPT | SA_SHIRQ, "sha1
+> handler", DEVICE_NAME);
+> printk (KERN_INFO "req irq %d \n", ret);
+> enable_irq(12);
 
-   No, it has not. Any language that looks remotely like an OO language
-  has not ever been considered for (Linux) kernel development and for
-  most, if not all, other operating systems kernels.
+enable_irq is opposite of disable_irq(_nosync), you don't need to call it in
+probe function and in most cases you don't need it at all.
 
-    Various problems occur in an object oriented language. One of them
-  is garbage collection: it provokes asynchronous delays and, during
-  an interrupt or a system call for a real time task, the kernel cannot
-  wait. Another is memory overhead: all the magic that OO languages
-  provide take space in memory and Linux kernel is used in embedded
-  systems with very tight memory requirements.
-
-    Lots of people will think of better reasons why ObjC is not used...
-
-        Loïc Grenié
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
