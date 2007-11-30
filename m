@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935651AbXK3RNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935366AbXK3RNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935651AbXK3RNO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 12:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762295AbXK3RMz
+	id S935366AbXK3RNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 12:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935539AbXK3RNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 12:12:55 -0500
-Received: from alto.filmlight.ltd.uk ([217.40.27.25]:34941 "HELO
-	a.mx.filmlight.ltd.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758436AbXK3RMy (ORCPT
+	Fri, 30 Nov 2007 12:13:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50138 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934675AbXK3RNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 12:12:54 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Nov 2007 12:12:51 EST
-Message-ID: <475042FB.8020106@filmlight.ltd.uk>
-Date: Fri, 30 Nov 2007 17:06:03 +0000
-From: Roger Willcocks <roger@filmlight.ltd.uk>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: nfsd bug: create file with specific uid/gid
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 Nov 2007 12:13:06 -0500
+Subject: Re: [PATCH 9/9] MN10300: Fix MTD JEDEC probe so that the ASB2303
+	bootprom can be detected [2.6.24-rc3-mm2]
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Howells <dhowells@redhat.com>
+Cc: tharbaugh@plug.org, akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org, ben-mtd@fluff.org
+In-Reply-To: <28258.1196431276@redhat.com>
+References: <1196430400.13978.26.camel@pmac.infradead.org>
+	 <20071129225219.21536.58653.stgit@warthog.procyon.org.uk>
+	 <20071129225301.21536.91506.stgit@warthog.procyon.org.uk>
+	 <28258.1196431276@redhat.com>
+Content-Type: text/plain
+Date: Fri, 30 Nov 2007 17:12:56 +0000
+Message-Id: <1196442776.13978.43.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nfsd/vfs.c:nfsd_create (the v2 version of create) says:
+You made me look at datasheets which number address lines from A-1 to
+A18. My brain hurts. I hate you now.
 
-"Set file attributes. Mode has already been set and
-setting uid/gid works only for root"
+Please try git://git.infradead.org/~dwmw2/jedec-unlock.git 
 
-but it doesn't actually test for root-ness (which could happen if the 
-access is no-root-squash). There's similar code without the comment in 
-nfsd_create_v3. In both cases the test:
+I may have broken chip probing for a number of people now, but it ought
+to be progress.
 
-    if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID|ATTR_MODE)) != 0)
-
-should read:
-
-    if (current->fsuid != 0)
-        iap->ia_valid &= ~(ATTR_UID|ATTR_GID);
-    if ((iap->ia_valid &= ~ATTR_MODE) != 0)
-
-although arguably they should return an EPERM error if the uid/gid bits 
-are set, instead of silently ignoring them.
-
---
-Roger
-
+-- 
+dwmw2
 
