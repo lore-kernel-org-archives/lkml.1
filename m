@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935231AbXK3Q10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935406AbXK3Q2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935231AbXK3Q10 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 11:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbXK3Q1P
+	id S935406AbXK3Q2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 11:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933612AbXK3Q2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 11:27:15 -0500
-Received: from sacred.ru ([62.205.161.221]:58276 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761232AbXK3Q1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 11:27:14 -0500
-Message-ID: <475038F3.9010209@openvz.org>
-Date: Fri, 30 Nov 2007 19:23:15 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 30 Nov 2007 11:28:22 -0500
+Received: from ag-out-0708.google.com ([72.14.246.241]:52978 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932685AbXK3Q2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 11:28:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=IRf6Fqppr/a2C4PkdviM7q97uhlWg0dBYglfIOnO6RfuPTfS3hhNA5J5vToNKH0wljqU03CSqfX3mA+Pkb9MyDDFz8QdN2W1GhdQ0EONSaHFuYMgpkorOhfrHkcznDO1RHrQPqEXn98TuvWejB6eZHChcCQ+vN3ho5P2iJWLRtY=
+Date: Fri, 30 Nov 2007 16:30:11 +0000
+From: Jaime Velasco Juan <jsagarribay@gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+       Rui Santos <rsantos@grupopie.com>, Pete Zaitcev <zaitcev@redhat.com>,
+       linux-usb@vger.kernel.org, preining@logic.at,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: [PATCH] USB: option: Bind to the correct interface of the Huawei
+	E220
+Message-ID: <20071130163011.GA4223@singular.local>
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129150550.86453nubw8i5xi68@webmail.tugraz.at> <20071129185339.GA10445@singular.local> <200711300023.08999.oliver@neukum.org>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/4] net: Implement the per network namespace sysctl	infrastructure
-References: <4742C73C.3010904@openvz.org> <m1odddc5mf.fsf@ebiederm.dsl.xmission.com> <m1k5o1c5eh.fsf_-_@ebiederm.dsl.xmission.com> <m1fxypc5cd.fsf_-_@ebiederm.dsl.xmission.com> <m1bq9dc53d.fsf_-_@ebiederm.dsl.xmission.com> <m17ik1c50m.fsf_-_@ebiederm.dsl.xmission.com> <20071130161856.GA10588@sergelap.austin.ibm.com>
-In-Reply-To: <20071130161856.GA10588@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 30 Nov 2007 19:23:17 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711300023.08999.oliver@neukum.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
 
->> +					&namespaces, path, table);
-> 
-> Hey Eric,
-> 
-> the patches look nice.
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+Signed-off-by: Jaime Velasco Juan <jsagarribay@gmail.com>
+---
 
-Agree ;)
-
-> The hand-forcing of the passed-in net_ns into a copy of current->nsproxy
-> does make it seem like nsproxy may not be the best choice of what to
-> pass in.  Doesn't only net_sysctl_root->lookup() look at the argument?
-> 
-> But I assume you don't want to be more general than sending in a
-> nsproxy so as to dissuade abuse of this interface for needlessly complex
-> sysctl interfaces?
-> 
-> (Well I expect that'll become clear once the the patches using this
-> come out.)
-> 
-> Are you planning to use this infrastructure for the uts and ipc
-> sysctls as well?
-
-I have sent some patches concerning uts and ipc already.
-I'd appreciate any feedback on it :)
-
-> thanks,
-> -serge
-
-Thanks,
-Pavel
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index a18659e..352c94c 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -158,8 +158,8 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_NETWORK) },
+ 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
+-	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
+-	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1100) }, /* Novatel Merlin XS620/S640 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1110) }, /* Novatel Merlin S620 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1120) }, /* Novatel Merlin EX720 */
