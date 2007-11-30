@@ -1,57 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXK3GnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933424AbXK3GoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbXK3GnW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 01:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbXK3GnM
+	id S933424AbXK3GoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 01:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbXK3GoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 01:43:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57055 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932120AbXK3GnL (ORCPT
+	Fri, 30 Nov 2007 01:44:04 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51769 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754873AbXK3GoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 01:43:11 -0500
-Date: Thu, 29 Nov 2007 22:41:13 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] Sample kset/ktype/kobject implementation
-Message-ID: <20071130064113.GB14596@kroah.com>
-References: <20071129203900.GA27877@kroah.com> <Pine.LNX.4.44L0.0711291708080.5666-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0711291708080.5666-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 30 Nov 2007 01:44:02 -0500
+Message-Id: <20071130064305.459255715@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 29 Nov 2007 22:43:05 -0800
+From: Christoph Lameter <clameter@sgi.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 0/3] Per cpu relocation to ZERO and x86_32 percpu ops on x86_64
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 05:11:35PM -0500, Alan Stern wrote:
-> On Thu, 29 Nov 2007, Greg KH wrote:
-> 
-> > > > > kobject_put(foo) is needed since it gets you through kobject_cleanup()
-> > > > > where the name can be freed.
-> > > > 
-> > > > No, kobject_register() should have handled that for us, right?
-> > > 
-> > > kobject_register() doesn't do a kobject_put() if kobject_add() failed.
-> > 
-> > Crap.  If I can't get this code right in an example, the API is messed
-> > up.  Time to take Kay seriously and start to revamp the basic kobject
-> > api :)
-> 
-> The rule is simple enough.  After calling kobject_register() you should 
-> always use kobject_put() -- even if kobject_register() failed.
+This patchset allows the use of x86_32 percpu ops on x86_64 while maintaining
+%gs pointing to the pda. It does that by moving the x86_64 pda into
+the percpu area (thereby pointing %gs at the per cpu area) and then
+relocating the x86_64 per cpu variables to start at 0.
 
-Yes.
+Patch applies on top of the per cpu cleanup patches V2.
+See http://marc.info/?l=linux-kernel&m=119628478316525&w=2
 
-> In fact, after calling kobject_init() you should use kobject_put().  
-> The first rule follows from this one, since kobject_register() calls 
-> kobject_init() internally.
+Ultimately I think we can make the per cpu accessors arch independent
+(see the RFC at http://marc.info/?l=linux-kernel&m=119552126330405&w=2).
+There is a performance benefit from using these in core code.
 
-Yes, that makes sense, time to write it all down :)
-
-thanks,
-
-greg k-h
+-- 
