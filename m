@@ -1,107 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764222AbXK3EeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbXK3Ehn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764222AbXK3EeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 23:34:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXK3Edx
+	id S1764271AbXK3Ehn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 23:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXK3Eha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 23:33:53 -0500
-Received: from mga05.intel.com ([192.55.52.89]:41405 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754865AbXK3Edw (ORCPT
+	Thu, 29 Nov 2007 23:37:30 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:30959 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754873AbXK3Eh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 23:33:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,231,1194249600"; 
-   d="scan'208";a="408727505"
-Subject: Re: sched_yield: delete sysctl_sched_compat_yield
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200711301429.15664.nickpiggin@yahoo.com.au>
-References: <1196155985.25646.31.camel@ymzhang>
-	 <200711301346.22573.nickpiggin@yahoo.com.au>
-	 <1196392527.25646.65.camel@ymzhang>
-	 <200711301429.15664.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 30 Nov 2007 12:32:09 +0800
-Message-Id: <1196397129.25646.78.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Thu, 29 Nov 2007 23:37:29 -0500
+Message-ID: <1618816c0711292037w34bd383av6cf32bfbd8d45707@mail.gmail.com>
+Date: Thu, 29 Nov 2007 21:37:28 -0700
+From: "Raymano Garibaldi" <raymano@faunos.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] [BUG] USB_PERSIST
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Denys Vlasenko" <vda.linux@googlemail.com>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "USB development list" <linux-usb-devel@lists.sourceforge.net>,
+       kirk@faunos.com
+In-Reply-To: <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1618816c0711290353h3c0e4192we5909725d1aff3e9@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0711291102290.4516-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-30 at 14:29 +1100, Nick Piggin wrote:
-> On Friday 30 November 2007 14:15, Zhang, Yanmin wrote:
-> > On Fri, 2007-11-30 at 13:46 +1100, Nick Piggin wrote:
-> > > On Wednesday 28 November 2007 09:57, Arjan van de Ven wrote:
-> 
-> > > > sounds like a bad idea; volanomark (well, technically the jvm behind
-> > > > it) is abusing sched_yield() by assuming it does something it really
-> > > > doesn't do, and as it happens some of the earlier 2.6 schedulers
-> > > > accidentally happened to behave in a way that was nice for this
-> > > > benchmark.
-> > >
-> > > OK, why is this still happening? Haven't we been asking JVMs to use
-> > > futexes or posix locking for years and years now? Are there any sane
-> > > jvms that _don't_ use yield?
-> >
-> > I think it's an issue of volanomark (a kind of java application) instead of
-> > JVM.
-> 
-> volanomark itself and not the jvm is calling sched_yield()? Do we have
-> any non-toy threaded java apps? (what's JAVA in the kernel-perf tests?)
-I run lots of well-known benchmarks and volanoMark is the one who gets the largest
-impact from sched_yield.
+On 11/29/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 29 Nov 2007, Raymano Garibaldi wrote:
+>
+> > The feature does work as long as the device remains plugged in and
+> > that is what I have said in my previous postings too. What I'm saying
+> > that should work and worked under 2.6.21 and is not working currently
+> > is the ability to unplug and plug back in the device while the
+> > computer is suspended before resuming without losing the mount.
+>
+> Okay, guess I misunderstood what you wrote before.
+>
+> The patch below for 2.6.23 should do what you want (and more besides).
+> It forces the USB Persist feature to apply to all persist-enabled
+> devices, whether they were unplugged or not.
+>
+> There's no chance of this getting accepted into the official kernel in
+> such a simple form, but at least it will allow you to do what you want.
+>
+> Alan Stern
+>
+>
+> --- 2.6.23/drivers/usb/core/driver.c1   2007-11-29 10:57:36.000000000 -0500
+> +++ 2.6.23/drivers/usb/core/driver.c    2007-11-29 11:01:44.000000000 -0500
+> @@ -1550,6 +1550,9 @@
+>                 if (!(udev->reset_resume && udev->do_remote_wakeup))
+>                         return -EPERM;
+>         }
+> +
+> +       /* Force all system resumes to be reset-resumes */
+> +       udev->reset_resume = 1;
+>         return usb_external_resume_device(udev);
+>  }
+>
+>
+>
 
-As for real-applications which use sched_yield, mostly, they are not open sources.
-Yesterday, I got to know someone was using sched_yield in his network C programs,
-but he didn't want to share the sources with me.
+Alan,
 
-> 
-> 
-> > > > Todays kernel has a different behavior somewhat (and before people
-> > > > scream "regression"; sched_yield() behavior isn't really specified and
-> > > > doesn't make any sense at all, whatever you get is what you get....
-> > > > it's pretty much an insane defacto behavior that is incredibly tied to
-> > > > which decisions the scheduler makes how, and no app can depend on that
-> > >
-> > > It is a performance regression. Is there any reason *not* to use the
-> > > "compat" yield by default?
-> >
-> > There is no, so I suggest to set sched_compat_yield=1 by default.
-> > If sched_compat_yield=0, kernel almost does nothing but returns. When
-> > sched_compat_yield=1, it is closer to the meaning of sched_yield man page.
-> 
-> sched_yield() is really only defined for posix realtime scheduling
-> AFAIK, which talks about priority lists. 
-> 
-> SCHED_OTHER is defined to be a single priority, below the rest of the
-> realtime priorities. So at first you *might* say that the process
-> should then be made to run only after all other SCHED_OTHER processes,
-> however there is no such ordering requirement for SCHED_OTHER
-> scheduling. The SCHED_OTHER scheduler can run any task at any time.
-> 
-> That said, I think people would *expect* that call be much closer to
-> the compat behaviour than the current default. And that's definitely
-> what Linux has done in the past. So there really does need to be a
-> good reason to change it like this IMO.
-That's indeed what I am thinking.
+Thank you! Thank you! Thank you!
 
-I am running many testing(SPECjbb/SPECjbb2005/cpu2000/iozone/dbench/tbench...) to 
-see if there is any regression if sched_compat_yield=1. I think there is no
-regression and the testing is just to double-check.
+Who'd have thought such a simple patch could make someone so happy?
 
-> 
-> 
-> > > As you say, for SCHED_OTHER tasks, yield
-> > > can do almost anything. We may as well do something that isn't a
-> > > regression...
-> >
-> > I just found SCHED_OTHER in man sched_setscheduler. Is it SCHED_NORMAL in
-> > the latest kernel?
-> 
-> Yes, SCHED_NORMAL is SCHED_OTHER. Don't know why it got renamed...
-Thanks.
+That did the trick. I just tried it and it works beautifully whether
+the device remains plugged in during suspend or if it's unplugged and
+plugged back in during suspend and before resume.
+
+Now if this could only become the default behavior ;-)
+
+Thanks again,
+Raymano G.
