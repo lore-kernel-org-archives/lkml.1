@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbXK3NDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934546AbXK3NEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758446AbXK3NDo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXK3ND2
+	id S934546AbXK3NEG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbXK3NDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:03:28 -0500
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:39749 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757333AbXK3ND0 (ORCPT
+	Fri, 30 Nov 2007 08:03:44 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:50178 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934773AbXK3NDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:03:26 -0500
-Subject: 2.6.22.14 oops msg with commvault galaxy ?
-From: Vincent Fortier <vincent.fortier1@ec.gc.ca>
-Reply-To: vincent.fortier1@ec.gc.ca
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Environnement Canada
-Date: Fri, 30 Nov 2007 13:02:54 +0000
-Message-Id: <1196427774.10204.4.camel@kayak.wul.qc.ec.gc.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-X-OriginalArrivalTime: 30 Nov 2007 13:02:54.0214 (UTC) FILETIME=[520EFA60:01C83351]
+	Fri, 30 Nov 2007 08:03:43 -0500
+Date: Fri, 30 Nov 2007 08:03:36 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: David Sterba <dsterba@suse.cz>
+cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       akpm@linux-foundation.org, jeff@garzik.org, jkosina@suse.cz,
+       jslaby@suse.cz, stephen@symmetric.co.nz, benm@symmetric.co.nz
+Subject: Re: [PATCH] ipwireless_cs driver for 4G PC Card
+In-Reply-To: <20071130125555.GA10977@ds.suse.cz>
+Message-ID: <alpine.LFD.0.9999.0711300759200.29812@localhost.localdomain>
+References: <20071130125555.GA10977@ds.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, 30 Nov 2007, David Sterba wrote:
 
-I'm using a 2.6.22.14 + CFS v24 and I got theses errors when starting up
-my commvault galaxy client...  Do anybody know what this could mean?
+...
+>  drivers/char/pcmcia/Kconfig                        |    8
+>  drivers/char/pcmcia/Makefile                       |    4
+>  drivers/char/pcmcia/ipwireless_cs_hardware.c       | 1728 +++++++++++++++++++++
+>  drivers/char/pcmcia/ipwireless_cs_hardware.h       |   63
+>  drivers/char/pcmcia/ipwireless_cs_main.c           |  479 +++++
+>  drivers/char/pcmcia/ipwireless_cs_main.h           |   70
+>  drivers/char/pcmcia/ipwireless_cs_network.c        |  496 ++++++
+>  drivers/char/pcmcia/ipwireless_cs_network.h        |   54
+>  drivers/char/pcmcia/ipwireless_cs_setup_protocol.h |  108 +
+>  drivers/char/pcmcia/ipwireless_cs_tty.c            |  779 +++++++++
+>  drivers/char/pcmcia/ipwireless_cs_tty.h            |   48
+>  12 files changed, 3845 insertions(+)
 
-Message from syslogd@printemps at Fri Nov 30 12:54:57 2007 ...
-printemps kernel: [750078.538268] Oops: 0000 [#1]
-printemps kernel: [750078.538284] SMP
-printemps kernel: [750078.538528] CPU:    2
-printemps kernel: [750078.538529] EIP:    0060:[<c01d915a>]    Not
-tainted VLI
-printemps kernel: [750078.538530] EFLAGS: 00010297
-(2.6.22.14-cfs-etch-686-envcan #1)
-printemps kernel: [750078.538580] EIP is at vsnprintf+0x2af/0x48c
-printemps kernel: [750078.538597] eax: 80000000   ebx: ffffffff   ecx:
-80000000   edx: fffffffe
-printemps kernel: [750078.538618] esi: e4a85017   edi: cf07feac   ebp:
-ffffffff   esp: cf07fe4c
-printemps kernel: [750078.538637] ds: 007b   es: 007b   fs: 00d8  gs:
-0033  ss: 0068
-printemps kernel: [750078.538656] Process clBackup (pid: 29277,
-ti=cf07e000 task=f6d9f8c0 task.ti=cf07e000)
-printemps kernel: [750078.538676] Stack: e4834000 00001000 c033b638
-f89e056c c02360f1 e4834000 1b57afe8 e4a85017
-printemps kernel: [750078.538721]        00ef2608 00000000 ffffffff
-00000000 ffffffff c0337eab 00000003 00000017
-printemps kernel: [750078.538767]        c037a340 e4834000 c01d93b8
-cf07feac cf07feac c023566c e4a85017 c0337eaa
-printemps kernel: [750078.538810] Call Trace:
-printemps kernel: [750078.538839]  [<c02360f1>] dev_uevent+0x189/0x1e0
-printemps kernel: [750078.538864]  [<c01d93b8>] sprintf+0x20/0x23
-printemps kernel: [750078.538885]  [<c023566c>] show_uevent+0xad/0xd5
-printemps kernel: [750078.538907]  [<c01571d1>] get_page_from_freelist
-+0x273/0x30a
-printemps kernel: [750078.538933]  [<c01323fc>] group_send_sig_info
-+0x12/0x56
-printemps kernel: [750078.538956]  [<c01572ba>] __alloc_pages+0x52/0x286
-printemps kernel: [750078.538984]  [<c02355bf>] show_uevent+0x0/0xd5
-printemps kernel: [750078.539006]  [<c023517e>] dev_attr_show+0x15/0x18
-printemps kernel: [750078.539027]  [<c01a8e9f>] sysfs_read_file
-+0x87/0xd8
-printemps kernel: [750078.539048]  [<c01880bc>] sys_getxattr+0x46/0x4e
-printemps kernel: [750078.539071]  [<c01a8e18>] sysfs_read_file+0x0/0xd8
-printemps kernel: [750078.539092]  [<c0171fb7>] vfs_read+0xa6/0x128
-printemps kernel: [750078.539115]  [<c01723b3>] sys_read+0x41/0x67
-printemps kernel: [750078.539137]  [<c0103d8a>] syscall_call+0x7/0xb
-printemps kernel: [750078.539162]  =======================
-printemps kernel: [750078.539177] Code: 74 24 28 73 03 c6 06 20 4d 46 85
-ed 7f f1 e9 b9 00 00 00 8b 0f b8 39 0a 33 c0 8b 54 24 30 81 f9 ff 0f 00
-00 0f 46 c8 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 f6
-44 24 2c 10 89 c3
-printemps kernel: [750078.539346] EIP: [<c01d915a>] vsnprintf
-+0x2af/0x48c SS:ESP 0068:cf07fe4c
+might it not make more sense to put all of that into a new
+subdirectory, say, /drivers/char/pcmcia/ipwireless_cs?  that way, it's
+more modular and it will keep that higher-level directory from
+potentially getting cluttered with even more drivers.  and it would
+let you drop the pointless "ipwireless_cs_" prefix from all of those
+files as well.
+
+rday
 
 
-thnx very much!
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-- vin
-
+http://crashcourse.ca
+========================================================================
