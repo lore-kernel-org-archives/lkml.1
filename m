@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761883AbXK3JQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbXK3JQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761883AbXK3JQE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 04:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXK3JPt
+	id S1755648AbXK3JQY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 04:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757674AbXK3JPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 04:15:49 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:47446 "EHLO twin.jikos.cz"
+	Fri, 30 Nov 2007 04:15:55 -0500
+Received: from mail.univits.se ([212.247.11.167]:43949 "EHLO mail.univits.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752943AbXK3JPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 04:15:48 -0500
-Date: Fri, 30 Nov 2007 10:15:33 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Dave Young <hidave.darkstar@gmail.com>
-cc: Marcel Holtmann <marcel@holtmann.org>, bgsmith@bendcable.com,
-       BlueZ users <bluez-users@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bluez-users] Lost connections - mouse and keyboard
-In-Reply-To: <a8e1da0711291706h68d1d19ajc3819f8836cf51e8@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711301011330.19853@twin.jikos.cz>
-References: <1196009038.14897.6.camel@pico> <1196056187.4217.54.camel@aeonflux>
-  <1196305426.23029.12.camel@pico>  <a8e1da0711290006x4bd3cc45x1ae8dcaa9c0ab462@mail.gmail.com>
-  <6EE8D368-C303-400A-B4FE-811228391639@holtmann.org> 
- <Pine.LNX.4.64.0711292141220.19853@twin.jikos.cz>
- <a8e1da0711291706h68d1d19ajc3819f8836cf51e8@mail.gmail.com>
+	id S1756427AbXK3JPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 04:15:54 -0500
+Message-ID: <474FD4C1.4030906@univits.com>
+Date: Fri, 30 Nov 2007 10:15:45 +0100
+From: =?UTF-8?B?TWlrYWVsIFN0w6VsZGFs?= <mikael.staldal@univits.com>
+Organization: Univits
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Re: Possibility to adjust the only-root-can-bind-to-port-under-1024
+   limit
+References: <4742B3A3.2050103@univits.com> <20071120155303.76f234ec@astralstorm.puszkin.org> <474A975A.8020302@univits.com> <474C9D6A.4000505@cfl.rr.com>
+In-Reply-To: <474C9D6A.4000505@cfl.rr.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, Dave Young wrote:
+Phillip Susi skrev:
+> Mikael Ståldal wrote:
+>> And how do you protect ports >1024 from any user binding to them?
+>
+> You prevent users from binding to those ports by only giving 
+> applications that need to the capability, and only letting the users 
+> that need to have execute permission to those programs.
 
-> > This particular warning means, that someone (usually indeed hid2hci) 
-> > passed usage through hiddev that was out of bounds, with respect to 
-> > the device's report descriptor.
-> Is this behaviour the normal one? IMHO, userspace program should not
-> cause kernel warnings like this no mater what input from users.
+I think you misunderstood my question.
 
-It has been on my todo list to convert that WARN_ON() to something that 
-won't scare users that much, especially the stacktrace shouldn't certainly 
-be there. I will do it.
+How do you protect ports greater than 1024 from any user binding to them? E.g. port 1080.
 
--- 
-Jiri Kosina
+/Mikael
+
