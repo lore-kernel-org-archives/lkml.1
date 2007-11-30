@@ -1,90 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbXK3Tyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbXK3T4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbXK3Tyo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbXK3Tyg
+	id S1755440AbXK3T4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbXK3T43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:54:36 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:48344 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbXK3Tyf (ORCPT
+	Fri, 30 Nov 2007 14:56:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60234 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752052AbXK3T42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:54:35 -0500
-Message-ID: <47506A4F.6010109@keyaccess.nl>
-Date: Fri, 30 Nov 2007 20:53:51 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 30 Nov 2007 14:56:28 -0500
+Date: Fri, 30 Nov 2007 11:53:00 -0800
+From: Greg KH <greg@kroah.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
+	functions
+Message-ID: <20071130195300.GB4659@kroah.com>
+References: <20071130195150.GA4659@kroah.com>
 MIME-Version: 1.0
-To: trenn@suse.de
-CC: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       "yakui.zhao" <yakui.zhao@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@osdl.org>,
-       ALSA devel <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sound/isa: kill pnp_resource_change.
-References: <474E1189.9030701@keyaccess.nl> <s5hsl2pf8lf.wl%tiwai@suse.de>	 <Pine.LNX.4.61.0711301050540.10769@tm8103.perex-int.cz>	 <s5hy7cgdmcx.wl%tiwai@suse.de>	 <Pine.LNX.4.61.0711301317240.10769@tm8103.perex-int.cz>	 <s5htzn3ewmx.wl%tiwai@suse.de>	 <Pine.LNX.4.61.0711301428241.10769@tm8103.perex-int.cz>	 <4750461E.2040104@keyaccess.nl> <1196444387.23251.332.camel@queen.suse.de>
-In-Reply-To: <1196444387.23251.332.camel@queen.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071130195150.GA4659@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-11-07 18:39, Thomas Renninger wrote:
+This is what the kobject_init function is going to become.  Add it to
+the kernel and then we can convert over the current kobject_init() users
+before renaming it.
 
-> On Fri, 2007-11-30 at 18:19 +0100, Rene Herman wrote:
+Also add a kobject_init_and_add function which bundles up what a lot of
+the current callers want to do all at once, and it properly handles the
+memory usages, unlike kobject_register();
 
->> Thomas Renninger is making some haste with the deprecation of the removed 
->> functions by the way -- I just saw a patch of his entering my mailbox where 
->> he says he'd in fact like them deprecated in 2.6.24 already. The ALSA 
->> removal would not seem likely to be scheduled to go to 2.6.24 yet, so I 
->> guess that won't do?
->>
->> I have no opinion on the schedule -- but Thomas, if you do, I guess you'd 
->> need to convince Jaroslav to withstand The Wrath Of Linus and ask him to 
->> push it. We can't have it deprecated (on the "spew warnings" level) with 
->> ALSA still using them in 2.6.24.
-> 
-> Why not?
-> The intend of __deprecated is to throw some compile warnings?
-> In this case it would warn on the official 2.6.24 on functions which are
-> known to be reverted already for the next cycle (this should not hurt?),
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-It does. A clean build is not about esthetics but about quality. Warnings 
-that are to be ignored hide warnings that are not to be, not just in the 
-sense of the output but due to humans actively tuning out the noise after 
-just a few. I'd hate for sound/isa to add to the noise.
+---
+ include/linux/kobject.h |    8 ++++
+ lib/kobject.c           |   91 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+)
 
-> it's more for drivers building against kernel headers getting noticed as
-> soon as possible...
-> 
-> If this is not added to 2.6.24, the funcs should live there for another
-> kernel cycle just to not print some irrelevant warnings at compile time
-> things are slowed down...
-
-This makes sense if someone told you that the deprecation period for 
-exported symbols is one kernel cycle but who did?
-
-Anyways, two things:
-
-The number of out of tree users of these symbols is very close to zero and 
-quite possibly if not likely _at_ zero after I've cleaned up the couple of 
-half-hearted ALSA ISAPnP drivers that I keep in a few local branches here.
-
-As such, and given that removing them apparently clears the path for a long 
-overdue and welcome PnP cleanup, simply yanking them soon would get my ack.
-
-Second, as said, speak to Jaroslav as well I guess.
-
-> This is also in vanilla and lives there for some time?:
-> kernel/power/pm.c:205: warning: ‘pm_register’ is deprecated (declared at kernel/power/pm.c:64)
-> kernel/power/pm.c:205: warning: ‘pm_register’ is deprecated (declared at kernel/power/pm.c:64)
-> kernel/power/pm.c:206: warning: ‘pm_send_all’ is deprecated (declared at kernel/power/pm.c:180)
-> kernel/power/pm.c:206: warning: ‘pm_send_all’ is deprecated (declared at kernel/power/pm.c:180)
-
-Exactly, and serves as a perfect reminder of why noone should ever be 
-allowed to deprecate anything until after removing all in tree users.
-
-Rene.
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -79,6 +79,14 @@ static inline const char * kobject_name(
+ }
+ 
+ extern void kobject_init(struct kobject *);
++extern int __must_check kobject_init_ng(struct kobject *kobj,
++					struct kobj_type *ktype,
++					struct kobject *parent,
++					const char *fmt, ...);
++extern int __must_check kobject_init_and_add(struct kobject *kobj,
++					     struct kobj_type *ktype,
++					     struct kobject *parent,
++					     const char *fmt, ...);
+ extern void kobject_cleanup(struct kobject *);
+ 
+ extern int __must_check kobject_add(struct kobject *);
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -347,6 +347,97 @@ int kobject_set_name(struct kobject *kob
+ }
+ EXPORT_SYMBOL(kobject_set_name);
+ 
++/*
++ * kobject_init_varg - the main kobject init function
++ *
++ * The kobject is initialized here with the needed fields.  After this
++ * function returns successfully, the kobject can not be freed directly,
++ * kobject_put must be called in order to clean it up properly.  If this
++ * function returns an error, the memory can be safely freed directly.
++ */
++static int kobject_init_varg(struct kobject *kobj, struct kobj_type *ktype,
++			     struct kobject *parent, const char *fmt,
++			     va_list vargs)
++{
++	va_list aq;
++	int retval;
++
++	if ((!kobj) || (!ktype))
++		return -EINVAL;
++
++	WARN_ON(atomic_read(&kobj->kref.refcount));
++	kref_init(&kobj->kref);
++	INIT_LIST_HEAD(&kobj->entry);
++	kobj->ktype = ktype;
++	kobj->parent = parent;
++
++	va_copy(aq, vargs);
++	retval = kobject_set_name_vargs(kobj, fmt, aq);
++	va_end(aq);
++
++	return retval;
++}
++
++/**
++ * kobject_init_ng - initialize a kobject structure
++ * @kobj: pointer to the kobject to initialize
++ * @ktype: pointer to the ktype for this kobject.
++ * @parent: pointer to the parent of this kobject.
++ * @fmt: the name of the kobject.
++ *
++ * This function will properly initialize a kobject such that it can then
++ * be passed to the kobject_add() call.
++ *
++ * If the function returns an error, the memory allocated by the kobject
++ * can be safely freed, no other functions need to be called.
++ */
++int kobject_init_ng(struct kobject *kobj, struct kobj_type *ktype,
++		    struct kobject *parent, const char *fmt, ...)
++{
++	va_list args;
++	int retval;
++
++	va_start(args, fmt);
++	retval = kobject_init_varg(kobj, ktype, parent, fmt, args);
++	va_end(args);
++
++	return retval;
++}
++EXPORT_SYMBOL(kobject_init_ng);
++
++/**
++ * kobject_init_and_add - initialize a kobject structure and add it to the kobject hierarchy
++ * @kobj: pointer to the kobject to initialize
++ * @ktype: pointer to the ktype for this kobject.
++ * @parent: pointer to the parent of this kobject.
++ * @fmt: the name of the kobject.
++ *
++ * This function will properly initialize a kobject and then call
++ * kobject_add().
++ *
++ * If the function returns an error, the memory allocated by the kobject
++ * can be safely freed, no other functions need to be called.
++ */
++int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
++			 struct kobject *parent, const char *fmt, ...)
++{
++	va_list args;
++	int retval;
++
++	va_start(args, fmt);
++	retval = kobject_init_varg(kobj, ktype, parent, fmt, args);
++	va_end(args);
++	if (retval)
++		return retval;
++
++	retval = kobject_add(kobj);
++	if (retval)
++		kobject_put(kobj);
++
++	return retval;
++}
++EXPORT_SYMBOL(kobject_init_and_add);
++
+ /**
+  *	kobject_rename - change the name of an object
+  *	@kobj:	object in question.
