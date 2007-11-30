@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbXK3TGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764086AbXK3TJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764058AbXK3TGc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760018AbXK3TGW
+	id S1764086AbXK3TJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbXK3TJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:06:22 -0500
-Received: from rtr.ca ([76.10.145.34]:4082 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756062AbXK3TGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:06:21 -0500
-Message-ID: <47505F2B.2090109@rtr.ca>
-Date: Fri, 30 Nov 2007 14:06:19 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 30 Nov 2007 14:09:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57983 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750726AbXK3TJP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 14:09:15 -0500
+Message-ID: <47505FC6.9030208@zytor.com>
+Date: Fri, 30 Nov 2007 11:08:54 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Kernel <linux-acpi@vger.kernel.org>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] 2.6.24: restore missing sysfs max_cstate attr
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: 2.6.23: does it supposed to work on an i486?
+References: <47504923.9030309@msgid.tls.msk.ru> <4750519C.2000907@zytor.com> <475059D6.2080900@msgid.tls.msk.ru>
+In-Reply-To: <475059D6.2080900@msgid.tls.msk.ru>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len, is there any good reason why max_cstate was made invisible in 2.6.24,
-breaking my userspace scripts that access it?
+Michael Tokarev wrote:
+>> It looks like 2.6.23.9 is missing checkin
+>> 7ed192906a2144ebc8ca2925a85d27b9c5355668 from Linus' tree (attached),
+>> which is necessary to work on 386 and 486.
+> 
+> Well, I applied the patch (in 2.6.23 it's
+>  arch/i386/boot/pmjump.S,
+> not
+>  arch/x86/boot/pmjump.S,
+> but that's minor) - still the same behavior, it still reboots
+> instantly right when bootloader gave control to the kernel.
+> So it must be something else.. ;)
 
-Here's a patch to fix the regression from 2.6.23:
+Well, it's a good bet it's croaking somewhere in the setup code 
+(arch/{i386,x86}/boot).  Putting debugging statements there might help.
 
-Restore visibility of /sys/module/processor/parameters/max_cstate 
-for compatibility with kernels prior to 2.6.24.
-
-I have scripts here that rely upon it.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
----
-
-Patch is against 2.6.24-rc3-git5.
-
---- linux/drivers/acpi/processor_idle.c.orig	2007-11-30 13:35:20.000000000 -0500
-+++ linux/drivers/acpi/processor_idle.c	2007-11-30 13:35:31.000000000 -0500
-@@ -76,7 +76,7 @@
- #define PM_TIMER_TICKS_TO_US(p)		(((p) * 1000)/(PM_TIMER_FREQUENCY/1000))
- 
- static unsigned int max_cstate __read_mostly = ACPI_PROCESSOR_MAX_POWER;
--module_param(max_cstate, uint, 0000);
-+module_param(max_cstate, uint, 0644);
- static unsigned int nocst __read_mostly;
- module_param(nocst, uint, 0000);
- 
+	-hpa
