@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934660AbXK3LlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933995AbXK3Lu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934660AbXK3LlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 06:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbXK3Lk7
+	id S933995AbXK3Lu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 06:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759195AbXK3Luo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 06:40:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47435 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932493AbXK3Lk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 06:40:58 -0500
-Date: Fri, 30 Nov 2007 12:40:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86/mm 05/11] x86 ptrace getreg/putreg merge
-Message-ID: <20071130114038.GA21520@elte.hu>
-References: <20071129115711.9FC8526F8E7@magilla.localdomain> <20071129115954.12D3126F8E7@magilla.localdomain> <20071129092715.2674bfe1.akpm@linux-foundation.org> <20071129222842.9613826F8E7@magilla.localdomain>
+	Fri, 30 Nov 2007 06:50:44 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:6724 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759074AbXK3Lun (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 06:50:43 -0500
+Date: Fri, 30 Nov 2007 12:50:15 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jaswinder Singh <jaswinderlinux@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Glauber <jan.glauber@de.ibm.com>
+Subject: Re: [PATCH] Re: [BUG] 2.6.24-rc3 x86 make depends on s390 arch
+Message-ID: <20071130115015.GC11682@osiris.boeblingen.de.ibm.com>
+References: <3f9a31f40711300014y576e83dldfafa340eec257f0@mail.gmail.com> <3f9a31f40711300303l3260c3e7s4c35884f5e1fa6e1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071129222842.9613826F8E7@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <3f9a31f40711300303l3260c3e7s4c35884f5e1fa6e1@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Roland McGrath <roland@redhat.com> wrote:
-
-> > This didn't need to be implemented as a macro hence it shouldn't have been.
+On Fri, Nov 30, 2007 at 04:33:19PM +0530, Jaswinder Singh wrote:
+> This patch fixes s390 dependency for x86
 > 
-> Ok.
-> 
-> 
-> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-> index b3433e1..0000000 100644  
-> --- a/arch/x86/kernel/ptrace.c
-> +++ b/arch/x86/kernel/ptrace.c
+> Signed-off-by: Jaswinder Singh <jaswinderlinux@gmail.com>
 
-i have added this to x86.git.
+Deleting random parts of the kernel tree is actually not
+supported.
+ 
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index 1330061..b699ed5 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -537,4 +537,6 @@ source "security/Kconfig"
+> 
+>  source "crypto/Kconfig"
+> 
+> +source "arch/s390/crypto/Kconfig"
+> +
 
-	Ingo
+With this there's no dependency on CRYPTO_HW anymore.
+
+> +#ifdef CONFIG_S390
+>  #include "../arch/s390/appldata/appldata.h"
+> +#endif
+
+This include can go away.
+
+Since this pops up again and again we'll come up with a patch to fix this.
