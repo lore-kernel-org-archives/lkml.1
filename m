@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934260AbXK3NC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXK3NDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934260AbXK3NC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbXK3NCS
+	id S932468AbXK3NDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXK3NDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:02:18 -0500
-Received: from lazybastard.de ([212.112.238.170]:53563 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757924AbXK3NCR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:02:17 -0500
-Date: Fri, 30 Nov 2007 13:56:28 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
-       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Message-ID: <20071130125628.GA30773@lazybastard.org>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com> <20071113031553.3c7b5c16.akpm@linux-foundation.org> <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20071115193612.GA751@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Fri, 30 Nov 2007 08:03:00 -0500
+Received: from sacred.ru ([62.205.161.221]:45602 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758028AbXK3NC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:02:59 -0500
+Message-ID: <475009FA.20409@openvz.org>
+Date: Fri, 30 Nov 2007 16:02:50 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef CONFIG_SYSCTL
+References: <475008F5.3000506@openvz.org>
+In-Reply-To: <475008F5.3000506@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 30 Nov 2007 16:02:48 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 November 2007 20:36:12 +0100, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > pick up the latest latency tracer patch from:
-> 
-> sorry, wrong URLs, the correct links are:
-> 
->    http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.24-rc2-git5-combo.patch
->    http://redhat.com/~mingo/latency-tracing-patches/trace-cmd.c
+This includes the tables themselves and the call to the
+register_sysctl_table(). Since this call is done from the __init
+call, I hope this is OK to keep the #ifdef inside the function, 
+rather than making proper helpers outside it.
 
-Don't seem to work with plain 2.6.23:
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-kernel/sched.c:3384: warning: ‘struct prio_array’ declared inside parameter list
-kernel/sched.c:3384: warning: its scope is only this definition or declaration, which is probably not what you want
-kernel/sched.c: In function ‘trace_array’:
-kernel/sched.c:3391: error: dereferencing pointer to incomplete type
-kernel/sched.c:3393: error: dereferencing pointer to incomplete type
-kernel/sched.c:3393: error: dereferencing pointer to incomplete type
-kernel/sched.c:3396: error: dereferencing pointer to incomplete type
-kernel/sched.c:3396: error: dereferencing pointer to incomplete type
-kernel/sched.c: In function ‘trace_all_runnable_tasks’:
-kernel/sched.c:3407: error: ‘struct rq’ has no member named ‘active’
-make[1]: *** [kernel/sched.o] Error 1
+---
 
-And I cannot find a definition of struct prio_array in current git
-either.  Is another patch needed?
-
-Jörn
-
+diff --git a/fs/dquot.c b/fs/dquot.c
+index 50e7c2a..efee14d 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -1821,6 +1821,7 @@ struct quotactl_ops vfs_quotactl_ops = {
+ 	.set_dqblk	= vfs_set_dqblk
+ };
+ 
++#ifdef CONFIG_SYSCTL
+ static ctl_table fs_dqstats_table[] = {
+ 	{
+ 		.ctl_name	= FS_DQ_LOOKUPS,
+@@ -1918,6 +1919,7 @@ static ctl_table sys_table[] = {
+ 	},
+ 	{ .ctl_name = 0 },
+ };
++#endif
+ 
+ static int __init dquot_init(void)
+ {
+@@ -1926,7 +1928,9 @@ static int __init dquot_init(void)
+ 
+ 	printk(KERN_NOTICE "VFS: Disk quotas %s\n", __DQUOT_VERSION__);
+ 
++#ifdef CONFIG_SYSCTL
+ 	register_sysctl_table(sys_table);
++#endif
+ 
+ 	dquot_cachep = kmem_cache_create("dquot",
+ 			sizeof(struct dquot), sizeof(unsigned long) * 4,
 -- 
-Time? What's that? Time is only worth what you do with it.
--- Theo de Raadt
+1.5.3.4
+
+
