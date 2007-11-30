@@ -1,112 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934718AbXK3DON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764122AbXK3DQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934718AbXK3DON (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 22:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbXK3DNx
+	id S1764122AbXK3DQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 22:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933818AbXK3DQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 22:13:53 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42930 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933501AbXK3DNv (ORCPT
+	Thu, 29 Nov 2007 22:16:44 -0500
+Received: from mga05.intel.com ([192.55.52.89]:13019 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932291AbXK3DQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 22:13:51 -0500
-Message-ID: <474F7FDF.3000506@linux.vnet.ibm.com>
-Date: Fri, 30 Nov 2007 08:43:35 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
+	Thu, 29 Nov 2007 22:16:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,231,1194249600"; 
+   d="scan'208";a="408661938"
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Linux Memory Management List <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in 2.6.25
-References: <474ED005.7060300@linux.vnet.ibm.com> <200711301311.48291.nickpiggin@yahoo.com.au>
-In-Reply-To: <200711301311.48291.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200711301346.22573.nickpiggin@yahoo.com.au>
+References: <1196155985.25646.31.camel@ymzhang>
+	 <20071127145747.5f4d0aca@laptopd505.fenrus.org>
+	 <200711301346.22573.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 30 Nov 2007 11:15:27 +0800
+Message-Id: <1196392527.25646.65.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Friday 30 November 2007 01:43, Balbir Singh wrote:
->> They say better strike when the iron is hot.
->>
->> Since we have so many people discussing the memory controller, I would
->> like to access the readiness of the memory controller for mainline
->> merge. Given that we have some time until the merge window, I'd like to
->> set aside some time (from my other work items) to work on the memory
->> controller, fix review comments and defects.
->>
->> In the past, we've received several useful comments from Rik Van Riel,
->> Lee Schermerhorn, Peter Zijlstra, Hugh Dickins, Nick Piggin, Paul Menage
->> and code contributions and bug fixes from Hugh Dickins, Pavel Emelianov,
->> Lee Schermerhorn, YAMAMOTO-San, Andrew Morton and KAMEZAWA-San. I
->> apologize if I missed out any other names or contributions
->>
->> At the VM-Summit we decided to try the current double LRU approach for
->> memory control. At this juncture in the space-time continuum, I seek
->> your support, feedback, comments and help to move the memory controller
+On Fri, 2007-11-30 at 13:46 +1100, Nick Piggin wrote:
+> On Wednesday 28 November 2007 09:57, Arjan van de Ven wrote:
+> > On Tue, 27 Nov 2007 17:33:05 +0800
+> >
+> > "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+> > > If echo "1">/proc/sys/kernel/sched_compat_yield before starting
+> > > volanoMark testing, the result is very good with kernel 2.6.24-rc3 on
+> > > my 16-core tigerton.
+> > >
+> > > 1) If /proc/sys/kernel/sched_compat_yield=1, comparing with 2.6.22,
+> > > 2.6.24-rc3 has more than 70% improvement;
+> > > 2) If /proc/sys/kernel/sched_compat_yield=0, comparing with 2.6.22,
+> > > 2.6.24-rc3 has more than 80% regression;
+> > >
+> > > On other machines, the volanoMark result also has much improvement if
+> > > /proc/sys/kernel/sched_compat_yield=1.
+> > >
+> > > Would you like to change function yield_task_fair to delete codes
+> > > around sysctl_sched_compat_yield, or just initiate it to 1?
+> >
+> > sounds like a bad idea; volanomark (well, technically the jvm behind
+> > it) is abusing sched_yield() by assuming it does something it really
+> > doesn't do, and as it happens some of the earlier 2.6 schedulers
+> > accidentally happened to behave in a way that was nice for this
+> > benchmark.
 > 
-> Do you have any test cases, performance numbers, etc.? And also some
-> results or even anecdotes of where this is going to be used would be
-> interesting...
+> OK, why is this still happening? Haven't we been asking JVMs to use
+> futexes or posix locking for years and years now? Are there any sane
+> jvms that _don't_ use yield?
+I think it's an issue of volanomark (a kind of java application) instead of JVM.
+
 > 
+> 
+> > Todays kernel has a different behavior somewhat (and before people
+> > scream "regression"; sched_yield() behavior isn't really specified and
+> > doesn't make any sense at all, whatever you get is what you get....
+> > it's pretty much an insane defacto behavior that is incredibly tied to
+> > which decisions the scheduler makes how, and no app can depend on that
+> 
+> It is a performance regression. Is there any reason *not* to use the
+> "compat" yield by default?
+There is no, so I suggest to set sched_compat_yield=1 by default.
+If sched_compat_yield=0, kernel almost does nothing but returns. When
+sched_compat_yield=1, it is closer to the meaning of sched_yield man page.
 
-Some test results were posted at
+> As you say, for SCHED_OTHER tasks, yield
+> can do almost anything. We may as well do something that isn't a
+> regression...
+I just found SCHED_OTHER in man sched_setscheduler. Is it SCHED_NORMAL in
+the latest kernel?
 
-http://lkml.org/lkml/2007/8/17/69
-http://lkml.org/lkml/2007/8/19/36
-http://lwn.net/Articles/242554/
-
-Some results for the RSS controller can be found in the OLS paper
-
-https://ols2006.108.redhat.com/2007/Reprints/singh-Reprint.pdf
-
-and at
-
-http://lkml.org/lkml/2007/5/18/1
-
-As far as test cases are concerned, I have a simple test case that I use
-that allocates memory and touches all the allocated memory in a loop. I
-can post that out if required. It uses various types of allocation
-
-1. mmaped memory
-2. anonymous memory
-3. shared memory
-
-I also run various benchmarks inside a control group, limited to 400 MB
-of RAM.
-
-One interesting that I noticed was that when I booted with mem=<some
-memory> and created a container with the same <some value>. The swapout
-test case ran much faster in the container (NOTE: This was prior to the
-swap cache changes).
-
-KAMEZAWA-San posted some test results on background reclaim and per zone
-reclaim
-
-http://forum.openvz.org/index.php?t=tree&th=4696&mid=23964&&rev=&reveal=
-
-The simplest use cases that come to mind are
-
-1. Memory control for containers/virtualization
-2. Job Isolation
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> 
+> 
+> > in any way. In fact, I've proposed to make sched_yield() just do an
+> > msleep(1)... that'd be closer to what sched_yield is supposed to do
+> > standard wise than any of the current behaviors .... ;_
+> 
+> What makes you say that? IIRC of all the things that sched_yeild can
+> do, it is not allowed to block. So this is about the only thing that
+> will break the standard...
