@@ -1,102 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbXLAAA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbXLAABU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759078AbXLAAA4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 19:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbXLAAAm
+	id S1758265AbXLAABU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 19:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbXLAAAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 19:00:42 -0500
-Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:53409
-	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755357AbXLAAAl (ORCPT
+	Fri, 30 Nov 2007 19:00:55 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:9542 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758563AbXLAAAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 19:00:41 -0500
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Nov 2007 19:00:41 EST
-X-Authority-Analysis: v=1.0 c=1 a=DVJqRJfkT4s3hOcjSRcA:9 a=wP8zy9ft34lpijhXR-UA:7 a=JIGQLiCUGozhRnmYcQf4SueLUukA:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
-Subject: Re: Kernel Development & Objective-C
-From: Nicholas Miell <nmiell@comcast.net>
-To: "J.A." =?ISO-8859-1?Q?Magall=F3n?= <jamagallon@ono.com>
-Cc: =?ISO-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>,
-       Ben.Crowhurst@stellatravel.co.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20071201001950.11100a32@werewolf>
-References: <474EAD18.6040408@stellatravel.co.uk>
-	 <9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
-	 <20071201001950.11100a32@werewolf>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 30 Nov 2007 15:53:38 -0800
-Message-Id: <1196466818.18231.40.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.0.njm.3) 
-Content-Transfer-Encoding: 8bit
+	Fri, 30 Nov 2007 19:00:54 -0500
+X-Greylist: delayed 489 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Nov 2007 19:00:54 EST
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [PATCH] Declare PNP option parsing functions as __init
+Date: Fri, 30 Nov 2007 16:52:41 -0700
+User-Agent: KMail/1.9.6
+Cc: trenn@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, "Li, Shaohua" <shaohua.li@intel.com>
+References: <1196442277.23251.318.camel@queen.suse.de> <47509EB6.20300@keyaccess.nl>
+In-Reply-To: <47509EB6.20300@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711301652.42110.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-12-01 at 00:19 +0100, J.A. Magallón wrote:
-
-> An vtable in C++ takes exactly the same space that the function
-> table pointer present in every driver nowadays... and probably
-> the virtual method call that C++ does itself with
+On Friday 30 November 2007 04:37:26 pm Rene Herman wrote:
+> On 30-11-07 18:04, Thomas Renninger wrote:
+> > If I have not overseen something, it should be rather obvious that those
+> > can all be declared __init...
+> > ---------------
+> > 
+> > Declare PNP option parsing functions as __init
+> > 
+> > There are three kind of parse functions provided by PNP acpi/bios:
+> >  - get current resources
+> >  - set resources
+> >  - get possible resources
+> > The first two may be needed later at runtime.
+> > The possible resource settings should never change dynamically.
+> > And even if this would make any sense (I doubt it), the current implementation
+> > only parses possible resource settings at early init time:
+> >   -> declare all the option parsing __init
+> > 
+> > Signed-off-by: Thomas Renninger <trenn@suse.de>
 > 
-> 	thing->do_something(with,this)
+> Yes. Obviousness aside,
 > 
-> like
-> 	push thing
-> 	push with
-> 	push this
-> 	call THING_vtable+indexof(do_something) // constants at compile time
-> 
-> is much more efficient that what gcc can mangle to do with
-> 
-> 	thing->do_something(with,this,thing)
-> 
-> 	push with
-> 	push this
-> 	push thing
-> 	get thing+offsetof(do_something) // not constant at compile time
-> 	dereference it
-> 	call it
-> 
-> (that is, get a generic field on a structure and use it as jump address)
-> 
-> In short, the kernel is object oriented, implements OO programming by
-> hand, but the compiler lacks the knowledge that it is object oriented
-> programming so it could do some optimizations.
+> (0) pnpacpi_add_device                          is only caller of
+> ...
 
-        struct test;
-        struct testVtbl
-        {
-        	int (*fn1)(struct test *t, int x, int y);
-        	int (*fn2)(struct test *t, int x, int y);
-        };
-        struct test
-        {
-        	struct testVtbl *vtbl;
-        	int x, y;
-        };
-        void testCall(struct test *t, int x, int y)
-        {
-        	t->vtbl->fn1(t, x, y);
-        	t->vtbl->fn2(t, x, y);
-        }
+I agree this is probably safe in the current implementation.
 
-and
+However, I think the current implementation is just broken because
+we can't really handle hotplug of ACPI devices.  Specifically, I think
+the first TBD in acpi_bus_check_device() should be fleshed out so it
+does something like pnpacpi_add_device().
 
-        struct test
-        {
-        	virtual int fn1(int x, int y);
-        	virtual int fn2(int x, int y);
-        
-        	int x, y;
-        };
-        
-        void testCall(struct test *t, int x, int y)
-        {
-        	t->fn1(x, y);
-        	t->fn2(x, y);
-        }
-        
-generate instruction-for-instruction identical code.
+So my dissenting opinion is that this patch would just get reverted
+soon anyway when somebody finishes implementing ACPI hotplug, and
+therefore it's not worth doing.
 
--- 
-Nicholas Miell <nmiell@comcast.net>
-
+Bjorn
