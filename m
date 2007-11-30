@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbXK3XH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbXK3XIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758604AbXK3XH5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXK3XHs
+	id S1758912AbXK3XIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbXK3XIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:07:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60947 "EHLO ogre.sisk.pl"
+	Fri, 30 Nov 2007 18:08:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42183 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755169AbXK3XHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:07:47 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Date: Sat, 1 Dec 2007 00:26:07 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Michael Cree <mcree@orcon.net.nz>, rct@gherkin.frus.com,
-       linux-kernel@vger.kernel.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-scsi@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>
-References: <20071126134819.8FE56DBA2@gherkin.frus.com> <47508EE9.9030304@orcon.net.nz> <20071130144250.e89335f3.akpm@linux-foundation.org>
-In-Reply-To: <20071130144250.e89335f3.akpm@linux-foundation.org>
+	id S1755434AbXK3XIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:08:40 -0500
+Message-ID: <475097EB.30604@redhat.com>
+Date: Fri, 30 Nov 2007 17:08:27 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: cmm@us.ibm.com
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [EXT4 set 6][PATCH 1/1]Export jbd stats through procfs
+References: <1183275490.4010.134.camel@localhost.localdomain>
+In-Reply-To: <1183275490.4010.134.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712010026.08086.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 30 of November 2007, Andrew Morton wrote:
-> On Sat, 01 Dec 2007 11:30:01 +1300
-> Michael Cree <mcree@orcon.net.nz> wrote:
+Mingming Cao wrote:
+> [PATCH] jbd2 stats through procfs
 > 
-> > Bob Tracy wrote:
-> > > Andrew Morton wrote:
-> > >> Could be something change in sysfs.  Please double-check the config
-> > >> options, make sure that something important didn't get disabled.
-> > >>
-> > >  Here's
-> > > hoping someone else is seeing this or can replicate it in the meantime.
-> > 
-> > Snap.
-> > 
-> > 2.6.24-rc2 works fine.   2.6.24-rc3 boots on Alpha but once /dev is 
-> > populated no partitions of the scsi sub-system are seen.  Looks like ide 
-> > sub-system similarly affected.
+> The patch below updates the jbd stats patch to 2.6.20/jbd2.
+> The initial patch was posted by Alex Tomas in December 2005
+> (http://marc.info/?l=linux-ext4&m=113538565128617&w=2).
+> It provides statistics via procfs such as transaction lifetime and size.
 > 
-> Rafael, I assume you have this regression in the list?
+> [ This probably should be rewritten to use debugfs?   -- Ted]
+> 
+> Signed-off-by: Johann Lombardi <johann.lombardi@bull.net>
 
-Yes, http://bugzilla.kernel.org/show_bug.cgi?id=9457
+I've started going through this one to clean it up to the point where it
+can go forward.  It's been sitting at the top of the unstable portion of
+the patch queue for long enough, I think :)
+
+I've converted the msecs to jiffies until the user boundary, changed the
+union #defines as suggested by Andrew, and various other little issues etc.
+
+Remaining to do is a generic time-difference calculator (instead of
+jbd2_time_diff), and looking into whether it should be made a config
+option; I tend to think it should, but it's fairly well sprinkled
+through the code, so I'll see how well that works.
+
+Also did we ever decided if this should go to debugfs?
+
+Thanks,
+
+-Eric
