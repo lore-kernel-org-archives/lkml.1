@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764855AbXKOLDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbXK3XEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764855AbXKOLDi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Nov 2007 06:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXKOLDa
+	id S1757457AbXK3XEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXK3XEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Nov 2007 06:03:30 -0500
-Received: from mail164.messagelabs.com ([216.82.253.131]:10357 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754864AbXKOLD3 (ORCPT
+	Fri, 30 Nov 2007 18:04:38 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:34690 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755046AbXK3XEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Nov 2007 06:03:29 -0500
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-3.tower-164.messagelabs.com!1195124608!13182173!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Mon, 1 Oct 2007 08:41:50 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH Documentation] use the newc archive format as requested by initramfs
-Message-ID: <20071001064150.GA24400@bre-cln-ukleine.digi.com>
+	Fri, 30 Nov 2007 18:04:38 -0500
+X-YMail-OSG: 4eG2ZXYVM1kE19Y3nwScO.Ibi6Jz3ydL.xqwLH3vvwlLrjWeo_ho9PfOMMwGwA3fkjqpaSv9Gg--
+Date: Fri, 30 Nov 2007 15:04:35 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: Stephen Lord <lord@xfs.org>
+Cc: Timothy Shimmin <tes@sgi.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xfs: revert to double-buffering readdir
+Message-ID: <20071130230435.GA12626@puku.stupidest.org>
+References: <20071114070400.GA25708@puku.stupidest.org> <20071125163014.GA17922@infradead.org> <474FBA21.4070201@sgi.com> <165B249C-FE97-4B27-927B-B39DE316CB23@xfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 15 Nov 2007 11:03:27.0381 (UTC) FILETIME=[2618CC50:01C82777]
+In-Reply-To: <165B249C-FE97-4B27-927B-B39DE316CB23@xfs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a documentation followup to 2e591bbc0d563e12f5a260fbbca0df7d5810910e
+On Fri, Nov 30, 2007 at 04:36:25PM -0600, Stephen Lord wrote:
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
- Documentation/initrd.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Looks like the readdir is in the bowels of the btree code when
+> filldir gets called here, there are probably locks on several
+> buffers in the btree at this point. This will only show up for large
+> directories I bet.
 
-diff --git a/Documentation/initrd.txt b/Documentation/initrd.txt
-index d3dc505..0c48110 100644
---- a/Documentation/initrd.txt
-+++ b/Documentation/initrd.txt
-@@ -85,7 +85,7 @@ involve special block devices or loopbacks, you merely create a directory on
- disk with the desired initrd content, cd to that directory, and run (as an
- example):
- 
--find . | cpio --quiet -c -o | gzip -9 -n > /boot/imagefile.img
-+find . | cpio --quiet -H newc -o | gzip -9 -n > /boot/imagefile.img
- 
- Examining the contents of an existing image file is just as simple:
- 
--- 
-1.5.3.2
+I see it for fairly small directories.  Larger than what you can stuff
+into an inode but less than a block (I'm not checking but fairly sure
+that's the case).
 
+> Just rambling, not a single line of code was consulted in writing
+> this message.
+
+Can you explain why the offset is capped and treated in an 'odd way'
+at all?
+
++       curr_offset = filp->f_pos;
++       if (curr_offset == 0x7fffffff)
++               offset = 0xffffffff;
++       else
++               offset = filp->f_pos;
+
+and later the offset to filldir is masked.  Is that some restriction
+in filldir?
