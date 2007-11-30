@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbXK3Kbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbXK3KeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932816AbXK3Kbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 05:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXK3Kbe
+	id S1762831AbXK3KeY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 05:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbXK3KeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 05:31:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:6491 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbXK3Kbd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 05:31:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=k/yU3TpNJfNvDTdGJWQqQ3hdWjKPVbv4MyAOgDM4rx0cGI1EM3VgX47EFauSbucN/rUyj4Yg9GUg67er2froRuOXL69WLFEZOhrXbNaox8lQmYYyVgMRDYZPMYObhFpcVXuQsvs/URvDElqwncQD/Ui0ZW56UTiaX53jo6AsFL4=
-Message-ID: <474FE681.9080101@gmail.com>
-Date: Fri, 30 Nov 2007 11:31:29 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 30 Nov 2007 05:34:10 -0500
+Received: from ns.suse.de ([195.135.220.2]:60087 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbXK3KeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 05:34:08 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>, tglx@linutronix.de
+Subject: Re: [patch 0/2] x86, ptrace:  support for branch trace store(BTS)
+Date: Fri, 30 Nov 2007 11:34:03 +0100
+User-Agent: KMail/1.9.6
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, hpa@zytor.com,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Michael Kerrisk" <mtk-manpages@gmx.net>
+References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com> <20071129155940.7df70ac2.akpm@linux-foundation.org> <029E5BE7F699594398CA44E3DDF5544401051EEF@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <029E5BE7F699594398CA44E3DDF5544401051EEF@swsmsx413.ger.corp.intel.com>
 MIME-Version: 1.0
-To: Chris Rutherford <chrismrutherford@googlemail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ldd irq problem
-References: <40dfeece0711291447m2efa4f40i5c2c22a4273ecbc0@mail.gmail.com> <40dfeece0711300128s731b3227xaa0b5982193e4b12@mail.gmail.com>
-In-Reply-To: <40dfeece0711300128s731b3227xaa0b5982193e4b12@mail.gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200711301134.04719.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/30/2007 10:28 AM, Chris Rutherford wrote:
-> Helo lkml,
+On Friday 30 November 2007 10:57:22 Metzger, Markus T wrote:
 > 
-> I'm trying to write a LDD but I have got a bug.  Any ideas what i
-> might be doing wrong?
+> >Is there any userspace code avaialble which people can use to play with
+> >this?
 > 
-> ret = request_irq(12, handler, SA_INTERRUPT | SA_SHIRQ, "sha1
-> handler", DEVICE_NAME);
-> printk (KERN_INFO "req irq %d \n", ret);
-> enable_irq(12);
+> Not yet. We are talking to internal teams regarding gdb support.
 
-enable_irq is opposite of disable_irq(_nosync), you don't need to call it in
-probe function and in most cases you don't need it at all.
+But you already have reasonably realistic test code right?
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+We were burned a few times recently with new interfaces that turned
+out to be not really usable from the user perspective.
+
+Ideal situation to avoid that would be that at least one person other than 
+the patch submitter has successfully written a program using it first.
+
+e.g. I'm still feeling a bit uneasy about that global sysctl
+embedded in the interface.
+
+> 
+> >How do you envisage it being used in the long term?  Do you 
+> >expect any of
+> >the standard performance tuning tools will be tweaked to 
+> >understand this
+> >feature and if so which ones?
+> 
+> I would expect debuggers to use it to show an execution trace of the 
+> debuggee. The ptrace interface targets application debuggers;
+
+application debuggers and possible performance tools. There are certainly
+a lot of possibilities from this.
+
+
+> If the feature turns out to be really useful, I would, of course, expect
+> (or at least hope) that other CPU's would provide a similar feature.
+
+I think some others do. But the details are always CPU specific. I doubt
+much low level code will be possible to share. But it would be good
+if the ptrace interface is generic enough for everybody (I think it was
+though) 
+
+ 
+> Most of the code is arch specific. If other CPU's share the general BTS
+> layout,
+> some of the ptrace_bts.c code could be shared.
+> Since the implementation only supports x86, I think the code should go
+> into
+> arch/x86 - at least until other CPU's are supported.
+
+Agreed.
+
+-Andi
