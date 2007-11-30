@@ -1,128 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbXK3XUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbXK3XWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757831AbXK3XUY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbXK3XUE
+	id S1758297AbXK3XWv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXK3XWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:20:04 -0500
-Received: from smtp.ono.com ([62.42.230.12]:28172 "EHLO resmaa03.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751107AbXK3XUD convert rfc822-to-8bit (ORCPT
+	Fri, 30 Nov 2007 18:22:39 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:34070 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755513AbXK3XWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:20:03 -0500
-Date: Sat, 1 Dec 2007 00:19:50 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: "=?UTF-8?B?TG/Dr2MgR3JlbmnDqQ==?=" <loic.grenie@gmail.com>
-Cc: Ben.Crowhurst@stellatravel.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Development & Objective-C
-Message-ID: <20071201001950.11100a32@werewolf>
-In-Reply-To: <9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
-References: <474EAD18.6040408@stellatravel.co.uk>
-	<9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
-X-Mailer: Claws Mail 3.1.0cvs44 (GTK+ 2.12.2; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 30 Nov 2007 18:22:38 -0500
+Date: Fri, 30 Nov 2007 18:22:37 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
+ functions
+In-Reply-To: <20071130222629.GA7653@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0711301816290.2747-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007 11:29:55 +0100, "Loïc Grenié" <loic.grenie@gmail.com> wrote:
+On Fri, 30 Nov 2007, Greg KH wrote:
 
-> 2007/11/29, Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>:
-> > Has Objective-C ever been considered for kernel development?
-> >
-> > regards,
-> > BPC
+> > However if kobject_add() is never called, or if it is called and it 
+> > fails, then it's okay to use kfree().  It's not clear whether this 
+> > distinction will matter in practice.  It's probably best to document 
+> > this using your stronger description.
 > 
+> No, if kobject_add() fails, kobject_put() still must be called in order
+> to free up the name pointer, unless you are somehow guessing that the
+> "kobject_set_name()" portion of kobject_add() somehow failed.
 
-Well, I really would like to learn some things here, could we
-keep this off-topic thread alive just a bit, please ?
-(I know, I'm going to gain a troll's fame because I can't avoid this
-discussions, its one of my secret vices...)
+Actually I imagined that if kobject_add() failed it would back out all 
+the changes it made -- which means it would deallocate the name 
+string.  But requiring people to call kobject_put() will do this just 
+as well.
 
->    No, it has not. Any language that looks remotely like an OO language
->   has not ever been considered for (Linux) kernel development and for
->   most, if not all, other operating systems kernels.
+>  And you
+> can't know that, so you have to call kobject_put() in order to be safe
+> and clean up everything.
 > 
+> Now why did we not do the final kobject_put() in kobject_del() as well?
+> Doing two calls, always in order, seems a bit strange, anyone know why
+> it's this way?
 
-I think BeOS was C++ and OSX is C+ObjectiveC (and runs on an iPhone).
-Original MacOS (fron 6 to 9) was Pascal (and a mac SE was very near
-to embedded hardware :) ).
+To be symmetrical with kobject_init() and kobject_add().  Besides, 
+isn't there kobject_unregister()?  Presumably it will go away along 
+with kobject_register(), though.
 
-I do not advocate to rewrite Linux in C++, but don't say a kernel written
-in C++ can not be efficient.
+> > You could put that a little less strongly.  After kobject_init() you
+> > SHOULD call kobject_put() to clean up properly, and after kobject_add()
+> > you MUST call kobject_del() and kobject_put().
+>
+> No, in looking at the code, you only need to call kobject_del() to clean
+> everything up properly, if kobject_add() succeeds.  No need to call
+> kobject_put() yet again.
 
->     Various problems occur in an object oriented language. One of them
->   is garbage collection: it provokes asynchronous delays and, during
->   an interrupt or a system call for a real time task, the kernel cannot
->   wait. 
+Sorry, yes, that's what I meant.  After a successful call to 
+kobject_add() you must call kobject_del() to undo the _add, and then
+kobject_put() for the final cleanup.
 
-C++ (and for what I read on other answer, nor ObjectiveC) has no garbage
-collection. It does not anything you did not it to do. It just allows
-you to change this
+Alan Stern
 
-	struct buffer *x;
-	x = kmalloc(...)
-	x->sz = 128
-	x->buff = kmalloc(...)
-	...
-	kfree(x->buff)
-	kfree(x)
-	
-to
-	struct buffer *x;
-	x = new buffer(128); (that does itself allocates x->buff,
-                              because _you_ programmed it,
-                              so you poor programmer don't forget)
-        ...
-	delete x;            (that also was programmed to deallocate
-                              x->buff itself, sou you have one less
-                              memory leak to worry about)
-
->   Another is memory overhead: all the magic that OO languages
->   provide take space in memory and Linux kernel is used in embedded
->   systems with very tight memory requirements.
-> 
-
-An vtable in C++ takes exactly the same space that the function
-table pointer present in every driver nowadays... and probably
-the virtual method call that C++ does itself with
-
-	thing->do_something(with,this)
-
-like
-	push thing
-	push with
-	push this
-	call THING_vtable+indexof(do_something) // constants at compile time
-
-is much more efficient that what gcc can mangle to do with
-
-	thing->do_something(with,this,thing)
-
-	push with
-	push this
-	push thing
-	get thing+offsetof(do_something) // not constant at compile time
-	dereference it
-	call it
-
-(that is, get a generic field on a structure and use it as jump address)
-
-In short, the kernel is object oriented, implements OO programming by
-hand, but the compiler lacks the knowledge that it is object oriented
-programming so it could do some optimizations.
-
->     Lots of people will think of better reasons why ObjC is not used...
-
-People usually complains about RTTI or exceptions, but benefits versus
-memory space should be seriously considered (sure there is something
-in current drivers to ask 'are you a SATA or an IDE disk?').
-
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam03 (gcc 4.2.2 (4.2.2-1mdv2008.1)) SMP Sat Nov
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
