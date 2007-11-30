@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbXK3WBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXK3WKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbXK3WBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbXK3WB3
+	id S1756570AbXK3WKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXK3WKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:01:29 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:36177 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752969AbXK3WB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:01:29 -0500
-Date: Fri, 30 Nov 2007 17:01:27 -0500
-To: Roger Willcocks <roger@filmlight.ltd.uk>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Neil Brown <neilb@suse.de>
-Subject: Re: nfsd bug: create file with specific uid/gid
-Message-ID: <20071130220127.GJ24887@fieldses.org>
-References: <475042FB.8020106@filmlight.ltd.uk>
+	Fri, 30 Nov 2007 17:10:36 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:59426 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752888AbXK3WKf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 17:10:35 -0500
+Date: Fri, 30 Nov 2007 17:10:33 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
+ functions
+In-Reply-To: <20071130214819.GA7326@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475042FB.8020106@filmlight.ltd.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 05:06:03PM +0000, Roger Willcocks wrote:
-> nfsd/vfs.c:nfsd_create (the v2 version of create) says:
->
-> "Set file attributes. Mode has already been set and
-> setting uid/gid works only for root"
->
-> but it doesn't actually test for root-ness (which could happen if the 
-> access is no-root-squash). There's similar code without the comment in 
-> nfsd_create_v3. In both cases the test:
->
->    if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID|ATTR_MODE)) != 0)
->
-> should read:
->
->    if (current->fsuid != 0)
->        iap->ia_valid &= ~(ATTR_UID|ATTR_GID);
->    if ((iap->ia_valid &= ~ATTR_MODE) != 0)
->
-> although arguably they should return an EPERM error if the uid/gid bits are 
-> set, instead of silently ignoring them.
+On Fri, 30 Nov 2007, Greg KH wrote:
 
-Assignments (especially with things like &=) inside of conditionals
-always make my head hurt for some reason.  So maybe something like the
-below?
+> Ok, how about this:
+> 	void kobject_init(struct kobject *kobj, struct ktype *ktype);
+> 
+> and then:
+> 	int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
+> 
+> After we call kobject_init() we HAVE to call kobject_put() to clean up
+> properly.  So, if kobject_add() fails, we still need to clean up with
+> kobject_put();
 
-Although I'd be happier if we could get a comment from someone with a
-better understanding of why this hack was added in the first place.
+You could put that a little less strongly.  After kobject_init() you
+SHOULD call kobject_put() to clean up properly, and after kobject_add()
+you MUST call kobject_del() and kobject_put().
 
-Thanks for the bug report!  (And, by the way, how did you run across
-this?)
+However if kobject_add() is never called, or if it is called and it 
+fails, then it's okay to use kfree().  It's not clear whether this 
+distinction will matter in practice.  It's probably best to document 
+this using your stronger description.
 
---b.
+The same sort of rule should apply to other kernel objects, like struct 
+device.  After intialization you have to do a final _put, before that 
+you just do a kfree().  (And initialization cannot fail.)
 
+> That means we _can_ create a:
+> 	int kobject_init_and_add(struct kobject *kobj, struct ktype *ktype, struct kobject *parent, const char *fmt, ...);
+> 
+> and if that fails, then again, you have to call kobject_put() to clean
+> things up, right?
 
-commit 38574420b8992d69f469ca86041f75b6e2283174
-Author: J. Bruce Fields <bfields@citi.umich.edu>
-Date:   Fri Nov 30 16:55:23 2007 -0500
+Right.  Because you know that the failure must have occurred in the 
+_add portion.
 
-    nfsd: allow root to set uid and gid on create
-    
-    The server silently ignores attempts to set the uid and gid on create.
-    Based on the comment, this appears to have been done to prevent some
-    overly-clever IRIX client from causing itself problems.
-    
-    Perhaps we should remove that hack completely.  For now, at least, it
-    makes sense to allow root (when no_root_squash is set) to set uid and
-    gid.
-    
-    Thanks to Roger Willcocks <roger@filmlight.ltd.uk> for the bug report
-    and original patch on which this is based.
-    
-    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+> Does this look sane?
 
-diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-index 755ba43..8a8bf06 100644
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1257,12 +1257,16 @@ nfsd_create(struct svc_rqst *rqstp, struct svc_fh *fhp,
- 	}
- 
- 
--	/* Set file attributes. Mode has already been set and
--	 * setting uid/gid works only for root. Irix appears to
-+	/* Mode has already been set: */
-+	iap->ia_valid &= ~ATTR_MODE;
-+	/*
-+	 * Setting uid/gid works only for root.  Irix appears to
- 	 * send along the gid when it tries to implement setgid
--	 * directories via NFS.
-+	 * directories via NFS:
- 	 */
--	if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID|ATTR_MODE)) != 0) {
-+	if (current->fsuid != 0)
-+		iap->ia_valid &= ~(ATTR_UID|ATTR_GID);
-+	if (iap->ia_valid) {
- 		__be32 err2 = nfsd_setattr(rqstp, resfhp, iap, 0, (time_t)0);
- 		if (err2)
- 			err = err2;
+Yes, I think that will all work correctly.
+
+Alan Stern
+
