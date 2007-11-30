@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXK3WKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbXK3WP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbXK3WKq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:10:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXK3WKg
+	id S1757245AbXK3WP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXK3WPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:10:36 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:59426 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752888AbXK3WKf (ORCPT
+	Fri, 30 Nov 2007 17:15:16 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4839 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753066AbXK3WPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:10:35 -0500
-Date: Fri, 30 Nov 2007 17:10:33 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
- functions
-In-Reply-To: <20071130214819.GA7326@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Nov 2007 17:15:15 -0500
+Date: Fri, 30 Nov 2007 23:15:12 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH 1/1] HWMON: coretemp, suspend fix
+Message-ID: <20071130231512.1111d558@hyperion.delvare>
+In-Reply-To: <661416096128474967.slaby@pripojeni.net>
+References: <661416096128474967.slaby@pripojeni.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, Greg KH wrote:
+Hi Jiri,
 
-> Ok, how about this:
-> 	void kobject_init(struct kobject *kobj, struct ktype *ktype);
+On Fri, 30 Nov 2007 15:12:46 +0100, Jiri Slaby wrote:
+> Ok, I don't see it merged in the latest -mm (mmotm). Could you, Mark, Rafael,
+> sign off this version of the patch (Mark's + Rafael's fix)?
 > 
-> and then:
-> 	int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
+> --
 > 
-> After we call kobject_init() we HAVE to call kobject_put() to clean up
-> properly.  So, if kobject_add() fails, we still need to clean up with
-> kobject_put();
-
-You could put that a little less strongly.  After kobject_init() you
-SHOULD call kobject_put() to clean up properly, and after kobject_add()
-you MUST call kobject_del() and kobject_put().
-
-However if kobject_add() is never called, or if it is called and it 
-fails, then it's okay to use kfree().  It's not clear whether this 
-distinction will matter in practice.  It's probably best to document 
-this using your stronger description.
-
-The same sort of rule should apply to other kernel objects, like struct 
-device.  After intialization you have to do a final _put, before that 
-you just do a kfree().  (And initialization cannot fail.)
-
-> That means we _can_ create a:
-> 	int kobject_init_and_add(struct kobject *kobj, struct ktype *ktype, struct kobject *parent, const char *fmt, ...);
+> From: Mark M. Hoffman <mhoffman@lightlink.com>
 > 
-> and if that fails, then again, you have to call kobject_put() to clean
-> things up, right?
+> coretemp, suspend fix
+> 
+> It's not permitted to unregister device/cpu if frozen and going to sleep.
+> It causes deadlock on systems, where coretemp hwmon is loaded. Do it only
+> in non-freezed states instead.
+> 
+> Cc: Rafael J. Wysocki <rjw@sisk.pl> (frozen fix)
+> Cc: Mark M. Hoffman <mhoffman@lightlink.com>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> ---
+> commit 4f0e19b172ed18fb29e8006c4470fd37aa245a7a
+> tree bec1cc4f7a499efe94c5f9d2d208db325914f28e
+> parent 877dcc2ef6c7c17a64155cf201886c49622250e9
+> author Jiri Slaby <jirislaby@gmail.com> Tue, 27 Nov 2007 20:19:47 +0100
+> committer Jiri Slaby <ku@bellona.localdomain> Thu, 29 Nov 2007 23:41:11 +0100
+> 
+>  drivers/hwmon/coretemp.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+> index 5c82ec7..ce7457d 100644
+> --- a/drivers/hwmon/coretemp.c
+> +++ b/drivers/hwmon/coretemp.c
+> @@ -338,11 +338,13 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
+>  	switch (action) {
+>  	case CPU_ONLINE:
+>  	case CPU_ONLINE_FROZEN:
+> +	case CPU_DOWN_FAILED:
+>  		coretemp_device_add(cpu);
+> +	case CPU_DOWN_FAILED_FROZEN:
+>  		break;
+> -	case CPU_DEAD:
+> -	case CPU_DEAD_FROZEN:
+> +	case CPU_DOWN_PREPARE:
+>  		coretemp_device_remove(cpu);
+> +	case CPU_DOWN_PREPARE_FROZEN:
+>  		break;
+>  	}
+>  	return NOTIFY_OK;
 
-Right.  Because you know that the failure must have occurred in the 
-_add portion.
+Should this change go to the stable tree(s) as well?
 
-> Does this look sane?
-
-Yes, I think that will all work correctly.
-
-Alan Stern
-
+-- 
+Jean Delvare
