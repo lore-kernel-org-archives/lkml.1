@@ -1,87 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbXK3VwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbXK3V63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbXK3VwW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 16:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXK3VwA
+	id S1756483AbXK3V63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 16:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbXK3V6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 16:52:00 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46207 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbXK3Vv7 (ORCPT
+	Fri, 30 Nov 2007 16:58:16 -0500
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:51643 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751296AbXK3V6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 16:51:59 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/4] net: Implement the per network namespace sysctl infrastructure
-References: <4742C73C.3010904@openvz.org>
-	<m1odddc5mf.fsf@ebiederm.dsl.xmission.com>
-	<m1k5o1c5eh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fxypc5cd.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bq9dc53d.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17ik1c50m.fsf_-_@ebiederm.dsl.xmission.com>
-	<20071130161856.GA10588@sergelap.austin.ibm.com>
-Date: Fri, 30 Nov 2007 14:49:25 -0700
-In-Reply-To: <20071130161856.GA10588@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Fri, 30 Nov 2007 10:18:56 -0600")
-Message-ID: <m13aun9zfe.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 30 Nov 2007 16:58:15 -0500
+Date: Fri, 30 Nov 2007 23:58:10 +0200
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: drivers/char/random.c:write_pool() -- cond_resched needed?
+Message-ID: <20071130215810.d3m43bwobifihfiu@m.safari.iki.fi>
+Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-30)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+In write_pool(), isn't cond_resched() needed after call to
+add_entropy_words() because otherwise there can be large latencies
+(think of command "dd if=/dev/zero of=/dev/random bs=100000000" ) ?
 
->
-> Hey Eric,
->
-> the patches look nice.
->
-> The hand-forcing of the passed-in net_ns into a copy of current->nsproxy
-> does make it seem like nsproxy may not be the best choice of what to
-> pass in.  Doesn't only net_sysctl_root->lookup() look at the argument?
+-- 
+Do what you love because life is too short for anything else.
 
-Yes.  Although I call it from __register_sysctl_paths.
-
-> But I assume you don't want to be more general than sending in a
-> nsproxy so as to dissuade abuse of this interface for needlessly complex
-> sysctl interfaces?
-
-A bit of that.  I would love to pass in a task_struct so you can use
-anything from a task.  The trouble is I don't have any task_structs or
-nsproxys with the proper value at the point where I am first setting
-this up.  Further I have to have the full sysctl lookup working or I
-could not call sysctl_check.
-
-> (Well I expect that'll become clear once the the patches using this
-> come out.)
->
-> Are you planning to use this infrastructure for the uts and ipc
-> sysctls as well?
-
-Yes.  Where it comes in especially useful, is I can move /proc/sys
-to /proc/sys/<tgid>/task/<pid>/sys.  And get a particular processes
-view of sysctl.  
-
-We also get a little more reuse of common functions.
-
-Otherwise Pavel does have a point that using this for uts and ipc
-is not a savings lines of code wise.
-
-After having seen Pavel changes I am asking myself if there is a sane
-way to remove the ctl_name argument from the ctl_path.
-
-Anyway where I am with the nsproxy question was that I don't
-see anything easily better.  What I have works and gets the job
-done, and doesn't have any module unload races or holes where a sloppy
-programmer can mess up the sysctl tree.  We needed a solution.
-Trying any harder to find something better would take ages.  So
-I figured this implementation was good enough.
-
-Eric
