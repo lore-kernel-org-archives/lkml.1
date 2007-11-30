@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbXK3WXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbXK3W1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbXK3WXc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 17:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbXK3WXX
+	id S1757328AbXK3W1k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 17:27:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbXK3W12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 17:23:23 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:54130 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbXK3WXX (ORCPT
+	Fri, 30 Nov 2007 17:27:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60416 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107AbXK3W12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 17:23:23 -0500
-Message-ID: <47508D3C.9050507@keyaccess.nl>
-Date: Fri, 30 Nov 2007 23:22:52 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 30 Nov 2007 17:27:28 -0500
+Date: Fri, 30 Nov 2007 14:26:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
+	functions
+Message-ID: <20071130222629.GA7653@kroah.com>
+References: <20071130214819.GA7326@kroah.com> <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Chris Holvenstot <cholvenstot@comcast.net>
-CC: linux-kernel@vger.kernel.org, hidave.darkstar@gmail.com,
-       yakui.zhao@intel.com, shaohua.li@intel.com, bjorn.helgaas@hp.com,
-       trenn@suse.de
-Subject: Re: pnpacpi : exceeded the max number of IO resources
-References: <1196428488.7066.6.camel@localhost>
-In-Reply-To: <1196428488.7066.6.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0711301702200.2747-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-11-07 14:14, Chris Holvenstot wrote:
-
-> For what it is worth I too have seen this problem this morning and it
-> DOES appear to be new (in contrast to a previous comment)
+On Fri, Nov 30, 2007 at 05:10:33PM -0500, Alan Stern wrote:
+> On Fri, 30 Nov 2007, Greg KH wrote:
 > 
-> The message:  pnpacpi: exceeded the max number of mem resources: 12
+> > Ok, how about this:
+> > 	void kobject_init(struct kobject *kobj, struct ktype *ktype);
+> > 
+> > and then:
+> > 	int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
+> > 
+> > After we call kobject_init() we HAVE to call kobject_put() to clean up
+> > properly.  So, if kobject_add() fails, we still need to clean up with
+> > kobject_put();
 > 
-> is displayed each time the system is booted with the 2.6.24-rc3-git5
-> kernel but is NOT displayed when booting 2.6.24-rc3-git4
+> You could put that a little less strongly.  After kobject_init() you
+> SHOULD call kobject_put() to clean up properly, and after kobject_add()
+> you MUST call kobject_del() and kobject_put().
 > 
-> I have made no changes in my config file between these two kernels other
-> than to accept any new defaults when running make oldconfig.
+> However if kobject_add() is never called, or if it is called and it 
+> fails, then it's okay to use kfree().  It's not clear whether this 
+> distinction will matter in practice.  It's probably best to document 
+> this using your stronger description.
+
+No, if kobject_add() fails, kobject_put() still must be called in order
+to free up the name pointer, unless you are somehow guessing that the
+"kobject_set_name()" portion of kobject_add() somehow failed.  And you
+can't know that, so you have to call kobject_put() in order to be safe
+and clean up everything.
+
+Now why did we not do the final kobject_put() in kobject_del() as well?
+Doing two calls, always in order, seems a bit strange, anyone know why
+it's this way?
+
+> The same sort of rule should apply to other kernel objects, like struct 
+> device.  After intialization you have to do a final _put, before that 
+> you just do a kfree().  (And initialization cannot fail.)
+
+Yes.
+
+> > That means we _can_ create a:
+> > 	int kobject_init_and_add(struct kobject *kobj, struct ktype *ktype, struct kobject *parent, const char *fmt, ...);
+> > 
+> > and if that fails, then again, you have to call kobject_put() to clean
+> > things up, right?
 > 
-> If you had already narrowed it down to a change between git4 and git5 I
-> apologize for wasting your time.  Have to run to work now.
+> Right.  Because you know that the failure must have occurred in the 
+> _add portion.
 
-Thanks, and re-added the proper CCs. Sigh...
+Ok, good, I might get this right yet :)
 
-Well, yes, the warning is actually new as well. Previously your kernel just 
-silently ignored 8 more mem resources than it does now it seems.
+thanks,
 
-Given that people are hitting these limits, it might make sense to just do 
-away with the warning for 2.6.24 again while waiting for the dynamic code?
-
-Rene.
+greg k-h
