@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763957AbXK3TBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbXK3TGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763957AbXK3TBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762479AbXK3TBE
+	id S1764058AbXK3TGc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760018AbXK3TGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:01:04 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:51404 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761537AbXK3TBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:01:03 -0500
-Date: Fri, 30 Nov 2007 11:01:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 03/10] percpu: Make the asm-generic/percpu.h more "generic"
-In-Reply-To: <20071130184952.GC9928@elte.hu>
-Message-ID: <Pine.LNX.4.64.0711301055470.2031@schroedinger.engr.sgi.com>
-References: <20071128210926.008783214@sgi.com> <20071128211526.640694725@sgi.com>
- <20071130111000.GA32431@elte.hu> <Pine.LNX.4.64.0711300908320.32071@schroedinger.engr.sgi.com>
- <20071130171419.GA18808@elte.hu> <Pine.LNX.4.64.0711300915460.32253@schroedinger.engr.sgi.com>
- <20071130175825.GA19571@elte.hu> <20071130181206.GA1586@elte.hu>
- <Pine.LNX.4.64.0711301033580.1806@schroedinger.engr.sgi.com>
- <20071130184952.GC9928@elte.hu>
+	Fri, 30 Nov 2007 14:06:22 -0500
+Received: from rtr.ca ([76.10.145.34]:4082 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756062AbXK3TGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 14:06:21 -0500
+Message-ID: <47505F2B.2090109@rtr.ca>
+Date: Fri, 30 Nov 2007 14:06:19 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Kernel <linux-acpi@vger.kernel.org>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] 2.6.24: restore missing sysfs max_cstate attr
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, Ingo Molnar wrote:
+Len, is there any good reason why max_cstate was made invisible in 2.6.24,
+breaking my userspace scripts that access it?
 
-> i have lockdep off. config attached.
+Here's a patch to fix the regression from 2.6.23:
 
-The .config does not compile under mm. Could you verify that the first 
-patchset applies (this one) and works fine before we get to to the 
-patchset that deals with relocating the percpu addresses?
+Restore visibility of /sys/module/processor/parameters/max_cstate 
+for compatibility with kernels prior to 2.6.24.
 
-Seems that there are some other funky features on:
+I have scripts here that rely upon it.
 
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_RELOCATABLE=y
-CONFIG_PHYSICAL_ALIGN=0x200000
+Signed-off-by: Mark Lord <mlord@pobox.com>
+---
 
-I gotta see how much of that is available under mm and how it interacts 
-with the relocation of the percpu area.
+Patch is against 2.6.24-rc3-git5.
 
-christoph@stapp:~/linux-2.6.24-rc3-mm2$ make -j9 all
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CC      scripts/mod/empty.o
-  MKELF   scripts/mod/elfconfig.h
-  HOSTCC  scripts/mod/file2alias.o
-  HOSTCC  scripts/mod/modpost.o
-  HOSTCC  scripts/mod/sumversion.o
-  CC      arch/x86/kernel/asm-offsets.s
-In file included from include/asm/page.h:5,
-                 from include/asm/processor_64.h:9,
-                 from include/asm/processor.h:4,
-                 from include/linux/prefetch.h:14,
-                 from include/linux/list.h:8,
-                 from include/linux/module.h:9,
-                 from include/linux/crypto.h:21,
-                 from arch/x86/kernel/asm-offsets_64.c:7,
-                 from arch/x86/kernel/asm-offsets.c:4:
-include/asm/page_64.h:97:2: error: #error "CONFIG_PHYSICAL_START must be a 
-multiple of 2MB"
-  HOSTLD  scripts/mod/modpost
-make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-
-
+--- linux/drivers/acpi/processor_idle.c.orig	2007-11-30 13:35:20.000000000 -0500
++++ linux/drivers/acpi/processor_idle.c	2007-11-30 13:35:31.000000000 -0500
+@@ -76,7 +76,7 @@
+ #define PM_TIMER_TICKS_TO_US(p)		(((p) * 1000)/(PM_TIMER_FREQUENCY/1000))
+ 
+ static unsigned int max_cstate __read_mostly = ACPI_PROCESSOR_MAX_POWER;
+-module_param(max_cstate, uint, 0000);
++module_param(max_cstate, uint, 0644);
+ static unsigned int nocst __read_mostly;
+ module_param(nocst, uint, 0000);
+ 
