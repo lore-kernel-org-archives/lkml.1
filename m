@@ -1,33 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbXK3KC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXK3KIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbXK3KC7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 05:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbXK3KCq
+	id S1761477AbXK3KIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 05:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbXK3KIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 05:02:46 -0500
-Received: from smtp2f.orange.fr ([80.12.242.150]:2694 "EHLO smtp2f.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbXK3KCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 05:02:45 -0500
-X-ME-UUID: 20071130100244106.1A09A700009B@mwinf2f03.orange.fr
-Subject: Re: Kernel Development & Objective-C
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Ben.Crowhurst@stellatravel.co.uk
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <474EAD18.6040408@stellatravel.co.uk>
-References: <474EAD18.6040408@stellatravel.co.uk>
-Content-Type: text/plain
-Date: Fri, 30 Nov 2007 11:02:40 +0100
-Message-Id: <1196416960.20567.205.camel@skunk.anacadf.mentorg.com>
+	Fri, 30 Nov 2007 05:08:17 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60241 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754014AbXK3KIQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 05:08:16 -0500
+Date: Fri, 30 Nov 2007 19:11:14 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh@veritas.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Pavel Emelianov <xemul@sw.ru>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
+       "Martin J. Bligh" <mbligh@google.com>,
+       Andy Whitcroft <andyw@uk.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: What can we do to get ready for memory controller merge in
+ 2.6.25
+Message-Id: <20071130191114.866b5ce0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <474F7FDF.3000506@linux.vnet.ibm.com>
+References: <474ED005.7060300@linux.vnet.ibm.com>
+	<200711301311.48291.nickpiggin@yahoo.com.au>
+	<474F7FDF.3000506@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-29 at 12:14 +0000, Ben Crowhurst wrote:
-> Has Objective-C ever been considered for kernel development?
+On Fri, 30 Nov 2007 08:43:35 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> KAMEZAWA-San posted some test results on background reclaim and per zone
+> reclaim
+> 
 
-Why not C# instead ?
+I'd like to post some patches below in the next week.
+  - throttling the number of callers of try_to_free_mem_cgroup_pages()
+  - background reclaim and high/low watermark.
+  - some cleanups.
 
+And they are all patches I have now (for this window)
+
+Thanks,
+-Kame
 
