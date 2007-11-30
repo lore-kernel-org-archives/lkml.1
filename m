@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934546AbXK3NEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934717AbXK3NF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934546AbXK3NEG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbXK3NDo
+	id S934717AbXK3NF0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbXK3NFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:03:44 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50178 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934773AbXK3NDn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:03:43 -0500
-Date: Fri, 30 Nov 2007 08:03:36 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: David Sterba <dsterba@suse.cz>
-cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       akpm@linux-foundation.org, jeff@garzik.org, jkosina@suse.cz,
-       jslaby@suse.cz, stephen@symmetric.co.nz, benm@symmetric.co.nz
-Subject: Re: [PATCH] ipwireless_cs driver for 4G PC Card
-In-Reply-To: <20071130125555.GA10977@ds.suse.cz>
-Message-ID: <alpine.LFD.0.9999.0711300759200.29812@localhost.localdomain>
-References: <20071130125555.GA10977@ds.suse.cz>
+	Fri, 30 Nov 2007 08:05:07 -0500
+Received: from sacred.ru ([62.205.161.221]:34394 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757919AbXK3NFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:05:05 -0500
+Message-ID: <47500A75.2060500@openvz.org>
+Date: Fri, 30 Nov 2007 16:04:53 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH 2/7][QUOTA] Use sysctl paths to register tables
+References: <475008F5.3000506@openvz.org>
+In-Reply-To: <475008F5.3000506@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 30 Nov 2007 16:04:53 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, David Sterba wrote:
+We need the fs/quota/ path for the quota tables.
 
-...
->  drivers/char/pcmcia/Kconfig                        |    8
->  drivers/char/pcmcia/Makefile                       |    4
->  drivers/char/pcmcia/ipwireless_cs_hardware.c       | 1728 +++++++++++++++++++++
->  drivers/char/pcmcia/ipwireless_cs_hardware.h       |   63
->  drivers/char/pcmcia/ipwireless_cs_main.c           |  479 +++++
->  drivers/char/pcmcia/ipwireless_cs_main.h           |   70
->  drivers/char/pcmcia/ipwireless_cs_network.c        |  496 ++++++
->  drivers/char/pcmcia/ipwireless_cs_network.h        |   54
->  drivers/char/pcmcia/ipwireless_cs_setup_protocol.h |  108 +
->  drivers/char/pcmcia/ipwireless_cs_tty.c            |  779 +++++++++
->  drivers/char/pcmcia/ipwireless_cs_tty.h            |   48
->  12 files changed, 3845 insertions(+)
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-might it not make more sense to put all of that into a new
-subdirectory, say, /drivers/char/pcmcia/ipwireless_cs?  that way, it's
-more modular and it will keep that higher-level directory from
-potentially getting cluttered with even more drivers.  and it would
-let you drop the pointless "ipwireless_cs_" prefix from all of those
-files as well.
+---
 
-rday
+diff --git a/fs/dquot.c b/fs/dquot.c
+index efee14d..1968495 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -1900,22 +1900,14 @@ static ctl_table fs_dqstats_table[] = {
+ 	{ .ctl_name = 0 },
+ };
+ 
+-static ctl_table fs_table[] = {
++static struct ctl_path fs_quota_path[] = {
+ 	{
+-		.ctl_name	= FS_DQSTATS,
+-		.procname	= "quota",
+-		.mode		= 0555,
+-		.child		= fs_dqstats_table,
++		.procname	= "fs",
++		.ctl_name	= CTL_FS,
+ 	},
+-	{ .ctl_name = 0 },
+-};
+-
+-static ctl_table sys_table[] = {
+ 	{
+-		.ctl_name	= CTL_FS,
+-		.procname	= "fs",
+-		.mode		= 0555,
+-		.child		= fs_table,
++		.procname	= "quota",
++		.ctl_name	= FS_DQSTATS,
+ 	},
+ 	{ .ctl_name = 0 },
+ };
+@@ -1929,7 +1921,7 @@ static int __init dquot_init(void)
+ 	printk(KERN_NOTICE "VFS: Disk quotas %s\n", __DQUOT_VERSION__);
+ 
+ #ifdef CONFIG_SYSCTL
+-	register_sysctl_table(sys_table);
++	register_sysctl_paths(fs_quota_path, fs_dqstats_table);
+ #endif
+ 
+ 	dquot_cachep = kmem_cache_create("dquot",
+-- 
+1.5.3.4
 
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
