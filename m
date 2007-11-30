@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934894AbXK3Njg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934845AbXK3NoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934894AbXK3Njg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXK3Nj0
+	id S934845AbXK3NoX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXK3NoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:39:26 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52763 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757166AbXK3NjZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:39:25 -0500
-Date: Fri, 30 Nov 2007 13:30:52 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Valdis.Kletnieks@vt.edu
-Cc: Jon Masters <jonathan@jonmasters.org>, Ray Lee <ray-lk@madrabbit.org>,
-       tvrtko.ursulin@sophos.com, Al Viro <viro@ftp.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071130133052.5fdab6f4@the-village.bc.nu>
-In-Reply-To: <21029.1196403614@turing-police.cc.vt.edu>
-References: <20071128183040.GW8181@ftp.linux.org.uk>
-	<OF699E23DA.E36E712D-ON802573A2.00591FA8-802573A2.005A44A2@sophos.com>
-	<20071129173601.34273083@the-village.bc.nu>
-	<2c0942db0711291040j4ce48acagb753b64c4b8c1357@mail.gmail.com>
-	<1196362612.6473.98.camel@perihelion>
-	<2c0942db0711291111t16a4eb49h6b1e83ddf7bb4cf9@mail.gmail.com>
-	<1196365551.6473.103.camel@perihelion>
-	<20071129214527.1d62056c@the-village.bc.nu>
-	<1196379273.6473.121.camel@perihelion>
-	<21029.1196403614@turing-police.cc.vt.edu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Nov 2007 08:44:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43445 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbXK3NoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:44:04 -0500
+Date: Fri, 30 Nov 2007 14:43:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: J?rn Engel <joern@logfs.org>
+Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
+       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071130134312.GA32273@elte.hu>
+References: <4739ADA2.4060604@rtr.ca> <alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain> <4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca> <20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu> <20071130125628.GA30773@lazybastard.org> <20071130133546.GB29679@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071130133546.GB29679@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Fortunately for all concerned, although Alan's self-modifying code is indeed a
-> possibility, it's much less of an issue than the sort of malware that can be
-> found with a simple "find this 27-byte sequence, which will be found in either
-> block 36 or 37 of the file"
 
-Thats a very old model of detection ;)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
+> > > sorry, wrong URLs, the correct links are:
+> > > 
+> > >    http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.24-rc2-git5-combo.patch
+> > >    http://redhat.com/~mingo/latency-tracing-patches/trace-cmd.c
+> > 
+> > Don't seem to work with plain 2.6.23:
 
-There is another usage case for this stuff as well - which is on the fly
-indexing of material. An indexer has the same basic needs as a virus
-checker (without the blocking aspect) and doesn't have to be robust
-against sneaky material.
+could you try this updated version:
 
-Alan
+  http://redhat.com/~mingo/latency-tracing-patches/latency-tracing-v2.6.24-rc3.combo.patch
+
+does it work any better?
+
+	Ingo
