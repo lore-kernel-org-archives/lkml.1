@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbXK3FHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932983AbXK3Fje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbXK3FHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 00:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbXK3FHi
+	id S932983AbXK3Fje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 00:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXK3FjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 00:07:38 -0500
-Received: from rn-out-0910.google.com ([64.233.170.189]:36406 "EHLO
-	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750726AbXK3FHi (ORCPT
+	Fri, 30 Nov 2007 00:39:24 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:49876 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbXK3FjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 00:07:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UVa3V2RxX7ppyrIzSQ5PsZxI2330pLsYoiUgEMooXOtKrdEn7KJfHo3XGvqoTvOu5Qj+djdPAOuR9rcpUD/BR2pORaG7EK9zWpQ/yL0Dlz/S6XvnzbFLKUzc98B9bo0TyAGtJYeAIqL6/H3SBwUrDxIUnuUDy7xBYWc+WlgJKh0=
-Message-ID: <a8e1da0711292107q4e2e0282o2d37798dc529288c@mail.gmail.com>
-Date: Fri, 30 Nov 2007 13:07:37 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Sample kset/ktype/kobject implementation
-Cc: "Greg KH" <greg@kroah.com>, "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       linux-kernel@vger.kernel.org, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Jonathan Corbet" <corbet@lwn.net>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.44L0.0711291708080.5666-100000@iolanthe.rowland.org>
+	Fri, 30 Nov 2007 00:39:24 -0500
+Message-ID: <474F9AFB.4030308@linux.vnet.ibm.com>
+Date: Fri, 30 Nov 2007 10:39:15 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [BUG] 2.6.24-rc3-mm2 soft lockup while running tbench
+References: <20071128034140.648383f0.akpm@linux-foundation.org> <474D7C32.1070809@linux.vnet.ibm.com> <20071129130905.c31431f3.akpm@linux-foundation.org>
+In-Reply-To: <20071129130905.c31431f3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071129203900.GA27877@kroah.com>
-	 <Pine.LNX.4.44L0.0711291708080.5666-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 30, 2007 6:11 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 29 Nov 2007, Greg KH wrote:
->
-> > > > > kobject_put(foo) is needed since it gets you through kobject_cleanup()
-> > > > > where the name can be freed.
-> > > >
-> > > > No, kobject_register() should have handled that for us, right?
-> > >
-> > > kobject_register() doesn't do a kobject_put() if kobject_add() failed.
-> >
-> > Crap.  If I can't get this code right in an example, the API is messed
-> > up.  Time to take Kay seriously and start to revamp the basic kobject
-> > api :)
->
-> The rule is simple enough.  After calling kobject_register() you should
-> always use kobject_put() -- even if kobject_register() failed.
->
-> In fact, after calling kobject_init() you should use kobject_put().
-> The first rule follows from this one, since kobject_register() calls
-> kobject_init() internally.
->
-Hi,
-The behavior is not very clear here, the root problem is that :
-
-1. Should we call kobject_put so cleanup work can be done by refcount
-touch zero or call kfree every time after kobject_register failed?
-
-2. If kobject_put calling is true, should this be done in
-kobject_register error handling codes or by hand after
-kobject_register failed?
-
-Regards
-dave
-> Alan Stern
->
->
->
+Andrew Morton wrote:
+> On Wed, 28 Nov 2007 20:03:22 +0530
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>> Hi Andrew,
+>>
+>> while running tbench on the powerpc with 2.6.24-rc3-mm2 softlock up occurs
+>>
+>> BUG: soft lockup - CPU#0 stuck for 11s! [tbench:12183]
+>> NIP: c0000000000ac978 LR: c0000000000acff0 CTR: c00000000005c648
+>> REGS: C00000076F0F3200 TRAP: 0901   Not tainted  (2.6.24-rc3-mm2-autotest)
+>> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44000482  XER: 00000000
+>> TASK = C00000076F4BC000[12183] 'tbench' THREAD: C00000076F0F0000 CPU: 0
+>> NIP [c0000000000ac978] .get_page_from_freelist+0x1cc/0x754
+>> LR [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
+>> Call Trace:
+>> [c00000076f0f3480] [c00000076f0f3560] 0xc00000076f0f3560 (unreliable)
+>> [c00000076f0f3590] [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
+>> [c00000076f0f3680] [c0000000000ce2e4] .alloc_pages_current+0xa8/0xc8
+>> [c00000076f0f3710] [c0000000000ac6ec] .__get_free_pages+0x20/0x70
+>> [c00000076f0f3790] [c0000000000d75c8] .__kmalloc_node_track_caller+0x60/0x148
+>> [c00000076f0f3840] [c0000000002c22b0] .__alloc_skb+0x98/0x184
+>> [c00000076f0f38f0] [c000000000306cd8] .tcp_sendmsg+0x1fc/0xe24
+>> [c00000076f0f3a10] [c0000000002b963c] .sock_sendmsg+0xe4/0x128
+>> [c00000076f0f3c10] [c0000000002ba4ec] .sys_sendto+0xd4/0x120
+>> [c00000076f0f3d90] [c0000000002df2f8] .compat_sys_socketcall+0x148/0x214
+>> [c00000076f0f3e30] [c00000000000872c] syscall_exit+0x0/0x40
+>> Instruction dump:
+>> 720b0001 eb970000 40820070 72000002 4182000c e8bc0000 48000018 72080004 
+>> 4182000c e8bc0008 48000008 e8bc0010 <e8c10078> 7f83e378 7de407b4 7e078378 
+>>
+> 
+> hm.  Beats me.  Does the machine recover OK?
 > -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Hi Andrew,
+
+In the set of test cases ran serially, the softlockup in seen in tbench,
+then the remaining test cases get to run successfully after the softlockup.
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
