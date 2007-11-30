@@ -1,98 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933399AbXK3Hfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933336AbXK3Hoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933399AbXK3Hfa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 02:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbXK3HfT
+	id S933336AbXK3Hoa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 02:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbXK3HoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 02:35:19 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44120 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756652AbXK3HfR (ORCPT
+	Fri, 30 Nov 2007 02:44:14 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:29223 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751199AbXK3HoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 02:35:17 -0500
-Date: Fri, 30 Nov 2007 13:04:46 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: ext4 development <linux-ext4@vger.kernel.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: circular locking dependency detected 
-Message-ID: <20071130073446.GA7864@skywalker>
+	Fri, 30 Nov 2007 02:44:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wher+D0LeX8R0o4dSsI9KSvQ7XdwSIIKjO+zHN2a72dZr2NrbzaihNjqgPDLwjWqcGEzppT83T3JZ99ndm8RZ0nG/wFOx0Nuxu+smzoRE7KRrJrpYVbX9zto9jfuGELoQce+YNYMizSTV8yKEW3Pvzv7x0tJp7ePZwvpDjbx0r4=
+Message-ID: <787b0d920711292344y43c9bc1cs2505a800617ecf86@mail.gmail.com>
+Date: Fri, 30 Nov 2007 02:44:12 -0500
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: + proc-fix-the-threaded-proc-self.patch added to -mm tree
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Guillaume Chazarain" <guichaz@yahoo.fr>,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org, oleg@tv-sign.ru,
+       rjw@sisk.pl, roland@redhat.com, xemul@openvz.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Ulrich Drepper" <drepper@redhat.com>
+In-Reply-To: <m1hcj4buim.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <200711262339.lAQNdNrw029057@imap1.linux-foundation.org>
+	 <20071128014901.4b303954@inria.fr>
+	 <787b0d920711280141v463759efod86395c50c1b47c5@mail.gmail.com>
+	 <20071128104622.GB19694@elte.hu>
+	 <m1ve7mehcm.fsf@ebiederm.dsl.xmission.com>
+	 <787b0d920711280947g418330faie5c96293102c3f05@mail.gmail.com>
+	 <m1hcj4buim.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Nov 29, 2007 4:40 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> "Albert Cahalan" <acahalan@gmail.com> writes:
+>
+> > On Nov 28, 2007 6:31 AM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> >> Ingo Molnar <mingo@elte.hu> writes:
+> >> > * Albert Cahalan <acahalan@gmail.com> wrote:
+> >> >> On Nov 27, 2007 7:49 PM, Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.24-rc3 #6
--------------------------------------------------------
-bash/2294 is trying to acquire lock:
-(&journal->j_list_lock){--..}, at: [<c01eee2f>] journal_try_to_free_buffers+0x76/0x10c
+> Linux tasks when used in one particular way can fulfill the posix
+> requirements for single threaded processes.
+>
+> Linux task groups when used in one particular way can fulfill the
+> posix requirements for processes.
 
-but task is already holding lock:
-(inode_lock){--..}, at: [<c01864b6>] drop_pagecache+0x48/0xd8
+Right. Once you leave this, weirdness happens.
+POSIX defines things in terms of processes and threads.
+POSIX defines many of our interfaces. That includes
+kernel behavior, the C library, and numerous programs.
 
-which lock already depends on the new lock.
+> As for where /proc/self points given that procps seems to read
+> files like /proc/self/stat.  It looks to me like we have a clear
+> case of a user space application that cares about the current
+> behavior and would break if we changed things.
 
+I wasn't saying procps would break, though it would if
+/proc/self/task went away. I'm more concerned about
+multi-threaded things that look in their own /proc/self
+directory. The procps programs are single-threaded.
 
-the existing dependency chain (in reverse order) is:
+In procps, the self link is used:
 
--> #1 (inode_lock){--..}:
-[<c0143929>] __lock_acquire+0xa31/0xc1a
-[<c0143b8c>] lock_acquire+0x7a/0x94
-[<c0447ae5>] _spin_lock+0x2e/0x58
-[<c0185fae>] __mark_inode_dirty+0xd8/0x15e
-[<c018996f>] __set_page_dirty+0xfb/0x10a
-[<c01899fe>] mark_buffer_dirty+0x80/0x86
-[<c01ed1b6>] __journal_temp_unlink_buffer+0xc1/0xc5
-[<c01ed2f3>] __journal_unfile_buffer+0xb/0x15
-[<c01ed338>] __journal_refile_buffer+0x3b/0x85
-[<c01efe1b>] journal_commit_transaction+0xe7f/0x10ec
-[<c01f34b0>] kjournald+0x131/0x35f
-[<c0138ee9>] kthread+0x3b/0x62
-[<c0105c7f>] kernel_thread_helper+0x7/0x10
-[<ffffffff>] 0xffffffff
+a. to see if the wchan file exists
+b. to see if the task directory exists
+c. to find the tty number
 
--> #0 (&journal->j_list_lock){--..}:
-[<c0143819>] __lock_acquire+0x921/0xc1a
-[<c0143b8c>] lock_acquire+0x7a/0x94
-[<c0447ae5>] _spin_lock+0x2e/0x58
-[<c01eee2f>] journal_try_to_free_buffers+0x76/0x10c
-[<c01cb7a2>] ext3_releasepage+0x68/0x74
-[<c0151ff1>] try_to_release_page+0x33/0x44
-[<c01578b0>] __invalidate_mapping_pages+0x74/0xe0
-[<c01864de>] drop_pagecache+0x70/0xd8
-[<c018657c>] drop_caches_sysctl_handler+0x36/0x4e
-[<c019efaa>] proc_sys_write+0x6b/0x85
-[<c016da2b>] vfs_write+0x90/0x119
-[<c016dfe2>] sys_write+0x3d/0x61
-[<c0104f6e>] sysenter_past_esp+0x5f/0xa5
-[<ffffffff>] 0xffffffff
+(that last one: there might not be a file descriptor
+for the tty, and anyway I need it with the bits in all
+the same places as what I get for the other processes)
 
-other info that might help us debug this:
+I'll bet that something reads /proc/self/stat to see
+CPU usage.
 
-2 locks held by bash/2294:
-#0:  (&type->s_umount_key#16){----}, at: [<c01864a6>] drop_pagecache+0x38/0xd8
-#1:  (inode_lock){--..}, at: [<c01864b6>] drop_pagecache+0x48/0xd8
+> > Note that it was intended that non-legacy additions
+> > would normally be added to either the process directory
+> > or the thread directory, not both. I think somebody may
+> > have ripped out the ability to do this; at the very least
+> > there have been numerous illogical additions.
+>
+> The rationale was not conveyed and the policy you describe
+> seems like deprecating the /proc/<tgid> directory in favor
+> of the /proc/<tgid>/task/<pid>/.  Which was a pattern
+> never established and it doesn't seem to make anything better
+> so I don't see the point there.
 
-stack backtrace:
-[<c0105ffb>] show_trace_log_lvl+0x1a/0x2f
-[<c0106875>] show_trace+0x12/0x14
-[<c0106967>] dump_stack+0x16/0x18
-[<c0141b33>] print_circular_bug_tail+0x5f/0x68
-[<c0143819>] __lock_acquire+0x921/0xc1a
-[<c0143b8c>] lock_acquire+0x7a/0x94
-[<c0447ae5>] _spin_lock+0x2e/0x58
-[<c01eee2f>] journal_try_to_free_buffers+0x76/0x10c
-[<c01cb7a2>] ext3_releasepage+0x68/0x74
-[<c0151ff1>] try_to_release_page+0x33/0x44
-[<c01578b0>] __invalidate_mapping_pages+0x74/0xe0
-[<c01864de>] drop_pagecache+0x70/0xd8
-[<c018657c>] drop_caches_sysctl_handler+0x36/0x4e
-[<c019efaa>] proc_sys_write+0x6b/0x85
-[<c016da2b>] vfs_write+0x90/0x119
-[<c016dfe2>] sys_write+0x3d/0x61
-[<c0104f6e>] sysenter_past_esp+0x5f/0xa5
-=======================
+For the stuff that is logically per-task, yes.
+For the rest, no. Oh well...
+
+It does make things better because redundant info
+is a source of confusion.
+
+> >> I'm still trying to understand which will break user space more,
+> >> adding /proc/task or changing /proc/self.
+> >
+> > Changing /proc/self makes you get per-thread data
+> > when you asked for per-process data. That's bad.
+>
+> /proc/self used to ask for per task data.  Which is why there
+> is some confusion.
+
+Heh. Well, /proc/self used to ask for per process data.
+It was all the same. I think it matters that /proc/self was
+always documented as being per-process.
+
+> >> >> This one is probably best:
+> >> >> /proc/task -> 123/task/456
+> >> >> (with both numbers showing)
+> >> >
+> >> > this sounds good to me. If it's a symlink then there's not much other
+> >> > choice because the thread PIDs do not even show up under /proc anymore.
+> >>
+> >> The name sounds good to me.
+>
+> I will see about writing the patch for this in a bit and sending
+> it to Andrew.
+
+Nice.
+
+> Nope.  /proc/mounts was a symlink to /proc/self/mounts long before
+> /proc/self was modified to stop pointing at the task directory and
+> changed it point at the new task group directory.
+
+Having the filesystem namespace be per-process is wild enough.
+We really don't need it to be per-thread. (and yes, I'm using the
+POSIX terms on purpose)
+
+> Frankly from what I have seen of the code the task-group work
+> seems to be a larger source of bugs, and complications, because
+> people have a darn hard time wrapping their head around how it
+> is supposed to behave, and all of the corner cases were not
+> resolved at the time it was developed.
+
+People look at me like I have two heads when I explain to
+them that the Linux kernel source uses "pid" to mean
+a thread. The bad terminology probably promotes bad thinking.
+It would be lovely if that could somehow get fixed.
+
+> My favorite ongoing issue is what is needed to allow a threaded
+> init to actually function properly.  I think enough fixes have
+> gone in that it might even work.
+
+My "favorite" is the multi-threaded debugger. By this I
+mean the debugger itself wants to be multi-threaded,
+issuing ptrace commands from multiple threads.
