@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbXK3XEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbXK3XGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbXK3XEu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXK3XEi
+	id S1758753AbXK3XGt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:06:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbXK3XGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:04:38 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:34690 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755046AbXK3XEi (ORCPT
+	Fri, 30 Nov 2007 18:06:39 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:44095 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758332AbXK3XGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:04:38 -0500
-X-YMail-OSG: 4eG2ZXYVM1kE19Y3nwScO.Ibi6Jz3ydL.xqwLH3vvwlLrjWeo_ho9PfOMMwGwA3fkjqpaSv9Gg--
-Date: Fri, 30 Nov 2007 15:04:35 -0800
-From: Chris Wedgwood <cw@f00f.org>
-To: Stephen Lord <lord@xfs.org>
-Cc: Timothy Shimmin <tes@sgi.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xfs: revert to double-buffering readdir
-Message-ID: <20071130230435.GA12626@puku.stupidest.org>
-References: <20071114070400.GA25708@puku.stupidest.org> <20071125163014.GA17922@infradead.org> <474FBA21.4070201@sgi.com> <165B249C-FE97-4B27-927B-B39DE316CB23@xfs.org>
+	Fri, 30 Nov 2007 18:06:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=TPs0tpaDATiTuf3pFL4vrZlvQJDnW0NPzlTee0RltqW3Znv0ztWfdi/bv9DyKDhjLfj56gKr6mHQEQqjxSND9U2qsOz3vhqUVBnpjq1/Mpv5Jw1pdw0zitTOP6kpzRdfTh6Uwn4ayibqerWfriWSVV+DCuDgs6Qi9/WPhDbtfRk=
+Message-ID: <2c0942db0711301506k7e154b76kc1fc99c189f68a3d@mail.gmail.com>
+Date: Fri, 30 Nov 2007 15:06:32 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Larry Finger" <Larry.Finger@lwfinger.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: SoftMAC: Getting essid from req_essid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <165B249C-FE97-4B27-927B-B39DE316CB23@xfs.org>
+X-Google-Sender-Auth: 00b77d19d8c9d82e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 04:36:25PM -0600, Stephen Lord wrote:
+Hey there Larry, all,
 
-> Looks like the readdir is in the bowels of the btree code when
-> filldir gets called here, there are probably locks on several
-> buffers in the btree at this point. This will only show up for large
-> directories I bet.
+git blame fingered commit id efe870f9 (from Larry) for adding a couple
+of fairly harmless looking messages to
+net/ieee80211/softmac/ieee80211softmac_wx.c . The problem is that one
+of them is clogging up my syslog at the tune of once a second or so
+("SoftMAC: Getting essid from req_essid"), and rolling everything else
+out of my dmesg.
 
-I see it for fairly small directories.  Larger than what you can stuff
-into an inode but less than a block (I'm not checking but fairly sure
-that's the case).
+I just rebooted into 2.6.23-rc3+some, and after 36 minutes of uptime I
+already have:
 
-> Just rambling, not a single line of code was consulted in writing
-> this message.
+$ dmesg | cut -d ']' -f2- | sort | uniq -c | sort -nr | head -3
 
-Can you explain why the offset is capped and treated in an 'odd way'
-at all?
+   1047  SoftMAC: Getting essid from req_essid
+     38  SoftMAC: Getting essid from associate_essid
+     22  SoftMAC: Scanning finished: scanned 13 channels starting with channel 1
 
-+       curr_offset = filp->f_pos;
-+       if (curr_offset == 0x7fffffff)
-+               offset = 0xffffffff;
-+       else
-+               offset = filp->f_pos;
+Is the message important for debugging, or can I make a patch to yank
+the silly thing?
 
-and later the offset to filldir is masked.  Is that some restriction
-in filldir?
+Ray
