@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbXK3X5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbXLAAA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbXK3X5Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXK3X5I
+	id S1759078AbXLAAA4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 19:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbXLAAAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:57:08 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:51318 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbXK3X5F (ORCPT
+	Fri, 30 Nov 2007 19:00:42 -0500
+Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:53409
+	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755357AbXLAAAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:57:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=YlzSwAoME3ZPVKhJaHlIk9ompFOow3OUt7ECIfaxDU9dVMsgX4GZ4W7iIHr1tBW/VIcPIAZ5IZyJrcZ/DFbs9JeE2AtxbVtnDca1dntlk+GRNXHz3Vk6WtHlMsvKEN2z8CqGeoCaQE8usatcRfZAwJdLLTgRsqtFGJf7JYiFG0A=
-Message-ID: <4750A33C.4080509@gmail.com>
-Date: Sat, 01 Dec 2007 08:56:44 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Phillip Susi <psusi@cfl.rr.com>
-CC: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       noah <noah123@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: Possibly SATA related freeze killed networking and RAID
-References: <d00698fb0711201109m23ff096eiabeb22c8f9a917dc@mail.gmail.com> <20071120220512.46b9e975@the-village.bc.nu> <20071126120649.GC4701@ucw.cz> <474CCA82.7030000@gmail.com> <474F3A4B.3080304@cfl.rr.com> <474F530D.8090302@gmail.com> <47505A63.8070507@cfl.rr.com>
-In-Reply-To: <47505A63.8070507@cfl.rr.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Nov 2007 19:00:41 -0500
+X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Nov 2007 19:00:41 EST
+X-Authority-Analysis: v=1.0 c=1 a=DVJqRJfkT4s3hOcjSRcA:9 a=wP8zy9ft34lpijhXR-UA:7 a=JIGQLiCUGozhRnmYcQf4SueLUukA:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
+Subject: Re: Kernel Development & Objective-C
+From: Nicholas Miell <nmiell@comcast.net>
+To: "J.A." =?ISO-8859-1?Q?Magall=F3n?= <jamagallon@ono.com>
+Cc: =?ISO-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>,
+       Ben.Crowhurst@stellatravel.co.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20071201001950.11100a32@werewolf>
+References: <474EAD18.6040408@stellatravel.co.uk>
+	 <9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
+	 <20071201001950.11100a32@werewolf>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 30 Nov 2007 15:53:38 -0800
+Message-Id: <1196466818.18231.40.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.0.njm.3) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Susi wrote:
-> Tejun Heo wrote:
->> Because SFF ATA controller don't have IRQ pending bit.  You don't know
->> whether IRQ is raised or not.  Plus, accessing the status register which
->> clears pending IRQ can be very slow on PATA machines.  It has to go
->> through the PCI and ATA bus and come back.  So, unconditionally trying
->> to clear IRQ by accessing Status can incur noticeable overhead if the
->> IRQ is shared with devices which raise a lot of IRQs.
+
+On Sat, 2007-12-01 at 00:19 +0100, J.A. Magallón wrote:
+
+> An vtable in C++ takes exactly the same space that the function
+> table pointer present in every driver nowadays... and probably
+> the virtual method call that C++ does itself with
 > 
-> There HAS to be a way to determine if that device generated the
-> interrupt, or the interrupt can not be shared.  Since the kernel said
-> nobody cared about the interrupt, that indicates that the sata driver
-> checked the status register and realized the sata chip didn't generate
-> the interrupt, and returned to the kernel letting it know that the
-> interrupt was not for it.
+> 	thing->do_something(with,this)
+> 
+> like
+> 	push thing
+> 	push with
+> 	push this
+> 	call THING_vtable+indexof(do_something) // constants at compile time
+> 
+> is much more efficient that what gcc can mangle to do with
+> 
+> 	thing->do_something(with,this,thing)
+> 
+> 	push with
+> 	push this
+> 	push thing
+> 	get thing+offsetof(do_something) // not constant at compile time
+> 	dereference it
+> 	call it
+> 
+> (that is, get a generic field on a structure and use it as jump address)
+> 
+> In short, the kernel is object oriented, implements OO programming by
+> hand, but the compiler lacks the knowledge that it is object oriented
+> programming so it could do some optimizations.
 
-Surprise, surprise.  There's no way to tell whether the controller
-raised interrupt or not if command is not in progress.  As I said
-before, there's no IRQ pending bit.  While processing commands, you can
-tell by looking at other status registers but when there's nothing in
-flight and the controller determines it's a good time to raise a
-spurious interrupt, there's no way you can tell.  That dang SFF
-interface is like 15+ years old.
+        struct test;
+        struct testVtbl
+        {
+        	int (*fn1)(struct test *t, int x, int y);
+        	int (*fn2)(struct test *t, int x, int y);
+        };
+        struct test
+        {
+        	struct testVtbl *vtbl;
+        	int x, y;
+        };
+        void testCall(struct test *t, int x, int y)
+        {
+        	t->vtbl->fn1(t, x, y);
+        	t->vtbl->fn2(t, x, y);
+        }
 
-But we can still make things pretty robust.  We're working on it.
+and
 
-Thanks.
+        struct test
+        {
+        	virtual int fn1(int x, int y);
+        	virtual int fn2(int x, int y);
+        
+        	int x, y;
+        };
+        
+        void testCall(struct test *t, int x, int y)
+        {
+        	t->fn1(x, y);
+        	t->fn2(x, y);
+        }
+        
+generate instruction-for-instruction identical code.
 
 -- 
-tejun
+Nicholas Miell <nmiell@comcast.net>
+
