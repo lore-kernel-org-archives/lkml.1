@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXK3NDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbXK3NDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbXK3NDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXK3NDA
+	id S1758446AbXK3NDo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXK3ND2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:03:00 -0500
-Received: from sacred.ru ([62.205.161.221]:45602 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758028AbXK3NC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:02:59 -0500
-Message-ID: <475009FA.20409@openvz.org>
-Date: Fri, 30 Nov 2007 16:02:50 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef CONFIG_SYSCTL
-References: <475008F5.3000506@openvz.org>
-In-Reply-To: <475008F5.3000506@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 30 Nov 2007 08:03:28 -0500
+Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:39749 "EHLO
+	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757333AbXK3ND0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 08:03:26 -0500
+Subject: 2.6.22.14 oops msg with commvault galaxy ?
+From: Vincent Fortier <vincent.fortier1@ec.gc.ca>
+Reply-To: vincent.fortier1@ec.gc.ca
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 30 Nov 2007 16:02:48 +0300 (MSK)
+Organization: Environnement Canada
+Date: Fri, 30 Nov 2007 13:02:54 +0000
+Message-Id: <1196427774.10204.4.camel@kayak.wul.qc.ec.gc.ca>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+X-OriginalArrivalTime: 30 Nov 2007 13:02:54.0214 (UTC) FILETIME=[520EFA60:01C83351]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This includes the tables themselves and the call to the
-register_sysctl_table(). Since this call is done from the __init
-call, I hope this is OK to keep the #ifdef inside the function, 
-rather than making proper helpers outside it.
+Hi all,
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+I'm using a 2.6.22.14 + CFS v24 and I got theses errors when starting up
+my commvault galaxy client...  Do anybody know what this could mean?
 
----
+Message from syslogd@printemps at Fri Nov 30 12:54:57 2007 ...
+printemps kernel: [750078.538268] Oops: 0000 [#1]
+printemps kernel: [750078.538284] SMP
+printemps kernel: [750078.538528] CPU:    2
+printemps kernel: [750078.538529] EIP:    0060:[<c01d915a>]    Not
+tainted VLI
+printemps kernel: [750078.538530] EFLAGS: 00010297
+(2.6.22.14-cfs-etch-686-envcan #1)
+printemps kernel: [750078.538580] EIP is at vsnprintf+0x2af/0x48c
+printemps kernel: [750078.538597] eax: 80000000   ebx: ffffffff   ecx:
+80000000   edx: fffffffe
+printemps kernel: [750078.538618] esi: e4a85017   edi: cf07feac   ebp:
+ffffffff   esp: cf07fe4c
+printemps kernel: [750078.538637] ds: 007b   es: 007b   fs: 00d8  gs:
+0033  ss: 0068
+printemps kernel: [750078.538656] Process clBackup (pid: 29277,
+ti=cf07e000 task=f6d9f8c0 task.ti=cf07e000)
+printemps kernel: [750078.538676] Stack: e4834000 00001000 c033b638
+f89e056c c02360f1 e4834000 1b57afe8 e4a85017
+printemps kernel: [750078.538721]        00ef2608 00000000 ffffffff
+00000000 ffffffff c0337eab 00000003 00000017
+printemps kernel: [750078.538767]        c037a340 e4834000 c01d93b8
+cf07feac cf07feac c023566c e4a85017 c0337eaa
+printemps kernel: [750078.538810] Call Trace:
+printemps kernel: [750078.538839]  [<c02360f1>] dev_uevent+0x189/0x1e0
+printemps kernel: [750078.538864]  [<c01d93b8>] sprintf+0x20/0x23
+printemps kernel: [750078.538885]  [<c023566c>] show_uevent+0xad/0xd5
+printemps kernel: [750078.538907]  [<c01571d1>] get_page_from_freelist
++0x273/0x30a
+printemps kernel: [750078.538933]  [<c01323fc>] group_send_sig_info
++0x12/0x56
+printemps kernel: [750078.538956]  [<c01572ba>] __alloc_pages+0x52/0x286
+printemps kernel: [750078.538984]  [<c02355bf>] show_uevent+0x0/0xd5
+printemps kernel: [750078.539006]  [<c023517e>] dev_attr_show+0x15/0x18
+printemps kernel: [750078.539027]  [<c01a8e9f>] sysfs_read_file
++0x87/0xd8
+printemps kernel: [750078.539048]  [<c01880bc>] sys_getxattr+0x46/0x4e
+printemps kernel: [750078.539071]  [<c01a8e18>] sysfs_read_file+0x0/0xd8
+printemps kernel: [750078.539092]  [<c0171fb7>] vfs_read+0xa6/0x128
+printemps kernel: [750078.539115]  [<c01723b3>] sys_read+0x41/0x67
+printemps kernel: [750078.539137]  [<c0103d8a>] syscall_call+0x7/0xb
+printemps kernel: [750078.539162]  =======================
+printemps kernel: [750078.539177] Code: 74 24 28 73 03 c6 06 20 4d 46 85
+ed 7f f1 e9 b9 00 00 00 8b 0f b8 39 0a 33 c0 8b 54 24 30 81 f9 ff 0f 00
+00 0f 46 c8 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 f6
+44 24 2c 10 89 c3
+printemps kernel: [750078.539346] EIP: [<c01d915a>] vsnprintf
++0x2af/0x48c SS:ESP 0068:cf07fe4c
 
-diff --git a/fs/dquot.c b/fs/dquot.c
-index 50e7c2a..efee14d 100644
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -1821,6 +1821,7 @@ struct quotactl_ops vfs_quotactl_ops = {
- 	.set_dqblk	= vfs_set_dqblk
- };
- 
-+#ifdef CONFIG_SYSCTL
- static ctl_table fs_dqstats_table[] = {
- 	{
- 		.ctl_name	= FS_DQ_LOOKUPS,
-@@ -1918,6 +1919,7 @@ static ctl_table sys_table[] = {
- 	},
- 	{ .ctl_name = 0 },
- };
-+#endif
- 
- static int __init dquot_init(void)
- {
-@@ -1926,7 +1928,9 @@ static int __init dquot_init(void)
- 
- 	printk(KERN_NOTICE "VFS: Disk quotas %s\n", __DQUOT_VERSION__);
- 
-+#ifdef CONFIG_SYSCTL
- 	register_sysctl_table(sys_table);
-+#endif
- 
- 	dquot_cachep = kmem_cache_create("dquot",
- 			sizeof(struct dquot), sizeof(unsigned long) * 4,
--- 
-1.5.3.4
 
+thnx very much!
+
+- vin
 
