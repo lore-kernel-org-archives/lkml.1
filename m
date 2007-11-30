@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbXK3XGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbXK3XH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758753AbXK3XGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbXK3XGj
+	id S1758604AbXK3XH5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXK3XHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:06:39 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:44095 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758332AbXK3XGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:06:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=TPs0tpaDATiTuf3pFL4vrZlvQJDnW0NPzlTee0RltqW3Znv0ztWfdi/bv9DyKDhjLfj56gKr6mHQEQqjxSND9U2qsOz3vhqUVBnpjq1/Mpv5Jw1pdw0zitTOP6kpzRdfTh6Uwn4ayibqerWfriWSVV+DCuDgs6Qi9/WPhDbtfRk=
-Message-ID: <2c0942db0711301506k7e154b76kc1fc99c189f68a3d@mail.gmail.com>
-Date: Fri, 30 Nov 2007 15:06:32 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Larry Finger" <Larry.Finger@lwfinger.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: SoftMAC: Getting essid from req_essid
+	Fri, 30 Nov 2007 18:07:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60947 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755169AbXK3XHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:07:47 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+Date: Sat, 1 Dec 2007 00:26:07 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Michael Cree <mcree@orcon.net.nz>, rct@gherkin.frus.com,
+       linux-kernel@vger.kernel.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       linux-scsi@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>
+References: <20071126134819.8FE56DBA2@gherkin.frus.com> <47508EE9.9030304@orcon.net.nz> <20071130144250.e89335f3.akpm@linux-foundation.org>
+In-Reply-To: <20071130144250.e89335f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: 00b77d19d8c9d82e
+Message-Id: <200712010026.08086.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey there Larry, all,
+On Friday, 30 of November 2007, Andrew Morton wrote:
+> On Sat, 01 Dec 2007 11:30:01 +1300
+> Michael Cree <mcree@orcon.net.nz> wrote:
+> 
+> > Bob Tracy wrote:
+> > > Andrew Morton wrote:
+> > >> Could be something change in sysfs.  Please double-check the config
+> > >> options, make sure that something important didn't get disabled.
+> > >>
+> > >  Here's
+> > > hoping someone else is seeing this or can replicate it in the meantime.
+> > 
+> > Snap.
+> > 
+> > 2.6.24-rc2 works fine.   2.6.24-rc3 boots on Alpha but once /dev is 
+> > populated no partitions of the scsi sub-system are seen.  Looks like ide 
+> > sub-system similarly affected.
+> 
+> Rafael, I assume you have this regression in the list?
 
-git blame fingered commit id efe870f9 (from Larry) for adding a couple
-of fairly harmless looking messages to
-net/ieee80211/softmac/ieee80211softmac_wx.c . The problem is that one
-of them is clogging up my syslog at the tune of once a second or so
-("SoftMAC: Getting essid from req_essid"), and rolling everything else
-out of my dmesg.
-
-I just rebooted into 2.6.23-rc3+some, and after 36 minutes of uptime I
-already have:
-
-$ dmesg | cut -d ']' -f2- | sort | uniq -c | sort -nr | head -3
-
-   1047  SoftMAC: Getting essid from req_essid
-     38  SoftMAC: Getting essid from associate_essid
-     22  SoftMAC: Scanning finished: scanned 13 channels starting with channel 1
-
-Is the message important for debugging, or can I make a patch to yank
-the silly thing?
-
-Ray
+Yes, http://bugzilla.kernel.org/show_bug.cgi?id=9457
