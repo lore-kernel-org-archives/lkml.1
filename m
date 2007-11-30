@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXK3KIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXK3KJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbXK3KIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 05:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbXK3KIR
+	id S932564AbXK3KJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 05:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXK3KJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 05:08:17 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60241 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754014AbXK3KIQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 05:08:16 -0500
-Date: Fri, 30 Nov 2007 19:11:14 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Memory Management List <linux-mm@kvack.org>,
+	Fri, 30 Nov 2007 05:09:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37504 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755159AbXK3KJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 05:09:02 -0500
+Date: Fri, 30 Nov 2007 11:08:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in
- 2.6.25
-Message-Id: <20071130191114.866b5ce0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <474F7FDF.3000506@linux.vnet.ibm.com>
-References: <474ED005.7060300@linux.vnet.ibm.com>
-	<200711301311.48291.nickpiggin@yahoo.com.au>
-	<474F7FDF.3000506@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071130100845.GB2201@elte.hu>
+References: <1196155985.25646.31.camel@ymzhang> <200711301346.22573.nickpiggin@yahoo.com.au> <1196392527.25646.65.camel@ymzhang> <200711301429.15664.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200711301429.15664.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007 08:43:35 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> KAMEZAWA-San posted some test results on background reclaim and per zone
-> reclaim
-> 
 
-I'd like to post some patches below in the next week.
-  - throttling the number of callers of try_to_free_mem_cgroup_pages()
-  - background reclaim and high/low watermark.
-  - some cleanups.
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-And they are all patches I have now (for this window)
+> Haven't we been asking JVMs to use futexes or posix locking for years 
+> and years now? [...]
 
-Thanks,
--Kame
+i'm curious, with what JVM was it tested and where's the source so i can 
+fix their locking for them? Can the problem be reproduced with:
 
+  http://download.fedora.redhat.com/pub/fedora/linux/development/source/SRPMS/java-1.7.0-icedtea-1.7.0.0-0.20.b23.snapshot.fc9.src.rpm
+
+?
+
+	Ingo
