@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXK3OVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934489AbXK3OWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbXK3OVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 09:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXK3OU5
+	id S934489AbXK3OWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 09:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXK3OWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 09:20:57 -0500
-Received: from styx.suse.cz ([82.119.242.94]:37804 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755810AbXK3OU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 09:20:56 -0500
-Date: Fri, 30 Nov 2007 15:20:55 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Sterba <dsterba@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>, jslaby@suse.cz,
-       stephen@symmetric.co.nz, Ben Martel <benm@symmetric.co.nz>
-Subject: Re: [PATCH] ipwireless_cs driver for 4G PC Card
-In-Reply-To: <47500D95.4020009@garzik.org>
-Message-ID: <Pine.LNX.4.64.0711301518320.12807@jikos.suse.cz>
-References: <20071130125555.GA10977@ds.suse.cz> <47500D95.4020009@garzik.org>
+	Fri, 30 Nov 2007 09:22:08 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35725 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756234AbXK3OWH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 09:22:07 -0500
+Message-ID: <47501C86.1020907@davidnewall.com>
+Date: Sat, 01 Dec 2007 00:51:58 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Xavier Bestel <xavier.bestel@free.fr>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ben.Crowhurst@stellatravel.co.uk, linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+References: <474EAD18.6040408@stellatravel.co.uk>  <1196416960.20567.205.camel@skunk.anacadf.mentorg.com>  <20071130190742.4B7C.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1196418013.20567.211.camel@skunk.anacadf.mentorg.com> <Pine.LNX.4.64.0711301154070.3089@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0711301154070.3089@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, Jeff Garzik wrote:
+Jan Engelhardt wrote:
+> On Nov 30 2007 11:20, Xavier Bestel wrote:
+>   
+>> On Fri, 2007-11-30 at 19:09 +0900, KOSAKI Motohiro wrote:
+>>     
+>>>>> Has Objective-C ever been considered for kernel development?
+>>>>>           
+>>>> Why not C# instead ?
+>>>>         
+>>> Why not Haskell nor Erlang instead ? :-D
+>>>       
+>> I heard of a bash compiler. That would enable development time
+>> rationalization and maximize the collaborative convergence of a
+>> community-oriented synergy.
+>>
+>>     
+> Fortran90 it has to be.
 
-> > Driver lives in drivers/char/pcmcia directory, it's a serial driver.  
-> > I'm not sure if this is the right place, since it's a networking 
-> > driver too and therefore should be in drivers/net/pcmcia.
-> If the -main- purpose of the hardware is wireless, it should go in via 
-> John Linville, wireless maintainer...
-
-Well, it is
-
-- 4G UMTS PPP networking hardware
-- PCMCIA
-- which presents itself as a serial character device (i.e. looks like 
-  usual modem to userspace, accepts AT commands, etc)
-
-So my opinion is that it's very far away from what actually is in 
-drivers/net/wireless. It's not 802.x network card in any sense.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+It used to be written in BCPL; or was that Multics?
