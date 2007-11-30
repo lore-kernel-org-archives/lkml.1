@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764516AbXK3SoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764319AbXK3Sp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764516AbXK3SoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 13:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762813AbXK3Sni
+	id S1764319AbXK3Sp5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 13:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762813AbXK3Sps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 13:43:38 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:22163 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761724AbXK3Snh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 13:43:37 -0500
-Message-ID: <475059D6.2080900@msgid.tls.msk.ru>
-Date: Fri, 30 Nov 2007 21:43:34 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Fri, 30 Nov 2007 13:45:48 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:48217 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762843AbXK3Spr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 13:45:47 -0500
+Message-ID: <47505A53.8080906@linux.vnet.ibm.com>
+Date: Sat, 01 Dec 2007 00:15:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: 2.6.23: does it supposed to work on an i486?
-References: <47504923.9030309@msgid.tls.msk.ru> <4750519C.2000907@zytor.com>
-In-Reply-To: <4750519C.2000907@zytor.com>
-X-Enigmail-Version: 0.94.2.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       skumar@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, menage@google.com
+Subject: Re: [PATCH] sched: cpu accounting controller (V2)
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129113035.bbdf35db.akpm@linux-foundation.org> <20071129201833.GA18023@linux.vnet.ibm.com> <20071130124225.GM5681@linux.vnet.ibm.com> <475005F7.7080702@linux.vnet.ibm.com> <20071130135331.GA7145@elte.hu>
+In-Reply-To: <20071130135331.GA7145@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Michael Tokarev wrote:
-[2.6.23 on an i486 machine]
->> The result is immediately machine reboot right
->> after bootloader (etherboot) passes control to
->> the kernel -- BEFORE "Uncompressing linux"
->> message.
+Ingo Molnar wrote:
+> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> Srivatsa Vaddagiri wrote:
+>> [snip]
 >>
->> 2.6.22 worked just fine.
-[]
-> It looks like 2.6.23.9 is missing checkin
-> 7ed192906a2144ebc8ca2925a85d27b9c5355668 from Linus' tree (attached),
-> which is necessary to work on 386 and 486.
+>>> Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+>>>
+>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> thx. Have you done targeted testing of it as well? The (v2) patch is in 
+> sched-devel.git:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+> 
+> 	Ingo
 
-Well, I applied the patch (in 2.6.23 it's
- arch/i386/boot/pmjump.S,
-not
- arch/x86/boot/pmjump.S,
-but that's minor) - still the same behavior, it still reboots
-instantly right when bootloader gave control to the kernel.
-So it must be something else.. ;)
+Tested the patches on top of 2.6.24-rc3. The patches work fine. Ran some
+simple tests like cpuspin (spin on the cpu), ran several tasks in the
+same group and timed them. Compared their time stamps with cpuacct.usage.
 
-I'll try other kernels tomorrow, given some time (I already
-spent almost the whole day today with this "machine").  This
-whole story prompted me to just throw those machines away and
-replace them with tiny devices (a small print server in this
-case).  There are still several 486-class machines out there...
+Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-By the way, this very machine I'm experimenting with is a
-strange beast by itself.  For example, etherboot does not
-work on it properly, anything since version 5.1.0 just
-freezes right after displaying the "greeting" message.
-5.0.11 works.  However till now, linux worked on it just
-fine, -- unlike etherboot.
-
-Thanks!
-
-/mjt
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
