@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935097AbXK3P02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbXK3P1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935097AbXK3P02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 10:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXK3P0N
+	id S934534AbXK3P1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 10:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758230AbXK3P10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 10:26:13 -0500
-Received: from smtpoutm.mac.com ([17.148.16.77]:54697 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbXK3P0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 10:26:12 -0500
-In-Reply-To: <20071130143445.GA2310@csclub.uwaterloo.ca>
-References: <474EAD18.6040408@stellatravel.co.uk> <20071130143445.GA2310@csclub.uwaterloo.ca>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
-Cc: Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
-       linux-kernel@vger.kernel.org
+	Fri, 30 Nov 2007 10:27:26 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54321 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752944AbXK3P1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 10:27:25 -0500
+Date: Fri, 30 Nov 2007 15:23:16 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, jeff@garzik.org,
+       akpm@osdl.org
+Subject: [PATCH] libata: Fix early use of port printk. (Was Re:
+ ata4294967295: failed to start port (errno=-19))
+Message-ID: <20071130152316.32e2effa@the-village.bc.nu>
+In-Reply-To: <Pine.SOC.4.64.0711301433130.13468@math.ut.ee>
+References: <Pine.SOC.4.64.0711281947090.15823@math.ut.ee>
+	<20071128200716.14eccfdd@the-village.bc.nu>
+	<Pine.SOC.4.64.0711301433130.13468@math.ut.ee>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Kernel Development & Objective-C
-Date: Fri, 30 Nov 2007 10:26:03 -0500
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 30, 2007, at 09:34:45, Lennart Sorensen wrote:
-> On Thu, Nov 29, 2007 at 12:14:16PM +0000, Ben Crowhurst wrote:
->> Has Objective-C ever been considered for kernel development?
->
-> Doesn't objective C essentially require a runtime to provide a lot  
-> of the features of the language?  If it does (as I suspect) then it  
-> is totally unsiatable for kernel development.
->
-> That and object oriented languages in general are badly designed  
-> and a bad idea.  Having not used objective C I have no idea if it  
-> qualifies as badly designed or not.  Certainly C++ and java are  
-> both very badly designed.
+On Fri, 30 Nov 2007 14:34:11 +0200 (EET)
+Meelis Roos <mroos@linux.ee> wrote:
 
-Objective-C is actually a pretty minimal wrapper around C; it was  
-originally implemented as a C preprocessor.  It generally does not  
-have any kind of memory management, garbage collection, or anything  
-else (although typically a "runtime" will provide those features).   
-There are no first-class exceptions, so there would be nothing to  
-worry about there (the exceptions used in GUI programs are built  
-around the setjmp/longjmp primitives).  Objective-C is also almost  
-completely backwards-compatible with C, much more so than C++ ever  
-was.  As far as the runtime goes the kernel would be expected to  
-write its own, the same way that it implements "kmalloc()" as part of  
-a "C runtime".  Since the runtime itself never does any implicit  
-memory allocation, I think it would conceivably even be relatively  
-safe for kernel usage.
+> > Can you stick a stack trace in at that point ? That would help diagnose
+> > it a great deal quicker.
+> 
+> Finally done - found out hard way that BUG() is too bad and 
+> dump_st5ack() suits me better.
 
-With that said, there is a significant performance penalty as all  
-Objective-C method calls are looked up symbolically at runtime for  
-every single call.  For GUI programs where large chunks of the code  
-are event-loops and not performance-sensitive that provides a huge  
-amount of extra flexibility.  In the kernel though, there are many  
-codepaths where *every* *single* instruction counts; that could be a  
-serious performance hit.
+Thanks. This should fix the real cause, and also allow for port start to
+fail politely with -ENODEV.
 
-Cheers,
-Kyle Moffett
+Signed-off-by: Alan Cox <alan@redhat.com>
+
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc2-mm1/drivers/ata/libata-core.c linux-2.6.24-rc2-mm1/drivers/ata/libata-core.c
+--- linux.vanilla-2.6.24-rc2-mm1/drivers/ata/libata-core.c	2007-11-16 17:55:11.000000000 +0000
++++ linux-2.6.24-rc2-mm1/drivers/ata/libata-core.c	2007-11-30 14:31:56.093473744 +0000
+@@ -6999,12 +7014,11 @@
+ 		if (ap->ops->port_start) {
+ 			rc = ap->ops->port_start(ap);
+ 			if (rc) {
+-				ata_port_printk(ap, KERN_ERR, "failed to "
+-						"start port (errno=%d)\n", rc);
++				if (rc != -ENODEV)
++					dev_printk(KERN_ERR, host->dev, "failed to start port %d (errno=%d)\n", i, rc);
+ 				goto err_out;
+ 			}
+ 		}
+-
+ 		ata_eh_freeze_port(ap);
+ 	}
+ 
+
+
+--
+"Twenty-five million records of children's names and addresses have
+ disappeared. Given the amount of data that the Government are collecting, no
+ doubt including whether the children have been bad or good, and that it is
+ six weeks before Christmas, it is blindingly obvious who has taken them."
+                               -- Desmond Swayne MP
+
+
 
