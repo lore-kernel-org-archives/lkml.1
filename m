@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbXK3Xgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764667AbXK3XhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763112AbXK3Xgp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 18:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759817AbXK3Xgd
+	id S1764667AbXK3XhQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 18:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759383AbXK3Xgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 18:36:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41327 "EHLO mx1.redhat.com"
+	Fri, 30 Nov 2007 18:36:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41339 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759816AbXK3Xgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 18:36:31 -0500
-Date: Fri, 30 Nov 2007 18:34:26 -0500 (EST)
-Message-Id: <20071130.183426.107256509.k-ueda@ct.jp.nec.com>
+	id S1760883AbXK3Xgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 18:36:52 -0500
+Date: Fri, 30 Nov 2007 18:35:35 -0500 (EST)
+Message-Id: <20071130.183535.75758102.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, bharrosh@panasas.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
        k-ueda@ct.jp.nec.com
-Subject: [PATCH 25/28] blk_end_request: add callback feature (take 3)
+Subject: [PATCH 28/28] blk_end_request: remove/unexport end_that_request_*
+ (take 3)
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -25,121 +26,147 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a variant of the interface, blk_end_request_callback(),
-which has driver callback feature.
-
-There are 2 drivers which need to do special works between
-end_that_request_first() and end_that_request_last():
-ide-cd and scsi bidi.
-
-For such drivers, blk_end_request_callback() allows it to pass
-a callback function which is called between end_that_request_first()
-and end_that_request_last().
-
-This interface should/will be removed, after the drivers remove
-such tricky behaviors.
-
-o ide-cd (cdrom_newpc_intr())
-  cdrom_newpc_intr() needs to:
-    1. call post_transform_command() to modify request contents
-    2. wait completing request until DRQ_STAT is cleared
-  after end_that_request_first() and before end_that_request_last().
-
-  As for the second one, ide-cd will wait for the interrupt from device.
-  So end_that_request_first() and end_that_request_last() are called
-  separately in ide-cd.
-  This means blk_end_request_callback() has to return without
-  completing request even if no leftover in the request.
-  To satisfy the requirement, callback function has return value
-  so that drivers can tell blk_end_request_callback() to return
-  without completing request.
-
-o scsi mid-layer for bidi request (scsi_end_bidi_request())
-  Bidi sets its specific value to rq->data_len before the request is
-  completed so that upper-layer can read it.
-  This setting must be between end_that_request_chunk() and
-  end_that_request_last(), because rq->data_len may be used
-  in end_that_request_chunk() by blk_trace and so on.
+This patch removes the following functions:
+  o end_that_request_first()
+  o end_that_request_chunk()
+and stops exporting the functions below:
+  o end_that_request_last()
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- block/ll_rw_blk.c      |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/blkdev.h |    3 ++
- 2 files changed, 53 insertions(+)
+ block/ll_rw_blk.c      |   61 ++++++++++++-------------------------------------
+ include/linux/blkdev.h |   15 ++++--------
+ 2 files changed, 21 insertions(+), 55 deletions(-)
 
 Index: 2.6.24-rc3-mm2/block/ll_rw_blk.c
 ===================================================================
 --- 2.6.24-rc3-mm2.orig/block/ll_rw_blk.c
 +++ 2.6.24-rc3-mm2/block/ll_rw_blk.c
-@@ -3850,6 +3850,56 @@ int __blk_end_request(struct request *rq
+@@ -3415,6 +3415,20 @@ static void blk_recalc_rq_sectors(struct
+ 	}
  }
- EXPORT_SYMBOL_GPL(__blk_end_request);
  
 +/**
-+ * blk_end_request_callback - Special helper function for tricky drivers
-+ * @rq:           the request being processed
-+ * @uptodate:     1 for success, 0 for I/O error, < 0 for specific error
-+ * @nr_bytes:     number of bytes to complete
-+ * @drv_callback: function called between completion of bios in the request
-+ *                and completion of the request.
-+ *                If the callback returns non 0, this helper returns without
-+ *                completion of the request.
++ * __end_that_request_first - end I/O on a request
++ * @req:      the request being processed
++ * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
++ * @nr_bytes: number of bytes to complete
 + *
 + * Description:
-+ *     Ends I/O on a number of bytes attached to @rq.
-+ *     If @rq has leftover, sets it up for the next range of segments.
-+ *
-+ *     This special helper function is used only for existing tricky drivers.
-+ *     (e.g. cdrom_newpc_intr() of ide-cd)
-+ *     This interface will be removed when such drivers are rewritten.
-+ *     Don't use this interface in other places anymore.
++ *     Ends I/O on a number of bytes attached to @req, and sets it up
++ *     for the next range of segments (if any) in the cluster.
 + *
 + * Return:
-+ *     0 - we are done with this request
-+ *     1 - this request is not freed yet.
-+ *         this request still has pending buffers or
-+ *         the driver doesn't want to finish this request yet.
++ *     0 - we are done with this request, call end_that_request_last()
++ *     1 - still buffers pending for this request
 + **/
-+int blk_end_request_callback(struct request *rq, int uptodate, int nr_bytes,
-+			     int (drv_callback)(struct request *))
-+{
-+	struct request_queue *q = rq->q;
-+	unsigned long flags = 0UL;
-+
-+	if (blk_fs_request(rq) || blk_pc_request(rq)) {
-+		if (__end_that_request_first(rq, uptodate, nr_bytes))
-+			return 1;
-+	}
-+
-+	/* Special feature for tricky drivers */
-+	if (drv_callback && drv_callback(rq))
-+		return 1;
-+
-+	add_disk_randomness(rq->rq_disk);
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
-+	complete_request(rq, uptodate);
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(blk_end_request_callback);
-+
- static void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
- 			    struct bio *bio)
+ static int __end_that_request_first(struct request *req, int uptodate,
+ 				    int nr_bytes)
+ {
+@@ -3531,49 +3545,6 @@ static int __end_that_request_first(stru
+ 	return 1;
+ }
+ 
+-/**
+- * end_that_request_first - end I/O on a request
+- * @req:      the request being processed
+- * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+- * @nr_sectors: number of sectors to end I/O on
+- *
+- * Description:
+- *     Ends I/O on a number of sectors attached to @req, and sets it up
+- *     for the next range of segments (if any) in the cluster.
+- *
+- * Return:
+- *     0 - we are done with this request, call end_that_request_last()
+- *     1 - still buffers pending for this request
+- **/
+-int end_that_request_first(struct request *req, int uptodate, int nr_sectors)
+-{
+-	return __end_that_request_first(req, uptodate, nr_sectors << 9);
+-}
+-
+-EXPORT_SYMBOL(end_that_request_first);
+-
+-/**
+- * end_that_request_chunk - end I/O on a request
+- * @req:      the request being processed
+- * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+- * @nr_bytes: number of bytes to complete
+- *
+- * Description:
+- *     Ends I/O on a number of bytes attached to @req, and sets it up
+- *     for the next range of segments (if any). Like end_that_request_first(),
+- *     but deals with bytes instead of sectors.
+- *
+- * Return:
+- *     0 - we are done with this request, call end_that_request_last()
+- *     1 - still buffers pending for this request
+- **/
+-int end_that_request_chunk(struct request *req, int uptodate, int nr_bytes)
+-{
+-	return __end_that_request_first(req, uptodate, nr_bytes);
+-}
+-
+-EXPORT_SYMBOL(end_that_request_chunk);
+-
+ /*
+  * splice the completion data to a local structure and hand off to
+  * process_completion_queue() to complete the requests
+@@ -3653,7 +3624,7 @@ EXPORT_SYMBOL(blk_complete_request);
+ /*
+  * queue lock must be held
+  */
+-void end_that_request_last(struct request *req, int uptodate)
++static void end_that_request_last(struct request *req, int uptodate)
+ {
+ 	struct gendisk *disk = req->rq_disk;
+ 	int error;
+@@ -3688,8 +3659,6 @@ void end_that_request_last(struct reques
+ 		__blk_put_request(req->q, req);
+ }
+ 
+-EXPORT_SYMBOL(end_that_request_last);
+-
+ static inline void __end_request(struct request *rq, int uptodate,
+ 				 unsigned int nr_bytes)
  {
 Index: 2.6.24-rc3-mm2/include/linux/blkdev.h
 ===================================================================
 --- 2.6.24-rc3-mm2.orig/include/linux/blkdev.h
 +++ 2.6.24-rc3-mm2/include/linux/blkdev.h
-@@ -733,6 +733,9 @@ extern void end_that_request_last(struct
+@@ -717,19 +717,16 @@ static inline void blk_run_address_space
+ }
+ 
+ /*
+- * end_request() and friends. Must be called with the request queue spinlock
+- * acquired. All functions called within end_request() _must_be_ atomic.
++ * blk_end_request() and friends.
++ * __blk_end_request() and end_request() must be called with
++ * the request queue spinlock acquired.
+  *
+  * Several drivers define their own end_request and call
+- * end_that_request_first() and end_that_request_last()
+- * for parts of the original function. This prevents
+- * code duplication in drivers.
++ * blk_end_request() for parts of the original function.
++ * This prevents code duplication in drivers.
+  */
+ extern int blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+ extern int __blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+-extern int end_that_request_first(struct request *, int, int);
+-extern int end_that_request_chunk(struct request *, int, int);
+-extern void end_that_request_last(struct request *, int);
  extern void end_request(struct request *, int);
  extern void end_queued_request(struct request *, int);
  extern void end_dequeued_request(struct request *, int);
-+extern int blk_end_request_callback(struct request *rq, int uptodate,
-+				    int nr_bytes,
-+				    int (drv_callback)(struct request *));
- extern void blk_complete_request(struct request *);
+@@ -747,7 +744,7 @@ extern unsigned int blk_rq_bytes(struct 
+ extern unsigned int blk_rq_cur_bytes(struct request *rq);
  
  /*
+- * end_that_request_first/chunk() takes an uptodate argument. we account
++ * blk_end_request() takes an uptodate argument. we account
+  * any value <= as an io error. 0 means -EIO for compatability reasons,
+  * any other < 0 value is the direct error type. An uptodate value of
+  * 1 indicates successful io completion
