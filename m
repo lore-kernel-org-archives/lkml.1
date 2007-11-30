@@ -1,219 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933512AbXK3HUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933458AbXK3H2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933512AbXK3HUa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 02:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758162AbXK3HUW
+	id S933458AbXK3H2g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 02:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXK3H2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 02:20:22 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57828 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758137AbXK3HUV (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 02:20:21 -0500
-Message-ID: <474FBA21.4070201@sgi.com>
-Date: Fri, 30 Nov 2007 18:22:09 +1100
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Fri, 30 Nov 2007 02:28:20 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:33663 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754163AbXK3H2T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 02:28:19 -0500
+Message-ID: <474FBB86.5000004@linux.vnet.ibm.com>
+Date: Fri, 30 Nov 2007 12:58:06 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Chris Wedgwood <cw@f00f.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xfs: revert to double-buffering readdir
-References: <20071114070400.GA25708@puku.stupidest.org> <20071125163014.GA17922@infradead.org>
-In-Reply-To: <20071125163014.GA17922@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@debian.org>
+Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
+References: <474D0AAC.5010005@linux.vnet.ibm.com> <20071127225328.9e3f3827.akpm@linux-foundation.org> <474D15FF.5080508@linux.vnet.ibm.com> <20071127232552.ad16e95c.akpm@linux-foundation.org> <474E5CAC.9000108@linux.vnet.ibm.com> <20071129003533.54b4b20e.akpm@linux-foundation.org> <20071130063929.GD2754@fattire.cabal.ca> <20071129230047.1b482562.akpm@linux-foundation.org> <20071129230204.8698f47e.akpm@linux-foundation.org>
+In-Reply-To: <20071129230204.8698f47e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> The current readdir implementation deadlocks on a btree buffers locks
-> because nfsd calls back into ->lookup from the filldir callback.  The
-> only short-term fix for this is to revert to the old inefficient
-> double-buffering scheme.
+Andrew Morton wrote:
+> On Thu, 29 Nov 2007 23:00:47 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-
-Probably why Steve did this: :)
-
-xfs_file.c
-----------------------------
-revision 1.40
-date: 2001/03/15 23:33:20;  author: lord;  state: Exp;  lines: +54 -17
-modid: 2.4.x-xfs:slinx:90125a
-Change linvfs_readdir to allocate a buffer, call xfs to fill it, and
-then call the filldir function on each entry. This is instead of doing the
-filldir deep in the bowels of xfs which causes locking problems.
-----------------------------
-
-
-Yes it looks like it is done equivalently to before (minus the uio stuff etc).
-I don't know what the 7fff* masking is about but we did that previously.
-I hadn't come across the name[] struct field before,
-was used to name[0] (or name[1] in times gone by) but found that is
-a kosher way of doing things too for the variable len string at the end.
-
-Hmmm, don't see the point of "eof" local var now.
-Previously bhv_vop_readdir() returned eof.
-I presume if we don't move the offset (offset == startoffset) then
-we're done and break out?
-So we lost eof when going to the filldir in the getdents code etc...
-
---Tim
-
-> This patch does exactly that and reverts xfs_file_readdir to what's
-> basically the 2.6.23 version minus the uio and vnops junk.
+>> On Fri, 30 Nov 2007 01:39:29 -0500 Kyle McMartin <kyle@mcmartin.ca> wrote:
+>>
+>>> On Thu, Nov 29, 2007 at 12:35:33AM -0800, Andrew Morton wrote:
+>>>> ten million is close enough to infinity for me to assume that we broke the
+>>>> driver and that's never going to terminate.
+>>>>
+>>> how about this? doesn't break things on my pa8800:
+>>>
+>>> diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.c b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+>>> index 463f119..ef01cb1 100644
+>>> --- a/drivers/scsi/sym53c8xx_2/sym_hipd.c
+>>> +++ b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+>>> @@ -1037,10 +1037,13 @@ restart_test:
+>>>  	/*
+>>>  	 *  Wait 'til done (with timeout)
+>>>  	 */
+>>> -	for (i=0; i<SYM_SNOOP_TIMEOUT; i++)
+>>> +	do {	
+>>>  		if (INB(np, nc_istat) & (INTF|SIP|DIP))
+>>>  			break;
+>>> -	if (i>=SYM_SNOOP_TIMEOUT) {
+>>> +		msleep(10);
+>>> +	} while (i++ < SYM_SNOOP_TIMEOUT);
+>>> +
+>>> +	if (i >= SYM_SNOOP_TIMEOUT) {
+>>>  		printf ("CACHE TEST FAILED: timeout.\n");
+>>>  		return (0x20);
+>>>  	}
+>>> diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.h b/drivers/scsi/sym53c8xx_2/sym_hipd.h
+>>> index ad07880..85c483b 100644
+>>> --- a/drivers/scsi/sym53c8xx_2/sym_hipd.h
+>>> +++ b/drivers/scsi/sym53c8xx_2/sym_hipd.h
+>>> @@ -339,7 +339,7 @@
+>>>  /*
+>>>   *  Misc.
+>>>   */
+>>> -#define SYM_SNOOP_TIMEOUT (10000000)
+>>> +#define SYM_SNOOP_TIMEOUT (1000)
+>>>  #define BUS_8_BIT	0
+>>>  #define BUS_16_BIT	1
+>>>  
+>> That might be the fix, but do we know what we're actually fixing?  afaik
+>> 2.6.24-rc3 doesn't get this timeout, 2.6.24-rc3-mm2 does get it and we
+>> don't know why?
+>>
 > 
-> I'll try to find something more optimal for 2.6.25 or at least find a
-> way to use the proper version for local access.
+> <looks at Subject:>
 > 
+> <Checks that Rafael was cc'ed>
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-> Index: linux-2.6/fs/xfs/linux-2.6/xfs_file.c
-> ===================================================================
-> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_file.c	2007-11-25 11:41:20.000000000 +0100
-> +++ linux-2.6/fs/xfs/linux-2.6/xfs_file.c	2007-11-25 17:14:27.000000000 +0100
-> @@ -218,6 +218,15 @@
->  }
->  #endif /* CONFIG_XFS_DMAPI */
->  
-> +/*
-> + * Unfortunately we can't just use the clean and simple readdir implementation
-> + * below, because nfs might call back into ->lookup from the filldir callback
-> + * and that will deadlock the low-level btree code.
-> + *
-> + * Hopefully we'll find a better workaround that allows to use the optimal
-> + * version at least for local readdirs for 2.6.25.
-> + */
-> +#if 0
->  STATIC int
->  xfs_file_readdir(
->  	struct file	*filp,
-> @@ -249,6 +258,121 @@
->  		return -error;
->  	return 0;
->  }
-> +#else
-> +
-> +struct hack_dirent {
-> +	int		namlen;
-> +	loff_t		offset;
-> +	u64		ino;
-> +	unsigned int	d_type;
-> +	char		name[];
-> +};
-> +
-> +struct hack_callback {
-> +	char		*dirent;
-> +	size_t		len;
-> +	size_t		used;
-> +};
-> +
-> +STATIC int
-> +xfs_hack_filldir(
-> +	void		*__buf,
-> +	const char	*name,
-> +	int		namlen,
-> +	loff_t		offset,
-> +	u64		ino,
-> +	unsigned int	d_type)
-> +{
-> +	struct hack_callback *buf = __buf;
-> +	struct hack_dirent *de = (struct hack_dirent *)(buf->dirent + buf->used);
-> +
-> +	if (buf->used + sizeof(struct hack_dirent) + namlen > buf->len)
-> +		return -EINVAL;
-> +
-> +	de->namlen = namlen;
-> +	de->offset = offset;
-> +	de->ino = ino;
-> +	de->d_type = d_type;
-> +	memcpy(de->name, name, namlen);
-> +	buf->used += sizeof(struct hack_dirent) + namlen;
-> +	return 0;
-> +}
-> +
-> +STATIC int
-> +xfs_file_readdir(
-> +	struct file	*filp,
-> +	void		*dirent,
-> +	filldir_t	filldir)
-> +{
-> +	struct inode	*inode = filp->f_path.dentry->d_inode;
-> +	xfs_inode_t	*ip = XFS_I(inode);
-> +	struct hack_callback buf;
-> +	struct hack_dirent *de;
-> +	int		error;
-> +	loff_t		size;
-> +	int		eof = 0;
-> +	xfs_off_t       start_offset, curr_offset, offset;
-> +
-> +	/*
-> +	 * Try fairly hard to get memory
-> +	 */
-> +	buf.len = PAGE_CACHE_SIZE;
-> +	do {
-> +		buf.dirent = kmalloc(buf.len, GFP_KERNEL);
-> +		if (buf.dirent)
-> +			break;
-> +		buf.len >>= 1;
-> +	} while (buf.len >= 1024);
-> +
-> +	if (!buf.dirent)
-> +		return -ENOMEM;
-> +
-> +	curr_offset = filp->f_pos;
-> +	if (curr_offset == 0x7fffffff)
-> +		offset = 0xffffffff;
-> +	else
-> +		offset = filp->f_pos;
-> +
-> +	while (!eof) {
-> +		int reclen;
-> +		start_offset = offset;
-> +
-> +		buf.used = 0;
-> +		error = -xfs_readdir(ip, &buf, buf.len, &offset,
-> +				     xfs_hack_filldir);
-> +		if (error || offset == start_offset) {
-> +			size = 0;
-> +			break;
-> +		}
-> +
-> +		size = buf.used;
-> +		de = (struct hack_dirent *)buf.dirent;
-> +		while (size > 0) {
-> +			if (filldir(dirent, de->name, de->namlen,
-> +					curr_offset & 0x7fffffff,
-> +					de->ino, de->d_type)) {
-> +				goto done;
-> +			}
-> +
-> +			reclen = sizeof(struct hack_dirent) + de->namlen;
-> +			size -= reclen;
-> +			curr_offset = de->offset /* & 0x7fffffff */;
-> +			de = (struct hack_dirent *)((char *)de + reclen);
-> +		}
-> +	}
-> +
-> + done:
-> + 	if (!error) {
-> +		if (size == 0)
-> +			filp->f_pos = offset & 0x7fffffff;
-> +		else if (de)
-> +			filp->f_pos = curr_offset;
-> +	}
-> +
-> +	kfree(buf.dirent);
-> +	return error;
-> +}
-> +#endif
->  
->  STATIC int
->  xfs_file_mmap(
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
 
+Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
