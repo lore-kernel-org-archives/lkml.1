@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934563AbXK3By4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934681AbXK3B5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934563AbXK3By4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 20:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759739AbXK3Byn
+	id S934681AbXK3B5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 20:57:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763825AbXK3B45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 20:54:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46269 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763600AbXK3Bym (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 20:54:42 -0500
-Date: Thu, 29 Nov 2007 17:54:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Avoid overflows in kernel/time.c
-Message-Id: <20071129175440.ead82de6.akpm@linux-foundation.org>
-In-Reply-To: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org>
-References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 20:56:57 -0500
+Received: from [222.73.24.84] ([222.73.24.84]:55130 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1763817AbXK3B44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Nov 2007 20:56:56 -0500
+Message-ID: <474F6D4D.9010006@cn.fujitsu.com>
+Date: Fri, 30 Nov 2007 09:54:21 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org
+Subject: Re: Trailing periods in kernel messages
+References: <474E6BD0.20103@cn.fujitsu.com>	 <E1IxfE8-0000Sr-9w@faramir.fjphome.nl>	<474E8669.6060409@cn.fujitsu.com>	 <200711291120.19595.elendil@planet.nl>	 <20071129032036.4c021617.akpm@linux-foundation.org>	 <474F6372.70705@cn.fujitsu.com> <1196386259.22120.101.camel@localhost>
+In-Reply-To: <1196386259.22120.101.camel@localhost>
+Content-Type: text/plain; charset=x-user-defined
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 16:19:51 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
+Joe Perches wrote:
+> On Fri, 2007-11-30 at 09:12 +0800, Li Zefan wrote:
+>> Just a roughly grep:
+>> # grep -r -P --include=*.[ch] 'printk.*\.\\n' * | wc -l
+>> 6025
+>> # grep -r -P --include=*.[ch] '\.\\n' * | wc -l
+>> 12723
+> 
+> Inequivalent.
+> 
+> Try:
+> 	grep -rP --include=*.[ch] 'printk.*\.\\n' * | wc -l
+> and
+> 	grep -rp --include=*.[ch] 'printk.*[^\.]\\n' * | wc -l
+> 
+> 6k/38k
+> 
 
-> When the conversion factor between jiffies and milli- or microseconds
-> is not a single multiply or divide, as for the case of HZ == 300, we
-> currently do a multiply followed by a divide.  The intervening
-> result, however, is subject to overflows, especially since the
-> fraction is not simplified (for HZ == 300, we multiply by 300 and
-> divide by 1000).
-> 
-> This is exposed to the user when passing a large timeout to poll(),
-> for example.
-> 
-> This patch replaces the multiply-divide with a reciprocal
-> multiplication on 32-bit platforms.  When the input is an unsigned
-> long, there is no portable way to do this on 64-bit platforms there is
-> no portable way to do this since it requires a 128-bit intermediate
-> result (which gcc does support on 64-bit platforms but may generate
-> libgcc calls, e.g. on 64-bit s390), but since the output is a 32-bit
-> integer in the cases affected, just simplify the multiply-divide
-> (*3/10 instead of *300/1000).
-> 
-> The reciprocal multiply used can have off-by-one errors in the upper
-> half of the valid output range.  This could be avoided at the expense
-> of having to deal with a potential 65-bit intermediate result.  Since
-> the intent is to avoid overflow problems and most of the other time
-> conversions are only semiexact, the off-by-one errors were considered
-> an acceptable tradeoff.
-> 
-> NOTE: This patch uses a bc(1) script to compute the appropriate
-> constants.
+My 2nd grep finds out how many strings are terminated with '.'.
+Those strings may finally pass to prink().
 
-Does this add the first dependency upon the availability of bc?
+So it doesn't deserve the effort to eliminate these periods, isn't it?
+Or we can add a check to checkpatch.pl to prevent new ones.
