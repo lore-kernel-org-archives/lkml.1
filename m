@@ -1,46 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbXK3SYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932981AbXK3S1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763416AbXK3SYR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 13:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757587AbXK3SYF
+	id S932981AbXK3S1Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 13:27:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbXK3S06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 13:24:05 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35824 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756713AbXK3SYD (ORCPT
+	Fri, 30 Nov 2007 13:26:58 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:40762 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758306AbXK3S04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 13:24:03 -0500
-Date: Fri, 30 Nov 2007 10:24:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 0/3] Per cpu relocation to ZERO and x86_32 percpu ops on
- x86_64
-In-Reply-To: <20071130180002.GB19571@elte.hu>
-Message-ID: <Pine.LNX.4.64.0711301019590.1743@schroedinger.engr.sgi.com>
-References: <20071130064305.459255715@sgi.com> <20071130112429.GA3605@elte.hu>
- <20071130112645.GA7565@elte.hu> <Pine.LNX.4.64.0711300918250.32294@schroedinger.engr.sgi.com>
- <20071130180002.GB19571@elte.hu>
+	Fri, 30 Nov 2007 13:26:56 -0500
+Message-ID: <475055EE.9060105@hp.com>
+Date: Fri, 30 Nov 2007 10:26:54 -0800
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Holger Hoffstaette <holger@wizards.de>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Reproducible data corruption with sendfile+vsftp - splice	regression?
+References: <pan.2007.11.29.23.42.52.661624@wizards.de>	<474FC4D9.3020506@cosmosbay.com> <pan.2007.11.30.09.20.24.737500@wizards.de>
+In-Reply-To: <pan.2007.11.30.09.20.24.737500@wizards.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007, Ingo Molnar wrote:
+Could the corruption be seen in a tcpdump trace prior to transmission 
+(ie taken on the sender) or was it only seen after the data passed out 
+the NIC?
 
-> you mean this single patch:
-> 
->  modules-fold-percpu_modcopy-into-modulec-and-get-rid-of-the-macro-from-hell.patch
-> 
-> that's the only patch i missed AFAICS.
-
-That is a pretty uncritical one. Then there is the fix of the zero address 
-handling in modules.c, the fixup for the use of __per_cpu_xx variables in 
-modules.c. etc.
-
-It would be best to test against mm since there are core changes here that 
-will have to wait to the next merge period.
-
+rick jones
