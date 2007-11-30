@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932778AbXK3Hri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXK3H6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932778AbXK3Hri (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 02:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758137AbXK3HrZ
+	id S933368AbXK3H6j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 02:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbXK3H6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 02:47:25 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:45403 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754923AbXK3HrY (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 02:47:24 -0500
-Date: Fri, 30 Nov 2007 18:47:12 +1100
-From: David Chinner <dgc@sgi.com>
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xfs: revert to double-buffering readdir
-Message-ID: <20071130074712.GM119954183@sgi.com>
-References: <20071114070400.GA25708@puku.stupidest.org> <20071125163014.GA17922@infradead.org> <alpine.DEB.0.99999.0711300037520.9287@sheep.housecafe.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 30 Nov 2007 02:58:30 -0500
+Received: from nz-out-0506.google.com ([64.233.162.226]:58239 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755943AbXK3H63 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 02:58:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ABYzXPI/y7L/Fr/0ApBK8DzL9nEy79fY/y8Rhu59vwmrMmVh4XZKG/DveqzdaZ/3/R0uNmUymlI2UEVXaUxiSBezmXwYGnvpyiyC7JjGPIiSnZGHdJBfu/X7OJw02qOI4Iftld6YvS3ibiLXAn418vzilYu6lcRVJV7bhkmzYXM=
+Message-ID: <5eeb9ad90711292358q2e8cf5few8d9c1b99195e1ee@mail.gmail.com>
+Date: Fri, 30 Nov 2007 08:58:28 +0100
+From: DM <dm.n9107@gmail.com>
+To: "Daniel Drake" <dsd@gentoo.org>
+Subject: Re: [RFC v2] Documentation about unaligned memory access
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071129161523.E0C349D4B52@zog.reactivated.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99999.0711300037520.9287@sheep.housecafe.de>
-User-Agent: Mutt/1.4.2.1i
+References: <20071129161523.E0C349D4B52@zog.reactivated.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 12:45:05AM +0100, Christian Kujau wrote:
-> On Sun, 25 Nov 2007, Christoph Hellwig wrote:
-> >This patch does exactly that and reverts xfs_file_readdir to what's
-> >basically the 2.6.23 version minus the uio and vnops junk.
-> 
-> Thanks, works here too (without nordirplus as a mountoption).
-> Am I supposed to close the bug[0] or do you guys want to leave this
-> open to track the Real Fix (TM) for 2.6.25?
+On Nov 29, 2007 5:15 PM, Daniel Drake <dsd@gentoo.org> wrote:
+[...]
+> To avoid the unaligned memory access, you would rewrite it as follows:
+>
+>        void myfunc(u8 *data, u32 value)
+>        {
+>                [...]
+>                value = cpu_to_le32(value);
+>                put_unaligned(value, data);
+>                [...]
+>        }
+>
+> The get_unaligned() macro works similarly. Assuming 'data' is a pointer to
+> memory and you wish to avoid unaligned access, its usage is as follows:
+>
+>        u32 value = get_unaligned(data);
+>
+> These macros work work for memory accesses of any length (not just 32 bits as
+> in the examples above). Be aware that when compared to standard access of
+> aligned memory, using these macros to access unaligned memory can be costy in
+> terms of performance.
+>
 
-I've been giving the fix some QA - that change appears to have caused
-a different regression as well so I'm holding off for a little bit
-until we know what the cause of the other regression is before deciding
-whether to take this fix or back the entire change out.
+The get_unaligned call above will not do what you intended given the,
+at least as I read it, implied context of myfunc. Since data is a u8*
+it will only get one byte of data. To avoid misunderstandings the code
+should probably read:
 
-Either way we'll include the fix in 2.6.24....
+u32 value = get_unaligned((u32 *)data);
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+/DM
