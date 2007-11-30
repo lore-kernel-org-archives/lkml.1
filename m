@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934958AbXK3NhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935044AbXK3Nhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934958AbXK3NhN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 08:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbXK3Ng4
+	id S935044AbXK3Nhl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 08:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934889AbXK3Ng7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 08:36:56 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4682 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757166AbXK3Ngz (ORCPT
+	Fri, 30 Nov 2007 08:36:59 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4595 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933811AbXK3Ng6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 08:36:55 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: mingo@elte.hu (Ingo Molnar)
-Subject: Re: [PATCH] AF_RXRPC: Configure crypto correctly for AF_RXRPC
-Cc: herbert@gondor.apana.org.au, dhowells@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Organization: Core
-In-Reply-To: <20071130121147.GB2665@elte.hu>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1Iy62o-0002OV-00@gondolin.me.apana.org.au>
-Date: Sat, 01 Dec 2007 00:36:38 +1100
+	Fri, 30 Nov 2007 08:36:58 -0500
+Date: Fri, 30 Nov 2007 14:36:54 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipebalbi@users.sourceforge.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>, Tony Lindgren <tony@atomide.com>,
+       eric miao <eric.y.miao@gmail.com>, Kevin Hilman <khilman@mvista.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [patch/rfc 2/4] pcf875x I2C GPIO expander driver
+Message-ID: <20071130143654.3fd39ffe@hyperion.delvare>
+In-Reply-To: <47500A4A.10006@billgatliff.com>
+References: <200710291809.29936.david-b@pacbell.net>
+	<200710291851.49057.david-b@pacbell.net>
+	<20071130133256.72385ea8@hyperion.delvare>
+	<47500A4A.10006@billgatliff.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> wrote:
->
->> Patch applied to net-2.6.  Thanks.
+Hi Bill,
+
+On Fri, 30 Nov 2007 07:04:10 -0600, Bill Gatliff wrote:
+> Jean Delvare wrote:
+> > !!(value & (1 << offset))
+> > is more efficiently written
+> > (value >> offset) & 1
 > 
-> aimed at 2.6.24 merging, right?
+> ... but not more efficiently implemented.
+> 
+> Your version requires code to do the shift on live data at runtime.  
+> David's version lets the compiler create the mask once, at compile-time.
 
-Yep.  net-2.6 is for 2.6.24 while net-2.6.25 is for 2.6.25.
+I don't understand. How could the compiler create the mask at
+compile-time when "offset" is only known at runtime?
 
-Cheers,
+Anyway, I just checked and gcc (4.1.2 on x86_86) generates the same
+code for both expressions, so there's not much to argue about. David,
+feel free to ignore my comment if you prefer your implementation :)
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Jean Delvare
