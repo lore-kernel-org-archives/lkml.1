@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933021AbXK3Cww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764191AbXK3C62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933021AbXK3Cww (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 21:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761708AbXK3Cwi
+	id S1764191AbXK3C62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 21:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763038AbXK3C6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 21:52:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36087 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758190AbXK3Cwi (ORCPT
+	Thu, 29 Nov 2007 21:58:20 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51514 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758190AbXK3C6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 21:52:38 -0500
-Date: Thu, 29 Nov 2007 18:51:44 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sched_yield: delete sysctl_sched_compat_yield
-Message-ID: <20071129185144.209108dd@laptopd505.fenrus.org>
-In-Reply-To: <200711301346.22573.nickpiggin@yahoo.com.au>
-References: <1196155985.25646.31.camel@ymzhang>
-	<20071127145747.5f4d0aca@laptopd505.fenrus.org>
-	<200711301346.22573.nickpiggin@yahoo.com.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 29 Nov 2007 21:58:19 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ben Woodard <woodard@redhat.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <m1y7cjkec2.fsf@ebiederm.dsl.xmission.com>
+	<200711271445.56792.ak@suse.de>
+	<m1lk8jka8j.fsf@ebiederm.dsl.xmission.com>
+	<474C64CB.7080004@redhat.com>
+	<20071127194220.GG14887@hmsendeavour.rdu.redhat.com>
+	<20071127200011.GA3703@redhat.com>
+	<20071127222408.GH24223@one.firstfloor.org>
+	<474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com>
+	<20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
+	<20071128190525.GD3192@redhat.com>
+	<m1d4tudun5.fsf@ebiederm.dsl.xmission.com>
+	<474F7290.8010504@redhat.com>
+Date: Thu, 29 Nov 2007 19:54:16 -0700
+In-Reply-To: <474F7290.8010504@redhat.com> (Ben Woodard's message of "Thu, 29
+	Nov 2007 18:16:48 -0800")
+Message-ID: <m1sl2oa1ev.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007 13:46:22 +1100
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Ben Woodard <woodard@redhat.com> writes:
 
-> > Todays kernel has a different behavior somewhat (and before people
-> > scream "regression"; sched_yield() behavior isn't really specified
-> > and doesn't make any sense at all, whatever you get is what you
-> > get.... it's pretty much an insane defacto behavior that is
-> > incredibly tied to which decisions the scheduler makes how, and no
-> > app can depend on that
-> 
-> It is a performance regression. Is there any reason *not* to use the
-> "compat" yield by default? As you say, for SCHED_OTHER tasks, yield
-> can do almost anything. We may as well do something that isn't a
-> regression..
+> Eric W. Biederman wrote:
+>> Vivek Goyal <vgoyal@redhat.com> writes:
+>>
+>>> Ok. Got it. So in this case we route the interrupts directly through LAPIC
+>>> and put LVT0 in ExtInt mode and IOAPIC is bypassed.
+>>>
+>>> I am looking at Intel Multiprocessor specification v1.4 and as per figure
+>>> 3-3 on page 3-9, 8259 is connected to LINTIN0 line, which in turn is
+>>> connected to LINTIN0 pin on all processors. If that is the case, even in
+>>> this mode, all the CPU should see the timer interrupts (which is coming
+>>> from 8259)?
+>>
+>> However things are implemented completely differently now.  I don't think
+>> the coherent hypertransport domain of AMD processors actually routes
+>> ExtINT interrupts to all cpus but instead one (the default route?) is
+>> picked.
+>>
+>> So I think for the kdump case we pretty much need to use an IOAPIC
+>> in virtual wire mode for recent AMD systems.
+>>
+>> For current Intel systems I believe either scenario still works.
+>>
+>>> Can you print the LAPIC registers (print_local_APIC) during normal boot
+>>> and during kdump boot and paste here?
+>>
+>> It's worth a look.
+>>
+>> I still think we need to just use apic mode at kernel startup, and
+>> be done with it.
+>>
+>
+> Neil whipped up a patch to try this and evidently it worked on his test boxes
+> but it didn't work very well on our problem tests box. It hung after the kernel
+> printed "Ready". i.e. on a normal boot I get:
 
-it just makes OTHER tests/benchmarks regress.... this is one of those
-things where you just can't win.
-
-> 
-> 
-> > in any way. In fact, I've proposed to make sched_yield() just do an
-> > msleep(1)... that'd be closer to what sched_yield is supposed to do
-> > standard wise than any of the current behaviors .... ;_
-> 
-> What makes you say that? IIRC of all the things that sched_yeild can
-> do, it is not allowed to block. So this is about the only thing that
-> will break the standard...
-
-sched_yield OF COURSE can block.. it's a schedule call after all!
+Interesting can you please try an early_printk console.
 
 
+I expect you made it a fair ways and it just didn't show up because you didn't
+get as far as the normal serial port setup.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+You don't have any output from your linux kernel.
+
+Eric
