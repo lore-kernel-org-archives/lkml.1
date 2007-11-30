@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbXK3AMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933553AbXK3ATE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764235AbXK3AMK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 19:12:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764240AbXK3ALd
+	id S933553AbXK3ATE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 19:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760702AbXK3ASu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 19:11:33 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52552 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764225AbXK3ALb (ORCPT
+	Thu, 29 Nov 2007 19:18:50 -0500
+Received: from rn-out-0910.google.com ([64.233.170.185]:24679 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760239AbXK3ASt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 19:11:31 -0500
-Date: Fri, 30 Nov 2007 09:14:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm2 (bugfix for memory cgroup per-zone-struct
- allocation.)
-Message-Id: <20071130091424.03731568.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1196371533.5347.11.camel@localhost>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<20071129122329.4c56c052.kamezawa.hiroyu@jp.fujitsu.com>
-	<20071129142416.f6d1ffcd.kamezawa.hiroyu@jp.fujitsu.com>
-	<1196371533.5347.11.camel@localhost>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Nov 2007 19:18:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=g8Ew1bhIbDjF+VJpN5T/usqmHN/6RcfMbPjpCz1ns0K8tFrA15u76CDbVE6vXZhl5c1xuc4Fb6ue3srXePx+00AGvxP0lIxVYO9LFp/brpr6RKal4jNxEMBIoTRrm6bZLTrU8zJbDxgIvYVFb2soXfL3/YQDaC5rCKD16eEzKAE=
+Message-ID: <a10e25a30711291618r69daa63n265d81c18cf1e06f@mail.gmail.com>
+Date: Thu, 29 Nov 2007 16:18:47 -0800
+From: "Kunal Trivedi" <ktrivedilkml@gmail.com>
+To: linuxkernel <linux-kernel@vger.kernel.org>
+Subject: Relation between nr_dirty and nr_inactive
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 16:25:33 -0500
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> > -	pn = kmalloc_node(sizeof(*pn), GFP_KERNEL, node);
-> > +	/*
-> > +	 * This routine is called against possible nodes.
-> > +	 * But it's BUG to call kmalloc() against offline node.
-> > +	 *
-> > +	 * TODO: this routine can waste much memory for nodes which will
-> > +	 *       never be onlined. It's better to use memory hotplug callback
-> > +	 *       function.
-> > +	 */
-> > +	if (node_state(node, N_HIGH_MEMORY))
-> > +		pn = kmalloc_node(sizeof(*pn), GFP_KERNEL, node);
-> > +	else
-> > +		pn = kmalloc(sizeof(*pn), GFP_KERNEL);
-> >  	if (!pn)
-> >  		return 1;
-> >  
-> > 
-> 
-> This worked for me.  Can boot 24-rc3-mm2 [if I turn off async scsi scan,
-> that is--not related to mem controller].  
-> 
-Thank you !
+Hi,
+I am running older kernel (CentOS 2.6.9-34 SMP) on 32 bit arch. Some
+of my systems got hung, while trying to write some data to disk. All
+those systems exhibit similar pattern where during this time,
+/proc/meminfo suggesting 'Inactive' < 'Dirty'. All of machines have 2G
+of physical memory and ~1.5G memory is locked (via mlock).
 
-> Just FYI, on my ia64 platform, with NODES_SHIFT == 8 [RHEL & SLES ship
-> with 10, I believe], the size of the mem_cgroup structure is ~10KB.
-> 
-Yes. But...
-I'll ask Goto-san how memory hotplug callback works and try it.
+I tried reading code but could not establish any direct relationship
+between Zone->in_active pages vs. per-cpu_page_state->nr_dirty.
 
-Thanks,
--Kame
+Has anybody seen system in this kind of state before ? And are these 2
+parameters affect each-other ?
 
-
+Thanks
+-Kunal
