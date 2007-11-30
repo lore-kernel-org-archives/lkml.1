@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934548AbXK3BgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934410AbXK3Bsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934548AbXK3BgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Nov 2007 20:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761825AbXK3BgJ
+	id S934410AbXK3Bsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Nov 2007 20:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763793AbXK3Bs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Nov 2007 20:36:09 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39371 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760917AbXK3BgH (ORCPT
+	Thu, 29 Nov 2007 20:48:26 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49784 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763761AbXK3BsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Nov 2007 20:36:07 -0500
-Date: Thu, 29 Nov 2007 17:36:05 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "K. Prasad" <prasad@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       mathieu.desnoyers@polymtl.ca, mingo@elte.hu
-Subject: Re: [PATCH 0/2] Markers Implementation for RCU Tracing
-Message-ID: <20071130013605.GK9059@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071129184128.GA26466@in.ibm.com>
-MIME-Version: 1.0
+	Thu, 29 Nov 2007 20:48:25 -0500
+Date: Fri, 30 Nov 2007 01:48:11 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Justin Banks <justinb@bakbone.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Masters <jonathan@jonmasters.org>,
+       Ray Lee <ray-lk@madrabbit.org>, tvrtko.ursulin@sophos.com,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071130014811.GA8181@ftp.linux.org.uk>
+References: <1196365551.6473.103.camel@perihelion> <20071129214527.1d62056c@the-village.bc.nu> <20071129221238.GF5601@bleen.corp.bb>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071129184128.GA26466@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071129221238.GF5601@bleen.corp.bb>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 12:11:28AM +0530, K. Prasad wrote:
-> Hi,
-> 	Please review the ensuing set of patches which convert the
-> existing RCU tracing mechanism for Preempt RCU and RCU Boost into
-> markers.
-> 
-> These patches are based upon the 2.6.24-rc2-rt1 kernel tree.
-> 
-> Along with marker transition, the RCU Tracing infrastructure has also
-> been modularised to be built as a kernel module, thereby enabling
-> runtime changes to the RCU Tracing infrastructure.
-> 
-> Patch [1/2] - Patch that converts the Preempt RCU tracing in
-> rcupreempt.c into markers.
-> 
-> Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
-> rcupreempt-boost.c into markers.
+On Thu, Nov 29, 2007 at 03:12:38PM -0700, Justin Banks wrote:
 
-Looks good to me, though I do not pretend to understand the markers
-implementation.  I presume that the markers implementation forces the
-varargs usage -- though the markers do seem quite a bit nicer in allowing
-the formatting to be specified more naturally.
+> It's not perfect, but as was recently pointed out, if you can only get
+> 98% of the way there rather than 100% is that a reason for not trying to
+> make it possible?
 
-							Thanx, Paul
+BTW, that's a fine example of a common fallacy: "$FOO is 98% of the way to
+$TARGET" does not allow to interpolate the properties of $TARGET to those
+of $FOO.
+
+Telling that a condom is a 98% approximation to platonic ideal of such is
+not particulary useful, especially if it turns out that what this number 
+really means is that there's a hole on its tip covering 2% of surface...
