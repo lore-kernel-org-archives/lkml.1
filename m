@@ -1,103 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbXK3SJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935410AbXK3SJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934863AbXK3SJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 13:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbXK3SIx
+	id S935410AbXK3SJk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 13:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934231AbXK3SJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 13:08:53 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51105 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754674AbXK3SIw (ORCPT
+	Fri, 30 Nov 2007 13:09:31 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:41032 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934832AbXK3SJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 13:08:52 -0500
-Message-ID: <4750519C.2000907@zytor.com>
-Date: Fri, 30 Nov 2007 10:08:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 30 Nov 2007 13:09:30 -0500
+Date: Fri, 30 Nov 2007 13:09:21 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jarek Poplawski <jarkao2@o2.pl>
+Subject: Re: [PATCH] Documentation/Changes -> Documentation/Requirements
+In-Reply-To: <200711301747.lAUHlDdM006716@tazenda.hos.anvin.org>
+Message-ID: <alpine.LFD.0.9999.0711301256520.7197@localhost.localdomain>
+References: <20071130071647.GA2017@ff.dom.local> <200711301747.lAUHlDdM006716@tazenda.hos.anvin.org>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: 2.6.23: does it supposed to work on an i486?
-References: <47504923.9030309@msgid.tls.msk.ru>
-In-Reply-To: <47504923.9030309@msgid.tls.msk.ru>
-Content-Type: multipart/mixed;
- boundary="------------080006050706000207090009"
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080006050706000207090009
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, 30 Nov 2007, H. Peter Anvin wrote:
 
-Michael Tokarev wrote:
-> I tried to upgrade one of our ooooold machines
-> (used as print servers and similar tasks) today
-> from 2.6.22 to 2.6.23[.9].  The same config (with
-> minor tweaks for new options), i486 base arch,
-> X86_GENERIC=y.
-> 
-> The result is immediately machine reboot right
-> after bootloader (etherboot) passes control to
-> the kernel -- BEFORE "Uncompressing linux"
-> message.
-> 
-> 2.6.22 worked just fine.
-> 
-> So I wonder if it's supposed to work in the first
-> place.  The thing is that this machine(s) are very
-> slow to boot, so trying to figure out which change
-> is at question will require quite some time...
+> diff --git a/Documentation/Requirements b/Documentation/Requirements
+> new file mode 100644
+> index 0000000..bd7bc2c
+> --- /dev/null
+> +++ b/Documentation/Requirements
+> @@ -0,0 +1,394 @@
 
-It looks like 2.6.23.9 is missing checkin 
-7ed192906a2144ebc8ca2925a85d27b9c5355668 from Linus' tree (attached), 
-which is necessary to work on 386 and 486.
+> +Minimal Runtime Requirements
+> +============================
+> +
+> +Upgrade to at *least* these software revisions before thinking you've
+> +encountered a bug!  If you're unsure what version you're currently
+> +running, the suggested command should tell you.
+> +
+> +Again, keep in mind that this list assumes you are already
+> +functionally running a Linux 2.4 kernel.  Also, not all tools are
+> +necessary on all systems; obviously, if you don't have any ISDN
+> +hardware, for example, you probably needn't concern yourself with
+> +isdn4k-utils.
+> +
+> +o  util-linux             2.10o                   # fdformat --version
+> +o  module-init-tools      0.9.10                  # depmod -V
 
-	-hpa
+given that, on my F8 system, i'm up to module-init-tools 3.4, is
+something as old as 0.9.10 still adequate?
 
---------------080006050706000207090009
-Content-Type: text/x-patch;
- name="0001-x86-setup-add-a-near-jump-to-serialize-cr0-on-386.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-x86-setup-add-a-near-jump-to-serialize-cr0-on-386.patch"
+> +o  e2fsprogs              1.29                    # tune2fs
+> +o  jfsutils               1.1.3                   # fsck.jfs -V
+> +o  reiserfsprogs          3.6.3                   # reiserfsck -V 2>&1|grep reiserfsprogs
+> +o  xfsprogs               2.6.0                   # xfs_db -V
+> +o  pcmciautils            004                     # pccardctl -V
 
->From 7ed192906a2144ebc8ca2925a85d27b9c5355668 Mon Sep 17 00:00:00 2001
-From: H. Peter Anvin <hpa@zytor.com>
-Date: Sun, 4 Nov 2007 17:50:12 -0800
-Subject: [PATCH] x86 setup: add a near jump to serialize %cr0 on 386/486
+same here -- f8 has pcmciautils version 014, so 004 is getting
+ancient.
 
-The 386 and 486 needs a jump immediately after setting %cr0 in order
-to serialize the pipeline.
+> +o  quota-tools            3.09                    # quota -V
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/boot/pmjump.S |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+quota-tools is actually just the "quota" package on fedora, but that's
+probably not worth obsessing over.
 
-diff --git a/arch/x86/boot/pmjump.S b/arch/x86/boot/pmjump.S
-index 2e55923..26baeab 100644
---- a/arch/x86/boot/pmjump.S
-+++ b/arch/x86/boot/pmjump.S
-@@ -31,14 +31,14 @@ protected_mode_jump:
- 	xorl	%ebx, %ebx		# Flag to indicate this is a boot
- 	movl	%edx, %esi		# Pointer to boot_params table
- 	movl	%eax, 2f		# Patch ljmpl instruction
--	jmp	1f			# Short jump to flush instruction q.
- 
--1:
- 	movw	$__BOOT_DS, %cx
- 
- 	movl	%cr0, %edx
- 	orb	$1, %dl			# Protected mode (PE) bit
- 	movl	%edx, %cr0
-+	jmp	1f			# Short jump to serialize on 386/486
-+1:
- 
- 	movw	%cx, %ds
- 	movw	%cx, %es
--- 
-1.5.3.4
+> +o  PPP                    2.4.0                   # pppd --version
+> +o  isdn4k-utils           3.1pre1                 # isdnctrl 2>&1|grep version
+> +o  nfs-utils              1.0.5                   # showmount --version
+> +o  procps                 3.2.0                   # ps --version
+> +o  oprofile               0.9                     # oprofiled --version
+> +o  udev                   081                     # udevinfo -V
+> +o  grub                   0.93                    # grub --version
+> +
+> +
+> +Kernel Compilation Requirements
+> +===============================
+> +
+> +On all systems, minimal requirements (see below for additional notes):
+> +
+> +o  Gnu C                  3.2                     # gcc --version
+> +o  Gnu make               3.79.1                  # make --version
+> +o  binutils               2.12                    # ld -v
+> +o  Gnu bc                 1.06                    # bc -v
 
+you need bc?  for what?  i just did a defconfig build for x86 with no
+need for bc.
 
---------------080006050706000207090009--
+> +o  Perl                   5.6.0(?)                # perl -v
+
+if you mention perl, you should also mention sed and awk, no?  and
+perhaps suggest running scripts/ver_linux.
+
+more later.
+
+rday
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
