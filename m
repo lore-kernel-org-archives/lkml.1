@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763706AbXK3Tfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbXK3ToU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763706AbXK3Tfu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 14:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbXK3Tfm
+	id S1757178AbXK3ToU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 14:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbXK3ToB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 14:35:42 -0500
-Received: from smtpoutm.mac.com ([17.148.16.71]:62230 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755196AbXK3Tfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 14:35:41 -0500
-In-Reply-To: <47505907.5030409@zytor.com>
-References: <474EAD18.6040408@stellatravel.co.uk> <20071130143445.GA2310@csclub.uwaterloo.ca> <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com> <47505907.5030409@zytor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <02B4DDE5-3D53-4BA5-BB79-52788CEBB9AF@mac.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
-       linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Kernel Development & Objective-C
-Date: Fri, 30 Nov 2007 14:35:34 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-X-Mailer: Apple Mail (2.752.2)
+	Fri, 30 Nov 2007 14:44:01 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:55508 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbXK3ToA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 14:44:00 -0500
+Date: Fri, 30 Nov 2007 14:41:34 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>, "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: capabilities-introduce-per-process-capability-bounding-set.patch breaks FC6 Avahi
+Message-ID: <20071130194134.GA7536@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 30, 2007, at 13:40:07, H. Peter Anvin wrote:
-> Kyle Moffett wrote:
->> With that said, there is a significant performance penalty as all  
->> Objective-C method calls are looked up symbolically at runtime for  
->> every single call.
->
-> GACK!
->
-> At least C++ has vtables.
+avahi-daemon fails to start on FC6 when
+capabilities-introduce-per-process-capability-bounding-set.patch is
+applied.
 
-In a tight loop there is a way to do a single symbolic lookup and  
-just call directly through a function pointer, but typically it isn't  
-necessary for GUI programs and the like.  The flexibility of being  
-able to dynamically add new methods to an existing class (at least  
-for desktop user interfaces) significantly outweighs the performance  
-cost.  Any performance-sensitive code is typically written in  
-straight C anyways.
+strace shows
+	capset(0x19980330, 0, {CAP_SETGID|CAP_SETUID|CAP_SYS_CHROOT, CAP_SETGID|CAP_SETUID|CAP_SYS_CHROOT, 0}) = -1 EPERM (Operation not permitted)
 
-Cheers,
-Kyle Moffett
+I don't know if this is expected, but the changelog doesn't seem to
+imply that this will break things.
 
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
