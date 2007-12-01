@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXLAUxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbXLAUyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbXLAUxd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 15:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXLAUxU
+	id S1754827AbXLAUyc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 15:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXLAUyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 15:53:20 -0500
-Received: from lazybastard.de ([212.112.238.170]:34834 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbXLAUxS convert rfc822-to-8bit (ORCPT
+	Sat, 1 Dec 2007 15:54:20 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35946 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbXLAUyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 15:53:18 -0500
-Date: Sat, 1 Dec 2007 21:47:47 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
-       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
-       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Message-ID: <20071201204747.GA6458@lazybastard.org>
-References: <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu> <20071130125628.GA30773@lazybastard.org> <20071130133546.GB29679@elte.hu> <20071130134312.GA32273@elte.hu> <20071130183510.GA1570@lazybastard.org> <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20071201183256.GA14052@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Sat, 1 Dec 2007 15:54:19 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Mark Lord <lkml@rtr.ca>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
+	<20071201192341.6750fbdb@the-village.bc.nu>
+	<20071201113815.5df0960a@freepuppy.rosehill>
+	<m13aum5g1x.fsf@ebiederm.dsl.xmission.com> <4751C238.6010609@rtr.ca>
+Date: Sat, 01 Dec 2007 13:52:05 -0700
+In-Reply-To: <4751C238.6010609@rtr.ca> (Mark Lord's message of "Sat, 01 Dec
+	2007 15:21:12 -0500")
+Message-ID: <m1y7ce3zpm.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 December 2007 19:32:56 +0100, Ingo Molnar wrote:
-> * Jörn Engel <joern@logfs.org> wrote:
-> 
-> > I have to change my qemu setup a little to see the top of those 
-> > dumps...
-> 
-> btw., if you start qemu like this:
-> 
-> qemu -cdrom ./cdrom.iso -hda ./hda.img -boot c -full-screen -kernel 
-> ~/bzImage -append "root=/dev/hda1 earlyprintk=serial,ttyS0,9600 
-> console=tty console=ttyS0,9600 enforcing=0 debug"
-> 
-> you'll get the inner kernel's serial console log to qemu's standard 
-> output. Pretty useful for capturing kernel crashes.
+Mark Lord <lkml@rtr.ca> writes:
 
-Almost.  "-serial stdio" was missing.  Much better now.
+>>> Can we get this resolved before 2.6.24 is released? Going back and forth
+>>> on API's is just needless frottage.
+>>
+>> Sure.  We keep the updated dev_get_by_XXXX that takes a network
+>> namespace parameter.
+> ..
+>
+> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
 
-stopped custom tracer.
-BUG: spinlock recursion on CPU#0, sh/953
- lock: c030f280, .magic: dead4ead, .owner: sh/953, .owner_cpu: 0
-Pid: 953, comm: sh Not tainted 2.6.24-rc3-ge1cca7e8-dirty #2
- [<c0103a04>] show_trace_log_lvl+0x35/0x54
- [<c010450a>] show_trace+0x2c/0x2e
- [<c0104e6d>] dump_stack+0x84/0x8a
- [<c01ded7c>] spin_bug+0xa7/0xae
- [<c01def14>] _raw_spin_lock+0x45/0xfa
- [<c02a02b1>] _spin_lock_irqsave+0x68/0x7a
- [<c01087e7>] pit_read+0x14/0x99
- [<c0130ee9>] get_monotonic_cycles+0xf/0x2d
- [<c013c0ef>] now+0x2a/0x7c
- [<c013c33b>] ____trace+0x4d/0x1e8
- [<c013dbf3>] __mcount+0x95/0xa6
- [<c010d35c>] mcount+0x14/0x18
- [<c0135a44>] lock_acquired+0xe/0x1d7
- [<c02a02b9>] _spin_lock_irqsave+0x70/0x7a
- [<c01087e7>] pit_read+0x14/0x99
- [<c0130791>] update_wall_time+0x23/0x692
- [<c0121756>] do_timer+0x24/0xb1
- [<c01331fe>] tick_periodic+0x49/0x84
- [<c013325b>] tick_handle_periodic+0x22/0x73
- [<c0106315>] timer_interrupt+0x4f/0x56
- [<c013e2c7>] handle_IRQ_event+0x24/0x4f
- [<c013f44a>] handle_edge_irq+0xb8/0x125
- [<c01054ee>] do_IRQ+0x89/0xa3
- [<c01033df>] common_interrupt+0x23/0x28
- [<c015d924>] vfs_write+0xa6/0x14c
- [<c015df6e>] sys_write+0x4c/0x70
- [<c0102a1f>] syscall_call+0x7/0xb
- =======================
+Mostly CONFIG_NET_NS is a define to keep us from exposing the feature to
+user space not to remove the code impact.  People could not stand the
+look of the code that would actually allow us to compile everything out.
 
-I assume you have the latency tracer working.  If you could send me your
-config, I could do a manual config-bisect and see which part of mine
-causes the problem.
+So all of the struct net * fields remain when !CONFIG_NET_NS.
+Including the global variable init_net.
 
-Jörn
-
--- 
-Admonish your friends privately, but praise them openly.
--- Publilius Syrus
+Eric
