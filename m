@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbXLAWqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbXLAWq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbXLAWqF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 17:46:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbXLAWpY
+	id S1754786AbXLAWq0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 17:46:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbXLAWqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 17:45:24 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:53479 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752208AbXLAWpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 17:45:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=NbVx1Ytiz9SOsB+blUpS9vd2vNtSgP4qLa7/miqrKPDd3ufb9g1XFnTKARMIJ15YCSep9pvm+o3vgGZVqzMcKTlg8C/nQuIP5NtRa2KbLwqRepmT91LurhrrszN8cPAqpKVOOUfzUCFQyeDq2MOH5kDuQRNczlmrdhxtnTR44+4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Subject: Re: [PATCH 24/28] blk_end_request: changing ide normal caller (take 3)
-Date: Sat, 1 Dec 2007 23:53:05 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: jens.axboe@oracle.com, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-References: <20071130.183358.35360061.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20071130.183358.35360061.k-ueda@ct.jp.nec.com>
+	Sat, 1 Dec 2007 17:46:11 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:59230 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753273AbXLAWqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 17:46:09 -0500
+Message-ID: <4751E427.9000704@garzik.org>
+Date: Sat, 01 Dec 2007 17:45:59 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200712012353.05187.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, akpm@osdl.org
+Subject: Re: [PATCH] libata: Fix early use of port printk. (Was Re: ata4294967295:
+ failed to start port (errno=-19))
+References: <Pine.SOC.4.64.0711281947090.15823@math.ut.ee>	<20071128200716.14eccfdd@the-village.bc.nu>	<Pine.SOC.4.64.0711301433130.13468@math.ut.ee> <20071130152316.32e2effa@the-village.bc.nu>
+In-Reply-To: <20071130152316.32e2effa@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 December 2007, Kiyoshi Ueda wrote:
-> This patch converts "normal" parts of ide to use blk_end_request().
+Alan Cox wrote:
+> On Fri, 30 Nov 2007 14:34:11 +0200 (EET)
+> Meelis Roos <mroos@linux.ee> wrote:
 > 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> ---
->  drivers/ide/ide-cd.c |    6 +++---
->  drivers/ide/ide-io.c |   17 ++++++-----------
->  2 files changed, 9 insertions(+), 14 deletions(-)
+>>> Can you stick a stack trace in at that point ? That would help diagnose
+>>> it a great deal quicker.
+>> Finally done - found out hard way that BUG() is too bad and 
+>> dump_st5ack() suits me better.
+> 
+> Thanks. This should fix the real cause, and also allow for port start to
+> fail politely with -ENODEV.
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-[...]
+applied #upstream-fixes
 
-> Index: 2.6.24-rc3-mm2/drivers/ide/ide-io.c
-> ===================================================================
-> --- 2.6.24-rc3-mm2.orig/drivers/ide/ide-io.c
-> +++ 2.6.24-rc3-mm2/drivers/ide/ide-io.c
-> @@ -78,14 +78,9 @@ static int __ide_end_request(ide_drive_t
->  		ide_dma_on(drive);
->  	}
->  
-> -	if (!end_that_request_chunk(rq, uptodate, nr_bytes)) {
-> -		add_disk_randomness(rq->rq_disk);
-> -		if (dequeue) {
-> -			if (!list_empty(&rq->queuelist))
-> -				blkdev_dequeue_request(rq);
-> +	if (!__blk_end_request(rq, uptodate, nr_bytes)) {
-> +		if (dequeue)
->  			HWGROUP(drive)->rq = NULL;
-> -		}
-> -		end_that_request_last(rq, uptodate);
->  		ret = 0;
->  	}
 
-Hmmm, this seems to change the old behavior (the request should
-be dequeued from the queue only if 'dequeue' variable is set)
-and AFAIR some error handling code (in ide-cd?) depends on the
-old behavior so please revisit this patch.
-
-Thanks,
-Bart
