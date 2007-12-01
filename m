@@ -1,104 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbXLAXvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXLAXz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbXLAXvl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 18:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbXLAXvc
+	id S1754717AbXLAXz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 18:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXLAXzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 18:51:32 -0500
-Received: from rtr.ca ([76.10.145.34]:1243 "EHLO mail.rtr.ca"
+	Sat, 1 Dec 2007 18:55:51 -0500
+Received: from rtr.ca ([76.10.145.34]:4466 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbXLAXva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 18:51:30 -0500
-Message-ID: <4751F380.7040309@rtr.ca>
-Date: Sat, 01 Dec 2007 18:51:28 -0500
+	id S1752956AbXLAXzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 18:55:50 -0500
+Message-ID: <4751F484.6040204@rtr.ca>
+Date: Sat, 01 Dec 2007 18:55:48 -0500
 From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>	<20071201192341.6750fbdb@the-village.bc.nu>	<20071201113815.5df0960a@freepuppy.rosehill>	<m13aum5g1x.fsf@ebiederm.dsl.xmission.com> <4751C238.6010609@rtr.ca>	<20071201122926.5c887588@laptopd505.fenrus.org>	<4751DC3C.1050606@rtr.ca> <m1tzn23t6k.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1tzn23t6k.fsf@ebiederm.dsl.xmission.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+       lenb@kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 20000+ wake-ups/second in 2.6.24.   Bug?
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com>	<20071130142058.816d1693.akpm@linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>	<4750CC78.9070105@rtr.ca>	<20071130190227.1976e682@laptopd505.fenrus.org>	<4750D180.6080001@rtr.ca>	<20071130191816.3e744205@laptopd505.fenrus.org>	<4750D585.1030200@rtr.ca>	<4750D899.4020905@rtr.ca>	<4751F1AB.2060801@rtr.ca> <20071201154646.5a288c9e@laptopd505.fenrus.org>
+In-Reply-To: <20071201154646.5a288c9e@laptopd505.fenrus.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Mark Lord <lkml@rtr.ca> writes:
+Arjan van de Ven wrote:
+> On Sat, 01 Dec 2007 18:43:39 -0500
+> Mark Lord <lkml@rtr.ca> wrote:
 > 
->> Arjan van de Ven wrote:
->>> On Sat, 01 Dec 2007 15:21:12 -0500
->>> Mark Lord <lkml@rtr.ca> wrote:
->>>
->>>> Eric W. Biederman wrote:
->>>>> Stephen Hemminger <shemminger@linux-foundation.org> writes:
->>>>> Sure.  We keep the updated dev_get_by_XXXX that takes a network
->>>>> namespace parameter.
->>>> ..
->>>>
->>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
->>> network drivers probably really really don't want to call
->>> dev_get_by_XXX...
->> ..
+>> Dagnabbit.. it's done it again.. went from 100-200 wakeups/sec
+>> back up to 20000+ wakeups/sec.  This time *with* the powertop patches
+>> in place.
 >>
->> Fine.  But all of them want to call sk_alloc(),
+>> Somethings broken in there, but I don't know what.
+>> Or how to make it happen on demand.. it's fine after rebooting again.
+>>
+>> ???
+>>
+>> At least now I know to look when I hear the fan turning on
+>> when the system is otherwise supposed to be idle..
+>>
+>> 2.6.23 did not have this problem.
 > 
-> network drivers should be calling sk_alloc less then they should
-> call dev_get_by_XXXX.  Only protocols call sk_alloc.
-..
+> actually we have reports of 2.6.23 having the exact same problem.
+> The thing is, "something" is causing the system to go into a state
+> where the cpu throws us right out of the C-state the kernel asks for.
+...
 
-I think I saw some bridge code that calls it, too.
-Regardless, it's EXPORT_SYMBOL(), but now unusable
-due to the GPL-only symbol "init_net".
+Ahh.  Okay, this machine here did not have the problem on 2.6.23.
 
-Meanwhile, you are avoiding answering the question:
+> Some people have seen that not loading yenta at all will just make this
+> not happen at all...
+...
 
->>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
-..
+No yenta/cardbus here -- it's all PCIe.
+If you have any debug patches that could detect or help next time I see it,
+then feel free to toss them this way.
 
->> and many want to do register_netdev().
-> 
-> I haven't even touched register_netdev.
-..
-
-Bull-pucky.  Somebody did:
-
-> @@ -3361,6 +3595,8 @@ int register_netdevice(struct net_device *dev)
-> 
->         /* When net_device's are persistent, this will be fatal. */
->         BUG_ON(dev->reg_state != NETREG_UNINITIALIZED);
-> +       BUG_ON(!dev->nd_net);
-> +       net = dev->nd_net;
-> 
->         spin_lock_init(&dev->queue_lock);
->         spin_lock_init(&dev->_xmit_lock);
-..
-
-That new BUG_ON() line complains if nd_net has not been initialized,
-and the only thing I see drivers putting there is GPL-only "&init_net".
-
->> So what should they be using there ?
-> 
-> What are you having problems with?
-..
-
-Avoiding the question again there, too.
-
-I personally am not having problems with anything.
-But I noticed the API change, and would like somebody to fix it.
-Any of the three ways (or a fourth, if you've got one) might do.
-
-Cheers
+Cheers!
