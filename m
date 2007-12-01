@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbXLAXp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbXLAXqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbXLAXp6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 18:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXLAXpv
+	id S1755057AbXLAXqt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 18:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXLAXqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 18:45:51 -0500
-Received: from gw.goop.org ([64.81.55.164]:51255 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753033AbXLAXpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 18:45:50 -0500
-In-Reply-To: <20071129194416.GB15245@elte.hu>
-References: <20071129003849.428E026F8E7@magilla.localdomain> <20071129004222.E49AD26F8E7@magilla.localdomain> <474EF824.3020806@redhat.com> <alpine.LFD.0.9999.0711290958110.8458@woody.linux-foundation.org> <474F01F6.2030509@zytor.com> <alpine.LFD.0.9999.0711291027070.8458@woody.linux-foundation.org> <474F08E1.2090806@zytor.com> <alpine.LFD.0.9999.0711291057320.8458@woody.linux-foundation.org> <474F1027.2020801@zytor.com> <20071129192721.GP24223@one.firstfloor.org> <20071129194416.GB15245@elte.hu>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0E451C72-3F30-4921-8C1B-60754899B19E@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, zach@vmware.com
-Content-Transfer-Encoding: 7bit
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH x86/mm 6/6] x86-64 ia32 ptrace get/putreg32 current task
-Date: Sat, 1 Dec 2007 18:44:10 -0500
+	Sat, 1 Dec 2007 18:46:42 -0500
+Received: from lazybastard.de ([212.112.238.170]:37019 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752786AbXLAXql convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 18:46:41 -0500
+Date: Sun, 2 Dec 2007 00:41:13 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 To: Ingo Molnar <mingo@elte.hu>
-X-Mailer: Apple Mail (2.752.3)
+Cc: J??rn Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
+       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071201234112.GA7209@lazybastard.org>
+References: <20071115193612.GA751@elte.hu> <20071130125628.GA30773@lazybastard.org> <20071130133546.GB29679@elte.hu> <20071130134312.GA32273@elte.hu> <20071130183510.GA1570@lazybastard.org> <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu> <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071201205456.GA8231@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 1 December 2007 21:54:56 +0100, Ingo Molnar wrote:
+> * J??rn Engel <joern@logfs.org> wrote:
+> > 
+> > stopped custom tracer.
+> > BUG: spinlock recursion on CPU#0, sh/953
+> >  lock: c030f280, .magic: dead4ead, .owner: sh/953, .owner_cpu: 0
+> > Pid: 953, comm: sh Not tainted 2.6.24-rc3-ge1cca7e8-dirty #2
+> >  [<c0103a04>] show_trace_log_lvl+0x35/0x54
+> >  [<c010450a>] show_trace+0x2c/0x2e
+> >  [<c0104e6d>] dump_stack+0x84/0x8a
+> >  [<c01ded7c>] spin_bug+0xa7/0xae
+> >  [<c01def14>] _raw_spin_lock+0x45/0xfa
+> >  [<c02a02b1>] _spin_lock_irqsave+0x68/0x7a
+> >  [<c01087e7>] pit_read+0x14/0x99
+> >  [<c0130ee9>] get_monotonic_cycles+0xf/0x2d
+> 
+> ah. You should mark pit_read() function as notrace. PIT clocksource is 
+> rare. (add the 'notrace' word to the function prototype)
 
-On Nov 29, 2007, at 2:44 PM, Ingo Molnar wrote:
+Hardly a change at all.  Apart from some offsets, this dump is
+identical.
 
->
-> * Andi Kleen <andi@firstfloor.org> wrote:
->
->> For i386 iirc Jeremy/Zach did the benchmarking and they settled on  
->> %fs
->> because it was faster for something (originally it was %gs too)
->
-> yep. IIRC, some CPUs only optimize %fs because that's what Windows  
-> uses
-> and leaves Linux with %gs out in the cold.
+stopped custom tracer.
+BUG: spinlock recursion on CPU#0, sh/954
+ lock: c030f280, .magic: dead4ead, .owner: sh/954, .owner_cpu: 0
+Pid: 954, comm: sh Not tainted 2.6.24-rc3-ge1cca7e8-dirty #3
+ [<c0103a04>] show_trace_log_lvl+0x35/0x54
+ [<c010450a>] show_trace+0x2c/0x2e
+ [<c0104e6d>] dump_stack+0x84/0x8a
+ [<c01ded7c>] spin_bug+0xa7/0xae
+ [<c01def14>] _raw_spin_lock+0x45/0xfa
+ [<c02a02b1>] _spin_lock_irqsave+0x68/0x7a
+ [<c01087e2>] pit_read+0xf/0x91
+ [<c0130ee1>] get_monotonic_cycles+0xf/0x2d
+ [<c013c0e7>] now+0x2a/0x7c
+ [<c013c333>] ____trace+0x4d/0x1e8
+ [<c013dbeb>] __mcount+0x95/0xa6
+ [<c010d354>] mcount+0x14/0x18
+ [<c0135a3c>] lock_acquired+0xe/0x1d7
+ [<c02a02b9>] _spin_lock_irqsave+0x70/0x7a
+ [<c01087e2>] pit_read+0xf/0x91
+ [<c0130789>] update_wall_time+0x23/0x692
+ [<c012174e>] do_timer+0x24/0xb1
+ [<c01331f6>] tick_periodic+0x49/0x84
+ [<c0133253>] tick_handle_periodic+0x22/0x73
+ [<c0106315>] timer_interrupt+0x4f/0x56
+ [<c013e2bf>] handle_IRQ_event+0x24/0x4f
+ [<c013f442>] handle_edge_irq+0xb8/0x125
+ [<c01054ee>] do_IRQ+0x89/0xa3
+ [<c01033df>] common_interrupt+0x23/0x28
+ [<c010d354>] mcount+0x14/0x18
+ [<c0120130>] sysctl_head_finish+0xc/0x33
+ [<c0192d64>] proc_sys_write+0x96/0xa0
+ [<c015d91c>] vfs_write+0xa6/0x14c
+ [<c015df66>] sys_write+0x4c/0x70
+ [<c0102a1f>] syscall_call+0x7/0xb
+ =======================
 
-I did measure some anomalies with the AMD K6+ (or something like  
-that), in which %gs was faster than %fs.  It was pretty much  
-inexplicable, but also unique - all other processors I tested (which  
-was a range from Pentium MMX to current) had identical performance.
+Jörn
 
-> There's also a performance
-> penalty for overlapping segment use, if the segment cache is single
-> entry only with an additional optimization for NULL [which just hides
-> the segment cache].
-
-Some processors do perform slightly better with null selector loads  
-than GDT/LDT ones, but it wasn't really noticeable for modern  
-processors.  The Intel architecture guy I asked about this said that  
-it might be worth doing, but it would likely be swamped by a GDT  
-cache miss.  I looked at rearranging the kernel's GDT to pack all the  
-kernel entry/exit entries into as few cachelines as possible, but it  
-was surprisingly fiddley.
-
-> But if it's good for unification we could switch that to %gs again on
-> 32-bit. I was one of the people who advocated the use of the 'other'
-> segment register, so that the hardware has less overlap, but clean and
-> unified code trumps this concern. It shouldnt be an issue on  
-> reasonably
-> modern CPUs anyway.
-
-Well, overall it should be fairly easy to make the two arches use  
-their own segment registers with a simple #define.  But things like  
-ptrace and vm86 were tricky, though I guess the latter isn't an issue  
-for 64-bit.
-
-I originally chose %gs for the kernel, partly in the hope that  
-compiler support for TLS would be helpful in the kernel, though that  
-doesn't seem like a good idea in retrospect.  %gs for the sake of  
-consistency would be reasonable, and wouldn't have a measurable  
-downside.
-
-	J
+-- 
+Don't worry about people stealing your ideas. If your ideas are any good,
+you'll have to ram them down people's throats.
+-- Howard Aiken quoted by Ken Iverson quoted by Jim Horning quoted by
+   Raph Levien, 1979
