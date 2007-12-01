@@ -1,173 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbXLAXQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbXLAXQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbXLAXQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 18:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXLAXQP
+	id S1754580AbXLAXQm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 18:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbXLAXQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 18:16:15 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:64513 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbXLAXQN (ORCPT
+	Sat, 1 Dec 2007 18:16:20 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48676 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbXLAXQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 18:16:13 -0500
-Date: Sat, 1 Dec 2007 15:14:19 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Mark Lord <lkml@rtr.ca>, Nick Warne <nick@ukfsn.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Peculiar out-of-sync boot log lines
-Message-Id: <20071201151419.39a169f1.randy.dunlap@oracle.com>
-In-Reply-To: <200712012259.35152.bzolnier@gmail.com>
-References: <20071129193728.2f1c237e@linuxamd.linicks.net>
-	<474F1D24.4070009@rtr.ca>
-	<200712012259.35152.bzolnier@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sat, 1 Dec 2007 18:16:17 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Mark Lord <lkml@rtr.ca>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
+	<20071201192341.6750fbdb@the-village.bc.nu>
+	<20071201113815.5df0960a@freepuppy.rosehill>
+	<m13aum5g1x.fsf@ebiederm.dsl.xmission.com> <4751C238.6010609@rtr.ca>
+	<20071201122926.5c887588@laptopd505.fenrus.org>
+	<4751DC3C.1050606@rtr.ca>
+Date: Sat, 01 Dec 2007 16:13:07 -0700
+In-Reply-To: <4751DC3C.1050606@rtr.ca> (Mark Lord's message of "Sat, 01 Dec
+	2007 17:12:12 -0500")
+Message-ID: <m1tzn23t6k.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Dec 2007 22:59:35 +0100 Bartlomiej Zolnierkiewicz wrote:
+Mark Lord <lkml@rtr.ca> writes:
 
-> Thanks for reporting/debugging it guys!
-> 
-> > Something in there needs to insert a '\n' before the "skipping word" message.
-> > Since it doesn't do that right now, the KERN_DEBUG string appears as "<7>"
-> 
-> This seems like a good occasion to fix ide_dma_verbose() for good so... :)
-> 
-> [ patch is against current Linus tree so might not apply to 2.6.23.9 ]
-> 
-> [PATCH] ide: DMA reporting and validity checking fixes
-> 
-> * ide_xfer_verbose() fixups:
->   - beautify returned mode names
->   - fix PIO5 reporting
->   - make it return 'const char *'
-> 
-> * Change printk() level from KERN_DEBUG to KERN_INFO in ide_find_dma_mode().
-> 
-> * Add ide_id_dma_bug() helper based on ide_dma_verbose() to check for invalid
->   DMA info in identify block.
-> 
-> * Use ide_id_dma_bug() in ide_tune_dma() and ide_driveid_update().
-> 
->   As a result DMA won't be tuned or will be disabled after tuning if device
->   reports inconsistent info about enabled DMA mode (ide_dma_verbose() does the
->   same checks while the IDE device is probed by ide-{cd,disk} device driver).
-> 
-> * Since (id->capability & 1) && id->tDMA is a valid configuration handle
->   it correctly in ide_id_dma_bug().
-> 
-> * Remove no longer needed ide_dma_verbose().
-> 
-> This patch should fix the following problem with out-of-sync IDE messages
-> reported by Nick Warned:
-> 
->        hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache<7>hdd:
->        skipping word 93 validity check
->         , UDMA(66)
-> 
-> and later debugged by Mark Lord to be caused by:
-> 
->         ide_dma_verbose()
->                 printk( ... "2048kB Cache");
->         eighty_ninty_three()
->                 printk(KERN_DEBUG "%s: skipping word 93 validity check\n");
->         ide_dma_verbose()
->                 printk(", UDMA(66)"
-> 
-> Please note that as a result ide-{cd,disk} device drivers won't report the
-> DMA speed used but this is intended since now DMA mode being used is always
-> reported by IDE core code.
-> 
-> Cc: Nick Warne <nick@ukfsn.org>
-> Cc: Mark Lord <lkml@rtr.ca>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-cd.c   |    7 ------
->  drivers/ide/ide-disk.c |    5 ----
->  drivers/ide/ide-dma.c  |   57 ++++++++++++-------------------------------------
->  drivers/ide/ide-iops.c |    3 ++
->  drivers/ide/ide-lib.c  |   55 ++++++++++++++++++++++++-----------------------
->  include/linux/ide.h    |    6 ++---
->  6 files changed, 51 insertions(+), 82 deletions(-)
-> 
-> Index: b/drivers/ide/ide-cd.c
-> ===================================================================
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -3049,12 +3049,7 @@ int ide_cdrom_probe_capabilities (ide_dr
->          else 	
->          	printk(" drive");
->  
-> -	printk(", %dkB Cache", be16_to_cpu(cap.buffer_size));
-> -
-> -	if (drive->using_dma)
-> -		ide_dma_verbose(drive);
-> -
-> -	printk("\n");
-> +	printk(", %dkB Cache\n", be16_to_cpu(cap.buffer_size));
+> Arjan van de Ven wrote:
+>> On Sat, 01 Dec 2007 15:21:12 -0500
+>> Mark Lord <lkml@rtr.ca> wrote:
+>>
+>>> Eric W. Biederman wrote:
+>>>> Stephen Hemminger <shemminger@linux-foundation.org> writes:
+>>>> Sure.  We keep the updated dev_get_by_XXXX that takes a network
+>>>> namespace parameter.
+>>> ..
+>>>
+>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
+>>
+>> network drivers probably really really don't want to call
+>> dev_get_by_XXX...
+> ..
+>
+> Fine.  But all of them want to call sk_alloc(),
 
-Use
-	printk(KERN_CONT ...
-so that someone won't try to add another KERN_* facility level to it.
-(same for other continued printk calls in this patch)
+network drivers should be calling sk_alloc less then they should
+call dev_get_by_XXXX.  Only protocols call sk_alloc.
 
->  
->  	return nslots;
->  }
-> Index: b/drivers/ide/ide-disk.c
-> ===================================================================
-> --- a/drivers/ide/ide-disk.c
-> +++ b/drivers/ide/ide-disk.c
-> @@ -961,11 +961,8 @@ static void idedisk_setup (ide_drive_t *
->  	if (id->buf_size)
->  		printk (" w/%dKiB Cache", id->buf_size/2);
->  
-> -	printk(", CHS=%d/%d/%d", 
-> +	printk(", CHS=%d/%d/%d\n",
+> and many want to do register_netdev().
 
-Ditto.
+I haven't even touched register_netdev.
 
->  	       drive->bios_cyl, drive->bios_head, drive->bios_sect);
-> -	if (drive->using_dma)
-> -		ide_dma_verbose(drive);
-> -	printk("\n");
->  
->  	/* write cache enabled? */
->  	if ((id->csfo & 1) || (id->cfs_enable_1 & (1 << 5)))
+> So what should they be using there ?
 
-> Index: b/include/linux/ide.h
-> ===================================================================
-> --- a/include/linux/ide.h
-> +++ b/include/linux/ide.h
+What are you having problems with?
 
-> @@ -1333,8 +1334,7 @@ static inline void ide_set_hwifdata (ide
->  	hwif->hwif_data = data;
->  }
->  
-> -/* ide-lib.c */
-> -extern char *ide_xfer_verbose(u8 xfer_rate);
-> +const char *ide_xfer_verbose(u8);
->  extern void ide_toggle_bounce(ide_drive_t *drive, int on);
->  extern int ide_set_xfer_rate(ide_drive_t *drive, u8 rate);
+It is hard to answer specific questions without a context.
 
-Ideally function prototypes would include variable names, not just
-types, as a helpful hint to readers of them.
-
----
-~Randy
-The Linux kernel requires that any needed documentation accompany all
-changes requiring said documentation -- part of the source-code patch
-must apply to the Documentation/ directory. [...]
-To sum up: No undocumented changes.
--- Donnie Berkholz engages in some wishful thinking
-<http://lwn.net/Articles/259470/> Quote of the Week
+Eric
