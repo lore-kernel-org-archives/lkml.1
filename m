@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbXLANOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbXLANZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbXLANOB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 08:14:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXLANNv
+	id S1754084AbXLANZE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 08:25:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXLANYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 08:13:51 -0500
-Received: from rtr.ca ([76.10.145.34]:4012 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751439AbXLANNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 08:13:50 -0500
-Message-ID: <47515E0C.9010405@rtr.ca>
-Date: Sat, 01 Dec 2007 08:13:48 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+	Sat, 1 Dec 2007 08:24:55 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48172 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752559AbXLANYy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 08:24:54 -0500
+Date: Sat, 1 Dec 2007 13:20:47 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>, Linus Torvalds <torvalds@osdl.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca>
-In-Reply-To: <47515D39.9030900@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Avoid overflows in kernel/time.c
+Message-ID: <20071201132047.2bf3c40c@the-village.bc.nu>
+In-Reply-To: <20071201003333.GR29463@stusta.de>
+References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org>
+	<20071201003333.GR29463@stusta.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
->> Now that we have network namespace support merged it is time to
->> revisit the sysfs support so we can remove the dependency on !SYSFS.
-> ...
-> Now that the namespace updates are part of 2.6.24,
-> there is a major inconsistency in network EXPORT_SYMBOLs.
-> 
-> It used to be that an external network module could get away without
-> having to add a MODULE_LICENSE("GPL*") line to the source.
-> 
-> In support of that, common networking functions (still) use EXPORT_SYMBOL()
-> rather than the more restrictive EXPORT_SYMBOL_GPL().
-> 
-> Eg.  register_netdev(), sk_alloc(), __dev_get_by_name().
-> 
-> But now, none of those three are actually usable by default,
-> because they all require "init_net", which is EXPORT_SYMBOL_GPL().
-> 
-> So.. It appears that one of three things should really happen next:
-> 
-> 1) Change the other exports to also be EXPORT_SYMBOL_GPL.
-> 
-> 2) Have register_netdev, sk_alloc, and __dev_get_by_name default
-> to using init_net when NULL is specified in the namespace field.
-> 
-> or
-> 3) Change init_net to be EXPORT_SYMBOL_GPL.
-..
+On Sat, 1 Dec 2007 01:33:33 +0100
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Obviously that should instead say:
+> On Thu, Nov 29, 2007 at 04:19:51PM -0800, H. Peter Anvin wrote:
+> > When the conversion factor between jiffies and milli- or microseconds
+> > is not a single multiply or divide, as for the case of HZ == 300, we
+> > currently do a multiply followed by a divide.  The intervening
+> > result, however, is subject to overflows, especially since the
+> > fraction is not simplified (for HZ == 300, we multiply by 300 and
+> > divide by 1000).
+> >...
+> >  kernel/Makefile     |    8 +++
+> >  kernel/time.c       |   29 +++++++++---
+> >  kernel/timeconst.bc |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 152 insertions(+), 8 deletions(-)
+> >  create mode 100644 kernel/timeconst.bc
+> >...
+> 
+> I have read the hep text, but are the advantages of HZ == 300 really 
+> visible or was this more theoretical?
 
-3) Change init_net to be EXPORT_SYMBOL instead of EXPORT_SYMBOL_GPL.
+Its visibile for people doing PAL media processing and TV sync work.
+
+Longer term we have high precision timers and tickless so for now we can
+jut do the HZ == 300 math in steps to avoid the overflow. Slower but in
+time it won't matter.
+
+Alan
