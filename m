@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbXLASLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbXLASWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbXLASLj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 13:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXLASL0
+	id S1752722AbXLASWW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 13:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbXLASWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 13:11:26 -0500
-Received: from mail.tmr.com ([64.65.253.246]:38202 "EHLO gaimboi.tmr.com"
+	Sat, 1 Dec 2007 13:22:05 -0500
+Received: from mail.tmr.com ([64.65.253.246]:38210 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbXLASLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 13:11:25 -0500
-Message-ID: <4751A77A.9050204@tmr.com>
-Date: Sat, 01 Dec 2007 13:27:06 -0500
+	id S1752388AbXLASWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 13:22:04 -0500
+Message-ID: <4751A9F8.1090505@tmr.com>
+Date: Sat, 01 Dec 2007 13:37:44 -0500
 From: Bill Davidsen <davidsen@tmr.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: David Newall <david@davidnewall.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Xavier Bestel <xavier.bestel@free.fr>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ben.Crowhurst@stellatravel.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Development & Objective-C
-References: <474EAD18.6040408@stellatravel.co.uk>	<1196416960.20567.205.camel@skunk.anacadf.mentorg.com>	<20071130190742.4B7C.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<1196418013.20567.211.camel@skunk.anacadf.mentorg.com>	<Pine.LNX.4.64.0711301154070.3089@fbirervta.pbzchgretzou.qr>	<47501C86.1020907@davidnewall.com>	<47509D56.7010605@tmr.com> <20071130234013.446f14ef@the-village.bc.nu>
-In-Reply-To: <20071130234013.446f14ef@the-village.bc.nu>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>, jakub@redhat.com
+Subject: Re: Fedora's latest gcc produces unbootable kernels
+References: <20071201154223.1b052d39@poseidon.drzeus.cx> <20071201184752.33536d09@poseidon.drzeus.cx>
+In-Reply-To: <20071201184752.33536d09@poseidon.drzeus.cx>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> BCPL was typeless, as was the successor B (between Bell Labs and GE we 
+Pierre Ossman wrote:
+> On Sat, 1 Dec 2007 15:42:23 +0100
+> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 > 
-> B isn't quite typeless. It has minimal inbuilt support for concepts like
-> strings (although you can of course multiply a string by an array
-> pointer ;))
+>> The latest GCC in Fedora rawhide contains some serious bug (or provokes a latent one in the kernel) that makes every kernel built unbootable. It just locks up halfway through the init. Kernels that previously worked fine all now experience the same symptom. Even RH's own kernels exhibit this. The kernel built Nov 24th works, Nov 26th doesn't. gcc was updated 26th, 14 hours earlier.
+>>
 > 
-> It also had some elegances that C lost, notably 
+> Digging a bit further, it is indeed the high-res stuff (the first missing message) that hangs. If I hard code the kernel to just be non-high-res capable, it boots, but time keeping is horribly broken.
 > 
-> 	case 1..5:
+> Anyway, hopefully this means I'll soon have the object file that gets miscompiled. Jakub also pointed me to an older gcc RPM so that I can produce an object file with that as well and see what differs.
 > 
-> the ability to do no zero biased arrays
-> 
-> 	x[40];
-> 	x-=10;
-
-Well, original C allowed you to do what you wanted with pointers (I used 
-to teach that back when K&R was "the" C manual). Now people which about 
-having pointers outside the array, which is a crock in practice, as long 
-as you don't actually /use/ an out of range value.
-> 
-> and the ability to reassign function names.
-> 
-> 	printk = wombat;
-
-I had forgotten that, the function name was actually a variable with the 
-entry point, say so in section 3.11. And as I recall the code, arrays 
-were the same thing, a length ten vector was actually the vector and 
-variable with the address of the start. I was more familiar with the B 
-stuff, I wrote both the interpreter and the code generator+library for 
-the 8080 and GE600 machines. B on MULTICS, those were the days... :-D
-> 
-> as well as stuff like free(function);
-> 
-> Alan (who learned B before C, and is still waiting for P)
-
-I had the BCPL book still on the reference shelf in the office, along 
-with goodies like the four candidates to be Ada, and a TRAC manual. I 
-too expected the next language to be "P".
+If you are referring to the "compat" RPMs, be aware that they use the 
+current headers, which is a good or bad thing depending on what you want 
+to do. If you want to build old software, you get to keep a down-rev 
+virtual machine to do it right :-(
 
 -- 
 Bill Davidsen <davidsen@tmr.com>
