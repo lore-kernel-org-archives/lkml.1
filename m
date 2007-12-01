@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbXLAAhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbXLAA7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbXLAAhf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 19:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbXLAAhZ
+	id S1758981AbXLAA7w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 19:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbXLAA7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 19:37:25 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45900 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758155AbXLAAhX (ORCPT
+	Fri, 30 Nov 2007 19:59:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48675 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755564AbXLAA7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 19:37:23 -0500
-Date: Fri, 30 Nov 2007 16:37:21 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: herbert@gondor.apana.org.au, ego@in.ibm.com, netdev@vger.kernel.org,
-       bridge@lists.osdl.org, devel@openvz.org,
-       shemminger@linux-foundation.org, xemul@openvz.org, dipankar@in.ibm.com,
-       akpm@linux-foundation.org
-Subject: [PATCH] Remove rcu_assign_pointer() penalty for NULL pointers
-Message-ID: <20071201003721.GA22726@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Fri, 30 Nov 2007 19:59:37 -0500
+Date: Fri, 30 Nov 2007 16:58:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng and kobject_init_and_add
+	functions
+Message-ID: <20071201005835.GA4745@kroah.com>
+References: <20071130222629.GA7653@kroah.com> <Pine.LNX.4.44L0.0711301816290.2747-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.44L0.0711301816290.2747-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Fri, Nov 30, 2007 at 06:22:37PM -0500, Alan Stern wrote:
+> On Fri, 30 Nov 2007, Greg KH wrote:
+> >  And you
+> > can't know that, so you have to call kobject_put() in order to be safe
+> > and clean up everything.
+> > 
+> > Now why did we not do the final kobject_put() in kobject_del() as well?
+> > Doing two calls, always in order, seems a bit strange, anyone know why
+> > it's this way?
+> 
+> To be symmetrical with kobject_init() and kobject_add().  Besides, 
+> isn't there kobject_unregister()?  Presumably it will go away along 
+> with kobject_register(), though.
 
-The rcu_assign_pointer() primitive currently unconditionally executes
-a memory barrier, even when a NULL pointer is being assigned.  This
-has lead some to avoid using rcu_assign_pointer() for NULL pointers,
-which loses the self-documenting advantages of rcu_assign_pointer()
-This patch uses __builtin_const_p() to omit needless memory barriers
-for NULL-pointer assignments at compile time with no runtime penalty,
-as discussed in the following thread:
+Yes, it will go away too, once everyone gets converted.
 
-	http://www.mail-archive.com/netdev@vger.kernel.org/msg54852.html
+> > > You could put that a little less strongly.  After kobject_init() you
+> > > SHOULD call kobject_put() to clean up properly, and after kobject_add()
+> > > you MUST call kobject_del() and kobject_put().
+> >
+> > No, in looking at the code, you only need to call kobject_del() to clean
+> > everything up properly, if kobject_add() succeeds.  No need to call
+> > kobject_put() yet again.
+> 
+> Sorry, yes, that's what I meant.  After a successful call to 
+> kobject_add() you must call kobject_del() to undo the _add, and then
+> kobject_put() for the final cleanup.
 
-Tested on x86_64 and ppc64, also compiled the four cases (NULL/non-NULL
-and const/non-const) with gcc version 4.1.2, and hand-checked the
-assembly output.
+No, kobject_del() does the put for you[1].  All that is needed is a call
+to kobject_del().
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+I'll post the updated patches in a minute, they look and seem to work
+much better.
 
- rcupdate.h |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+thanks,
 
-diff -urpNa -X dontdiff linux-2.6.24-rc1-ego/include/linux/rcupdate.h linux-2.6.24-rc1-egoxu/include/linux/rcupdate.h
---- linux-2.6.24-rc1-ego/include/linux/rcupdate.h	2007-11-06 15:30:02.000000000 -0800
-+++ linux-2.6.24-rc1-egoxu/include/linux/rcupdate.h	2007-11-30 09:06:11.000000000 -0800
-@@ -191,10 +191,13 @@ static inline void rcu_preempt_boost(voi
-  * code.
-  */
- 
--#define rcu_assign_pointer(p, v)	({ \
--						smp_wmb(); \
--						(p) = (v); \
--					})
-+#define rcu_assign_pointer(p, v) \
-+	({ \
-+		if (!__builtin_constant_p(v) || \
-+		    ((v) != NULL)) \
-+			smp_wmb(); \
-+		(p) = (v); \
-+	})
- 
- /**
-  * synchronize_sched - block until all CPUs have exited any non-preemptive
+greg k-h
