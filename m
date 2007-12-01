@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXLASno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXLASvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbXLASno (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 13:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXLASna
+	id S1754381AbXLASvp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 13:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXLASvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 13:43:30 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:30352 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbXLASna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 13:43:30 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=cyE2AezvVUo7nxZNYhCwU6SXQ/iOZnvaUyplH0ng3p8HSJ2h+OdMifTdtmtmlVMCn
-	E3HsMKRHj+l261eZSKUGw==
-Date: Sat, 1 Dec 2007 10:42:57 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-In-Reply-To: <20071201092037.GA32544@elte.hu>
-Message-ID: <alpine.DEB.0.9999.0712011036340.10996@chino.kir.corp.google.com>
-References: <20071201092037.GA32544@elte.hu>
+	Sat, 1 Dec 2007 13:51:31 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:25263 "EHLO mx2.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752686AbXLASva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 13:51:30 -0500
+Date: Sat, 1 Dec 2007 21:47:34 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Bailey <dsbailey@pacbell.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ufs: fix nexstep dir block size
+Message-ID: <20071201184734.GA12099@rain>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Dave Bailey <dsbailey@pacbell.net>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Dec 2007, Ingo Molnar wrote:
+This patch fixes regression, introduced since 2.6.16.
+NextStep variant of UFS as OpenStep uses directory block size
+equals to 1024. Without this change, ufs_check_page fails in many
+cases.
 
-> this patch extends the soft-lockup detector to automatically
-> detect hung TASK_UNINTERRUPTIBLE tasks. Such hung tasks are
-> printed the following way:
-> 
+Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
+Cc: Dave Bailey <dsbailey@pacbell.net>
 
-Wouldn't a natural extension of this feature be to mark these hung 
-TASK_UNINTERRUPTIBLE tasks with a new thread flag such as TIF_HUNG for the 
-purposes of the OOM killer?
+---
 
-Right now, the OOM killer will become a no-op when any candidate task that 
-it scans through is found to have the TIF_MEMDIE flag when selecting a 
-task to kill.  So any hung task in this state could cause the OOM killer 
-to infinitely loop.
+diff --git a/fs/ufs/dir.c b/fs/ufs/dir.c
+index 30f8c2b..e4263c1 100644
+--- a/fs/ufs/dir.c
++++ b/fs/ufs/dir.c
+@@ -179,7 +179,7 @@ bad_entry:
+ 	goto fail;
+ Eend:
+ 	p = (struct ufs_dir_entry *)(kaddr + offs);
+-	ufs_error (sb, "ext2_check_page",
++	ufs_error (sb, __FUNCTION__,
+ 		   "entry in directory #%lu spans the page boundary"
+ 		   "offset=%lu",
+ 		   dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs);
+diff --git a/fs/ufs/super.c b/fs/ufs/super.c
+index c78c04f..0072cb3 100644
+--- a/fs/ufs/super.c
++++ b/fs/ufs/super.c
+@@ -755,13 +755,13 @@ static int ufs_fill_super(struct super_block *sb, void *data, int silent)
+ 		break;
+ 	
+ 	case UFS_MOUNT_UFSTYPE_NEXTSTEP:
+-		/*TODO: check may be we need set special dir block size?*/
+ 		UFSD("ufstype=nextstep\n");
+ 		uspi->s_fsize = block_size = 1024;
+ 		uspi->s_fmask = ~(1024 - 1);
+ 		uspi->s_fshift = 10;
+ 		uspi->s_sbsize = super_block_size = 2048;
+ 		uspi->s_sbbase = 0;
++		uspi->s_dirblksize = 1024;
+ 		flags |= UFS_DE_OLD | UFS_UID_OLD | UFS_ST_OLD | UFS_CG_OLD;
+ 		if (!(sb->s_flags & MS_RDONLY)) {
+ 			if (!silent)
+@@ -771,13 +771,13 @@ static int ufs_fill_super(struct super_block *sb, void *data, int silent)
+ 		break;
+ 	
+ 	case UFS_MOUNT_UFSTYPE_NEXTSTEP_CD:
+-		/*TODO: check may be we need set special dir block size?*/
+ 		UFSD("ufstype=nextstep-cd\n");
+ 		uspi->s_fsize = block_size = 2048;
+ 		uspi->s_fmask = ~(2048 - 1);
+ 		uspi->s_fshift = 11;
+ 		uspi->s_sbsize = super_block_size = 2048;
+ 		uspi->s_sbbase = 0;
++		uspi->s_dirblksize = 1024;
+ 		flags |= UFS_DE_OLD | UFS_UID_OLD | UFS_ST_OLD | UFS_CG_OLD;
+ 		if (!(sb->s_flags & MS_RDONLY)) {
+ 			if (!silent)
 
-If lockdep could set_tsk_thread_flag(g, TIF_HUNG), this could be detected 
-in the OOM killer and not only could we prevent the infinite looping but 
-we could also clear TIF_MEMDIE and reduce the increased timeslice that the 
-OOM killer gives to the tasks it kills.
+-- 
+/Evgeniy
 
-		David
