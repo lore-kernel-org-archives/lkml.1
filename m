@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXLAX2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXLAX3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbXLAX2F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 18:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXLAX1x
+	id S1754751AbXLAX3O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 18:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXLAX26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 18:27:53 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57667 "EHLO smtps.tip.net.au"
+	Sat, 1 Dec 2007 18:28:58 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:48305 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752707AbXLAX1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 18:27:52 -0500
-Date: Sun, 2 Dec 2007 10:27:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: cbou@mail.ru
-Cc: Jochen Friedrich <jochen@scram.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
- layer functionality
-Message-Id: <20071202102739.490ae468.sfr@canb.auug.org.au>
-In-Reply-To: <20071201213403.GA2350@zarina>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	<47516646.9000803@scram.de>
-	<20071201213403.GA2350@zarina>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__2_Dec_2007_10_27_39_+1100_P8UzWhXZL=bMA0n_"
+	id S1752560AbXLAX25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 18:28:57 -0500
+Message-ID: <4751EE36.6050506@garzik.org>
+Date: Sat, 01 Dec 2007 18:28:54 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: kristen.c.accardi@intel.com
+CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] ata: ahci: Enclosure Management via LED rev2
+References: <20071129121925.7d178915@appleyard> <20071130163443.2feabc5d@appleyard>
+In-Reply-To: <20071130163443.2feabc5d@appleyard>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__2_Dec_2007_10_27_39_+1100_P8UzWhXZL=bMA0n_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kristen Carlson Accardi wrote:
+> Enclosure Management via LED
+> 
+> This patch implements Enclosure Management via the LED protocol as specified
+> in AHCI specification.
+> 
+> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> ---
+> This revision makes the change to the comment requested by Mark Lord,
+> fixes some bugs in the bit shifting for writing the new led state,
+> and implements a show function so that led status can be read as
+> well as written.
 
-Just a little reminder ...
+Overall looks pretty good, from a technical review perspective.
 
-On Sun, 2 Dec 2007 00:34:03 +0300 Anton Vorontsov <cbou@mail.ru> wrote:
->
-> static int __init of_add_fixed_phys(void)
-> {
-> 	struct device_node *np;
-> 	const u32 *prop;
-> 	struct fixed_phy_status status =3D {};
->=20
-> 	while ((np =3D of_find_node_by_name(NULL, "ethernet"))) {
+Two worries:
 
-	for_each_node_by_name(np, "ethernet") {
-(this probably does what you want instead of finding just the first
-ethernet over and over again. :-))
+1) exporting ata_scsi_find_dev(), and assuming a scsi device is 
+attached.  the latter can be fixed by a !NULL check (and should be), but 
+its a bit of a layering violation since long term we want to make the 
+SCSI simulator optional for all ATA devices.
 
-> 		data  =3D of_get_property(np, "fixed-link", NULL);
-> 		if (!data)
-> 			continue;
->=20
-> 		status.link =3D 1;
-> 		status.duplex =3D data[1];
-> 		status.speed  =3D data[2];
->=20
-> 		ret =3D fixed_phy_add(PHY_POLL, data[0], &status);
-> 		if (ret)
-> 			return ret;
-		if (ret) {
-			of_put_node(np);
-			retun ret;
-		}
-> 	}
+2) vaguely related to #1, I'm not so sure the attributes should be 
+implemented directly in ahci.  if this __or something like it__ appears 
+on non-Intel hardware, the code should be somewhere more generic.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sun__2_Dec_2007_10_27_39_+1100_P8UzWhXZL=bMA0n_
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHUe3yTgG2atn1QN8RAnKXAJ0atAh7fRzQ8PgPUE1+yoK4aNVJQgCfY29E
-kx+R21nK1BHD63ePkedAKeE=
-=D5Cu
------END PGP SIGNATURE-----
-
---Signature=_Sun__2_Dec_2007_10_27_39_+1100_P8UzWhXZL=bMA0n_--
