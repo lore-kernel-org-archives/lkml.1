@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbXLANL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbXLANOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbXLANL7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 08:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbXLANLw
+	id S1754146AbXLANOB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 08:14:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXLANNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 08:11:52 -0500
-Received: from mu-out-0910.google.com ([209.85.134.187]:64797 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751700AbXLANLv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 08:11:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TdfquE7m17DeYBoV4s+rYDNxzvxaEDtoT9+mliThgqD+03LEdk++t420SHYCbitnczccuAVTL3Bdw6Ta8Uk6GKEv5LGS9U69Ow5H90ATXvfaQ1zg1r2SfXcD5tzTEl+234X5LJ2NOYJjt2smBHT1vSA4pjFH3KO+0Z956IIMl1M=
-Date: Sat, 1 Dec 2007 16:11:40 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: possible BUG: unable to handle kernel NULL pointer dereference
-	at virtual address 00000000
-Message-ID: <20071201131140.GB28875@cvg>
-References: <200711241951.37817.rjw@sisk.pl> <474870F5.4050504@xs4all.nl> <aa79d98a0711270340q5fd6b8a0o5076052a4411e6b2@mail.gmail.com> <474C3659.600@xs4all.nl> <20071127164929.GA7279@cvg> <474C56C8.80206@xs4all.nl> <20071127175503.GC7279@cvg> <47513EE5.30703@xs4all.nl> <20071201121220.GA28875@cvg> <475157CA.2040206@xs4all.nl>
+	Sat, 1 Dec 2007 08:13:51 -0500
+Received: from rtr.ca ([76.10.145.34]:4012 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751439AbXLANNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 08:13:50 -0500
+Message-ID: <47515E0C.9010405@rtr.ca>
+Date: Sat, 01 Dec 2007 08:13:48 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475157CA.2040206@xs4all.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, Linus Torvalds <torvalds@osdl.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca>
+In-Reply-To: <47515D39.9030900@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Udo van den Heuvel - Sat, Dec 01, 2007 at 01:47:06PM +0100]
-| Cyrill Gorcunov wrote:
-| > [Udo van den Heuvel - Sat, Dec 01, 2007 at 12:00:53PM +0100]
-| > | I only had teh bug once, that was the reason for my post.
-| > | Since then the system has been busy, with intervals, doing kernel
-| > | compiles and no repeat of the BUG yet...
-| > | It's a VIA EN12000 with 1GB of RAM. How could I increase the chances of
-| > | hitting it?
-| > 
-| > if my guessing is right - the only chance to hit it faster - is to increase
-| > files' activity i.e. compiling the kernel involves a lot of file being readed
-| > thru dcache system. First we have to locate the bug on a pure kernel
-| > and 'case it's a rare thing to happen... well I don't really know how to
-| > get it up to known point. So i think you could play with a pure kernel
-| > by compiling it or run several copies of 'grep' thru kernel searching
-| > the same pattern like "grep -r -n for ./*" in kernel sources. But Udo,
-| > I'm not a kernel specialist so my suggestions could be not really usefull ;)
-| 
-| Ok, maybe someone else can improve on this:
-| I now have 12 screen'ed sessions running in /usr/src/linux with:
-| while true; do grep -r -n for ./*; done
-| 
-| Every now and then I can check dmesg.
-| 
-| Would that be enough?
-| 
-| Udo
-| 
+Mark Lord wrote:
+>> Now that we have network namespace support merged it is time to
+>> revisit the sysfs support so we can remove the dependency on !SYSFS.
+> ...
+> Now that the namespace updates are part of 2.6.24,
+> there is a major inconsistency in network EXPORT_SYMBOLs.
+> 
+> It used to be that an external network module could get away without
+> having to add a MODULE_LICENSE("GPL*") line to the source.
+> 
+> In support of that, common networking functions (still) use EXPORT_SYMBOL()
+> rather than the more restrictive EXPORT_SYMBOL_GPL().
+> 
+> Eg.  register_netdev(), sk_alloc(), __dev_get_by_name().
+> 
+> But now, none of those three are actually usable by default,
+> because they all require "init_net", which is EXPORT_SYMBOL_GPL().
+> 
+> So.. It appears that one of three things should really happen next:
+> 
+> 1) Change the other exports to also be EXPORT_SYMBOL_GPL.
+> 
+> 2) Have register_netdev, sk_alloc, and __dev_get_by_name default
+> to using init_net when NULL is specified in the namespace field.
+> 
+> or
+> 3) Change init_net to be EXPORT_SYMBOL_GPL.
+..
 
-I think yes - it would be enough ;)
+Obviously that should instead say:
 
-		Cyrill
-
+3) Change init_net to be EXPORT_SYMBOL instead of EXPORT_SYMBOL_GPL.
