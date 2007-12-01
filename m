@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbXLAT2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbXLAT3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbXLAT2b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 14:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXLAT2V
+	id S1755065AbXLAT3Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 14:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbXLAT2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 14:28:21 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48268 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752731AbXLAT2U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 14:28:20 -0500
-Date: Sat, 1 Dec 2007 19:23:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Mark Lord <lkml@rtr.ca>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-Message-ID: <20071201192341.6750fbdb@the-village.bc.nu>
-In-Reply-To: <20071201111736.297dd99a@freepuppy.rosehill>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca>
-	<20071201111736.297dd99a@freepuppy.rosehill>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Dec 2007 14:28:48 -0500
+Received: from lixom.net ([66.141.50.11]:34606 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754736AbXLAT2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 14:28:46 -0500
+Date: Sat, 1 Dec 2007 13:32:21 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       apw@shadowen.org, balbir@linux.vnet.ibm.com,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH] 2.6.24-rc3-mm2 build failure pasemi-rng driver
+Message-ID: <20071201193221.GA27505@lixom.net>
+References: <20071128034140.648383f0.akpm@linux-foundation.org> <20071128142201.GA487@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071128142201.GA487@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Then init_net needs to be not GPL limited. Sorry, we need to allow
-> non GPL network drivers.  There is a fine line between keeping the
+On Wed, Nov 28, 2007 at 07:52:01PM +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The kerne build fails, with message
+> 
+>   CC      drivers/char/hw_random/pasemi-rng.o
+> drivers/char/hw_random/pasemi-rng.c: In function ???pasemi_rng_data_present???:
+> drivers/char/hw_random/pasemi-rng.c:53: error: ???wait??? undeclared (first use in this function)
+> drivers/char/hw_random/pasemi-rng.c:53: error: (Each undeclared identifier is reported only once
+> drivers/char/hw_random/pasemi-rng.c:53: error: for each function it appears in.)
+> drivers/char/hw_random/pasemi-rng.c: At top level:
+> drivers/char/hw_random/pasemi-rng.c:93: warning: initialization from incompatible pointer type
+> make[3]: *** [drivers/char/hw_random/pasemi-rng.o] Error 1
+> make[2]: *** [drivers/char/hw_random] Error 2
+> make[1]: *** [drivers/char] Error 2
+> make: *** [drivers] Error 2
+> 
+> Tested for build failure, only.
 
-Why - they aren't exactly likely to be permissible by law
+Fix works. Sorry for the delay, it's been a crazy week with other stuff.
 
-> binary seething masses from accessing random kernel functions, and allowing
-> reasonable (but still non GPL) things like ndiswrapper to use network
-> device interface.
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-Its up to the ndiswrapper authors how the licence their code, but they
-should respect how we licence ours.
+Acked-by: Olof Johansson <olof@lixom.net>
