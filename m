@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbXLAT25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbXLATgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbXLAT25 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 14:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbXLAT2k
+	id S1754519AbXLATgw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 14:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXLATgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 14:28:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51353 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752974AbXLAT2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 14:28:38 -0500
-Date: Sat, 1 Dec 2007 14:26:50 -0500
-From: Rik van Riel <riel@redhat.com>
-To: "Paul Menage" <menage@google.com>
-Cc: balbir@linux.vnet.ibm.com, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linux Memory Management List" <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Pavel Emelianov" <xemul@sw.ru>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       "Andy Whitcroft" <andyw@uk.ibm.com>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in
- 2.6.25
-Message-ID: <20071201142650.6ee71d43@bree.surriel.com>
-In-Reply-To: <6599ad830712011102h3bbfd7e6lc5c448cd8efa3158@mail.gmail.com>
-References: <474ED005.7060300@linux.vnet.ibm.com>
-	<200711301311.48291.nickpiggin@yahoo.com.au>
-	<6599ad830711302339v1f92af40v85e89484a8a6575e@mail.gmail.com>
-	<47512E65.9030803@linux.vnet.ibm.com>
-	<20071201133652.6888a717@bree.surriel.com>
-	<6599ad830712011102h3bbfd7e6lc5c448cd8efa3158@mail.gmail.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Dec 2007 14:36:44 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60862 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752220AbXLATgo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 14:36:44 -0500
+Date: Sat, 1 Dec 2007 20:36:36 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Chris Clayton <chris2553@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc3-git4 build warnings
+Message-ID: <20071201193636.GC15974@stusta.de>
+References: <200711291419.49261.chris2553@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200711291419.49261.chris2553@googlemail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Dec 2007 11:02:32 -0800
-"Paul Menage" <menage@google.com> wrote:
-
-> On Dec 1, 2007 10:36 AM, Rik van Riel <riel@redhat.com> wrote:
-> >
-> > With the /proc/refaults info, we can measure how much extra
-> > memory each process group needs, if any.
+On Thu, Nov 29, 2007 at 02:19:49PM +0000, Chris Clayton wrote:
+> Hi,
 > 
-> What's the status of that? It looks as though it would be better than
-> the "accessed in the last N seconds" metric that we've been playing
-> with, although it's possibly more intrusive?
+> I've just built 2.6.24-rc3-git4 and got the following two warnings.
 > 
-> Would it be practical to keep a non-resident set for each cgroup?
+>   LD      .tmp_vmlinux1
+>   KSYM    .tmp_kallsyms1.S
+>   AS      .tmp_kallsyms1.o
+>   LD      .tmp_vmlinux2
+>   KSYM    .tmp_kallsyms2.S
+>   AS      .tmp_kallsyms2.o
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: vmlinux.o(.text+0x90b6): Section mismatch: reference to
+> .init.text:cache_remove_shared_cpu_map (between 'free_cache_attributes' and
+> 'show_level')
+> WARNING: vmlinux.o(.init.text+0x143bd): Section mismatch: reference to
+> .exit.text:cpufreq_stats_free_table (between 'cpufreq_stat_cpu_callback' and
+> 'cpufreq_stats_init')
+>...
 
-I have an implementation with a global array, but will have to
-change it over to a per-radix tree implementation (not that
-hard, with the slab reclaiming code) and per-cgroup reclaiming
-information.
+You seem to be using gcc 3.3 or 3.4.
 
-That way we can figure out per mapping, per cgroup or system
-wide reclaim info (though not all at the same time).
+I'll send patches for these.
 
-> > As for how much memory a process group needs, at pageout time
-> > we can check the fraction of pages that are accessed.  If 60%
-> > of the pages were recently accessed at pageout time and this
-> > process group is spending little or no time waiting for refaults,
-> > 40% of the pages are *not* recently accessed and we can probably
-> > reduce the amount of memory assigned to this group.
-> 
-> It would probably be better to reduce its background-reclaim high
-> watermark than to reduce its limit. If you do the latter, you risk
-> triggering an OOM in the cgroup if it turns out that it did need all
-> that memory after all.
+> Chris
 
-I did mean the RSS limit, not a virtual memory limit.
-
-What exactly are all the terminologies you use that
-I need to be aware of? :)
+cu
+Adrian
 
 -- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
