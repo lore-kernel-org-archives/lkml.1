@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbXLABLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbXLABWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760148AbXLABLs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 20:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbXLABLf
+	id S1759424AbXLABWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 20:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbXLABWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 20:11:35 -0500
-Received: from smtp.ono.com ([62.42.230.12]:29600 "EHLO resmaa03.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755105AbXLABLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 20:11:34 -0500
-Date: Sat, 1 Dec 2007 02:09:34 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel Development & Objective-C
-Message-ID: <20071201020934.4f94e94f@werewolf>
-In-Reply-To: <20071201003119.GB8181@ftp.linux.org.uk>
-References: <474EAD18.6040408@stellatravel.co.uk>
-	<9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com>
-	<20071201001950.11100a32@werewolf>
-	<20071201003119.GB8181@ftp.linux.org.uk>
-X-Mailer: Claws Mail 3.1.0cvs44 (GTK+ 2.12.2; i686-pc-linux-gnu)
+	Fri, 30 Nov 2007 20:22:20 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45817 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755883AbXLABWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 20:22:19 -0500
+Subject: Re: [EXT4 set 6][PATCH 1/1]Export jbd stats through procfs
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <475097EB.30604@redhat.com>
+References: <1183275490.4010.134.camel@localhost.localdomain>
+	 <475097EB.30604@redhat.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 30 Nov 2007 17:22:16 -0800
+Message-Id: <1196472136.11479.33.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Dec 2007 00:31:19 +0000, Al Viro <viro@ftp.linux.org.uk> wrote:
-
-> On Sat, Dec 01, 2007 at 12:19:50AM +0100, J.A. Magall??n wrote:
-> > An vtable in C++ takes exactly the same space that the function
-> > table pointer present in every driver nowadays... and probably
-> > the virtual method call that C++ does itself with
+On Fri, 2007-11-30 at 17:08 -0600, Eric Sandeen wrote:
+> Mingming Cao wrote:
+> > [PATCH] jbd2 stats through procfs
 > > 
-> > 	thing->do_something(with,this)
+> > The patch below updates the jbd stats patch to 2.6.20/jbd2.
+> > The initial patch was posted by Alex Tomas in December 2005
+> > (http://marc.info/?l=linux-ext4&m=113538565128617&w=2).
+> > It provides statistics via procfs such as transaction lifetime and size.
 > > 
-> > like
-> > 	push thing
-> > 	push with
-> > 	push this
-> > 	call THING_vtable+indexof(do_something) // constants at compile time
+> > [ This probably should be rewritten to use debugfs?   -- Ted]
+> > 
+> > Signed-off-by: Johann Lombardi <johann.lombardi@bull.net>
 > 
-> This is not what vtables are.  Think for a minute - all codepaths arriving
-> to that point in your code will pick the address to call from the same
-> location.  Either the contents of that location is constant (in which case
-> you could bloody well call it directly in the first place) *or* it has to
-> somehow be reassigned back and forth, according to the value of this.  The
-> former is dumb, the latter - outright insane.
+> I've started going through this one to clean it up to the point where it
+> can go forward.  It's been sitting at the top of the unstable portion of
+> the patch queue for long enough, I think :)
 > 
-> The contents of vtables is constant.  The whole point of that thing is
-> to deal with the situations where we _can't_ tell which derived class
-> this ->do_something() is from; if we could tell which vtable it is at
-> compile time, we wouldn't need to bother at all.
+Thanks!
+
+> I've converted the msecs to jiffies until the user boundary, changed the
+> union #defines as suggested by Andrew, and various other little issues etc.
+> 
+> Remaining to do is a generic time-difference calculator (instead of
+> jbd2_time_diff), and looking into whether it should be made a config
+> option; I tend to think it should, but it's fairly well sprinkled
+> through the code, so I'll see how well that works.
+> 
+> Also did we ever decided if this should go to debugfs?
 > 
 
-Yup, my mistake (that's why I said i will learn something). I was thinking
-on non-virtual methods. For virtual ones you have to fetch the vtable
-start address and index from it.
+I thought it was decided to keep it on procfs as debugfs is not always
+on...
+> Thanks,
+> 
+> -Eric
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-> It's a tradeoff - we pay the extra memory access (fetch vtable pointer, then 
-> fetch method from vtable) for not having to store a slew of method pointers
-> in each instance of base class.  But the extra memory access is very much
-> there.  It can be further optimized away if you have several method calls
-> for the same object next to each other (then vtable can be picked once),
-> but it's still done at runtime.
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam03 (gcc 4.2.2 (4.2.2-1mdv2008.1)) SMP Sat Nov
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
