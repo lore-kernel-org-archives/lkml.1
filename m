@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760588AbXLAAB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbXLAAGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760588AbXLAAB7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 19:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbXLAABt
+	id S1759595AbXLAAGD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 19:06:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbXLAAFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 19:01:49 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40418 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755756AbXLAABr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 19:01:47 -0500
-Date: Fri, 30 Nov 2007 18:01:50 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/4] net: Implement the per network namespace sysctl
-	infrastructure
-Message-ID: <20071201000150.GA18758@sergelap.austin.ibm.com>
-References: <4742C73C.3010904@openvz.org> <m1odddc5mf.fsf@ebiederm.dsl.xmission.com> <m1k5o1c5eh.fsf_-_@ebiederm.dsl.xmission.com> <m1fxypc5cd.fsf_-_@ebiederm.dsl.xmission.com> <m1bq9dc53d.fsf_-_@ebiederm.dsl.xmission.com> <m17ik1c50m.fsf_-_@ebiederm.dsl.xmission.com> <20071130161856.GA10588@sergelap.austin.ibm.com> <m13aun9zfe.fsf@ebiederm.dsl.xmission.com>
+	Fri, 30 Nov 2007 19:05:47 -0500
+Received: from namei.org ([69.55.235.186]:49216 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754631AbXLAAFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 19:05:46 -0500
+Date: Sat, 1 Dec 2007 11:05:41 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Crispin Cowan <crispin@crispincowan.com>
+cc: "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>,
+       linux-kernel@vger.kernel.org,
+       LSM ML <linux-security-module@vger.kernel.org>
+Subject: Re: Out of tree module using LSM
+In-Reply-To: <4750A225.3060505@crispincowan.com>
+Message-ID: <Xine.LNX.4.64.0712011052480.24380@us.intercode.com.au>
+References: <47507818.8010808@crispincowan.com> <Xine.LNX.4.64.0712010824170.5027@us.intercode.com.au>
+ <4750A225.3060505@crispincowan.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m13aun9zfe.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> >
-> > Hey Eric,
-> >
-> > the patches look nice.
-> >
-> > The hand-forcing of the passed-in net_ns into a copy of current->nsproxy
-> > does make it seem like nsproxy may not be the best choice of what to
-> > pass in.  Doesn't only net_sysctl_root->lookup() look at the argument?
-> 
-> Yes.  Although I call it from __register_sysctl_paths.
-> 
-> > But I assume you don't want to be more general than sending in a
-> > nsproxy so as to dissuade abuse of this interface for needlessly complex
-> > sysctl interfaces?
-> 
-> A bit of that.  I would love to pass in a task_struct so you can use
-> anything from a task.  The trouble is I don't have any task_structs or
-> nsproxys with the proper value at the point where I am first setting
-> this up.  Further I have to have the full sysctl lookup working or I
-> could not call sysctl_check.
-> 
-> > (Well I expect that'll become clear once the the patches using this
-> > come out.)
-> >
-> > Are you planning to use this infrastructure for the uts and ipc
-> > sysctls as well?
-> 
-> Yes.  Where it comes in especially useful, is I can move /proc/sys
-> to /proc/sys/<tgid>/task/<pid>/sys.  And get a particular processes
-> view of sysctl.  
-> 
-> We also get a little more reuse of common functions.
-> 
-> Otherwise Pavel does have a point that using this for uts and ipc
-> is not a savings lines of code wise.
-> 
-> After having seen Pavel changes I am asking myself if there is a sane
-> way to remove the ctl_name argument from the ctl_path.
-> 
-> Anyway where I am with the nsproxy question was that I don't
-> see anything easily better.  What I have works and gets the job
-> done, and doesn't have any module unload races or holes where a sloppy
-> programmer can mess up the sysctl tree.  We needed a solution.
-> Trying any harder to find something better would take ages.  So
-> I figured this implementation was good enough.
+On Fri, 30 Nov 2007, Crispin Cowan wrote:
 
-I agree.  So it's already in -mm but still
+> > The only case of this so far has been Multiadm, although there seems to be 
+> > no reason for it to stay out of tree.
+> >   
+> Dazuko. It has the same yucky code issues as Talpa, but AFAIK is pure
+> GPL2 and thus is clean on the license issues.
+>
+> That these modules are valid modules that users want to use, are GPL
+> clean, and are *not* something LKML wants to upstream because of code
+> issues, is precisely why the LSM interface makes sense.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+I think the idea is to try and fix code quality issues through 
+participation in the upstream process, rather than have upstream maintain 
+stable kernel APIs which are naturally mismatched to the unknown 
+requirements of out of tree users.
 
-thanks,
--serge
+- James
+-- 
+James Morris 
+<jmorris@namei.org>
+
