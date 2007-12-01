@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbXLBMUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXLBMem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbXLBMUo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 07:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXLBMUb
+	id S1754799AbXLBMem (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 07:34:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXLBMed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 07:20:31 -0500
-Received: from mx33.mail.ru ([194.67.23.194]:34599 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbXLBMUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 07:20:30 -0500
-X-Greylist: delayed 52761 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Dec 2007 07:20:30 EST
-Date: Sun, 2 Dec 2007 15:13:12 +0300
-From: Anton Vorontsov <cbou@mail.ru>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: "'Jochen Friedrich'" <jochen@scram.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "'Jeff Garzik'" <jeff@garzik.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate
-	PHYlayer functionality
-Message-ID: <20071202121312.GA2996@zarina>
-Reply-To: cbou@mail.ru
-References: <20071201213403.GA2350@zarina> <051e01c834da$1cce82f0$5267a8c0@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Sun, 2 Dec 2007 07:34:33 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3197 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751576AbXLBMec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 07:34:32 -0500
+Date: Sat, 1 Dec 2007 08:43:32 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: tvrtko.ursulin@sophos.com
+Cc: Andi Kleen <andi@firstfloor.org>, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+Message-ID: <20071201084332.GB4446@ucw.cz>
+References: <p738x4i9nyd.fsf@crumb.suse.de> <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <051e01c834da$1cce82f0$5267a8c0@Jocke>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 12:54:36PM +0100, Joakim Tjernlund wrote:
-> [SNIP]
-> > ^^ the correct solution is to implement arch_initcall function
-> > which will create fixed PHYs, and then leave only
-> > snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data); part in the
-> > fs_enet's find_phy().
-> > 
-> > Try add something like this to the fsl_soc.c (compile untested):
-> > 
-> > - - - -
-> > static int __init of_add_fixed_phys(void)
-> > {
-> > 	struct device_node *np;
-> > 	const u32 *prop;
-> > 	struct fixed_phy_status status = {};
-> > 
-> > 	while ((np = of_find_node_by_name(NULL, "ethernet"))) {
-> > 		data  = of_get_property(np, "fixed-link", NULL);
-> > 		if (!data)
-> > 			continue;
-> > 
-> > 		status.link = 1;
-> > 		status.duplex = data[1];
-> > 		status.speed  = data[2];
-> 
-> What about Pause and Asym_Pause?
+Hi!
 
-Will be addressed in the next respin of these patches. Let's
-hope on Monday.
-
-> Dunno why so few, if any, eth drivers
-> impl. it, but the PHY lib supports it.
-> Even if fixed PHYs doesn't support it directly I think the OF interface
-> should have it.
+> > Personally I admit I never quite saw the point of intercepting all
+> > file accesses for everything. That will just always be slow as often
+> > demonstrated on other operating systems and racey and unreliable too.
+> > And at least the internal daemons should be already reasonably well
+> > protected by standard (or beyond standard, like AA/SELinux etc.)
+> > security measures, so e.g. it does not really make sense to intercept
+> > all of your /etc file accesses and similar.
 > 
->     - fixed-link : <a b c d e> where a is emulated phy id - choose any,
->       but unique to the all specified fixed-links, b is duplex - 0 half,
->       1 full, c is link speed - d#10/d#100/d#1000, d is pause - 0 no pause,
->       1 pause, d asym_pause - 0 no asym_pause, 1 asym_pause.
+> Personally I don't know. I am often surprised when I hear what techniques 
+> the bad guys use and what is possible.
+> 
+> Solution that we currently have is not so slow (btw you are free to try it 
+> out). And by working on a proper interface race and reliability issues 
+> should be solvable.
+
+Really?
+
+So what you are trying to do is 'application may never read bad
+sequence of bits from disk', right?
+
+Now, how do you propose to solve mmap(MAP_SHARED)? The app on the other cpu may
+see the bad bits before kernel has chance to see them.
+
+> > It might be better to identify the services (gateway, samba, file
+> > server whatever) that are actually dealing with possible infected
+> > "external" files and then define some generic interface that would
+> > allow you to check those as the data appears.
+> > 
+> > I would expect such an approach to perform better in the end and be more
+> > reliable too.
+> > 
+> > Note such a interface might well be user space only.
+> 
+> That is fine for some classes of servers. But for some other and desktop 
+> more could be needed. 
+
+Andi's solution seems the only one that has chance to work _reliably_.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
