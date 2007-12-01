@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXLATC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbXLATHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbXLATC6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 14:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXLATCu
+	id S1754377AbXLATHl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 14:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXLATHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 14:02:50 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:34722 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594AbXLATCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 14:02:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=QZSZ4w1mQnsm3sflsU35y5GJIu8kSICA08fc2+GwfaBehzR8ZYSpnKVpmvuwWnBef
-	uua1nT7Svr1Tw6j3TlnBw==
-Message-ID: <6599ad830712011102h3bbfd7e6lc5c448cd8efa3158@mail.gmail.com>
-Date: Sat, 1 Dec 2007 11:02:32 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: What can we do to get ready for memory controller merge in 2.6.25
-Cc: balbir@linux.vnet.ibm.com, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linux Memory Management List" <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Pavel Emelianov" <xemul@sw.ru>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       "Andy Whitcroft" <andyw@uk.ibm.com>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>
-In-Reply-To: <20071201133652.6888a717@bree.surriel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 1 Dec 2007 14:07:30 -0500
+Received: from gate.crashing.org ([63.228.1.57]:41582 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751216AbXLATH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 14:07:29 -0500
+Date: Sat, 1 Dec 2007 22:07:02 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
+ layer functionality
+Message-ID: <20071201220702.5b9e9b4d@kernel.crashing.org>
+In-Reply-To: <47516646.9000803@scram.de>
+References: <20071126142906.19642.45540.stgit@localhost.localdomain>
+	<47516646.9000803@scram.de>
+X-Mailer: Claws Mail 3.1.0cvs26 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <474ED005.7060300@linux.vnet.ibm.com>
-	 <200711301311.48291.nickpiggin@yahoo.com.au>
-	 <6599ad830711302339v1f92af40v85e89484a8a6575e@mail.gmail.com>
-	 <47512E65.9030803@linux.vnet.ibm.com>
-	 <20071201133652.6888a717@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 1, 2007 10:36 AM, Rik van Riel <riel@redhat.com> wrote:
+On Sat, 01 Dec 2007 14:48:54 +0100
+Jochen Friedrich wrote:
+
+> Hi Vitaly,
+> 
+> > With that patch fixed.c now fully emulates MDIO bus, thus no need
+> > to duplicate PHY layer functionality. That, in turn, drastically
+> > simplifies the code, and drops down line count.
+> >
+> > As an additional bonus, now there is no need to register MDIO bus
+> > for each PHY, all emulated PHYs placed on the platform fixed MDIO
+> > bus. There is also no more need to pre-allocate PHYs via .config
+> > option, this is all now handled dynamically.
+> >
+> > p.s. Don't even try to understand patch content! Better: apply patch
+> > and look into resulting drivers/net/phy/fixed.c.
+> >   
+> If i understand your code correctly, you seem to rely on the fact 
+> that fixed_phy_add() is called before the fixed MDIO bus is scanned
+> for devices. How is this supposed to work for modules or for the 
+> PPC_CPM_NEW_BINDING mode where the device tree is no longer scanned 
+> during fs_soc initialization but during device initialization?
 >
-> With the /proc/refaults info, we can measure how much extra
-> memory each process group needs, if any.
+Well, this is kind of known issue - to work it around for now, place PHY lib after fs_enet in
+Makefile. This way it works for me for _NEW_BINDING and mpc866ads.
 
-What's the status of that? It looks as though it would be better than
-the "accessed in the last N seconds" metric that we've been playing
-with, although it's possibly more intrusive?
+> I tried to add fixed-phy support to fs_enet, but the fixed phy is not 
+> found this way.
+> 
+The point is I have the code and it works now(for fs_enet etc.), but I need to find the way for the fixed phy pinning to work in either order with phylib. If you have ideas, please go ahead :)
 
-Would it be practical to keep a non-resident set for each cgroup?
 
->
-> As for how much memory a process group needs, at pageout time
-> we can check the fraction of pages that are accessed.  If 60%
-> of the pages were recently accessed at pageout time and this
-> process group is spending little or no time waiting for refaults,
-> 40% of the pages are *not* recently accessed and we can probably
-> reduce the amount of memory assigned to this group.
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/fs.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/phy.h>
+> +#include <linux/phy_fixed.h>
+>  
+>  #include <linux/vmalloc.h>
+>  #include <asm/pgtable.h>
+> @@ -1174,8 +1175,24 @@ static int __devinit find_phy(struct
+> device_node *np, struct device_node *phynode, *mdionode;
+>         struct resource res;
+>         int ret = 0, len;
+> +       const u32 *data;
+> +       struct fixed_phy_status status = {};
+> +
+> +       data  = of_get_property(np, "fixed-link", NULL);
+> +       if (data) {
+> +               status.link = 1;
+> +               status.duplex = data[1];
+> +               status.speed  = data[2];
+> +
+> +               ret = fixed_phy_add(PHY_POLL, data[0], &status);
+> +               if (ret)
+> +                       return ret;
+> +
+> +               snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data);
+> +               return 0;
+> +       }
+>  
+> -       const u32 *data = of_get_property(np, "phy-handle", &len);
+> +       data = of_get_property(np, "phy-handle", &len);
+>         if (!data || len != 4)
+>                 return -EINVAL;
+> 
+> Thanks,
+> Jochen
 
-It would probably be better to reduce its background-reclaim high
-watermark than to reduce its limit. If you do the latter, you risk
-triggering an OOM in the cgroup if it turns out that it did need all
-that memory after all.
 
-Paul
+-- 
+Sincerely, Vitaly
