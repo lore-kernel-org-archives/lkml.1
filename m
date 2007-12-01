@@ -1,73 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbXLAUud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXLAUxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbXLAUud (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 15:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXLAUuQ
+	id S1754672AbXLAUxd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 15:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXLAUxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 15:50:16 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:38163 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751475AbXLAUuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 15:50:14 -0500
-Date: Sat, 1 Dec 2007 21:50:10 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Vitaly Luban <vitaly@luban.org>
-Cc: linux-kernel@vger.kernel.org, Vitaly Luban <vitaly@luban.org>
-Subject: Re: [PATCH] Tokyo Electron SDIO controller (Ellen) support
-Message-ID: <20071201215010.2fa3b334@poseidon.drzeus.cx>
-In-Reply-To: <47511ADA.20506@luban.org>
-References: <47511ADA.20506@luban.org>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i386-redhat-linux-gnu)
+	Sat, 1 Dec 2007 15:53:20 -0500
+Received: from lazybastard.de ([212.112.238.170]:34834 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbXLAUxS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 15:53:18 -0500
+Date: Sat, 1 Dec 2007 21:47:47 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
+       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071201204747.GA6458@lazybastard.org>
+References: <473C825E.3030307@rtr.ca> <20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu> <20071130125628.GA30773@lazybastard.org> <20071130133546.GB29679@elte.hu> <20071130134312.GA32273@elte.hu> <20071130183510.GA1570@lazybastard.org> <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-3368-1196542213-0001-2"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071201183256.GA14052@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sat, 1 December 2007 19:32:56 +0100, Ingo Molnar wrote:
+> * Jörn Engel <joern@logfs.org> wrote:
+> 
+> > I have to change my qemu setup a little to see the top of those 
+> > dumps...
+> 
+> btw., if you start qemu like this:
+> 
+> qemu -cdrom ./cdrom.iso -hda ./hda.img -boot c -full-screen -kernel 
+> ~/bzImage -append "root=/dev/hda1 earlyprintk=serial,ttyS0,9600 
+> console=tty console=ttyS0,9600 enforcing=0 debug"
+> 
+> you'll get the inner kernel's serial console log to qemu's standard 
+> output. Pretty useful for capturing kernel crashes.
 
---=_hera.drzeus.cx-3368-1196542213-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Almost.  "-serial stdio" was missing.  Much better now.
 
-On Sat, 01 Dec 2007 00:27:06 -0800
-Vitaly Luban <vitaly@luban.org> wrote:
+stopped custom tracer.
+BUG: spinlock recursion on CPU#0, sh/953
+ lock: c030f280, .magic: dead4ead, .owner: sh/953, .owner_cpu: 0
+Pid: 953, comm: sh Not tainted 2.6.24-rc3-ge1cca7e8-dirty #2
+ [<c0103a04>] show_trace_log_lvl+0x35/0x54
+ [<c010450a>] show_trace+0x2c/0x2e
+ [<c0104e6d>] dump_stack+0x84/0x8a
+ [<c01ded7c>] spin_bug+0xa7/0xae
+ [<c01def14>] _raw_spin_lock+0x45/0xfa
+ [<c02a02b1>] _spin_lock_irqsave+0x68/0x7a
+ [<c01087e7>] pit_read+0x14/0x99
+ [<c0130ee9>] get_monotonic_cycles+0xf/0x2d
+ [<c013c0ef>] now+0x2a/0x7c
+ [<c013c33b>] ____trace+0x4d/0x1e8
+ [<c013dbf3>] __mcount+0x95/0xa6
+ [<c010d35c>] mcount+0x14/0x18
+ [<c0135a44>] lock_acquired+0xe/0x1d7
+ [<c02a02b9>] _spin_lock_irqsave+0x70/0x7a
+ [<c01087e7>] pit_read+0x14/0x99
+ [<c0130791>] update_wall_time+0x23/0x692
+ [<c0121756>] do_timer+0x24/0xb1
+ [<c01331fe>] tick_periodic+0x49/0x84
+ [<c013325b>] tick_handle_periodic+0x22/0x73
+ [<c0106315>] timer_interrupt+0x4f/0x56
+ [<c013e2c7>] handle_IRQ_event+0x24/0x4f
+ [<c013f44a>] handle_edge_irq+0xb8/0x125
+ [<c01054ee>] do_IRQ+0x89/0xa3
+ [<c01033df>] common_interrupt+0x23/0x28
+ [<c015d924>] vfs_write+0xa6/0x14c
+ [<c015df6e>] sys_write+0x4c/0x70
+ [<c0102a1f>] syscall_call+0x7/0xb
+ =======================
 
-> Kernel "pci_ids.h" file has data for that card missing.
->=20
-> Also, Ellen needs some control bits flipped before it functions properly=
-=20
-> as SDIO controller by the spec.
-> Should apply clenly to Linus and Drzeus trees. Please apply.
->=20
-> Signed-off-by:  Vitaly Luban <vitaly@luban.org>
->=20
->=20
+I assume you have the latency tracer working.  If you could send me your
+config, I could do a manual config-bisect and see which part of mine
+causes the problem.
 
-The illiteracy rates for hardware engineers must be through the roof. Nobod=
-y seems capable of reading specifications anymore...
+Jörn
 
-As for the patch, it's a big NAK at this point. Vendors who can't be bother=
-ed to follow the standard will have to wait for Ben's separation patches be=
-fore they can be supported. Then they can have some voodoo front-end to han=
-dle their mistakes instead of turning sdhci.c into a collection of hacks an=
-d workarounds.
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-3368-1196542213-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHUckD7b8eESbyJLgRAlyIAJ9ZF9mTjuRzi/Z0gawTaFDgh2Fd7QCgheWv
-uuloGo2Fraz+RsqokmtKLwE=
-=Hwk8
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-3368-1196542213-0001-2--
+-- 
+Admonish your friends privately, but praise them openly.
+-- Publilius Syrus
