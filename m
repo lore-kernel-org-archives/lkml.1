@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbXLAEUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbXLAEbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbXLAEUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 23:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbXLAET7
+	id S1759477AbXLAEbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 23:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXLAEbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 23:19:59 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36858 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755459AbXLAET6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 23:19:58 -0500
-Message-ID: <4750E0D7.9060402@zytor.com>
-Date: Fri, 30 Nov 2007 20:19:35 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 30 Nov 2007 23:31:16 -0500
+Received: from rtr.ca ([76.10.145.34]:1523 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752829AbXLAEbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Nov 2007 23:31:15 -0500
+Message-ID: <4750E391.4060309@rtr.ca>
+Date: Fri, 30 Nov 2007 23:31:13 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Avoid overflows in kernel/time.c
-References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org> <20071201003333.GR29463@stusta.de>
-In-Reply-To: <20071201003333.GR29463@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+       lenb@kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com>	<20071130142058.816d1693.akpm@linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>	<4750CC78.9070105@rtr.ca>	<20071130190227.1976e682@laptopd505.fenrus.org>	<4750D180.6080001@rtr.ca> <20071130191816.3e744205@laptopd505.fenrus.org> <4750D585.1030200@rtr.ca> <4750D899.4020905@rtr.ca> <4750DCDC.8030306@rtr.ca>
+In-Reply-To: <4750DCDC.8030306@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
+Mark Lord wrote:
+> Arjan van de Ven wrote:
+>> On Fri, 30 Nov 2007 22:44:25 -0500
+>> Mark Lord <lkml@rtr.ca> wrote:
+>>>> all you need to do in your kernel module is call
+...
+>> set_acceptable_latency("mark", 5);
+>>
+>> and to remove the constraint again you just do
+>>
+>> remove_acceptable_latency("mark");
+..
+>>> Then why not have a sysfs entry for scripts to write tsoro
+>>> to trigger the exact same end result?  :)
+>>
+>> that's what is in current -mm pretty much
+>> well not sysfs, but it goes via a file descriptor
+>> (so that if the process that sets the contraint dies, the latency
+>> requirement can be given up automatically)
+> ...
 > 
-> I have read the hep text, but are the advantages of HZ == 300 really 
-> visible or was this more theoretical?
-> 
-> In the latter case, we might remove the HZ == 300 choice instead.
-> 
+> But doesn't that approach also make it nearly impossible to script ????
+...
 
-Well, we have, for various architectures:
+Okay, I have a working trivial kernel module that I can load/unload
+to tweak this.  But a simple sysfs attribute would be *so much* better
+as a permanent kernel feature.
 
-HZ == 48, 100, 128, 250, 256, 300, 1000, 1024
+Binary interfaces (fd) are fine for some uses, but not nice for scripts.
 
-You'd have to kill 48, 128, 256, 300 and 1024.
-
-	-hpa
-
+Cheers
