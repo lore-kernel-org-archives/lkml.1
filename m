@@ -1,53 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbXLAJPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXLAJQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752354AbXLAJPu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 04:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXLAJPg
+	id S1752599AbXLAJQP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 04:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXLAJP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 04:15:36 -0500
-Received: from neopsis.com ([213.239.204.14]:48125 "EHLO
-	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751019AbXLAJPf (ORCPT
+	Sat, 1 Dec 2007 04:15:58 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46685 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbXLAJPy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 04:15:35 -0500
-Message-ID: <4752703B.10305@dbservice.com>
-Date: Sun, 02 Dec 2007 09:43:39 +0100
-From: Tomas Carnecky <tom@dbservice.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071130)
+	Sat, 1 Dec 2007 04:15:54 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>
+Cc: Tejun Heo <htejun@gmail.com>, Linux Containers <containers@lists.osdl.org>,
+       <netdev@vger.kernel.org>, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH 02/10] sysfs: Support for preventing unmounts.
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<m11wa693t0.fsf@ebiederm.dsl.xmission.com>
+Date: Sat, 01 Dec 2007 02:13:59 -0700
+In-Reply-To: <m11wa693t0.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
+	message of "Sat, 01 Dec 2007 02:12:27 -0700")
+Message-ID: <m1wsry7p60.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: WARNING: smp_call_function_single() and smp_call_function_mask()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
-X-Neopsis-MailScanner: Found to be clean
-X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-1.176,
-	required 5, autolearn=spam, AWL -0.87, BAYES_00 -2.60,
-	DATE_IN_FUTURE_12_24 2.19, RDNS_DYNAMIC 0.10)
-X-MailScanner-From: tom@dbservice.com
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: at arch/x86/kernel/smp_64.c:427 smp_call_function_single()
-WARNING: at arch/x86/kernel/smp_64.c:397 smp_call_function_mask()
 
-dmesg and config attached.
+To support mounting multiple instances of sysfs occassionally I
+need to walk through all of the currently present sysfs super blocks.
 
-I'm getting about three of each at boot. I'm running:
-commit e1cca7e8d484390169777b423a7fe46c7021fec1
-Date:   Thu Nov 29 16:25:29 2007 -0800
-which is the latest git as of yesterday plus a one (unrelated) debug
-statement patch in usb uhci.
+To allow this iteration this patch adds sysfs_grab_supers and
+sysfs_release_supers.  While a piece of code is in a section
+surrounded by these no more sysfs super blocks will be either created
+or destroyed.
 
-There was a similar bug report after 2.6.23-rc8-mm was released. Though
-there seems to be a fundamental problem with how people use
-smp_call_function*() [1]. And this can just as well be another
-incarnation of it.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/mount.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ fs/sysfs/sysfs.h |   10 +++++++
+ 2 files changed, 81 insertions(+), 8 deletions(-)
 
-Is that easy enough to fix or do I need to bisect (it didn't happen in
-2.6.24-rc3)?
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 7416826..ef5f7ae 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -41,47 +41,110 @@ struct sysfs_dirent sysfs_root = {
+ 
+ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ {
+-	struct inode *inode;
+-	struct dentry *root;
++	struct sysfs_super_info *info = NULL;
++	struct inode *inode = NULL;
++	struct dentry *root = NULL;
++	int error;
+ 
+ 	sb->s_blocksize = PAGE_CACHE_SIZE;
+ 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+ 	sb->s_magic = SYSFS_MAGIC;
+ 	sb->s_op = &sysfs_ops;
+ 	sb->s_time_gran = 1;
+-	sysfs_sb = sb;
++	if (!sysfs_sb)
++		sysfs_sb = sb;
++
++	error = -ENOMEM;
++	info = kzalloc(sizeof(*info), GFP_KERNEL);
++	if (!info)
++		goto out_err;
+ 
+ 	/* get root inode, initialize and unlock it */
++	error = -ENOMEM;
+ 	inode = sysfs_get_inode(&sysfs_root);
+ 	if (!inode) {
+ 		pr_debug("sysfs: could not get root inode\n");
+-		return -ENOMEM;
++		goto out_err;
+ 	}
+ 
+ 	/* instantiate and link root dentry */
++	error = -ENOMEM;
+ 	root = d_alloc_root(inode);
+ 	if (!root) {
+ 		pr_debug("%s: could not get root dentry!\n",__FUNCTION__);
+-		iput(inode);
+-		return -ENOMEM;
++		goto out_err;
+ 	}
+ 	root->d_fsdata = &sysfs_root;
+ 	sb->s_root = root;
++	sb->s_fs_info = info;
+ 	return 0;
++
++out_err:
++	dput(root);
++	iput(inode);
++	kfree(info);
++	if (sysfs_sb == sb)
++		sysfs_sb = NULL;
++	return error;
+ }
+ 
+ static int sysfs_get_sb(struct file_system_type *fs_type,
+ 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+ {
+-	return get_sb_single(fs_type, flags, data, sysfs_fill_super, mnt);
++	int rc;
++	mutex_lock(&sysfs_rename_mutex);
++	rc = get_sb_single(fs_type, flags, data, sysfs_fill_super, mnt);
++	mutex_unlock(&sysfs_rename_mutex);
++	return rc;
+ }
+ 
+-static struct file_system_type sysfs_fs_type = {
++struct file_system_type sysfs_fs_type = {
+ 	.name		= "sysfs",
+ 	.get_sb		= sysfs_get_sb,
+ 	.kill_sb	= kill_anon_super,
+ };
+ 
++void sysfs_grab_supers(void)
++{
++	/* must hold sysfs_rename_mutex */
++	struct super_block *sb;
++	/* Loop until I have taken s_umount on all sysfs superblocks */
++restart:
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		if (sysfs_info(sb)->grabbed)
++			continue;
++		/* Wait for unmount activity to complete. */
++		if (sb->s_count < S_BIAS) {
++			sb->s_count += 1;
++			spin_unlock(&sb_lock);
++			down_read(&sb->s_umount);
++			drop_super(sb);
++			goto restart;
++		}
++		atomic_inc(&sb->s_active);
++		sysfs_info(sb)->grabbed = 1;
++	}
++	spin_unlock(&sb_lock);
++}
++
++void sysfs_release_supers(void)
++{
++	/* must hold sysfs_rename_mutex */
++	struct super_block *sb;
++restart:
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		if (!sysfs_info(sb)->grabbed)
++			continue;
++		sysfs_info(sb)->grabbed = 0;
++		spin_unlock(&sb_lock);
++		deactivate_super(sb);
++		goto restart;
++	}
++	spin_unlock(&sb_lock);
++}
++
+ int __init sysfs_init(void)
+ {
+ 	int err = -ENOMEM;
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index ff17f8d..3308759 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -85,12 +85,22 @@ struct sysfs_addrm_cxt {
+ 	int			cnt;
+ };
+ 
++struct sysfs_super_info {
++	int	grabbed;
++};
++
++#define sysfs_info(SB) ((struct sysfs_super_info *)(SB)->s_fs_info)
++
+ /*
+  * mount.c
+  */
+ extern struct sysfs_dirent sysfs_root;
+ extern struct super_block *sysfs_sb;
+ extern struct kmem_cache *sysfs_dir_cachep;
++extern struct file_system_type sysfs_fs_type;
++
++void sysfs_grab_supers(void);
++void sysfs_release_supers(void);
+ 
+ /*
+  * dir.c
+-- 
+1.5.3.rc6.17.g1911
 
-tom
-
-[1] http://kerneltrap.org/mailarchive/linux-kernel/2007/9/27/324310
