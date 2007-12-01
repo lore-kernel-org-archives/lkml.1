@@ -1,40 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXLAJus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbXLAJvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbXLAJus (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 04:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXLAJug
+	id S1753282AbXLAJvX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 04:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXLAJvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 04:50:36 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45639 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbXLAJuf (ORCPT
+	Sat, 1 Dec 2007 04:51:15 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43299 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbXLAJvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 04:50:35 -0500
-Message-ID: <47512E65.9030803@linux.vnet.ibm.com>
-Date: Sat, 01 Dec 2007 15:20:29 +0530
+	Sat, 1 Dec 2007 04:51:14 -0500
+Message-ID: <47512E8D.6090805@linux.vnet.ibm.com>
+Date: Sat, 01 Dec 2007 15:21:09 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 Organization: IBM
 User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
 To: Paul Menage <menage@google.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in 2.6.25
-References: <474ED005.7060300@linux.vnet.ibm.com> <200711301311.48291.nickpiggin@yahoo.com.au> <6599ad830711302339v1f92af40v85e89484a8a6575e@mail.gmail.com>
-In-Reply-To: <6599ad830711302339v1f92af40v85e89484a8a6575e@mail.gmail.com>
+CC: vatsa@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, skumar@linux.vnet.ibm.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH] sched: cpu accounting controller (V2)
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129113035.bbdf35db.akpm@linux-foundation.org> <20071129201833.GA18023@linux.vnet.ibm.com> <20071130124225.GM5681@linux.vnet.ibm.com> <6599ad830711302348n49900ca8jfa66fa71fde76a67@mail.gmail.com>
+In-Reply-To: <6599ad830711302348n49900ca8jfa66fa71fde76a67@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,61 +32,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Paul Menage wrote:
-> On Nov 29, 2007 6:11 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->> And also some
->> results or even anecdotes of where this is going to be used would be
->> interesting...
+> Hi Vatsa,
 > 
-> We want to be able to run multiple isolated jobs on the same machine.
-> So being able to limit how much memory each job can consume, in terms
-> of anonymous memory and page cache, are useful. I've not had much time
-> to look at the patches in great detail, but they seem to provide a
-> sensible way to assign and enforce static limits on a bunch of jobs.
+> Thanks, this looks pretty good.
 > 
-> Some of our requirements are a bit beyond this, though:
+> On Nov 30, 2007 4:42 AM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+>>         - Removed load average information. I felt it needs more thought (esp
+>>           to deal with SMP and virtualized platforms) and can be added for
+>>           2.6.25 after more discussions.
 > 
-> In our experience, users are not good at figuring out how much memory
-> they really need. In general they tend to massively over-estimate
-> their requirements. So we want some way to determine how much of its
-> allocated memory a job is actively using, and how much could be thrown
-> away or swapped out without bothering the job too much.
+> The "load" value was never a load average, it was just a count of the
+> % cpu time used in the previous fixed window of time, updated at the
+> end of each window.
 > 
-
-One would prefer the kernel provides the mechanism and user space
-provides the policy. The algorithms to assign limits can exist in user
-space and be supported by a good set of statistics.
-
-> Of course, the definition of "actve use" is tricky - one possibility
-> that we're looking at is "has been accessed within the last N
-> seconds", where N can be configured appropriately for different jobs
-> depending on the job's latency requirements. Active use should also be
-> reported for pages that can't be easily freed quickly, e.g. mlocked or
-> dirty pages, or anon pages on a swapless system. Inactive pages should
-> be easily freeable, and be the first ones to go in the event of memory
-> pressure. (From a scheduling point of view we can treat them as free
-> memory, and schedule more jobs on the machine)
+> Maybe we can instead do something based tracking the length of the run
+> queue for the cgroup?
 > 
-
-This definition of active comes from the mainline kernel, which in-turn
-is derived from our understanding of the working set.
-
-> The existing active/inactive distinction doesn't really capture this,
-> since it's relative rather than absolute.
-> 
-
-Not sure I understand why we need absolute use and not relative use.
-
-> We want to be able to overcommit a machine, so the sums of the cgroup
-> memory limits can add up to more than the total machine memory. So we
-> need control over what happens when there's global memory pressure,
-> and a way to ensure that the low-latency jobs don't get bogged down in
-> reclaim (or OOM) due to the activity of batch jobs.
-> 
-
-I agree, well said. We need Job Isolation.
-
 > Paul
 
+Length of the runqueue gives no idea of the weight of the tasks on the
+runqueue. I still prefer to have a top'ish view of the load on the
+system. The load average can be extracted using container group statistics.
 
 -- 
 	Warm Regards,
