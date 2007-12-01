@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbXLAMXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbXLAMrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbXLAMXz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 07:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXLAMXn
+	id S1753926AbXLAMrV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 07:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXLAMrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 07:23:43 -0500
-Received: from lucidpixels.com ([75.144.35.66]:36226 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbXLAMXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 07:23:42 -0500
-Date: Sat, 1 Dec 2007 07:23:41 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, apiszcz@solarrain.com
-Subject: Re: Kernel 2.6.23.9 / P35 Chipset + WD 750GB Drives (reset port)
-In-Reply-To: <Pine.LNX.4.64.0712011310410.30316@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0712010722590.28887@p34.internal.lan>
-References: <Pine.LNX.4.64.0712010619150.25643@p34.internal.lan>
- <Pine.LNX.4.64.0712011310410.30316@fbirervta.pbzchgretzou.qr>
+	Sat, 1 Dec 2007 07:47:10 -0500
+Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:4337 "EHLO
+	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752602AbXLAMrJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 07:47:09 -0500
+Message-ID: <475157CA.2040206@xs4all.nl>
+Date: Sat, 01 Dec 2007 13:47:06 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: possible BUG: unable to handle kernel NULL pointer dereference
+ at virtual address 00000000
+References: <47481590.8090009@xs4all.nl> <200711241951.37817.rjw@sisk.pl> <474870F5.4050504@xs4all.nl> <aa79d98a0711270340q5fd6b8a0o5076052a4411e6b2@mail.gmail.com> <474C3659.600@xs4all.nl> <20071127164929.GA7279@cvg> <474C56C8.80206@xs4all.nl> <20071127175503.GC7279@cvg> <47513EE5.30703@xs4all.nl> <20071201121220.GA28875@cvg>
+In-Reply-To: <20071201121220.GA28875@cvg>
+X-Enigmail-Version: 0.95.5
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cyrill Gorcunov wrote:
+> [Udo van den Heuvel - Sat, Dec 01, 2007 at 12:00:53PM +0100]
+> | I only had teh bug once, that was the reason for my post.
+> | Since then the system has been busy, with intervals, doing kernel
+> | compiles and no repeat of the BUG yet...
+> | It's a VIA EN12000 with 1GB of RAM. How could I increase the chances of
+> | hitting it?
+> 
+> if my guessing is right - the only chance to hit it faster - is to increase
+> files' activity i.e. compiling the kernel involves a lot of file being readed
+> thru dcache system. First we have to locate the bug on a pure kernel
+> and 'case it's a rare thing to happen... well I don't really know how to
+> get it up to known point. So i think you could play with a pure kernel
+> by compiling it or run several copies of 'grep' thru kernel searching
+> the same pattern like "grep -r -n for ./*" in kernel sources. But Udo,
+> I'm not a kernel specialist so my suggestions could be not really usefull ;)
 
+Ok, maybe someone else can improve on this:
+I now have 12 screen'ed sessions running in /usr/src/linux with:
+while true; do grep -r -n for ./*; done
 
-On Sat, 1 Dec 2007, Jan Engelhardt wrote:
+Every now and then I can check dmesg.
 
->
-> On Dec 1 2007 06:26, Justin Piszcz wrote:
->> I ran the following:
->>
->> dd if=/dev/zero of=/dev/sdc
->> dd if=/dev/zero of=/dev/sdd
->> dd if=/dev/zero of=/dev/sde
->>
->> (as it is always a very good idea to do this with any new disk)
->
-> Why would you care about what's on the disk? fdisk, mkfs and
-> the day-to-day operation will overwrite it _anyway_.
->
-> (If you think the disk is not empty, you should look at it
-> and copy off all usable warez beforehand :-)
->
+Would that be enough?
 
-The purpose is with any new disk its good to write to all the blocks and 
-let the drive to all of the re-mapping before you put 'real' data on it. 
-Let it crap out or fail before I put my data on it.
-
-Justin.
+Udo
