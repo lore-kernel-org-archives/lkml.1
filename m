@@ -1,105 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbXLATHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbXLATLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754377AbXLATHl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 14:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXLATHa
+	id S1754525AbXLATLZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 14:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbXLATLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 14:07:30 -0500
-Received: from gate.crashing.org ([63.228.1.57]:41582 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbXLATH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 14:07:29 -0500
-Date: Sat, 1 Dec 2007 22:07:02 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
- layer functionality
-Message-ID: <20071201220702.5b9e9b4d@kernel.crashing.org>
-In-Reply-To: <47516646.9000803@scram.de>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	<47516646.9000803@scram.de>
-X-Mailer: Claws Mail 3.1.0cvs26 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 1 Dec 2007 14:11:10 -0500
+Received: from mail.arctic.org ([208.69.40.137]:33689 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752603AbXLATLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 14:11:09 -0500
+Message-ID: <4751B1C3.1000704@kernel.org>
+Date: Sat, 01 Dec 2007 11:10:59 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: serge@hallyn.com, KaiGai Kohei <kaigai@kaigai.gr.jp>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] capabilities: introduce per-process capability	bounding
+ set (v10)
+References: <20071126200908.GA13287@sergelap.austin.ibm.com> <4750B6D5.7070607@kaigai.gr.jp> <20071201035820.GA7730@vino.hallyn.com>
+In-Reply-To: <20071201035820.GA7730@vino.hallyn.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Dec 2007 14:48:54 +0100
-Jochen Friedrich wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Hi Vitaly,
+There is already a pam_cap module in the libcap2 package. Can we merge
+this functionality?
+
+Cheers
+
+Andrew
+
+serge@hallyn.com wrote:
+> Quoting KaiGai Kohei (kaigai@kaigai.gr.jp):
+>> Serge E. Hallyn wrote:
+>>> The capability bounding set is a set beyond which capabilities
+>>> cannot grow.  Currently cap_bset is per-system.  It can be
+>>> manipulated through sysctl, but only init can add capabilities.
+>>> Root can remove capabilities.  By default it includes all caps
+>>> except CAP_SETPCAP.
+>> Serge,
+>>
+>> This feature makes me being interested in.
+>> I think you intend to apply this feature for the primary process
+>> of security container.
+>> However, it is also worthwhile to apply when a session is starting up.
+>>
+>> The following PAM module enables to drop capability bounding bit
+>> specified by the fifth field in /etc/passwd entry.
+>> This code is just an example now, but considerable feature.
+>>
+>> build and install:
+>> # gcc -Wall -c pam_cap_drop.c
+>> # gcc -Wall -shared -Xlinker -x -o pam_cap_drop.so pam_cap_drop.o -lpam
+>> # cp pam_cap_drop.so /lib/security
+>>
+>> modify /etc/passwd as follows:
+>>
+>> tak:x:1004:100:cap_drop=cap_net_raw,cap_chown:/home/tak:/bin/bash
+>>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> example:
+>> [kaigai@masu ~]$ ping 192.168.1.1
+>> PING 192.168.1.1 (192.168.1.1) 56(84) bytes of data.
+>> 64 bytes from 192.168.1.1: icmp_seq=1 ttl=64 time=1.23 ms
+>> 64 bytes from 192.168.1.1: icmp_seq=2 ttl=64 time=1.02 ms
+>>
+>> --- 192.168.1.1 ping statistics ---
+>> 2 packets transmitted, 2 received, 0% packet loss, time 999ms
+>> rtt min/avg/max/mdev = 1.023/1.130/1.237/0.107 ms
+>>
+>> [kaigai@masu ~]$ ssh tak@localhost
+>> tak@localhost's password:
+>> Last login: Sat Dec  1 10:09:29 2007 from masu.myhome.cx
+>> [tak@masu ~]$ export LANG=C
+>> [tak@masu ~]$ ping 192.168.1.1
+>> ping: icmp open socket: Operation not permitted
+>>
+>> [tak@masu ~]$ su
+>> Password:
+>> pam_cap_bset[6921]: user root does not have 'cap_drop=' property
+>> [root@masu tak]# cat /proc/self/status | grep ^Cap
+>> CapInh: 0000000000000000
+>> CapPrm: 00000000ffffdffe
+>> CapEff: 00000000ffffdffe
+>> [root@masu tak]#
 > 
-> > With that patch fixed.c now fully emulates MDIO bus, thus no need
-> > to duplicate PHY layer functionality. That, in turn, drastically
-> > simplifies the code, and drops down line count.
-> >
-> > As an additional bonus, now there is no need to register MDIO bus
-> > for each PHY, all emulated PHYs placed on the platform fixed MDIO
-> > bus. There is also no more need to pre-allocate PHYs via .config
-> > option, this is all now handled dynamically.
-> >
-> > p.s. Don't even try to understand patch content! Better: apply patch
-> > and look into resulting drivers/net/phy/fixed.c.
-> >   
-> If i understand your code correctly, you seem to rely on the fact 
-> that fixed_phy_add() is called before the fixed MDIO bus is scanned
-> for devices. How is this supposed to work for modules or for the 
-> PPC_CPM_NEW_BINDING mode where the device tree is no longer scanned 
-> during fs_soc initialization but during device initialization?
->
-Well, this is kind of known issue - to work it around for now, place PHY lib after fs_enet in
-Makefile. This way it works for me for _NEW_BINDING and mpc866ads.
-
-> I tried to add fixed-phy support to fs_enet, but the fixed phy is not 
-> found this way.
+> Neat.  A bigger-stick version of not adding the account to
+> group wheel.  I'll use that.
 > 
-The point is I have the code and it works now(for fs_enet etc.), but I need to find the way for the fixed phy pinning to work in either order with phylib. If you have ideas, please go ahead :)
-
-
-> --- a/drivers/net/fs_enet/fs_enet-main.c
-> +++ b/drivers/net/fs_enet/fs_enet-main.c
-> @@ -36,6 +36,7 @@
->  #include <linux/fs.h>
->  #include <linux/platform_device.h>
->  #include <linux/phy.h>
-> +#include <linux/phy_fixed.h>
->  
->  #include <linux/vmalloc.h>
->  #include <asm/pgtable.h>
-> @@ -1174,8 +1175,24 @@ static int __devinit find_phy(struct
-> device_node *np, struct device_node *phynode, *mdionode;
->         struct resource res;
->         int ret = 0, len;
-> +       const u32 *data;
-> +       struct fixed_phy_status status = {};
-> +
-> +       data  = of_get_property(np, "fixed-link", NULL);
-> +       if (data) {
-> +               status.link = 1;
-> +               status.duplex = data[1];
-> +               status.speed  = data[2];
-> +
-> +               ret = fixed_phy_add(PHY_POLL, data[0], &status);
-> +               if (ret)
-> +                       return ret;
-> +
-> +               snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data);
-> +               return 0;
-> +       }
->  
-> -       const u32 *data = of_get_property(np, "phy-handle", &len);
-> +       data = of_get_property(np, "phy-handle", &len);
->         if (!data || len != 4)
->                 return -EINVAL;
+> Is there any reason not to have a separate /etc/login.capbounds
+> config file, though, so the account can still have a full name?
+> Did you only use that for convenience of proof of concept, or
+> is there another reason?
 > 
-> Thanks,
-> Jochen
+>> # BTW, I replaced the James's address in the Cc: list,
+>> # because MTA does not accept it.
+> 
+> Thanks!  I don't know what happened to my alias for him...
+> 
+> thanks,
+> -serge
+> 
+>> -- 
+>> KaiGai Kohei <kaigai@kaigai.gr.jp>
+>>
+>> ************************************************************
+>>     pam_cap_drop.c
+>> ************************************************************
+>>
+>> /*
+>>  * pam_cap_drop.c module -- drop capabilities bounding set
+>>  *
+>>  * Copyright: 2007 KaiGai Kohei <kaigai@kaigai.gr.jp>
+>>  */
+>>
+>> #include <errno.h>
+>> #include <pwd.h>
+>> #include <stdlib.h>
+>> #include <stdio.h>
+>> #include <string.h>
+>> #include <syslog.h>
+>> #include <sys/prctl.h>
+>> #include <sys/types.h>
+>>
+>> #include <security/pam_modules.h>
+>>
+>> #ifndef PR_CAPBSET_DROP
+>> #define PR_CAPBSET_DROP 24
+>> #endif
+>>
+>> static char *captable[] = {
+>> 	"cap_chown",
+>> 	"cap_dac_override",
+>> 	"cap_dac_read_search",
+>> 	"cap_fowner",
+>> 	"cap_fsetid",
+>> 	"cap_kill",
+>> 	"cap_setgid",
+>> 	"cap_setuid",
+>> 	"cap_setpcap",
+>> 	"cap_linux_immutable",
+>> 	"cap_net_bind_service",
+>> 	"cap_net_broadcast",
+>> 	"cap_net_admin",
+>> 	"cap_net_raw",
+>> 	"cap_ipc_lock",
+>> 	"cap_ipc_owner",
+>> 	"cap_sys_module",
+>> 	"cap_sys_rawio",
+>> 	"cap_sys_chroot",
+>> 	"cap_sys_ptrace",
+>> 	"cap_sys_pacct",
+>> 	"cap_sys_admin",
+>> 	"cap_sys_boot",
+>> 	"cap_sys_nice",
+>> 	"cap_sys_resource",
+>> 	"cap_sys_time",
+>> 	"cap_sys_tty_config",
+>> 	"cap_mknod",
+>> 	"cap_lease",
+>> 	"cap_audit_write",
+>> 	"cap_audit_control",
+>> 	"cap_setfcap",
+>> 	NULL,
+>> };
+>>
+>>
+>> PAM_EXTERN int
+>> pam_sm_open_session(pam_handle_t *pamh, int flags,
+>>                     int argc, const char **argv)
+>> {
+>> 	struct passwd *pwd;
+>> 	char *pos, *buf;
+>> 	char *username = NULL;
+>>
+>> 	/* open system logger */
+>> 	openlog("pam_cap_bset", LOG_PERROR | LOG_PID, LOG_AUTHPRIV);
+>>
+>> 	/* get the unix username */
+>> 	if (pam_get_item(pamh, PAM_USER, (void *) &username) != PAM_SUCCESS || !username)
+>> 		return PAM_USER_UNKNOWN;
+>>
+>> 	/* get the passwd entry */
+>> 	pwd = getpwnam(username);
+>> 	if (!pwd)
+>> 		return PAM_USER_UNKNOWN;
+>>
+>> 	/* Is there "cap_drop=" ? */
+>> 	pos = strstr(pwd->pw_gecos, "cap_drop=");
+>> 	if (pos) {
+>> 		buf = strdup(pos + sizeof("cap_drop=") - 1);
+>> 		if (!buf)
+>> 			return PAM_SESSION_ERR;
+>> 		pos = strtok(buf, ",");
+>> 		while (pos) {
+>> 			int rc, i;
+>>
+>> 			for (i=0; captable[i]; i++) {
+>> 				if (!strcmp(pos, captable[i])) {
+>> 					rc = prctl(PR_CAPBSET_DROP, i);
+>> 					if (rc < 0) {
+>> 						syslog(LOG_NOTICE, "user %s could not drop %s (%s)",
+>> 						       username, captable[i], strerror(errno));
+>> 						break;
+>> 					}
+>> 					syslog(LOG_NOTICE, "user %s drops %s\n", username, captable[i]);
+>> 					goto next;
+>> 				}
+>> 			}
+>> 			break;
+>> 		next:
+>> 			pos = strtok(NULL, ",");
+>> 		}
+>> 		free(buf);
+>> 	} else {
+>> 		syslog(LOG_NOTICE, "user %s does not have 'cap_drop=' property", username);
+>> 	}
+>> 	return PAM_SUCCESS;
+>> }
+>>
+>> PAM_EXTERN int
+>> pam_sm_close_session(pam_handle_t *pamh, int flags,
+>>                      int argc, const char **argv)
+>> {
+>> 	/* do nothing */
+>> 	return PAM_SUCCESS;
+>> }
+>>
+>> ************************************************************
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-
--- 
-Sincerely, Vitaly
+iD8DBQFHUbHDmwytjiwfWMwRAj5uAJ9+OB8ljQlJAhKW7jxJWrIPa1k2vgCdHFL9
+3zXtwGz+cVeThb53/kAmdCs=
+=OdM7
+-----END PGP SIGNATURE-----
