@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbXLANiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbXLANtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbXLANiV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 08:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLANiF
+	id S1753358AbXLANtP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 08:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXLANs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 08:38:05 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55460 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751434AbXLANiE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 08:38:04 -0500
-Date: Sat, 1 Dec 2007 13:33:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Adrian Bunk <bunk@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Avoid overflows in kernel/time.c
-Message-ID: <20071201133359.2e609976@the-village.bc.nu>
-In-Reply-To: <20071201132047.2bf3c40c@the-village.bc.nu>
-References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org>
-	<20071201003333.GR29463@stusta.de>
-	<20071201132047.2bf3c40c@the-village.bc.nu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 1 Dec 2007 08:48:56 -0500
+Received: from mail0.scram.de ([78.47.204.202]:34868 "EHLO mail0.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751239AbXLANsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 08:48:55 -0500
+X-Spam-Score: -3.906
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.5 AWL AWL: From: address is in the auto white-list
+Message-ID: <47516646.9000803@scram.de>
+Date: Sat, 01 Dec 2007 14:48:54 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+CC: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY layer
+ functionality
+References: <20071126142906.19642.45540.stgit@localhost.localdomain>
+In-Reply-To: <20071126142906.19642.45540.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Dec 2007 13:20:47 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hi Vitaly,
 
-> On Sat, 1 Dec 2007 01:33:33 +0100
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Thu, Nov 29, 2007 at 04:19:51PM -0800, H. Peter Anvin wrote:
-> > > When the conversion factor between jiffies and milli- or microseconds
-> > > is not a single multiply or divide, as for the case of HZ == 300, we
-> > > currently do a multiply followed by a divide.  The intervening
-> > > result, however, is subject to overflows, especially since the
-> > > fraction is not simplified (for HZ == 300, we multiply by 300 and
-> > > divide by 1000).
-> > >...
-> > >  kernel/Makefile     |    8 +++
-> > >  kernel/time.c       |   29 +++++++++---
-> > >  kernel/timeconst.bc |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  3 files changed, 152 insertions(+), 8 deletions(-)
-> > >  create mode 100644 kernel/timeconst.bc
-> > >...
-> > 
-> > I have read the hep text, but are the advantages of HZ == 300 really 
-> > visible or was this more theoretical?
-> 
-> Its visibile for people doing PAL media processing and TV sync work.
+> With that patch fixed.c now fully emulates MDIO bus, thus no need
+> to duplicate PHY layer functionality. That, in turn, drastically
+> simplifies the code, and drops down line count.
+>
+> As an additional bonus, now there is no need to register MDIO bus
+> for each PHY, all emulated PHYs placed on the platform fixed MDIO bus.
+> There is also no more need to pre-allocate PHYs via .config option,
+> this is all now handled dynamically.
+>
+> p.s. Don't even try to understand patch content! Better: apply patch
+> and look into resulting drivers/net/phy/fixed.c.
+>   
+If i understand your code correctly, you seem to rely on the fact 
+that fixed_phy_add() is called before the fixed MDIO bus is scanned for 
+devices. How is this supposed to work for modules or for the 
+PPC_CPM_NEW_BINDING mode where the device tree is no longer scanned 
+during fs_soc initialization but during device initialization?
 
-Wake up Alan - NTSC for 300HZ, PAL is OK at 250HZ setting.
+I tried to add fixed-phy support to fs_enet, but the fixed phy is not 
+found this way.
 
-Alan
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -36,6 +36,7 @@
+ #include <linux/fs.h>
+ #include <linux/platform_device.h>
+ #include <linux/phy.h>
++#include <linux/phy_fixed.h>
+ 
+ #include <linux/vmalloc.h>
+ #include <asm/pgtable.h>
+@@ -1174,8 +1175,24 @@ static int __devinit find_phy(struct device_node *np,
+        struct device_node *phynode, *mdionode;
+        struct resource res;
+        int ret = 0, len;
++       const u32 *data;
++       struct fixed_phy_status status = {};
++
++       data  = of_get_property(np, "fixed-link", NULL);
++       if (data) {
++               status.link = 1;
++               status.duplex = data[1];
++               status.speed  = data[2];
++
++               ret = fixed_phy_add(PHY_POLL, data[0], &status);
++               if (ret)
++                       return ret;
++
++               snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data);
++               return 0;
++       }
+ 
+-       const u32 *data = of_get_property(np, "phy-handle", &len);
++       data = of_get_property(np, "phy-handle", &len);
+        if (!data || len != 4)
+                return -EINVAL;
+
+Thanks,
+Jochen
