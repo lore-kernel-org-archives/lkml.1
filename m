@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbXLAABU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760588AbXLAAB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758265AbXLAABU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Nov 2007 19:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbXLAAAz
+	id S1760588AbXLAAB7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Nov 2007 19:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbXLAABt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Nov 2007 19:00:55 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:9542 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758563AbXLAAAy (ORCPT
+	Fri, 30 Nov 2007 19:01:49 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40418 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755756AbXLAABr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Nov 2007 19:00:54 -0500
-X-Greylist: delayed 489 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Nov 2007 19:00:54 EST
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [PATCH] Declare PNP option parsing functions as __init
-Date: Fri, 30 Nov 2007 16:52:41 -0700
-User-Agent: KMail/1.9.6
-Cc: trenn@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, "Li, Shaohua" <shaohua.li@intel.com>
-References: <1196442277.23251.318.camel@queen.suse.de> <47509EB6.20300@keyaccess.nl>
-In-Reply-To: <47509EB6.20300@keyaccess.nl>
+	Fri, 30 Nov 2007 19:01:47 -0500
+Date: Fri, 30 Nov 2007 18:01:50 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 4/4] net: Implement the per network namespace sysctl
+	infrastructure
+Message-ID: <20071201000150.GA18758@sergelap.austin.ibm.com>
+References: <4742C73C.3010904@openvz.org> <m1odddc5mf.fsf@ebiederm.dsl.xmission.com> <m1k5o1c5eh.fsf_-_@ebiederm.dsl.xmission.com> <m1fxypc5cd.fsf_-_@ebiederm.dsl.xmission.com> <m1bq9dc53d.fsf_-_@ebiederm.dsl.xmission.com> <m17ik1c50m.fsf_-_@ebiederm.dsl.xmission.com> <20071130161856.GA10588@sergelap.austin.ibm.com> <m13aun9zfe.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200711301652.42110.bjorn.helgaas@hp.com>
+In-Reply-To: <m13aun9zfe.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 November 2007 04:37:26 pm Rene Herman wrote:
-> On 30-11-07 18:04, Thomas Renninger wrote:
-> > If I have not overseen something, it should be rather obvious that those
-> > can all be declared __init...
-> > ---------------
-> > 
-> > Declare PNP option parsing functions as __init
-> > 
-> > There are three kind of parse functions provided by PNP acpi/bios:
-> >  - get current resources
-> >  - set resources
-> >  - get possible resources
-> > The first two may be needed later at runtime.
-> > The possible resource settings should never change dynamically.
-> > And even if this would make any sense (I doubt it), the current implementation
-> > only parses possible resource settings at early init time:
-> >   -> declare all the option parsing __init
-> > 
-> > Signed-off-by: Thomas Renninger <trenn@suse.de>
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
 > 
-> Yes. Obviousness aside,
+> >
+> > Hey Eric,
+> >
+> > the patches look nice.
+> >
+> > The hand-forcing of the passed-in net_ns into a copy of current->nsproxy
+> > does make it seem like nsproxy may not be the best choice of what to
+> > pass in.  Doesn't only net_sysctl_root->lookup() look at the argument?
 > 
-> (0) pnpacpi_add_device                          is only caller of
-> ...
+> Yes.  Although I call it from __register_sysctl_paths.
+> 
+> > But I assume you don't want to be more general than sending in a
+> > nsproxy so as to dissuade abuse of this interface for needlessly complex
+> > sysctl interfaces?
+> 
+> A bit of that.  I would love to pass in a task_struct so you can use
+> anything from a task.  The trouble is I don't have any task_structs or
+> nsproxys with the proper value at the point where I am first setting
+> this up.  Further I have to have the full sysctl lookup working or I
+> could not call sysctl_check.
+> 
+> > (Well I expect that'll become clear once the the patches using this
+> > come out.)
+> >
+> > Are you planning to use this infrastructure for the uts and ipc
+> > sysctls as well?
+> 
+> Yes.  Where it comes in especially useful, is I can move /proc/sys
+> to /proc/sys/<tgid>/task/<pid>/sys.  And get a particular processes
+> view of sysctl.  
+> 
+> We also get a little more reuse of common functions.
+> 
+> Otherwise Pavel does have a point that using this for uts and ipc
+> is not a savings lines of code wise.
+> 
+> After having seen Pavel changes I am asking myself if there is a sane
+> way to remove the ctl_name argument from the ctl_path.
+> 
+> Anyway where I am with the nsproxy question was that I don't
+> see anything easily better.  What I have works and gets the job
+> done, and doesn't have any module unload races or holes where a sloppy
+> programmer can mess up the sysctl tree.  We needed a solution.
+> Trying any harder to find something better would take ages.  So
+> I figured this implementation was good enough.
 
-I agree this is probably safe in the current implementation.
+I agree.  So it's already in -mm but still
 
-However, I think the current implementation is just broken because
-we can't really handle hotplug of ACPI devices.  Specifically, I think
-the first TBD in acpi_bus_check_device() should be fleshed out so it
-does something like pnpacpi_add_device().
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-So my dissenting opinion is that this patch would just get reverted
-soon anyway when somebody finishes implementing ACPI hotplug, and
-therefore it's not worth doing.
-
-Bjorn
+thanks,
+-serge
