@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXLAUbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbXLAUbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbXLAUbQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 15:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXLAUa4
+	id S1755056AbXLAUbb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 15:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXLAUbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 15:30:56 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48803 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbXLAUay (ORCPT
+	Sat, 1 Dec 2007 15:31:14 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:3791 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753444AbXLAUbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 15:30:54 -0500
-Date: Sat, 1 Dec 2007 12:29:26 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-Message-ID: <20071201122926.5c887588@laptopd505.fenrus.org>
-In-Reply-To: <4751C238.6010609@rtr.ca>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca>
-	<20071201111736.297dd99a@freepuppy.rosehill>
-	<20071201192341.6750fbdb@the-village.bc.nu>
-	<20071201113815.5df0960a@freepuppy.rosehill>
-	<m13aum5g1x.fsf@ebiederm.dsl.xmission.com>
-	<4751C238.6010609@rtr.ca>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 1 Dec 2007 15:31:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=eri/EvQ8yo7P78eILy7+f0wG2G+fzvo8isKRuEKEZPDYq+P+oMvbfaySXAPkOBZTIfhKPDZH2B2LKFqlTY4DdUeCFgQjt/yQ9CRcFZrX9xFSNopckh6llSialxqIa83LDyrlSUVgoRvTAUK3euUgLhmuQf+fKCJy/be6kwtl7qs=
+Message-ID: <91b13c310712011231k3604214bx3559387c568cce09@mail.gmail.com>
+Date: Sun, 2 Dec 2007 04:31:09 +0800
+From: "rae l" <crquan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Since sysfs_mount is static and used only in sysfs_init function, it could be just an automatic variable.
+Cc: gregkh@suse.de
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Dec 2007 15:21:12 -0500
-Mark Lord <lkml@rtr.ca> wrote:
+---
+and I still have questions about this code:
+1. Why here kern_mount is needed?
+	Or the first time user space `mount -t sysfs` won't do that?
+2. If root executes many mounts to mount sysfs on /sys and many other places,
+	are there many instances of struct vfsmount those have only
+mnt_mountpoint different?
 
-> Eric W. Biederman wrote:
-> > Stephen Hemminger <shemminger@linux-foundation.org> writes:
-> > Sure.  We keep the updated dev_get_by_XXXX that takes a network
-> > namespace parameter.
-> ..
-> 
-> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
+	For most common case, mount a virtual filesystem(proc, sysfs, ...) on
+multiple mounting point,
+	how to handle it more efficiently?
 
-network drivers probably really really don't want to call
-dev_get_by_XXX...
+and where is a detailed explaination on kern_mount? could someone give
+some comments or documentation pointers on this?
 
-in fact no NIC driver in drivers/net does so!
-Sounds like whatever driver you're looking at has a nasty bug in that
-it's using non-driver APIs...
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 7416826..add0dda 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -22,7 +22,6 @@
+ /* Random magic number */
+ #define SYSFS_MAGIC 0x62656572
 
+-static struct vfsmount *sysfs_mount;
+ struct super_block * sysfs_sb = NULL;
+ struct kmem_cache *sysfs_dir_cachep;
 
+@@ -98,11 +97,10 @@ int __init sysfs_init(void)
+
+ 	err = register_filesystem(&sysfs_fs_type);
+ 	if (!err) {
+-		sysfs_mount = kern_mount(&sysfs_fs_type);
++		struct vfsmount *sysfs_mount = kern_mount(&sysfs_fs_type);
+ 		if (IS_ERR(sysfs_mount)) {
+ 			printk(KERN_ERR "sysfs: could not mount!\n");
+ 			err = PTR_ERR(sysfs_mount);
+-			sysfs_mount = NULL;
+ 			unregister_filesystem(&sysfs_fs_type);
+ 			goto out_err;
+ 		}
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Denis Cheng
