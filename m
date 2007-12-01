@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbXLATk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbXLATuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbXLATk1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 14:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbXLATkL
+	id S1753301AbXLATuP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 14:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbXLATt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 14:40:11 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37018 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751152AbXLATkI (ORCPT
+	Sat, 1 Dec 2007 14:49:56 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:22226 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbXLATtz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 14:40:08 -0500
-Date: Sat, 1 Dec 2007 11:38:15 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Mark Lord <lkml@rtr.ca>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-Message-ID: <20071201113815.5df0960a@freepuppy.rosehill>
-In-Reply-To: <20071201192341.6750fbdb@the-village.bc.nu>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca>
-	<20071201111736.297dd99a@freepuppy.rosehill>
-	<20071201192341.6750fbdb@the-village.bc.nu>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Dec 2007 14:49:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=l1jXJc2jljPE/TkSEKrnMHyoAn/POC9twWvAOlYamuIs+CCa3OfSqmrKy7dAc2oZVj0W0xBk4fvLSOl+BwZri5gvqdLKqm724LLBau3drw0wMJzpYI+0YTGpiy6R7LvyA/3RBnFyyqmV1rbZzTUIhJZ7rA9DAXzK6d66+NLdZcM=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: 2.6.24-rc3-git4 build warnings
+Date: Sat, 1 Dec 2007 19:49:46 +0000
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200711291419.49261.chris2553@googlemail.com> <20071201193636.GC15974@stusta.de>
+In-Reply-To: <20071201193636.GC15974@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712011949.46386.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Dec 2007 19:23:41 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Saturday 01 December 2007, Adrian Bunk wrote:
+> On Thu, Nov 29, 2007 at 02:19:49PM +0000, Chris Clayton wrote:
+> > Hi,
+> >
+> > I've just built 2.6.24-rc3-git4 and got the following two warnings.
+> >
+> >   LD      .tmp_vmlinux1
+> >   KSYM    .tmp_kallsyms1.S
+> >   AS      .tmp_kallsyms1.o
+> >   LD      .tmp_vmlinux2
+> >   KSYM    .tmp_kallsyms2.S
+> >   AS      .tmp_kallsyms2.o
+> >   LD      vmlinux.o
+> >   MODPOST vmlinux.o
+> > WARNING: vmlinux.o(.text+0x90b6): Section mismatch: reference to
+> > .init.text:cache_remove_shared_cpu_map (between 'free_cache_attributes'
+> > and 'show_level')
+> > WARNING: vmlinux.o(.init.text+0x143bd): Section mismatch: reference to
+> > .exit.text:cpufreq_stats_free_table (between 'cpufreq_stat_cpu_callback'
+> > and 'cpufreq_stats_init')
+> >...
+>
+> You seem to be using gcc 3.3 or 3.4.
+>
 
-> > Then init_net needs to be not GPL limited. Sorry, we need to allow
-> > non GPL network drivers.  There is a fine line between keeping the
-> 
-> Why - they aren't exactly likely to be permissible by law
+Yes, it's 3.3.6. README in the top-level kernel source directory says "Make 
+sure you have at least gcc 3.2 available", so that should be OK, shouldn't 
+it?
 
-Matter of debate in which there are several opinions.
-I don't like binary modules either, but don't feel qualified to render
-a legal opinion.
+> I'll send patches for these.
+>
 
-> 
-> > binary seething masses from accessing random kernel functions, and allowing
-> > reasonable (but still non GPL) things like ndiswrapper to use network
-> > device interface.
-> 
-> Its up to the ndiswrapper authors how the licence their code, but they
-> should respect how we licence ours.
+Thanks
 
-Then change the license, explicitly and get it approved, forcing license
-changes by technically subversive means is bad policy. It is like Euro bureaucrats
-sneaking in software patents in regulations. If you want to have the debate and
-can get it resolved, then I support you.
+> > Chris
+>
+> cu
+> Adrian
 
-Actually, the whole mess would go away if the api for dev_get_by_XXXX hadn't
-been changed in the namespace transition. IMHO the interface to dev_get_by_name()
-should not have added a namespace parameter, of the callers in the tree, only
-two use a different namespace. So it would have been better to to introduce
-dev_get_by_name_ns() with the extra parameter.
-
-Can we get this resolved before 2.6.24 is released? Going back and forth
-on API's is just needless frottage.
+Chris
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Beer is proof that God loves us and wants us to be happy - Benjamin Franklin
