@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbXLAT5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbXLAT6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbXLAT5a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 14:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXLAT5O
+	id S1754299AbXLAT6h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 14:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbXLAT6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 14:57:14 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47187 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbXLAT5M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 14:57:12 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Mark Lord <lkml@rtr.ca>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
-Date: Sat, 01 Dec 2007 12:54:52 -0700
-In-Reply-To: <20071201111736.297dd99a@freepuppy.rosehill> (Stephen Hemminger's
-	message of "Sat, 1 Dec 2007 11:17:36 -0800")
-Message-ID: <m1bq9a5gxf.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 1 Dec 2007 14:58:30 -0500
+Received: from il.qumranet.com ([82.166.9.18]:59984 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751475AbXLAT63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 14:58:29 -0500
+Message-ID: <4751BC4F.3030007@argo.co.il>
+Date: Sat, 01 Dec 2007 21:55:59 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: "J.A. Magall??n" <jamagallon@ono.com>,
+       Lo??c Greni?? <loic.grenie@gmail.com>, Ben.Crowhurst@stellatravel.co.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+References: <474EAD18.6040408@stellatravel.co.uk> <9b06e8d20711300229r1ed570bfi9ecbb6466fd0a0ab@mail.gmail.com> <20071201001950.11100a32@werewolf> <20071201003119.GB8181@ftp.linux.org.uk>
+In-Reply-To: <20071201003119.GB8181@ftp.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@linux-foundation.org> writes:
-
-> On Sat, 01 Dec 2007 08:10:17 -0500
-> Mark Lord <lkml@rtr.ca> wrote:
+Al Viro wrote:
+> On Sat, Dec 01, 2007 at 12:19:50AM +0100, J.A. Magall??n wrote:
+>   
+>> An vtable in C++ takes exactly the same space that the function
+>> table pointer present in every driver nowadays... and probably
+>> the virtual method call that C++ does itself with
+>>
+>> 	thing->do_something(with,this)
+>>
+>> like
+>> 	push thing
+>> 	push with
+>> 	push this
+>> 	call THING_vtable+indexof(do_something) // constants at compile time
+>>     
 >
->> > Now that we have network namespace support merged it is time to
->> > revisit the sysfs support so we can remove the dependency on !SYSFS.
->> ...
->> 
->> Now that the namespace updates are part of 2.6.24,
->> there is a major inconsistency in network EXPORT_SYMBOLs.
->> 
->> It used to be that an external network module could get away without
->> having to add a MODULE_LICENSE("GPL*") line to the source.
->> 
->> In support of that, common networking functions (still) use EXPORT_SYMBOL()
->> rather than the more restrictive EXPORT_SYMBOL_GPL().
->> 
->> Eg.  register_netdev(), sk_alloc(), __dev_get_by_name().
->> 
->> But now, none of those three are actually usable by default,
->> because they all require "init_net", which is EXPORT_SYMBOL_GPL().
+> This is not what vtables are.  Think for a minute - all codepaths arriving
+> to that point in your code will pick the address to call from the same
+> location.  Either the contents of that location is constant (in which case
+> you could bloody well call it directly in the first place) *or* it has to
+> somehow be reassigned back and forth, according to the value of this.  The
+> former is dumb, the latter - outright insane.
+>
+> The contents of vtables is constant.  The whole point of that thing is
+> to deal with the situations where we _can't_ tell which derived class
+> this ->do_something() is from; if we could tell which vtable it is at
+> compile time, we wouldn't need to bother at all.
+>
+> It's a tradeoff - we pay the extra memory access (fetch vtable pointer, then 
+> fetch method from vtable) for not having to store a slew of method pointers
+> in each instance of base class.  But the extra memory access is very much
+> there.  It can be further optimized away if you have several method calls
+> for the same object next to each other (then vtable can be picked once),
+> but it's still done at runtime.
+>   
 
-Which alternative kernel does the above comment apply to?
+True. C++ vtables have no performance advantage over C ->ops->function() 
+calls. But they have no disadvantage either and they do offer many 
+syntactic advantages (such as automatically casting the object type to 
+the *correct* derived class.
 
-> Then init_net needs to be not GPL limited. Sorry, we need to allow
-> non GPL network drivers.
-
-For the record network drivers should not be affected.  As a practical
-measure that just gets unmaintainable and it is unnecessary.
-
-There are specific exceptions where network drivers mess with the userspace
-interfaces where I do have some impact.  However if you are messing
-with our userspace interface especially with network namespaces in place
-I don't see how it is possible for you to be anything other then a derivative
-work, and something we need in tree to keep maintenance a manageable thing.
-
-It should just be the core of the network stack that struct net has some
-effect on.
-
-> There is a fine line between keeping the
-> binary seething masses from accessing random kernel functions, and allowing
-> reasonable (but still non GPL) things like ndiswrapper to use network
-> device interface.
-
-Does ndiswrapper break?  If so what dubious and unsupportable thing is
-it doing?
-
-Eric
