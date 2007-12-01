@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbXLAHob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbXLAHsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751677AbXLAHob (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 02:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXLAHoR
+	id S1751865AbXLAHsj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 02:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbXLAHsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 02:44:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58608 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbXLAHoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 02:44:17 -0500
-Date: Sat, 1 Dec 2007 08:44:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Brownell <david-b@pacbell.net>
-Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.24-rc3] rtc-cmos alarm acts as oneshot
-Message-ID: <20071201074400.GA14709@elte.hu>
-References: <200711301418.24033.david-b@pacbell.net>
+	Sat, 1 Dec 2007 02:48:25 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:20752 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbXLAHsY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 02:48:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=oCENqDuCTv32I9a4oDzXTH1zA8ve3DomtNTRBs43CprySEMXDISxIfWcVEnq0WDYv
+	mvL/sxays0j6CBTv+tD+Q==
+Message-ID: <6599ad830711302348n49900ca8jfa66fa71fde76a67@mail.gmail.com>
+Date: Fri, 30 Nov 2007 23:48:15 -0800
+From: "Paul Menage" <menage@google.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH] sched: cpu accounting controller (V2)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, dhaval@linux.vnet.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       skumar@linux.vnet.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       balbir@linux.vnet.ibm.com
+In-Reply-To: <20071130124225.GM5681@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200711301418.24033.david-b@pacbell.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com>
+	 <20071113060038.GC3359@linux.vnet.ibm.com>
+	 <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com>
+	 <20071113074805.GA13499@linux.vnet.ibm.com>
+	 <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com>
+	 <20071129191737.GH5681@linux.vnet.ibm.com>
+	 <20071129113035.bbdf35db.akpm@linux-foundation.org>
+	 <20071129201833.GA18023@linux.vnet.ibm.com>
+	 <20071130124225.GM5681@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Vatsa,
 
-* David Brownell <david-b@pacbell.net> wrote:
+Thanks, this looks pretty good.
 
-> Start making the rtc-cmos alarm act more like a oneshot alarm by 
-> disabling that alarm after its IRQ fires.  (ACPI hooks are also 
-> needed.)
-> 
-> The Linux RTC framework has previously been a bit vague in this area, 
-> but any other behavior is problematic and not very portable.  RTCs 
-> with full YYYY-MM-DD HH:MM[:SS] alarms won't have a problem here.  
-> Only ones with partial match criteria, with the most visible example 
-> being the PC RTC, get confused.  (Because the criteria will match 
-> repeatedly.)
-> 
-> Update comments relating to that oneshot behavior and timezone 
-> handling. (Timezones are another issue that's mostly visible with 
-> rtc-cmos.  That's because PCs often dual-boot MS-Windows, which likes 
-> its RTC to match local wall-clock time instead of UTC.)
+On Nov 30, 2007 4:42 AM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+>
+>         - Removed load average information. I felt it needs more thought (esp
+>           to deal with SMP and virtualized platforms) and can be added for
+>           2.6.25 after more discussions.
 
-Cool. I'm still wondering about:
+The "load" value was never a load average, it was just a count of the
+% cpu time used in the previous fixed window of time, updated at the
+end of each window.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=7014
+Maybe we can instead do something based tracking the length of the run
+queue for the cgroup?
 
-basically, we had universally working /dev/rtc before, now it appears we 
-dont have it anymore. Or were the problems in this bugzilla present with 
-the old code too?
-
-	Ingo
+Paul
