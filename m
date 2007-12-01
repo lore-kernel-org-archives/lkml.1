@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbXLAHlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbXLAHob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751698AbXLAHlY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 02:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbXLAHlR
+	id S1751677AbXLAHob (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 02:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXLAHoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 02:41:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37820 "EHLO mx2.mail.elte.hu"
+	Sat, 1 Dec 2007 02:44:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58608 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbXLAHlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 02:41:16 -0500
-Date: Sat, 1 Dec 2007 08:40:46 +0100
+	id S1751019AbXLAHoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 02:44:17 -0500
+Date: Sat, 1 Dec 2007 08:44:00 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Andi Kleen <ak@suse.de>, tglx@linutronix.de,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Michael Kerrisk <mtk-manpages@gmx.net>, markus.t.metzger@gmail.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 0/2] x86, ptrace:  support for branch trace store(BTS)
-Message-ID: <20071201074044.GA13974@elte.hu>
-References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com> <20071129155940.7df70ac2.akpm@linux-foundation.org> <029E5BE7F699594398CA44E3DDF5544401051EEF@swsmsx413.ger.corp.intel.com> <200711301134.04719.ak@suse.de> <029E5BE7F699594398CA44E3DDF554440105236A@swsmsx413.ger.corp.intel.com> <20071130170655.GA10868@elte.hu>
+To: David Brownell <david-b@pacbell.net>
+Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.24-rc3] rtc-cmos alarm acts as oneshot
+Message-ID: <20071201074400.GA14709@elte.hu>
+References: <200711301418.24033.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071130170655.GA10868@elte.hu>
+In-Reply-To: <200711301418.24033.david-b@pacbell.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,40 +35,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* David Brownell <david-b@pacbell.net> wrote:
 
-> > Our debugger team has a prototype implementation for their debugger. 
-> > But that will not be available for some time.
-> > 
-> > I hope that we get gdb support, soon, but that would take a while if 
-> > I had to do it.
+> Start making the rtc-cmos alarm act more like a oneshot alarm by 
+> disabling that alarm after its IRQ fires.  (ACPI hooks are also 
+> needed.)
 > 
-> i'm wondering what the main use-case would be then, and what the gdb 
-> folks think about the current API. (Roland?)
+> The Linux RTC framework has previously been a bit vague in this area, 
+> but any other behavior is problematic and not very portable.  RTCs 
+> with full YYYY-MM-DD HH:MM[:SS] alarms won't have a problem here.  
+> Only ones with partial match criteria, with the most visible example 
+> being the PC RTC, get confused.  (Because the criteria will match 
+> repeatedly.)
+> 
+> Update comments relating to that oneshot behavior and timezone 
+> handling. (Timezones are another issue that's mostly visible with 
+> rtc-cmos.  That's because PCs often dual-boot MS-Windows, which likes 
+> its RTC to match local wall-clock time instead of UTC.)
 
-here's a forwarded mail from Roland about the patch and APIs. (and i 
-hope that now i can stop playing the middleman, with everyone Cc:-ed :)
+Cool. I'm still wondering about:
 
------------->
-From: Roland McGrath <roland@redhat.com>
-Subject: Re: [patch][v2] x86, ptrace: support for branch trace store(BTS)]
+  http://bugzilla.kernel.org/show_bug.cgi?id=7014
 
-Cool.  It's been on my list to look into exposing those features 
-somehow. I hadn't planned on doing it until after the utrace stuff 
-settles and there is a more coherent interface context in which to do 
-it.
+basically, we had universally working /dev/rtc before, now it appears we 
+dont have it anymore. Or were the problems in this bugzilla present with 
+the old code too?
 
-If they are tackling the MSR hacking and context switch and so forth, 
-I'd like to see them start out by just adding block-step 
-(debugctlmsr.btf) with the PTRACE_SINGLEBLOCK interface as ia64 has.  
-That should lay some of the same groundwork needed here, but is much 
-simpler.
-
-I am not really in favor of this new ptrace interface.  I think they 
-should look around across arch's and think about sane general-purpose 
-interfaces for features of this kind that might be built with some 
-commonality across machines.  Also do it in a layered way from 
-low-level, with something usable for kernel-mode too.  The discussion 
-Alan Stern and I had on LKML that started as kwatch and became 
-hw_breakpoint is an example of how I would go at this set of features 
-too.
+	Ingo
