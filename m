@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbXLAMrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXLANEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbXLAMrV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 07:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXLAMrK
+	id S1753486AbXLANEr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 08:04:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXLANEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 07:47:10 -0500
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:4337 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbXLAMrJ (ORCPT
+	Sat, 1 Dec 2007 08:04:39 -0500
+Received: from relay1.integra.net ([204.130.255.180]:55763 "HELO
+	mail.integraonline.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751053AbXLANEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 07:47:09 -0500
-Message-ID: <475157CA.2040206@xs4all.nl>
-Date: Sat, 01 Dec 2007 13:47:06 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: possible BUG: unable to handle kernel NULL pointer dereference
- at virtual address 00000000
-References: <47481590.8090009@xs4all.nl> <200711241951.37817.rjw@sisk.pl> <474870F5.4050504@xs4all.nl> <aa79d98a0711270340q5fd6b8a0o5076052a4411e6b2@mail.gmail.com> <474C3659.600@xs4all.nl> <20071127164929.GA7279@cvg> <474C56C8.80206@xs4all.nl> <20071127175503.GC7279@cvg> <47513EE5.30703@xs4all.nl> <20071201121220.GA28875@cvg>
-In-Reply-To: <20071201121220.GA28875@cvg>
-X-Enigmail-Version: 0.95.5
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 1 Dec 2007 08:04:38 -0500
+In-Reply-To: <20071130230435.GA12626@puku.stupidest.org>
+References: <20071114070400.GA25708@puku.stupidest.org> <20071125163014.GA17922@infradead.org> <474FBA21.4070201@sgi.com> <165B249C-FE97-4B27-927B-B39DE316CB23@xfs.org> <20071130230435.GA12626@puku.stupidest.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A3093599-2967-4969-BFFD-1328D47FAC12@xfs.org>
+Cc: Timothy Shimmin <tes@sgi.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+From: Stephen Lord <lord@xfs.org>
+Subject: Re: [PATCH] xfs: revert to double-buffering readdir
+Date: Sat, 1 Dec 2007 07:04:27 -0600
+To: Chris Wedgwood <cw@f00f.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> [Udo van den Heuvel - Sat, Dec 01, 2007 at 12:00:53PM +0100]
-> | I only had teh bug once, that was the reason for my post.
-> | Since then the system has been busy, with intervals, doing kernel
-> | compiles and no repeat of the BUG yet...
-> | It's a VIA EN12000 with 1GB of RAM. How could I increase the chances of
-> | hitting it?
-> 
-> if my guessing is right - the only chance to hit it faster - is to increase
-> files' activity i.e. compiling the kernel involves a lot of file being readed
-> thru dcache system. First we have to locate the bug on a pure kernel
-> and 'case it's a rare thing to happen... well I don't really know how to
-> get it up to known point. So i think you could play with a pure kernel
-> by compiling it or run several copies of 'grep' thru kernel searching
-> the same pattern like "grep -r -n for ./*" in kernel sources. But Udo,
-> I'm not a kernel specialist so my suggestions could be not really usefull ;)
 
-Ok, maybe someone else can improve on this:
-I now have 12 screen'ed sessions running in /usr/src/linux with:
-while true; do grep -r -n for ./*; done
+On Nov 30, 2007, at 5:04 PM, Chris Wedgwood wrote:
 
-Every now and then I can check dmesg.
+> On Fri, Nov 30, 2007 at 04:36:25PM -0600, Stephen Lord wrote:
+>
+>> Looks like the readdir is in the bowels of the btree code when
+>> filldir gets called here, there are probably locks on several
+>> buffers in the btree at this point. This will only show up for large
+>> directories I bet.
+>
+> I see it for fairly small directories.  Larger than what you can stuff
+> into an inode but less than a block (I'm not checking but fairly sure
+> that's the case).
 
-Would that be enough?
+I told you I did not read any code..... once a directory is out of  
+the inode
+and into disk blocks, there will be a lock on the buffer while the  
+contents
+are copied out.
 
-Udo
+>
+>> Just rambling, not a single line of code was consulted in writing
+>> this message.
+>
+> Can you explain why the offset is capped and treated in an 'odd way'
+> at all?
+>
+> +       curr_offset = filp->f_pos;
+> +       if (curr_offset == 0x7fffffff)
+> +               offset = 0xffffffff;
+> +       else
+> +               offset = filp->f_pos;
+>
+> and later the offset to filldir is masked.  Is that some restriction
+> in filldir?
+
+Too long ago to remember exact reasons. The only thing I do recall is  
+issues
+with glibc readdir code which wanted to remember positions in a dir  
+and seek
+backwards. It was translating structures and could end up with more
+data from the kernel than would fit in the user buffer. This may have  
+something
+to do with that and special values used as eof markers in the  
+getdents output
+and signed 32 bit arguments to lseek. In the original xfs directory  
+code, the
+offset of an entry was a 64 bit hash+offset value, that really  
+confused things
+when glibc attempted to do math on it.
+
+I also recall that the offsets in the directory fields had different  
+meanings
+on different OS's. Sometimes it was the offset of the entry itself,  
+sometimes it
+was the offset of the next entry, that was one of the reasons for the  
+translation
+layer I think.
+
+Steve
+
