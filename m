@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXLAOml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbXLAPnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbXLAOml (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 09:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXLAOm2
+	id S1753361AbXLAPnG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 10:43:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbXLAPmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 09:42:28 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:55993 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbXLAOm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 09:42:28 -0500
-Date: Sat, 1 Dec 2007 15:42:23 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Fedora's latest gcc produces unbootable kernels
-Message-ID: <20071201154223.1b052d39@poseidon.drzeus.cx>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Dec 2007 10:42:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:39158 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbXLAPms convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 10:42:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=MNN/sxErVcqfL1+FBEeY412MO/7PkefIijd9H3ZXo0CW03GeDHVho3tgVPqoj9tXGgkaS6Ps0y1cN4xYtCSdSpMWk4Fj+vqbYJzE/xGxWsDZFfVQwYLyZFZwNqv3vOeIYRKpI+bSx0rvkzUiiLxSIRYVqOh9/HbCM5PF4V8CpZw=
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] acpi: remove duplicated warning message
+Date: Sat, 1 Dec 2007 16:42:51 +0100
+User-Agent: KMail/1.9.7
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712011642.52165.mboton@gmail.com>
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest GCC in Fedora rawhide contains some serious bug (or provokes a latent one in the kernel) that makes every kernel built unbootable. It just locks up halfway through the init. Kernels that previously worked fine all now experience the same symptom. Even RH's own kernels exhibit this. The kernel built Nov 24th works, Nov 26th doesn't. gcc was updated 26th, 14 hours earlier.
+Remove duplicated warning message in acpi_power_transition()
 
-The last message printed is:
+This warning message is printed by acpi_bus_set_power() so we don't
+need to print it again.
 
-isapnp: Scanning for PnP cards...
+Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-Comparing with the working kernel, the next steps are:
+diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
+index af1769a..b4af974 100644
+--- a/drivers/acpi/power.c
++++ b/drivers/acpi/power.c
+@@ -458,11 +458,9 @@ int acpi_power_transition(struct acpi_device *device, int state)
+ 	}
+ 
+      end:
+-	if (result) {
++	if (result) 
+ 		device->power.state = ACPI_STATE_UNKNOWN;
+-		printk(KERN_WARNING PREFIX "Transitioning device [%s] to D%d\n",
+-			      device->pnp.bus_id, state);
+-	} else {
++	else {
+ 	/* We shouldn't change the state till all above operations succeed */
+ 		device->power.state = state;
+ 	}
 
-isapnp: Scanning for PnP cards...
-Switched to high resolution mode on CPU 0
-isapnp: No Plug & Play device found
 
-Any ideas on how I can work around this? I'm rather unproductive when I can't build working kernels.. :/
-
-Rgds
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+	Miguel Botón
