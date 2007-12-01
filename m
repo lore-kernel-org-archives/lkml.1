@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751373AbXLAGvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751453AbXLAHkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751373AbXLAGvy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 01:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbXLAGvj
+	id S1751453AbXLAHkF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 02:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXLAHjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 01:51:39 -0500
-Received: from [212.12.190.32] ([212.12.190.32]:45563 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750838AbXLAGvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 01:51:38 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>
-Subject: Re: git guidance
-Date: Sat, 1 Dec 2007 09:50:15 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, git@vger.kernel.org
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <alpine.LFD.0.9999.0711290810170.8458@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0711290810170.8458@woody.linux-foundation.org>
+	Sat, 1 Dec 2007 02:39:48 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:60712 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbXLAHjr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 02:39:47 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=JhjhgSDpDYfjVBF9TC49S88LnlMaD+NIeAcKZw9tLt0vKfmn7P09JbBFfeyjN9JM/
+	OV59CtYhL9kpsxiKSmMFg==
+Message-ID: <6599ad830711302339v1f92af40v85e89484a8a6575e@mail.gmail.com>
+Date: Fri, 30 Nov 2007 23:39:37 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: What can we do to get ready for memory controller merge in 2.6.25
+Cc: balbir@linux.vnet.ibm.com,
+       "Linux Memory Management List" <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Pavel Emelianov" <xemul@sw.ru>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Martin J. Bligh" <mbligh@google.com>,
+       "Andy Whitcroft" <andyw@uk.ibm.com>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>
+In-Reply-To: <200711301311.48291.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712010950.15628.a1426z@gawab.com>
+References: <474ED005.7060300@linux.vnet.ibm.com>
+	 <200711301311.48291.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jing Xue wrote:
-> Quoting Al Boldi <a1426z@gawab.com>:
-> > Sure, browsing is the easy part, but Version Control starts when things
-> > become writable.
->
-> But how is that supposed to work?  What happens when you make some
-> changes to a file and save it?  Do you want the "git file system" to
-> commit it right aways or wait until you to issue a "commit" command?
-> The first behavior would obviously be wrong, and the second would make
-> the "file system" not operationally transparent anyways. Right?
+On Nov 29, 2007 6:11 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> And also some
+> results or even anecdotes of where this is going to be used would be
+> interesting...
 
-Not sure what you mean by operationally transparent?  It would be transparent 
-for the updating client,  and the rest of the git-users would need to wait 
-for the commit from the updating client; which is ok, as this transparency 
-is not meant to change the server-side git-update semantic.
+We want to be able to run multiple isolated jobs on the same machine.
+So being able to limit how much memory each job can consume, in terms
+of anonymous memory and page cache, are useful. I've not had much time
+to look at the patches in great detail, but they seem to provide a
+sensible way to assign and enforce static limits on a bunch of jobs.
 
-Linus Torvalds wrote:
-> On Thu, 29 Nov 2007, Jing Xue wrote:
-> > By the way, the only SCM I have worked with that tries to mount its
-> > repository (or a view on top of it) as a file system is ClearCase with
-> > its dynamic views. And, between the buggy file system implementation,
-> > the intrusion on workflow, and the lack of scalability, at least in
-> > the organization I worked for, it turned out to be a horrible,
-> > horrible, horrible idea.
+Some of our requirements are a bit beyond this, though:
 
-Judging an idea, based on a flawed implementation, doesn't prove that the 
-idea itself is flawed.
+In our experience, users are not good at figuring out how much memory
+they really need. In general they tend to massively over-estimate
+their requirements. So we want some way to determine how much of its
+allocated memory a job is actively using, and how much could be thrown
+away or swapped out without bothering the job too much.
 
-And...
-> Doing a read-only mount setup tends to be pretty easy, but it's largely
-> pointless except for specialty uses. Ie it's obviously not useful for
-> actual *development*, but it can be useful for some other cases.
->
-> For example, a read-only revctrl filesystem can be a _very_ useful thing
-> for test-farms, where you may have hundreds of clients that run tests on
-> possibly different versions at the same time. In situations like that, the
-> read-only mount can actually often be done as a user-space NFS server on
-> some machine.
->
-> The advantage is that you don't need to export close to infinite amounts
-> of versions from a "real" filesystem, or make the clients have their own
-> copies. And if you do it as a user-space NFS server (or samba, for that
-> matter), it's even portable, unlike many other approaches. The read-only
-> part also makes 99% of all the complexity go away, and it turns out to be
-> a fairly easy exercise to do.
->
-> So I don't think the filesystem approach is _wrong_ per se. But yes, doing
-> it read-write is almost invariably a big mistake. On operatign systems
-> that support a "union mount" approach, it's likely much better to have a
-> read-only revctl thing, and then over-mount a regular filesystem on top of
-> it.
+Of course, the definition of "actve use" is tricky - one possibility
+that we're looking at is "has been accessed within the last N
+seconds", where N can be configured appropriately for different jobs
+depending on the job's latency requirements. Active use should also be
+reported for pages that can't be easily freed quickly, e.g. mlocked or
+dirty pages, or anon pages on a swapless system. Inactive pages should
+be easily freeable, and be the first ones to go in the event of memory
+pressure. (From a scheduling point of view we can treat them as free
+memory, and schedule more jobs on the machine)
 
-You could probably do that, or you could instead use cp -al.  Both would 
-require some hacks to allow some basic version control.
+The existing active/inactive distinction doesn't really capture this,
+since it's relative rather than absolute.
 
-> Trying to make it read-write from the revctl engine standpoint is almost
-> certainly totally insane.
+We want to be able to overcommit a machine, so the sums of the cgroup
+memory limits can add up to more than the total machine memory. So we
+need control over what happens when there's global memory pressure,
+and a way to ensure that the low-latency jobs don't get bogged down in
+reclaim (or OOM) due to the activity of batch jobs.
 
-Sure, you wouldn't want to change the git-engine update semantics, as that 
-sits on the server and handles all users.  But what the git model is 
-currently missing is a client manager.  Right now, this is being worked 
-around by replicating the git tree on the client, which still doesn't 
-provide the required transparency.
-
-IOW, git currently only implements the server-side use-case, but fails to 
-deliver on the client-side.  By introducing a git-client manager that 
-handles the transparency needs of a single user, it should be possible to 
-clearly isolate update semantics for both the client and the server, each 
-handling their specific use-case.
-
-
-Thanks!
-
---
-Al
-
+Paul
