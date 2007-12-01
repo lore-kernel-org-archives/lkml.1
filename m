@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXLANEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbXLANKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbXLANEr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 08:04:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXLANEj
+	id S1753801AbXLANKi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 08:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbXLANKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 08:04:39 -0500
-Received: from relay1.integra.net ([204.130.255.180]:55763 "HELO
-	mail.integraonline.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751053AbXLANEi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 08:04:38 -0500
-In-Reply-To: <20071130230435.GA12626@puku.stupidest.org>
-References: <20071114070400.GA25708@puku.stupidest.org> <20071125163014.GA17922@infradead.org> <474FBA21.4070201@sgi.com> <165B249C-FE97-4B27-927B-B39DE316CB23@xfs.org> <20071130230435.GA12626@puku.stupidest.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A3093599-2967-4969-BFFD-1328D47FAC12@xfs.org>
-Cc: Timothy Shimmin <tes@sgi.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
+	Sat, 1 Dec 2007 08:10:21 -0500
+Received: from rtr.ca ([76.10.145.34]:3712 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbXLANKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 08:10:19 -0500
+Message-ID: <47515D39.9030900@rtr.ca>
+Date: Sat, 01 Dec 2007 08:10:17 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, Linus Torvalds <torvalds@osdl.org>
+Subject: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Stephen Lord <lord@xfs.org>
-Subject: Re: [PATCH] xfs: revert to double-buffering readdir
-Date: Sat, 1 Dec 2007 07:04:27 -0600
-To: Chris Wedgwood <cw@f00f.org>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Now that we have network namespace support merged it is time to
+> revisit the sysfs support so we can remove the dependency on !SYSFS.
+...
 
-On Nov 30, 2007, at 5:04 PM, Chris Wedgwood wrote:
+Now that the namespace updates are part of 2.6.24,
+there is a major inconsistency in network EXPORT_SYMBOLs.
 
-> On Fri, Nov 30, 2007 at 04:36:25PM -0600, Stephen Lord wrote:
->
->> Looks like the readdir is in the bowels of the btree code when
->> filldir gets called here, there are probably locks on several
->> buffers in the btree at this point. This will only show up for large
->> directories I bet.
->
-> I see it for fairly small directories.  Larger than what you can stuff
-> into an inode but less than a block (I'm not checking but fairly sure
-> that's the case).
+It used to be that an external network module could get away without
+having to add a MODULE_LICENSE("GPL*") line to the source.
 
-I told you I did not read any code..... once a directory is out of  
-the inode
-and into disk blocks, there will be a lock on the buffer while the  
-contents
-are copied out.
+In support of that, common networking functions (still) use EXPORT_SYMBOL()
+rather than the more restrictive EXPORT_SYMBOL_GPL().
 
->
->> Just rambling, not a single line of code was consulted in writing
->> this message.
->
-> Can you explain why the offset is capped and treated in an 'odd way'
-> at all?
->
-> +       curr_offset = filp->f_pos;
-> +       if (curr_offset == 0x7fffffff)
-> +               offset = 0xffffffff;
-> +       else
-> +               offset = filp->f_pos;
->
-> and later the offset to filldir is masked.  Is that some restriction
-> in filldir?
+Eg.  register_netdev(), sk_alloc(), __dev_get_by_name().
 
-Too long ago to remember exact reasons. The only thing I do recall is  
-issues
-with glibc readdir code which wanted to remember positions in a dir  
-and seek
-backwards. It was translating structures and could end up with more
-data from the kernel than would fit in the user buffer. This may have  
-something
-to do with that and special values used as eof markers in the  
-getdents output
-and signed 32 bit arguments to lseek. In the original xfs directory  
-code, the
-offset of an entry was a 64 bit hash+offset value, that really  
-confused things
-when glibc attempted to do math on it.
+But now, none of those three are actually usable by default,
+because they all require "init_net", which is EXPORT_SYMBOL_GPL().
 
-I also recall that the offsets in the directory fields had different  
-meanings
-on different OS's. Sometimes it was the offset of the entry itself,  
-sometimes it
-was the offset of the next entry, that was one of the reasons for the  
-translation
-layer I think.
+So.. It appears that one of three things should really happen next:
 
-Steve
+1) Change the other exports to also be EXPORT_SYMBOL_GPL.
 
+2) Have register_netdev, sk_alloc, and __dev_get_by_name default
+to using init_net when NULL is specified in the namespace field.
+
+or 
+
+3) Change init_net to be EXPORT_SYMBOL_GPL.
+
+Right now, things are just a bit inconsistent, and it's not clear
+whether the namespace changes intended this consequence or not.
+
+Cheers
+
+(as for me, I think all kernel modules are GPL, whether they have
+ the MODULE_LICENSE line or not, so flames to /dev/null on that).
