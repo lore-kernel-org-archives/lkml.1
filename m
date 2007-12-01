@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbXLAUMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbXLAUQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbXLAUMY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 15:12:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXLAUMH
+	id S1754285AbXLAUQg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 15:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbXLAUQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 15:12:07 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:37279 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbXLAUMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 15:12:07 -0500
-Date: Sat, 1 Dec 2007 21:11:58 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, jakub@redhat.com
-Subject: Re: Fedora's latest gcc produces unbootable kernels
-Message-ID: <20071201211158.4700b222@poseidon.drzeus.cx>
-In-Reply-To: <4751A9F8.1090505@tmr.com>
-References: <20071201154223.1b052d39@poseidon.drzeus.cx>
-	<20071201184752.33536d09@poseidon.drzeus.cx>
-	<4751A9F8.1090505@tmr.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Dec 2007 15:16:21 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54669 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbXLAUQT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 15:16:19 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <lkml@rtr.ca>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
+	<20071201192341.6750fbdb@the-village.bc.nu>
+	<20071201113815.5df0960a@freepuppy.rosehill>
+Date: Sat, 01 Dec 2007 13:13:46 -0700
+In-Reply-To: <20071201113815.5df0960a@freepuppy.rosehill> (Stephen Hemminger's
+	message of "Sat, 1 Dec 2007 11:38:15 -0800")
+Message-ID: <m13aum5g1x.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Dec 2007 13:37:44 -0500
-Bill Davidsen <davidsen@tmr.com> wrote:
+Stephen Hemminger <shemminger@linux-foundation.org> writes:
 
-> If you are referring to the "compat" RPMs, be aware that they use the 
-> current headers, which is a good or bad thing depending on what you want 
-> to do. If you want to build old software, you get to keep a down-rev 
-> virtual machine to do it right :-(
-> 
+> Actually, the whole mess would go away if the api for dev_get_by_XXXX hadn't
+> been changed in the namespace transition. IMHO the interface to
+> dev_get_by_name()
+> should not have added a namespace parameter, of the callers in the tree, only
+> two use a different namespace. So it would have been better to to introduce
+> dev_get_by_name_ns() with the extra parameter.
 
-Nah. The previous gcc package is the one shipped with Fedora 8. So I could just grab that one (plus cpp and libgomp) and downgrade.
+As a general rule if you are calling dev_get_by_name and taking an &init_net
+parameter that means you code has not yet been converted to actually support
+network namespaces.
 
-Rgds
--- 
-     -- Pierre Ossman
+Not everything can be safely changed at once so we take it by steps.  When
+the code fully supports network namespaces practically nothing will take
+an &init_net parameter.  The network namespace parameter will come in
+some form from userspace.  Either from current or from the network
+socket.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Except for boot time initialization I don't know of any cases using
+dev_get_by_XXXX that won't need to be modified before the network
+namespace work is complete.
+
+I believe I mentioned that this getting the fully network namespace
+support was going to take a while and a bunch of patches at the
+outset.
+
+> Can we get this resolved before 2.6.24 is released? Going back and forth
+> on API's is just needless frottage.
+
+Sure.  We keep the updated dev_get_by_XXXX that takes a network
+namespace parameter.
+
+Or is their some legitimate usage of it by out of tree code that
+I'm not aware of?
+
+Eric
