@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbXLAJvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbXLAKEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753282AbXLAJvX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 04:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXLAJvP
+	id S1753093AbXLAKEz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 05:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXLAKEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 04:51:15 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43299 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161AbXLAJvO (ORCPT
+	Sat, 1 Dec 2007 05:04:40 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:42151 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbXLAKEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 04:51:14 -0500
-Message-ID: <47512E8D.6090805@linux.vnet.ibm.com>
-Date: Sat, 01 Dec 2007 15:21:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 1 Dec 2007 05:04:38 -0500
+Date: Sat, 1 Dec 2007 11:04:22 +0100
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Jaime Velasco Juan <jsagarribay@gmail.com>,
+       Oliver Neukum <oliver@neukum.org>,
+       Johann Wilhelm <johann.wilhelm@student.tugraz.at>,
+       Rui Santos <rsantos@grupopie.com>, linux-usb@vger.kernel.org,
+       kristoffer.ericson@gmail.com, drussell@redhat.com,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: [PATCH] USB: option: Bind to the correct interface of the Huawei E220
+Message-ID: <20071201100422.GA14566@gamma.logic.tuwien.ac.at>
+References: <20071128161305.b01167b3.zaitcev@redhat.com> <20071129150550.86453nubw8i5xi68@webmail.tugraz.at> <20071129185339.GA10445@singular.local> <200711300023.08999.oliver@neukum.org> <20071130163011.GA4223@singular.local> <20071201080738.GA10031@gamma.logic.tuwien.ac.at> <20071201003455.75b5f0ad.zaitcev@redhat.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: vatsa@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, skumar@linux.vnet.ibm.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH] sched: cpu accounting controller (V2)
-References: <6599ad830711122125u576e85a6w428466a0ab46dbc6@mail.gmail.com> <20071113060038.GC3359@linux.vnet.ibm.com> <6599ad830711122205g88aae4fua8dd76cf6e8ab84d@mail.gmail.com> <20071113074805.GA13499@linux.vnet.ibm.com> <6599ad830711122357i60482475o10c0e0935a9e00c0@mail.gmail.com> <20071129191737.GH5681@linux.vnet.ibm.com> <20071129113035.bbdf35db.akpm@linux-foundation.org> <20071129201833.GA18023@linux.vnet.ibm.com> <20071130124225.GM5681@linux.vnet.ibm.com> <6599ad830711302348n49900ca8jfa66fa71fde76a67@mail.gmail.com>
-In-Reply-To: <6599ad830711302348n49900ca8jfa66fa71fde76a67@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071201003455.75b5f0ad.zaitcev@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Hi Vatsa,
+On Sa, 01 Dez 2007, Pete Zaitcev wrote:
+> > is this the only addition that should be needed, ortogether with the
+> > changes in option to call the huawei init function?
 > 
-> Thanks, this looks pretty good.
-> 
-> On Nov 30, 2007 4:42 AM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
->>         - Removed load average information. I felt it needs more thought (esp
->>           to deal with SMP and virtualized platforms) and can be added for
->>           2.6.25 after more discussions.
-> 
-> The "load" value was never a load average, it was just a count of the
-> % cpu time used in the previous fixed window of time, updated at the
-> end of each window.
-> 
-> Maybe we can instead do something based tracking the length of the run
-> queue for the cgroup?
-> 
-> Paul
+> The only one.
 
-Length of the runqueue gives no idea of the weight of the tasks on the
-runqueue. I still prefer to have a top'ish view of the load on the
-system. The load average can be extracted using container group statistics.
+Ok.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> Your problem is something else. Neither my patch nor Jaime's patch
+> address it. Honestly, I'm not even sure how to tackle it. I seem to
+
+Ah, ok.
+
+> recall that I had a usbmon trace from you but I'm unable to find it now.
+> Gettin it (again?) probably would be a good place to restart that
+> investigation.
+
+I am not sure that I used usbmon ...,I can't recall it, but I know what
+the problem is, I need this patch:
+--- drivers/usb/storage/initializers.c.orig	2007-11-17 12:29:25.000000000 +0100
++++ drivers/usb/storage/initializers.c	2007-11-17 12:29:37.000000000 +0100
+@@ -100,7 +100,7 @@
+ 	result = usb_stor_control_msg(us, us->send_ctrl_pipe,
+ 				      USB_REQ_SET_FEATURE,
+ 				      USB_TYPE_STANDARD | USB_RECIP_DEVICE,
+-				      0x01, 0x0, us->iobuf, 0x1, 1000);
++				      0x01, 0x0, us->iobuf, 0, 1000);
+ 	US_DEBUGP("usb_control_msg performing result is %d\n", result);
+ 	return (result ? 0 : -1);
+ }
+
+With this everything works really smoothly. Even better, now I do get
+only 2 (instead of prior 3) /dev/ttyUSB devices (that caused some
+problems with umtsmon).
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+POLBATHIC (adj.)
+Gifted with ability to manipulate taps using only the feet.
+			--- Douglas Adams, The Meaning of Liff
