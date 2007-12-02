@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbXLBEYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbXLBFMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbXLBEYz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 23:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbXLBEYp
+	id S1752097AbXLBFMR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 00:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbXLBFMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 23:24:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57178 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753519AbXLBEYo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 23:24:44 -0500
-Date: Sat, 1 Dec 2007 20:23:54 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-Message-ID: <20071201202354.672aed18@freepuppy.rosehill>
-In-Reply-To: <475227B1.2060802@rtr.ca>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca>
-	<20071201111736.297dd99a@freepuppy.rosehill>
-	<20071201163035.321fd554@freepuppy.rosehill>
-	<475227B1.2060802@rtr.ca>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Dec 2007 00:12:03 -0500
+Received: from mail.suse.de ([195.135.220.2]:43818 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbXLBFMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 00:12:01 -0500
+Date: Sat, 1 Dec 2007 20:48:25 -0800
+From: Greg KH <gregkh@suse.de>
+To: rae l <crquan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Since sysfs_mount is static and used only in sysfs_init
+	function, it could be just an automatic variable.
+Message-ID: <20071202044825.GA7004@suse.de>
+References: <91b13c310712011231k3604214bx3559387c568cce09@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <91b13c310712011231k3604214bx3559387c568cce09@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Dec 2007 22:34:09 -0500
-Mark Lord <lkml@rtr.ca> wrote:
-
-> Stephen Hemminger wrote:
-> > On Sat, 1 Dec 2007 11:17:36 -0800
-> > Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > 
-> >> Then init_net needs to be not GPL limited. Sorry, we need to allow
-> >> non GPL network drivers.  There is a fine line between keeping the
-> >> binary seething masses from accessing random kernel functions, and allowing
-> >> reasonable (but still non GPL) things like ndiswrapper to use network
-> >> device interface.
-> >>
-> > I spoke too soon earlier, ndiswrapper builds and loads against current
-> > 2.6.24-rc3. Vmware and proprietary VPN software probably do not. Once again I don't
-> > give a damn, but the enterprise distro vendors certainly care.
-> ...
+On Sun, Dec 02, 2007 at 04:31:09AM +0800, rae l wrote:
+> ---
+> and I still have questions about this code:
+> 1. Why here kern_mount is needed?
+> 	Or the first time user space `mount -t sysfs` won't do that?
+> 2. If root executes many mounts to mount sysfs on /sys and many other places,
+> 	are there many instances of struct vfsmount those have only
+> mnt_mountpoint different?
 > 
-> Naw, enterprise (or any other) distro vendors shouldn't have any issues here,
-> since they can just patch their kernels around any issues.
+> 	For most common case, mount a virtual filesystem(proc, sysfs, ...) on
+> multiple mounting point,
+> 	how to handle it more efficiently?
 > 
-> But it looks like Eric has this one thought out well enough.
+> and where is a detailed explaination on kern_mount? could someone give
+> some comments or documentation pointers on this?
 
-So you are saying all this is not a problem, fine.
-Any affected parties can certainly lobby for themselves. But I suspect
-they all think the kernel community is a bunch of ... and will just ignore
-the problem. 
+See the patches that Eric Biederman just posted to lkml for why this
+structure is a static pointer this way right now, it's in preparation
+for future patches.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Hope this helps,
+
+greg k-h
