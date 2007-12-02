@@ -1,276 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbXLBD37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbXLBDeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbXLBD37 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 22:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbXLBD3u
+	id S1755178AbXLBDeV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 22:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbXLBDeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 22:29:50 -0500
-Received: from mail2.asahi-net.or.jp ([202.224.39.198]:30776 "EHLO
-	mail.asahi-net.or.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753849AbXLBD3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 22:29:49 -0500
-Message-ID: <475226B1.5090303@kaigai.gr.jp>
-Date: Sun, 02 Dec 2007 12:29:53 +0900
-From: KaiGai Kohei <kaigai@kaigai.gr.jp>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sat, 1 Dec 2007 22:34:12 -0500
+Received: from rtr.ca ([76.10.145.34]:2317 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753959AbXLBDeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 22:34:11 -0500
+Message-ID: <475227B1.2060802@rtr.ca>
+Date: Sat, 01 Dec 2007 22:34:09 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Andrew Morgan <morgan@kernel.org>
-CC: serge@hallyn.com, "Serge E. Hallyn" <serue@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] capabilities: introduce per-process capability	bounding
- set (v10)
-References: <20071126200908.GA13287@sergelap.austin.ibm.com> <4750B6D5.7070607@kaigai.gr.jp> <20071201035820.GA7730@vino.hallyn.com> <4751B1C3.1000704@kernel.org>
-In-Reply-To: <4751B1C3.1000704@kernel.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca>	<20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill>
+In-Reply-To: <20071201163035.321fd554@freepuppy.rosehill>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There is already a pam_cap module in the libcap2 package. Can we merge
-> this functionality?
-
-I think it is a good idea.
-
-However, this module already have a feature to modify inheritable
-capability set.
-How does it to be described in the "/etc/security/capability.conf"?
-
-One idea is like a following convention:
-
-# compatible configuration. We can omit "i:" at the head of line
-cap_setfcap                 tak
-# It drops any capabilities from b-set except for cap_net_raw and cap_fowner
-b:cap_net_raw,cap_fowner    ymj
-# It drops only cap_dac_override from b-set.
-b:-cap_dac_override         kaigai
-# It drops only cap_sys_admin from b-set of any user within users group.
-b:-cap_sys_admin            group:users
-
-Thanks,
-
-> Cheers
+Stephen Hemminger wrote:
+> On Sat, 1 Dec 2007 11:17:36 -0800
+> Stephen Hemminger <shemminger@linux-foundation.org> wrote:
 > 
-> Andrew
-> 
-> serge@hallyn.com wrote:
->> Quoting KaiGai Kohei (kaigai@kaigai.gr.jp):
->>> Serge E. Hallyn wrote:
->>>> The capability bounding set is a set beyond which capabilities
->>>> cannot grow.  Currently cap_bset is per-system.  It can be
->>>> manipulated through sysctl, but only init can add capabilities.
->>>> Root can remove capabilities.  By default it includes all caps
->>>> except CAP_SETPCAP.
->>> Serge,
->>>
->>> This feature makes me being interested in.
->>> I think you intend to apply this feature for the primary process
->>> of security container.
->>> However, it is also worthwhile to apply when a session is starting up.
->>>
->>> The following PAM module enables to drop capability bounding bit
->>> specified by the fifth field in /etc/passwd entry.
->>> This code is just an example now, but considerable feature.
->>>
->>> build and install:
->>> # gcc -Wall -c pam_cap_drop.c
->>> # gcc -Wall -shared -Xlinker -x -o pam_cap_drop.so pam_cap_drop.o -lpam
->>> # cp pam_cap_drop.so /lib/security
->>>
->>> modify /etc/passwd as follows:
->>>
->>> tak:x:1004:100:cap_drop=cap_net_raw,cap_chown:/home/tak:/bin/bash
->>>                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>> example:
->>> [kaigai@masu ~]$ ping 192.168.1.1
->>> PING 192.168.1.1 (192.168.1.1) 56(84) bytes of data.
->>> 64 bytes from 192.168.1.1: icmp_seq=1 ttl=64 time=1.23 ms
->>> 64 bytes from 192.168.1.1: icmp_seq=2 ttl=64 time=1.02 ms
->>>
->>> --- 192.168.1.1 ping statistics ---
->>> 2 packets transmitted, 2 received, 0% packet loss, time 999ms
->>> rtt min/avg/max/mdev = 1.023/1.130/1.237/0.107 ms
->>>
->>> [kaigai@masu ~]$ ssh tak@localhost
->>> tak@localhost's password:
->>> Last login: Sat Dec  1 10:09:29 2007 from masu.myhome.cx
->>> [tak@masu ~]$ export LANG=C
->>> [tak@masu ~]$ ping 192.168.1.1
->>> ping: icmp open socket: Operation not permitted
->>>
->>> [tak@masu ~]$ su
->>> Password:
->>> pam_cap_bset[6921]: user root does not have 'cap_drop=' property
->>> [root@masu tak]# cat /proc/self/status | grep ^Cap
->>> CapInh: 0000000000000000
->>> CapPrm: 00000000ffffdffe
->>> CapEff: 00000000ffffdffe
->>> [root@masu tak]#
->> Neat.  A bigger-stick version of not adding the account to
->> group wheel.  I'll use that.
+>> Then init_net needs to be not GPL limited. Sorry, we need to allow
+>> non GPL network drivers.  There is a fine line between keeping the
+>> binary seething masses from accessing random kernel functions, and allowing
+>> reasonable (but still non GPL) things like ndiswrapper to use network
+>> device interface.
 >>
->> Is there any reason not to have a separate /etc/login.capbounds
->> config file, though, so the account can still have a full name?
->> Did you only use that for convenience of proof of concept, or
->> is there another reason?
->>
->>> # BTW, I replaced the James's address in the Cc: list,
->>> # because MTA does not accept it.
->> Thanks!  I don't know what happened to my alias for him...
->>
->> thanks,
->> -serge
->>
->>> -- 
->>> KaiGai Kohei <kaigai@kaigai.gr.jp>
->>>
->>> ************************************************************
->>>     pam_cap_drop.c
->>> ************************************************************
->>>
->>> /*
->>>  * pam_cap_drop.c module -- drop capabilities bounding set
->>>  *
->>>  * Copyright: 2007 KaiGai Kohei <kaigai@kaigai.gr.jp>
->>>  */
->>>
->>> #include <errno.h>
->>> #include <pwd.h>
->>> #include <stdlib.h>
->>> #include <stdio.h>
->>> #include <string.h>
->>> #include <syslog.h>
->>> #include <sys/prctl.h>
->>> #include <sys/types.h>
->>>
->>> #include <security/pam_modules.h>
->>>
->>> #ifndef PR_CAPBSET_DROP
->>> #define PR_CAPBSET_DROP 24
->>> #endif
->>>
->>> static char *captable[] = {
->>> 	"cap_chown",
->>> 	"cap_dac_override",
->>> 	"cap_dac_read_search",
->>> 	"cap_fowner",
->>> 	"cap_fsetid",
->>> 	"cap_kill",
->>> 	"cap_setgid",
->>> 	"cap_setuid",
->>> 	"cap_setpcap",
->>> 	"cap_linux_immutable",
->>> 	"cap_net_bind_service",
->>> 	"cap_net_broadcast",
->>> 	"cap_net_admin",
->>> 	"cap_net_raw",
->>> 	"cap_ipc_lock",
->>> 	"cap_ipc_owner",
->>> 	"cap_sys_module",
->>> 	"cap_sys_rawio",
->>> 	"cap_sys_chroot",
->>> 	"cap_sys_ptrace",
->>> 	"cap_sys_pacct",
->>> 	"cap_sys_admin",
->>> 	"cap_sys_boot",
->>> 	"cap_sys_nice",
->>> 	"cap_sys_resource",
->>> 	"cap_sys_time",
->>> 	"cap_sys_tty_config",
->>> 	"cap_mknod",
->>> 	"cap_lease",
->>> 	"cap_audit_write",
->>> 	"cap_audit_control",
->>> 	"cap_setfcap",
->>> 	NULL,
->>> };
->>>
->>>
->>> PAM_EXTERN int
->>> pam_sm_open_session(pam_handle_t *pamh, int flags,
->>>                     int argc, const char **argv)
->>> {
->>> 	struct passwd *pwd;
->>> 	char *pos, *buf;
->>> 	char *username = NULL;
->>>
->>> 	/* open system logger */
->>> 	openlog("pam_cap_bset", LOG_PERROR | LOG_PID, LOG_AUTHPRIV);
->>>
->>> 	/* get the unix username */
->>> 	if (pam_get_item(pamh, PAM_USER, (void *) &username) != PAM_SUCCESS || !username)
->>> 		return PAM_USER_UNKNOWN;
->>>
->>> 	/* get the passwd entry */
->>> 	pwd = getpwnam(username);
->>> 	if (!pwd)
->>> 		return PAM_USER_UNKNOWN;
->>>
->>> 	/* Is there "cap_drop=" ? */
->>> 	pos = strstr(pwd->pw_gecos, "cap_drop=");
->>> 	if (pos) {
->>> 		buf = strdup(pos + sizeof("cap_drop=") - 1);
->>> 		if (!buf)
->>> 			return PAM_SESSION_ERR;
->>> 		pos = strtok(buf, ",");
->>> 		while (pos) {
->>> 			int rc, i;
->>>
->>> 			for (i=0; captable[i]; i++) {
->>> 				if (!strcmp(pos, captable[i])) {
->>> 					rc = prctl(PR_CAPBSET_DROP, i);
->>> 					if (rc < 0) {
->>> 						syslog(LOG_NOTICE, "user %s could not drop %s (%s)",
->>> 						       username, captable[i], strerror(errno));
->>> 						break;
->>> 					}
->>> 					syslog(LOG_NOTICE, "user %s drops %s\n", username, captable[i]);
->>> 					goto next;
->>> 				}
->>> 			}
->>> 			break;
->>> 		next:
->>> 			pos = strtok(NULL, ",");
->>> 		}
->>> 		free(buf);
->>> 	} else {
->>> 		syslog(LOG_NOTICE, "user %s does not have 'cap_drop=' property", username);
->>> 	}
->>> 	return PAM_SUCCESS;
->>> }
->>>
->>> PAM_EXTERN int
->>> pam_sm_close_session(pam_handle_t *pamh, int flags,
->>>                      int argc, const char **argv)
->>> {
->>> 	/* do nothing */
->>> 	return PAM_SUCCESS;
->>> }
->>>
->>> ************************************************************
->>> -
->>> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.7 (Darwin)
-> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-> 
-> iD8DBQFHUbHDmwytjiwfWMwRAj5uAJ9+OB8ljQlJAhKW7jxJWrIPa1k2vgCdHFL9
-> 3zXtwGz+cVeThb53/kAmdCs=
-> =OdM7
-> -----END PGP SIGNATURE-----
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> I spoke too soon earlier, ndiswrapper builds and loads against current
+> 2.6.24-rc3. Vmware and proprietary VPN software probably do not. Once again I don't
+> give a damn, but the enterprise distro vendors certainly care.
+...
 
+Naw, enterprise (or any other) distro vendors shouldn't have any issues here,
+since they can just patch their kernels around any issues.
 
--- 
-KaiGai Kohei <kaigai@kaigai.gr.jp>
+But it looks like Eric has this one thought out well enough.
+
+Cheers
+
