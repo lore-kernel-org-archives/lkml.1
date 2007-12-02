@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbXLBLU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbXLBLV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbXLBLU5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 06:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbXLBLSS
+	id S1755723AbXLBLV0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 06:21:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbXLBLST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 06:18:18 -0500
-Received: from il.qumranet.com ([82.166.9.18]:41440 "EHLO il.qumranet.com"
+	Sun, 2 Dec 2007 06:18:19 -0500
+Received: from il.qumranet.com ([82.166.9.18]:41443 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752585AbXLBLSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752668AbXLBLSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 2 Dec 2007 06:18:11 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: stable@kernel.org
 Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Amit Shah <amit.shah@qumranet.com>, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 07/10] KVM: SVM: Fix FPU leak while emulating clts
-Date: Sun,  2 Dec 2007 13:18:44 +0200
-Message-Id: <11965943273853-git-send-email-avi@qumranet.com>
+       Eddie Dong <eddie.dong@intel.com>, Qing He <qing.he@intel.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 10/10] KVM: VMX: Reset mmu context when entering real mode
+Date: Sun,  2 Dec 2007 13:18:47 +0200
+Message-Id: <11965943271835-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <1196594327338-git-send-email-avi@qumranet.com>
 References: <1196594327338-git-send-email-avi@qumranet.com>
@@ -23,33 +24,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Shah <amit.shah@qumranet.com>
+From: Eddie Dong <eddie.dong@intel.com>
 
-The clts code didn't use set_cr0 properly, so our lazy FPU
-processing wasn't being done by the clts instruction at all.
+Resetting an SMP guest will force AP enter real mode (RESET) with
+paging enabled in protected mode. While current enter_rmode() can
+only handle mode switch from nonpaging mode to real mode which leads
+to SMP reboot failure.
 
-(this isn't called on Intel as the hardware does the decode for us)
+Fix by reloading the mmu context on entering real mode.
 
-Signed-off-by: Amit Shah <amit.shah@qumranet.com>
+Signed-off-by: Yaozu (Eddie) Dong <eddie.dong@intel.com>
+Signed-off-by: Qing He <qing.he@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm_main.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ drivers/kvm/mmu.c |    1 +
+ drivers/kvm/vmx.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index b514dfb..504e81d 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1163,10 +1163,7 @@ int emulate_invlpg(struct kvm_vcpu *vcpu, gva_t address)
+diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
+index 23965aa..56ab369 100644
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -1066,6 +1066,7 @@ int kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
+ 	destroy_kvm_mmu(vcpu);
+ 	return init_kvm_mmu(vcpu);
+ }
++EXPORT_SYMBOL_GPL(kvm_mmu_reset_context);
  
- int emulate_clts(struct kvm_vcpu *vcpu)
+ int kvm_mmu_load(struct kvm_vcpu *vcpu)
  {
--	unsigned long cr0;
--
--	cr0 = vcpu->cr0 & ~CR0_TS_MASK;
--	kvm_arch_ops->set_cr0(vcpu, cr0);
-+	kvm_arch_ops->set_cr0(vcpu, vcpu->cr0 & ~X86_CR0_TS);
- 	return X86EMUL_CONTINUE;
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index c158a2d..916da29 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -957,6 +957,7 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
+ 	fix_rmode_seg(VCPU_SREG_GS, &vcpu->rmode.gs);
+ 	fix_rmode_seg(VCPU_SREG_FS, &vcpu->rmode.fs);
+ 
++	kvm_mmu_reset_context(vcpu);
+ 	init_rmode_tss(vcpu->kvm);
  }
  
 -- 
