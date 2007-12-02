@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbXLBIJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbXLBInw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbXLBIJR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 03:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXLBIJE
+	id S1754229AbXLBInw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 03:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXLBInn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 03:09:04 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:53509 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbXLBIJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 03:09:03 -0500
-Date: Sun, 2 Dec 2007 03:08:58 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: any value in centralizing common 32/64 x86 content in
- vmlinux.lds.S?
-Message-ID: <alpine.LFD.0.9999.0712020301180.29501@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sun, 2 Dec 2007 03:43:43 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55279 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751909AbXLBInn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 03:43:43 -0500
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add EXPORT_SYMBOL(ksize);
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Message-Id: <200712021743.GBH12983.FHOFVJOMFLOStQ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sun, 2 Dec 2007 17:43:39 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  given the amount of common content between
-arch/x86/kernel/vmlinux_32.lds.S and arch/x86/kernel/vmlinux_64.lds.S,
-what about just defining macros for some of that stuff in
-arch/x86/kernel/vmlinux.lds.S and cutting down on all the duplication?
+mm/slub.c exports ksize(), but mm/slob.c and mm/slab.c don't. I don't know why.
 
-  as is done in include/asm-generic/vmlinux.lds.S, why not just
-define some handy macros, like:
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-#define INITRAMFS(align)					\
-	. = ALIGN(align);					\
-	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {	\
-	__initramfs_start = .;					\
-	*(.init.ramfs)						\
-	__initramfs_end = .;					\
-	}
+---
+ mm/slab.c |    1 +
+ mm/slob.c |    1 +
+ 2 files changed, 2 insertions(+)
 
-or something similar.
-
-  i'm guessing there's a fair amount of content like that that can be
-coalesced, no?  it would also standardize some of the niggling
-differences between some of that content between the two files.
-
-rday
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+--- linux-2.6-mm.orig/mm/slab.c
++++ linux-2.6-mm/mm/slab.c
+@@ -4479,3 +4479,4 @@ size_t ksize(const void *objp)
+ 
+ 	return obj_size(virt_to_cache(objp));
+ }
++EXPORT_SYMBOL(ksize);
+--- linux-2.6-mm.orig/mm/slob.c
++++ linux-2.6-mm/mm/slob.c
+@@ -495,6 +495,7 @@ size_t ksize(const void *block)
+ 	else
+ 		return sp->page.private;
+ }
++EXPORT_SYMBOL(ksize);
+ 
+ struct kmem_cache {
+ 	unsigned int size, align;
