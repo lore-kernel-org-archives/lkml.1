@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbXLBACV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbXLBAOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbXLBACV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 19:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbXLBACN
+	id S1754793AbXLBAOc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 19:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbXLBAO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 19:02:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35925 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753065AbXLBACM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 19:02:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 20000+ wake-ups/second in 2.6.24.   Bug?
-Date: Sun, 2 Dec 2007 01:20:35 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
-       lenb@kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org> <20071201154646.5a288c9e@laptopd505.fenrus.org> <4751F484.6040204@rtr.ca>
-In-Reply-To: <4751F484.6040204@rtr.ca>
+	Sat, 1 Dec 2007 19:14:26 -0500
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:51449 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752983AbXLBAOZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 19:14:25 -0500
+To: linux-kernel@vger.kernel.org
+Subject: sym53c8xx2: incredible sloth after parity error / SCSI bus reset
+From: Nix <nix@esperi.org.uk>
+Emacs: don't cry -- it won't help.
+Date: Sun, 02 Dec 2007 00:14:21 +0000
+Message-ID: <878x4egdgi.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712020120.36439.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-DCC--Metrics: hades 1114; Body=1 Fuz1=1 Fuz2=1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 2 of December 2007, Mark Lord wrote:
-> Arjan van de Ven wrote:
-> > On Sat, 01 Dec 2007 18:43:39 -0500
-> > Mark Lord <lkml@rtr.ca> wrote:
-> > 
-> >> Dagnabbit.. it's done it again.. went from 100-200 wakeups/sec
-> >> back up to 20000+ wakeups/sec.  This time *with* the powertop patches
-> >> in place.
-> >>
-> >> Somethings broken in there, but I don't know what.
-> >> Or how to make it happen on demand.. it's fine after rebooting again.
-> >>
-> >> ???
-> >>
-> >> At least now I know to look when I hear the fan turning on
-> >> when the system is otherwise supposed to be idle..
-> >>
-> >> 2.6.23 did not have this problem.
-> > 
-> > actually we have reports of 2.6.23 having the exact same problem.
-> > The thing is, "something" is causing the system to go into a state
-> > where the cpu throws us right out of the C-state the kernel asks for.
-> ...
-> 
-> Ahh.  Okay, this machine here did not have the problem on 2.6.23.
+About once a year I get a SCSI parity error on one of my systems (the
+only one with SCSI). I presume the cabling is substandard, but given my
+coordination deficits and the rarity of the errors I'd do far more
+damage replacing it than leaving it be.
 
-So on this particular machine it is a regression.
+I had one of these today.
 
-I'm tempted to add it to the list of recent regressions in case it appears on
-someone else's system on which 2.6.23 works correctly.  Objections?
+The system (2.6.23.9) spotted the error, and seemingly recovered:
 
-Rafael
+Dec  1 12:53:40 loki warning: kernel: sym0: SCSI parity error detected: SCR1=132 DBC=50000000 SBCL=0
+Dec  1 12:53:40 loki warning: kernel: sym0:0: ERROR (81:0) (8-0-0) (10/9d/0) @ (mem c2800048:ffffffff).
+Dec  1 12:53:40 loki warning: kernel: sym0: regdump: da 00 00 9d 47 10 00 0e 00 08 80 00 80 00 0f 0a d0 58 3c 01 02 ff ff ff.
+Dec  1 12:53:40 loki warning: kernel: sym0: SCSI BUS reset detected.
+Dec  1 12:53:40 loki notice: kernel: sym0: SCSI BUS has been reset.
+
+However, after that reset I/O to any device on that controller is
+*incredibly* slow.
+
+A monthly RAID check kicked off shortly afterwards and provided my first
+clue. Load average >15, and:
+
+md1 : active raid5 sda6[0] hdc5[3] sdb6[1]
+      76807296 blocks super 1.2 level 5, 64k chunk, algorithm 2 [3/3] [UUU]
+      [========>............]  check = 42.8% (16450780/38403648) finish=253.3min speed=1442K/sec
+
+1442Kb/s is a bit less than I'd expect from a three-drive array with
+disks capable of 40Mb/s easily.
+
+/dev/sda:
+ Timing buffered disk reads:    8 MB in  3.50 seconds =   2.29 MB/sec
+
+A somewhat slower ATAPI disk on the same machine:
+
+/dev/hdc:
+ Timing buffered disk reads:  110 MB in  3.05 seconds =  36.08 MB/sec
+
+So, um, what could cause this? Can I speed it up again other than by
+rebooting (which I'm just about to do, but it is annoying).
+
+-- 
+`Some people don't think performance issues are "real bugs", and I think 
+such people shouldn't be allowed to program.' --- Linus Torvalds
