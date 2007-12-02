@@ -1,118 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbXLBQZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbXLBQaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbXLBQZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 11:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXLBQZR
+	id S1756088AbXLBQaX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 11:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXLBQaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 11:25:17 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:52993 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751987AbXLBQZQ (ORCPT
+	Sun, 2 Dec 2007 11:30:09 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:48650 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484AbXLBQaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 11:25:16 -0500
-Message-ID: <4752D587.4000805@linux.vnet.ibm.com>
-Date: Sun, 02 Dec 2007 21:25:51 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Sun, 2 Dec 2007 11:30:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kfbCqxuHJ747sF0WWuL6LGnOWC1M/64MqAaJUAwPQqbFEtpoFqUXUjdwFcocx/nZ94fCbKu+6tcmLbt/Y204NSb1poC9bfnBhxPnN63b8E1PB/7TVAiHnPKHbJiDyHzG1fEe+Qmcpp+JcXWVZ+37q+M4i8GPBR132E1CdRI5omk=
+Message-ID: <19f34abd0712020830y4825691atdfc9dac07ce4cb35@mail.gmail.com>
+Date: Sun, 2 Dec 2007 17:30:07 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: [BUG 2.6.24-rc3-git6] SLUB's ksize() fails for size > 2048.
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       samba-technical@lists.samba.org, nfs@lists.sourceforge.net,
-       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
-References: <20071128034140.648383f0.akpm@linux-foundation.org> <474E7F9E.9000601@linux.vnet.ibm.com> <20071129010906.772e0c15.akpm@linux-foundation.org> <474EA914.1060502@linux.vnet.ibm.com> <20071129144030.GE16558@duck.suse.cz>
-In-Reply-To: <20071129144030.GE16558@duck.suse.cz>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> On Thu 29-11-07 17:27:08, Kamalesh Babulal wrote:
->> Andrew Morton wrote:
->>> On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>>
->>>> Hi Andrew,
->>>>
->>>> While running file system stress on nfs and cifs mounted partitions, the machine
->>>> drops to xmon
->>>>
->>>> 1:mon> e
->>>> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
->>>>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
->>>>     lr: c0000000001074d0: .vfs_link+0x204/0x298
->>>>     sp: c000000080a9fb00
->>>>    msr: 8000000000009032
->>>>    dar: 280 
->>>>  dsisr: 40010000
->>>>   current = 0xc0000000c8e6f670
->>>>   paca    = 0xc000000000512c00
->>>>     pid   = 2848, comm = fsstress
->>>> 1:mon> t
->>>> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
->>>> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
->>>> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
->>>> --- Exception: c00 (System Call) at 000000000ff1bdfc
->>>> SP (ffeaed10) is in userspace
->>>> 1:mon> r
->>>> R00 = c0000000001074d0   R16 = 0000000000000000
->>>> R01 = c000000080a9fb00   R17 = 0000000000000000
->>>> R02 = c00000000060c380   R18 = 0000000000000000
->>>> R03 = 0000000000000000   R19 = 0000000000000000
->>>> R04 = 0000000000000004   R20 = 0000000000000000
->>>> R05 = 0000000000000000   R21 = 0000000000000000
->>>> R06 = 0000000000000000   R22 = 0000000000000000
->>>> R07 = 0000000000000000   R23 = 0000000000000004
->>>> R08 = 0000000000000000   R24 = 0000000000000280
->>>> R09 = 0000000000000000   R25 = fffffffffffff000
->>>> R10 = 0000000000000001   R26 = c000000082827790
->>>> R11 = c0000000003963e8   R27 = c0000000828275a0
->>>> R12 = d000000000deec78   R28 = 0000000000000000
->>>> R13 = c000000000512c00   R29 = c00000007b18fcf0
->>>> R14 = 0000000000000000   R30 = c0000000005bc088
->>>> R15 = 0000000000000000   R31 = 0000000000000000
->>>> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
->>>> lr  = c0000000001074d0 .vfs_link+0x204/0x298
->>>> msr = 8000000000009032   cr  = 24000882
->>>> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
->>>> dar = 0000000000000280   dsisr = 40010000
->>>>
->>>>
->>>> The gdb output shows 
->>>>
->>>> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
->>>> 103      * fsnotify_create - 'name' was linked in
->>>> 104      */  
->>>> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
->>>> 106     {   
->>>> 107             inode_dir_notify(inode, DN_CREATE);
->>>> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
->>>> 109                                       dentry->d_inode);
->>>> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
->>>> 111     }   
->>>> 112
->>>>
->>> If it is reproducible can you please try reverting
->>> inotify-send-in_attrib-events-when-link-count-changes.patch?
->> Hi Andrew,
->>
->> reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
->> bug is not reproduced.
->   OK, it's a problem with CIFS. Its cifs_hardlink() function doesn't call
-> d_instantiate() and thus returns a dentry with d_inode set to NULL. I'm not
-> sure if such behavior is really correct but anyway, attached is a new
-> version of the patch which should handle it gracefully. Kamalesh, can you
-> please give it a try? Thanks.
-> 
-> 									Honza
-Hi Jan,
+On Dec 2, 2007 11:39 AM, Tetsuo Handa
+<penguin-kernel@i-love.sakura.ne.jp> wrote:
+> Hello.
+>
+> I can't pass memory allocated by kmalloc() to ksize()
+> if it is allocated by SLUB allocator and
+> size is larger than (I guess) PAGE_SIZE / 2.
+>
+> Regards.
 
-Thanks, the patch fixes the bug.
+Take a look at mm/slub.c around line 2560, in __kmalloc:
+        if (unlikely(size > PAGE_SIZE / 2))
+                return (void *)__get_free_pages(flags | __GFP_COMP,
+                                                        get_order(size));
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+
+So it seems that kmalloc simply returns pages from the page allocator
+in this case. Therefore no SLUB metadata will be available for the
+allocation.
+
+The error of ksize() seems to be that it does not check if the
+allocation was made by SLUB or the page allocator. Maybe something
+like this will fix it? (completely untested)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 9acb413..1cdca59 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2552,6 +2552,7 @@ EXPORT_SYMBOL(__kmalloc_node);
+ size_t ksize(const void *object)
+ {
+        struct page *page;
++       struct page *head;
+        struct kmem_cache *s;
+
+        BUG_ON(!object);
+@@ -2560,6 +2561,13 @@ size_t ksize(const void *object)
+
+        page = get_object_page(object);
+        BUG_ON(!page);
++
++       head = compound_head(page);
++       BUG_ON(!head);
++
++       if (unlikely(!(head->flags & PG_slab)))
++               return PAGE_SIZE << compound_order(head);
++
+        s = page->slab;
+        BUG_ON(!s);
+
+
+
+It's going to round up, though, so you would get ksize(kmalloc(2049))
+= PAGE_SIZE.
+
+
+Vegard
