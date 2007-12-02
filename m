@@ -1,93 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbXLAJOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbXLAJPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752557AbXLAJOk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 04:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXLAJOY
+	id S1752354AbXLAJPu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 04:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXLAJPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 04:14:24 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46672 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbXLAJOW (ORCPT
+	Sat, 1 Dec 2007 04:15:36 -0500
+Received: from neopsis.com ([213.239.204.14]:48125 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751019AbXLAJPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 04:14:22 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>
-Cc: Tejun Heo <htejun@gmail.com>, Linux Containers <containers@lists.osdl.org>,
-       <netdev@vger.kernel.org>, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
-       <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH 01/10] sysfs: Make sysfs_mount static again.
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-Date: Sat, 01 Dec 2007 02:12:27 -0700
-In-Reply-To: <m163zi9425.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Sat, 01 Dec 2007 02:06:58 -0700")
-Message-ID: <m11wa693t0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 1 Dec 2007 04:15:35 -0500
+Message-ID: <4752703B.10305@dbservice.com>
+Date: Sun, 02 Dec 2007 09:43:39 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071130)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: WARNING: smp_call_function_single() and smp_call_function_mask()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-1.176,
+	required 5, autolearn=spam, AWL -0.87, BAYES_00 -2.60,
+	DATE_IN_FUTURE_12_24 2.19, RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+WARNING: at arch/x86/kernel/smp_64.c:427 smp_call_function_single()
+WARNING: at arch/x86/kernel/smp_64.c:397 smp_call_function_mask()
 
-In preparation for supporting multiple mounts of sysfs I need to
-remove all assumptions that we have a single mount of sysfs.  So this
-patch modifies sysfs_open_file to use the vfsmount from the struct
-file instead of fibbing and using the global vfsmount.
+dmesg and config attached.
 
-We get a little more noise this way but we should continue to get the
-useful part of the debugging information.
+I'm getting about three of each at boot. I'm running:
+commit e1cca7e8d484390169777b423a7fe46c7021fec1
+Date:   Thu Nov 29 16:25:29 2007 -0800
+which is the latest git as of yesterday plus a one (unrelated) debug
+statement patch in usb uhci.
 
-This was the reason I made sysfs_mount static earlier.
+There was a similar bug report after 2.6.23-rc8-mm was released. Though
+there seems to be a fundamental problem with how people use
+smp_call_function*() [1]. And this can just as well be another
+incarnation of it.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/sysfs/file.c  |    2 +-
- fs/sysfs/mount.c |    2 +-
- fs/sysfs/sysfs.h |    1 -
- 3 files changed, 2 insertions(+), 3 deletions(-)
+Is that easy enough to fix or do I need to bisect (it didn't happen in
+2.6.24-rc3)?
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 87e4a0e..ad13151 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -330,7 +330,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	int error = -EACCES;
- 	char *p;
- 
--	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
-+	p = d_path(file->f_dentry, file->f_vfsmnt, last_sysfs_file,
- 		   sizeof(last_sysfs_file));
- 	if (p)
- 		memmove(last_sysfs_file, p, strlen(p) + 1);
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index a3410d6..7416826 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -22,7 +22,7 @@
- /* Random magic number */
- #define SYSFS_MAGIC 0x62656572
- 
--struct vfsmount *sysfs_mount;
-+static struct vfsmount *sysfs_mount;
- struct super_block * sysfs_sb = NULL;
- struct kmem_cache *sysfs_dir_cachep;
- 
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 52aaa8c..ff17f8d 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -91,7 +91,6 @@ struct sysfs_addrm_cxt {
- extern struct sysfs_dirent sysfs_root;
- extern struct super_block *sysfs_sb;
- extern struct kmem_cache *sysfs_dir_cachep;
--extern struct vfsmount *sysfs_mount;
- 
- /*
-  * dir.c
--- 
-1.5.3.rc6.17.g1911
+tom
 
+[1] http://kerneltrap.org/mailarchive/linux-kernel/2007/9/27/324310
