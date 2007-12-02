@@ -1,39 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXLBQVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbXLBQZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbXLBQVn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 11:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXLBQVf
+	id S1756136AbXLBQZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 11:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXLBQZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 11:21:35 -0500
-Received: from rtr.ca ([76.10.145.34]:2360 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbXLBQVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 11:21:34 -0500
-Message-ID: <4752DB8C.50608@rtr.ca>
-Date: Sun, 02 Dec 2007 11:21:32 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 2 Dec 2007 11:25:17 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:52993 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987AbXLBQZQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 11:25:16 -0500
+Message-ID: <4752D587.4000805@linux.vnet.ibm.com>
+Date: Sun, 02 Dec 2007 21:25:51 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: dmitry.torokhov@gmail.com, rubini@vision.unipv.it,
-       linux-input@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.24:  false double-clicks from USB mouse
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jan Kara <jack@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       samba-technical@lists.samba.org, nfs@lists.sourceforge.net,
+       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
+References: <20071128034140.648383f0.akpm@linux-foundation.org> <474E7F9E.9000601@linux.vnet.ibm.com> <20071129010906.772e0c15.akpm@linux-foundation.org> <474EA914.1060502@linux.vnet.ibm.com> <20071129144030.GE16558@duck.suse.cz>
+In-Reply-To: <20071129144030.GE16558@duck.suse.cz>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've only just recently tried running 2.6.24 on my main machine.
-And it appears that I'll have to go back to 2.6.23,
-because the USB mouse is not working correctly.
+Jan Kara wrote:
+> On Thu 29-11-07 17:27:08, Kamalesh Babulal wrote:
+>> Andrew Morton wrote:
+>>> On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>>>
+>>>> Hi Andrew,
+>>>>
+>>>> While running file system stress on nfs and cifs mounted partitions, the machine
+>>>> drops to xmon
+>>>>
+>>>> 1:mon> e
+>>>> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
+>>>>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
+>>>>     lr: c0000000001074d0: .vfs_link+0x204/0x298
+>>>>     sp: c000000080a9fb00
+>>>>    msr: 8000000000009032
+>>>>    dar: 280 
+>>>>  dsisr: 40010000
+>>>>   current = 0xc0000000c8e6f670
+>>>>   paca    = 0xc000000000512c00
+>>>>     pid   = 2848, comm = fsstress
+>>>> 1:mon> t
+>>>> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
+>>>> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
+>>>> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
+>>>> --- Exception: c00 (System Call) at 000000000ff1bdfc
+>>>> SP (ffeaed10) is in userspace
+>>>> 1:mon> r
+>>>> R00 = c0000000001074d0   R16 = 0000000000000000
+>>>> R01 = c000000080a9fb00   R17 = 0000000000000000
+>>>> R02 = c00000000060c380   R18 = 0000000000000000
+>>>> R03 = 0000000000000000   R19 = 0000000000000000
+>>>> R04 = 0000000000000004   R20 = 0000000000000000
+>>>> R05 = 0000000000000000   R21 = 0000000000000000
+>>>> R06 = 0000000000000000   R22 = 0000000000000000
+>>>> R07 = 0000000000000000   R23 = 0000000000000004
+>>>> R08 = 0000000000000000   R24 = 0000000000000280
+>>>> R09 = 0000000000000000   R25 = fffffffffffff000
+>>>> R10 = 0000000000000001   R26 = c000000082827790
+>>>> R11 = c0000000003963e8   R27 = c0000000828275a0
+>>>> R12 = d000000000deec78   R28 = 0000000000000000
+>>>> R13 = c000000000512c00   R29 = c00000007b18fcf0
+>>>> R14 = 0000000000000000   R30 = c0000000005bc088
+>>>> R15 = 0000000000000000   R31 = 0000000000000000
+>>>> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
+>>>> lr  = c0000000001074d0 .vfs_link+0x204/0x298
+>>>> msr = 8000000000009032   cr  = 24000882
+>>>> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
+>>>> dar = 0000000000000280   dsisr = 40010000
+>>>>
+>>>>
+>>>> The gdb output shows 
+>>>>
+>>>> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
+>>>> 103      * fsnotify_create - 'name' was linked in
+>>>> 104      */  
+>>>> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+>>>> 106     {   
+>>>> 107             inode_dir_notify(inode, DN_CREATE);
+>>>> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
+>>>> 109                                       dentry->d_inode);
+>>>> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
+>>>> 111     }   
+>>>> 112
+>>>>
+>>> If it is reproducible can you please try reverting
+>>> inotify-send-in_attrib-events-when-link-count-changes.patch?
+>> Hi Andrew,
+>>
+>> reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
+>> bug is not reproduced.
+>   OK, it's a problem with CIFS. Its cifs_hardlink() function doesn't call
+> d_instantiate() and thus returns a dentry with d_inode set to NULL. I'm not
+> sure if such behavior is really correct but anyway, attached is a new
+> version of the patch which should handle it gracefully. Kamalesh, can you
+> please give it a try? Thanks.
+> 
+> 									Honza
+Hi Jan,
 
-Single-clicking on things with 2.6.24 very frequently gives a "double-click".
-This does not happen with 2.6.23.8.
+Thanks, the patch fixes the bug.
 
-I wonder what broke it?
-
-I've grabbed mousedev.c from 2.6.23 and inserted that in place
-of the updated 2.6.24 source, but no change.  So it's not that file.
-
-?????
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
