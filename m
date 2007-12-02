@@ -1,59 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbXLBQFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbXLBQNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbXLBQFp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 11:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXLBQFi
+	id S1755984AbXLBQNm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 11:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXLBQNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 11:05:38 -0500
-Received: from main.gmane.org ([80.91.229.2]:33374 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbXLBQFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 11:05:38 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Holger Hoffstaette" <holger@wizards.de>
-Subject: Re: Reproducible data corruption with sendfile+vsftp - splice regression?
-Date: Sun, 02 Dec 2007 17:00:03 +0100
-Organization: The Fists of the White Lotus
-Message-ID: <pan.2007.12.02.16.00.03.568000@wizards.de>
-References: <pan.2007.11.29.23.42.52.661624@wizards.de> <474FC4D9.3020506@cosmosbay.com> <pan.2007.11.30.09.20.24.737500@wizards.de> <475055EE.9060105@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: port-87-234-135-174.dynamic.qsc.de
-User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
-Cc: netdev@vger.kernel.org
+	Sun, 2 Dec 2007 11:13:33 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34275 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752069AbXLBQNd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 11:13:33 -0500
+Date: Sun, 2 Dec 2007 17:13:25 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.24-rc3-git6] SLUB's ksize() fails for size > 2048.
+Message-ID: <20071202161325.GL15974@stusta.de>
+References: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Dec 02, 2007 at 07:39:59PM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> I can't pass memory allocated by kmalloc() to ksize()
+> if it is allocated by SLUB allocator and
+> size is larger than (I guess) PAGE_SIZE / 2.
+> 
+> Regards.
+> 
+> ---------- Kernel config (grep CONFIG_SLUB .config) ----------
+> CONFIG_SLUB_DEBUG=y
+> CONFIG_SLUB=y
+> # CONFIG_SLUB_DEBUG_ON is not set
+> 
+> ---------- Testing program (ksize_test.c) ----------
+> #include <linux/module.h>
+> #include <linux/slab.h>
+> 
+> static int __init init_ksize_test(void)
+> {
+>         void *p = kmalloc(2049, GFP_KERNEL);
+>         printk("ksize(%p) = %d\n", p, ksize(p));
+>         kfree(p);
+>         return -ENOMEM;
+> }
+> 
+> module_init(init_ksize_test)
+> 
+> MODULE_LICENSE("GPL");
+> 
+> ------------[ cut here ]------------
+> kernel BUG at mm/slub.c:2562!
+> invalid opcode: 0000 [#1] SMP
+> Modules linked in: ksize_test
+> 
+> Pid: 8473, comm: modprobe Not tainted (2.6.24-rc3-git6 #4)
+> EIP: 0060:[<c01714a2>] EFLAGS: 00010246 CPU: 1
+> EIP is at ksize+0x1b/0x4a
+> EAX: 00000000 EBX: dd776000 ECX: c16721d0 EDX: 00000000
+> ESI: e081b280 EDI: df3a396c EBP: dd595ea0 ESP: dd595ea0
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process modprobe (pid: 8473, ti=dd595000 task=d347cd60 task.ti=dd595000)
+> Stack: dd595eb8 e081e01a dd595eb8 c014010c ffffffff e08193e0 dd595fb0 c0150b18
+>        00000000 00000000 00001866 00000000 dd4dac00 d347cd60 c14366ac 00000230
+>        0000135c 0000000e dd4dac00 e081b280 00000000 00000000 00000000 00000000
+> Call Trace:
+>  [<c0106008>] show_trace_log_lvl+0x1a/0x2f
+>  [<c01060b8>] show_stack_log_lvl+0x9b/0xa3
+>  [<c0106167>] show_registers+0xa7/0x178
+>  [<c010634c>] die+0x114/0x1f5
+>  [<c0417018>] do_trap+0x8a/0xa3
+>  [<c01066ec>] do_invalid_op+0x88/0x92
+>  [<c0416dea>] error_code+0x72/0x78
+>  [<e081e01a>] init_ksize_test+0x1a/0x40 [ksize_test]
+>  [<c0150b18>] sys_init_module+0x13d3/0x14ff
+>  [<c0104f7e>] sysenter_past_esp+0x5f/0xa5
+>  =======================
+> Code: 8b 02 5d 84 c0 b8 00 00 00 00 0f 49 d0 89 d0 c3 55 85 c0 89 e5 75 04 0f 0b eb fe 31 d2 83 f8 10 74 34 e8 b4 ff ff ff 85 c0 75 04 <0f> 0b eb fe 8b 40 0c 85 c0 75 04 0f 0b eb fe 8b 10 f6 c6 0c 74
+> EIP: [<c01714a2>] ksize+0x1b/0x4a SS:ESP 0068:dd595ea0
 
-On Fri, 30 Nov 2007 10:26:54 -0800, Rick Jones wrote:
+Can you confirm that it works in 2.6.23?
 
-> Could the corruption be seen in a tcpdump trace prior to transmission (ie
-> taken on the sender) or was it only seen after the data passed out the
-> NIC?
+If yes this is most likely caused by
+commit aadb4bc4a1f9108c1d0fbd121827c936c2ed4217
 
-I did the following:
+cu
+Adrian
 
-1) turn on tso on the server's r8169: ethtool --offload eth0 tso on
-2) on the server: tcpdump -i eth0 -s 0 -w <file>
-3) ftp'ed file to 100mbit client
+-- 
 
-As expected the file was corrupted, and the various corrupted byte
-sequences also show up in the tcpdump file at the corresponding offsets.
-
-I did this with 2.6.22.14, so it does not seem to be a recent regression
-in .23/.24.
-
-All files can be found here:
-http://hoho.dyndns.org/~holger/dist/r8169-tso/
-
-I will gladly try out any other tweaks but need some guidance as I don't
-know what exactly to change - maybe without NAPI for the r8169?
-
-thank you
-Holger
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
