@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbXLBOPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXLBOQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbXLBOPy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 09:15:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXLBOPq
+	id S1755988AbXLBOQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 09:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXLBOQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 09:15:46 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4531 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753503AbXLBOPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 09:15:45 -0500
-Date: Sun, 2 Dec 2007 14:15:35 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Dan Kegel <dank@kegel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Relax permissions for reading hard drive serial number?
-Message-ID: <20071202141535.GA4721@ucw.cz>
-References: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
+	Sun, 2 Dec 2007 09:16:49 -0500
+Received: from lazybastard.de ([212.112.238.170]:54954 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751048AbXLBOQs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 09:16:48 -0500
+Date: Sun, 2 Dec 2007 15:11:18 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
+       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071202141117.GB9516@lazybastard.org>
+References: <20071130183510.GA1570@lazybastard.org> <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu> <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org> <20071202135711.GA20434@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071202135711.GA20434@elte.hu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> http://marc.info/?l=linux-kernel&m=96836765403118&w=2, Linus wrote:
-> > Hmm.. I have this feeling that it would be much nicer to
-> > just implement the NT system calls directly.
-> > ...
-> > I wouldn't be adverse to supporting Wine better...
+On Sun, 2 December 2007 14:57:11 +0100, Ingo Molnar wrote:
 > 
-> A few years on, Wine has matured to the point where it's
-> ready to run quite a few apps, even some protected by Safedisc.
-> One sticking point is that apps like Photoshop and probably
-> Punkbuster want to retrieve the hard drive's serial number,
-> but Linux restricts access to that info:
-> $ ls -l /proc/ide/hda/identify
-> -r-------- 1 root root 0 2007-11-29 07:05 /proc/ide/hda/identify
-> (And even if /proc/ide goes away, the other ways of retrieving
-> this info are similarly restricted to root.)
-> 
-> Any reason the access control on this info shouldn't be eased a bit,
-> e.g. make /proc/ide/*/identify be mode 444?
+> hm, do you have CONFIG_FRAME_POINTERS=y, i.e. are the dumps reliable?
 
-I think conslusion was 'unchangeable machine ids are root-only'. But
-perhaps you can chmod in startup scripts?
+I do.  Went through 10odd runs and annotated the function right below
+mcount each time.  Seems to work now.
 
-> An alternative might be for Wine to simply fake the serial number,
-> but I would like to avoid that if possible.
+Trouble is that it doesn't solve my real problem at hand.  Something is
+causing significant delays when writing to logfs.  Core logfs code is
+not running, but may cause whatever other code is running and burning up
+all the cpu time.  Wasting 100ms of "qemu-time" to write a single page
+happens fairly frequently.
 
-Fake it, I'd say.
+With the latency tracer the problem appears to have become worse.  Now
+the loftlockup code triggers quite frequently.  Which makes a bit of
+sense, as the problem is a busy CPU, rather than an idle one.
+
+Guess I'll try oprofile or lcov instead.
+
+Jörn
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Joern's library part 5:
+http://www.faqs.org/faqs/compression-faq/part2/section-9.html
