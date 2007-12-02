@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbXLBAnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbXLBAnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbXLBAnG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 19:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXLBAm4
+	id S1755373AbXLBAnZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 19:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXLBAnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 19:42:56 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60146 "EHLO
+	Sat, 1 Dec 2007 19:43:13 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60151 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753502AbXLBAmz (ORCPT
+	with ESMTP id S1755267AbXLBAnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 19:42:55 -0500
-Date: Sun, 2 Dec 2007 01:42:48 +0100
+	Sat, 1 Dec 2007 19:43:12 -0500
+Date: Sun, 2 Dec 2007 01:43:04 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: Chris Clayton <chris2553@googlemail.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x86 intel_cacheinfo.c section fix
-Message-ID: <20071202004248.GF15974@stusta.de>
+To: Chris Clayton <chris2553@googlemail.com>, davej@codemonkey.org.uk
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Subject: [2.6 patch] drivers/cpufreq/cpufreq_stats.c section fix
+Message-ID: <20071202004304.GG15974@stusta.de>
 References: <200711291419.49261.chris2553@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -27,8 +26,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-free_cache_attributes() must be __cpuinit since it calls the
-__cpuinit cache_remove_shared_cpu_map().
+cpufreq_stats_free_table() mustn't be __cpuexit since it's called by the 
+__cpuinit cpufreq_stat_cpu_callback().
 
 This patch fixes the following section mismatch reported by
 Chris Clayton:
@@ -36,7 +35,7 @@ Chris Clayton:
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.text+0x90b6): Section mismatch: reference to .init.text:cache_remove_shared_cpu_map (between 'free_cache_attributes' and 'show_level')
+WARNING: vmlinux.o(.init.text+0x143dd): Section mismatch: reference to .exit.text:cpufreq_stats_free_table (between 'cpufreq_stat_cpu_callback' and 'cpufreq_stats_init')
 ...
 
 <--  snip  -->
@@ -44,18 +43,18 @@ WARNING: vmlinux.o(.text+0x90b6): Section mismatch: reference to .init.text:cach
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-afa32c098aaa39826ec6c71e641908ea12287e48 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 9921b01..606fe4d 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -497,7 +497,7 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index) {}
- static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index) {}
- #endif
+b845706570b48f091f855c33cdb9979d7e83a424 
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 8a45d0f..1b8312b 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -164,7 +164,7 @@ freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ 	return -1;
+ }
  
--static void free_cache_attributes(unsigned int cpu)
-+static void __cpuinit free_cache_attributes(unsigned int cpu)
+-static void __cpuexit cpufreq_stats_free_table(unsigned int cpu)
++static void cpufreq_stats_free_table(unsigned int cpu)
  {
- 	int i;
- 
+ 	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
 
