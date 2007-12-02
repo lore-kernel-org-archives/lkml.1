@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbXLBUoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbXLBUqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbXLBUoU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXLBUoF
+	id S1756751AbXLBUqa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbXLBUqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:44:05 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60286 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754110AbXLBUoE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:44:04 -0500
-Date: Sun, 2 Dec 2007 21:43:56 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Ben Greear <greearb@candelatech.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-Message-ID: <20071202204356.GN15974@stusta.de>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill> <47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>
+	Sun, 2 Dec 2007 15:46:21 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48576 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbXLBUqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 15:46:21 -0500
+Date: Sun, 2 Dec 2007 21:45:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
+       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071202204559.GA28550@elte.hu>
+References: <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org> <20071202135711.GA20434@elte.hu> <20071202141117.GB9516@lazybastard.org> <20071202154746.GA27069@elte.hu> <20071202195501.GB10657@lazybastard.org> <20071202200722.GA12101@elte.hu> <20071202203016.GC10657@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <47530FAC.1070804@trash.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071202203016.GC10657@lazybastard.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 09:03:56PM +0100, Patrick McHardy wrote:
-> Ben Greear wrote:
->> Stephen Hemminger wrote:
->>>>
->>>> Naw, enterprise (or any other) distro vendors shouldn't have any issues 
->>>> here,
->>>> since they can just patch their kernels around any issues.
->>>>
->>>> But it looks like Eric has this one thought out well enough.
->>>>     
->>>
->>> So you are saying all this is not a problem, fine.
->>> Any affected parties can certainly lobby for themselves. But I suspect
->>> they all think the kernel community is a bunch of ... and will just 
->>> ignore
->>> the problem.   
-> >
->> I have a binary module that uses dev_get_by_name...it's sort of a 
->> bridge-like thing and
->> needs user-space to tell it which device to listen for packets on...
->>
->> This code doesn't need or care about name-spaces, so I don't see how it 
->> could really
->> be infringing on the author's code (any worse than loading a binary driver 
->> into the kernel
->> ever does).
->>
->> I would certainly prefer to not have to patch around any problems with 
->> calling dev_get_by_name
->> from a non-gpl module, but if required, I can probably figure something 
->> out...
->
->
-> For all I care binary modules can break, but frankly I don't see
-> how encapsulating a couple of structures and pointers in a new
-> structure and adding a new argument to existing functions shifts
-> the decision about how a function should be usable to the namespace
-> guys. IMO all functions should continue to be usable as before,
-> as decided by whoever actually wrote them.
->...
 
-Even ignoring the fact that it's unclear whether distributing modules 
-with not GPLv2 compatible licences is legal at all or might bring you in 
-jail, your statement has an interesting implication:
+* Jörn Engel <joern@logfs.org> wrote:
 
-Stuff like e.g. the EXPORT_SYMBOL(sk_alloc) predates the 
-EXPORT_SYMBOL_GPL stuff.
+> > oprofile helps if you can reliably reproduce the slowdown in a loop 
+> > or for a long amount of time, with lots of CPU utilization - and 
+> > then it's also lower overhead. The tracer can be used to capture 
+> > rare or complex events, and gives the full flow control and what is 
+> > happening within the kernel.
+> 
+> Such a trace would be useful indeed.  But so far the patch has only 
+> given me grief and nothing remotely like useful output.  Maybe I 
+> should simply use the complete -rt patch instead of debugging the 
+> broken-out latency-tracer patch.
 
-Who is considered the author of this code?
+to capture that trace i did not use -rt, i just patched latest -git 
+with:
 
-And when should he state whether he prefers to use EXPORT_SYMBOL_GPL 
-but wasn't able to use it at that when he wrote it since his code 
-predates it and is glad to be able to decide this now?
+  http://people.redhat.com/mingo/latency-tracing-patches/latency-tracing-v2.6.24-rc3.combo.patch
 
-cu
-Adrian
+(this has your fixes included already)
 
--- 
+have done:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+  echo 1 > /proc/sys/kernel/mcount_enabled
 
+and have run:
+
+  ./trace-cmd sleep 1 > trace.txt
+
+  http://people.redhat.com/mingo/latency-tracing-patches/trace-cmd.c
+
+to capture a 1 second trace of what the system is doing. I think your 
+troubles are due to running it within a qemu guest - that is not a 
+typical utilization so you are on unchartered waters.
+
+	Ingo
