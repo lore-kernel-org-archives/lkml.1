@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbXLBTpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbXLBTpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbXLBTpA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXLBTox
+	id S1755046AbXLBTpX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbXLBTpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:44:53 -0500
-Received: from rtr.ca ([76.10.145.34]:2608 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbXLBTow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:44:52 -0500
-Message-ID: <47530B32.7080502@rtr.ca>
-Date: Sun, 02 Dec 2007 14:44:50 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, rubini@vision.unipv.it,
-       linux-input@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: 2.6.24:  false double-clicks from USB mouse
-References: <4752DB8C.50608@rtr.ca> <4752E432.10504@rtr.ca> <Pine.LNX.4.64.0712021903460.12208@twin.jikos.cz> <4752F6C7.4040904@rtr.ca> <Pine.LNX.4.64.0712021918500.13260@jikos.suse.cz> <4752FE11.2050200@rtr.ca> <4752FEFE.3000600@rtr.ca> <Pine.LNX.4.64.0712022007360.13260@jikos.suse.cz> <47530680.6020206@rtr.ca> <Pine.LNX.4.64.0712022025250.13260@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0712022025250.13260@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 2 Dec 2007 14:45:01 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49146 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755801AbXLBTpA (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:45:00 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Pavel Machek <pavel@ucw.cz>
+Cc: tvrtko.ursulin@sophos.com, Andi Kleen <andi@firstfloor.org>, ak@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+In-Reply-To: Your message of "Sat, 01 Dec 2007 08:43:32 GMT."
+             <20071201084332.GB4446@ucw.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <p738x4i9nyd.fsf@crumb.suse.de> <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com>
+            <20071201084332.GB4446@ucw.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1196624688_2962P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 02 Dec 2007 14:44:48 -0500
+Message-ID: <17957.1196624688@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Sun, 2 Dec 2007, Mark Lord wrote:
-> 
->> Right now it's double-clicking just about everything. If I unplug/replug 
->> it, things behave for a while. Still want the HID_DEBUG output?  
->> (rebooting shortly)
-> 
-> Yes, definitely. I currently don't have an idea what might be causing it, 
-> and I am unable to reproduce it here.
-> 
-> If HID DEBUG doesn't reveal anything interesting, we would probably need 
-> usbmon dump too.
-..
+--==_Exmh_1196624688_2962P
+Content-Type: text/plain; charset=us-ascii
 
-Okay.  I've got to leave the computer for a while now,
-so I'll post again whenever I have something new here.
+On Sat, 01 Dec 2007 08:43:32 GMT, Pavel Machek said:
 
-Leave it with me for now.  Thanks for helping!
+> So what you are trying to do is 'application may never read bad
+> sequence of bits from disk', right?
 
-Cheers
- 
+No, in many of the use cases, we're trying to do "if application reads certain
+specified sequences of bits from disk we know about it", which is subtly
+different.  Often, *absolute* prevention isn't required, as long as we can
+generate audit trails and/or alerts...
 
+> Now, how do you propose to solve mmap(MAP_SHARED)? The app on the other cpu may
+> see the bad bits before kernel has chance to see them.
+
+For many usage cases (such as virus scanners), mmap() isn't really an issue,
+because if another process is *already* trying to mmap() the file before it's
+even finished downloading from the network interface, you have other problems.
+In that case, what you *really* want to be hooking is read() from a network
+socket, not a disk file - and I don't think you can mmap() a socket anyhow,
+right?
+
+Similarly, if you're using these exit points to do *indexing*, you really don't
+care if it got mmap()'ed - at worst, it isn't indexed until the other CPU gets
+around to it.
+
+
+
+--==_Exmh_1196624688_2962P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHUwswcC3lWbTT17ARAvRFAJ9ngiPXwfAy6Ahkk1PC5rsHv3pwcQCgzUug
+XWAs2kxXxWMmk21uQoamj0M=
+=MwR7
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196624688_2962P--
