@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbXLBPzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbXLBP4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbXLBPzr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 10:55:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXLBPzj
+	id S1756203AbXLBP4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 10:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXLBP4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 10:55:39 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:50681 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbXLBPzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 10:55:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=gVOa6rsRoov6ucH6bJToDrQBWG5T+ytBqD4nI2Z/mvdgPKVi4LezEK6EnugXkSnI7
-	WWHSPWsXVCxQWh5947+Ng==
-Date: Sun, 2 Dec 2007 07:52:54 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Oeser <ioe-lkml@rameria.de>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-In-Reply-To: <200712020155.00187.ioe-lkml@rameria.de>
-Message-ID: <alpine.DEB.0.9999.0712012321150.7852@chino.kir.corp.google.com>
-References: <20071201092037.GA32544@elte.hu> <alpine.DEB.0.9999.0712011036340.10996@chino.kir.corp.google.com> <20071201193643.GA10911@elte.hu> <200712020155.00187.ioe-lkml@rameria.de>
+	Sun, 2 Dec 2007 10:56:13 -0500
+Received: from rtr.ca ([76.10.145.34]:3231 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751455AbXLBP4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 10:56:13 -0500
+Message-ID: <4752D59B.1020907@rtr.ca>
+Date: Sun, 02 Dec 2007 10:56:11 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.24-rc3-git6] SLUB's ksize() fails for size > 2048.
+References: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
+In-Reply-To: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Dec 2007, Ingo Oeser wrote:
-
-> > maybe, but we'd have to see how often this gets triggered. An OOM is 
-> > something that could happen in any overloaded system - while a hung task 
-> > is likely due to a kernel bug.
+Tetsuo Handa wrote:
+> Hello.
 > 
-> What about a client using hard mounted NFS shares here? That shouldn't be
-> killed by the OOM killer in that situation, should it?
+> I can't pass memory allocated by kmalloc() to ksize()
+> if it is allocated by SLUB allocator and
+> size is larger than (I guess) PAGE_SIZE / 2.
 > 
+> Regards.
+> 
+> ---------- Kernel config (grep CONFIG_SLUB .config) ----------
+> CONFIG_SLUB_DEBUG=y
+> CONFIG_SLUB=y
+> # CONFIG_SLUB_DEBUG_ON is not set
+> 
+> ---------- Testing program (ksize_test.c) ----------
+> #include <linux/module.h>
+> #include <linux/slab.h>
+> 
+> static int __init init_ksize_test(void)
+> {
+>         void *p = kmalloc(2049, GFP_KERNEL);
+>         printk("ksize(%p) = %d\n", p, ksize(p));
+>         kfree(p);
+>         return -ENOMEM;
+> }
+> 
+> module_init(init_ksize_test)
+> 
+> MODULE_LICENSE("GPL");
+> 
+> ------------[ cut here ]------------
+> kernel BUG at mm/slub.c:2562!
+> invalid opcode: 0000 [#1] SMP
+> Modules linked in: ksize_test
+> 
+> Pid: 8473, comm: modprobe Not tainted (2.6.24-rc3-git6 #4)
+> EIP: 0060:[<c01714a2>] EFLAGS: 00010246 CPU: 1
+> EIP is at ksize+0x1b/0x4a
+> EAX: 00000000 EBX: dd776000 ECX: c16721d0 EDX: 00000000
+> ESI: e081b280 EDI: df3a396c EBP: dd595ea0 ESP: dd595ea0
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process modprobe (pid: 8473, ti=dd595000 task=d347cd60 task.ti=dd595000)
+> Stack: dd595eb8 e081e01a dd595eb8 c014010c ffffffff e08193e0 dd595fb0 c0150b18
+>        00000000 00000000 00001866 00000000 dd4dac00 d347cd60 c14366ac 00000230
+>        0000135c 0000000e dd4dac00 e081b280 00000000 00000000 00000000 00000000
+> Call Trace:
+>  [<c0106008>] show_trace_log_lvl+0x1a/0x2f
+>  [<c01060b8>] show_stack_log_lvl+0x9b/0xa3
+>  [<c0106167>] show_registers+0xa7/0x178
+>  [<c010634c>] die+0x114/0x1f5
+>  [<c0417018>] do_trap+0x8a/0xa3
+>  [<c01066ec>] do_invalid_op+0x88/0x92
+>  [<c0416dea>] error_code+0x72/0x78
+>  [<e081e01a>] init_ksize_test+0x1a/0x40 [ksize_test]
+>  [<c0150b18>] sys_init_module+0x13d3/0x14ff
+>  [<c0104f7e>] sysenter_past_esp+0x5f/0xa5
+>  =======================
+> Code: 8b 02 5d 84 c0 b8 00 00 00 00 0f 49 d0 89 d0 c3 55 85 c0 89 e5 75 04 0f 0b eb fe 31 d2 83 f8 10 74 34 e8 b4 ff ff ff 85 c0 75 04 <0f> 0b eb fe 8b 40 0c 85 c0 75 04 0f 0b eb fe 8b 10 f6 c6 0c 74
+> EIP: [<c01714a2>] ksize+0x1b/0x4a SS:ESP 0068:dd595ea0
+..
 
-That's orthogonal to the point I was making; the problem with the OOM 
-killer right now is that it can easily enter an infinite loop in out of 
-memory conditions if the task that it has selected to be killed fails to 
-exit.  This only happens when the task hangs in TASK_UNINTERRUPTIBLE state 
-and doesn't respond to the SIGKILL that the OOM killer has sent it.
-
-That behavior is a consequence of trying to avoid needlessly killing tasks 
-by giving already-killed tasks time to exit in subsequent OOM conditions.  
-During the tasklist scan of eligible tasks to kill, if any task is found 
-to have access to memory reserves that only the OOM killer can provide 
-(signified by the TIF_MEMDIE thread flag) and it has not yet died, the OOM 
-killer becomes a complete no-op.
-
-This happens on occasion and completely deadlocks the system because the 
-out of memory condition will never be alleviated.  With the hang detection 
-addition to lockdep, it would be easy to correct this situation.  I 
-understand the primary purpose of the patch is to identify potential 
-kernel bugs that aren't hardware induced, but I think it has relevance to 
-the OOM killer problem until such time as tasks hanging in 
-TASK_UNINTERRUPTIBLE state becomes passe.
-
-		David
+Is "p" NULL ?   Where'd your printk() output go to?
