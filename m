@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbXLBT5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXLBUAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbXLBT5g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:57:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXLBT50
+	id S1756214AbXLBUAw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbXLBUAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:57:26 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34462 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615AbXLBT50 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:57:26 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-In-Reply-To: Your message of "Sun, 02 Dec 2007 13:51:04 GMT."
-             <20071202135104.006c5a15@the-village.bc.nu>
-From: Valdis.Kletnieks@vt.edu
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill>
-            <20071202135104.006c5a15@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196625402_2962P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 02 Dec 2007 14:56:42 -0500
-Message-ID: <18773.1196625402@turing-police.cc.vt.edu>
+	Sun, 2 Dec 2007 15:00:43 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:37283 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472AbXLBUAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 15:00:42 -0500
+Date: Sun, 2 Dec 2007 21:00:38 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Subject: [PATCH] arch/powerpc/platforms/powermac: Drop unneeded
+ of_node_put
+Message-ID: <Pine.LNX.4.64.0712022058570.3361@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196625402_2962P
-Content-Type: text/plain; charset=us-ascii
+From: Julia Lawall <julia@diku.dk>
 
-On Sun, 02 Dec 2007 13:51:04 GMT, Alan Cox said:
-> On Sat, 1 Dec 2007 16:30:35 -0800
-> > I spoke too soon earlier, ndiswrapper builds and loads against current
-> > 2.6.24-rc3. Vmware and proprietary VPN software probably do not. Once again I don't
-> > give a damn, but the enterprise distro vendors certainly care.
-> 
-> Enterprise distro vendors ship kernels from the 2.6.19 era, so I don't
-> see why they care.
+After using for_each_node_by_name, there is no need for of_node_put unless
+there was a break in the loop body, as for_each_node_by_name does a
+of_node_put on each of the elements it returns.
 
-They don't care *now*.  They will care when they try to rev forward from .19.
+This was detected and fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
 
-Not that they'll care a *lot* - it took *me* all of about an hour to get VMware
-Server 1.0.4 working under -rc3-mm2.  Probably will take an enterprise distro
-4-5 hours, 30 mins for the port and 4 1/2 hours for the paperwork. :)
+// <smpl>
+@@
+iterator for_each_node_by_name;
+expression d;
+@@
 
+  for_each_node_by_name(d,...) {
+    ... when != break;
+  }
+  ... when != d
+?- of_node_put(d);
+// </smpl>
 
---==_Exmh_1196625402_2962P
-Content-Type: application/pgp-signature
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHUw36cC3lWbTT17ARAh78AJsFA/XnhYVcpqEs53gLjRoyy27dBwCgipGy
-Xrzb5Kga0xxwCYiL71ViNN0=
-=IJ+U
------END PGP SIGNATURE-----
-
---==_Exmh_1196625402_2962P--
+diff -u -p a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+--- a/arch/powerpc/platforms/powermac/feature.c 2007-08-12 13:27:05.000000000 +0200
++++ b/arch/powerpc/platforms/powermac/feature.c 2007-12-02 17:16:04.000000000 +0100
+@@ -2861,7 +2861,6 @@ set_initial_features(void)
+ 				core99_airport_enable(np, 0, 0);
+ 			}
+ 		}
+-		of_node_put(np);
+ 	}
+ 
+ 	/* On all machines that support sound PM, switch sound off */
+diff -u -p a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+--- a/arch/powerpc/platforms/powermac/pci.c 2007-10-22 11:24:59.000000000 +0200
++++ b/arch/powerpc/platforms/powermac/pci.c 2007-12-02 17:16:05.000000000 +0100
+@@ -1162,13 +1162,11 @@ void __init pmac_pcibios_after_init(void
+ 			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, nd, 0, 0);
+ 		}
+ 	}
+-	of_node_put(nd);
+ 	for_each_node_by_name(nd, "ethernet") {
+ 		if (nd->parent && of_device_is_compatible(nd, "gmac")
+ 		    && of_device_is_compatible(nd->parent, "uni-north"))
+ 			pmac_call_feature(PMAC_FTR_GMAC_ENABLE, nd, 0, 0);
+ 	}
+-	of_node_put(nd);
+ }
+ 
+ #ifdef CONFIG_PPC32
