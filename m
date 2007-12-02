@@ -1,163 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbXLBBKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbXLBBLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbXLBBKq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 20:10:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXLBBKg
+	id S1755339AbXLBBLY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 20:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXLBBLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 20:10:36 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50075 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbXLBBKe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 20:10:34 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Mark Lord <lkml@rtr.ca>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
-	<20071201192341.6750fbdb@the-village.bc.nu>
-	<20071201113815.5df0960a@freepuppy.rosehill>
-	<m13aum5g1x.fsf@ebiederm.dsl.xmission.com> <4751C238.6010609@rtr.ca>
-	<20071201122926.5c887588@laptopd505.fenrus.org>
-	<4751DC3C.1050606@rtr.ca> <m1tzn23t6k.fsf@ebiederm.dsl.xmission.com>
-	<4751F380.7040309@rtr.ca>
-Date: Sat, 01 Dec 2007 18:08:09 -0700
-In-Reply-To: <4751F380.7040309@rtr.ca> (Mark Lord's message of "Sat, 01 Dec
-	2007 18:51:28 -0500")
-Message-ID: <m1eje552fa.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 1 Dec 2007 20:11:16 -0500
+Received: from mail.anarazel.de ([217.115.131.40]:48446 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753484AbXLBBLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Dec 2007 20:11:15 -0500
+From: Andres Freund <andres@anarazel.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: 20000+ wake-ups/second in 2.6.24.   Bug?
+Date: Sun, 2 Dec 2007 02:10:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Mark Lord <lkml@rtr.ca>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+       lenb@kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org> <4751F484.6040204@rtr.ca> <20071201161302.731b80d3@laptopd505.fenrus.org>
+In-Reply-To: <20071201161302.731b80d3@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1682725.tduZQciSPq";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712020210.59041.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord <lkml@rtr.ca> writes:
+--nextPart1682725.tduZQciSPq
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Eric W. Biederman wrote:
->> Mark Lord <lkml@rtr.ca> writes:
->>
->>> Arjan van de Ven wrote:
->>>> On Sat, 01 Dec 2007 15:21:12 -0500
->>>> Mark Lord <lkml@rtr.ca> wrote:
->>>>
->>>>> Eric W. Biederman wrote:
->>>>>> Stephen Hemminger <shemminger@linux-foundation.org> writes:
->>>>>> Sure.  We keep the updated dev_get_by_XXXX that takes a network
->>>>>> namespace parameter.
->>>>> ..
->>>>>
->>>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
->>>> network drivers probably really really don't want to call
->>>> dev_get_by_XXX...
->>> ..
->>>
->>> Fine.  But all of them want to call sk_alloc(),
->>
->> network drivers should be calling sk_alloc less then they should
->> call dev_get_by_XXXX.  Only protocols call sk_alloc.
-> ..
->
-> I think I saw some bridge code that calls it, too.
-> Regardless, it's EXPORT_SYMBOL(), but now unusable
-> due to the GPL-only symbol "init_net".
->
-> Meanwhile, you are avoiding answering the question:
+Hi,
 
-What EXPORT_SYMBOL_GPL means is I don't have a clue how you
-can use this without being a derivative work of the linux kernel.  I
-think that is true for init_net and I stand by that.  It is a very
-internal symbol.
+On Sunday 02 December 2007, Arjan van de Ven wrote in "Re: 20000+=20
+wake-ups/second in 2.6.24.   Bug?":
+> > > Mark Lord <lkml@rtr.ca> wrote:
+> > >> 2.6.23 did not have this problem.
+> > > actually we have reports of 2.6.23 having the exact same problem.
+> > > The thing is, "something" is causing the system to go into a state
+> > > where the cpu throws us right out of the C-state the kernel asks
+> > > for.
+Just as an Information - I see the same problem here, with an ubuntu 2.6.22=
+=20
+kernel. I did not report it so far, as I couldnt reliably reproduce it with=
+=20
+an upstream kernel.
+Just as an additional datapoint (Lenovo T60 here).
 
-Further the only case that I think might pass the derivative work
-test would be a network driver, and I am not affecting those.
+=46or me it happens only when using battery. Thats another reason I havent=
+=20
+reported it so far - it only happened while on the road with work to do.=20
 
-I also believe that since it isn't mandatory you get your struct
-net pointer by taking the address of a GPL only symbol that
-those interfaces can continue to be used.
+If there is any testing needed - just say it.
 
-However I do suspect you are right that it may be more correct
-to realized that only a derivative work could possibly use those
-interfaces and tell 3rd parties that loud and clear.
+Greetings,=20
 
-We also have the policy of not changing exports from EXPORT_SYMBOL
-to EXPORT_SYMBOL_GPL.  So making that such a change is difficult.
+Andres
 
->>>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
-> ..
->
->>> and many want to do register_netdev().
->>
->> I haven't even touched register_netdev.
-> ..
->
-> Bull-pucky.  Somebody did:
->
->> @@ -3361,6 +3595,8 @@ int register_netdevice(struct net_device *dev)
->>
->>         /* When net_device's are persistent, this will be fatal. */
->>         BUG_ON(dev->reg_state != NETREG_UNINITIALIZED);
->> +       BUG_ON(!dev->nd_net);
->> +       net = dev->nd_net;
->>
->>         spin_lock_init(&dev->queue_lock);
->>         spin_lock_init(&dev->_xmit_lock);
-> ..
->
-> That new BUG_ON() line complains if nd_net has not been initialized,
-> and the only thing I see drivers putting there is GPL-only "&init_net".
+--nextPart1682725.tduZQciSPq
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Yes and alloc_netdev initializes it.  All network drivers are required
-to call alloc_netdev.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-So register_netdev from a device driver perspective has not changed.
+iD8DBQBHUgYiporPraT14igRAhXRAJ9KcmAV6+O1mbhl9xrJZ7b4U9hu/wCgkElB
+gz5FXuPb4qRqNXD//az/3Qc=
+=2Yu5
+-----END PGP SIGNATURE-----
 
-Anything the above change breaks happens to be a broken network device
-driver.
-
->>> So what should they be using there ?
->>
->> What are you having problems with?
-> ..
->
-> Avoiding the question again there, too.
-
-No.  I am saying that I don't see a problem.  All of the real world
-problems that I actually know of are code bugs.  I asked for
-a real world problem to see if there was something I was missing
-in my analysis.  That isn't avoiding the problem that is trying
-to see if I was wrong.
-
-> I personally am not having problems with anything.
-> But I noticed the API change, and would like somebody to fix it.
-> Any of the three ways (or a fourth, if you've got one) might do.
-
-Honestly I think I have done the best I can with the knowledge and
-information that I have.    I do not think dropping the GPL from
-the export of init_net makes sense.  I think turning a NULL into
-init_net is a technical joke.  That parameter is there because
-that is someplace where we need to pay attention to our network
-namespace.
-
-Which only leaves your first option of making more symbols
-EXPORT_SYMBOL_GPL as even interesting.
-
-That would seem to make some sense, given the attitudes and
-perceptions of the current network developers.  
-
-However I'm not volunteering for that one as finishing up the network
-and pid namespaces already has my plate full.
-
-Eric
+--nextPart1682725.tduZQciSPq--
