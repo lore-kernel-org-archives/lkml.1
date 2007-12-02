@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbXLBUys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbXLBUz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbXLBUys (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXLBUyl
+	id S1756931AbXLBUz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXLBUzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:54:41 -0500
-Received: from loadbalancer1.orcon.net.nz ([219.88.242.3]:49250 "EHLO
-	mx3.orcon.net.nz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754700AbXLBUyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:54:41 -0500
-In-Reply-To: <20071130144250.e89335f3.akpm@linux-foundation.org>
-References: <20071126134819.8FE56DBA2@gherkin.frus.com> <47508EE9.9030304@orcon.net.nz> <20071130144250.e89335f3.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6A73BEE8-9D45-4B75-8756-3008A4B1FDF4@orcon.net.nz>
-Cc: rct@gherkin.frus.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       rth@twiddle.net, ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
-Content-Transfer-Encoding: 7bit
-From: Michael Cree <mcree@orcon.net.nz>
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Date: Mon, 3 Dec 2007 09:53:53 +1300
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
-X-DSPAM-Check: by mx3.orcon.net.nz on Mon, 03 Dec 2007 09:54:38 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Mon Dec  3 09:54:38 2007
-X-DSPAM-Confidence: 0.8507
-X-DSPAM-Improbability: 1 in 571 chance of being spam
-X-DSPAM-Probability: 0.0000
+	Sun, 2 Dec 2007 15:55:21 -0500
+Received: from main.gmane.org ([80.91.229.2]:52670 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755281AbXLBUzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 15:55:20 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Holger Hoffstaette" <holger@wizards.de>
+Subject: Re: Reproducible data corruption with sendfile+vsftp - splice regression?
+Date: Sun, 02 Dec 2007 21:49:42 +0100
+Organization: The Fists of the White Lotus
+Message-ID: <pan.2007.12.02.20.49.42.675000@wizards.de>
+References: <pan.2007.11.29.23.42.52.661624@wizards.de> <474FC4D9.3020506@cosmosbay.com> <pan.2007.11.30.09.20.24.737500@wizards.de> <475055EE.9060105@hp.com> <pan.2007.12.02.16.00.03.568000@wizards.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: port-87-234-135-174.dynamic.qsc.de
+User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/12/2007, at 11:42 AM, Andrew Morton wrote:
-> On Sat, 01 Dec 2007 11:30:01 +1300
-> Michael Cree <mcree@orcon.net.nz> wrote:
->
->> Bob Tracy wrote:
->>> Andrew Morton wrote:
->>>> Could be something change in sysfs.  Please double-check the config
->>>> options, make sure that something important didn't get disabled.
->>>>
->>>  Here's
->>> hoping someone else is seeing this or can replicate it in the  
->>> meantime.
->>
->> Snap.
->>
->> 2.6.24-rc2 works fine.   2.6.24-rc3 boots on Alpha but once /dev is
->> populated no partitions of the scsi sub-system are seen.  Looks  
->> like ide
->> sub-system similarly affected.
+On Sun, 02 Dec 2007 17:00:03 +0100, Holger Hoffstaette wrote:
 
-[snip]
+> On Fri, 30 Nov 2007 10:26:54 -0800, Rick Jones wrote:
+> 
+>> Could the corruption be seen in a tcpdump trace prior to transmission
+>> (ie taken on the sender) or was it only seen after the data passed out
+>> the NIC?
+> 
+> I did the following:
+> 
+> 1) turn on tso on the server's r8169: ethtool --offload eth0 tso on
+> 2) on the server: tcpdump -i eth0 -s 0 -w <file>
+> 3) ftp'ed file to 100mbit client
+> 
+> As expected the file was corrupted, and the various corrupted byte
+> sequences also show up in the tcpdump file at the corresponding offsets.
+> 
+> I did this with 2.6.22.14, so it does not seem to be a recent regression
+> in .23/.24.
+> 
+> All files can be found here:
+> http://hoho.dyndns.org/~holger/dist/r8169-tso/
+> 
+> I will gladly try out any other tweaks but need some guidance as I don't
+> know what exactly to change - maybe without NAPI for the r8169?
 
->> eth0: Digital DS21142/43 Tulip rev 65 at Port 0x200009400,
->> 08:00:2b:87:4c:b0, IRQ 45.
->> Linux video capture interface: v2.00
->> scsi_id[402]: scsi_id: unable to access '/block'
->
-> I guess this is where things go bad.
+Ta-daa! Rebuilding 2.6.22.14 (and I suspect all other versions) without
+NAPI for the r8169 but with tso enabled yields NO data corruption; the
+ftp'ed file has a good crc, repeatedly.
 
-Yes, that is what I thought too.
+Any suggestions how to proceed? Should I file this in bugzilla?
 
-> scsi_id is part of udev.  Perhaps some sysfs nodes aren't being  
-> created
-> correctly.
->
-> Random guess: what is your setting of CONFIG_SCSI_SCAN_ASYNC and what
-> happens if you invert it?
+thanks
+Holger
 
-Is set to Y.  Changed it to N and recompiled kernel and restarted.   
-No change.  Same problems remain.
-
-I now realise that not only SCSI drive device nodes are not appearing  
-in /dev, but all disc nodes are not appearing.
-
-In my case all of fd0, hde (IDE disc), hdf (CD/DVD), sda (SCSI disc),  
-sdb (SATA disc), sdc (memory card reader), and their accompanying  
-partition nodes, do not get made in /dev.
-
-I'm not familiar with sysfs so don't know what what I should be  
-looking for in particular, but I did have a quick noisy around /sys  
-and noted that the above mentioned devices are all appearing at /sys/ 
-block with what appeared to be sensible information in the  
-subdirectories thereof.
-
-Sorry, but it is unlikely that I'll be able to look further into this  
-problem at the moment as I am running a conference this week and the  
-storm is about to hit...
-
-Cheers
-Michael.
 
