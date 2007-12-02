@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbXLBTFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbXLBTJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbXLBTFb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXLBTFU
+	id S1756201AbXLBTJS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbXLBTJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:05:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57718 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbXLBTFT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:05:19 -0500
-Date: Sun, 2 Dec 2007 11:08:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: stable@kernel.org, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 00/10]: KVM updates for 2.6.23.9 (-stable)
-Message-ID: <20071202190829.GA22385@kroah.com>
-References: <1196594327338-git-send-email-avi@qumranet.com>
+	Sun, 2 Dec 2007 14:09:05 -0500
+Received: from styx.suse.cz ([82.119.242.94]:55688 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752526AbXLBTJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:09:03 -0500
+Date: Sun, 2 Dec 2007 20:09:02 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, rubini@vision.unipv.it,
+       linux-input@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.24:  false double-clicks from USB mouse
+In-Reply-To: <4752FEFE.3000600@rtr.ca>
+Message-ID: <Pine.LNX.4.64.0712022007360.13260@jikos.suse.cz>
+References: <4752DB8C.50608@rtr.ca> <4752E432.10504@rtr.ca>
+ <Pine.LNX.4.64.0712021903460.12208@twin.jikos.cz> <4752F6C7.4040904@rtr.ca>
+ <Pine.LNX.4.64.0712021918500.13260@jikos.suse.cz> <4752FE11.2050200@rtr.ca>
+ <4752FEFE.3000600@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1196594327338-git-send-email-avi@qumranet.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 01:18:37PM +0200, Avi Kivity wrote:
-> The following patchset fixes some bugs in KVM for the next 2.6.23.y stable
-> release.  Please apply.
+On Sun, 2 Dec 2007, Mark Lord wrote:
 
-I'm guessing that all of these are already upstream in Linus's tree?
+> > Here's a *single* button click (press/release quickly):
+> > Event: time 1196621063.612542, type 1 (Key), code 272 (LeftBtn), value 1
+> > Event: time 1196621063.612553, type 0 (Reset), code 0 (Reset), value 0
+> > Event: time 1196621063.620504, type 1 (Key), code 272 (LeftBtn), value 0
+> > Event: time 1196621063.620512, type 0 (Reset), code 0 (Reset), value 0
+> > Event: time 1196621063.628497, type 1 (Key), code 272 (LeftBtn), value 1
+> > Event: time 1196621063.628502, type 0 (Reset), code 0 (Reset), value 0
+> > Event: time 1196621063.684524, type 1 (Key), code 272 (LeftBtn), value 0
+> > Event: time 1196621063.684531, type 0 (Reset), code 0 (Reset), value 0
+> > Event: time 1196621063.700532, type 1 (Key), code 272 (LeftBtn), value 1
+> > Event: time 1196621063.700538, type 0 (Reset), code 0 (Reset), value 0
+> > Event: time 1196621063.764540, type 1 (Key), code 272 (LeftBtn), value 0
+> > Event: time 1196621063.764550, type 0 (Reset), code 0 (Reset), value 0
+> ..
 
-If so, can you give me the git commit ids for them all if you happen to
-know them, so that I don't have to guess at them?  :)
+Thanks. This definitely is bogus. In fact three clicks are reported.
 
-thanks,
+> Note that, much of the time, a single mouse click looks like this:
+> Event: time 1196621357.073485, type 1 (Key), code 272 (LeftBtn), value 1
+> Event: time 1196621357.073494, type 0 (Reset), code 0 (Reset), value 0
+> Event: time 1196621357.201482, type 1 (Key), code 272 (LeftBtn), value 0
+> Event: time 1196621357.201492, type 0 (Reset), code 0 (Reset), value 0
 
-greg k-h
+Yes, this is correct.
+
+> This information may also be relevant:
+> The mouse is plugged into a USB2 hub, and appears as IRQ19:
+> 19:      34776          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5
+
+Just a random shot into the dark -- if you remove the ehci-hcd module, 
+does anything change?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
