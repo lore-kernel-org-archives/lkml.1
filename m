@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbXLBTAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbXLBTBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbXLBTAg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXLBTAR
+	id S1756722AbXLBTBW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbXLBTBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:00:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49150 "EHLO mx3.mail.elte.hu"
+	Sun, 2 Dec 2007 14:01:14 -0500
+Received: from ns1.suse.de ([195.135.220.2]:57693 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbXLBTAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:00:15 -0500
-Date: Sun, 2 Dec 2007 19:59:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071202185945.GA25990@elte.hu>
-References: <20071201092037.GA32544@elte.hu> <p737ijwylet.fsf@bingen.suse.de>
+	id S1752702AbXLBTBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:01:13 -0500
+To: Avi Kivity <avi@argo.co.il>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+From: Andi Kleen <andi@firstfloor.org>
+References: <474EAD18.6040408@stellatravel.co.uk>
+	<20071130143445.GA2310@csclub.uwaterloo.ca>
+	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
+	<4751BE0D.3050609@argo.co.il>
+Date: Sun, 02 Dec 2007 20:01:12 +0100
+In-Reply-To: <4751BE0D.3050609@argo.co.il> (Avi Kivity's message of "Sat\, 01 Dec 2007 22\:03\:25 +0200")
+Message-ID: <p733aukyl8n.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p737ijwylet.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avi Kivity <avi@argo.co.il> writes:
+>
+> [I really doubt there are that many of these; syscall
+> entry/dispatch/exit, interrupt dispatch, context switch, what else?]
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+Networking, block IO, page fault, ... But only the fast paths in these 
+cases. A lot of the kernel is slow path code and could probably
+be written even in an interpreted language without much trouble.
 
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> > this patch extends the soft-lockup detector to automatically
-> > detect hung TASK_UNINTERRUPTIBLE tasks. Such hung tasks are
-> > printed the following way:
-> 
-> That will likely trigger anytime a hard nfs/cifs mount loses its 
-> server for 120s. To make this work you would need a new 
-> TASK_UNINTERRUPTIBLE_EXTERNAL_EVENT or similar and mark all the places 
-> which depend on those.
-
-TASK_KILLABLE should be the right solution i think.
-
-> I've also seen kernel modules that use semaphores like wait queues 
-> While that gives a little funny results (high load average) it worked 
-> so far, until this patch.
-
-it still works with this patch of course. With a funny results like high 
-load average _AND_ a clear debug message that tells us (and the user) 
-where that high load average comes from.
-
-	Ingo
+-Andi
