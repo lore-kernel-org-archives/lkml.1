@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbXLBTBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbXLBTFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbXLBTBW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbXLBTBO
+	id S1756532AbXLBTFb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXLBTFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:01:14 -0500
-Received: from ns1.suse.de ([195.135.220.2]:57693 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752702AbXLBTBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:01:13 -0500
-To: Avi Kivity <avi@argo.co.il>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
+	Sun, 2 Dec 2007 14:05:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57718 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752097AbXLBTFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:05:19 -0500
+Date: Sun, 2 Dec 2007 11:08:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: stable@kernel.org, kvm-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: Kernel Development & Objective-C
-From: Andi Kleen <andi@firstfloor.org>
-References: <474EAD18.6040408@stellatravel.co.uk>
-	<20071130143445.GA2310@csclub.uwaterloo.ca>
-	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
-	<4751BE0D.3050609@argo.co.il>
-Date: Sun, 02 Dec 2007 20:01:12 +0100
-In-Reply-To: <4751BE0D.3050609@argo.co.il> (Avi Kivity's message of "Sat\, 01 Dec 2007 22\:03\:25 +0200")
-Message-ID: <p733aukyl8n.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+Subject: Re: [stable] [PATCH 00/10]: KVM updates for 2.6.23.9 (-stable)
+Message-ID: <20071202190829.GA22385@kroah.com>
+References: <1196594327338-git-send-email-avi@qumranet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196594327338-git-send-email-avi@qumranet.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@argo.co.il> writes:
->
-> [I really doubt there are that many of these; syscall
-> entry/dispatch/exit, interrupt dispatch, context switch, what else?]
+On Sun, Dec 02, 2007 at 01:18:37PM +0200, Avi Kivity wrote:
+> The following patchset fixes some bugs in KVM for the next 2.6.23.y stable
+> release.  Please apply.
 
-Networking, block IO, page fault, ... But only the fast paths in these 
-cases. A lot of the kernel is slow path code and could probably
-be written even in an interpreted language without much trouble.
+I'm guessing that all of these are already upstream in Linus's tree?
 
--Andi
+If so, can you give me the git commit ids for them all if you happen to
+know them, so that I don't have to guess at them?  :)
+
+thanks,
+
+greg k-h
