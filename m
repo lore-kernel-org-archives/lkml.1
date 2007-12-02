@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbXLBQnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbXLBQ5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbXLBQnz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 11:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbXLBQnj
+	id S1756178AbXLBQ5G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 11:57:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXLBQ4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 11:43:39 -0500
-Received: from z2.cat.iki.fi ([212.16.98.133]:50533 "EHLO z2.cat.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755418AbXLBQni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 11:43:38 -0500
-Date: Sun, 2 Dec 2007 18:43:33 +0200
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Dan Kegel <dank@kegel.com>,
-       Xavier Bestel <xavier.bestel@free.fr>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
-Subject: Re: Relax permissions for reading hard drive serial number?
-Message-ID: <20071202164333.GJ6372@mea-ext.zmailer.org>
-References: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com> <a71bd89a0711290746q57002217ga14c4f4f7201683d@mail.gmail.com> <3ae72650711290939w4fee581fm6f0d65a33abf1b82@mail.gmail.com> <200711292207.46967.bzolnier@gmail.com>
+	Sun, 2 Dec 2007 11:56:52 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:17986 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987AbXLBQ4w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 11:56:52 -0500
+Message-ID: <cccedfc60712020856k157192e6u4f2610e5e755c8df@mail.gmail.com>
+Date: Sun, 2 Dec 2007 10:56:49 -0600
+From: "Jon Nelson" <jnelson@jamponi.net>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 9482] New: kernel GPF in 2.6.24 (g09f345da)
+Cc: jnelson-kernel-bugzilla@jamponi.net, bugme-daemon@bugzilla.kernel.org,
+       "Ed L. Cashin" <ecashin@coraid.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20071201122302.10dd9c44.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200711292207.46967.bzolnier@gmail.com>
+References: <bug-9482-10286@http.bugzilla.kernel.org/>
+	 <20071201122302.10dd9c44.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 10:07:46PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > There are people who, for privacy reasons, really don't like that "unique"
-> > unchangeable serial numbers can be retrieved by untrusted users.
-> > 
-> > You should probably chmod the file on the users system, if he is fine with
-> > that, but not change the kernel default.
-> 
-> Seconded.
-> 
-> While on it, how's about exporting model/firmware/serial through
-> sysfs so /proc/ide/hd*/identify don't have to be used?
+I upgraded to a more recent commit,
+92d499d991ec4f5cbd00d6f33967eab9d3ee8d6c
+and rebuilt.
 
+Now I get lots and lots of AoE errors, over and over again, but no GPF.
 
-Nice, except that while my home workstation running 2.6.23 kernel
-does have 4 SATA disks in it, plus a compact flash memory card on
-PATA (boot device, while SATA-disks are JBOD in SW RAID), it has
-_no_  /sys/bus/ide/,  nor  /proc/ide/
-All devices are under /sys/bus/scsi/
+aoe: can't get a frame. This shouldn't happen.
 
-Simplest way for me to pick this data is to use  "hdparm -I /dev/sdX"
-command.  Which of course must be run as root.  All it does is to open
-named device, and issue one ioctl().
+It's possible the previous kernel had been patched, so I made really
+REALLY sure that this was a 100% clean build using the above commit. I
+can build using more or less any other commit or tag upon request but
+it's not quick.
 
-That ioctl() can be embedded into a suid-root helper program, or it
-can even (in case of Wine) be run separately to write a text file
-storing these identifier data on some Wine config file, which the
-"read from physical device X" then does receive.
-
-In my case I don't want to report any of the hard-drive serial numbers,
-but rather my boot-device - a flash drive.  Hard-drives do break at
-some point in time, a flash drive in read-only mode does last considerably
-longer.
-
-> [PATCH] ide: add /sys/bus/ide/devices/*/{model,firmware,serial} sysfs entries
-...
-
-/Matti Aarnio
+-- 
+Jon
