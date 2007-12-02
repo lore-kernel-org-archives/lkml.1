@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbXLBMey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbXLBMhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbXLBMey (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 07:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbXLBMef
+	id S1755267AbXLBMhA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 07:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXLBMgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 07:34:35 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3198 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752313AbXLBMed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 07:34:33 -0500
-Date: Sat, 1 Dec 2007 08:33:44 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: suspend-related lockdep warning
-Message-ID: <20071201083343.GA4446@ucw.cz>
-References: <20071128024355.5931c6ec.akpm@linux-foundation.org>
+	Sun, 2 Dec 2007 07:36:52 -0500
+Received: from lazybastard.de ([212.112.238.170]:48256 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbXLBMgv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 07:36:51 -0500
+Date: Sun, 2 Dec 2007 13:31:25 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Mark Lord <lkml@rtr.ca>,
+       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071202123125.GA9516@lazybastard.org>
+References: <20071130134312.GA32273@elte.hu> <20071130183510.GA1570@lazybastard.org> <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu> <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071128024355.5931c6ec.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071202113143.GA9378@lazybastard.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> 2.6.24-rc3-mm2 (which will be released if it boots on two more machines and
-> if I stay awake) will say this during suspend-to-RAM on the Vaio:
+On Sun, 2 December 2007 12:31:43 +0100, Jörn Engel wrote:
 > 
-> [   91.876445] Syncing filesystems ... done.
-> [   92.382595] Freezing user space processes ... WARNING: at kernel/lockdep.c:2662 check_flags()
-> [   92.384000] Pid: 1925, comm: dbus-daemon Not tainted 2.6.24-rc3-mm2 #32
-> [   92.384177]  [<c0104a74>] show_trace_log_lvl+0x12/0x25
-> [   92.384335]  [<c01052ff>] show_trace+0xd/0x10
-> [   92.384469]  [<c01059be>] dump_stack+0x55/0x5d
-> [   92.384605]  [<c0136a29>] check_flags+0x7f/0x11a
-> [   92.384746]  [<c0139cfb>] lock_acquire+0x3a/0x86
-> [   92.384886]  [<c031f4de>] _spin_lock+0x26/0x53
-> [   92.385023]  [<c0141d3b>] refrigerator+0x13/0xc8
-> [   92.385163]  [<c01274c8>] get_signal_to_deliver+0x32/0x3fb
-> [   92.385326]  [<c01030f4>] do_notify_resume+0x8c/0x699
-> [   92.385476]  [<c0103c18>] work_notifysig+0x13/0x1b
-> [   92.385620]  =======================
-> [   92.385719] irq event stamp: 309
-> [   92.385809] hardirqs last  enabled at (309): [<c0103c79>] syscall_exit_work+0x11/0x26
-> [   92.386045] hardirqs last disabled at (308): [<c0103b42>] syscall_exit+0x14/0x25
-> [   92.386265] softirqs last  enabled at (0): [<c011bea5>] copy_process+0x374/0x130e
-> [   92.386491] softirqs last disabled at (0): [<00000000>] 0x0
-> [   92.392457] (elapsed 0.00 seconds) done.
-> [   92.392581] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> [   92.392882] PM: Entering mem sleep
-> [   92.392974] Suspending console(s)
-> 
-> this has been happening for quite some time and might even be happening in
-> mainline.  
+> This time not even the offsets have changed.  Dump is identical.
 
-Is it complaining that we entered refrigerator with irqs disabled?
+After another ten or so notrace annotations throughout the spinlock
+code, the latency tracer appears to work.  Not sure how many useful
+information is missing through all the annotations, though.
 
-							Pavel
+Jörn
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Das Aufregende am Schreiben ist es, eine Ordnung zu schaffen, wo
+vorher keine existiert hat.
+-- Doris Lessing
