@@ -1,48 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbXLBAxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbXLBBKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbXLBAxc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 19:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXLBAxY
+	id S1754903AbXLBBKq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 20:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXLBBKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 19:53:24 -0500
-Received: from smtprelay03.ispgateway.de ([80.67.18.15]:51308 "EHLO
-	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbXLBAxX (ORCPT
+	Sat, 1 Dec 2007 20:10:36 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50075 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbXLBBKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 19:53:23 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Dec 2007 19:53:23 EST
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Date: Sun, 2 Dec 2007 01:54:59 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+	Sat, 1 Dec 2007 20:10:34 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Mark Lord <lkml@rtr.ca>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20071201092037.GA32544@elte.hu> <alpine.DEB.0.9999.0712011036340.10996@chino.kir.corp.google.com> <20071201193643.GA10911@elte.hu>
-In-Reply-To: <20071201193643.GA10911@elte.hu>
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
+	<20071201192341.6750fbdb@the-village.bc.nu>
+	<20071201113815.5df0960a@freepuppy.rosehill>
+	<m13aum5g1x.fsf@ebiederm.dsl.xmission.com> <4751C238.6010609@rtr.ca>
+	<20071201122926.5c887588@laptopd505.fenrus.org>
+	<4751DC3C.1050606@rtr.ca> <m1tzn23t6k.fsf@ebiederm.dsl.xmission.com>
+	<4751F380.7040309@rtr.ca>
+Date: Sat, 01 Dec 2007 18:08:09 -0700
+In-Reply-To: <4751F380.7040309@rtr.ca> (Mark Lord's message of "Sat, 01 Dec
+	2007 18:51:28 -0500")
+Message-ID: <m1eje552fa.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712020155.00187.ioe-lkml@rameria.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 December 2007, Ingo Molnar wrote:
-> maybe, but we'd have to see how often this gets triggered. An OOM is 
-> something that could happen in any overloaded system - while a hung task 
-> is likely due to a kernel bug.
+Mark Lord <lkml@rtr.ca> writes:
 
-What about a client using hard mounted NFS shares here? That shouldn't be
-killed by the OOM killer in that situation, should it?
+> Eric W. Biederman wrote:
+>> Mark Lord <lkml@rtr.ca> writes:
+>>
+>>> Arjan van de Ven wrote:
+>>>> On Sat, 01 Dec 2007 15:21:12 -0500
+>>>> Mark Lord <lkml@rtr.ca> wrote:
+>>>>
+>>>>> Eric W. Biederman wrote:
+>>>>>> Stephen Hemminger <shemminger@linux-foundation.org> writes:
+>>>>>> Sure.  We keep the updated dev_get_by_XXXX that takes a network
+>>>>>> namespace parameter.
+>>>>> ..
+>>>>>
+>>>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
+>>>> network drivers probably really really don't want to call
+>>>> dev_get_by_XXX...
+>>> ..
+>>>
+>>> Fine.  But all of them want to call sk_alloc(),
+>>
+>> network drivers should be calling sk_alloc less then they should
+>> call dev_get_by_XXXX.  Only protocols call sk_alloc.
+> ..
+>
+> I think I saw some bridge code that calls it, too.
+> Regardless, it's EXPORT_SYMBOL(), but now unusable
+> due to the GPL-only symbol "init_net".
+>
+> Meanwhile, you are avoiding answering the question:
 
-Am I missing sth.?
+What EXPORT_SYMBOL_GPL means is I don't have a clue how you
+can use this without being a derivative work of the linux kernel.  I
+think that is true for init_net and I stand by that.  It is a very
+internal symbol.
 
+Further the only case that I think might pass the derivative work
+test would be a network driver, and I am not affecting those.
 
-Best Regards
+I also believe that since it isn't mandatory you get your struct
+net pointer by taking the address of a GPL only symbol that
+those interfaces can continue to be used.
 
-Ingo Oeser
+However I do suspect you are right that it may be more correct
+to realized that only a derivative work could possibly use those
+interfaces and tell 3rd parties that loud and clear.
+
+We also have the policy of not changing exports from EXPORT_SYMBOL
+to EXPORT_SYMBOL_GPL.  So making that such a change is difficult.
+
+>>>>> And what should code be passing in when "# CONFIG_NET_NS is not set" ?
+> ..
+>
+>>> and many want to do register_netdev().
+>>
+>> I haven't even touched register_netdev.
+> ..
+>
+> Bull-pucky.  Somebody did:
+>
+>> @@ -3361,6 +3595,8 @@ int register_netdevice(struct net_device *dev)
+>>
+>>         /* When net_device's are persistent, this will be fatal. */
+>>         BUG_ON(dev->reg_state != NETREG_UNINITIALIZED);
+>> +       BUG_ON(!dev->nd_net);
+>> +       net = dev->nd_net;
+>>
+>>         spin_lock_init(&dev->queue_lock);
+>>         spin_lock_init(&dev->_xmit_lock);
+> ..
+>
+> That new BUG_ON() line complains if nd_net has not been initialized,
+> and the only thing I see drivers putting there is GPL-only "&init_net".
+
+Yes and alloc_netdev initializes it.  All network drivers are required
+to call alloc_netdev.
+
+So register_netdev from a device driver perspective has not changed.
+
+Anything the above change breaks happens to be a broken network device
+driver.
+
+>>> So what should they be using there ?
+>>
+>> What are you having problems with?
+> ..
+>
+> Avoiding the question again there, too.
+
+No.  I am saying that I don't see a problem.  All of the real world
+problems that I actually know of are code bugs.  I asked for
+a real world problem to see if there was something I was missing
+in my analysis.  That isn't avoiding the problem that is trying
+to see if I was wrong.
+
+> I personally am not having problems with anything.
+> But I noticed the API change, and would like somebody to fix it.
+> Any of the three ways (or a fourth, if you've got one) might do.
+
+Honestly I think I have done the best I can with the knowledge and
+information that I have.    I do not think dropping the GPL from
+the export of init_net makes sense.  I think turning a NULL into
+init_net is a technical joke.  That parameter is there because
+that is someplace where we need to pay attention to our network
+namespace.
+
+Which only leaves your first option of making more symbols
+EXPORT_SYMBOL_GPL as even interesting.
+
+That would seem to make some sense, given the attitudes and
+perceptions of the current network developers.  
+
+However I'm not volunteering for that one as finishing up the network
+and pid namespaces already has my plate full.
+
+Eric
