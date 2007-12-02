@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbXLBGw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbXLBG7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbXLBGw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 01:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbXLBGwV
+	id S1754057AbXLBG7S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 01:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbXLBG7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 01:52:21 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:44790 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbXLBGwU (ORCPT
+	Sun, 2 Dec 2007 01:59:11 -0500
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:23585 "HELO
+	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751408AbXLBG7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 01:52:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a1Id6ntvkKcpVZlh8WIHR1zYRMefLCHGmmL82JRJEjqLFVj9whK3RnLn8u0hKDvgb8UJ1CheUbuWE9YDtWsRoagXGlD/By4jLzGQymcyrEhFXAIDCcP0SZeQQprCJX90Thg1chvaClObNHb/w4ZZkzMRtm7t9nkMD6s/TOtgIc4=
-Message-ID: <91b13c310712012252k5307735x782582fd2d7abd94@mail.gmail.com>
-Date: Sun, 2 Dec 2007 14:52:17 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: Since sysfs_mount is static and used only in sysfs_init function, it could be just an automatic variable.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071202044825.GA7004@suse.de>
+	Sun, 2 Dec 2007 01:59:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=xTf953fkMc7nDLZoEMwLVZ/901SkGPN2o3D2c8c6sv8ebt7gW5bqS5bvgQKvoiljeGackKLpV41KyLe+Tu8eGVJSxVri3OpKdH3pEQ3ZxOdEepHIK7doFJ36RHKetiNfVZtjRwwv+6CPOXNGssbdcGwIp77fyLpC+FYnuK5axwo=  ;
+X-YMail-OSG: kP6RQ1YVM1nQb8if7MbBOudkabw.dv2zOJgnZV4gPv39mcEit5xDabp4aGKgp0WUoYDAncCOPg--
+From: David Brownell <david-b@pacbell.net>
+To: "Bryan Wu" <cooloney.lkml@gmail.com>
+Subject: Re: blackfin compile error
+Date: Sat, 1 Dec 2007 22:59:05 -0800
+User-Agent: KMail/1.9.6
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Bryan Wu" <bryan.wu@analog.com>, linux-kernel@vger.kernel.org
+References: <20071202004204.GE15974@stusta.de> <386072610712012242i58e48aebk17fec7a87391a7fc@mail.gmail.com>
+In-Reply-To: <386072610712012242i58e48aebk17fec7a87391a7fc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <91b13c310712011231k3604214bx3559387c568cce09@mail.gmail.com>
-	 <20071202044825.GA7004@suse.de>
+Message-Id: <200712012259.06493.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 2, 2007 12:48 PM, Greg KH <gregkh@suse.de> wrote:
-...
-> > and where is a detailed explaination on kern_mount? could someone give
-> > some comments or documentation pointers on this?
->
-> See the patches that Eric Biederman just posted to lkml for why this
-> structure is a static pointer this way right now, it's in preparation
-> for future patches.
-I have checked commit 7d0c7d676cc066413e1583b5af9fba8011972d41 by Eric
-W. Biederman,
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7d0c7d676cc066413e1583b5af9fba8011972d41
+On Saturday 01 December 2007, Bryan Wu wrote:
+> On Dec 2, 2007 8:42 AM, Adrian Bunk <bunk@kernel.org> wrote:
+> > It seems commit 5d448dd50712ae42f8176b5bb8db4703bef6f0f5 was incomplete:
+> >
+> > <--  snip  -->
+> >
+> > ...
+> >   CC      arch/blackfin/mach-bf537/boards/stamp.o
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: error: unknown field 'pin_req' specified in initializer
+> 
+> Yes, there is a SPI patch adding the field 'pin_req' in a Blackfin SPI
+> header file which is in -mm tree.
+> 
+> David, could you please submit the Blackfin SPI update to mainline?
 
-which just make sysfs_mount from externally visible to static that
-could be only used in one c file,
+So far as I know they're all ready for Andrew to get them to Linus...
 
-but I mean that the static variable is still on kernel bss section,
-this consumes a pointer (4 or 8 bytes) memory,
 
-through a grep from fs/sysfs/, it appears that the variable
-sysfs_mount is only used in the sysfs_init function,
-
-$ grep -RsInw sysfs_mount fs/sysfs/
-fs/sysfs/mount.c:25:static struct vfsmount *sysfs_mount;
-fs/sysfs/mount.c:101:           sysfs_mount = kern_mount(&sysfs_fs_type);
-fs/sysfs/mount.c:102:           if (IS_ERR(sysfs_mount)) {
-fs/sysfs/mount.c:104:                   err = PTR_ERR(sysfs_mount);
-fs/sysfs/mount.c:105:                   sysfs_mount = NULL;
-
-we could mark this variable an automatic one, which scope is just in
-this function, thus created and destroyed with the stack,
-this approach does not consume a pointer on kernel bss section,
-
-Why not do this?
-
--- 
-Denis Cheng
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: error: extra brace group at end of initializer
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: error: (near initialization for 'bfin_spi0_info')
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: warning: excess elements in struct initializer
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: warning: (near initialization for 'bfin_spi0_info')
+> > make[2]: *** [arch/blackfin/mach-bf537/boards/stamp.o] Error 1
+> >
+> > <--  snip  -->
+> >
+> > cu
+> > Adrian
+> >
+> > --
+> 
