@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbXLBPPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbXLBPp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbXLBPPc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 10:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbXLBPOp
+	id S1755018AbXLBPp0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 10:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXLBPpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 10:14:45 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:37476 "EHLO mail.screens.ru"
+	Sun, 2 Dec 2007 10:45:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51395 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754480AbXLBPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 10:14:43 -0500
-Date: Sun, 2 Dec 2007 18:14:55 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] remove handle_group_stop() in favor of do_signal_stop()
-Message-ID: <20071202151455.GA13183@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751103AbXLBPpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 10:45:07 -0500
+Date: Sun, 2 Dec 2007 16:44:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
+       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071202154437.GA26261@elte.hu>
+References: <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu> <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org> <20071202123125.GA9516@lazybastard.org> <20071202144635.GC9516@lazybastard.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071202144635.GC9516@lazybastard.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every time we set SIGNAL_GROUP_EXIT or clear SIGNAL_STOP_DEQUEUED we also
-reset ->group_stop_count.
 
-This means that the SIGNAL_GROUP_EXIT check in handle_group_stop() is not
-needed, and do_signal_stop() should check SIGNAL_STOP_DEQUEUED only when
-->group_stop_count == 0. With these changes handle_group_stop() becomes the
-subset of do_signal_stop(), we can kill it and use do_signal_stop() instead.
+* Jörn Engel <joern@logfs.org> wrote:
 
-Also, a preparation for the next patch.
+> On Sun, 2 December 2007 13:31:25 +0100, Jörn Engel wrote:
+> > 
+> > After another ten or so notrace annotations throughout the spinlock
+> > code, the latency tracer appears to work.  Not sure how many useful
+> > information is missing through all the annotations, though.
+> 
+> And here is a patch with the needed annotations.  Looks a bit shabby, 
+> as it was generated though git diff, patcher, interdiff and 
+> combinediff.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+thanks - the patches applied fine, i've added them to my latency-tracer 
+patchqueue. Steve Rostedt might want to pick the fixes up for -rt as 
+well.
 
---- PT/kernel/signal.c~1_UNIFY_STOP	2007-12-02 14:36:22.000000000 +0300
-+++ PT/kernel/signal.c	2007-12-02 16:56:16.000000000 +0300
-@@ -1683,9 +1683,6 @@ static int do_signal_stop(int signr)
- 	struct signal_struct *sig = current->signal;
- 	int stop_count;
- 
--	if (!likely(sig->flags & SIGNAL_STOP_DEQUEUED))
--		return 0;
--
- 	if (sig->group_stop_count > 0) {
- 		/*
- 		 * There is a group stop in progress.  We don't need to
-@@ -1693,12 +1690,14 @@ static int do_signal_stop(int signr)
- 		 */
- 		stop_count = --sig->group_stop_count;
- 	} else {
-+		struct task_struct *t;
-+
-+		if (!likely(sig->flags & SIGNAL_STOP_DEQUEUED))
-+			return 0;
- 		/*
- 		 * There is no group stop already in progress.
- 		 * We must initiate one now.
- 		 */
--		struct task_struct *t;
--
- 		sig->group_exit_code = signr;
- 
- 		stop_count = 0;
-@@ -1726,38 +1725,6 @@ static int do_signal_stop(int signr)
- 	return 1;
- }
- 
--/*
-- * Do appropriate magic when group_stop_count > 0.
-- * We return nonzero if we stopped, after releasing the siglock.
-- * We return zero if we still hold the siglock and should look
-- * for another signal without checking group_stop_count again.
-- */
--static int handle_group_stop(void)
--{
--	int stop_count;
--
--	if (current->signal->flags & SIGNAL_GROUP_EXIT)
--		/*
--		 * Group stop is so another thread can do a core dump,
--		 * or else we are racing against a death signal.
--		 * Just punt the stop so we can get the next signal.
--		 */
--		return 0;
--
--	/*
--	 * There is a group stop in progress.  We stop
--	 * without any associated signal being in our queue.
--	 */
--	stop_count = --current->signal->group_stop_count;
--	if (stop_count == 0)
--		current->signal->flags = SIGNAL_STOP_STOPPED;
--	current->exit_code = current->signal->group_exit_code;
--	__set_current_state(TASK_STOPPED);
--	spin_unlock_irq(&current->sighand->siglock);
--	finish_stop(stop_count);
--	return 1;
--}
--
- int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka,
- 			  struct pt_regs *regs, void *cookie)
- {
-@@ -1772,7 +1739,7 @@ relock:
- 		struct k_sigaction *ka;
- 
- 		if (unlikely(current->signal->group_stop_count > 0) &&
--		    handle_group_stop())
-+		    do_signal_stop(0))
- 			goto relock;
- 
- 		signr = dequeue_signal(current, mask, info);
-
+	Ingo
