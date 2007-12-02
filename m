@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbXLBHtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbXLBIEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbXLBHtg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 02:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbXLBHt2
+	id S1754057AbXLBIEf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 03:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbXLBIE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 02:49:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:54042 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbXLBHt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 02:49:27 -0500
-Date: Sat, 1 Dec 2007 23:54:37 -0800
-From: Greg KH <gregkh@suse.de>
-To: rae l <crquan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Since sysfs_mount is static and used only in sysfs_init
-	function, it could be just an automatic variable.
-Message-ID: <20071202075437.GA19897@suse.de>
-References: <91b13c310712011231k3604214bx3559387c568cce09@mail.gmail.com> <20071202044825.GA7004@suse.de> <91b13c310712012252k5307735x782582fd2d7abd94@mail.gmail.com>
+	Sun, 2 Dec 2007 03:04:27 -0500
+Received: from smtp111.plus.mail.re1.yahoo.com ([69.147.102.74]:48985 "HELO
+	smtp111.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751927AbXLBIE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 03:04:26 -0500
+X-YMail-OSG: 4dyLDX8VM1kWJpYN1vyl79Q03Pokw1jsCF0W.ahW9fnVmW0jw7n8dNmR21CWVey4bFlLsPGxmEDyUKuHyIZdNZ.jSKe.n0jsoJjfZeuAZwdIBaQyvw--
+Date: Sun, 2 Dec 2007 09:03:40 +0100
+From: Borislav Petkov <yme@gollum.tnic>
+To: Lucy McCoy <lucy@keyspan.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] keyspan: init termios properly
+Message-ID: <20071202080340.GB6528@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+Mail-Followup-To: bbpetkov@yahoo.de, Lucy McCoy <lucy@keyspan.com>,
+	Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
+	linux-kernel@vger.kernel.org
+References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71> <20071118131130.GA3991@gollum.tnic> <20071126141852.a609cdb6.akpm@linux-foundation.org> <20071130054500.GB17350@gollum.tnic> <4750471F.5050007@keyspan.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <91b13c310712012252k5307735x782582fd2d7abd94@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4750471F.5050007@keyspan.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 02:52:17PM +0800, rae l wrote:
-> On Dec 2, 2007 12:48 PM, Greg KH <gregkh@suse.de> wrote:
-> ...
-> > > and where is a detailed explaination on kern_mount? could someone give
-> > > some comments or documentation pointers on this?
-> >
-> > See the patches that Eric Biederman just posted to lkml for why this
-> > structure is a static pointer this way right now, it's in preparation
-> > for future patches.
-> I have checked commit 7d0c7d676cc066413e1583b5af9fba8011972d41 by Eric
-> W. Biederman,
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7d0c7d676cc066413e1583b5af9fba8011972d41
-> 
-> which just make sysfs_mount from externally visible to static that
-> could be only used in one c file,
-> 
-> but I mean that the static variable is still on kernel bss section,
-> this consumes a pointer (4 or 8 bytes) memory,
-> 
-> through a grep from fs/sysfs/, it appears that the variable
-> sysfs_mount is only used in the sysfs_init function,
-> 
-> $ grep -RsInw sysfs_mount fs/sysfs/
-> fs/sysfs/mount.c:25:static struct vfsmount *sysfs_mount;
-> fs/sysfs/mount.c:101:           sysfs_mount = kern_mount(&sysfs_fs_type);
-> fs/sysfs/mount.c:102:           if (IS_ERR(sysfs_mount)) {
-> fs/sysfs/mount.c:104:                   err = PTR_ERR(sysfs_mount);
-> fs/sysfs/mount.c:105:                   sysfs_mount = NULL;
-> 
-> we could mark this variable an automatic one, which scope is just in
-> this function, thus created and destroyed with the stack,
-> this approach does not consume a pointer on kernel bss section,
-> 
-> Why not do this?
+On Fri, Nov 30, 2007 at 09:23:43AM -0800, Lucy McCoy wrote:
+> Hi All,
+>
+> I've been too busy to get to this but i'd rather not use the code fragment 
+> i sent Boris to try.  It would be better to go ahead with the tty setup if 
+> the pointer is not NULL, otherwise use the defaults and not reference the 
+> NULL pointer. I'll see if I can get to this today.
+you might also want to take a look at usa90_indat_callback() - there is
+port->tty accessed again and this time it kills the machine completely when
+something is sent over the serial line from the other end (through minicom, for
+example). Oops is at
 
-Again, see the patches he _just_ posted to lkml, the specific message
-you are looking for is:
-	Message-ID: <m11wa693t0.fsf@ebiederm.dsl.xmission.com>
-	Subject: [PATCH 01/10] sysfs: Make sysfs_mount static again.
-
-Also see the whole long thread for more details.
-
-If you have further questions about this, please ask Eric.
-
-thanks,
-
-greg k-h
+http://www.screenshots.cc/view_image/ab9a1837/cimg00772.jpg
+-- 
+Regards/Gruﬂ,
+    Boris.
