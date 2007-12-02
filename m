@@ -1,64 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbXLBWq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbXLBXDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbXLBWq6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 17:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXLBWqt
+	id S1752904AbXLBXDU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 18:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXLBXDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 17:46:49 -0500
-Received: from rtr.ca ([76.10.145.34]:1342 "EHLO mail.rtr.ca"
+	Sun, 2 Dec 2007 18:03:12 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:59073 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751279AbXLBWqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 17:46:48 -0500
-Message-ID: <475335D6.8070902@rtr.ca>
-Date: Sun, 02 Dec 2007 17:46:46 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1750774AbXLBXDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 18:03:11 -0500
+Message-ID: <475339A6.9020207@us.ibm.com>
+Date: Sun, 02 Dec 2007 17:03:02 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, rubini@vision.unipv.it,
-       linux-input@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.24:  false double-clicks from USB mouse
-References: <4752DB8C.50608@rtr.ca> <4752E432.10504@rtr.ca> <Pine.LNX.4.64.0712021903460.12208@twin.jikos.cz> <4752F6C7.4040904@rtr.ca> <Pine.LNX.4.64.0712021918500.13260@jikos.suse.cz> <4752FE11.2050200@rtr.ca> <4752FEFE.3000600@rtr.ca> <Pine.LNX.4.64.0712022007360.13260@jikos.suse.cz> <47530680.6020206@rtr.ca> <Pine.LNX.4.64.0712022025250.13260@jikos.suse.cz> <47530B32.7080502@rtr.ca> <Pine.LNX.4.64.0712022300490.13260@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0712022300490.13260@jikos.suse.cz>
+To: Amit Shah <amit.shah@qumranet.com>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure (v2)
+References: <11898788932902-git-send-email-aliguori@us.ibm.com> <200712021917.28706.amit.shah@qumranet.com>
+In-Reply-To: <200712021917.28706.amit.shah@qumranet.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> [ linux-usb-devel added to CC ]
-> 
-> On Sun, 2 Dec 2007, Mark Lord wrote:
-> 
->> Okay.  I've got to leave the computer for a while now, so I'll post 
->> again whenever I have something new here.
-> 
-> Thanks. To sum up this longish thread:
-> 
-> - 2.6.24-rcX exposes the problem with sometimes multiple clicks being 
->   generated as a response for one click on USB mouse (evtest shows that 
->   really mutliple LeftBtn events arrive). 2.6.23 behaves correctly
-> - reverting the state of drivers/hid to 2.6.23 state doesn't make the 
->   problem go away, so the problem is elsewhere (Input? USB?)
-> - Mark seems to be able to reproduce the problem quite easily; I was not 
->   successful reproducing this no matter how hard I tried, and I also 
->   didn't receive any similar bugreports from anyone else
-> - we are currently waiting for Mark to provide HID_DEBUG (and preferably
->   also usbmon) output from the situation where multiple clicks are 
->   being generated incorrectly
-..
+Amit Shah wrote:
+> * Anthony Liguori wrote:
+>   
+>> This patch refactors the current hypercall infrastructure to better support
+>> live migration and SMP.  It eliminates the hypercall page by trapping the
+>> UD exception that would occur if you used the wrong hypercall instruction
+>> for the underlying architecture and replacing it with the right one lazily.
+>>     
+>
+> This doesn't work right for SVM. It keeps looping indefinitely; on a kvm_stat 
+> run, I get about 230,000 light vm exits per second, with the hypercall never 
+> returning to the guest.
+>
+> ...
+>   
 
-Well, I've rebuilt the kernel with HID_DEBUG, DEBUG_FS, and USBMON.
-And I've written a nifty script to make usbmon tracing effortless for this.
+What are you using to issue the hypercall?
 
-And now I'm waiting.. things are currently behaving perfectly.
-Go figure.  It did seem to arrive in bursts before.
+Regards,
 
-So, don't beat yourselves over this one for now.
-I'll track it down here and post again next time it starts happening.
+Anthony Liguori
 
-Mmmm...
+>> diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+>> index 729f1cd..d09a9f5 100644
+>> --- a/drivers/kvm/svm.c
+>> +++ b/drivers/kvm/svm.c
+>> @@ -476,7 +476,8 @@ static void init_vmcb(struct vmcb *vmcb)
+>>  					INTERCEPT_DR5_MASK |
+>>  					INTERCEPT_DR7_MASK;
+>>
+>> -	control->intercept_exceptions = 1 << PF_VECTOR;
+>> +	control->intercept_exceptions = (1 << PF_VECTOR) |
+>> +					(1 << UD_VECTOR);
+>>
+>>
+>>  	control->intercept = 	(1ULL << INTERCEPT_INTR) |
+>> @@ -970,6 +971,17 @@ static int pf_interception(struct vcpu_svm *svm,
+>> struct kvm_run *kvm_run) return 0;
+>>  }
+>>
+>> +static int ud_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+>> +{
+>> +	int er;
+>> +
+>> +	er = emulate_instruction(&svm->vcpu, kvm_run, 0, 0);
+>> +	if (er != EMULATE_DONE)
+>> +		inject_ud(&svm->vcpu);
+>> +
+>> +	return 1;
+>> +}
+>> +
+>>  static int nm_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+>>  {
+>>  	svm->vmcb->control.intercept_exceptions &= ~(1 << NM_VECTOR);
+>> @@ -1036,7 +1048,8 @@ static int vmmcall_interception(struct vcpu_svm *svm,
+>> struct kvm_run *kvm_run) {
+>>  	svm->next_rip = svm->vmcb->save.rip + 3;
+>>  	skip_emulated_instruction(&svm->vcpu);
+>> -	return kvm_hypercall(&svm->vcpu, kvm_run);
+>> +	kvm_emulate_hypercall(&svm->vcpu);
+>> +	return 1;
+>>  }
+>>
+>>  static int invalid_op_interception(struct vcpu_svm *svm,
+>> @@ -1232,6 +1245,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm
+>> *svm, [SVM_EXIT_WRITE_DR3]			= emulate_on_interception,
+>>  	[SVM_EXIT_WRITE_DR5]			= emulate_on_interception,
+>>  	[SVM_EXIT_WRITE_DR7]			= emulate_on_interception,
+>> +	[SVM_EXIT_EXCP_BASE + UD_VECTOR]	= ud_interception,
+>>  	[SVM_EXIT_EXCP_BASE + PF_VECTOR] 	= pf_interception,
+>>  	[SVM_EXIT_EXCP_BASE + NM_VECTOR] 	= nm_interception,
+>>  	[SVM_EXIT_INTR] 			= nop_on_interception,
+>> @@ -1664,7 +1678,6 @@ svm_patch_hypercall(struct kvm_vcpu *vcpu, unsigned
+>> char *hypercall) hypercall[0] = 0x0f;
+>>  	hypercall[1] = 0x01;
+>>  	hypercall[2] = 0xd9;
+>> -	hypercall[3] = 0xc3;
+>>  }
+>>     
+>
+> ...
+>
+>   
+>> +/* This instruction is vmcall.  On non-VT architectures, it will generate
+>> a + * trap that we will then rewrite to the appropriate instruction. */
+>> -#define __NR_hypercalls			0
+>> +#define KVM_HYPERCALL ".byte 0x0f,0x01,0xc1"
+>>     
+>
+> .. which never happens.
+>   
 
