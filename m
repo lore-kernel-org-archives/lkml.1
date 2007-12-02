@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbXLBWiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752889AbXLBWp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbXLBWiY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 17:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXLBWiQ
+	id S1752889AbXLBWp2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 17:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbXLBWpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 17:38:16 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51686 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbXLBWiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 17:38:15 -0500
-Message-ID: <475333CB.9000800@garzik.org>
-Date: Sun, 02 Dec 2007 17:38:03 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Lindroth <thomas.lindroth@gmail.com>
-Subject: Re: 2.6.24-rc3-git6: Reported regressions from 2.6.23
-References: <200712012312.42136.rjw@sisk.pl> <200712020347.01769.bzolnier@gmail.com>
-In-Reply-To: <200712020347.01769.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+	Sun, 2 Dec 2007 17:45:21 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37732 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbXLBWpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 17:45:20 -0500
+Date: Sun, 2 Dec 2007 14:43:31 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Message-ID: <20071202144331.6abf1289@laptopd505.fenrus.org>
+In-Reply-To: <20071202204725.GA25891@one.firstfloor.org>
+References: <20071201092037.GA32544@elte.hu>
+	<p737ijwylet.fsf@bingen.suse.de>
+	<20071202185945.GA25990@elte.hu>
+	<20071202114152.3bf4332d@laptopd505.fenrus.org>
+	<20071202200953.GA23994@one.firstfloor.org>
+	<20071202202602.GA16480@elte.hu>
+	<20071202204725.GA25891@one.firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> [PATCH] pata_amd/pata_via: de-couple programming of PIO/MWDMA and UDMA timings
+On Sun, 2 Dec 2007 21:47:25 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> > Out of direct experience, 95% of the "too long delay" cases are
+> > plain old bugs. The rest we can (and must!) convert to
+> > TASK_KILLABLE or could 
 > 
-> * Don't program UDMA timings when programming PIO or MWDMA modes.
+> I already pointed out a few cases (nfs, cifs, smbfs, ncpfs, afs).   
+> It would be pretty bad to merge this patch without converting them to 
+> TASK_KILLABLE first
+
+"pretty bad" as in "a few people see warnings in their dmesg" ?
+And TASK_KILLABLE is hopefully about to get merged anyway.
+
+
+We really need to get better diagnostics for the
+bad-kernel-behavior-that-is-seen-as-bug cases. If we ever want to get
+to the scenario where we have a more or less robust measure of kernel
+quality (and we're not all that far off for several cases), one thing
+we need keep doing is have the kernel detect bad cases as much as
+possible. This patch is a step in the right direction there, by quite a
+lot.
+
+I really don't understand what your objection is to this patch... is it
+that an enterprise distro can't ship with it on? (Which is fine btw)
+
 > 
->   This has also a nice side-effect of fixing regression added by commit
->   681c80b5d96076f447e8101ac4325c82d8dce508 ("libata: correct handling of
->   SRST reset sequences") (->set_piomode method for PIO0 is called before
->   ->cable_detect method which checks UDMA timings to get the cable type).
-> 
-> * Bump driver version.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Tested-by: "Thomas Lindroth" <thomas.lindroth@gmail.com>
-> Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Cc: Jeff Garzik <jeff@garzik.org>
-> Cc: Tejun Heo <htejun@gmail.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
 
-I'll add this to the queue.  Sorry for missing it.
-
-	Jeff
-
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
