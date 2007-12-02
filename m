@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbXLBKkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbXLBLSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbXLBKkR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 05:40:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXLBKkE
+	id S1754046AbXLBLSU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 06:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXLBLSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 05:40:04 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49920 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 2 Dec 2007 06:18:07 -0500
+Received: from il.qumranet.com ([82.166.9.18]:41418 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbXLBKkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 05:40:02 -0500
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [BUG 2.6.24-rc3-git6] SLUB's ksize() fails for size > 2048.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Message-Id: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sun, 2 Dec 2007 19:39:59 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751316AbXLBLSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 06:18:06 -0500
+From: Avi Kivity <avi@qumranet.com>
+To: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: [PATCH 00/10]: KVM updates for 2.6.23.9 (-stable)
+Date: Sun,  2 Dec 2007 13:18:37 +0200
+Message-Id: <1196594327338-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+The following patchset fixes some bugs in KVM for the next 2.6.23.y stable
+release.  Please apply.
 
-I can't pass memory allocated by kmalloc() to ksize()
-if it is allocated by SLUB allocator and
-size is larger than (I guess) PAGE_SIZE / 2.
+Amit Shah (2):
+      KVM: x86 emulator: Use emulator_write_emulated and not emulator_write_std
+      KVM: SVM: Fix FPU leak while emulating clts
 
-Regards.
+Aurelien Jarno (1):
+      KVM: x86 emulator: fix access registers for instructions with ModR/M byte and Mod = 3
 
----------- Kernel config (grep CONFIG_SLUB .config) ----------
-CONFIG_SLUB_DEBUG=y
-CONFIG_SLUB=y
-# CONFIG_SLUB_DEBUG_ON is not set
+Avi Kivity (4):
+      KVM: x86 emulator: invd instruction
+      KVM: SVM: Intercept the 'invd' and 'wbinvd' instructions
+      KVM: Skip pio instruction when it is emulated, not executed
+      KVM: VMX: Force vm86 mode if setting flags during real mode
 
----------- Testing program (ksize_test.c) ----------
-#include <linux/module.h>
-#include <linux/slab.h>
+Eddie Dong (1):
+      KVM: VMX: Reset mmu context when entering real mode
 
-static int __init init_ksize_test(void)
-{
-        void *p = kmalloc(2049, GFP_KERNEL);
-        printk("ksize(%p) = %d\n", p, ksize(p));
-        kfree(p);
-        return -ENOMEM;
-}
+Marko Kohtala (1):
+      KVM: Fix hang on uniprocessor
 
-module_init(init_ksize_test)
+Sheng Yang (1):
+      KVM: x86 emulator: implement 'movnti mem, reg'
 
-MODULE_LICENSE("GPL");
 
-------------[ cut here ]------------
-kernel BUG at mm/slub.c:2562!
-invalid opcode: 0000 [#1] SMP
-Modules linked in: ksize_test
-
-Pid: 8473, comm: modprobe Not tainted (2.6.24-rc3-git6 #4)
-EIP: 0060:[<c01714a2>] EFLAGS: 00010246 CPU: 1
-EIP is at ksize+0x1b/0x4a
-EAX: 00000000 EBX: dd776000 ECX: c16721d0 EDX: 00000000
-ESI: e081b280 EDI: df3a396c EBP: dd595ea0 ESP: dd595ea0
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 8473, ti=dd595000 task=d347cd60 task.ti=dd595000)
-Stack: dd595eb8 e081e01a dd595eb8 c014010c ffffffff e08193e0 dd595fb0 c0150b18
-       00000000 00000000 00001866 00000000 dd4dac00 d347cd60 c14366ac 00000230
-       0000135c 0000000e dd4dac00 e081b280 00000000 00000000 00000000 00000000
-Call Trace:
- [<c0106008>] show_trace_log_lvl+0x1a/0x2f
- [<c01060b8>] show_stack_log_lvl+0x9b/0xa3
- [<c0106167>] show_registers+0xa7/0x178
- [<c010634c>] die+0x114/0x1f5
- [<c0417018>] do_trap+0x8a/0xa3
- [<c01066ec>] do_invalid_op+0x88/0x92
- [<c0416dea>] error_code+0x72/0x78
- [<e081e01a>] init_ksize_test+0x1a/0x40 [ksize_test]
- [<c0150b18>] sys_init_module+0x13d3/0x14ff
- [<c0104f7e>] sysenter_past_esp+0x5f/0xa5
- =======================
-Code: 8b 02 5d 84 c0 b8 00 00 00 00 0f 49 d0 89 d0 c3 55 85 c0 89 e5 75 04 0f 0b eb fe 31 d2 83 f8 10 74 34 e8 b4 ff ff ff 85 c0 75 04 <0f> 0b eb fe 8b 40 0c 85 c0 75 04 0f 0b eb fe 8b 10 f6 c6 0c 74
-EIP: [<c01714a2>] ksize+0x1b/0x4a SS:ESP 0068:dd595ea0
+ drivers/kvm/kvm_main.c    |   16 ++++++++++------
+ drivers/kvm/mmu.c         |    1 +
+ drivers/kvm/svm.c         |    4 ++++
+ drivers/kvm/vmx.c         |    3 +++
+ drivers/kvm/x86_emulate.c |   30 +++++++++++++++++++++++++++---
+ 5 files changed, 45 insertions(+), 9 deletions(-)
