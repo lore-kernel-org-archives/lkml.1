@@ -1,177 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbXLBIxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXLBI4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbXLBIxu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 03:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbXLBIxm
+	id S1754598AbXLBI4p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 03:56:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXLBI4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 03:53:42 -0500
-Received: from il.qumranet.com ([82.166.9.18]:34777 "EHLO il.qumranet.com"
+	Sun, 2 Dec 2007 03:56:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59488 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbXLBIxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 03:53:41 -0500
-Message-ID: <4752734A.70903@qumranet.com>
-Date: Sun, 02 Dec 2007 10:56:42 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752067AbXLBI4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 03:56:36 -0500
+Date: Sun, 2 Dec 2007 09:56:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
+       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071202085607.GA28966@elte.hu>
+References: <20071130125628.GA30773@lazybastard.org> <20071130133546.GB29679@elte.hu> <20071130134312.GA32273@elte.hu> <20071130183510.GA1570@lazybastard.org> <20071130184625.GB9928@elte.hu> <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu> <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.24-rc3-mm1 make headers_check fails
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	<4743EB52.1040205@linux.vnet.ibm.com>	<20071120163240.e54beed6.akpm@linux-foundation.org>	<4743EF47.5000203@linux.vnet.ibm.com>	<4743EFF8.9010307@qumranet.com>	<20071121095821.GB1070@uranus.ravnborg.org>	<474401BB.2020204@qumranet.com>	<474405AA.2070608@qumranet.com> <20071127210211.094e9562.akpm@linux-foundation.org>
-In-Reply-To: <20071127210211.094e9562.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------090604040905070009030406"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071201234112.GA7209@lazybastard.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090604040905070009030406
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Andrew Morton wrote:
-> On Wed, 21 Nov 2007 12:17:14 +0200 Avi Kivity <avi@qumranet.com> wrote:
->
->   
->> Avi Kivity wrote:
->>     
->>>>>>>   
->>>>>>>               
->>>>>>>> The make headers_check fails,
->>>>>>>>
->>>>>>>>  CHECK   include/linux/usb/gadgetfs.h
->>>>>>>>  CHECK   include/linux/usb/ch9.h
->>>>>>>>  CHECK   include/linux/usb/cdc.h
->>>>>>>>  CHECK   include/linux/usb/audio.h
->>>>>>>>  CHECK   include/linux/kvm.h
->>>>>>>> /root/kernels/linux-2.6.24-rc3/usr/include/linux/kvm.h requires 
->>>>>>>> asm/kvm.h, which does not exist in exported headers
->>>>>>>>                
->>>>>>>>                 
->>>>>>> hm, works for me, on i386 and x86_64.  What's different over there?
->>>>>>>            
->>>>>>>               
->>>>>> Hi Andrew,
->>>>>>
->>>>>> It fails on the powerpc box, with allyesconfig option.
->>>>>>
->>>>>>  
->>>>>>       
->>>>>>             
->>>>> How do we fix this?  Export linux/kvm.h only on x86?  Seems ugly.
->>>>>     
->>>>>           
->>>> Is kvm x86 specific? Then move the .h file to asm-x86.
->>>> Otherwise no good idea...
->>>>
->>>>   
->>>>         
->>> kvm.h is x86 specific today, but will be s390, ppc, ia64, and x86 
->>> specific tomorrow.
->>>
->>> What about having a asm-generic/kvm.h with a nice #error?    would 
->>> that suit?
->>>
->>>       
->> headers_check continues to complain.  Is the only recourse to add 
->> asm/kvm.h for all archs?
->>
->>     
->
-> That would work.
->
-> Meanwhile my recourse is to drop the kvm tree ;)
->   
+* Jörn Engel <joern@logfs.org> wrote:
 
-Since you put it this way...
+> > ah. You should mark pit_read() function as notrace. PIT clocksource 
+> > is rare. (add the 'notrace' word to the function prototype)
+> 
+> Hardly a change at all.  Apart from some offsets, this dump is 
+> identical.
+> 
+> stopped custom tracer.
+> BUG: spinlock recursion on CPU#0, sh/954
+>  lock: c030f280, .magic: dead4ead, .owner: sh/954, .owner_cpu: 0
+> Pid: 954, comm: sh Not tainted 2.6.24-rc3-ge1cca7e8-dirty #3
+>  [<c0103a04>] show_trace_log_lvl+0x35/0x54
+>  [<c010450a>] show_trace+0x2c/0x2e
+>  [<c0104e6d>] dump_stack+0x84/0x8a
+>  [<c01ded7c>] spin_bug+0xa7/0xae
+>  [<c01def14>] _raw_spin_lock+0x45/0xfa
+>  [<c02a02b1>] _spin_lock_irqsave+0x68/0x7a
+>  [<c01087e2>] pit_read+0xf/0x91
+>  [<c0130ee1>] get_monotonic_cycles+0xf/0x2d
+>  [<c013c0e7>] now+0x2a/0x7c
+>  [<c013c333>] ____trace+0x4d/0x1e8
+>  [<c013dbeb>] __mcount+0x95/0xa6
+>  [<c010d354>] mcount+0x14/0x18
+>  [<c0135a3c>] lock_acquired+0xe/0x1d7
+>  [<c02a02b9>] _spin_lock_irqsave+0x70/0x7a
+>  [<c01087e2>] pit_read+0xf/0x91
 
-I committed the attached (sorry) patch to kvm.git.   Rather than 
-touching 2*($NARCH - 1) file, I changed include/linux/Kbuild to only 
-export kvm.h if the arch actually supports it.  Currently that's just x86.
+hm, it seems lock_acquired() [in kernel/lockdep.c] needs to be marked 
+'notrace' too - otherwise we recurse back into pit_read().
 
-
--- 
-error compiling committee.c: too many arguments to function
-
-
---------------090604040905070009030406
-Content-Type: text/x-patch;
- name="0001-KVM-Export-include-linux-kvm.h-only-if-ARCH-actual.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-KVM-Export-include-linux-kvm.h-only-if-ARCH-actual.patc";
- filename*1="h"
-
->From a393444c97f6d7355a6d7d6d7aeb80f1e72472b1 Mon Sep 17 00:00:00 2001
-From: Avi Kivity <avi@qumranet.com>
-Date: Sun, 2 Dec 2007 10:50:06 +0200
-Subject: [PATCH] KVM: Export include/linux/kvm.h only if $ARCH actually supports KVM
-
-Currently, make headers_check barfs due to <asm/kvm.h>, which <linux/kvm.h>
-includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export kvm.h
-only if the arch actually supports it.
-
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/x86/Kconfig     |    3 +++
- drivers/kvm/Kconfig  |    4 ++--
- include/linux/Kbuild |    2 +-
- 3 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 368864d..eded44e 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -112,6 +112,9 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default X86_64
- 
-+config ARCH_SUPPORTS_KVM
-+	bool
-+	default y
- 
- 
- 
-diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
-index 6569206..4086080 100644
---- a/drivers/kvm/Kconfig
-+++ b/drivers/kvm/Kconfig
-@@ -3,7 +3,7 @@
- #
- menuconfig VIRTUALIZATION
- 	bool "Virtualization"
--	depends on X86
-+	depends on ARCH_SUPPORTS_KVM || X86
- 	default y
- 	---help---
- 	  Say Y here to get to see options for using your Linux host to run other
-@@ -16,7 +16,7 @@ if VIRTUALIZATION
- 
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support"
--	depends on X86 && EXPERIMENTAL
-+	depends on ARCH_SUPPORTS_KVM && EXPERIMENTAL
- 	select PREEMPT_NOTIFIERS
- 	select ANON_INODES
- 	---help---
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 105c5d6..397197f 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -254,7 +254,7 @@ unifdef-y += kd.h
- unifdef-y += kernelcapi.h
- unifdef-y += kernel.h
- unifdef-y += keyboard.h
--unifdef-y += kvm.h
-+unifdef-$(CONFIG_ARCH_SUPPORTS_KVM) += kvm.h
- unifdef-y += llc.h
- unifdef-y += loop.h
- unifdef-y += lp.h
--- 
-1.5.3
-
-
---------------090604040905070009030406--
+	Ingo
