@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbXLBWUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbXLBWUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752947AbXLBWUR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 17:20:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXLBWUF
+	id S1753600AbXLBWUp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 17:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXLBWUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 17:20:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56680 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbXLBWUD (ORCPT
+	Sun, 2 Dec 2007 17:20:37 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:59036 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbXLBWUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 17:20:03 -0500
-Date: Sun, 2 Dec 2007 14:18:25 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071202141825.063356a2@laptopd505.fenrus.org>
-In-Reply-To: <20071202211925.GA26414@one.firstfloor.org>
-References: <20071201092037.GA32544@elte.hu>
-	<p737ijwylet.fsf@bingen.suse.de>
-	<20071202185945.GA25990@elte.hu>
-	<20071202114152.3bf4332d@laptopd505.fenrus.org>
-	<20071202200953.GA23994@one.firstfloor.org>
-	<20071202202602.GA16480@elte.hu>
-	<20071202204725.GA25891@one.firstfloor.org>
-	<20071202211027.GA32282@elte.hu>
-	<20071202211925.GA26414@one.firstfloor.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 2 Dec 2007 17:20:36 -0500
+Message-ID: <47532C78.3090701@student.ltu.se>
+Date: Sun, 02 Dec 2007 23:06:48 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Hans Verkuil <hverkuil@xs4all.nl>
+CC: v4l-dvb-maintainer@linuxtv.org, mchehab@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [PATCH 1/2] ivtv: Some general fixes
+References: <20071202173329.15374.4223.sendpatchset@thinktank.campus.ltu.se> <200712022049.33601.hverkuil@xs4all.nl>
+In-Reply-To: <200712022049.33601.hverkuil@xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Dec 2007 22:19:25 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+Hans Verkuil wrote:
+> On Sunday 02 December 2007 18:46, Richard Knutsson wrote:
+>   
+>> Fix "warning: Using plain integer as NULL pointer".
+>>     
+>
+> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+>
+>   
+>> Remove a gcc-2.95 requirement.
+>>     
+>
+> NACK! The main v4l-dvb repository that contains this driver can also be 
+> compiled on older systems. I'd like to keep the option that the driver 
+> can be compiled with an older gcc version, unless Mauro thinks 
+> otherwise. Other than the removal of one comment and one space there 
+> are no other benefits of this change, so I'd prefer to keep it.
+>
+>   
+Oh alright, thought it was just a leftover since the support for the 
+2.95 ended.
+Maybe add something to the text to let others know the status? (Since I 
+found it by doing a 'grep' for "gcc 2.95"'s...)
+>> Convert 'x < y ? x : y' to use min() instead.
+>>     
+>
+> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+>
+> Thanks,
+>
+> 	Hans
+>
+>   
+Thanks for the fast turnaround
+Richard
 
-> > 
-> > Until now users had little direct recourse to get such problems
-> > fixed. (we had sysrq-t, but that included no real metric of how
-> > long a task was 
-> 
-> Actually task delay accounting can measure this now.  iirc someone
-> had a latencytop based on it already.
-
-
-I have written a latencytop tool, but it's not based quite on the task
-delay accounting (it doesn't provide the right information to make such
-a tool). I've not released the tool mostly because I'm not quite happy
-about the kernel side yet... but if there's real interest I'll fix it
-up soon and release it.
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
