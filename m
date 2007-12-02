@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbXLBTNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbXLBTYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbXLBTNR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXLBTNG
+	id S1755625AbXLBTYd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbXLBTY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:13:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57181 "EHLO mx2.mail.elte.hu"
+	Sun, 2 Dec 2007 14:24:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46537 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbXLBTNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:13:05 -0500
-Date: Sun, 2 Dec 2007 20:12:45 +0100
+	id S1752097AbXLBTYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:24:25 -0500
+Date: Sun, 2 Dec 2007 20:24:12 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fixes
-Message-ID: <20071202191245.GA31657@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] scheduler fixes for v2.6.24-rc4
+Message-ID: <20071202192412.GA1598@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,128 +32,273 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Linus, please pull the latest x86 git tree from:
+Linus, please pull the latest scheduler git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-x86.git
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-two kexec related hpet fixes from Ogawa Hirofumi. (the #ifdefs will be 
-eliminated later on, these are the tested patches for -rc4)
+this includes a single commit: a revert of a revert :-/ It turns out 
+revert cfb5285660 went in by mistake (outside of sched.git). This commit 
+has been tested quite extensively and it does not impact the normal case 
+anyway.
 
 Thanks!
 
 	Ingo
 
 ------------------>
-OGAWA Hirofumi (2):
-      x86: disable hpet on shutdown
-      x86: disable hpet legacy replacement for kdump
+Srivatsa Vaddagiri (1):
+      sched: cpu accounting controller (V2)
 
- arch/x86/kernel/crash.c     |    4 ++++
- arch/x86/kernel/hpet.c      |   14 ++++++++++++++
- arch/x86/kernel/reboot_32.c |    4 ++++
- arch/x86/kernel/reboot_64.c |    4 ++++
- include/asm-x86/hpet.h      |    1 +
- 5 files changed, 27 insertions(+)
+ include/linux/cgroup_subsys.h |    7 +
+ init/Kconfig                  |    7 +
+ kernel/sched.c                |  155 ++++++++++++++++++++++++++++++++++--------
+ kernel/sched_fair.c           |    6 +
+ kernel/sched_rt.c             |    1 
+ 5 files changed, 150 insertions(+), 26 deletions(-)
 
-Index: linux-x86.q/arch/x86/kernel/crash.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/crash.c
-+++ linux-x86.q/arch/x86/kernel/crash.c
-@@ -22,6 +22,7 @@
- #include <asm/nmi.h>
- #include <asm/hw_irq.h>
- #include <asm/apic.h>
-+#include <asm/hpet.h>
- #include <linux/kdebug.h>
- #include <asm/smp.h>
- 
-@@ -140,5 +141,8 @@ void machine_crash_shutdown(struct pt_re
- #if defined(CONFIG_X86_IO_APIC)
- 	disable_IO_APIC();
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index d62fcee..9ec4318 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -30,3 +30,10 @@ SUBSYS(cpu_cgroup)
  #endif
-+#ifdef CONFIG_HPET_TIMER
-+	hpet_disable();
-+#endif
- 	crash_save_cpu(regs, safe_smp_processor_id());
- }
-Index: linux-x86.q/arch/x86/kernel/hpet.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/hpet.c
-+++ linux-x86.q/arch/x86/kernel/hpet.c
-@@ -446,6 +446,20 @@ static __init int hpet_late_init(void)
- }
- fs_initcall(hpet_late_init);
  
-+void hpet_disable(void)
-+{
-+	if (is_hpet_capable()) {
-+		unsigned long cfg = hpet_readl(HPET_CFG);
+ /* */
 +
-+		if (hpet_legacy_int_enabled) {
-+			cfg &= ~HPET_CFG_LEGACY;
-+			hpet_legacy_int_enabled = 0;
-+		}
-+		cfg &= ~HPET_CFG_ENABLE;
-+		hpet_writel(cfg, HPET_CFG);
++#ifdef CONFIG_CGROUP_CPUACCT
++SUBSYS(cpuacct)
++#endif
++
++/* */
++
+diff --git a/init/Kconfig b/init/Kconfig
+index d35e44f..404bbf3 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -354,6 +354,13 @@ config FAIR_CGROUP_SCHED
+ 
+ endchoice
+ 
++config CGROUP_CPUACCT
++	bool "Simple CPU accounting cgroup subsystem"
++	depends on CGROUPS
++	help
++	  Provides a simple Resource Controller for monitoring the
++	  total CPU consumed by the tasks in a cgroup
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 98dcdf2..59ff6b1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -854,6 +854,12 @@ iter_move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
+ 		   struct rq_iterator *iterator);
+ #endif
+ 
++#ifdef CONFIG_CGROUP_CPUACCT
++static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
++#else
++static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
++#endif
++
+ #include "sched_stats.h"
+ #include "sched_idletask.c"
+ #include "sched_fair.c"
+@@ -7221,38 +7227,12 @@ static u64 cpu_shares_read_uint(struct cgroup *cgrp, struct cftype *cft)
+ 	return (u64) tg->shares;
+ }
+ 
+-static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
+-{
+-	struct task_group *tg = cgroup_tg(cgrp);
+-	unsigned long flags;
+-	u64 res = 0;
+-	int i;
+-
+-	for_each_possible_cpu(i) {
+-		/*
+-		 * Lock to prevent races with updating 64-bit counters
+-		 * on 32-bit arches.
+-		 */
+-		spin_lock_irqsave(&cpu_rq(i)->lock, flags);
+-		res += tg->se[i]->sum_exec_runtime;
+-		spin_unlock_irqrestore(&cpu_rq(i)->lock, flags);
+-	}
+-	/* Convert from ns to ms */
+-	do_div(res, NSEC_PER_MSEC);
+-
+-	return res;
+-}
+-
+ static struct cftype cpu_files[] = {
+ 	{
+ 		.name = "shares",
+ 		.read_uint = cpu_shares_read_uint,
+ 		.write_uint = cpu_shares_write_uint,
+ 	},
+-	{
+-		.name = "usage",
+-		.read_uint = cpu_usage_read,
+-	},
+ };
+ 
+ static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+@@ -7272,3 +7252,126 @@ struct cgroup_subsys cpu_cgroup_subsys = {
+ };
+ 
+ #endif	/* CONFIG_FAIR_CGROUP_SCHED */
++
++#ifdef CONFIG_CGROUP_CPUACCT
++
++/*
++ * CPU accounting code for task groups.
++ *
++ * Based on the work by Paul Menage (menage@google.com) and Balbir Singh
++ * (balbir@in.ibm.com).
++ */
++
++/* track cpu usage of a group of tasks */
++struct cpuacct {
++	struct cgroup_subsys_state css;
++	/* cpuusage holds pointer to a u64-type object on every cpu */
++	u64 *cpuusage;
++};
++
++struct cgroup_subsys cpuacct_subsys;
++
++/* return cpu accounting group corresponding to this container */
++static inline struct cpuacct *cgroup_ca(struct cgroup *cont)
++{
++	return container_of(cgroup_subsys_state(cont, cpuacct_subsys_id),
++			    struct cpuacct, css);
++}
++
++/* return cpu accounting group to which this task belongs */
++static inline struct cpuacct *task_ca(struct task_struct *tsk)
++{
++	return container_of(task_subsys_state(tsk, cpuacct_subsys_id),
++			    struct cpuacct, css);
++}
++
++/* create a new cpu accounting group */
++static struct cgroup_subsys_state *cpuacct_create(
++	struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
++
++	if (!ca)
++		return ERR_PTR(-ENOMEM);
++
++	ca->cpuusage = alloc_percpu(u64);
++	if (!ca->cpuusage) {
++		kfree(ca);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	return &ca->css;
++}
++
++/* destroy an existing cpu accounting group */
++static void cpuacct_destroy(struct cgroup_subsys *ss,
++			    struct cgroup *cont)
++{
++	struct cpuacct *ca = cgroup_ca(cont);
++
++	free_percpu(ca->cpuusage);
++	kfree(ca);
++}
++
++/* return total cpu usage (in nanoseconds) of a group */
++static u64 cpuusage_read(struct cgroup *cont, struct cftype *cft)
++{
++	struct cpuacct *ca = cgroup_ca(cont);
++	u64 totalcpuusage = 0;
++	int i;
++
++	for_each_possible_cpu(i) {
++		u64 *cpuusage = percpu_ptr(ca->cpuusage, i);
++
++		/*
++		 * Take rq->lock to make 64-bit addition safe on 32-bit
++		 * platforms.
++		 */
++		spin_lock_irq(&cpu_rq(i)->lock);
++		totalcpuusage += *cpuusage;
++		spin_unlock_irq(&cpu_rq(i)->lock);
++	}
++
++	return totalcpuusage;
++}
++
++static struct cftype files[] = {
++	{
++		.name = "usage",
++		.read_uint = cpuusage_read,
++	},
++};
++
++static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
++}
++
++/*
++ * charge this task's execution time to its accounting group.
++ *
++ * called with rq->lock held.
++ */
++static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
++{
++	struct cpuacct *ca;
++
++	if (!cpuacct_subsys.active)
++		return;
++
++	ca = task_ca(tsk);
++	if (ca) {
++		u64 *cpuusage = percpu_ptr(ca->cpuusage, task_cpu(tsk));
++
++		*cpuusage += cputime;
 +	}
 +}
 +
- #ifdef CONFIG_HPET_EMULATE_RTC
++struct cgroup_subsys cpuacct_subsys = {
++	.name = "cpuacct",
++	.create = cpuacct_create,
++	.destroy = cpuacct_destroy,
++	.populate = cpuacct_populate,
++	.subsys_id = cpuacct_subsys_id,
++};
++#endif	/* CONFIG_CGROUP_CPUACCT */
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 2f16e15..37bb265 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -351,6 +351,12 @@ static void update_curr(struct cfs_rq *cfs_rq)
  
- /* HPET in LegacyReplacement Mode eats up RTC interrupt line. When, HPET
-Index: linux-x86.q/arch/x86/kernel/reboot_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/reboot_32.c
-+++ linux-x86.q/arch/x86/kernel/reboot_32.c
-@@ -11,6 +11,7 @@
- #include <linux/reboot.h>
- #include <asm/uaccess.h>
- #include <asm/apic.h>
-+#include <asm/hpet.h>
- #include <asm/desc.h>
- #include "mach_reboot.h"
- #include <asm/reboot_fixups.h>
-@@ -326,6 +327,9 @@ static void native_machine_shutdown(void
- #ifdef CONFIG_X86_IO_APIC
- 	disable_IO_APIC();
- #endif
-+#ifdef CONFIG_HPET_TIMER
-+	hpet_disable();
-+#endif
+ 	__update_curr(cfs_rq, curr, delta_exec);
+ 	curr->exec_start = now;
++
++	if (entity_is_task(curr)) {
++		struct task_struct *curtask = task_of(curr);
++
++		cpuacct_charge(curtask, delta_exec);
++	}
  }
  
- void __attribute__((weak)) mach_reboot_fixups(void)
-Index: linux-x86.q/arch/x86/kernel/reboot_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/reboot_64.c
-+++ linux-x86.q/arch/x86/kernel/reboot_64.c
-@@ -17,6 +17,7 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/apic.h>
-+#include <asm/hpet.h>
- #include <asm/gart.h>
+ static inline void
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 8abd752..ee9c8b6 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -23,6 +23,7 @@ static void update_curr_rt(struct rq *rq)
  
- /*
-@@ -113,6 +114,9 @@ void machine_shutdown(void)
+ 	curr->se.sum_exec_runtime += delta_exec;
+ 	curr->se.exec_start = rq->clock;
++	cpuacct_charge(curr, delta_exec);
+ }
  
- 	disable_IO_APIC();
- 
-+#ifdef CONFIG_HPET_TIMER
-+	hpet_disable();
-+#endif
- 	local_irq_restore(flags);
- 
- 	pci_iommu_shutdown();
-Index: linux-x86.q/include/asm-x86/hpet.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/hpet.h
-+++ linux-x86.q/include/asm-x86/hpet.h
-@@ -61,6 +61,7 @@ extern unsigned long force_hpet_address;
- extern int hpet_force_user;
- extern int is_hpet_enabled(void);
- extern int hpet_enable(void);
-+extern void hpet_disable(void);
- extern unsigned long hpet_readl(unsigned long a);
- extern void force_hpet_resume(void);
- 
+ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+
