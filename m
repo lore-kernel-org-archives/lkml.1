@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbXLBT3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbXLBTnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264AbXLBT3U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbXLBT3F
+	id S1755306AbXLBTnh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbXLBTn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:29:05 -0500
-Received: from ns2.lanforge.com ([66.165.47.211]:32952 "EHLO ns2.lanforge.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472AbXLBT3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:29:03 -0500
-Message-ID: <47530778.7030605@candelatech.com>
-Date: Sun, 02 Dec 2007 11:28:56 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca>	<20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill>	<475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill>
-In-Reply-To: <20071201202354.672aed18@freepuppy.rosehill>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 2 Dec 2007 14:43:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50375 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbXLBTn1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:43:27 -0500
+Date: Sun, 2 Dec 2007 11:41:52 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Message-ID: <20071202114152.3bf4332d@laptopd505.fenrus.org>
+In-Reply-To: <20071202185945.GA25990@elte.hu>
+References: <20071201092037.GA32544@elte.hu>
+	<p737ijwylet.fsf@bingen.suse.de>
+	<20071202185945.GA25990@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
->>
->> Naw, enterprise (or any other) distro vendors shouldn't have any issues here,
->> since they can just patch their kernels around any issues.
->>
->> But it looks like Eric has this one thought out well enough.
->>     
->
-> So you are saying all this is not a problem, fine.
-> Any affected parties can certainly lobby for themselves. But I suspect
-> they all think the kernel community is a bunch of ... and will just ignore
-> the problem. 
->   
-I have a binary module that uses dev_get_by_name...it's sort of a 
-bridge-like thing and
-needs user-space to tell it which device to listen for packets on...
+On Sun, 2 Dec 2007 19:59:45 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-This code doesn't need or care about name-spaces, so I don't see how it 
-could really
-be infringing on the author's code (any worse than loading a binary 
-driver into the kernel
-ever does).
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > Ingo Molnar <mingo@elte.hu> writes:
+> > 
+> > > this patch extends the soft-lockup detector to automatically
+> > > detect hung TASK_UNINTERRUPTIBLE tasks. Such hung tasks are
+> > > printed the following way:
+> > 
+> > That will likely trigger anytime a hard nfs/cifs mount loses its 
+> > server for 120s. To make this work you would need a new 
+> > TASK_UNINTERRUPTIBLE_EXTERNAL_EVENT or similar and mark all the
+> > places which depend on those.
+> 
+> TASK_KILLABLE should be the right solution i think.
 
-I would certainly prefer to not have to patch around any problems with 
-calling dev_get_by_name
-from a non-gpl module, but if required, I can probably figure something 
-out...
+.. and it's even a tool to show where we missed making something
+TASK_KILLABLE... anything that triggers from NFS and the like really
+ought to be TASK_KILLABLE after all. This patch will point any
+omissions out quite nicely without having to do any kind of destructive
+testing.
 
-Thanks,
-Ben
 
 -- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
-
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
