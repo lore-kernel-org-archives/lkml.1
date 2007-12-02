@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXLBLyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbXLBL7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXLBLyz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 06:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXLBLyn
+	id S1754858AbXLBL7w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 06:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXLBL7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 06:54:43 -0500
-Received: from mail.transmode.se ([83.241.175.147]:21867 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751125AbXLBLym (ORCPT
+	Sun, 2 Dec 2007 06:59:45 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:16017 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752264AbXLBL7o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 06:54:42 -0500
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: <cbou@mail.ru>, "'Jochen Friedrich'" <jochen@scram.de>
-Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "'Jeff Garzik'" <jeff@garzik.org>, <linuxppc-dev@ozlabs.org>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain><47516646.9000803@scram.de> <20071201213403.GA2350@zarina>
-Subject: RE: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHYlayer functionality
-Date: Sun, 2 Dec 2007 12:54:36 +0100
-Message-ID: <051e01c834da$1cce82f0$5267a8c0@Jocke>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-In-Reply-To: <20071201213403.GA2350@zarina>
-thread-index: Acg0YumPh2mlPOFZR8Kj5Apq4xGIMAAdbmPQ
-X-OriginalArrivalTime: 02 Dec 2007 11:54:39.0196 (UTC) FILETIME=[1E1051C0:01C834DA]
+	Sun, 2 Dec 2007 06:59:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=B1LzlSmQUsUtGnMnUxFELRd6Uu742ICXB9puG1vBZWofrpr2SSSLg+VrgRoZRrLjeczwuSlbtSKIy6OEOMxPJ5LU17+Ub1bHZUlpon4EebkNqKdEoZ0WT3zxv7Mna+sXG7sPnd+V//9p34iYYi2ScegzSEsJso917Up9GHY+Dt4=
+From: Denis Cheng <crquan@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: stable@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] mm/backing-dev.c: fix percpu_counter_destroy call bug in bdi_init
+Date: Sun,  2 Dec 2007 19:59:07 +0800
+Message-Id: <1196596747-5932-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[SNIP]
-> ^^ the correct solution is to implement arch_initcall function
-> which will create fixed PHYs, and then leave only
-> snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data); part in the
-> fs_enet's find_phy().
-> 
-> Try add something like this to the fsl_soc.c (compile untested):
-> 
-> - - - -
-> static int __init of_add_fixed_phys(void)
-> {
-> 	struct device_node *np;
-> 	const u32 *prop;
-> 	struct fixed_phy_status status = {};
-> 
-> 	while ((np = of_find_node_by_name(NULL, "ethernet"))) {
-> 		data  = of_get_property(np, "fixed-link", NULL);
-> 		if (!data)
-> 			continue;
-> 
-> 		status.link = 1;
-> 		status.duplex = data[1];
-> 		status.speed  = data[2];
+this call should use the array index j, not i:
 
-What about Pause and Asym_Pause? Dunno why so few, if any, eth drivers
-impl. it, but the PHY lib supports it.
-Even if fixed PHYs doesn't support it directly I think the OF interface
-should have it.
+	--- mm/backing-dev.c.orig	2007-12-02 19:42:57.000000000 +0800
+	+++ mm/backing-dev.c	2007-12-02 19:43:14.000000000 +0800
+	@@ -22,7 +22,7 @@ int bdi_init(struct backing_dev_info *bd
+		if (err) {
+	 err:
+			for (j = 0; j < i; j++)
+	-			percpu_counter_destroy(&bdi->bdi_stat[i]);
+	+			percpu_counter_destroy(&bdi->bdi_stat[j]);
+		}
 
-    - fixed-link : <a b c d e> where a is emulated phy id - choose any,
-      but unique to the all specified fixed-links, b is duplex - 0 half,
-      1 full, c is link speed - d#10/d#100/d#1000, d is pause - 0 no pause,
-      1 pause, d asym_pause - 0 no asym_pause, 1 asym_pause.
+		return err;
 
-Jocke
+but with this approach, just one int i is enough, int j is not needed.
 
-> 
-> 		ret = fixed_phy_add(PHY_POLL, data[0], &status);
-> 		if (ret)
-> 			return ret;
-> 	}
-> 
-> 	return 0;
-> }
-> arch_initcall(of_add_fixed_phys);
-> - - - -
-> 
-> And remove fixed_phy_add() from the fs_enet. This should work
-> nicely and also should be ideologically correct. ;-)
-> 
-> > How is this supposed to work for modules or for the
-> > PPC_CPM_NEW_BINDING mode where the device tree is no longer scanned
-> > during fs_soc initialization but during device initialization?
-> 
-> We should mark fixed.c as bool. Fake/virtual/fixed/platform PHYs
-> creation is architecture code anyway, can't be =m.
-> 
-> -- 
-> Anton Vorontsov
-> email: cbou@mail.ru
-> backup email: ya-cbou@yandex.ru
-> irc://irc.freenode.net/bd2
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ mm/backing-dev.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index b0ceb29..e8644b1 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -7,7 +7,7 @@
+ 
+ int bdi_init(struct backing_dev_info *bdi)
+ {
+-	int i, j;
++	int i;
+ 	int err;
+ 
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
+@@ -21,7 +21,7 @@ int bdi_init(struct backing_dev_info *bdi)
+ 
+ 	if (err) {
+ err:
+-		for (j = 0; j < i; j++)
++		while (i--)
+ 			percpu_counter_destroy(&bdi->bdi_stat[i]);
+ 	}
+ 
+-- 
+1.5.3.4
 
