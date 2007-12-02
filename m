@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbXLBT1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbXLBT3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbXLBT1T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXLBT1K
+	id S1756264AbXLBT3U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbXLBT3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:27:10 -0500
-Received: from styx.suse.cz ([82.119.242.94]:55920 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750954AbXLBT1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:27:09 -0500
-Date: Sun, 2 Dec 2007 20:27:07 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, rubini@vision.unipv.it,
-       linux-input@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: 2.6.24:  false double-clicks from USB mouse
-In-Reply-To: <47530680.6020206@rtr.ca>
-Message-ID: <Pine.LNX.4.64.0712022025250.13260@jikos.suse.cz>
-References: <4752DB8C.50608@rtr.ca> <4752E432.10504@rtr.ca>
- <Pine.LNX.4.64.0712021903460.12208@twin.jikos.cz> <4752F6C7.4040904@rtr.ca>
- <Pine.LNX.4.64.0712021918500.13260@jikos.suse.cz> <4752FE11.2050200@rtr.ca>
- <4752FEFE.3000600@rtr.ca> <Pine.LNX.4.64.0712022007360.13260@jikos.suse.cz>
- <47530680.6020206@rtr.ca>
+	Sun, 2 Dec 2007 14:29:05 -0500
+Received: from ns2.lanforge.com ([66.165.47.211]:32952 "EHLO ns2.lanforge.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472AbXLBT3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:29:03 -0500
+Message-ID: <47530778.7030605@candelatech.com>
+Date: Sun, 02 Dec 2007 11:28:56 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca>	<20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill>	<475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill>
+In-Reply-To: <20071201202354.672aed18@freepuppy.rosehill>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Dec 2007, Mark Lord wrote:
+Stephen Hemminger wrote:
+>>
+>> Naw, enterprise (or any other) distro vendors shouldn't have any issues here,
+>> since they can just patch their kernels around any issues.
+>>
+>> But it looks like Eric has this one thought out well enough.
+>>     
+>
+> So you are saying all this is not a problem, fine.
+> Any affected parties can certainly lobby for themselves. But I suspect
+> they all think the kernel community is a bunch of ... and will just ignore
+> the problem. 
+>   
+I have a binary module that uses dev_get_by_name...it's sort of a 
+bridge-like thing and
+needs user-space to tell it which device to listen for packets on...
 
-> Right now it's double-clicking just about everything. If I unplug/replug 
-> it, things behave for a while. Still want the HID_DEBUG output?  
-> (rebooting shortly)
+This code doesn't need or care about name-spaces, so I don't see how it 
+could really
+be infringing on the author's code (any worse than loading a binary 
+driver into the kernel
+ever does).
 
-Yes, definitely. I currently don't have an idea what might be causing it, 
-and I am unable to reproduce it here.
+I would certainly prefer to not have to patch around any problems with 
+calling dev_get_by_name
+from a non-gpl module, but if required, I can probably figure something 
+out...
 
-If HID DEBUG doesn't reveal anything interesting, we would probably need 
-usbmon dump too.
+Thanks,
+Ben
 
 -- 
-Jiri Kosina
-SUSE Labs
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
+
