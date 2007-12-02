@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbXLBUfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbXLBUoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbXLBUfx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbXLBUfn
+	id S1756579AbXLBUoU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXLBUoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:35:43 -0500
-Received: from lazybastard.de ([212.112.238.170]:49316 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754668AbXLBUfn convert rfc822-to-8bit (ORCPT
+	Sun, 2 Dec 2007 15:44:05 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60286 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754110AbXLBUoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:35:43 -0500
-Date: Sun, 2 Dec 2007 21:30:16 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
-       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
-       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Message-ID: <20071202203016.GC10657@lazybastard.org>
-References: <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org> <20071202135711.GA20434@elte.hu> <20071202141117.GB9516@lazybastard.org> <20071202154746.GA27069@elte.hu> <20071202195501.GB10657@lazybastard.org> <20071202200722.GA12101@elte.hu>
-Mime-Version: 1.0
+	Sun, 2 Dec 2007 15:44:04 -0500
+Date: Sun, 2 Dec 2007 21:43:56 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Ben Greear <greearb@candelatech.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+Message-ID: <20071202204356.GN15974@stusta.de>
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill> <47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20071202200722.GA12101@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <47530FAC.1070804@trash.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 December 2007 21:07:22 +0100, Ingo Molnar wrote:
-> * Jörn Engel <joern@logfs.org> wrote:
-> 
-> > Result looked like a livelock and finally convinced me to abandon the 
-> > latency tracer.  Sorry, but it appears to be the right tool for the 
-> > wrong job.
-> 
-> hm, we routinely use it in -rt to capture "what on earth is happening" 
-> incidents. The snippet below is a random snipped from a trace that i've 
-> just captured, with mcount enabled. It seems to work fine here, with and 
-> without mcount. (pit clocksource is almost never used, that's why you 
-> had those early problems.)
-> 
-> oprofile helps if you can reliably reproduce the slowdown in a loop or 
-> for a long amount of time, with lots of CPU utilization - and then it's 
-> also lower overhead. The tracer can be used to capture rare or complex 
-> events, and gives the full flow control and what is happening within the 
-> kernel.
+On Sun, Dec 02, 2007 at 09:03:56PM +0100, Patrick McHardy wrote:
+> Ben Greear wrote:
+>> Stephen Hemminger wrote:
+>>>>
+>>>> Naw, enterprise (or any other) distro vendors shouldn't have any issues 
+>>>> here,
+>>>> since they can just patch their kernels around any issues.
+>>>>
+>>>> But it looks like Eric has this one thought out well enough.
+>>>>     
+>>>
+>>> So you are saying all this is not a problem, fine.
+>>> Any affected parties can certainly lobby for themselves. But I suspect
+>>> they all think the kernel community is a bunch of ... and will just 
+>>> ignore
+>>> the problem.   
+> >
+>> I have a binary module that uses dev_get_by_name...it's sort of a 
+>> bridge-like thing and
+>> needs user-space to tell it which device to listen for packets on...
+>>
+>> This code doesn't need or care about name-spaces, so I don't see how it 
+>> could really
+>> be infringing on the author's code (any worse than loading a binary driver 
+>> into the kernel
+>> ever does).
+>>
+>> I would certainly prefer to not have to patch around any problems with 
+>> calling dev_get_by_name
+>> from a non-gpl module, but if required, I can probably figure something 
+>> out...
+>
+>
+> For all I care binary modules can break, but frankly I don't see
+> how encapsulating a couple of structures and pointers in a new
+> structure and adding a new argument to existing functions shifts
+> the decision about how a function should be usable to the namespace
+> guys. IMO all functions should continue to be usable as before,
+> as decided by whoever actually wrote them.
+>...
 
-Such a trace would be useful indeed.  But so far the patch has only
-given me grief and nothing remotely like useful output.  Maybe I should
-simply use the complete -rt patch instead of debugging the broken-out
-latency-tracer patch.
+Even ignoring the fact that it's unclear whether distributing modules 
+with not GPLv2 compatible licences is legal at all or might bring you in 
+jail, your statement has an interesting implication:
 
-Jörn
+Stuff like e.g. the EXPORT_SYMBOL(sk_alloc) predates the 
+EXPORT_SYMBOL_GPL stuff.
+
+Who is considered the author of this code?
+
+And when should he state whether he prefers to use EXPORT_SYMBOL_GPL 
+but wasn't able to use it at that when he wrote it since his code 
+predates it and is glad to be able to decide this now?
+
+cu
+Adrian
 
 -- 
-Mundie uses a textbook tactic of manipulation: start with some
-reasonable talk, and lead the audience to an unreasonable conclusion.
--- Bruce Perens
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
