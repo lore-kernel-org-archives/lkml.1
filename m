@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbXLBU41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbXLBVKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbXLBU41 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:56:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbXLBU4U
+	id S1755636AbXLBVKR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 16:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXLBVKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:56:20 -0500
-Received: from gate.crashing.org ([63.228.1.57]:33430 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbXLBU4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:56:19 -0500
-Subject: Re: [patch 11/14] Powerpc: Use generic per cpu
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@kernel.crashing.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0711281051540.11968@schroedinger.engr.sgi.com>
-References: <20071127001407.859743255@sgi.com>
-	 <20071127001431.688565525@sgi.com>
-	 <F81BD9A7-9D76-4C2C-AF80-AAA3F70F061E@kernel.crashing.org>
-	 <Pine.LNX.4.64.0711271016260.2310@schroedinger.engr.sgi.com>
-	 <18252.34032.207280.742887@cargo.ozlabs.ibm.com>
-	 <Pine.LNX.4.64.0711271311370.4590@schroedinger.engr.sgi.com>
-	 <18252.54275.429917.929763@cargo.ozlabs.ibm.com>
-	 <Pine.LNX.4.64.0711281051540.11968@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 07:55:58 +1100
-Message-Id: <1196628958.13230.158.camel@pasglop>
+	Sun, 2 Dec 2007 16:10:04 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40993 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbXLBVKD (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 16:10:03 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Pavel Machek <pavel@ucw.cz>
+Cc: tvrtko.ursulin@sophos.com, Andi Kleen <andi@firstfloor.org>, ak@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Out of tree module using LSM
+In-Reply-To: Your message of "Sun, 02 Dec 2007 21:22:40 +0100."
+             <20071202202240.GB1625@elf.ucw.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <p738x4i9nyd.fsf@crumb.suse.de> <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com> <20071201084332.GB4446@ucw.cz> <17957.1196624688@turing-police.cc.vt.edu>
+            <20071202202240.GB1625@elf.ucw.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1196629795_2962P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 02 Dec 2007 16:09:55 -0500
+Message-ID: <23463.1196629795@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1196629795_2962P
+Content-Type: text/plain; charset=us-ascii
 
-On Wed, 2007-11-28 at 10:54 -0800, Christoph Lameter wrote:
-> > As far as I can see, after applying your series of patches, I end up
-> > with an unbalanced #ifdef in include/asm-powerpc/percpu.h.  I see 3
-> > #ifdef/#ifndef, but only two #endifs.  It needs another #endif after
-> > the #endif /* SMP */ to match the #ifdef __powerpc64__.  With that
-> > change it looks OK, since 32-bit uses asm-generic/percpu.h for both
-> > SMP and UP.
+On Sun, 02 Dec 2007 21:22:40 +0100, Pavel Machek said:
+> Well, if you only want to detect viruses _sometimes_, you can just
+> LD_PRELOAD your scanner.
+
+And for some use cases, that probably *is* the best answer..
+
+> I guess the A/V people should describe what they are trying to do, as
+> in
 > 
-> Ahhh.. Ok. Fixed.
-> 
-> Do you know where to get a ppc64 crosscompiler? I 
-> tried to build gcc for ppc64 but the build failed on x86_64.
+> "forbidden sequences of bits should never hit disk" or "forbidden
+> sequences of bits should be never read from disk"  or something...
 
-Usually, we build biarch... checked if your existing gcc happen to work
-with -m64 ?
+We probably want to hear related usages as well - what *besides* A/V would be
+interested? Indexing services?  Software that tries to limit the distribution
+of sensitive info off the machine - for instance, imagine a rule that said
+"Data that comes from a file that contains SSNs or the string 'Corporate
+Secret' data isn't allowed to leave the computer" and a Perl-like 'taint'
+concept.  I'm not saying its *doable*, but it's certainly a goal that somebody
+would like to achieve...
 
-Ben.
 
+--==_Exmh_1196629795_2962P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHUx8jcC3lWbTT17ARAgb8AJ4yZYMxXoicZEXNGbB/dtr5zH8/VACgyuGh
+ButXpSLhoAHF8+XnQy55t58=
+=/HB+
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196629795_2962P--
