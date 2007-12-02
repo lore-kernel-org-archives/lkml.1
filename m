@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbXLBV4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbXLBWAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbXLBV4A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 16:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbXLBVzv
+	id S1752435AbXLBWAK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 17:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXLBV7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 16:55:51 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44928 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750717AbXLBVzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 16:55:51 -0500
-Date: Sun, 2 Dec 2007 22:56:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Valdis.Kletnieks@vt.edu
-Cc: tvrtko.ursulin@sophos.com, Andi Kleen <andi@firstfloor.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071202215634.GB2438@elf.ucw.cz>
-References: <p738x4i9nyd.fsf@crumb.suse.de> <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com> <20071201084332.GB4446@ucw.cz> <17957.1196624688@turing-police.cc.vt.edu> <20071202202240.GB1625@elf.ucw.cz> <23463.1196629795@turing-police.cc.vt.edu>
+	Sun, 2 Dec 2007 16:59:54 -0500
+Received: from stinky.trash.net ([213.144.137.162]:46990 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbXLBV7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 16:59:53 -0500
+Message-ID: <47532AD2.8090704@trash.net>
+Date: Sun, 02 Dec 2007 22:59:46 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <23463.1196629795@turing-police.cc.vt.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ben Greear <greearb@candelatech.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill> <47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net> <20071202204356.GN15974@stusta.de>
+In-Reply-To: <20071202204356.GN15974@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-12-02 16:09:55, Valdis.Kletnieks@vt.edu wrote:
-> On Sun, 02 Dec 2007 21:22:40 +0100, Pavel Machek said:
-> > Well, if you only want to detect viruses _sometimes_, you can just
-> > LD_PRELOAD your scanner.
+Adrian Bunk wrote:
+> On Sun, Dec 02, 2007 at 09:03:56PM +0100, Patrick McHardy wrote:
+>
+>> For all I care binary modules can break, but frankly I don't see
+>> how encapsulating a couple of structures and pointers in a new
+>> structure and adding a new argument to existing functions shifts
+>> the decision about how a function should be usable to the namespace
+>> guys. IMO all functions should continue to be usable as before,
+>> as decided by whoever actually wrote them.
+>> ...
 > 
-> And for some use cases, that probably *is* the best answer..
+> Even ignoring the fact that it's unclear whether distributing modules 
+> with not GPLv2 compatible licences is legal at all or might bring you in 
+> jail,
 
-I'd say so.
+Agreed, lets ignore that :)
 
-> > I guess the A/V people should describe what they are trying to do, as
-> > in
-> > 
-> > "forbidden sequences of bits should never hit disk" or "forbidden
-> > sequences of bits should be never read from disk"  or something...
+> your statement has an interesting implication:
 > 
-> We probably want to hear related usages as well - what *besides* A/V would be
-> interested? Indexing services?  
+> Stuff like e.g. the EXPORT_SYMBOL(sk_alloc) predates the 
+> EXPORT_SYMBOL_GPL stuff.
+> 
+> Who is considered the author of this code?
+> 
+> And when should he state whether he prefers to use EXPORT_SYMBOL_GPL 
+> but wasn't able to use it at that when he wrote it since his code 
+> predates it and is glad to be able to decide this now?
 
-Well... I'd really like to know what A/V people are trying to do.
 
-Indexing services are really different, and doable with recursive
-m-time Jan is preparing... 
+He can state it when he feels like it, I don't see the point.
+Authors generally get to decide whether they use EXPORT_SYMBOL
+or EXPORT_SYMBOL_GPL unless in cases where its really clear-cut
+that EXPORT_SYMBOL is inapproriate. But thats a different matter.
 
-> Software that tries to limit the
-> distribution
-> of sensitive info off the machine - for instance, imagine a rule that said
-> "Data that comes from a file that contains SSNs or the string 'Corporate
-> Secret' data isn't allowed to leave the computer" and a Perl-like 'taint'
-> concept.  I'm not saying its *doable*, but it's certainly a goal that somebody
-> would like to achieve...
-
-That sounds like a task for SELinux, no?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If a symbol was OK to be used previously and something using it
+would not automatically be considered a derived work, how does
+passing &init_net to the function just to make the compiler
+happy, avoid BUG_ONs and generally keep things working as before
+make it more of a derived work?
