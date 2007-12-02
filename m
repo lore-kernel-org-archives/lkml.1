@@ -1,98 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbXLBQDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbXLBQDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829AbXLBQDS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 11:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXLBQDI
+	id S1756309AbXLBQDb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 11:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbXLBQDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 11:03:08 -0500
-Received: from rtr.ca ([76.10.145.34]:2264 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709AbXLBQDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 11:03:07 -0500
-Message-ID: <4752D739.5060701@rtr.ca>
-Date: Sun, 02 Dec 2007 11:03:05 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 2 Dec 2007 11:03:19 -0500
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:24120 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755584AbXLBQDR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 11:03:17 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zhDLREWtBuY+PbH+8Sy7CoVBRjlg4Qhzdz8/XdrpSjmviq7/3ROnuGV5XuzVILZgK5QTOBjG2snD3p/Dhagia0TbysjEiPGUbFPjyFhSGveQs1FBUXW/ejjHFaP1pXHVl2RldsOeAjSXasn6IAxSQSwVuX9IY1ouZuprnGjYGQk=  ;
+X-YMail-OSG: cKHz3uMVM1lbyY_xnL2T_DKCdQ1KvBxu2BGafnH.z8vE2anBp30ZbKenXiXTv9d0Glrzo4B7qg--
+From: David Brownell <david-b@pacbell.net>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: RTC wakealarm write-only, still has 644 permissions
+Date: Sun, 2 Dec 2007 08:03:15 -0800
+User-Agent: KMail/1.9.6
+Cc: rtc-linux@googlegroups.com, kernel list <linux-kernel@vger.kernel.org>,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+References: <20070920103225.GA4410@elf.ucw.cz> <200711301310.40360.david-b@pacbell.net> <20071202113609.GA1796@elf.ucw.cz>
+In-Reply-To: <20071202113609.GA1796@elf.ucw.cz>
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG 2.6.24-rc3-git6] SLUB's ksize() fails for size > 2048.
-References: <200712021939.HHH18792.FLQSOOtFOFJVHM@I-love.SAKURA.ne.jp> <4752D59B.1020907@rtr.ca>
-In-Reply-To: <4752D59B.1020907@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712020803.15621.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Tetsuo Handa wrote:
->> Hello.
->>
->> I can't pass memory allocated by kmalloc() to ksize()
->> if it is allocated by SLUB allocator and
->> size is larger than (I guess) PAGE_SIZE / 2.
->>
->> Regards.
->>
->> ---------- Kernel config (grep CONFIG_SLUB .config) ----------
->> CONFIG_SLUB_DEBUG=y
->> CONFIG_SLUB=y
->> # CONFIG_SLUB_DEBUG_ON is not set
->>
->> ---------- Testing program (ksize_test.c) ----------
->> #include <linux/module.h>
->> #include <linux/slab.h>
->>
->> static int __init init_ksize_test(void)
->> {
->>         void *p = kmalloc(2049, GFP_KERNEL);
->>         printk("ksize(%p) = %d\n", p, ksize(p));
->>         kfree(p);
->>         return -ENOMEM;
->> }
->>
->> module_init(init_ksize_test)
->>
->> MODULE_LICENSE("GPL");
->>
->> ------------[ cut here ]------------
->> kernel BUG at mm/slub.c:2562!
->> invalid opcode: 0000 [#1] SMP
->> Modules linked in: ksize_test
->>
->> Pid: 8473, comm: modprobe Not tainted (2.6.24-rc3-git6 #4)
->> EIP: 0060:[<c01714a2>] EFLAGS: 00010246 CPU: 1
->> EIP is at ksize+0x1b/0x4a
->> EAX: 00000000 EBX: dd776000 ECX: c16721d0 EDX: 00000000
->> ESI: e081b280 EDI: df3a396c EBP: dd595ea0 ESP: dd595ea0
->>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> Process modprobe (pid: 8473, ti=dd595000 task=d347cd60 task.ti=dd595000)
->> Stack: dd595eb8 e081e01a dd595eb8 c014010c ffffffff e08193e0 dd595fb0 
->> c0150b18
->>        00000000 00000000 00001866 00000000 dd4dac00 d347cd60 c14366ac 
->> 00000230
->>        0000135c 0000000e dd4dac00 e081b280 00000000 00000000 00000000 
->> 00000000
->> Call Trace:
->>  [<c0106008>] show_trace_log_lvl+0x1a/0x2f
->>  [<c01060b8>] show_stack_log_lvl+0x9b/0xa3
->>  [<c0106167>] show_registers+0xa7/0x178
->>  [<c010634c>] die+0x114/0x1f5
->>  [<c0417018>] do_trap+0x8a/0xa3
->>  [<c01066ec>] do_invalid_op+0x88/0x92
->>  [<c0416dea>] error_code+0x72/0x78
->>  [<e081e01a>] init_ksize_test+0x1a/0x40 [ksize_test]
->>  [<c0150b18>] sys_init_module+0x13d3/0x14ff
->>  [<c0104f7e>] sysenter_past_esp+0x5f/0xa5
->>  =======================
->> Code: 8b 02 5d 84 c0 b8 00 00 00 00 0f 49 d0 89 d0 c3 55 85 c0 89 e5 
->> 75 04 0f 0b eb fe 31 d2 83 f8 10 74 34 e8 b4 ff ff ff 85 c0 75 04 <0f> 
->> 0b eb fe 8b 40 0c 85 c0 75 04 0f 0b eb fe 8b 10 f6 c6 0c 74
->> EIP: [<c01714a2>] ksize+0x1b/0x4a SS:ESP 0068:dd595ea0
-> ..
-> 
-> Is "p" NULL ?   Where'd your printk() output go to?
-..
+On Sunday 02 December 2007, Pavel Machek wrote:
+> Anyway, with wildcarded dates, no-clobber is a problem -- because you
+> need to kill the alarm after you waken up, or it will repeat.
 
-Mmm.. just tried it here, same result, and "p" is definitely not NULL.
+And I've started to fix that problem.  Alarms need to
+act only in oneshot mode for other reasons too.
+
+- Dave
