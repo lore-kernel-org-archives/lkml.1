@@ -1,114 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbXLBTum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbXLBT5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbXLBTum (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbXLBTuI
+	id S1755768AbXLBT5g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXLBT50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:50:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51428 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756638AbXLBTuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:50:06 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] ACPI patches for 2.6.24-rc3 -- part 2
-Date: Sun, 2 Dec 2007 14:49:50 -0500
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 2 Dec 2007 14:57:26 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34462 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753615AbXLBT50 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:57:26 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+In-Reply-To: Your message of "Sun, 02 Dec 2007 13:51:04 GMT."
+             <20071202135104.006c5a15@the-village.bc.nu>
+From: Valdis.Kletnieks@vt.edu
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill>
+            <20071202135104.006c5a15@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1196625402_2962P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712021449.51082.lenb@kernel.org>
+Date: Sun, 02 Dec 2007 14:56:42 -0500
+Message-ID: <18773.1196625402@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+--==_Exmh_1196625402_2962P
+Content-Type: text/plain; charset=us-ascii
 
-Before rc4, please pull from: 
+On Sun, 02 Dec 2007 13:51:04 GMT, Alan Cox said:
+> On Sat, 1 Dec 2007 16:30:35 -0800
+> > I spoke too soon earlier, ndiswrapper builds and loads against current
+> > 2.6.24-rc3. Vmware and proprietary VPN software probably do not. Once again I don't
+> > give a damn, but the enterprise distro vendors certainly care.
+> 
+> Enterprise distro vendors ship kernels from the 2.6.19 era, so I don't
+> see why they care.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+They don't care *now*.  They will care when they try to rev forward from .19.
 
-This fixes the Thinkpad T61 OOPS regression due to the -rc3 thermal changes.
-It also fixes a boot crash in the AML interpreter that has been with us forever,
-but has recently been exposed by acpi-cpufreq on some new platforms.
+Not that they'll care a *lot* - it took *me* all of about an hour to get VMware
+Server 1.0.4 working under -rc3-mm2.  Probably will take an enterprise distro
+4-5 hours, 30 mins for the port and 4 1/2 hours for the paperwork. :)
 
-This will update the files shown below.
 
-thanks!
+--==_Exmh_1196625402_2962P
+Content-Type: application/pgp-signature
 
--Len
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24-rc3.diff.gz
+iD8DBQFHUw36cC3lWbTT17ARAh78AJsFA/XnhYVcpqEs53gLjRoyy27dBwCgipGy
+Xrzb5Kga0xxwCYiL71ViNN0=
+=IJ+U
+-----END PGP SIGNATURE-----
 
- drivers/acpi/dispatcher/dsobject.c  |   91 ++++++++++++++++++++++--
- drivers/acpi/processor_throttling.c |   36 +++++++--
- 2 files changed, 113 insertions(+), 14 deletions(-)
-
-through these commits:
-
-Bob Moore (1):
-      ACPICA: fix acpi-cpufreq boot crash due to _PSD return-by-reference
-
-Zhao Yakui (1):
-      ACPI: Delete the IRQ operation in throttling controll via PTC
-
-with this log:
-
-commit 6ac47735cdba6ac8c64cb7595762a75fdcafaa6d
-Merge: 7ac3ae3... 152c300...
-Author: Len Brown <len.brown@intel.com>
-Date:   Sun Dec 2 14:33:33 2007 -0500
-
-    Pull bugzilla-9429 into release branch
-
-commit 7ac3ae32d170cea8cb8e7822acc29ed8f1b1018d
-Merge: 92d499d... 357dc4c...
-Author: Len Brown <len.brown@intel.com>
-Date:   Sun Dec 2 14:33:21 2007 -0500
-
-    Pull thermal into release branch
-
-commit 152c300d007c70c4a1847dad39ecdaba22e7d457
-Author: Bob Moore <robert.moore@intel.com>
-Date:   Wed Oct 17 16:10:18 2007 -0400
-
-    ACPICA: fix acpi-cpufreq boot crash due to _PSD return-by-reference
-    
-    Changed resolution of named references in packages
-    
-    Fixed a problem with the Package operator where all named
-    references were created as object references and left otherwise
-    unresolved. According to the ACPI specification, a Package can
-    only contain Data Objects or references to control methods. The
-    implication is that named references to Data Objects (Integer,
-    Buffer, String, Package, BufferField, Field) should be resolved
-    immediately upon package creation. This is the approach taken
-    with this change. References to all other named objects (Methods,
-    Devices, Scopes, etc.) are all now properly created as reference objects.
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=5328
-    http://bugzilla.kernel.org/show_bug.cgi?id=9429
-    
-    Signed-off-by: Bob Moore <robert.moore@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 357dc4c3f13cb5c1e3b40a09cbe6ff1b0df2c7c3
-Author: Zhao Yakui <yakui.zhao@intel.com>
-Date:   Thu Nov 29 16:22:43 2007 +0800
-
-    ACPI: Delete the IRQ operation in throttling controll via PTC
-    
-    The IRQ operation(enable/disable) should be avoided when throttling is
-    controlled via PTC method. It is replaced by the migration of task.
-    
-    This fixes an oops on T61 -- a regression due to
-    f79f06ab9f86 b/c FixedHW support tried to read remote MSR with interrupts disabled.
-    
-    Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+--==_Exmh_1196625402_2962P--
