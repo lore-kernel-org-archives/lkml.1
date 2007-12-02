@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbXLBAmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbXLBAnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbXLBAmV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 19:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbXLBAmN
+	id S1755207AbXLBAnG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 19:43:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXLBAm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 19:42:13 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60144 "EHLO
+	Sat, 1 Dec 2007 19:42:56 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60146 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753033AbXLBAmM (ORCPT
+	with ESMTP id S1753502AbXLBAmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 19:42:12 -0500
-Date: Sun, 2 Dec 2007 01:42:04 +0100
+	Sat, 1 Dec 2007 19:42:55 -0500
+Date: Sun, 2 Dec 2007 01:42:48 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: Bryan Wu <bryan.wu@analog.com>
+To: Chris Clayton <chris2553@googlemail.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com
 Cc: linux-kernel@vger.kernel.org
-Subject: blackfin compile error
-Message-ID: <20071202004204.GE15974@stusta.de>
+Subject: [2.6 patch] x86 intel_cacheinfo.c section fix
+Message-ID: <20071202004248.GF15974@stusta.de>
+References: <200711291419.49261.chris2553@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200711291419.49261.chris2553@googlemail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems commit 5d448dd50712ae42f8176b5bb8db4703bef6f0f5 was incomplete:
+free_cache_attributes() must be __cpuinit since it calls the
+__cpuinit cache_remove_shared_cpu_map().
+
+This patch fixes the following section mismatch reported by
+Chris Clayton:
 
 <--  snip  -->
 
 ...
-  CC      arch/blackfin/mach-bf537/boards/stamp.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: error: unknown field 'pin_req' specified in initializer
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: error: extra brace group at end of initializer
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: error: (near initialization for 'bfin_spi0_info')
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: warning: excess elements in struct initializer
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/blackfin/mach-bf537/boards/stamp.c:539: warning: (near initialization for 'bfin_spi0_info')
-make[2]: *** [arch/blackfin/mach-bf537/boards/stamp.o] Error 1
+WARNING: vmlinux.o(.text+0x90b6): Section mismatch: reference to .init.text:cache_remove_shared_cpu_map (between 'free_cache_attributes' and 'show_level')
+...
 
 <--  snip  -->
 
-cu
-Adrian
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+---
+afa32c098aaa39826ec6c71e641908ea12287e48 
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 9921b01..606fe4d 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -497,7 +497,7 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index) {}
+ static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index) {}
+ #endif
+ 
+-static void free_cache_attributes(unsigned int cpu)
++static void __cpuinit free_cache_attributes(unsigned int cpu)
+ {
+ 	int i;
+ 
 
