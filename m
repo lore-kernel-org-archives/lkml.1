@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXLBUAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbXLBUBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbXLBUAw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbXLBUAn
+	id S1756825AbXLBUBH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:01:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbXLBUAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:00:43 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:37283 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472AbXLBUAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:00:42 -0500
-Date: Sun, 2 Dec 2007 21:00:38 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Subject: [PATCH] arch/powerpc/platforms/powermac: Drop unneeded
- of_node_put
-Message-ID: <Pine.LNX.4.64.0712022058570.3361@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 2 Dec 2007 15:00:48 -0500
+Received: from lazybastard.de ([212.112.238.170]:42999 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbXLBUAr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 15:00:47 -0500
+Date: Sun, 2 Dec 2007 20:55:02 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
+       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071202195501.GB10657@lazybastard.org>
+References: <20071201151650.GA5031@lazybastard.org> <20071201183256.GA14052@elte.hu> <20071201204747.GA6458@lazybastard.org> <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org> <20071202135711.GA20434@elte.hu> <20071202141117.GB9516@lazybastard.org> <20071202154746.GA27069@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071202154746.GA27069@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Sun, 2 December 2007 16:47:46 +0100, Ingo Molnar wrote:
+> 
+> well what does the trace say, where do the delays come from? To get a 
+> quick overview you can make tracing lighter weight by doing:
+> 
+>  echo 0 > /proc/sys/kernel/mcount_enabled
+>  echo 1 > /proc/sys/kernel/trace_syscalls
 
-After using for_each_node_by_name, there is no need for of_node_put unless
-there was a break in the loop body, as for_each_node_by_name does a
-of_node_put on each of the elements it returns.
+I mistyped and did 
+ echo 1 > /proc/sys/kernel/mcount_enabled
 
-This was detected and fixed using the following semantic patch.
-(http://www.emn.fr/x-info/coccinelle/)
+Result looked like a livelock and finally convinced me to abandon the
+latency tracer.  Sorry, but it appears to be the right tool for the
+wrong job.
 
-// <smpl>
-@@
-iterator for_each_node_by_name;
-expression d;
-@@
+Jörn
 
-  for_each_node_by_name(d,...) {
-    ... when != break;
-  }
-  ... when != d
-?- of_node_put(d);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
-
-diff -u -p a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
---- a/arch/powerpc/platforms/powermac/feature.c 2007-08-12 13:27:05.000000000 +0200
-+++ b/arch/powerpc/platforms/powermac/feature.c 2007-12-02 17:16:04.000000000 +0100
-@@ -2861,7 +2861,6 @@ set_initial_features(void)
- 				core99_airport_enable(np, 0, 0);
- 			}
- 		}
--		of_node_put(np);
- 	}
- 
- 	/* On all machines that support sound PM, switch sound off */
-diff -u -p a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
---- a/arch/powerpc/platforms/powermac/pci.c 2007-10-22 11:24:59.000000000 +0200
-+++ b/arch/powerpc/platforms/powermac/pci.c 2007-12-02 17:16:05.000000000 +0100
-@@ -1162,13 +1162,11 @@ void __init pmac_pcibios_after_init(void
- 			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, nd, 0, 0);
- 		}
- 	}
--	of_node_put(nd);
- 	for_each_node_by_name(nd, "ethernet") {
- 		if (nd->parent && of_device_is_compatible(nd, "gmac")
- 		    && of_device_is_compatible(nd->parent, "uni-north"))
- 			pmac_call_feature(PMAC_FTR_GMAC_ENABLE, nd, 0, 0);
- 	}
--	of_node_put(nd);
- }
- 
- #ifdef CONFIG_PPC32
+-- 
+They laughed at Galileo.  They laughed at Copernicus.  They laughed at
+Columbus. But remember, they also laughed at Bozo the Clown.
+-- unknown
