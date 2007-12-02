@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbXLBUD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXLBUEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465AbXLBUD4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbXLBUDt
+	id S1756856AbXLBUEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbXLBUEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:03:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43985 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753861AbXLBUDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:03:48 -0500
-Date: Sun, 2 Dec 2007 12:02:14 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Pavel Machek <pavel@ucw.cz>, tvrtko.ursulin@sophos.com,
-       Andi Kleen <andi@firstfloor.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071202120214.68cf1700@laptopd505.fenrus.org>
-In-Reply-To: <17957.1196624688@turing-police.cc.vt.edu>
-References: <p738x4i9nyd.fsf@crumb.suse.de>
-	<OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com>
-	<20071201084332.GB4446@ucw.cz>
-	<17957.1196624688@turing-police.cc.vt.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 2 Dec 2007 15:04:10 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:37624 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753861AbXLBUEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 15:04:08 -0500
+Date: Sun, 2 Dec 2007 21:04:05 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/3] arch/powerpc: Add missing of_node_put
+Message-ID: <Pine.LNX.4.64.0712022101010.3361@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Dec 2007 14:44:48 -0500
-Valdis.Kletnieks@vt.edu wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> On Sat, 01 Dec 2007 08:43:32 GMT, Pavel Machek said:
-> 
-> > So what you are trying to do is 'application may never read bad
-> > sequence of bits from disk', right?
-> 
-> No, in many of the use cases, we're trying to do "if application
-> reads certain specified sequences of bits from disk we know about
-> it", which is subtly different.  Often, *absolute* prevention isn't
-> required, as long as we can generate audit trails and/or alerts...
+There should be an of_node_put when breaking out of a loop that iterates
+using for_each_node_by_type.
 
-.. which breaks down if/when glibc uses mmap() to implement the
-fopen/fread etc interface
-(note: it already does, just not quite yet by default)
+This was detected and fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
 
+// <smpl>
+@@
+identifier d;
+type T;
+expression e;
+iterator for_each_node_by_type;
+@@
 
+T *d;
+...
+for_each_node_by_type(d,...)
+  {... when != of_node_put(d)
+       when != e = d
+(
+   return d;
+|
++  of_node_put(d);
+?  return ...;
+)
+...}
+// </smpl>
 
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff -u -p a/arch/powerpc/platforms/cell/cbe_regs.c b/arch/powerpc/platforms/cell/cbe_regs.c
+--- a/arch/powerpc/platforms/cell/cbe_regs.c 2007-10-22 11:24:59.000000000 +0200
++++ b/arch/powerpc/platforms/cell/cbe_regs.c 2007-12-02 17:40:26.000000000 +0100
+@@ -256,6 +256,7 @@ void __init cbe_regs_init(void)
+ 			printk(KERN_ERR "cbe_regs: More BE chips than supported"
+ 			       "!\n");
+ 			cbe_regs_map_count--;
++			of_node_put(cpu);
+ 			return;
+ 		}
+ 		map->cpu_node = cpu;
