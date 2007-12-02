@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbXLBAnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbXLBAxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbXLBAnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Dec 2007 19:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXLBAnN
+	id S1755068AbXLBAxc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Dec 2007 19:53:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXLBAxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 19:43:13 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60151 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755267AbXLBAnM (ORCPT
+	Sat, 1 Dec 2007 19:53:24 -0500
+Received: from smtprelay03.ispgateway.de ([80.67.18.15]:51308 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753385AbXLBAxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 19:43:12 -0500
-Date: Sun, 2 Dec 2007 01:43:04 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Clayton <chris2553@googlemail.com>, davej@codemonkey.org.uk
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
-Subject: [2.6 patch] drivers/cpufreq/cpufreq_stats.c section fix
-Message-ID: <20071202004304.GG15974@stusta.de>
-References: <200711291419.49261.chris2553@googlemail.com>
+	Sat, 1 Dec 2007 19:53:23 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Dec 2007 19:53:23 EST
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Date: Sun, 2 Dec 2007 01:54:59 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20071201092037.GA32544@elte.hu> <alpine.DEB.0.9999.0712011036340.10996@chino.kir.corp.google.com> <20071201193643.GA10911@elte.hu>
+In-Reply-To: <20071201193643.GA10911@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200711291419.49261.chris2553@googlemail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712020155.00187.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpufreq_stats_free_table() mustn't be __cpuexit since it's called by the 
-__cpuinit cpufreq_stat_cpu_callback().
+On Saturday 01 December 2007, Ingo Molnar wrote:
+> maybe, but we'd have to see how often this gets triggered. An OOM is 
+> something that could happen in any overloaded system - while a hung task 
+> is likely due to a kernel bug.
 
-This patch fixes the following section mismatch reported by
-Chris Clayton:
+What about a client using hard mounted NFS shares here? That shouldn't be
+killed by the OOM killer in that situation, should it?
 
-<--  snip  -->
+Am I missing sth.?
 
-...
-WARNING: vmlinux.o(.init.text+0x143dd): Section mismatch: reference to .exit.text:cpufreq_stats_free_table (between 'cpufreq_stat_cpu_callback' and 'cpufreq_stats_init')
-...
 
-<--  snip  -->
+Best Regards
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-b845706570b48f091f855c33cdb9979d7e83a424 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 8a45d0f..1b8312b 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -164,7 +164,7 @@ freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
- 	return -1;
- }
- 
--static void __cpuexit cpufreq_stats_free_table(unsigned int cpu)
-+static void cpufreq_stats_free_table(unsigned int cpu)
- {
- 	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-
+Ingo Oeser
