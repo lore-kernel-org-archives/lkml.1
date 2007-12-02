@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbXLBROl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbXLBRRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755627AbXLBROl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 12:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXLBROb
+	id S1755885AbXLBRRt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 12:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXLBRRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 12:14:31 -0500
-Received: from rtr.ca ([76.10.145.34]:3550 "EHLO mail.rtr.ca"
+	Sun, 2 Dec 2007 12:17:40 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:60248 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbXLBROa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 12:14:30 -0500
-Message-ID: <4752E7F5.1000805@rtr.ca>
-Date: Sun, 02 Dec 2007 12:14:29 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: dmitry.torokhov@gmail.com, rubini@vision.unipv.it,
-       linux-input@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jkosina@suse.cz,
-       linux-usb@vger.kernel.org
-Subject: Re: REGRESSION: 2.6.24:  false double-clicks from USB mouse
-References: <4752DB8C.50608@rtr.ca>	<4752E432.10504@rtr.ca>	<4752E5AD.40905@rtr.ca> <20071202090755.342280f6@laptopd505.fenrus.org>
-In-Reply-To: <20071202090755.342280f6@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751788AbXLBRRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 12:17:40 -0500
+Date: Sun, 2 Dec 2007 20:18:05 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Simon Holm Th?gersen <odie@cs.aau.dk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] fix the long standing exec vs kill race
+Message-ID: <20071202171805.GA14701@tv-sign.ru>
+References: <20071202151454.GA13180@tv-sign.ru> <1196615193.5698.8.camel@odie.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196615193.5698.8.camel@odie.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Sun, 02 Dec 2007 12:04:45 -0500
-> Mark Lord <lkml@rtr.ca> wrote:
+On 12/02, Simon Holm Th?gersen wrote:
 > 
->> Mark Lord wrote:
->>> Mark Lord wrote:
->>>> I've only just recently tried running 2.6.24 on my main machine.
->>>> And it appears that I'll have to go back to 2.6.23,
->>>> because the USB mouse is not working correctly.
->>>>
->>>> Single-clicking on things with 2.6.24 very frequently gives a 
->>>> "double-click".
->>>> This does not happen with 2.6.23.8.
->>>>
->>>> I wonder what broke it?
->>>>
->>>> I've grabbed mousedev.c from 2.6.23 and inserted that in place
->>>> of the updated 2.6.24 source, but no change.  So it's not that
->>>> file.
->>> ...
->>>
->>> Mmm.. reverting the entire drivers/hid directory to that from 2.6.23
->>> seems to have fixed the problem, so we now know it's in there
->>> somewhere.
->>>
+> s??n, 02 12 2007 kl. 18:14 +0300, skrev Oleg Nesterov:
+> > 
+> > Please comment, I think at least the idea is promising.
+> > 
+> I have an issue that sounds related, but I might be completely off. I
+> would expect the simple attached program to keep receiving the same
+> signal, i.e. respond to
+> 	killall signal-exec -s SIGHUP
+> 
+> I tried your patches, but they didn't help.
+> 
+> Any ideas?
 > 
 > 
-> just making sure.. this is while running an untainted kernel without
-> something like vmware loaded, right?
-..
+> Simon Holm Th??gersen
 
-Absolutely.
+> #include <signal.h>
+> #include <stdio.h>
+> #include <unistd.h>
+> 
+> static char **argv_;
+> 
+> static void handler(int signal)
+> {
+> 	printf("got signal %d\n", signal);
+> 	execv(argv_[0], argv_);
+> }
+> 
+> int main(int argc, char *argv[])
+> {
+> 	printf("spawned\n");
+> 	argv_ = argv;
+> 	if (signal(SIGTERM, handler) == SIG_ERR)
+> 		err(1, "could not set signal handler for SIGTERM");
+> 	if (signal(SIGHUP, handler) == SIG_ERR)
+> 		err(1, "could not set signal handler for SIGTERM");
+> 	sleep(60);
+> 	return 0;
+> }
+> 
 
-But thanks for reminding me.. I need to re-run vmware-config.pl now.
+I think this is another issue which should be solved (?).
+
+exec() from the signal handler doesn't do sys_sigreturn(), so we don't unblock
+the signal, and it remains blocked after exec().
+
+Hmm. Is this linux bug, or application bug?
+
+Oleg.
+
