@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbXLBUqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbXLBUre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbXLBUqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 15:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbXLBUqV
+	id S1756861AbXLBUre (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 15:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbXLBUr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 15:46:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48576 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbXLBUqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 15:46:21 -0500
-Date: Sun, 2 Dec 2007 21:45:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
-       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Message-ID: <20071202204559.GA28550@elte.hu>
-References: <20071201205456.GA8231@elte.hu> <20071201234112.GA7209@lazybastard.org> <20071202085607.GA28966@elte.hu> <20071202113143.GA9378@lazybastard.org> <20071202135711.GA20434@elte.hu> <20071202141117.GB9516@lazybastard.org> <20071202154746.GA27069@elte.hu> <20071202195501.GB10657@lazybastard.org> <20071202200722.GA12101@elte.hu> <20071202203016.GC10657@lazybastard.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 2 Dec 2007 15:47:27 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45699 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389AbXLBUr0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 15:47:26 -0500
+Date: Sun, 2 Dec 2007 21:47:25 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Message-ID: <20071202204725.GA25891@one.firstfloor.org>
+References: <20071201092037.GA32544@elte.hu> <p737ijwylet.fsf@bingen.suse.de> <20071202185945.GA25990@elte.hu> <20071202114152.3bf4332d@laptopd505.fenrus.org> <20071202200953.GA23994@one.firstfloor.org> <20071202202602.GA16480@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071202203016.GC10657@lazybastard.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071202202602.GA16480@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Out of direct experience, 95% of the "too long delay" cases are plain 
+> old bugs. The rest we can (and must!) convert to TASK_KILLABLE or could 
 
-* Jörn Engel <joern@logfs.org> wrote:
+I already pointed out a few cases (nfs, cifs, smbfs, ncpfs, afs).   
+It would be pretty bad to merge this patch without converting them to 
+TASK_KILLABLE first
 
-> > oprofile helps if you can reliably reproduce the slowdown in a loop 
-> > or for a long amount of time, with lots of CPU utilization - and 
-> > then it's also lower overhead. The tracer can be used to capture 
-> > rare or complex events, and gives the full flow control and what is 
-> > happening within the kernel.
-> 
-> Such a trace would be useful indeed.  But so far the patch has only 
-> given me grief and nothing remotely like useful output.  Maybe I 
-> should simply use the complete -rt patch instead of debugging the 
-> broken-out latency-tracer patch.
+There's also the additional issue that even block devices are often
+network or SAN backed these days. Having 120 second delays in there
+is quite possible.
 
-to capture that trace i did not use -rt, i just patched latest -git 
-with:
+So most likely adding this patch and still keeping a robust kernel
+would require converting most of these delays to TASK_KILLABLE first.
+That would not be a bad thing -- i would often like to kill a
+process stuck on a bad block device -- but is likely a lot of work.
 
-  http://people.redhat.com/mingo/latency-tracing-patches/latency-tracing-v2.6.24-rc3.combo.patch
+> There are no softlockup false positive bugs open at the moment. If you 
+> know about any, then please do not hesitate and report them, i'll be 
+> eager to fix them. The softlockup detector is turned on by default in 
+> Fedora (alongside lockdep in rawhide), and it helped us find countless 
 
-(this has your fixes included already)
+That just means nobody runs stress tests on those. e.g. lockdep 
+tends to explode even on simple stress tests on larger systems because it
+tracks all locks in all dynamic objects in memory and towards 6k-10k entries
+the graph walks tend to take multiple seconds on some NUMA systems.
 
-have done:
+-Andi
 
-  echo 1 > /proc/sys/kernel/mcount_enabled
-
-and have run:
-
-  ./trace-cmd sleep 1 > trace.txt
-
-  http://people.redhat.com/mingo/latency-tracing-patches/trace-cmd.c
-
-to capture a 1 second trace of what the system is doing. I think your 
-troubles are due to running it within a qemu guest - that is not a 
-typical utilization so you are on unchartered waters.
-
-	Ingo
