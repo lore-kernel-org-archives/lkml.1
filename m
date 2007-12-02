@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbXLBTpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbXLBTpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbXLBTpX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 14:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbXLBTpB
+	id S1755256AbXLBTpn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 14:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbXLBTpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 14:45:01 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49146 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755801AbXLBTpA (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 14:45:00 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pavel Machek <pavel@ucw.cz>
-Cc: tvrtko.ursulin@sophos.com, Andi Kleen <andi@firstfloor.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-In-Reply-To: Your message of "Sat, 01 Dec 2007 08:43:32 GMT."
-             <20071201084332.GB4446@ucw.cz>
-From: Valdis.Kletnieks@vt.edu
-References: <p738x4i9nyd.fsf@crumb.suse.de> <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com>
-            <20071201084332.GB4446@ucw.cz>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196624688_2962P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 02 Dec 2007 14:44:48 -0500
-Message-ID: <17957.1196624688@turing-police.cc.vt.edu>
+	Sun, 2 Dec 2007 14:45:34 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3287 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754682AbXLBTpe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 14:45:34 -0500
+Date: Sun, 2 Dec 2007 14:45:32 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Need lockdep help
+Message-ID: <Pine.LNX.4.44L0.0712021430140.4185-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196624688_2962P
-Content-Type: text/plain; charset=us-ascii
+Ingo:
 
-On Sat, 01 Dec 2007 08:43:32 GMT, Pavel Machek said:
+I ran into a lockdep reporting issue just now with some new code under 
+development.  I think it's a false positive; the question is how best 
+to deal with it.
 
-> So what you are trying to do is 'application may never read bad
-> sequence of bits from disk', right?
+Here's the situation.  The new code runs during a system sleep (i.e., 
+suspend or hibernation).  Certain activities have to be deferred during 
+a system sleep, so I defined an rwsem: system_sleep_in_progress_rwsem.
 
-No, in many of the use cases, we're trying to do "if application reads certain
-specified sequences of bits from disk we know about it", which is subtly
-different.  Often, *absolute* prevention isn't required, as long as we can
-generate audit trails and/or alerts...
+Subroutines carrying out these activities acquire a read lock on the
+rwsem, so normally they proceed with no hindrance.  During a sleep
+transition, I acquire a write lock -- this is done via a PM-notifier
+callout routine.  That is, during a PM_HIBERNATION_PREPARE or
+PM_SUSPEND_PREPARE notification the routine does down_write(), and
+during a PM_POST_HIBERNATION or PM_POST_SUSPEND notification the
+routine does up_write().
 
-> Now, how do you propose to solve mmap(MAP_SHARED)? The app on the other cpu may
-> see the bad bits before kernel has chance to see them.
+The problem is that the notifier chain itself is under the control of 
+an rwsem (to prevent the chain from being modified while it is in use).  
+The resulting actions look like this:
 
-For many usage cases (such as virus scanners), mmap() isn't really an issue,
-because if another process is *already* trying to mmap() the file before it's
-even finished downloading from the network interface, you have other problems.
-In that case, what you *really* want to be hooking is read() from a network
-socket, not a disk file - and I don't think you can mmap() a socket anyhow,
-right?
+System sleep start:
+		down_read(notifier-chain rwsem);
+		call the notifier routine
+			down_write(&system_sleep_in_progress_rwsem);
+		up_read(notifier-chain rwsem);
 
-Similarly, if you're using these exit points to do *indexing*, you really don't
-care if it got mmap()'ed - at worst, it isn't indexed until the other CPU gets
-around to it.
+System sleep end:
+		down_read(notifier-chain rwsem);
+		call the notifier routine
+			up_write(&system_sleep_in_progress_rwsem);
+		up_read(notifier-chain rwsem);
 
+This creates a lockdep violation; each rwsem in turn is locked while 
+the other is being held.  However the only way this could lead to 
+deadlock would be if there was already a bug in the system Power 
+Management code (overlapping notifications).
 
+Perhaps the system_sleep_in_progress_rwsem could be replaced by some 
+other sort of synchronizing mechanism, but I don't want to change it -- 
+an rwsem really does seem to be the correct thing to use here.
 
---==_Exmh_1196624688_2962P
-Content-Type: application/pgp-signature
+What do you suggest?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Alan Stern
 
-iD8DBQFHUwswcC3lWbTT17ARAvRFAJ9ngiPXwfAy6Ahkk1PC5rsHv3pwcQCgzUug
-XWAs2kxXxWMmk21uQoamj0M=
-=MwR7
------END PGP SIGNATURE-----
-
---==_Exmh_1196624688_2962P--
