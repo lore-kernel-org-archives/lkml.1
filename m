@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbXLBWAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbXLBWAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752435AbXLBWAK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 17:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXLBV7y
+	id S1753196AbXLBWAf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 17:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXLBWAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 16:59:54 -0500
-Received: from stinky.trash.net ([213.144.137.162]:46990 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbXLBV7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 16:59:53 -0500
-Message-ID: <47532AD2.8090704@trash.net>
-Date: Sun, 02 Dec 2007 22:59:46 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Sun, 2 Dec 2007 17:00:08 -0500
+Received: from styx.suse.cz ([82.119.242.94]:58331 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751648AbXLBWAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 17:00:06 -0500
+Date: Sun, 2 Dec 2007 23:00:04 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+       David Brownell <david-b@pacbell.net>,
+       Nickk Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: [RESEND] [PATCH] RTC: assure proper memory ordering with respect to
+ RTC_DEV_BUSY flag (was Re: RTC: convert mutex to bitfield)
+In-Reply-To: <Pine.LNX.4.64.0711300944020.12807@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.64.0712022258120.13260@jikos.suse.cz>
+References: <200711301355.03139.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0711300944020.12807@jikos.suse.cz>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Ben Greear <greearb@candelatech.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill> <47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net> <20071202204356.GN15974@stusta.de>
-In-Reply-To: <20071202204356.GN15974@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Dec 02, 2007 at 09:03:56PM +0100, Patrick McHardy wrote:
->
->> For all I care binary modules can break, but frankly I don't see
->> how encapsulating a couple of structures and pointers in a new
->> structure and adding a new argument to existing functions shifts
->> the decision about how a function should be usable to the namespace
->> guys. IMO all functions should continue to be usable as before,
->> as decided by whoever actually wrote them.
->> ...
-> 
-> Even ignoring the fact that it's unclear whether distributing modules 
-> with not GPLv2 compatible licences is legal at all or might bring you in 
-> jail,
+[ nobody seems to have picked this up, resending. This is a fix for 
+  commit 8853c202b4 in Linus' tree ]
 
-Agreed, lets ignore that :)
+From: Jiri Kosina <jkosina@suse.cz>
 
-> your statement has an interesting implication:
-> 
-> Stuff like e.g. the EXPORT_SYMBOL(sk_alloc) predates the 
-> EXPORT_SYMBOL_GPL stuff.
-> 
-> Who is considered the author of this code?
-> 
-> And when should he state whether he prefers to use EXPORT_SYMBOL_GPL 
-> but wasn't able to use it at that when he wrote it since his code 
-> predates it and is glad to be able to decide this now?
+RTC: assure proper memory ordering with respect to RTC_DEV_BUSY flag
 
+We must make sure that the RTC_DEV_BUSY flag has proper lock semantics, 
+i.e. that the RTC_DEV_BUSY stores clearing the flag don't get reordered 
+before the preceeding stores and loads and vice versa.
 
-He can state it when he feels like it, I don't see the point.
-Authors generally get to decide whether they use EXPORT_SYMBOL
-or EXPORT_SYMBOL_GPL unless in cases where its really clear-cut
-that EXPORT_SYMBOL is inapproriate. But thats a different matter.
+Spotted by Nick Piggin.
 
-If a symbol was OK to be used previously and something using it
-would not automatically be considered a derived work, how does
-passing &init_net to the function just to make the compiler
-happy, avoid BUG_ONs and generally keep things working as before
-make it more of a derived work?
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/drivers/rtc/interface.c b/drivers/rtc/interface.c
+index a4f56e9..f1e00ff 100644
+--- a/drivers/rtc/interface.c
++++ b/drivers/rtc/interface.c
+@@ -293,7 +293,7 @@ int rtc_irq_register(struct rtc_device *rtc, struct rtc_task *task)
+ 		return -EINVAL;
+ 
+ 	/* Cannot register while the char dev is in use */
+-	if (test_and_set_bit(RTC_DEV_BUSY, &rtc->flags))
++	if (test_and_set_bit_lock(RTC_DEV_BUSY, &rtc->flags))
+ 		return -EBUSY;
+ 
+ 	spin_lock_irq(&rtc->irq_task_lock);
+@@ -303,7 +303,7 @@ int rtc_irq_register(struct rtc_device *rtc, struct rtc_task *task)
+ 	}
+ 	spin_unlock_irq(&rtc->irq_task_lock);
+ 
+-	clear_bit(RTC_DEV_BUSY, &rtc->flags);
++	clear_bit_unlock(RTC_DEV_BUSY, &rtc->flags);
+ 
+ 	return retval;
+ }
+diff --git a/drivers/rtc/rtc-dev.c b/drivers/rtc/rtc-dev.c
+index ae1bf17..025c60a 100644
+--- a/drivers/rtc/rtc-dev.c
++++ b/drivers/rtc/rtc-dev.c
+@@ -26,7 +26,7 @@ static int rtc_dev_open(struct inode *inode, struct file *file)
+ 					struct rtc_device, char_dev);
+ 	const struct rtc_class_ops *ops = rtc->ops;
+ 
+-	if (test_and_set_bit(RTC_DEV_BUSY, &rtc->flags))
++	if (test_and_set_bit_lock(RTC_DEV_BUSY, &rtc->flags))
+ 		return -EBUSY;
+ 
+ 	file->private_data = rtc;
+@@ -41,7 +41,7 @@ static int rtc_dev_open(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	/* something has gone wrong */
+-	clear_bit(RTC_DEV_BUSY, &rtc->flags);
++	clear_bit_unlock(RTC_DEV_BUSY, &rtc->flags);
+ 	return err;
+ }
+ 
+@@ -402,7 +402,7 @@ static int rtc_dev_release(struct inode *inode, struct file *file)
+ 	if (rtc->ops->release)
+ 		rtc->ops->release(rtc->dev.parent);
+ 
+-	clear_bit(RTC_DEV_BUSY, &rtc->flags);
++	clear_bit_unlock(RTC_DEV_BUSY, &rtc->flags);
+ 	return 0;
+ }
+ 
+
