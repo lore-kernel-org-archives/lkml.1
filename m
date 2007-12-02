@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbXLBOB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbXLBOPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbXLBOB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 09:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXLBOBt
+	id S1755597AbXLBOPy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 09:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXLBOPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 09:01:49 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39391 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754107AbXLBOBs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 09:01:48 -0500
-Date: Sun, 2 Dec 2007 13:57:34 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: bbpetkov@yahoo.de
-Cc: yme@gollum.tnic, Lucy McCoy <lucy@keyspan.com>,
-       Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] keyspan: init termios properly
-Message-ID: <20071202135734.323428c5@the-village.bc.nu>
-In-Reply-To: <20071202080340.GB6528@gollum.tnic>
-References: <46954.192.168.1.71.1195161016.webmail@192.168.1.71>
-	<20071118131130.GA3991@gollum.tnic>
-	<20071126141852.a609cdb6.akpm@linux-foundation.org>
-	<20071130054500.GB17350@gollum.tnic>
-	<4750471F.5050007@keyspan.com>
-	<20071202080340.GB6528@gollum.tnic>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 2 Dec 2007 09:15:46 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4531 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753503AbXLBOPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 09:15:45 -0500
+Date: Sun, 2 Dec 2007 14:15:35 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Dan Kegel <dank@kegel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Relax permissions for reading hard drive serial number?
+Message-ID: <20071202141535.GA4721@ucw.cz>
+References: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a71bd89a0711290713w809db6fv933ee9d9744bab6c@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Dec 2007 09:03:40 +0100
-Borislav Petkov <yme@gollum.tnic> wrote:
+Hi!
 
-> On Fri, Nov 30, 2007 at 09:23:43AM -0800, Lucy McCoy wrote:
-> > Hi All,
-> >
-> > I've been too busy to get to this but i'd rather not use the code fragment 
-> > i sent Boris to try.  It would be better to go ahead with the tty setup if 
-> > the pointer is not NULL, otherwise use the defaults and not reference the 
-> > NULL pointer. I'll see if I can get to this today.
-> you might also want to take a look at usa90_indat_callback() - there is
-> port->tty accessed again and this time it kills the machine completely when
-> something is sent over the serial line from the other end (through minicom, for
-> example). Oops is at
+> http://marc.info/?l=linux-kernel&m=96836765403118&w=2, Linus wrote:
+> > Hmm.. I have this feeling that it would be much nicer to
+> > just implement the NT system calls directly.
+> > ...
+> > I wouldn't be adverse to supporting Wine better...
 > 
-> http://www.screenshots.cc/view_image/ab9a1837/cimg00772.jpg
+> A few years on, Wine has matured to the point where it's
+> ready to run quite a few apps, even some protected by Safedisc.
+> One sticking point is that apps like Photoshop and probably
+> Punkbuster want to retrieve the hard drive's serial number,
+> but Linux restricts access to that info:
+> $ ls -l /proc/ide/hda/identify
+> -r-------- 1 root root 0 2007-11-29 07:05 /proc/ide/hda/identify
+> (And even if /proc/ide goes away, the other ways of retrieving
+> this info are similarly restricted to root.)
+> 
+> Any reason the access control on this info shouldn't be eased a bit,
+> e.g. make /proc/ide/*/identify be mode 444?
 
-Change it to if (tty && urb->actual_length) in that function and it'll
-probably cure it
+I think conslusion was 'unchangeable machine ids are root-only'. But
+perhaps you can chmod in startup scripts?
+
+> An alternative might be for Wine to simply fake the serial number,
+> but I would like to avoid that if possible.
+
+Fake it, I'd say.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
