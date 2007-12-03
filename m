@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbXLCXf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbXLCXhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752561AbXLCXf4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 18:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXLCXfr
+	id S1752740AbXLCXhI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 18:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXLCXg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 18:35:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42506 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751106AbXLCXfq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 18:35:46 -0500
-Date: Mon, 3 Dec 2007 15:34:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: penguin-kernel@I-love.SAKURA.ne.jp, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add EXPORT_SYMBOL(ksize);
-Message-Id: <20071203153459.ac19dae3.akpm@linux-foundation.org>
-In-Reply-To: <20071202134841.GI15974@stusta.de>
-References: <200712021743.GBH12983.FHOFVJOMFLOStQ@I-love.SAKURA.ne.jp>
-	<20071202134841.GI15974@stusta.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Dec 2007 18:36:57 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:9095 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750764AbXLCXg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 18:36:56 -0500
+Date: Tue, 4 Dec 2007 08:36:37 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.24-rc4, part 2.
+Message-ID: <20071203233637.GC15047@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Dec 2007 14:48:42 +0100
-Adrian Bunk <bunk@kernel.org> wrote:
+Please pull from:
 
-> On Sun, Dec 02, 2007 at 05:43:39PM +0900, Tetsuo Handa wrote:
-> > 
-> > mm/slub.c exports ksize(), but mm/slob.c and mm/slab.c don't. I don't know why.
-> >...
-> 
-> That's due to the fact that my patch to remove this unused export from 
-> slub was not yet applied...
-> 
-> Where is the modular in-kernel user?
-> 
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.24.git
 
-binfmt_flat.c, binfmt_elf_fdpic.c.
+Which contains:
+
+Nobuhiro Iwamatsu (2):
+      sh: Fix PCI IO space base address of SH7780.
+      sh: Support PCI IO access of SH7780 base boards.
+
+ arch/sh/drivers/pci/ops-r7780rp.c |    4 ++--
+ arch/sh/drivers/pci/ops-se7780.c  |    4 ++--
+ arch/sh/drivers/pci/pci-sh7780.h  |    2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
