@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbXLCQwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbXLCQx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752846AbXLCQwm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 11:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbXLCQwf
+	id S1753374AbXLCQx4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 11:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXLCQxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 11:52:35 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:56725 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbXLCQwe (ORCPT
+	Mon, 3 Dec 2007 11:53:48 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:40609 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750858AbXLCQxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 11:52:34 -0500
-Message-ID: <475433E1.6030208@oracle.com>
-Date: Mon, 03 Dec 2007 08:50:41 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Mon, 3 Dec 2007 11:53:47 -0500
+Date: Mon, 3 Dec 2007 11:53:47 -0500
+To: Avi Kivity <avi@argo.co.il>
+Cc: Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+Message-ID: <20071203165347.GJ2308@csclub.uwaterloo.ca>
+References: <474EAD18.6040408@stellatravel.co.uk> <20071130143445.GA2310@csclub.uwaterloo.ca> <4751BD23.7020104@argo.co.il>
 MIME-Version: 1.0
-To: Clemens Koller <clemens.koller@anagramm.de>
-CC: LKML List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Documentation/BUG-HUNTING whitespace cleanup, take 2
-References: <475405A9.4030608@anagramm.de> <20071203083101.93141c4b.randy.dunlap@oracle.com> <47543339.7010104@anagramm.de>
-In-Reply-To: <47543339.7010104@anagramm.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4751BD23.7020104@argo.co.il>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clemens Koller wrote:
-> Randy Dunlap schrieb:
->  > On Mon, 03 Dec 2007 14:33:29 +0100 Clemens Koller wrote:
->  >
->  >> Just a little whitespace cleanup patch for Documentation/BUG-HUNTING.
->  >>
->  >> Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
->  >
->  >
->  > Mostly looks OK, except for the last chunk:  why delete that line?
->  > missing a + line?
->  >
->  >
->  > @@ -130,7 +130,6 @@ You will then do:
->  >              that makes the difference.
->  >
->  >  Finally, you take all the info that you have, kernel revisions, bug
->  > -description, the extent to which you have narrowed it down, and pass
->  >  that off to whomever you believe is the maintainer of that section.
->  >  A post to linux.dev.kernel isn't such a bad idea if you've done some
->  >  work to narrow it down.
-> 
-> Hmm... that was not intended, updated patch attached.
-> 
-> Thank you,
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> Just a little whitespace cleanup patch for Documentation/BUG-HUNTING
-> 
-> Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
+On Sat, Dec 01, 2007 at 09:59:31PM +0200, Avi Kivity wrote:
+> C also requires a (very minimal) runtime. And I don't see how having a 
+> runtime disqualifies a language from being usable in a kernel; the 
+> runtime is just one more library, either supplied by the compiler or by 
+> the kernel.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Well the majority of C syntax requires no runtime library.  There are
+some system call like things that you often want that need a library
+(like malloc and such), but those aren't really part of C itself.  Of
+course without malloc and printf and file i/o calls the program would
+probably be a bit boring.  I have written some small C programs without
+a runtime, where the few things I needed where implemented in assembly
+and poked the hardware directly and called from the C program.
 
+> Object orientation in C leaves much to be desired; see the huge number 
+> of void pointers and container_of()s in the kernel.
 
-Thanks.
+As a programming language, C leaves much to be desired.
 
--- 
-~Randy
-Features and documentation: http://lwn.net/Articles/260136/
+--
+Len Sorensen
