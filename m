@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbXLCXOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbXLCXUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbXLCXOm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 18:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXLCXOf
+	id S1752161AbXLCXUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 18:20:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXLCXUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 18:14:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42465 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750964AbXLCXOe (ORCPT
+	Mon, 3 Dec 2007 18:20:38 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:41009 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076AbXLCXUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 18:14:34 -0500
-Date: Mon, 3 Dec 2007 15:13:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ecashin@coraid.com, jnelson-kernel-bugzilla@jamponi.net,
-       bugme-daemon@bugzilla.kernel.org, nickpiggin@yahoo.com.au,
-       clameter@sgi.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       a.p.zijlstra@chello.nl
-Subject: Re: [Bugme-new] [Bug 9482] New: kernel GPF in 2.6.24 (g09f345da)
-Message-Id: <20071203151349.0ebf497c.akpm@linux-foundation.org>
-In-Reply-To: <20071203144722.4188f476.akpm@linux-foundation.org>
-References: <bug-9482-10286@http.bugzilla.kernel.org/>
-	<20071201122302.10dd9c44.akpm@linux-foundation.org>
-	<20071203162137.GB25251@coraid.com>
-	<20071203113459.d36c1a01.akpm@linux-foundation.org>
-	<20071203210005.GB27094@coraid.com>
-	<20071203213837.GE27094@coraid.com>
-	<20071203144722.4188f476.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Dec 2007 18:20:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=k+vXsgQEnUZOnkqrJPQm3B+hhKOox8/plQm28UHrzC2PxJuO5XjqCZpmbKebJaqXUdemqAl+I785gnZCd6Vue9MmVW/IZPdxX9KXuutK3saYn/RzPagGq/sZCZvg7uzl3Qy8SliZ52VUaDXCjkQTXhjE5qrzoM0lQ0qecbg/PEo=
+Message-ID: <47548F40.8090309@gmail.com>
+Date: Tue, 04 Dec 2007 00:20:32 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: casey@schaufler-ca.com
+CC: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] (2.6.24-rc3-mm2) -mm Smack mutex cleanup
+References: <47544D58.5090306@schaufler-ca.com>
+In-Reply-To: <47544D58.5090306@schaufler-ca.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Dec 2007 14:47:22 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On 12/03/2007 07:39 PM, Casey Schaufler wrote:
+> From: Casey Schaufler <casey@schaufler-ca.com>
+> 
+> Clean out unnecessary mutex initializations for Smack list locks.
+> Once this is done, there is no need for them to be shared among
+> multiple files, so pull them out of the header file and put them
+> in the files where they belong.
 
-> Does this fix?
+Then it might be static.
 
-Slightly more elaborate version
+> Pull unnecessary locking from smack_inode_setsecurity, it used
+> to be required when the assignment was not guaranteed to be a
+> scalar value but isn't now.
+> 
+> Change uses of __capable(current,...) to capable(...).
+> Take out an inappropriate cast. Use container_of() instead
+> of doing the same calculation by hand.
+> Fix comment spelling errors.
 
-- handle errors
+Too many different changes according to the name of the patch.
 
-- don't do illegal things under spinlock
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> 
+> ---
+> 
+> Tested with stamp-2007-11-30-16-39
+> 
+>  security/smack/smack.h        |    3 --
+>  security/smack/smack_access.c |    3 ++
+>  security/smack/smack_lsm.c    |   34 +++++++++-----------------------
+>  security/smack/smackfs.c      |    6 +++++
+>  4 files changed, 19 insertions(+), 27 deletions(-)
+> 
+> diff -uprN -X linux-2.6.24-rc3-mm2-base/Documentation/dontdiff linux-2.6.24-rc3-mm2-base/security/smack/smack_lsm.c linux-2.6.24-rc3-mm2-smack/security/smack/smack_lsm.c
+> --- linux-2.6.24-rc3-mm2-base/security/smack/smack_lsm.c	2007-11-27 16:47:05.000000000 -0800
+> +++ linux-2.6.24-rc3-mm2-smack/security/smack/smack_lsm.c	2007-11-28 11:46:13.000000000 -0800
+[...]
+> @@ -748,9 +746,7 @@ static int smack_inode_setsecurity(struc
+>  		return -EINVAL;
+>  
+>  	if (strcmp(name, XATTR_SMACK_SUFFIX) == 0) {
+> -		mutex_lock(&nsp->smk_lock);
+>  		nsp->smk_inode = sp;
+> -		mutex_unlock(&nsp->smk_lock);
+>  		return 0;
+>  	}
+>  	/*
 
-- clean up error unwinding
+Ok, it still might be atomic as a variable change, but it will break scenarios
+such as
 
---- a/drivers/block/aoe/aoeblk.c~aoe-properly-initialise-the-request_queues-backing_dev_info
-+++ a/drivers/block/aoe/aoeblk.c
-@@ -6,6 +6,7 @@
- 
- #include <linux/hdreg.h>
- #include <linux/blkdev.h>
-+#include <linux/backing-dev.h>
- #include <linux/fs.h>
- #include <linux/ioctl.h>
- #include <linux/genhd.h>
-@@ -210,25 +211,20 @@ aoeblk_gdalloc(void *vp)
- 	if (gd == NULL) {
- 		printk(KERN_ERR "aoe: cannot allocate disk structure for %ld.%ld\n",
- 			d->aoemajor, d->aoeminor);
--		spin_lock_irqsave(&d->lock, flags);
--		d->flags &= ~DEVFL_GDALLOC;
--		spin_unlock_irqrestore(&d->lock, flags);
--		return;
-+		goto err;
- 	}
- 
- 	d->bufpool = mempool_create_slab_pool(MIN_BUFS, buf_pool_cache);
- 	if (d->bufpool == NULL) {
- 		printk(KERN_ERR "aoe: cannot allocate bufpool for %ld.%ld\n",
- 			d->aoemajor, d->aoeminor);
--		put_disk(gd);
--		spin_lock_irqsave(&d->lock, flags);
--		d->flags &= ~DEVFL_GDALLOC;
--		spin_unlock_irqrestore(&d->lock, flags);
--		return;
-+		goto err_disk;
- 	}
- 
--	spin_lock_irqsave(&d->lock, flags);
- 	blk_queue_make_request(&d->blkq, aoeblk_make_request);
-+	if (bdi_init(&d->blkq.backing_dev_info))
-+		goto err_mempool;
-+	spin_lock_irqsave(&d->lock, flags);
- 	gd->major = AOE_MAJOR;
- 	gd->first_minor = d->sysminor * AOE_PARTITIONS;
- 	gd->fops = &aoe_bdops;
-@@ -246,6 +242,16 @@ aoeblk_gdalloc(void *vp)
- 
- 	add_disk(gd);
- 	aoedisk_add_sysfs(d);
-+	return;
-+
-+err_mempool:
-+	mempool_destroy(d->bufpool);
-+err_disk:
-+	put_disk(gd);
-+err:
-+	spin_lock_irqsave(&d->lock, flags);
-+	d->flags &= ~DEVFL_GDALLOC;
-+	spin_unlock_irqrestore(&d->lock, flags);
- }
- 
- void
-_
+mutex_lock(&nsp->smk_lock);
+create(nsp->smk_inode);
+cook_a_dinner();
+get_info(nsp->smk_inode);
+mutex_unlock(&nsp->smk_lock);
 
+While cook_a_dinner(), smack_inode_setsecurity() is called and the attribute
+changed...
 
-It was done lackadaisically and needs checking.
-
-
+Doesn't this matter?
