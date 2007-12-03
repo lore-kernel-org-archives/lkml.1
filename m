@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXLCN4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXLCN5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbXLCN4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 08:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbXLCN4P
+	id S1754701AbXLCN5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 08:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbXLCN5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 08:56:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46581 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752711AbXLCN4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 08:56:15 -0500
-Date: Mon, 3 Dec 2007 14:55:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203135547.GA4245@elte.hu>
-References: <20071203103815.GA2707@elte.hu> <20071203110412.GD28560@one.firstfloor.org> <20071203115900.GB8432@elte.hu> <20071203121357.GB2986@one.firstfloor.org> <20071203122833.GA20232@elte.hu> <20071203124144.GC2986@one.firstfloor.org> <20071203130003.GA26372@elte.hu> <20071203131442.GA4004@one.firstfloor.org> <20071203132955.GA31354@elte.hu> <20071203134801.GB4004@one.firstfloor.org>
+	Mon, 3 Dec 2007 08:57:08 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39706 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751882AbXLCN5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 08:57:07 -0500
+Date: Mon, 3 Dec 2007 14:57:00 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: acme@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add EXPORT_SYMBOL(ksize);
+Message-ID: <20071203135700.GR15974@stusta.de>
+References: <200712021743.GBH12983.FHOFVJOMFLOStQ@I-love.SAKURA.ne.jp> <20071202134841.GI15974@stusta.de> <200712030634.CBJ18798.OVFQJSFFOHMtLO@I-love.SAKURA.ne.jp> <20071202214629.GA15034@ghostprotocols.net> <200712032041.ABB90643.SOFVQFtMHFLOOJ@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071203134801.GB4004@one.firstfloor.org>
+In-Reply-To: <200712032041.ABB90643.SOFVQFtMHFLOOJ@I-love.SAKURA.ne.jp>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 03, 2007 at 08:41:44PM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> Arnaldo Carvalho de Melo wrote:
+> > > But I think ksize() should be available to kernel modules as well as kmalloc() etc.
+> > Why do you think so? You have to justify that with some valid use.
+> Is there an alternative function?
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+The question is not whether there's an alternative function.
 
-> I would still appreciate if you could state what default value you 
-> plan to set the backtrace sysctl to in the submitted patch.
+The kernel does not waste memory for all users by providing a fixed API 
+for external modules, the purpose of the kernel is to provide everything 
+required for what is shipped with the kernel.
 
-there's no "backtrace sysctl" planned for the moment. This "hung tasks" 
-debugging feature can be disabled/enabled on a wide scale already:
+Simply send the patch adding the exports when you submit your module for 
+inclusion in the kernel.
 
- - in the .config
+> If not, it sounds to me that this is a regression.
 
- - runtime, temporarily, via:
+That sounds strange considering that slab and slob AFAIR never exported 
+this symbol and only slub in 2.6.22 and 2.6.23 exports it.
 
-     echo 0 > /proc/sys/kernel/hung_task_timeout_secs
+> We couldn't know how much memory was allocated by kmalloc() in 2.4 era, and we can know it 2.6 era.
+> But are we going back to 2.4 era for out-of-tree kernel modules?
 
- - runtime, permanently, via adding:
+The interesting fact is that there are zero in-kernel modules using it.
 
-     kernel.hung_task_timeout_secs = 0
+> Thanks.
 
-   to /etc/sysctl.conf.
+cu
+Adrian
 
-the backtrace, as other posters have stated it in this thread too, is 
-very useful, so i'll not remove it from the printout.
+-- 
 
-	Ingo
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
