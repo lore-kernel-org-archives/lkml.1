@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXLCUDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751355AbXLCUOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbXLCUDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 15:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXLCUDJ
+	id S1751355AbXLCUOa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 15:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXLCUOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 15:03:09 -0500
-Received: from mx12.go2.pl ([193.17.41.142]:56046 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753079AbXLCUDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 15:03:08 -0500
-X-Greylist: delayed 20052 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Dec 2007 15:03:05 EST
-Message-ID: <475460EA.4050606@o2.pl>
-Date: Mon, 03 Dec 2007 21:02:50 +0100
-From: Warpme <warpme@o2.pl>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Mon, 3 Dec 2007 15:14:23 -0500
+Received: from neopsis.com ([213.239.204.14]:41011 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750733AbXLCUOW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 15:14:22 -0500
+Message-ID: <47546385.1010708@dbservice.com>
+Date: Mon, 03 Dec 2007 21:13:57 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071118)
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Subject: S3 resume stability problems
-Content-Type: multipart/mixed;
- boundary="------------020401000900000109080902"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: WARNING: smp_call_function_single() and smp_call_function_mask()
+References: <4752703B.10305@dbservice.com> <20071201084833.63263489@laptopd505.fenrus.org>
+In-Reply-To: <20071201084833.63263489@laptopd505.fenrus.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.261,
+	required 5, autolearn=spam, AWL 0.24, BAYES_00 -2.60,
+	RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020401000900000109080902
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Arjan van de Ven wrote:
+> On Sun, 02 Dec 2007 09:43:39 +0100
+> Tomas Carnecky <tom@dbservice.com> wrote:
+> 
+>> WARNING: at arch/x86/kernel/smp_64.c:427 smp_call_function_single()
+>> WARNING: at arch/x86/kernel/smp_64.c:397 smp_call_function_mask()
+>>
+>> dmesg and config attached.
+>>
+>> I'm getting about three of each at boot. I'm running:
+>> commit e1cca7e8d484390169777b423a7fe46c7021fec1
+>> Date:   Thu Nov 29 16:25:29 2007 -0800
+>> which is the latest git as of yesterday plus a one (unrelated) debug
+>> statement patch in usb uhci.
+>>
+>> There was a similar bug report after 2.6.23-rc8-mm was released.
+>> Though there seems to be a fundamental problem with how people use
+>> smp_call_function*() [1]. And this can just as well be another
+>> incarnation of it.
+>>
+>> Is that easy enough to fix or do I need to bisect (it didn't happen in
+>> 2.6.24-rc3)?
+>>
+> 
+> this appears to be a bug in the acpi code, to be exact in
+> processor_throttling.c file, function
+> acpi_processor_set_throttling_ptc(); it disables interrupts and then
+> appears to do a cross-cpu IPI to set the state. Well... we can't do
+> that due to deadlock reasons (you can't do IPI's with interrupts off or
+> you can get a very nice deadlock with the cpu that you IPI trying to
+> do the same thing to you).
+> 
 
-Hi *
+I updated the kernel today (to 1a2edea9aff48...) and the warnings are gone.
 
-I'm setting up 2 appliances based on AMD x2 4400 CPU and Nvidia Mobos: 
-ASUS M2NPV-VM (6150 based) and Abit AN-M2HD (7050 based). Kernel is 
-2.6.23.9.
-
-My issue is stability of S3 resume:
--on ASUS it hangs every 3-10 try and it not depends on maxcpus setting.
--on Abit also it hangs every 3-10 try, but with maxcpus=1 is stable.
-
-It is not depending on enabled HW on mobos - even with all HW disabled 
-in BIOS S3, resume is still unstable.
-
-Observing resume process I didn't see any errors in syslog. Also when 
-resume hangs it hangs always with still lightning CapsLock keyb led 
-(keyb is not reacting on CapsLock pressing) -> it leads me that it isn't 
-video issue.
-
-As Abit with maxcpus=1 is working OK - it hints me that resume issue is 
-related to non-booting processor initialization.
-
-Do somebody can help me investigate problem ?
-
-br
-
-
---------------020401000900000109080902
-Content-Type: text/x-vcard; charset=utf-8;
- name="warpme.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="warpme.vcf"
-
-begin:vcard
-fn:Warpme
-n:;Warpme
-email;internet:warpme@o2.pl
-version:2.1
-end:vcard
-
-
---------------020401000900000109080902--
+tom
