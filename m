@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbXLCKR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbXLCKY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbXLCKR3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 05:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXLCKRV
+	id S1753693AbXLCKY1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 05:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXLCKYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 05:17:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56570 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Dec 2007 05:24:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35988 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751525AbXLCKRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 05:17:20 -0500
-Date: Mon, 3 Dec 2007 11:17:02 +0100
+	id S1751726AbXLCKYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 05:24:19 -0500
+Date: Mon, 3 Dec 2007 11:23:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sched_yield: delete sysctl_sched_compat_yield
-Message-ID: <20071203101702.GB30050@elte.hu>
-References: <1196155985.25646.31.camel@ymzhang> <200711301429.15664.nickpiggin@yahoo.com.au> <20071130100845.GB2201@elte.hu> <200712031527.57129.nickpiggin@yahoo.com.au> <20071203084557.GA13156@elte.hu> <1196674869.25646.142.camel@ymzhang>
+To: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Message-ID: <20071203102355.GC30050@elte.hu>
+References: <20071202185945.GA25990@elte.hu> <20071202114152.3bf4332d@laptopd505.fenrus.org> <20071202200953.GA23994@one.firstfloor.org> <20071202202602.GA16480@elte.hu> <20071202204725.GA25891@one.firstfloor.org> <20071202144331.6abf1289@laptopd505.fenrus.org> <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203095501.GB28560@one.firstfloor.org> <20071203111520.33ed2139@astralstorm.puszkin.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1196674869.25646.142.camel@ymzhang>
+In-Reply-To: <20071203111520.33ed2139@astralstorm.puszkin.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,37 +36,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+* Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org> wrote:
 
-> > as far as desktop apps such as firefox goes, the exact opposite is 
-> > true. We had two choices basically: either a "more agressive" yield 
-> > than before or a "less agressive" yield. Desktop apps were reported 
-> > to hurt from a "more agressive" yield (firefox for example gets some 
-> > pretty bad delays),
->
-> Why not to change source codes of firefox? [...]
-
-because we care a heck of a lot more about a widely used open-source 
-package's default "user experience" than we care about closed-source 
-volanomark scores...
-
-do you realize the absurdity of that suggestion: in essence we'd punish 
-firefox _because it is open-source and can be changed_. So basically 
-firefox would get a more preferential treatment if it was closed-source 
-and could not be changed? That's totally backwards.
-
-> If the sched_compat_yield=0, the sys_sched_yield almost does nothing 
-> but returns, so firefox could just do not call sched_yield. I assume 
-> 'sched_compat_yield=0' ~ no_call_to_sched_yield.
+> > iirc TASK_KILLABLE fixed NFS only. While that's a good thing there 
+> > are unfortunately a lot more subsystems that would need the same 
+> > treatment.
 > 
-> It's easier to delete calls to sched_yield in applications than to 
-> tune calls to sched_yield.
+> Yes, that's exactly why the patch is needed - to find the bugs and fix 
+> them. Otherwise you'll have problems finding some places to convert to 
+> TASK_KILLABLE.
+> 
+> CIFS and similar have to be fixed - it tends to lock the app using it, 
+> in unkillable state.
 
-We are not at all worried about punishing silly benchmark behavior - and 
-volanomark's call to Thread.yield (if that's indeed what is happening - 
-could you try to trace it to make sure?) is outright silly. There are 
-other chatroom benchmarks such as hackbench.c and hackbench_pth.c that i 
-test frequently, and they are not affected by any yield details. (and 
-even then it's still taken with a grain of salt - remember dbench)
+Amen. I still have to see a single rational argument against this 
+debugging feature - and tons of arguments were listed in favor of it. So 
+let's just try and see what happens.
+
+> > Yes let's break things first instead of looking at the implications 
+> > closely.
+> 
+> Throwing _rare_ stack traces is not breakage. 120s 
+> task_uninterruptible in the usual case (no errors) is already broken - 
+> there are no sane loads that can invoke that IMO.
+> 
+> A stack trace on x subsystem error is not that bad, especially as 
+> these are limited to 10 per session.
+
+we could lower that limit to 1 per bootup - if they become annoying. 
+There's lots of flexibility in the code. Really, we should have done 
+this 10 years ago - it would have literally saved me many days of 
+debugging time combined, and i really have experience in identifying 
+such bad tasks. (and it would have sped up debugging in countless number 
+of instances when users were met with an uninterruptible task.)
 
 	Ingo
