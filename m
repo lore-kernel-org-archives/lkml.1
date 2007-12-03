@@ -1,30 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXLCRpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbXLCR64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbXLCRpX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 12:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbXLCRpJ
+	id S1752226AbXLCR64 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 12:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbXLCR6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 12:45:09 -0500
-Received: from mga02.intel.com ([134.134.136.20]:6754 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbXLCRpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 12:45:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,244,1194249600"; 
-   d="scan'208";a="237646746"
-Date: Mon, 3 Dec 2007 09:42:36 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ata: ahci: Enclosure Management via LED rev2
-Message-ID: <20071203094236.7c85522c@appleyard>
-In-Reply-To: <4751EE36.6050506@garzik.org>
-References: <20071129121925.7d178915@appleyard>
-	<20071130163443.2feabc5d@appleyard>
-	<4751EE36.6050506@garzik.org>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Mon, 3 Dec 2007 12:58:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51771 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750754AbXLCR6r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 12:58:47 -0500
+Date: Mon, 3 Dec 2007 09:57:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: andi@firstfloor.org, penberg@cs.helsinki.fi, lkml@astralstorm.puszkin.org,
+       arjan@infradead.org, linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Message-Id: <20071203095736.7963553e.akpm@linux-foundation.org>
+In-Reply-To: <20071203141925.GA8327@elte.hu>
+References: <20071202165913.3eaebee6@laptopd505.fenrus.org>
+	<20071203095501.GB28560@one.firstfloor.org>
+	<20071203111520.33ed2139@astralstorm.puszkin.org>
+	<20071203102715.GC28560@one.firstfloor.org>
+	<20071203103815.GA2707@elte.hu>
+	<20071203110412.GD28560@one.firstfloor.org>
+	<20071203115900.GB8432@elte.hu>
+	<20071203121357.GB2986@one.firstfloor.org>
+	<84144f020712030550x1cb4dac7q8eeb111f7784590d@mail.gmail.com>
+	<20071203141437.GA4719@one.firstfloor.org>
+	<20071203141925.GA8327@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,50 +37,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Dec 2007 18:28:54 -0500
-Jeff Garzik <jeff@garzik.org> wrote:
+On Mon, 3 Dec 2007 15:19:25 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> Kristen Carlson Accardi wrote:
-> > Enclosure Management via LED
-> > 
-> > This patch implements Enclosure Management via the LED protocol as
-> > specified in AHCI specification.
-> > 
-> > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > ---
-> > This revision makes the change to the comment requested by Mark
-> > Lord, fixes some bugs in the bit shifting for writing the new led
-> > state, and implements a show function so that led status can be
-> > read as well as written.
+> this patch extends the soft-lockup detector to automatically
+> detect hung TASK_UNINTERRUPTIBLE tasks. Such hung tasks are
+> printed the following way:
 > 
-> Overall looks pretty good, from a technical review perspective.
+>  ------------------>
+>  INFO: task prctl:3042 blocked for more than 120 seconds.
+>  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message
+>  prctl         D fd5e3793     0  3042   2997
+>         f6050f38 00000046 00000001 fd5e3793 00000009 c06d8264 c06dae80 00000286
+>         f6050f40 f6050f00 f7d34d90 f7d34fc8 c1e1be80 00000001 f6050000 00000000
+>         f7e92d00 00000286 f6050f18 c0489d1a f6050f40 00006605 00000000 c0133a5b
+>  Call Trace:
+>   [<c04883a5>] schedule_timeout+0x6d/0x8b
+>   [<c04883d8>] schedule_timeout_uninterruptible+0x15/0x17
+>   [<c0133a76>] msleep+0x10/0x16
+>   [<c0138974>] sys_prctl+0x30/0x1e2
+>   [<c0104c52>] sysenter_past_esp+0x5f/0xa5
+>   =======================
+>  2 locks held by prctl/3042:
+>  #0:  (&sb->s_type->i_mutex_key#5){--..}, at: [<c0197d11>] do_fsync+0x38/0x7a
+>  #1:  (jbd_handle){--..}, at: [<c01ca3d2>] journal_start+0xc7/0xe9
+>  <------------------
 > 
-> Two worries:
+> the current default timeout is 120 seconds. Such messages are printed
+> up to 10 times per bootup. If the system has crashed already then the
+> messages are not printed.
 > 
-> 1) exporting ata_scsi_find_dev(), and assuming a scsi device is 
-> attached.  the latter can be fixed by a !NULL check (and should be),
-> but its a bit of a layering violation since long term we want to make
-> the SCSI simulator optional for all ATA devices.
+> if lockdep is enabled then all held locks are printed as well.
 > 
-> 2) vaguely related to #1, I'm not so sure the attributes should be 
-> implemented directly in ahci.  if this __or something like it__
-> appears on non-Intel hardware, the code should be somewhere more
-> generic.
-> 
+> this feature is a natural extension to the softlockup-detector (kernel
+> locked up without scheduling) and to the NMI watchdog (kernel locked up
+> with IRQs disabled).
 
-When I first started developing this patch, I did have a more generic
-approach - It adds lots of complexity that isn't needed for this simple
-protocol, and one of the problems I encountered was that for different
-EM protocols, you'd probably want to have a different set of attributes
-defined.  Also, even using the same protocol, you may have hardware
-that supports more attributes.  For example, in the case of this LED
-protocol, some implementations may support the Activity LED (software
-controlled), and some may not.  For protocols like SGPIO, they have a
-lot of attributes defined by the spec, but I'm guessing hardware may
-not support all of them.  When I tried to abstract hardware and
-protocol away and make some kind of generic enclosure management
-framework, it turned into this big ordeal.  So, I can keep going along
-those lines, but to me it started to seem silly since I had no other
-hardware that I knew of that was going to be helped by all this.  I
-thought maybe the right thing to do was to keep it simple and then wait
-for other the hardware to appear.
+This feature will save one full reporter-developer round-trip during
+investigation of a significant number of bug reports.
+
+It might be more practical if it were to dump the traces for _all_
+D-state processes when it fires - basically an auto-triggered sysrq-W.
