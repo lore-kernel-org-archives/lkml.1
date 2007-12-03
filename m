@@ -1,70 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbXLCUzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbXLCVBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947AbXLCUzQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 15:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXLCUzF
+	id S1751938AbXLCVBF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 16:01:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXLCVAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 15:55:05 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:48520 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750979AbXLCUzE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 15:55:04 -0500
-Date: Mon, 3 Dec 2007 15:55:01 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] kobject: add kobject_init_ng, kobject_add_ng, and
- kobject_init_and_add functions
-In-Reply-To: <20071203190523.GA21776@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0712031552030.3115-100000@iolanthe.rowland.org>
+	Mon, 3 Dec 2007 16:00:55 -0500
+Received: from baron.coile-labs.com ([65.14.39.133]:16421 "EHLO coraid.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750709AbXLCVAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 16:00:54 -0500
+Date: Mon, 3 Dec 2007 16:00:05 -0500
+From: "Ed L. Cashin" <ecashin@coraid.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jnelson-kernel-bugzilla@jamponi.net, bugme-daemon@bugzilla.kernel.org,
+       nickpiggin@yahoo.com.au, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl
+Subject: Re: [Bugme-new] [Bug 9482] New: kernel GPF in 2.6.24 (g09f345da)
+Message-ID: <20071203210005.GB27094@coraid.com>
+References: <bug-9482-10286@http.bugzilla.kernel.org/> <20071201122302.10dd9c44.akpm@linux-foundation.org> <20071203162137.GB25251@coraid.com> <20071203113459.d36c1a01.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071203113459.d36c1a01.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Dec 2007, Greg KH wrote:
-
-> > Did you want to add an extra kobject_put() to the end of kobject_del()?  
-> > Or did you want to define a new kobject_destroy() that combines calls 
-> > to kobject_del() and kobject_put()?
+On Mon, Dec 03, 2007 at 11:34:59AM -0800, Andrew Morton wrote:
+...
+> Strange.  It _looks_ like we've somehow caused smp_processor_id() to return
+> a not-possible CPU number.
+...
+> Could you debug this a bit please?  Find out which CPU number
+> __percpu_counter_add() is using, for a start?  I'd do:
+...
+> Alternatively, just do
 > 
-> No, let's keep what we have there on the cleanup path for now.  I have
-> enough work to clean up the initializion part of the api for now :)
+> 	if (!cpu_possible(cpu))
+> 		printk(...)
+> 
+> in __percpu_counter_add().  Then you can proceed to work through the
+> various operations which smp_processor_id() does and find out where it went
+> wrong: print out %fs, mainly.
+> 
+> If the cpu number is valid then perhaps something scribbled on the cpu's
+> per-cpu memory.
 
-> +/**
-> + * kobject_add_ng - the main kobject add function
-> + * @kobj: the kobject to add
-> + * @parent: pointer to the parent of the kobject.
-> + * @fmt: format to name the kobject with.
-> + *
-> + * The kobject name is set and added to the kobject hierarchy in this
-> + * function.
-> + *
-> + * If @parent is set, then the parent of the @kobj will be set to it.
-> + * If @parent is NULL, then the parent of the @kobj will be set to the
-> + * kobject associted with the kset assigned to this kobject.  If no kset
-> + * is assigned to the kobject, then the kobject will be located in the
-> + * root of the sysfs tree.
-> + *
-> + * If this function returns an error, kobject_put() must be called to
-> + * properly clean up the memory associated with the object.
-> + *
-> + * If the function is successful, the only way to properly clean up the
-> + * memory is with a call to kobject_del(), in which case, a call to
-> + * kobject_put() is not necessary (kobject_del() does the final
-> + * kobject_put() to call the release function in the ktype's release
-> + * pointer.)
+I'll keep looking at this, but at a glance it looks like the cpu
+number is valid, because I don't trip a BUG_ON when I make the change
+below (the badval variable is noise, sorry).
 
-This comment is inconsistent with your decision above not to add an 
-extra kobject_put() into kobject_del().  (Unless such a line was added 
-while I wasn't looking...)
+  --- lx/lib/percpu_counter.c.20071130    2007-12-03 15:43:19.000000000 -0500
+  +++ lx/lib/percpu_counter.c     2007-12-03 15:47:38.000000000 -0500
+  @@ -33,7 +33,9 @@ void __percpu_counter_add(struct percpu_
+          s64 count;
+          s32 *pcount;
+          int cpu = get_cpu();
+  +       u64 badval = 0xffffffffffffffffULL;
+   
+  +       BUG_ON(!cpu_possible(cpu));
+          pcount = per_cpu_ptr(fbc->counters, cpu);
+          count = *pcount + amount;
+          if (count >= batch || count <= -batch) {
 
-Alan Stern
+The trace is,
 
+Unable to handle kernel paging request at ffffffffffffffff RIP: 
+ [<ffffffff8036d602>] __percpu_counter_add+0x35/0x7f
+PGD 203067 PUD 204067 PMD 0 
+Oops: 0000 [1] SMP 
+CPU 0 
+Modules linked in: aoe
+Pid: 2777, comm: bash Not tainted 2.6.24-rc3-47dbg #9
+RIP: 0010:[<ffffffff8036d602>]  [<ffffffff8036d602>] __percpu_counter_add+0x35/0x7f
+RSP: 0018:ffff810078d19aa8  EFLAGS: 00010086
+RAX: ffffffffffffffff RBX: ffff81007fc71950 RCX: 0000000000000010
+RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffff810078d9a250
+RBP: ffff810078d19ac8 R08: ffff81007cc077b0 R09: ffffffff802ae5ee
+R10: ffff810078d19aa8 R11: ffff810078cb59d8 R12: ffff81007c81c380
+R13: ffff810078d9a250 R14: 0000000000000200 R15: ffff81007805f830
+FS:  00002b341db94db0(0000) GS:ffffffff8078b000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: ffffffffffffffff CR3: 000000007b415000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process bash (pid: 2777, threadinfo ffff810078d18000, task ffff810078d160c0)
+Stack:  ffff810078d19ac8 ffff81007fc71950 ffff81007c81c380 0000000000000000
+ ffff810078d19af8 ffffffff802ae682 0000100078d19ae8 ffff81007805f830
+ 0000000000000200 ffff81007fc71950 ffff810078d19b18 ffffffff802ae75c
+Call Trace:
+ [<ffffffff802ae682>] __set_page_dirty+0xdc/0x121
+ [<ffffffff802ae75c>] mark_buffer_dirty+0x95/0x99
+ [<ffffffff802ae7d2>] __block_commit_write+0x72/0xac
+ [<ffffffff802ae988>] block_write_end+0x4f/0x5b
+ [<ffffffff802b243f>] blkdev_write_end+0x1b/0x38
+ [<ffffffff80265d96>] generic_file_buffered_write+0x1c0/0x648
+ [<ffffffff8023a752>] current_fs_time+0x22/0x29
+ [<ffffffff80266576>] __generic_file_aio_write_nolock+0x358/0x3c2
+ [<ffffffff80266c84>] filemap_fault+0x1c4/0x320
+ [<ffffffff80264cce>] unlock_page+0x2d/0x31
+ [<ffffffff802666dd>] generic_file_aio_write_nolock+0x3b/0x8d
+ [<ffffffff8028e40f>] do_sync_write+0xe2/0x126
+ [<ffffffff802497d0>] autoremove_wake_function+0x0/0x38
+ [<ffffffff8058e715>] do_page_fault+0x3f8/0x7bb
+ [<ffffffff8028cae8>] fd_install+0x5f/0x68
+ [<ffffffff8028eb98>] vfs_write+0xae/0x137
+ [<ffffffff8028f102>] sys_write+0x47/0x70
+ [<ffffffff8020b7ae>] system_call+0x7e/0x83
+
+
+Code: 4c 8b 24 d0 49 63 04 24 48 8d 1c 30 48 63 c1 48 39 c3 7d 0a 
+RIP  [<ffffffff8036d602>] __percpu_counter_add+0x35/0x7f
+ RSP <ffff810078d19aa8>
+CR2: ffffffffffffffff
+BUG: sleeping function called from invalid context at kernel/rwsem.c:20
+in_atomic():0, irqs_disabled():1
+INFO: lockdep is turned off.
+
+Call Trace:
+ [<ffffffff802518cb>] debug_show_held_locks+0x1b/0x24
+ [<ffffffff8022f352>] __might_sleep+0xc7/0xc9
+ [<ffffffff8024c4d0>] down_read+0x1d/0x4a
+ [<ffffffff80237bd8>] exit_mm+0x34/0xf7
+ [<ffffffff8023933e>] do_exit+0x247/0x75b
+ [<ffffffff8058e9e4>] do_page_fault+0x6c7/0x7bb
+ [<ffffffff8058a82a>] thread_return+0x42/0x86
+ [<ffffffff88002544>] :aoe:aoeblk_make_request+0x1c3/0x1d0
+ [<ffffffff8058cb7d>] error_exit+0x0/0x9a
+ [<ffffffff802ae5ee>] __set_page_dirty+0x48/0x121
+ [<ffffffff8036d602>] __percpu_counter_add+0x35/0x7f
+ [<ffffffff802ae682>] __set_page_dirty+0xdc/0x121
+ [<ffffffff802ae75c>] mark_buffer_dirty+0x95/0x99
+ [<ffffffff802ae7d2>] __block_commit_write+0x72/0xac
+ [<ffffffff802ae988>] block_write_end+0x4f/0x5b
+ [<ffffffff802b243f>] blkdev_write_end+0x1b/0x38
+ [<ffffffff80265d96>] generic_file_buffered_write+0x1c0/0x648
+ [<ffffffff8023a752>] current_fs_time+0x22/0x29
+ [<ffffffff80266576>] __generic_file_aio_write_nolock+0x358/0x3c2
+ [<ffffffff80266c84>] filemap_fault+0x1c4/0x320
+ [<ffffffff80264cce>] unlock_page+0x2d/0x31
+ [<ffffffff802666dd>] generic_file_aio_write_nolock+0x3b/0x8d
+ [<ffffffff8028e40f>] do_sync_write+0xe2/0x126
+ [<ffffffff802497d0>] autoremove_wake_function+0x0/0x38
+ [<ffffffff8058e715>] do_page_fault+0x3f8/0x7bb
+ [<ffffffff8028cae8>] fd_install+0x5f/0x68
+ [<ffffffff8028eb98>] vfs_write+0xae/0x137
+ [<ffffffff8028f102>] sys_write+0x47/0x70
+ [<ffffffff8020b7ae>] system_call+0x7e/0x83
+
+
+
+-- 
+  Ed L Cashin <ecashin@coraid.com>
