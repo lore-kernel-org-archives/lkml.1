@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXLCOHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXLCOMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbXLCOHn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 09:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbXLCOHg
+	id S1753922AbXLCOMg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 09:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXLCOM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 09:07:36 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:25422 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbXLCOHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 09:07:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=el6wfe8HS/1IfMbSzjGY8XsVkNGCJ+1SkRbpXbJ7O8JiNklvj4SRpxURsJ3z9MX4viJbIB2LUj8+fNRRs1fNdDBd7WaRx7R90WmTn4hGIvDURwMAwaB04HfPUtKCgjXyogtxLSO2mLxZ/KIYu4suWN4V0wDPLYmGpGUkWpE9Yy8=
-Message-ID: <84144f020712030607v79ebf1e8w8c8b14d2647f1deb@mail.gmail.com>
-Date: Mon, 3 Dec 2007 16:07:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH] Add EXPORT_SYMBOL(ksize);
-Cc: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>, acme@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071203135700.GR15974@stusta.de>
+	Mon, 3 Dec 2007 09:12:29 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40545 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752087AbXLCOM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 09:12:28 -0500
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/wPIhYsfTwCG2FX8c9r0k1+iY67T6pCXj3bSA24w
+	LK1RE169X4LqUQ
+Message-ID: <47540EC8.9080401@gmx.de>
+Date: Mon, 03 Dec 2007 15:12:24 +0100
+From: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Daniel Drake <dsd@gentoo.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: hibernation issue with kernel 2.6.23-gentoo-r3 at T41
+References: <200712031419.41596.toralf.foerster@gmx.de> <47540950.4090207@gentoo.org>
+In-Reply-To: <47540950.4090207@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200712021743.GBH12983.FHOFVJOMFLOStQ@I-love.SAKURA.ne.jp>
-	 <20071202134841.GI15974@stusta.de>
-	 <200712030634.CBJ18798.OVFQJSFFOHMtLO@I-love.SAKURA.ne.jp>
-	 <20071202214629.GA15034@ghostprotocols.net>
-	 <200712032041.ABB90643.SOFVQFtMHFLOOJ@I-love.SAKURA.ne.jp>
-	 <20071203135700.GR15974@stusta.de>
-X-Google-Sender-Auth: 125e67fe6f538cb0
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Daniel Drake schrieb:
+> And the outcome was what exactly? It didn't suspend, and hard-hung? Or 
+> didn't suspend, came back to a usable system? ...
+Ah, sorry - the system came back and  I could continue my work.
+However I couldn't hibernate my system (I tried it 2 additional times) 
+as long as
+my user mode linux image was running (2.6.23 UML kernel). Within UML I 
+ran cupsd to which firefox
+was trying to make a connection. Firefox itself was waiting for a 
+response of the cupsd server,
+the cupsd itself was generating the ssl -files under /etc/cupsd/ssl as 
+far as I could read from the cupsd log.
+> Did you press alt+sysrq+T or did all this come about as a result of 
+> the suspend?
+I pressed <Fn>+<F12> to hibernate the system, and b/c the scrren was 
+black and came back some secs later I had have a look into
+/var/log/message and copied the outout into my first mail.
 
-On Mon, Dec 03, 2007 at 08:41:44PM +0900, Tetsuo Handa wrote:
-> > We couldn't know how much memory was allocated by kmalloc() in 2.4 era, and we can know it 2.6 era.
-> > But are we going back to 2.4 era for out-of-tree kernel modules?
-
-On Dec 3, 2007 3:57 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> The interesting fact is that there are zero in-kernel modules using it.
-
-Yeah, and now that we have krealloc() I don't expect that many callers
-actually need ksize() either.
-
-                                Pekka
