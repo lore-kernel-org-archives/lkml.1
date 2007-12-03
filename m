@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbXLCN6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbXLCN7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbXLCN6R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 08:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXLCN6H
+	id S1754864AbXLCN7r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 08:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXLCN7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 08:58:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37655 "EHLO mx3.mail.elte.hu"
+	Mon, 3 Dec 2007 08:59:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41277 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbXLCN6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 08:58:04 -0500
-Date: Mon, 3 Dec 2007 14:57:41 +0100
+	id S1750727AbXLCN7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 08:59:39 -0500
+Date: Mon, 3 Dec 2007 14:59:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203135741.GB4245@elte.hu>
-References: <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203095501.GB28560@one.firstfloor.org> <20071203111520.33ed2139@astralstorm.puszkin.org> <20071203102715.GC28560@one.firstfloor.org> <20071203103815.GA2707@elte.hu> <20071203110412.GD28560@one.firstfloor.org> <20071203115900.GB8432@elte.hu> <20071203121357.GB2986@one.firstfloor.org> <84144f020712030550x1cb4dac7q8eeb111f7784590d@mail.gmail.com>
+Message-ID: <20071203135916.GC4245@elte.hu>
+References: <20071203103815.GA2707@elte.hu> <20071203110412.GD28560@one.firstfloor.org> <20071203115900.GB8432@elte.hu> <20071203121357.GB2986@one.firstfloor.org> <20071203122833.GA20232@elte.hu> <20071203124144.GC2986@one.firstfloor.org> <20071203130003.GA26372@elte.hu> <20071203131442.GA4004@one.firstfloor.org> <20071203132955.GA31354@elte.hu> <20071203144128.16a3dd53@astralstorm.puszkin.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020712030550x1cb4dac7q8eeb111f7784590d@mail.gmail.com>
+In-Reply-To: <20071203144128.16a3dd53@astralstorm.puszkin.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,24 +36,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+* Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org> wrote:
 
-> Hi,
+> On Mon, 3 Dec 2007 14:29:56 +0100
+> > * Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > > feedback about an impending catastrophy has been duly noted
+> > > 
+> > > The point was less about an impending catastrophe, but more of a 
+> > > timebomb ticking until the next widely used release.
 > 
-> On Mon, Dec 03, 2007 at 12:59:00PM +0100, Ingo Molnar wrote:
-> > > "audit thousands of callsites in 8 million lines of code first" is a
-> > > nice euphemism for hiding from the blame forever. We had 10 years for it
-> 
-> On Dec 3, 2007 2:13 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> > Ok your approach is then to "let's warn about it and hope
-> > it will go away"
-> 
-> It's more like "lets warn about it and fix the problems when we find 
-> some." Btw, how is this different from how the lockdep patches went 
-> in?
+> I think I know why Andi is so much against backtraces: he has some log 
+> filter listening on netconsole mailing him with suspicious log 
+> messages.
 
-yeah, it's quite similar. (in fact this feature is expected to have a 
-false positive rate lower than that of lockdep) The backtraces are 
-essential as well, they help kernel developer find the bugs.
+Andi, is that true? If yes, why didnt Andi state this concern outright, 
+instead of pooh-pooh-ing the patch on various other grounds?
 
 	Ingo
+
