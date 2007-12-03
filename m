@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbXLCWQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXLCWSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751716AbXLCWQI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 17:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbXLCWP4
+	id S1752069AbXLCWSd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 17:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbXLCWS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 17:15:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43600 "EHLO ogre.sisk.pl"
+	Mon, 3 Dec 2007 17:18:26 -0500
+Received: from rtr.ca ([76.10.145.34]:4370 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967AbXLCWPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 17:15:55 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: suspend-related lockdep warning
-Date: Mon, 3 Dec 2007 23:34:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-References: <20071128024355.5931c6ec.akpm@linux-foundation.org> <200712022133.24420.rjw@sisk.pl> <20071202222652.ef7c6c18.akpm@linux-foundation.org>
-In-Reply-To: <20071202222652.ef7c6c18.akpm@linux-foundation.org>
+	id S1750764AbXLCWSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 17:18:25 -0500
+Message-ID: <475480AF.2010307@rtr.ca>
+Date: Mon, 03 Dec 2007 17:18:23 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Chris Friesen <cfriesen@nortel.com>, davids@webmaster.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+References: <MDEHLPKNGKAHNMBLJOLKEEHJIJAC.davids@webmaster.com> <47545F88.6070609@nortel.com> <4754777F.7020302@rtr.ca> <20071203214803.GA8989@elte.hu> <47547BB6.3040402@rtr.ca> <20071203220559.GA11906@elte.hu>
+In-Reply-To: <20071203220559.GA11906@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712032334.27088.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of December 2007, Andrew Morton wrote:
-> On Sun, 2 Dec 2007 21:33:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Ingo Molnar wrote:
+> * Mark Lord <lkml@rtr.ca> wrote:
 > 
-> > On Saturday, 1 of December 2007, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > 2.6.24-rc3-mm2 (which will be released if it boots on two more machines and
-> > > > if I stay awake) will say this during suspend-to-RAM on the Vaio:
-> > > > 
-> > > > [   91.876445] Syncing filesystems ... done.
-> > > > [   92.382595] Freezing user space processes ... WARNING: at kernel/lockdep.c:2662 check_flags()
-> > > > [   92.384000] Pid: 1925, comm: dbus-daemon Not tainted 2.6.24-rc3-mm2 #32
-> > > > [   92.384177]  [<c0104a74>] show_trace_log_lvl+0x12/0x25
-> > > > [   92.384335]  [<c01052ff>] show_trace+0xd/0x10
-> > > > [   92.384469]  [<c01059be>] dump_stack+0x55/0x5d
-> > > > [   92.384605]  [<c0136a29>] check_flags+0x7f/0x11a
-> > > > [   92.384746]  [<c0139cfb>] lock_acquire+0x3a/0x86
-> > > > [   92.384886]  [<c031f4de>] _spin_lock+0x26/0x53
-> > > > [   92.385023]  [<c0141d3b>] refrigerator+0x13/0xc8
-> > > > [   92.385163]  [<c01274c8>] get_signal_to_deliver+0x32/0x3fb
-> > > > [   92.385326]  [<c01030f4>] do_notify_resume+0x8c/0x699
-> > > > [   92.385476]  [<c0103c18>] work_notifysig+0x13/0x1b
-> > > > [   92.385620]  =======================
-> > > > [   92.385719] irq event stamp: 309
-> > > > [   92.385809] hardirqs last  enabled at (309): [<c0103c79>] syscall_exit_work+0x11/0x26
-> > > > [   92.386045] hardirqs last disabled at (308): [<c0103b42>] syscall_exit+0x14/0x25
-> > > > [   92.386265] softirqs last  enabled at (0): [<c011bea5>] copy_process+0x374/0x130e
-> > > > [   92.386491] softirqs last disabled at (0): [<00000000>] 0x0
-> > > > [   92.392457] (elapsed 0.00 seconds) done.
-> > > > [   92.392581] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> > > > [   92.392882] PM: Entering mem sleep
-> > > > [   92.392974] Suspending console(s)
-> > > > 
-> > > > this has been happening for quite some time and might even be happening in
-> > > > mainline.  
-> > > 
-> > > Is it complaining that we entered refrigerator with irqs disabled?
-> > 
-> > Or that someone else called task_lock() with irqs disabled at one point ...
-> > 
-> > Hm, perhaps it's related to kernel preemption.  Andrew, I guess the kernel is
-> > preemptible?
-> > 
+>> Ack.  And what of the suggestion to try to ensure that a yielding task 
+>> simply not end up as the very next one chosen to run?  Maybe by 
+>> swapping it with another (adjacent?) task in the tree if it comes out 
+>> on top again?
 > 
-> yup.  http://userweb.kernel.org/~akpm/config-sony.txt
+> we did that too for quite some time in CFS - it was found to be "not 
+> agressive enough" by some folks and "too agressive" by others. Then when 
+> people started bickering over this we added these two simple corner 
+> cases - switchable via a flag. (minimum agression and maximum agression)
+> 
+>> (I really don't know the proper terminology to use here, but hopefully 
+>> Ingo can translate that).
+> 
+> the terminology you used is perfectly fine.
+> 
+>> Thanks Ingo -- I *really* like this scheduler!
+> 
+> heh, thanks :) For which workload does it make the biggest difference 
+> for you? (and compared to what other scheduler you used before? 2.6.22?)
+..
 
-Is this reproducible with kernel preemption off?
+Heh.. I'm just a very unsophisticated desktop user, and I like it when
+Thunderbird and Firefox are unaffected by the "make -j3" kernel builds
+that are often running in another window.  BIG difference there.
+
+And on the cool side, the Swarm game (swarm.swf) is a great example of
+something that used to get jerky really fast whenever anything else was
+running, and now it really doesn't seem to be affected by anything.
+(I don't really play computer games, but this one is has a very retro feel..).
+
+Cheers
