@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXLCWSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752335AbXLCWVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbXLCWSd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 17:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbXLCWS0
+	id S1752335AbXLCWVE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 17:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXLCWUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 17:18:26 -0500
-Received: from rtr.ca ([76.10.145.34]:4370 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbXLCWSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 17:18:25 -0500
-Message-ID: <475480AF.2010307@rtr.ca>
-Date: Mon, 03 Dec 2007 17:18:23 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 3 Dec 2007 17:20:53 -0500
+Received: from smtp.rutgers.edu ([128.6.72.243]:11089 "EHLO
+	annwn14.rutgers.edu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750808AbXLCWUw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 17:20:52 -0500
+From: Michael Wu <flamingice@sourmilk.net>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] NET: mac80211 - fix missed mutex unlock
+Date: Mon, 3 Dec 2007 17:29:14 -0500
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
+References: <aa79d98a0712030250s748bb7dfjb50f3fe5fed67fa7@mail.gmail.com>
+In-Reply-To: <aa79d98a0712030250s748bb7dfjb50f3fe5fed67fa7@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chris Friesen <cfriesen@nortel.com>, davids@webmaster.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sched_yield: delete sysctl_sched_compat_yield
-References: <MDEHLPKNGKAHNMBLJOLKEEHJIJAC.davids@webmaster.com> <47545F88.6070609@nortel.com> <4754777F.7020302@rtr.ca> <20071203214803.GA8989@elte.hu> <47547BB6.3040402@rtr.ca> <20071203220559.GA11906@elte.hu>
-In-Reply-To: <20071203220559.GA11906@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart5138846.zmjnCDzoCt";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200712031729.15188.flamingice@sourmilk.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mark Lord <lkml@rtr.ca> wrote:
-> 
->> Ack.  And what of the suggestion to try to ensure that a yielding task 
->> simply not end up as the very next one chosen to run?  Maybe by 
->> swapping it with another (adjacent?) task in the tree if it comes out 
->> on top again?
-> 
-> we did that too for quite some time in CFS - it was found to be "not 
-> agressive enough" by some folks and "too agressive" by others. Then when 
-> people started bickering over this we added these two simple corner 
-> cases - switchable via a flag. (minimum agression and maximum agression)
-> 
->> (I really don't know the proper terminology to use here, but hopefully 
->> Ingo can translate that).
-> 
-> the terminology you used is perfectly fine.
-> 
->> Thanks Ingo -- I *really* like this scheduler!
-> 
-> heh, thanks :) For which workload does it make the biggest difference 
-> for you? (and compared to what other scheduler you used before? 2.6.22?)
-..
+--nextPart5138846.zmjnCDzoCt
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Heh.. I'm just a very unsophisticated desktop user, and I like it when
-Thunderbird and Firefox are unaffected by the "make -j3" kernel builds
-that are often running in another window.  BIG difference there.
+On Monday 03 December 2007 05:50:38 Cyrill Gorcunov wrote:
+> This patch does fix missed mutex unlock. Please see it attached.
+> (Can't send it as a plain text patch - have only IE based mail access)
+>
+> Cyrill
+Acked-by: Michael Wu <flamingice@sourmilk.net>
 
-And on the cool side, the Swarm game (swarm.swf) is a great example of
-something that used to get jerky really fast whenever anything else was
-running, and now it really doesn't seem to be affected by anything.
-(I don't really play computer games, but this one is has a very retro feel..).
+Thanks,
+-Michael Wu
 
-Cheers
+--nextPart5138846.zmjnCDzoCt
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHVIM7T3Oqt9AH4aERAmhAAKCNpOFTdnVw2259T8LgheZ/iDQcvgCgmk6F
+GyKY1QuApuWP2h5YizVpW4I=
+=oGeY
+-----END PGP SIGNATURE-----
+
+--nextPart5138846.zmjnCDzoCt--
