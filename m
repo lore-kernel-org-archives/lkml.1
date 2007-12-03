@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbXLCSu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbXLCSxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbXLCSu0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 13:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbXLCSuP
+	id S1752975AbXLCSxn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 13:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXLCSxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 13:50:15 -0500
-Received: from waste.org ([66.93.16.53]:33970 "EHLO waste.org"
+	Mon, 3 Dec 2007 13:53:36 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:45683 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbXLCSuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 13:50:14 -0500
-Date: Mon, 3 Dec 2007 12:49:59 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: drivers/char/random.c:write_pool() -- cond_resched needed?
-Message-ID: <20071203184958.GN17536@waste.org>
-References: <20071130215810.d3m43bwobifihfiu@m.safari.iki.fi>
+	id S1751595AbXLCSxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 13:53:35 -0500
+Message-ID: <475450A1.9000103@oracle.com>
+Date: Mon, 03 Dec 2007 10:53:21 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071130215810.d3m43bwobifihfiu@m.safari.iki.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 BUG] 100% iowait on host while UML is running
+References: <E1IzDHv-0003xj-Af@dorka.pomaz.szeredi.hu> <x49ir3fhg5n.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49ir3fhg5n.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30, 2007 at 11:58:10PM +0200, Sami Farin wrote:
-> In write_pool(), isn't cond_resched() needed after call to
-> add_entropy_words() because otherwise there can be large latencies
-> (think of command "dd if=/dev/zero of=/dev/random bs=100000000" ) ?
 
-Yes, looks like you're right.
+> We could check ctx->reqs_active before scheduling to determine whether
+> or not we are waiting for I/O, but this would require taking the
+> context lock in order to be accurate.  Given that the test would be
+> only for the sake of book keeping, it might be okay to do it outside
+> of the lock.
+> 
+> Zach, what are your thoughts on this?
 
-Reduce latency for large writes to /dev/[u]random
+I agree that it'd be OK to test it outside the lock, though we'll want
+some commentary:
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+	/* Try to only show up in io wait if there are ops in flight */
+	if (ctx->reqs_active)
+		io_schedule();
+	else
+		schedule();
 
-diff -r c60016ba6237 drivers/char/random.c
---- a/drivers/char/random.c	Tue Nov 13 09:09:36 2007 -0800
-+++ b/drivers/char/random.c	Mon Dec 03 12:48:30 2007 -0600
-@@ -1041,6 +1041,7 @@ write_pool(struct entropy_store *r, cons
- 		p += bytes;
- 
- 		add_entropy_words(r, buf, (bytes + 3) / 4);
-+		cond_resched();
- 	}
- 
- 	return 0;
+It's cheap, safe, and accurate the overwhelming majority of the time :).
 
+We only need it in read_events().  The other two io_schedule() calls are
+only reached to wait on pending reqs specifically.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+It still won't make sense for iocbs which aren't performing IO, but I
+guess that's one more bridge to cross when we come to it.
+
+Do you want to throw this tiny patch together and submit it?
+
+- z
