@@ -1,265 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbXLCQLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbXLCQOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751721AbXLCQLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 11:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbXLCQLI
+	id S1752558AbXLCQOg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 11:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXLCQO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 11:11:08 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:20875 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750914AbXLCQLH (ORCPT
+	Mon, 3 Dec 2007 11:14:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53942 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbXLCQO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 11:11:07 -0500
-From: Daniel Drake <dsd@gentoo.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation about unaligned memory access
-Message-Id: <20071203161101.A63469D4ED7@zog.reactivated.net>
-Date: Mon,  3 Dec 2007 16:11:01 +0000 (GMT)
+	Mon, 3 Dec 2007 11:14:29 -0500
+Date: Mon, 3 Dec 2007 08:12:43 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Kyle Rose <krose@krose.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: OOPS at mm/rmap.c:628
+Message-ID: <20071203081243.0a8ad658@laptopd505.fenrus.org>
+In-Reply-To: <47542108.1050104@krose.org>
+References: <47542108.1050104@krose.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a document I wrote after figuring out what unaligned memory access
-is all about. I've tried to cover the information I was looking for when
-trying to learn about this, without producing a hopelessly detailed/complex
-spew. I hope it is useful to others.
+On Mon, 03 Dec 2007 10:30:16 -0500
+Kyle Rose <krose@krose.org> wrote:
 
-Signed-off-by: Daniel Drake <dsd@gentoo.org>
+> Not on the list, so please be sure to include me in any
+> replies/comments/questions.
+> 
+> Thanks,
+> Kyle
+> 
+> 
+> 
+> Ubuntu 2.6.22-14 source (2.6.22.9 with some other patches,
+> presumably). x86_64
+> Intel Core 2 Duo E6600
+> 4G
+> 
+> 
+> kern.log output:
+> 
+> Dec  3 06:10:02 kai kernel: [3080315.180287] ------------[ cut here
+> ]------------
+> Dec  3 06:10:02 kai kernel: [3080315.180289] kernel BUG at
+> mm/rmap.c:628! Dec  3 06:10:02 kai kernel: [3080315.180292] invalid
 
----
 
-Changes since the v2 draft I posted last week:
- - spelling/grammar fixes
- - fixed get_unaligned/put_unaligned examples
- - clarified the scope of unaligned access
+Hi,
 
---- /dev/null	2007-12-03 10:17:52.569007801 +0000
-+++ linux/Documentation/unaligned-memory-access.txt	2007-12-03 16:04:55.000000000 +0000
-@@ -0,0 +1,226 @@
-+UNALIGNED MEMORY ACCESSES
-+=========================
-+
-+Linux runs on a wide variety of architectures which have varying behaviour
-+when it comes to memory access. This document presents some details about
-+unaligned accesses, why you need to write code that doesn't cause them,
-+and how to write such code!
-+
-+
-+The definition of an unaligned access
-+=====================================
-+
-+Unaligned memory accesses occur when you try to read N bytes of data starting
-+from an address that is not evenly divisible by N (i.e. addr % N != 0).
-+For example, reading 4 bytes of data from address 0x10004 is fine, but
-+reading 4 bytes of data from address 0x10005 would be an unaligned memory
-+access.
-+
-+The above may seem a little vague, as memory access can happen in different
-+ways. The context here is at the machine code level: certain instructions read
-+or write a number of bytes to or from memory (e.g. movb, movw, movl in x86
-+assembly). As will become clear, it is relatively easy to spot C statements
-+which will compile to multiple-byte memory access instructions, namely when
-+dealing with types such as u16, u32 and u64.
-+
-+
-+Natural alignment
-+=================
-+
-+The rule mentioned above forms what we refer to as natural alignment:
-+When accessing N bytes of memory, the base memory address must be evenly
-+divisible by N, i.e. addr % N == 0.
-+
-+When writing code, assume the target architecture has natural alignment
-+requirements.
-+
-+In reality, only a few architectures require natural alignment on all sizes
-+of memory access. However, we must consider ALL supported architectures;
-+writing code that satisfies natural alignment requirements is the easiest way
-+to achieve full portability.
-+
-+
-+Why unaligned access is bad
-+===========================
-+
-+The effects of performing an unaligned memory access vary from architecture
-+to architecture. It would be easy to write a whole document on the differences
-+here; a summary of the common scenarios is presented below:
-+
-+ - Some architectures are able to perform unaligned memory accesses
-+   transparently, but there is usually a significant performance cost.
-+ - Some architectures raise processor exceptions when unaligned accesses
-+   happen. The exception handler is able to correct the unaligned access,
-+   at significant cost to performance.
-+ - Some architectures raise processor exceptions when unaligned accesses
-+   happen, but the exceptions do not contain enough information for the
-+   unaligned access to be corrected.
-+ - Some architectures are not capable of unaligned memory access, but will
-+   silently perform a different memory access to the one that was requested,
-+   resulting a a subtle code bug that is hard to detect!
-+
-+It should be obvious from the above that if your code causes unaligned
-+memory accesses to happen, your code will not work correctly on certain
-+platforms and will cause performance problems on others.
-+
-+
-+Code that does not cause unaligned access
-+=========================================
-+
-+At first, the concepts above may seem a little hard to relate to actual
-+coding practice. After all, you don't have a great deal of control over
-+memory addresses of certain variables, etc.
-+
-+Fortunately things are not too complex, as in most cases, the compiler
-+ensures that things will work for you. For example, take the following
-+structure:
-+
-+	struct foo {
-+		u16 field1;
-+		u32 field2;
-+		u8 field3;
-+	};
-+
-+Let us assume that an instance of the above structure resides in memory
-+starting at address 0x10000. With a basic level of understanding, it would
-+not be unreasonable to expect that accessing field2 would cause an unaligned
-+access. You'd be expecting field2 to be located at offset 2 bytes into the
-+structure, i.e. address 0x10002, but that address is not evenly divisible
-+by 4 (remember, we're reading a 4 byte value here).
-+
-+Fortunately, the compiler understands the alignment constraints, so in the
-+above case it would insert 2 bytes of padding in between field1 and field2.
-+Therefore, for standard structure types you can always rely on the compiler
-+to pad structures so that accesses to fields are suitably aligned (assuming
-+you do not cast the field to a type of different length).
-+
-+Similarly, you can also rely on the compiler to align variables and function
-+parameters to a naturally aligned scheme, based on the size of the type of
-+the variable.
-+
-+At this point, it should be clear that accessing a single byte (u8 or char)
-+will never cause an unaligned access, because all memory addresses are evenly
-+divisible by one.
-+
-+On a related topic, with the above considerations in mind you may observe
-+that you could reorder the fields in the structure in order to place fields
-+where padding would otherwise be inserted, and hence reduce the overall
-+resident memory size of structure instances. The optimal layout of the
-+above example is:
-+
-+	struct foo {
-+		u32 field2;
-+		u16 field1;
-+		u8 field3;
-+	};
-+
-+For a natural alignment scheme, the compiler would only have to add a single
-+byte of padding at the end of the structure. This padding is added in order
-+to satisfy alignment constraints for arrays of these structures.
-+
-+Another point worth mentioning is the use of __attribute__((packed)) on a
-+structure type. This GCC-specific attribute tells the compiler never to
-+insert any padding within structures, useful when you want to use a C struct
-+to represent some data that comes in a fixed arrangement 'off the wire'.
-+
-+You might be inclined to believe that usage of this attribute can easily
-+lead to unaligned accesses when accessing fields that do not satisfy
-+architectural alignment requirements. However, again, the compiler is aware
-+of the alignment constraints and will generate extra instructions to perform
-+the memory access in a way that does not cause unaligned access. Of course,
-+the extra instructions obviously cause a loss in performance compared to the
-+non-packed case, so the packed attribute should only be used when avoiding
-+structure padding is of importance.
-+
-+
-+Code that causes unaligned access
-+=================================
-+
-+With the above in mind, let's move onto a real life example of a function
-+that can cause an unaligned memory access. The following function adapted
-+from include/linux/etherdevice.h is an optimized routine to compare two
-+ethernet MAC addresses for equality.
-+
-+unsigned int compare_ether_addr(const u8 *addr1, const u8 *addr2)
-+{
-+	const u16 *a = (const u16 *) addr1;
-+	const u16 *b = (const u16 *) addr2;
-+	return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2])) != 0;
-+}
-+
-+In the above function, the reference to a[0] causes 2 bytes (16 bits) to
-+be read from memory starting at address addr1. Think about what would happen
-+if addr1 was an odd address such as 0x10003. (Hint: it'd be an unaligned
-+access.)
-+
-+Despite the potential unaligned access problems with the above function, it
-+is included in the kernel anyway but is understood to only work on
-+16-bit-aligned addresses. It is up to the caller to ensure this alignment or
-+not use this function at all. This alignment-unsafe function is still useful
-+as it is a decent optimization for the cases when you can ensure alignment,
-+which is true almost all of the time in ethernet networking context.
-+
-+
-+Here is another example of some code that could cause unaligned accesses:
-+	void myfunc(u8 *data, u32 value)
-+	{
-+		[...]
-+		*((u32 *) data) = cpu_to_le32(value);
-+		[...]
-+	}
-+
-+This code will cause unaligned accesses every time the data parameter points
-+to an address that is not evenly divisible by 4.
-+
-+In summary, the 2 main scenarios where you may run into unaligned access
-+problems involve:
-+ 1. Casting variables to types of different lengths
-+ 2. Pointer arithmetic followed by access to at least 2 bytes of data
-+
-+
-+Avoiding unaligned accesses
-+===========================
-+
-+The easiest way to avoid unaligned access is to use the get_unaligned() and
-+put_unaligned() macros provided by the <asm/unaligned.h> header file.
-+
-+Going back to an earlier example of code that potentially causes unaligned
-+access:
-+
-+	void myfunc(u8 *data, u32 value)
-+	{
-+		[...]
-+		*((u32 *) data) = cpu_to_le32(value);
-+		[...]
-+	}
-+
-+To avoid the unaligned memory access, you would rewrite it as follows:
-+
-+	void myfunc(u8 *data, u32 value)
-+	{
-+		[...]
-+		value = cpu_to_le32(value);
-+		put_unaligned(value, (u32 *) data);
-+		[...]
-+	}
-+
-+The get_unaligned() macro works similarly. Assuming 'data' is a pointer to
-+memory and you wish to avoid unaligned access, its usage is as follows:
-+
-+	u32 value = get_unaligned((u32 *) data);
-+
-+These macros work work for memory accesses of any length (not just 32 bits as
-+in the examples above). Be aware that when compared to standard access of
-+aligned memory, using these macros to access unaligned memory can be costly in
-+terms of performance.
-+
-+If use of such macros is not convenient, another option is to use memcpy(),
-+where the source or destination (or both) are of type u8* or unsigned char*.
-+Due to the byte-wise nature of this operation, unaligned accesses are avoided.
-+
-+--
-+Author: Daniel Drake <dsd@gentoo.org>
-+With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
-+Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
-+Uli Kunitz, Vadim Lobanov
-+
+Thank you for your report.
+there have been several reports (at least 8 on lkml already) of this
+BUG() before for 2.6.22 (and a few before that), however nobody has
+reported this in 2.6.23 or later, so it's very likely something that
+this got fixed since in a later kernel....
+
+Greetings,
+    Arjan van de Ven
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
