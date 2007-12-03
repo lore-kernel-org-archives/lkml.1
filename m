@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbXLCW26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751714AbXLCWeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752121AbXLCW26 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 17:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXLCW2u
+	id S1751714AbXLCWeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 17:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXLCWeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 17:28:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43652 "EHLO ogre.sisk.pl"
+	Mon, 3 Dec 2007 17:34:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54466 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199AbXLCW2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 17:28:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Date: Mon, 3 Dec 2007 23:47:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, andi@firstfloor.org,
-       penberg@cs.helsinki.fi, lkml@astralstorm.puszkin.org,
-       arjan@infradead.org, linux-kernel@vger.kernel.org, tglx@linutronix.de
-References: <20071202165913.3eaebee6@laptopd505.fenrus.org> <200712031928.53659.rjw@sisk.pl> <20071203192426.GA8017@elte.hu>
-In-Reply-To: <20071203192426.GA8017@elte.hu>
+	id S1750896AbXLCWeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 17:34:12 -0500
+Date: Mon, 3 Dec 2007 23:33:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Chris Friesen <cfriesen@nortel.com>, davids@webmaster.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071203223353.GA20362@elte.hu>
+References: <MDEHLPKNGKAHNMBLJOLKEEHJIJAC.davids@webmaster.com> <47545F88.6070609@nortel.com> <4754777F.7020302@rtr.ca> <20071203214803.GA8989@elte.hu> <47547BB6.3040402@rtr.ca> <20071203220559.GA11906@elte.hu> <475480AF.2010307@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712032347.37723.rjw@sisk.pl>
+In-Reply-To: <475480AF.2010307@rtr.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of December 2007, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > This feature will save one full reporter-developer round-trip during 
-> > > investigation of a significant number of bug reports.
-> > > 
-> > > It might be more practical if it were to dump the traces for _all_ 
-> > > D-state processes when it fires - basically an auto-triggered 
-> > > sysrq-W.
-> > 
-> > Er, it won't play well if that happen when tasks are frozen for 
-> > suspend.
-> 
-> right now any suspend attempt times out after 20 seconds:
-> 
->   $ grep TIMEOUT kernel/power/process.c
->   #define TIMEOUT (20 * HZ)
->           end_time = jiffies + TIMEOUT;
 
-This is the timeout for freezing tasks, but if the freezing succeeds, they
-can stay in TASK_UNINTERRUPTIBLE for quite some more time, especially during
-a hibernation (the tasks stay frozen until we power off the system after saving
-the image).
+* Mark Lord <lkml@rtr.ca> wrote:
 
-> which should be well before the 120 seconds timeout that the detector 
-> uses. But indeed you are right in that the refrigerator() works via 
-> TASK_UNINTERRUPTIBLE too. I've updated the patch to exclude PF_FROZEN - 
-> attached below. That should solve this particular issue, even if the 
-> timeout increased to above 20 secs, right?
+>> heh, thanks :) For which workload does it make the biggest difference 
+>> for you? (and compared to what other scheduler you used before? 
+>> 2.6.22?)
+> ..
+>
+> Heh.. I'm just a very unsophisticated desktop user, and I like it when 
+> Thunderbird and Firefox are unaffected by the "make -j3" kernel builds 
+> that are often running in another window.  BIG difference there.
+>
+> And on the cool side, the Swarm game (swarm.swf) is a great example of 
+> something that used to get jerky really fast whenever anything else 
+> was running, and now it really doesn't seem to be affected by 
+> anything. (I don't really play computer games, but this one is has a 
+> very retro feel..).
 
-Sure.
+nice! Do you feel any difference between 2.6.23 and 2.6.24-rc for these 
+workloads? (if you've tried .24 already)
 
-Thanks,
-Rafael
+	Ingo
