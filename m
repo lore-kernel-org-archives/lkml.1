@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbXLCBBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbXLCBCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbXLCBBF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 20:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXLCBAx
+	id S1754181AbXLCBCn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 20:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXLCBCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 20:00:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56417 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbXLCBAw (ORCPT
+	Sun, 2 Dec 2007 20:02:34 -0500
+Received: from lazybastard.de ([212.112.238.170]:39057 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbXLCBCe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 20:00:52 -0500
-Date: Sun, 2 Dec 2007 16:59:13 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071202165913.3eaebee6@laptopd505.fenrus.org>
-In-Reply-To: <20071203000741.GB26636@one.firstfloor.org>
-References: <20071201092037.GA32544@elte.hu>
-	<p737ijwylet.fsf@bingen.suse.de>
-	<20071202185945.GA25990@elte.hu>
-	<20071202114152.3bf4332d@laptopd505.fenrus.org>
-	<20071202200953.GA23994@one.firstfloor.org>
-	<20071202202602.GA16480@elte.hu>
-	<20071202204725.GA25891@one.firstfloor.org>
-	<20071202144331.6abf1289@laptopd505.fenrus.org>
-	<20071203000741.GB26636@one.firstfloor.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Sun, 2 Dec 2007 20:02:34 -0500
+Date: Mon, 3 Dec 2007 01:57:02 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Mark Lord <lkml@rtr.ca>,
+       Pavel Machek <pavel@ucw.cz>, Mark Lord <liml@rtr.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Message-ID: <20071203005702.GA12215@lazybastard.org>
+References: <20071202113143.GA9378@lazybastard.org> <20071202135711.GA20434@elte.hu> <20071202141117.GB9516@lazybastard.org> <20071202154746.GA27069@elte.hu> <20071202195501.GB10657@lazybastard.org> <20071202200722.GA12101@elte.hu> <20071202203016.GC10657@lazybastard.org> <20071202204559.GA28550@elte.hu> <20071202211026.GB11522@lazybastard.org> <20071202211900.GB7439@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20071202211900.GB7439@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Dec 2007 01:07:41 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> > We really need to get better diagnostics for the
-> > bad-kernel-behavior-that-is-seen-as-bug cases. If we ever want to
-> > get to the scenario where we have a more or less robust measure of
-> > kernel quality (and we're not all that far off for several cases),
-> > one thing
+On Sun, 2 December 2007 22:19:00 +0100, Ingo Molnar wrote:
+> * Jörn Engel <joern@logfs.org> wrote:
 > 
-> One measure to kernel quality is to recover well from IO errors
-> (like network problems or broken block devices)
-
-yes. and this patch will flag cases that don't (yet) work well
-
+> > Maybe one more thing: can you send me the config you used for the 
+> > setup above?  I'd like to know whether qemu or my config is to blame.
 > 
-> This patch will likely work against that by breaking error paths.
+> sure - attached.
 
-it won't break error paths, it will at most put a warning in the log.
-It doesn't kill or otherwise damage the system or process.
+After an eternity of compile time, this config does generate some useful
+output.  qemu is not to blame.
 
-> 
-> > This patch is a step in the right direction there, by quite a
-> > lot.
-> > 
-> > I really don't understand what your objection is to this patch...
-> > is it that an enterprise distro can't ship with it on? (Which is
-> > fine btw)
-> 
-> Any distribution aimed at end users cannot ship with it on. 
-
-That's a pretty bold statement; assuming that the TASK_KILLABLE patch
-is in, I don't see the problem.
-
-And even if a distro doesn't turn it on, I still don't see a problem;
-it's a diagnostics patch that people can turn on (even at runtime) if
-they see problems.
-
-> Also in general I have my doubts that the false positive:real bug
-> ratio of this warning is well balanced.
-
-I'll just have to disagree with you then; but both of us are making
-wild guesses. Only one way to get the real false positive percentage.
-
-> Just consider the original
-> example of dead network servers. Even in my relatively small
-> home network that that is a quite common occurrence. This patch
-> will break that all by throwing random backtraces when this 
-> happens.
-
-1) with TASK_KILLABLE that shouldn't happen
-2) how does "throwing a backtrace" "break" things?
-
+Jörn
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Joern's library part 9:
+http://www.scl.ameslab.gov/Publications/Gus/TwelveWays.html
