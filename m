@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXLCQss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbXLCQwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbXLCQss (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 11:48:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXLCQsl
+	id S1752846AbXLCQwm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 11:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbXLCQwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 11:48:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48060 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbXLCQsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 11:48:40 -0500
-Date: Mon, 3 Dec 2007 17:47:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux@bohmer.net,
-       jonathan@jonmasters.org
-Subject: Re: [PATCH] isapnp driver semaphore to mutex
-Message-ID: <20071203164751.GB16135@elte.hu>
-References: <20071203153743.119714913@mvista.com> <20071203155753.GA32546@elte.hu> <1196697144.1568.1.camel@jnielson-xp.ddns.mvista.com>
+	Mon, 3 Dec 2007 11:52:35 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:56725 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbXLCQwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 11:52:34 -0500
+Message-ID: <475433E1.6030208@oracle.com>
+Date: Mon, 03 Dec 2007 08:50:41 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1196697144.1568.1.camel@jnielson-xp.ddns.mvista.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Clemens Koller <clemens.koller@anagramm.de>
+CC: LKML List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Documentation/BUG-HUNTING whitespace cleanup, take 2
+References: <475405A9.4030608@anagramm.de> <20071203083101.93141c4b.randy.dunlap@oracle.com> <47543339.7010104@anagramm.de>
+In-Reply-To: <47543339.7010104@anagramm.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Daniel Walker <dwalker@mvista.com> wrote:
-
-> On Mon, 2007-12-03 at 16:57 +0100, Ingo Molnar wrote:
-> > * Daniel Walker <dwalker@mvista.com> wrote:
-> > 
-> > > Changed the isapnp semaphore to a mutex.
-> > 
-> > cool - i'll give it a whirl.
-> > 
-> > small immaterial nit:
-> > 
-> > > Signed-Off-By: Daniel Walker <dwalker@mvista.com>
-> > 
-> > it's Signed-off-by (note the capitalization). Having this consistent 
-> > makes scripting around patches a tiny bit easier.
+Clemens Koller wrote:
+> Randy Dunlap schrieb:
+>  > On Mon, 03 Dec 2007 14:33:29 +0100 Clemens Koller wrote:
+>  >
+>  >> Just a little whitespace cleanup patch for Documentation/BUG-HUNTING.
+>  >>
+>  >> Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
+>  >
+>  >
+>  > Mostly looks OK, except for the last chunk:  why delete that line?
+>  > missing a + line?
+>  >
+>  >
+>  > @@ -130,7 +130,6 @@ You will then do:
+>  >              that makes the difference.
+>  >
+>  >  Finally, you take all the info that you have, kernel revisions, bug
+>  > -description, the extent to which you have narrowed it down, and pass
+>  >  that off to whomever you believe is the maintainer of that section.
+>  >  A post to linux.dev.kernel isn't such a bad idea if you've done some
+>  >  work to narrow it down.
 > 
-> Yeah, I know about it but sometimes still slips by..
+> Hmm... that was not intended, updated patch attached.
+> 
+> Thank you,
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> Just a little whitespace cleanup patch for Documentation/BUG-HUNTING
+> 
+> Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
 
-it's worth automating these repetative bits. I use small templates when 
-creating patches. Also, it's worth running patches through 
-scripts/checkpatch.pl - it has a check for exactly this typo. [ Not a 
-big issue at all, i just mentioned it in case you get a taste for 
-sending more sem2mutex patches :-) ]
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-	Ingo
+
+Thanks.
+
+-- 
+~Randy
+Features and documentation: http://lwn.net/Articles/260136/
