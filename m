@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbXLCKeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbXLCKgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbXLCKeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 05:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbXLCKd5
+	id S1754386AbXLCKgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 05:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLCKgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 05:33:57 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39856 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbXLCKd4 (ORCPT
+	Mon, 3 Dec 2007 05:36:07 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58153 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907AbXLCKgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 05:33:56 -0500
-Date: Mon, 3 Dec 2007 11:35:57 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20071203103557.GT10305@enneenne.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: heartbeat for leds on i2c bus
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Mon, 3 Dec 2007 05:36:06 -0500
+Subject: Re: [RFC v2] Documentation about unaligned memory access
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, avuton@gmail.com, hancockr@shaw.ca,
+       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org, mrmacman_g4@mac.com,
+       dean@arctic.org, argggh@dolphinics.no, jengelh@computergmbh.de,
+       shdl@zakalwe.fi, vlobanov@speakeasy.net, drzeus-list@drzeus.cx,
+       strange@nsk.no-ip.org, dm.n9107@gmail.com
+In-Reply-To: <20071129161523.E0C349D4B52@zog.reactivated.net>
+References: <20071129161523.E0C349D4B52@zog.reactivated.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-GWpspBqA4h1s8LgcaDR8"
+Date: Mon, 03 Dec 2007 10:26:29 +0100
+Message-Id: <1196673989.6060.5.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-on my custom board I have some leds mapped on a dedicated chip
-connected via i2c bus.
+--=-GWpspBqA4h1s8LgcaDR8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-If I try to use the heartbeat trigger I hang the system... I suppose
-it is due the fact the led_set_brightness() function is called inside
-a kernel timer.
 
-How I can solve this problem? I thought to modify the trigger adding a
-kernel thread who manage the led which in turn is controlled by the
-kernel timer. It could be the right solution?
+> 	void myfunc(u8 *data, u32 value)
+> 	{
+> 		[...]
+> 		value =3D cpu_to_le32(value);
+> 		put_unaligned(value, data);
 
-Thanks in advance,
+> 	u32 value =3D get_unaligned(data);
 
-Rodolfo
+Actually, this is wrong. put_unaligned and get_unaligned use the type of
+the "data" pointer, e.g. on powerpc get_unaligned does just "*data".
 
--- 
+Hence, here you'll want to use
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+	put_unaligned(value, (u32 *)data);
+
+and
+
+	u32 value =3D get_unaligned((u32 *)data);
+
+or you end up with a single-byte store/load.
+
+johannes
+
+--=-GWpspBqA4h1s8LgcaDR8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR1PLxKVg1VMiehFYAQIgog//Qjh2wt8k9S7fnICwStfpsByNJFeHzTff
+mEHBbHW0HBhOnspY8vxlNHV4eShIjBVoyTURGXz1RiaO7U2bPEfWI5qdp62+oSrt
+6BwVN9MUF4I/ObnkC1vB5u+Sl+pCWh+BX7AAkA7bF2LFrItHXGxAmwL019gf1xbx
+hDeKtObBpb3qk+R613FMEcehA6AvPTEXKaIDw677J6NCaggJM3VGSwPSddSQVOQ7
+Mhvhfr8ZnTS9msXUuqGmwFzYi7ChHqSMLpnCzUlg3/hZVXO6MTxImkqpqDjokAHv
+yyZ3to7DGDuYyU6Q0NXgjeaEnvap2z+frqeih/pGTP1ps4AZ/WjhTo1eBAREw9u4
+XOJfjK7r5qS4idpxjbOjclmu58EYIo8SnruqYr+1d4QWLGzyF0TdXXKThhifivpF
+M8hvovK5gD9s2xQXmsXDZ098TtLW2/bNE73lgOa+cRS0dnvVLjRBn5NQ54Vqa/69
+WeJo8FKQNZjBVWly1UsAt3e+BrPpdVmqa4YbG/wvZOHqSdg15RHY9VcBpVoVtwwv
+LaF6L0Z6WzMwEHRAF3c6FRskcfv/08IJmD9fQ9lrfpdJ/ZhnDxAK3euq8d7mkK17
+Z5AsCIRSk5TmK/EJzyaTlG78Oa8MGiw+I86bOs2A3aN22TG+uSardkRO+XEXZ+rc
+sCxvE1F1rf0=
+=etEa
+-----END PGP SIGNATURE-----
+
+--=-GWpspBqA4h1s8LgcaDR8--
+
