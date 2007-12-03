@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXLCBO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbXLCBRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbXLCBO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 20:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXLCBOp
+	id S1754617AbXLCBRw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 20:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXLCBRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 20:14:45 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36255 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750717AbXLCBOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 20:14:44 -0500
-Date: Mon, 3 Dec 2007 02:14:37 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Ben Greear <greearb@candelatech.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-Message-ID: <20071203011437.GP15974@stusta.de>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com> <47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill> <20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca> <20071201202354.672aed18@freepuppy.rosehill> <47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net> <20071202204356.GN15974@stusta.de> <47532AD2.8090704@trash.net>
+	Sun, 2 Dec 2007 20:17:43 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:42983 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbXLCBRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 20:17:43 -0500
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+In-Reply-To: <6A73BEE8-9D45-4B75-8756-3008A4B1FDF4@orcon.net.nz>
+ "from Michael Cree at Dec 3, 2007 09:53:53 am"
+To: Michael Cree <mcree@orcon.net.nz>
+Date: Sun, 2 Dec 2007 19:17:32 -0600 (CST)
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       linux-scsi@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47532AD2.8090704@trash.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20071203011732.2CEABDBA2@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 10:59:46PM +0100, Patrick McHardy wrote:
-> Adrian Bunk wrote:
->> On Sun, Dec 02, 2007 at 09:03:56PM +0100, Patrick McHardy wrote:
->...
->> your statement has an interesting implication:
->>
->> Stuff like e.g. the EXPORT_SYMBOL(sk_alloc) predates the EXPORT_SYMBOL_GPL 
->> stuff.
->>
->> Who is considered the author of this code?
->>
->> And when should he state whether he prefers to use EXPORT_SYMBOL_GPL but 
->> wasn't able to use it at that when he wrote it since his code predates it 
->> and is glad to be able to decide this now?
->
-> He can state it when he feels like it, I don't see the point.
-> Authors generally get to decide whether they use EXPORT_SYMBOL
-> or EXPORT_SYMBOL_GPL unless in cases where its really clear-cut
-> that EXPORT_SYMBOL is inapproriate. But thats a different matter.
->...
+Michael Cree wrote:
+> On 1/12/2007, at 11:42 AM, Andrew Morton wrote:
+> > On Sat, 01 Dec 2007 11:30:01 +1300
+> > Michael Cree <mcree@orcon.net.nz> wrote:
+> >
+> >> Bob Tracy wrote:
+> >>>  Here's
+> >>> hoping someone else is seeing this or can replicate it in the  
+> >>> meantime.
+> >>
+> >> Snap.
+> >>
+> >> 2.6.24-rc2 works fine.   2.6.24-rc3 boots on Alpha but once /dev is
+> >> populated no partitions of the scsi sub-system are seen.  Looks  
+> >> like ide sub-system similarly affected.
+> 
+> [snip]
+> 
+> >> eth0: Digital DS21142/43 Tulip rev 65 at Port 0x200009400,
+> >> 08:00:2b:87:4c:b0, IRQ 45.
+> >> Linux video capture interface: v2.00
+> >> scsi_id[402]: scsi_id: unable to access '/block'
+> >
+> > I guess this is where things go bad.
+> 
+> Yes, that is what I thought too.
 
-You miss my point.
+Thanks for the confirmation of the error condition.  As best I can
+recall, your boot log is substantially the same as what I saw.
 
-Stuff like sk_alloc was exported to modules before EXPORT_SYMBOL_GPL 
-existed (it was even exported to modules before EXPORT_SYMBOL existed).
-
-We are talking about code and exports that are at about 12 years old, 
-which is at about twice as old as EXPORT_SYMBOL_GPL.
-
-So what should happen in your opinion if e.g. Alan checks which of the 
-network code he had written when it was exported a dozen years ago, 
-stating that he never wanted it to be available to non-GPL modules?
-
-cu
-Adrian
+Finally got back in town.  Starting the git-bisect process.  I've got
+a relatively slow network connection, and the PWS 433au isn't exactly
+what I would call "fast" by modern standards, so bear with me while I
+get things set up and crank through this.  The clone of the 2.6 tree
+will take several more hours to finish downloading.  I anticipate the
+best pace I'll be able to manage after that is two iterations in a 24-
+hour period.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+------------------------------------------------------------------------
+Bob Tracy          |  "They couldn't hit an elephant at this dist- "
+rct@frus.com       |   - Last words of Union General John Sedgwick,
+                   |  Battle of Spotsylvania Court House, U.S. Civil War
+------------------------------------------------------------------------
