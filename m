@@ -1,131 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbXLCDjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbXLCEAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbXLCDjx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 22:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXLCDjn
+	id S1754036AbXLCEAE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 23:00:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbXLCD7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 22:39:43 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58412 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbXLCDjl (ORCPT
+	Sun, 2 Dec 2007 22:59:52 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:22445 "EHLO
+	outbound3-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752087AbXLCD7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 22:39:41 -0500
-Message-ID: <4753786F.1040703@jp.fujitsu.com>
-Date: Mon, 03 Dec 2007 12:30:55 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sun, 2 Dec 2007 22:59:50 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <47537F2E.2070204@am.sony.com>
+Date: Sun, 02 Dec 2007 19:59:42 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>, pcihpd-discuss@lists.sourceforge.net
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       gregkh@suse.de, kristen.c.accardi@intel.com, lenb@kernel.org,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com> <20071126222253.GA31708@ldl.fc.hp.com> <474E6E82.40307@jp.fujitsu.com> <20071130015105.GH24707@ldl.fc.hp.com>
-In-Reply-To: <20071130015105.GH24707@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Christoph Lameter <clameter@sgi.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Milton Miller <miltonm@bga.com>
+Subject: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Dec 2007 03:59:47.0276 (UTC) FILETIME=[F1F818C0:01C83560]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex-san,
+Hi.
 
->> On my system, hotplug slots themselves can be added, removed
->> and replaced with the ohter type of I/O box. The ACPI firmware
->> tells OS the presence of those slots using _STA method (That
->> is, it doesn't use 'LoadTable()' AML operator). On the other
->> hand, current pci_slot driver doesn't check _STA.  As a result,
->> pci_slot driver tryied to register the invalid (non-existing)
->> slots. The ACPI firmware of my system returns '1023' if the
->> invalid slot's _SUN is evaluated. This is the cause of Call
->> Traces mentioned above. To fix this problem, pci_slot driver
->> need to check _STA when scanning ACPI Namespace.
-> 
-> Now this is very curious. The relevant line in pci_slot is:
-> 
-> check_slot()
-> 	status = acpi_evaluate_integer(handle, "_SUN", NULL, sun);
-> 	if (ACPI_FAILURE(status))
-> 		return -1;
-> 
-> Why does your firmware return the error information inside sun,
-> instead of returning an error in status? That doesn't seem right
-> to me...
+I'm finding that recently kexec'ed kernels on PS3 will
+panic on startup.  It seems the trouble was introduced
+with the ppc64 SPARSEMEM_VMEMMAP support.  The problem
+is the same when starting either new or old kernels:
 
-Because ACPI spec doesn't provide any way for firmware (AML)
-to return as error.
+2.6.24 -> 2.6.23 ok
+2.6.24 -> 2.6.23 panic
+2.6.24 -> 2.6.24 panic
 
-In addtion, I think we should not trust the _SUN value of
-non-existing device because the ACPI spec says in "6.5.1 _INI
-(Init)" that _INI method is run before _ADR, _CID, _HID, _SUN, and
-_UID are run. It means _SUN could be initialized in _INI method
-implecitely. And it also says that "If the _STA method indicates
-that the device is not present, OSPM will not run the _INI and will
-not examine the children of the device for _INI methods.". After all,
-_SUN for non-existing device is not reliable because it might not
-initialized by _INI method.
+These are the commits that seem to introduce the problem:
 
-> 
->> I'm sorry for reporting this so late. I'm attaching the patch
->> to fix the problem. This is against 2.6.24-rc3 with your
->> patches applied. Could you try it?
-> 
-> Applying this patch causes me to only detect populated slots in
-> my system, which isn't what I want -- otherwise, I could have
-> just enumerated the PCI bus and found the devices that way. :)
-> 
-> Maybe on your machine, checking existence of _STA might do the
-> right thing, but I don't think we should actually be looking at
-> any of the actual bits returned. 
-> 
-> If we check ACPI_STA_DEVICE_PRESENT, then we will not detect
-> empty slots on my system. Can you try this patch to see if at
-> least the first call to acpi_evaluate_integer helps? If that
-> doesn't help, maybe the second block will help you, but it breaks
-> my machine...
+  d29eff7bca60c9ee401d691d4562a4abca8de543 ppc64: SPARSEMEM_VMEMMAP suppor
+  8f6aac419bd590f535fb110875a51f7db2b62b5b Generic Virtual Memmap support for SPARSEMEM
 
-Maybe the result is as you guess.
-The first block doesn't help me (with the first block, all of the
-slot disappeared. Please see the bottom of this mail for details).
-The second block helps me.
 
-There seems a difference of the interpretation about _STA for PCI
-hotplug slot between your firmware and my firmware. The difference
-is:
+Below is a startup dump.  Any help in finding the problem
+would be appreciated.
 
-  - Your firmware provides the _STA method to represent the presence
-    of PCI adapter card on the slot.
+-Geoff
 
-  - My firmware provides the _STA method to represent the presence
-    of the slot.
 
-Providing _STA method to represent the presence of PCI adpater card
-on the slot (as your firmware does) doesn't seem right to me because
-of the following reasons.
 
-  - ACPI spec says "After calling _EJ0, OSPM verifies the device no
-    longer exists to determine if the eject succeeded. For _HID devices,
-    OSPM evaluates the _STA method. For _ADR devices, OSPM checks with
-    the bus driver for that device." in "6.3.3 _EJx (Eject)". Because
-    PCI adapter card on the slot is _ADR device, the presence of the
-    card must be checked with bus driver, not _STA.
-
-  - ACPI spec provides the example AML code which uses _STA to
-    represent Docking Station (See 6.3.2 _EJD (Ejection Dependent
-    Device)". The usage of this is same as my firmware.
-
-What do you think about that?
-
-P.S. None of the slots except the strange slot named '1023' were
-detected with your patch. It would happen on other machines
-(might including hp machine) too. The reason is _STA evaluation
-fails on the hotplug slot which doesn't have _STA method. If the
-device object doesn't have a _STA method, we need to handle it as
-if it is present. I believe firmware normally doesn't provide
-_STA method for PCI hotplug slots.
-
-Thanks,
-Kenji Kaneshige
+ps3_mm_add_memory:317: start_addr 740320000000h, start_pfn 740320000h, nr_pages 17000h
+<4>swapper: page allocation failure. order:12, mode:0x80d0
+Call Trace:
+[c000000006047820] [c00000000000e700] .show_stack+0x68/0x1b0 (unreliable)
+[c0000000060478c0] [c000000000089eb4] .__alloc_pages+0x358/0x3ac
+[c0000000060479b0] [c0000000000a3964] .vmemmap_alloc_block+0x6c/0xf4
+[c000000006047a40] [c000000000026544] .vmemmap_populate+0x74/0x100
+[c000000006047ae0] [c0000000000a385c] .sparse_mem_map_populate+0x38/0x5c
+[c000000006047b70] [c0000000000a36e4] .sparse_add_one_section+0x64/0x128
+[c000000006047c20] [c0000000000aa74c] .__add_pages+0xac/0x18c
+[c000000006047cd0] [c000000000025fd4] .arch_add_memory+0x44/0x60
+[c000000006047d60] [c0000000000aa5b0] .add_memory+0xd4/0x124
+[c000000006047e00] [c000000000452544] .ps3_mm_add_memory+0x8c/0x108
+[c000000006047ea0] [c0000000004417c4] .kernel_init+0x1f4/0x3b8
+[c000000006047f90] [c000000000021d88] .kernel_thread+0x4c/0x68
+Mem-info:
+DMA per-cpu:
+CPU    0: Hot: hi:   42, btch:   7 usd:   0   Cold: hi:   14, btch:   3 usd:   0
+CPU    1: Hot: hi:   42, btch:   7 usd:   0   Cold: hi:   14, btch:   3 usd:   0
+Active:0 inactive:0 dirty:0 writeback:0 unstable:0
+ free:18094 slab:122 mapped:0 pagetables:0 bounce:0
+DMA free:72376kB min:0kB low:0kB high:0kB active:0kB inactive:0kB present:129280kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+DMA: 8*4kB 5*8kB 5*16kB 7*32kB 3*64kB 5*128kB 4*256kB 3*512kB 5*1024kB 3*2048kB 4*4096kB 5*8192kB 0*16384kB = 72376kB
+Swap cache: add 0, delete 0, find 0/0, race 0+0
+Free swap  = 0kB
+Total swap = 0kB
+Free swap:            0kB
+32768 pages of RAM
+10403 reserved pages
+0 pages shared
+0 pages swap cached
+<1>Unable to handle kernel paging request for data at address 0xcf0001960b000010
+<1>Faulting instruction address: 0xc000000000087340
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2 PS3
+Modules linked in:
+NIP: c000000000087340 LR: c00000000008733c CTR: 0000000000000000
+REGS: c000000006047900 TRAP: 0300   Not tainted  (2.6.24-rc3-ps3-linux-dev-g91428d55-dirty)
+MSR: 8000000000008032 <EE,IR,DR>  CR: 22004444  XER: 00000000
+DAR: cf0001960b000010, DSISR: 0000000042000000
+TASK = c000000006041080[1] 'swapper' THREAD: c000000006044000 CPU: 1
+<6>GPR00: 0000000000000000 c000000006047b80 c00000000052b410 c000000006001b40
+<6>GPR04: 0000000000000001 0000000000000003 0000000000000008 0000000000000000
+<6>GPR08: 0000000000000002 cf0001960b000008 c000000006051240 0000000000000003
+<6>GPR12: 0000000000000003 c000000000484080 00000000100d0000 0000000000bc5000
+<6>GPR16: 0000000007fff000 0000000000000001 00000000100a0000 00000000100d0000
+<6>GPR20: 0000000000000000 00000000100df628 00000000100df458 00000000100df678
+<6>GPR24: 0000000000740336 c000000000492c00 0000000000000000 0000000000000001
+<6>GPR28: 0000000740325000 0000000740324924 c0000000004ce9a8 cf0001960affffe0
+NIP [c000000000087340] .memmap_init_zone+0xf0/0x134
+LR [c00000000008733c] .memmap_init_zone+0xec/0x134
+Call Trace:
+[c000000006047b80] [c0000000001da530] .add_memory_block+0xd8/0x108 (unreliable)
+[c000000006047c20] [c0000000000aa7ac] .__add_pages+0x10c/0x18c
+[c000000006047cd0] [c000000000025fd4] .arch_add_memory+0x44/0x60
+[c000000006047d60] [c0000000000aa5b0] .add_memory+0xd4/0x124
+[c000000006047e00] [c000000000452544] .ps3_mm_add_memory+0x8c/0x108
+[c000000006047ea0] [c0000000004417c4] .kernel_init+0x1f4/0x3b8
+[c000000006047f90] [c000000000021d88] .kernel_thread+0x4c/0x68
+Instruction dump:
+901f000c 38000400 7d20f8a8 7d290378 7d20f9ad 40a2fff4 7ba00521 7fe3fb78
+38800002 41820008 4bffff0d 393f0028 <f9290008> f93f0028 3bbd0001 3bff0038
+<0>Kernel panic - not syncing: Attempted to kill init!
 
