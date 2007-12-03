@@ -1,93 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752295AbXLCRhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXLCRhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752295AbXLCRhW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 12:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXLCRhI
+	id S1753245AbXLCRhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 12:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXLCRh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 12:37:08 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50665 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbXLCRhH (ORCPT
+	Mon, 3 Dec 2007 12:37:28 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:7518 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbXLCRh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 12:37:07 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Patrick McHardy <kaber@trash.net>
-Cc: Ben Greear <greearb@candelatech.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
-	<20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca>
-	<20071201202354.672aed18@freepuppy.rosehill>
-	<47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>
-Date: Mon, 03 Dec 2007 10:35:21 -0700
-In-Reply-To: <47530FAC.1070804@trash.net> (Patrick McHardy's message of "Sun,
-	02 Dec 2007 21:03:56 +0100")
-Message-ID: <m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 3 Dec 2007 12:37:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=ia7OlnezAOq2tw8qhabSf/BMFMwvo45rt7n5QDDADxYgBNYBQeQG4/4GpqglKMrZGe7unUiOGZwaQeBy3nHMyJoWEtOGis4FO093vEOpcV2trit+WHiksVGeq3HrtJc8InLqvBIRSBWgumyNx96MXfsZL3pttowSUhvzrhzm/tM=
+Message-ID: <47543F81.4030805@gmail.com>
+Date: Mon, 03 Dec 2007 18:40:17 +0100
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.69 is released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy <kaber@trash.net> writes:
+Gidday,
 
-> Ben Greear wrote:
->> I have a binary module that uses dev_get_by_name...it's sort of a bridge-like
->> thing and
->> needs user-space to tell it which device to listen for packets on...
->>
->> This code doesn't need or care about name-spaces, so I don't see how it could
->> really
->> be infringing on the author's code (any worse than loading a binary driver
->> into the kernel
->> ever does).
+Some news:
 
-Regardless of infringement it is incompatible with a complete network
-namespace implementation.  Further it sounds like the module you are
-describing defines a kernel ABI without being merged and hopes that
-ABI will still be supportable in the future.  Honestly I think doing so
-is horrible code maintenance policy.
+* man-pages now has a website:
 
->> I would certainly prefer to not have to patch around any problems with calling
->> dev_get_by_name
->> from a non-gpl module, but if required, I can probably figure something out...
->
->
-> For all I care binary modules can break, but frankly I don't see
-> how encapsulating a couple of structures and pointers in a new
-> structure and adding a new argument to existing functions shifts
-> the decision about how a function should be usable to the namespace
-> guys. IMO all functions should continue to be usable as before,
-> as decided by whoever actually wrote them. The only exception
-> might be stuff where an existing EXPORT_SYMBOL is clearly wrong,
-> but that would be a seperate discussion.
+      http://www.kernel.org/doc/man-pages
 
-I don't think we have actually shifted the decision.
+  The site includes HTML versions of the current set of man-pages.
 
-Further from a namespace perspective if I had to support out of tree
-modules and the current in kernel API the implementation would be
-impossible short of loading kernel modules multiple times once
-for each namespace.  I totally refuse to give out of tree modules
-that power whatever their license.
+* Starting with man-pages-2.69, each man page now includes a COLOPHON
+  section at the end of the page which indicates the version of
+  man-pages in which this page is released, and also contains a
+  pointer to the man-pages web site.
 
-Right now the network namespace code that has been merged isn't that
-interesting as it does not include ipv4 and ipv6 support which everyone
-uses.
+Repeating some old news:
 
-One of the tests for completion of the network namespace work is
-grepping for &init_net and making certain we have cleanly removed
-all references to except in a handful of cases like the boot code.
+* As from now, my address as man-pages maintainer has changed
+  to mtk.manpages@gmail.com.  (Mail to the old address will
+  continue to work for a while, but eventually I will close
+  that account.)
 
-Once things are largely complete it makes sense to argue with out of
-tree module authors that because they don't have network namespace
-support in their modules, their modules are broken.   
+* The list linux-man@vger.kernel.org has been created for
+  the purpose of discussing Linux man page bugs, patches,
+  and maintenance.  To subscribe, send a message to
+  majordomo@vger.kernel.org, with the body:
 
-Right now I suspect to many developers even of in-tree modules
-I have just shifted code around in an annoying looking way.  I can
-completely see other developers not getting the point.
+       subscribe linux-man
 
-Eric
+Back to the news as usual...
+
+I recently released man-pages-2.69.
+
+This release is now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+
+    (Note the s/manpages/man-pages/ in these paths;
+    a symlink with the old path will exist for
+    a limited time.)
+
+Changes in the release that may be of interest to readers of this list are
+summarized below.
+
+Cheers,
+
+Michael
+(man-pages maintenance is supported by Google, as a Google engineer 20%
+project.)
+
+
+==================== Changes in man-pages-2.69 ====================
+
+Removed pages
+-------------
+
+HOWTOHELP
+MAINTAINING
+    mtk
+        The content of these files is now available in HTML format.
+
+
+Changes to individual pages
+---------------------------
+
+fcntl.2
+    J. Bruce Fields
+        Add warning that mandatory locking is unreliable.
+    J. Bruce Fields
+        Clarify details in description of file leases.
+
+sched_setscheduler.2
+    Mats Wichmann
+        Add BUGS text noting that the return value from Linux
+        sched_setschuler() does not conform to POSIX.
+
+spu_create.2
+    Jeremy Kerr
+        Various updates and improvements.
+
+spu_run.2
+    Jeremy Kerr
+        Various updates and improvements.
+
+spufs.7
+    Jeremy Kerr
+        Various updates and improvements.
+
+-- 
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+(Sections 2, 3, 4, 5, and 7 of the Linux man pages)
+http://www.kernel.org/doc/man-pages/
+
+
+
+
+
