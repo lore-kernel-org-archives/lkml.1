@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbXLCQST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbXLCQVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268AbXLCQST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 11:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbXLCQSB
+	id S1753044AbXLCQVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 11:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXLCQVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 11:18:01 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39800 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751067AbXLCQSA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 11:18:00 -0500
-Date: Mon, 3 Dec 2007 17:17:54 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
-	!CONFIG_BINFMT_AOUT [try #5]
-Message-ID: <20071203161754.GU15974@stusta.de>
-References: <20071111112538.GL21669@stusta.de> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153437.20803.55096.stgit@warthog.procyon.org.uk> <18452.1196694929@redhat.com> <20071203160011.GA9058@linux-mips.org>
+	Mon, 3 Dec 2007 11:21:45 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53649 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbXLCQVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 11:21:44 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Markus Metzger" <markus.t.metzger@googlemail.com>
+Subject: Re: [patch 0/2] x86, ptrace: support for branch trace store(BTS)
+Date: Mon, 3 Dec 2007 17:21:38 +0100
+User-Agent: KMail/1.9.6
+Cc: "Roland McGrath" <roland@redhat.com>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>, tglx@linutronix.de,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Michael Kerrisk" <mtk-manpages@gmx.net>, markus.t.metzger@gmail.com,
+       "Ingo Molnar" <mingo@elte.hu>
+References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com> <20071201074044.GA13974@elte.hu> <a430082a0712030553v22e9b46bnb9da975a23b1c0db@mail.gmail.com>
+In-Reply-To: <a430082a0712030553v22e9b46bnb9da975a23b1c0db@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071203160011.GA9058@linux-mips.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712031721.39013.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 04:00:11PM +0000, Ralf Baechle wrote:
-> On Mon, Dec 03, 2007 at 03:15:29PM +0000, David Howells wrote:
+On Monday 03 December 2007 14:53:27 Markus Metzger wrote:
+> > Cool.  It's been on my list to look into exposing those features
+> > somehow. I hadn't planned on doing it until after the utrace stuff
+> > settles and there is a more coherent interface context in which to do
+> > it.
 > 
-> > > - it adds #ifdef's in fs/binfmt_elf.c for code that is anyway
-> > >   scheduled for removal in 2.6.25
-> > 
-> > I'm told (by Ralf) that removing this support will break Castle Wolfenstein or
-> > something like that.
-> > 
-> > So unless you want hordes of rampaging MIPS users breaking down your door
-> > whilst waving pitchforks and torches, maybe this needs to be reconsidered...
-> 
-> The wonders of asynchronous IRC communication ...
-> 
-> Wolfenstein is a true a.out binary and for a long time it was _the_ a.out
-> binary.  If it was working no user would complain ;-)
+> I'm looking very much forward to utrace. From what I read so far, this is
+> a much nicer interface.
 
-Then it's unrelated to this issue.
+Just don't wait for that. utrace doesn't seem to have any concrete 
+plans to merge any time soon AFAIK[1] and it would be a shame to delay an useful
+feature forever.
 
-At the time when I was playing Wolfenstein I was using M$ DOS, but I'd 
-assume the "rampaging MIPS users" was another misunderstanding and 
-it's i386?
+[1] At least the patches have not reached any mailing lists
 
->   Ralf
+> What did you have in mind when you asked for kernel-mode support?
 
-cu
-Adrian
+I asked about that earlier too and I would like to see per CPU traces
+for ring 0 with some way to dump that on crashes or on user trigger.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-Andi
 
