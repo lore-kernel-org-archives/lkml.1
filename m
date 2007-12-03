@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbXLCOU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbXLCOWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbXLCOU4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 09:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbXLCOUs
+	id S1754825AbXLCOWd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 09:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbXLCOWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 09:20:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:37542 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752298AbXLCOUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 09:20:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=yG0GsR8bQypLg/MG08VNs6My8z6QZb0yB+7ahQ9SCafXfBqQSCFqk8Yf/Cm9/dljY4YfR2wHWUCh2ASwYbkNavZ1B/7qkdercxE9foqNLiZXhuuPygqxDIBO3jiYU3NX8tmh0oJsYST4FMMtKZsNRo0pWU7bnzNu+ZZIVgXkcFU=
-Date: Mon, 3 Dec 2007 22:20:37 +0800
-From: "peerchen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>
-Cc: "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
-Subject: [PATCH] ahci: add the Device IDs of MCP79 AHCI controller to ahci.c
-Message-ID: <200712032220233286345@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
+	Mon, 3 Dec 2007 09:22:25 -0500
+Received: from gate.crashing.org ([63.228.1.57]:33058 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751454AbXLCOWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 09:22:25 -0500
+Date: Mon, 3 Dec 2007 08:22:07 -0600
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Vitaly Luban <vitaly@luban.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Tokyo Electron SDIO controller (Ellen) support
+Message-ID: <20071203142207.GA28101@gate.crashing.org>
+References: <47511ADA.20506@luban.org> <20071201215010.2fa3b334@poseidon.drzeus.cx>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071201215010.2fa3b334@poseidon.drzeus.cx>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the device IDs of legacy mode of MCP79 AHCI controller to ahci.c
+On Sat, Dec 01, 2007 at 09:50:10PM +0100, Pierre Ossman wrote:
+> As for the patch, it's a big NAK at this point. Vendors who can't be bothered to follow
+> the standard will have to wait for Ben's separation patches before they can be supported.
+> Then they can have some voodoo front-end to handle their mistakes instead of turning
+> sdhci.c into a collection of hacks and workarounds.
 
-The patch base on kernel 2.6.24-rc3
+What's the status of Ben's separation patches? I haven't seen a posting of those
+versus a recent kernel. I've got some SDHCI driver glue for the non-pci Arasan core
+running in an older kernel tree with those patches. It's just waiting for the separation
+patches to hit the mmc or mainline tree.
 
-Signed-off-by: Peer Chen <peerchen@gmail.com>
----
---- linux-2.6.24-rc3/drivers/ata/ahci.c.orig	2007-12-03 16:20:15.000000000 -0500
-+++ linux-2.6.24-rc3/drivers/ata/ahci.c	2007-12-03 16:32:11.000000000 -0500
-@@ -536,6 +536,10 @@ static const struct pci_device_id ahci_p
- 	{ PCI_VDEVICE(NVIDIA, 0x0ad9), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ada), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0adb), board_ahci },		/* MCP77 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab4), board_ahci },		/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab5), board_ahci },		/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab6), board_ahci },		/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab7), board_ahci },		/* MCP79 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ab8), board_ahci },		/* MCP79 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ab9), board_ahci },		/* MCP79 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0aba), board_ahci },		/* MCP79 */
--
-
+-Matt
