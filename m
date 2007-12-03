@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXLCIpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbXLCIqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbXLCIpM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 03:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXLCIo4
+	id S1754199AbXLCIqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 03:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXLCIqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 03:44:56 -0500
-Received: from antispam.upcomillas.es ([130.206.70.245]:58477 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbXLCIoz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 03:44:55 -0500
-Subject: Re: namespace support requires network modules to say "GPL"
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       containers@lists.osdl.org
-In-Reply-To: <475227B1.2060802@rtr.ca>
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	 <47515D39.9030900@rtr.ca>	<20071201111736.297dd99a@freepuppy.rosehill>
-	 <20071201163035.321fd554@freepuppy.rosehill>  <475227B1.2060802@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Mon, 03 Dec 2007 09:24:15 +0100
-Message-Id: <1196670255.4127.21.camel@rukbat>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 3 Dec 2007 03:46:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60329 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751106AbXLCIqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 03:46:16 -0500
+Date: Mon, 3 Dec 2007 09:45:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071203084557.GA13156@elte.hu>
+References: <1196155985.25646.31.camel@ymzhang> <200711301429.15664.nickpiggin@yahoo.com.au> <20071130100845.GB2201@elte.hu> <200712031527.57129.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712031527.57129.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-On Sat, 2007-12-01 at 22:34 -0500, Mark Lord wrote:
-> Stephen Hemminger wrote:.
-> >>
-> > I spoke too soon earlier, ndiswrapper builds and loads against current
-> > 2.6.24-rc3. Vmware and proprietary VPN software probably do not. Once again I don't
-> > give a damn, but the enterprise distro vendors certainly care.
-> ...
+> On Friday 30 November 2007 21:08, Ingo Molnar wrote:
+> > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > Haven't we been asking JVMs to use futexes or posix locking for years
+> > > and years now? [...]
+> >
+> > i'm curious, with what JVM was it tested and where's the source so i 
+> > can fix their locking for them? Can the problem be reproduced with:
 > 
-> Naw, enterprise (or any other) distro vendors shouldn't have any issues here,
-> since they can just patch their kernels around any issues.
+> Sure, but why shouldn't the compat behaviour be the default, and the 
+> sysctl go away?
+> 
+> It makes older JVMs work better, it is slightly closer to the old 
+> behaviour, and it is arguably a less surprising result.
 
-Please pardon me for jumping in; I am not a kernel developer, but I try
-to help with debugging whenever I can (and it's not just hand-waving, I
-helped to track down a couple of nasty bugs on MMC or ACPI EC,
-recently). And I am an engineer and IANAL, so I wouldn't speak about
-laws here. But I think it's not just a distribution's problem.
+as far as desktop apps such as firefox goes, the exact opposite is true. 
+We had two choices basically: either a "more agressive" yield than 
+before or a "less agressive" yield. Desktop apps were reported to hurt 
+from a "more agressive" yield (firefox for example gets some pretty bad 
+delays), so we defaulted to the less agressive method. (and we defaulted 
+to that in v2.6.23 already) Really, in this sense volanomark is another 
+test like dbench - we care about it but not unconditionally and in this 
+case it's a really silly API use that is at the center of the problem. 
+Talking about the default alone will not bring us forward, but we can 
+certainly add helpers to identify SCHED_OTHER::yield tasks - a once per 
+bootup warning perhaps?
 
-Unfortunately, I need VMware and ndiswrapper to get work done with my
-laptop. It's not the perfect world, but the only alternative is to boot
-in XP. So I normally stick with vendors kernels and, when I have time to
-"play" with new kernel, I go for it. If ndiswrapper and VMware work,
-perfect, I can test extensively the new kernel; if I find problems, I
-*know* I have to restart without proprietary modules, try to reproduce,
-report back. I did it a lot of times.
-
-What I think is that every time VMware or (worst) ndiswrapper breaks,
-the kernel loose an awful lot of testers. In the span of time before
-Giri and the VMware team post a patch (-rc1 and -rc4, tipically), my
-testing activity is just occasional. And I guess a lot of people is in
-the same situation. 
-
-These are just my 2cents. I will continue to test new kernels every time
-I can, and to use native solutions as often as I can (go, ath5k, go!;
-and LabWindows/CVI for Linux, anyone?). But maybe a bit of tolerance can
-help everyone...
-
-Back in my hole,
-
-		Romano 
-
-
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+	Ingo
