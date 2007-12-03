@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbXLCXpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXLCXqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751839AbXLCXpu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 18:45:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXLCXpm
+	id S1752587AbXLCXqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 18:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXLCXqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 18:45:42 -0500
-Received: from baron.coraid.com ([65.14.39.133]:16446 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751081AbXLCXpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 18:45:42 -0500
-Date: Mon, 3 Dec 2007 18:42:28 -0500
-From: "Ed L. Cashin" <ecashin@coraid.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jnelson-kernel-bugzilla@jamponi.net, bugme-daemon@bugzilla.kernel.org,
-       nickpiggin@yahoo.com.au, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, a.p.zijlstra@chello.nl
-Subject: Re: [Bugme-new] [Bug 9482] New: kernel GPF in 2.6.24 (g09f345da)
-Message-ID: <20071203234228.GG27094@coraid.com>
-References: <bug-9482-10286@http.bugzilla.kernel.org/> <20071201122302.10dd9c44.akpm@linux-foundation.org> <20071203162137.GB25251@coraid.com> <20071203113459.d36c1a01.akpm@linux-foundation.org> <20071203210005.GB27094@coraid.com> <20071203213837.GE27094@coraid.com> <20071203144722.4188f476.akpm@linux-foundation.org> <20071203151349.0ebf497c.akpm@linux-foundation.org>
+	Mon, 3 Dec 2007 18:46:12 -0500
+Received: from mail.transmode.se ([83.241.175.147]:31073 "EHLO
+	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751355AbXLCXqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 18:46:11 -0500
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Mark Fasheh'" <mark.fasheh@oracle.com>
+Cc: <linux-kernel@vger.kernel.org>
+References: <056a01c835e9$5b7203f0$5267a8c0@Jocke> <20071203213406.GJ28607@ca-server1.us.oracle.com>
+Subject: RE: what happened to RELATIME?
+Date: Tue, 4 Dec 2007 00:46:04 +0100
+Message-ID: <057e01c83606$aadc09f0$5267a8c0@Jocke>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071203151349.0ebf497c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+In-Reply-To: <20071203213406.GJ28607@ca-server1.us.oracle.com>
+thread-index: Acg19HRT9z25kxgCTIOYA69wGjgc4QAEbV1g
+X-OriginalArrivalTime: 03 Dec 2007 23:46:07.0894 (UTC) FILETIME=[ACEC7360:01C83606]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 03:13:49PM -0800, Andrew Morton wrote:
-> On Mon, 3 Dec 2007 14:47:22 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+> -----Original Message-----
+> From: Mark Fasheh [mailto:mark.fasheh@oracle.com] 
+> Sent: den 3 december 2007 22:34
+> To: Joakim Tjernlund
+> Cc: linux-kernel@vger.kernel.org
+> Subject: Re: what happened to RELATIME?
 > 
-> > Does this fix?
+> On Mon, Dec 03, 2007 at 09:16:15PM +0100, Joakim Tjernlund wrote:
+> > Looking in 2.6.23 sources it seems like only ocfs2 has added
+> > support for RELATIME. Was RELATIME a bad idea or is there
+> > some other reason other filesystems hasn't added support?
 > 
-> Slightly more elaborate version
+> Ocfs2 just needs a bit of explicit support - as far as I 
+> recall, other file
+> systems should have gotten it automagically via the generic 
+> vfs changes.
+> 	--Mark
 
-Yes, this patch does eliminate the problem.  Without it, no write can
-complete, and with it I have seen many writes complete without any
-trouble.
+Ahh, that explains it. Can anyone confirm that all in
+FS:es honours relatime?
 
-Thank you for looking into this.  I will look more closely at this
-patch tomorrow.
+Thanks, Jocke
 
--- 
-  Ed L Cashin <ecashin@coraid.com>
