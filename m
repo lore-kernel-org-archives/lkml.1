@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbXLCN7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbXLCOAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbXLCN7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 08:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXLCN7k
+	id S1755070AbXLCOAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 09:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbXLCOA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 08:59:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41277 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbXLCN7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 08:59:39 -0500
-Date: Mon, 3 Dec 2007 14:59:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203135916.GC4245@elte.hu>
-References: <20071203103815.GA2707@elte.hu> <20071203110412.GD28560@one.firstfloor.org> <20071203115900.GB8432@elte.hu> <20071203121357.GB2986@one.firstfloor.org> <20071203122833.GA20232@elte.hu> <20071203124144.GC2986@one.firstfloor.org> <20071203130003.GA26372@elte.hu> <20071203131442.GA4004@one.firstfloor.org> <20071203132955.GA31354@elte.hu> <20071203144128.16a3dd53@astralstorm.puszkin.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071203144128.16a3dd53@astralstorm.puszkin.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 3 Dec 2007 09:00:26 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:15814 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752379AbXLCOAZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 09:00:25 -0500
+Date: Mon, 3 Dec 2007 09:00:17 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Reminder: Last day for submissions to the Storage and Filesystem
+ Workshop.
+Message-ID: <20071203090017.4c722c68@think.oraclecorp.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello everyone,
 
-* Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org> wrote:
+The deadline for position statements to the Linux Storage and
+Filesystem Workshop is here.  Submitting a position statement
+is an easy way for you to tell the organizers that you would like to
+attend, and which topics you are most interesting in.
 
-> On Mon, 3 Dec 2007 14:29:56 +0100
-> > * Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > > feedback about an impending catastrophy has been duly noted
-> > > 
-> > > The point was less about an impending catastrophe, but more of a 
-> > > timebomb ticking until the next widely used release.
-> 
-> I think I know why Andi is so much against backtraces: he has some log 
-> filter listening on netconsole mailing him with suspicious log 
-> messages.
+You can find all the details about the workshop here:
 
-Andi, is that true? If yes, why didnt Andi state this concern outright, 
-instead of pooh-pooh-ing the patch on various other grounds?
+http://www.usenix.org/events/lsf08/
 
-	Ingo
+The Linux Storage and Filesystem Workshop is a small, tightly focused,
+by-invitation workshop. It is intended to bring together developers and
+researchers interested in implementing improvements in the Linux
+filesystem and storage subsystems that can find their way into the
+mainline kernel and into Linux distributions in the 1–2 year timeframe.
+The workshop will be two days and will be separated into storage and
+filesystem tracks, with some combined plenary sessions.
 
+The workshop will be held Feb 25 and 26 in San Jose.
+
+-chris
