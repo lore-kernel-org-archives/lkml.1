@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbXLCPZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbXLCPeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbXLCPZi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 10:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbXLCPZ3
+	id S1751596AbXLCPeL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 10:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbXLCPd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 10:25:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56032 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbXLCPZ2 (ORCPT
+	Mon, 3 Dec 2007 10:33:56 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36537 "EHLO
+	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750713AbXLCPd4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 10:25:28 -0500
-Date: Mon, 3 Dec 2007 07:23:28 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203072328.371d0b00@laptopd505.fenrus.org>
-In-Reply-To: <20071203102715.GC28560@one.firstfloor.org>
-References: <20071202185945.GA25990@elte.hu>
-	<20071202114152.3bf4332d@laptopd505.fenrus.org>
-	<20071202200953.GA23994@one.firstfloor.org>
-	<20071202202602.GA16480@elte.hu>
-	<20071202204725.GA25891@one.firstfloor.org>
-	<20071202144331.6abf1289@laptopd505.fenrus.org>
-	<20071203000741.GB26636@one.firstfloor.org>
-	<20071202165913.3eaebee6@laptopd505.fenrus.org>
-	<20071203095501.GB28560@one.firstfloor.org>
-	<20071203111520.33ed2139@astralstorm.puszkin.org>
-	<20071203102715.GC28560@one.firstfloor.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 3 Dec 2007 10:33:56 -0500
+To: jmoyer@redhat.com, zach.brown@oracle.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [2.6.24 BUG] 100% iowait on host while UML is running
+Message-Id: <E1IzDHv-0003xj-Af@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 03 Dec 2007 16:32:51 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Dec 2007 11:27:15 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+On 2.6.24, top started showing 100% iowait on one CPU when a UML
+instance was running (but completely idle).  I've traced it to this
+commit.  Reverting it cures the problem.
 
-> > Kernel waiting 2 minutes on TASK_UNINTERRUPTIBLE is certainly
-> > broken.
-> 
-> What should it do when the NFS server doesn't answer anymore or 
-> when the network to the SAN RAID array located a few hundred KM away
-> develops some hickup?  Or just the SCSI driver decides to do lengthy
-> error recovery  -- you could argue that is broken if it takes longer 
-> than 2 minutes, but in practice these things are hard to test
-> and to fix.
-> 
-
-the scsi layer will have the IO totally aborted within that time anyway;
-the retry timeout for disks is 30 seconds after all.
+Miklos
 
 
 
+commit 41d10da3717409de33d5441f2f6d8f072ab3fbb6
+Author: Jeff Moyer <jmoyer@redhat.com>
+Date:   Tue Oct 16 23:27:20 2007 -0700
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+    aio: account I/O wait time properly
+    
+    Some months back I proposed changing the schedule() call in
+    read_events to an io_schedule():
+    	http://osdir.com/ml/linux.kernel.aio.general/2006-10/msg00024.html
+    This was rejected as there are AIO operations that do not initiate
+    disk I/O.  I've had another look at the problem, and the only AIO
+    operation that will not initiate disk I/O is IOCB_CMD_NOOP.  However,
+    this command isn't even wired up!
+    
+    Given that it doesn't work, and hasn't for *years*, I'm going to
+    suggest again that we do proper I/O accounting when using AIO.
+    
+    Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+    Acked-by: Zach Brown <zach.brown@oracle.com>
+    Cc: Benjamin LaHaise <bcrl@kvack.org>
+    Cc: Suparna Bhattacharya <suparna@in.ibm.com>
+    Cc: Badari Pulavarty <pbadari@us.ibm.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/fs/aio.c b/fs/aio.c
+index ea2e198..d02f43b 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -303,7 +303,7 @@ static void wait_for_all_aios(struct kioctx *ctx)
+ 	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+ 	while (ctx->reqs_active) {
+ 		spin_unlock_irq(&ctx->ctx_lock);
+-		schedule();
++		io_schedule();
+ 		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+ 		spin_lock_irq(&ctx->ctx_lock);
+ 	}
+@@ -323,7 +323,7 @@ ssize_t fastcall wait_on_sync_kiocb(struct kiocb *iocb)
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+ 		if (!iocb->ki_users)
+ 			break;
+-		schedule();
++		io_schedule();
+ 	}
+ 	__set_current_state(TASK_RUNNING);
+ 	return iocb->ki_user_data;
+@@ -1170,7 +1170,7 @@ retry:
+ 			ret = 0;
+ 			if (to.timed_out)	/* Only check after read evt */
+ 				break;
+-			schedule();
++			io_schedule();
+ 			if (signal_pending(tsk)) {
+ 				ret = -EINTR;
+ 				break;
