@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXLCNs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbXLCNtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbXLCNs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 08:48:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbXLCNst
+	id S1754728AbXLCNtd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 08:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbXLCNtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 08:48:49 -0500
-Received: from probity.mcc.ac.uk ([130.88.200.94]:50548 "EHLO
-	probity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752407AbXLCNss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 08:48:48 -0500
-Message-ID: <47540950.4090207@gentoo.org>
-Date: Mon, 03 Dec 2007 13:49:04 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
+	Mon, 3 Dec 2007 08:49:25 -0500
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:58616 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752346AbXLCNtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 08:49:24 -0500
+Date: Mon, 3 Dec 2007 16:50:23 +0300
+From: "Denis V. Lunev" <den@openvz.org>
+To: akpm@osdl.org
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       dev@openvz.org
+Subject: [PATCH] AB-BA deadlock in drop_caches sysctl
+Message-ID: <20071203135023.GA29548@iris.sw.ru>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: hibernation issue with kernel 2.6.23-gentoo-r3 at T41
-References: <200712031419.41596.toralf.foerster@gmx.de>
-In-Reply-To: <200712031419.41596.toralf.foerster@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Toralf Förster wrote:
-> Today I tried to hibernate my ThinkPad but got the following :
+There is a AB-BA deadlock regarding drop_caches sysctl. Here are the code
+paths:
 
-And the outcome was what exactly? It didn't suspend, and hard-hung? Or 
-didn't suspend, came back to a usable system? ...
+drop_pagecache
+  spin_lock(&inode_lock);
+  invalidate_mapping_pages
+    try_to_release_page
+      ext3_releasepage
+        journal_try_to_free_buffers
+          __journal_try_to_free_buffer
+	    spin_lock(&journal->j_list_lock);
 
-> Dec  3 14:14:29 n22 c420 00000000 
-> Dec  3 14:14:29 n22 dca29fb8 dca29f90 d30ad4c4 0851bf48 0851bf48 0851bfcb dca29fb8 c01036f1 
-> Dec  3 14:14:29 n22 Call Trace:
-> Dec  3 14:14:29 n22 [<c0135fe5>] refrigerator+0x55/0x80
-> Dec  3 14:14:29 n22 [<c0121b2a>] get_signal_to_deliver+0x3ca/0x3f0
-> Dec  3 14:14:29 n22 [<c01036f1>] do_notify_resume+0x91/0x6e0
-> Dec  3 14:14:29 n22 [<c0113c61>] update_curr+0x141/0x150
-> Dec  3 14:14:29 n22 [<c01c109d>] rb_erase+0x15d/0x280
-> Dec  3 14:14:29 n22 [<c01136f7>] update_stats_wait_end+0xa7/0xe0
-> Dec  3 14:14:29 n22 [<c028031b>] schedule+0x13b/0x2e0
-> Dec  3 14:14:29 n22 [<c01040c2>] work_notifysig+0x13/0x19
-> Dec  3 14:14:29 n22 =======================
+journal_commit_transaction
+  spin_lock(&journal->j_list_lock);
+  __journal_remove_checkpoint
+    __journal_refile_buffer
+      __journal_unfile_buffer
+        __journal_temp_unlink_buffer
+	  __set_page_dirty_nobuffers
+	    __mark_inode_dirt
+	    spin_lock(&inode_lock);
 
-Looks like your logger did not capture all the messages. Some important 
-messages at the top were likely lost as a result. dmesg will have them, 
-but you may have to increase the dmesg log buffer size in order to 
-capture them all.
+The patch tries to address the issue - it drops inode_lock before digging into
+invalidate_inode_pages. This seems sane as inode hold should not gone from the
+list and should not change its place.
 
-Did you press alt+sysrq+T or did all this come about as a result of the 
-suspend?
+Signed-off-by: Denis V. Lunev <den@openvz.org>
 
-Daniel
+--- ./fs/drop_caches.c.marker	2006-09-20 07:42:06.000000000 +0400
++++ ./fs/drop_caches.c	2007-12-03 15:43:44.000000000 +0300
+@@ -14,15 +14,27 @@ int sysctl_drop_caches;
+ 
+ static void drop_pagecache_sb(struct super_block *sb)
+ {
+-	struct inode *inode;
++	struct inode *inode, *old;
+ 
++	old = NULL;
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+ 			continue;
++		__iget(inode);
++		spin_unlock(&inode_lock);
++
+ 		invalidate_inode_pages(inode->i_mapping);
++		if (old != NULL)
++			iput(old);
++		old = inode;
++
++		spin_lock(&inode_lock);
+ 	}
+ 	spin_unlock(&inode_lock);
++
++	if (old != NULL)
++		iput(old);
+ }
+ 
+ void drop_pagecache(void)
