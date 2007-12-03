@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbXLCRMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbXLCROR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747AbXLCRMY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 12:12:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXLCRMK
+	id S1753752AbXLCROR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 12:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXLCROF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 12:12:10 -0500
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:52489 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbXLCRMI (ORCPT
+	Mon, 3 Dec 2007 12:14:05 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:27769 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbXLCROC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 12:12:08 -0500
-Message-ID: <475436A3.90906@keyaccess.nl>
-Date: Mon, 03 Dec 2007 18:02:27 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 3 Dec 2007 12:14:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=X/DSsMBCy0ocJJ+8ihtZkOE9WL21PaaltsKpB8sD81SPxYokrdAcnrWvjsv1CvcB8G8ntSq51cQttY7Tv1sc/8DhIpEKE6r6I7fI8I2lJCllbxYwJeULWRnEXH2/2Jcxn2XShxSguyUc9S6RnJ9LIpANLTCTa67BeLdhIoSsBhE=
+Message-ID: <808c8e9d0712030914x513c95b8r9daa4e97ada97511@mail.gmail.com>
+Date: Mon, 3 Dec 2007 11:14:01 -0600
+From: "Ben Gardner" <gardner.ben@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] gpio_cs5535: disable AUX on output
+Cc: "Andrew Morton" <akpm@osdl.org>
 MIME-Version: 1.0
-To: yakui.zhao@intel.com, shaohua.li@intel.com
-CC: Chris Holvenstot <cholvenstot@comcast.net>, linux-kernel@vger.kernel.org,
-       hidave.darkstar@gmail.com, bjorn.helgaas@hp.com, trenn@suse.de,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: pnpacpi : exceeded the max number of IO resources
-References: <1196428488.7066.6.camel@localhost> <47508D3C.9050507@keyaccess.nl>
-In-Reply-To: <47508D3C.9050507@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-11-07 23:22, Rene Herman wrote:
+The AMD CS5535/CS5536 GPIO has two alternate output modes: AUX-1 and AUX-2.
+When either AUX is enabled, the cs5535_gpio driver cannot control the output.
 
-> On 30-11-07 14:14, Chris Holvenstot wrote:
-> 
->> For what it is worth I too have seen this problem this morning and it
->> DOES appear to be new (in contrast to a previous comment)
->>
->> The message:  pnpacpi: exceeded the max number of mem resources: 12
->>
->> is displayed each time the system is booted with the 2.6.24-rc3-git5
->> kernel but is NOT displayed when booting 2.6.24-rc3-git4
->>
->> I have made no changes in my config file between these two kernels other
->> than to accept any new defaults when running make oldconfig.
->>
->> If you had already narrowed it down to a change between git4 and git5 I
->> apologize for wasting your time.  Have to run to work now.
-> 
-> Thanks, and re-added the proper CCs. Sigh...
-> 
-> Well, yes, the warning is actually new as well. Previously your kernel 
-> just silently ignored 8 more mem resources than it does now it seems.
-> 
-> Given that people are hitting these limits, it might make sense to just 
-> do away with the warning for 2.6.24 again while waiting for the dynamic 
-> code?
+Some BIOS code for the Geode processor enables AUX-1 for GPIO-1, which
+configures it as the PC BEEP output.
 
-Ping. Should these warnings be reverted for 2.6.24?
+This patch will disable AUX-1 and AUX-2 when the user enables output.
 
-Rene.
+Signed-of-by: Ben Gardner <gardner.ben@gmail.com>
 
+--- linux-2.6.23.1.orig/drivers/char/cs5535_gpio.c	2007-10-12
+11:43:44.000000000 -0500
++++ linux-2.6.23.1/drivers/char/cs5535_gpio.c	2007-12-03
+09:25:49.000000000 -0600
+@@ -104,6 +104,11 @@
+ 		for (j = 0; j < ARRAY_SIZE(rm); j++) {
+ 			if (c == rm[j].on) {
+ 				outl(m1, base + rm[j].wr_offset);
++				/* If enabling output, turn off AUX 1 and AUX 2 */
++				if (c == 'O') {
++					outl(m0, base + 0x10);
++					outl(m0, base + 0x14);
++				}
+ 				break;
+ 			} else if (c == rm[j].off) {
+ 				outl(m0, base + rm[j].wr_offset);
