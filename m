@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbXLCP6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbXLCQDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbXLCP6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 10:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXLCP6o
+	id S1752711AbXLCQDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 11:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbXLCQDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 10:58:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56246 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbXLCP6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 10:58:43 -0500
-Date: Mon, 3 Dec 2007 16:57:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux@bohmer.net,
-       jonathan@jonmasters.org
-Subject: Re: [PATCH] isapnp driver semaphore to mutex
-Message-ID: <20071203155753.GA32546@elte.hu>
-References: <20071203153743.119714913@mvista.com>
+	Mon, 3 Dec 2007 11:03:10 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:44118 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbXLCQDJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 11:03:09 -0500
+Date: Mon, 3 Dec 2007 16:00:11 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Suppress A.OUT library support if
+	!CONFIG_BINFMT_AOUT [try #5]
+Message-ID: <20071203160011.GA9058@linux-mips.org>
+References: <20071111112538.GL21669@stusta.de> <20071109153432.20803.69832.stgit@warthog.procyon.org.uk> <20071109153437.20803.55096.stgit@warthog.procyon.org.uk> <18452.1196694929@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071203153743.119714913@mvista.com>
+In-Reply-To: <18452.1196694929@redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 03, 2007 at 03:15:29PM +0000, David Howells wrote:
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+> > - it adds #ifdef's in fs/binfmt_elf.c for code that is anyway
+> >   scheduled for removal in 2.6.25
+> 
+> I'm told (by Ralf) that removing this support will break Castle Wolfenstein or
+> something like that.
+> 
+> So unless you want hordes of rampaging MIPS users breaking down your door
+> whilst waving pitchforks and torches, maybe this needs to be reconsidered...
 
-> Changed the isapnp semaphore to a mutex.
+The wonders of asynchronous IRC communication ...
 
-cool - i'll give it a whirl.
+Wolfenstein is a true a.out binary and for a long time it was _the_ a.out
+binary.  If it was working no user would complain ;-)
 
-small immaterial nit:
-
-> Signed-Off-By: Daniel Walker <dwalker@mvista.com>
-
-it's Signed-off-by (note the capitalization). Having this consistent 
-makes scripting around patches a tiny bit easier.
-
-	Ingo
+  Ralf
