@@ -1,121 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbXLCMOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbXLCM3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbXLCMOP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 07:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXLCMOA
+	id S1754049AbXLCM3J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 07:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbXLCM25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 07:14:00 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:50852 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbXLCMN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 07:13:59 -0500
-Date: Mon, 3 Dec 2007 13:13:57 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
+	Mon, 3 Dec 2007 07:28:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38798 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751430AbXLCM24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 07:28:56 -0500
+Date: Mon, 3 Dec 2007 13:28:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
        Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203121357.GB2986@one.firstfloor.org>
-References: <20071202204725.GA25891@one.firstfloor.org> <20071202144331.6abf1289@laptopd505.fenrus.org> <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203095501.GB28560@one.firstfloor.org> <20071203111520.33ed2139@astralstorm.puszkin.org> <20071203102715.GC28560@one.firstfloor.org> <20071203103815.GA2707@elte.hu> <20071203110412.GD28560@one.firstfloor.org> <20071203115900.GB8432@elte.hu>
-Mime-Version: 1.0
+Message-ID: <20071203122833.GA20232@elte.hu>
+References: <20071202144331.6abf1289@laptopd505.fenrus.org> <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203095501.GB28560@one.firstfloor.org> <20071203111520.33ed2139@astralstorm.puszkin.org> <20071203102715.GC28560@one.firstfloor.org> <20071203103815.GA2707@elte.hu> <20071203110412.GD28560@one.firstfloor.org> <20071203115900.GB8432@elte.hu> <20071203121357.GB2986@one.firstfloor.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071203115900.GB8432@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071203121357.GB2986@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 12:59:00PM +0100, Ingo Molnar wrote:
-> no. (that's why i added the '(or a kill -9)' qualification above - if 
-> NFS is mounted noninterruptible then standard signals (such as Ctrl-C) 
-> should not have an interrupting effect.)
 
-NFS is already interruptible with umount -f (I use that all the time...), 
-but softlockup won't know that and throw the warning anyways.
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-> your syslet snide comment aside (which is quite incomprehensible - a 
-
-For the record I have no principle problem with syslets, just I do
-consider them roughly equivalent in end result to a explicit retry based
-AIO implementation.
-
-> retry based asynchonous IO model is clearly inferior even if it were 
-> implemented everywhere), i do think that most if not all of these 
-> supposedly "difficult to fix" codepaths are just on the backburner out 
-> of lack of a clear blame vector.
-
-Hmm. -ENOPARSE. Can you please clarify?
-
+> On Mon, Dec 03, 2007 at 12:59:00PM +0100, Ingo Molnar wrote:
+> > no. (that's why i added the '(or a kill -9)' qualification above - if 
+> > NFS is mounted noninterruptible then standard signals (such as Ctrl-C) 
+> > should not have an interrupting effect.)
 > 
-> "audit thousands of callsites in 8 million lines of code first" is a 
-> nice euphemism for hiding from the blame forever. We had 10 years for it 
+> NFS is already interruptible with umount -f (I use that all the 
+> time...), but softlockup won't know that and throw the warning 
+> anyways.
 
-Ok your approach is then to "let's warn about it and hope
-it will go away" 
+umount -f is a spectacularly unintelligent solution (it requires the 
+user to know precisely which path to umount, etc.), TASK_KILLABLE is a 
+lot more useful.
 
-> and it didnt happen. As we've seen it again and again, getting a 
-> non-fatal reminder in the dmesg about the suckage is quite efficient at 
-
-It's not universal suckage I would say, but sometimes unavoidable
-conditions. Now it is better of course to have these all TASK_KILLABLE,
-but then fixing that all in the kernel will probably a long term
-project. I'm not arguing against that, just forcing it through
-backtraces before even starting all that is probably not the right
-strategy to do that.
-
-> getting people to fix crappy solutions, and gives users and exact blame 
-> point of where to start. That will create pressure to fix these 
-> problems.
-
-After impacting the user base -- many of these conditions are infrequent
-enough that we will likely only see them during real production. Throwing
-warnings for lots of known cases is probably ok for a -mm kernel
-(where users expect things lik that), but not a "release" (be it
-Linus release or any kind of end user distribution) imho.
-
-I don't think there is a real alternative to code audit first
-(and someone doing all the work of fixing all these first) 
- 
-
+> > your syslet snide comment aside (which is quite incomprehensible - a
 > 
-> > > I think you are somehow confusing two issues: this patch in no way 
-> > > declares that "long waits are bad" - if the user _choses_ to wait 
-> > > for
-> > 
-> > Throwing a backtrace is the kernel's way to declare something as bad. 
-> > The only more clear ways to that I know of would be BUG or panic().
+> For the record I have no principle problem with syslets, just I do 
+> consider them roughly equivalent in end result to a explicit retry 
+> based AIO implementation.
+
+which suggests you have not really understood syslets. Syslets have no 
+"retry" component, they just process straight through the workflow. 
+Retry based AIO has a retry component, which - as its name suggests 
+already - retries operations instead of processing through the workload 
+intelligently. Depending on how "deep" the context of an operation the 
+retries might or might not make a noticeable difference in performance, 
+but it sure is an inferior approach.
+
+> > retry based asynchonous IO model is clearly inferior even if it were 
+> > implemented everywhere), i do think that most if not all of these 
+> > supposedly "difficult to fix" codepaths are just on the backburner 
+> > out of lack of a clear blame vector.
 > 
-> there are various levels of declarig something bad, and you are quite 
-> wrong to suggest that a BUG() would be the only recourse.
+> Hmm. -ENOPARSE. Can you please clarify?
 
-I didn't write that, please reread my sentence.. 
+which bit was unclear to you? The retry bit i've explained above, lemme 
+know if there's any other unclarity.
 
-But we seem to agree that a backtrace is something "declared bad" anyways,
-which was my point.
-
-
+> > "audit thousands of callsites in 8 million lines of code first" is a 
+> > nice euphemism for hiding from the blame forever. We had 10 years 
+> > for it
 > 
-> > > way to stop_ are quite likely bad".
-> > 
-> > The user will just see the backtraces and think the kernel has 
-> > crashed.
-> 
-> i've just changed the message to:
-> 
->   INFO: task keventd/5 blocked for more than 120 seconds.
->   "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message
+> Ok your approach is then to "let's warn about it and hope it will go 
+> away"
 
-That's better, but the backtrace is still there isn't it?
+s/hope//, but yes. Surprisingly, this works quite well :-) [as long as 
+the warnings are not excessively bogus, of course]
 
-Anyways I think I could live with it a one liner warning (if it's
-seriously rate limited etc.) and a sysctl to enable the backtraces;
-off by default. Or if you prefer that record 
-the backtrace always in a buffer and make it available somewhere in /proc
-or /sys or /debug. Would that work for you? 
+and note that this is just a happy side-effect - the primary motivation 
+is to get warnings about tasks that are uninterruptible forever. (which 
+is a quite common kernel bug pattern.)
 
--Andi
+> Anyways I think I could live with it a one liner warning (if it's 
+> seriously rate limited etc.) and a sysctl to enable the backtraces; 
+> off by default. Or if you prefer that record the backtrace always in a 
+> buffer and make it available somewhere in /proc or /sys or /debug. 
+> Would that work for you?
+
+you are over-designing it way too much - a backtrace is obviously very 
+helpful and it must be printed by default. There's enough 
+configurability in it already so that you can turn it off if you want. 
+(And you said SLES has softlockup turned off already so it shouldnt 
+affect you anyway.)
+
+	Ingo
