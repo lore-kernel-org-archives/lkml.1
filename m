@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXLCOjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbXLCOry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbXLCOjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 09:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXLCOjf
+	id S1753852AbXLCOry (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 09:47:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXLCOrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 09:39:35 -0500
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:49280 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752087AbXLCOjf (ORCPT
+	Mon, 3 Dec 2007 09:47:47 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:58477 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214AbXLCOrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 09:39:35 -0500
-Date: Mon, 3 Dec 2007 14:39:26 +0000
-From: Ben Dooks <ben@fluff.org>
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Pierre Ossman <drzeus@drzeus.cx>, Vitaly Luban <vitaly@luban.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Tokyo Electron SDIO controller (Ellen) support
-Message-ID: <20071203143926.GC7855@fluff.org.uk>
-References: <47511ADA.20506@luban.org> <20071201215010.2fa3b334@poseidon.drzeus.cx> <20071203142207.GA28101@gate.crashing.org>
+	Mon, 3 Dec 2007 09:47:46 -0500
+Message-ID: <47541701.9060705@s5r6.in-berlin.de>
+Date: Mon, 03 Dec 2007 15:47:29 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071203142207.GA28101@gate.crashing.org>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Peter Stahlir <peter.stahlir@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: cgit for kernel.org
+References: <fbe8b1780712030304q14ed9e62wb0da75d8f4884c0b@mail.gmail.com> <Pine.LNX.4.64.0712031331580.21880@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0712031331580.21880@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 08:22:07AM -0600, Matt Porter wrote:
-> On Sat, Dec 01, 2007 at 09:50:10PM +0100, Pierre Ossman wrote:
-> > As for the patch, it's a big NAK at this point. Vendors who can't be bothered to follow
-> > the standard will have to wait for Ben's separation patches before they can be supported.
-> > Then they can have some voodoo front-end to handle their mistakes instead of turning
-> > sdhci.c into a collection of hacks and workarounds.
+Jan Engelhardt wrote:
+> On Dec 3 2007 12:04, Peter Stahlir wrote:
+>>I suggest setting up cgit for kernel.org
+>>cgit is a fast web interface for git.
+>>It is located at
+>>
+>>http://hjemli.net/git/cgit/
+>>
+>>I tried it at
+>>
+>>http://cgit.freedesktop.org/
+>>
+>>and it feels much snappier than gitweb.
+>>
 > 
-> What's the status of Ben's separation patches? I haven't seen a posting of those
-> versus a recent kernel. I've got some SDHCI driver glue for the non-pci Arasan core
-> running in an older kernel tree with those patches. It's just waiting for the separation
-> patches to hit the mmc or mainline tree.
+> cgit looks so bare.
 
-I need to go back and try and sort out the last of Pierre's last
-comments, and update to the latest kernel version. I was waiting
-for 2.6.24-rc4 to re-start the effort to try and ensure there are
-fewer changes due to fixes.
-
+This is a compliment to cgit, right?  Anyway, the UI looks OK to me.
+The only essential functionality which seems to be missing according to
+my first quick glance at cgit.freedesktop.org is to get log and diff of
+a commit in plain text.
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+Stefan Richter
+-=====-=-=== ==-- ---==
+http://arcgraph.de/sr/
