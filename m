@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbXLCPDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbXLCPIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674AbXLCPDt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 10:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbXLCPDl
+	id S1752022AbXLCPIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 10:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbXLCPIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 10:03:41 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54806 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbXLCPDk (ORCPT
+	Mon, 3 Dec 2007 10:08:45 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:54464 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750703AbXLCPIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 10:03:40 -0500
-Date: Mon, 3 Dec 2007 09:03:08 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morgan <morgan@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc3-mm2 - add-64-bit-capability-support-to-the-kernel
-Message-ID: <20071203150308.GD9008@sergelap.austin.ibm.com>
-References: <14896.1196497105@turing-police.cc.vt.edu>
+	Mon, 3 Dec 2007 10:08:45 -0500
+Date: Mon, 3 Dec 2007 10:08:43 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jarek Poplawski <jarkao2@o2.pl>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Need lockdep help
+In-Reply-To: <20071203103630.GB2429@ff.dom.local>
+Message-ID: <Pine.LNX.4.44L0.0712031000480.3630-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <14896.1196497105@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu):
-> Question:
+On Mon, 3 Dec 2007, Jarek Poplawski wrote:
+
+> > System sleep start:
+> > 		down_read(notifier-chain rwsem);
+> > 		call the notifier routine
+> > 			down_write(&system_sleep_in_progress_rwsem);
+> > 		up_read(notifier-chain rwsem);
+> > 
+> > System sleep end:
+> > 		down_read(notifier-chain rwsem);
+> > 		call the notifier routine
+> > 			up_write(&system_sleep_in_progress_rwsem);
+> > 		up_read(notifier-chain rwsem);
+> > 
+> > This creates a lockdep violation; each rwsem in turn is locked while 
+> > the other is being held.  However the only way this could lead to 
+> > deadlock would be if there was already a bug in the system Power 
+> > Management code (overlapping notifications).
 > 
-> The patch does the semantic equivalent of:
+> Actually, IMHO, there is no reason for any lockdep violation:
 > 
-> -#define cap_clear(c)         do { cap_t(c) =  0; } while(0)
-> -#define cap_set_full(c)      do { cap_t(c) = ~0; } while(0)
+> thread #1: has down_read(A); waits for #2 to down_write(B)
+> thread #2: has down_write(B); never waits for #1 to down_read(A)
 > 
-> +# define cap_clear(c)         do { (c) = __cap_empty_set; } while (0)
-> +# define cap_set_full(c)      do { (c) = __cap_full_set; } while (0)
-> +# define cap_set_init_eff(c)  do { (c) = __cap_init_eff_set; } while (0)
-> 
-> Was it intentional, or an oversight, that this blows chunks in modules
-> that try to use cap_clear() or cap_set_full() because the __cap_*
-> symbols don't get an EXPORT_SYMBOL() attached to them?
+> So, deadlock isn't possible here. If lockdep reports something else it
+> should be fixed (and you'd be right to omit lockdep until this is
+> done).
 
-I think that's one big oops, and the following is needed.
+I think the reasoning goes the way Arjan described.  Suppose in between
+#1 and #2 there is thread #3 trying to do down_write(A) and waiting for
+#1.  Then thread #2 doesn't have to wait for #1 directly, but it would
+have to wait for #3.
 
->From 9c217a6280b559cca28edab621d2d22288ce0ac6 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Mon, 3 Dec 2007 09:59:50 -0500
-Subject: [PATCH 1/1] capabilities: export __cap_ symbols
+In my case the simplest answer appears to be the replace the rwsem
+with something slightly more complicated (a mutex plus a boolean flag 
+-- the loss of concurrency won't matter much since it isn't on a hot 
+path).
 
-Export __cap_empty_set and friends so that the cap_clear(),
-cap_set_full() and cap_set_init_eff() defines can be used
-by modules.
+Thanks for the comment.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- kernel/capability.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/capability.c b/kernel/capability.c
-index 9f2db55..064eb8a 100644
---- a/kernel/capability.c
-+++ b/kernel/capability.c
-@@ -29,6 +29,10 @@ const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
- const kernel_cap_t __cap_full_set = CAP_FULL_SET;
- const kernel_cap_t __cap_init_eff_set = CAP_INIT_EFF_SET;
- 
-+EXPORT_SYMBOL(__cap_empty_set);
-+EXPORT_SYMBOL(__cap_full_set);
-+EXPORT_SYMBOL(__cap_init_eff_set);
-+
- /*
-  * For sys_getproccap() and sys_setproccap(), any of the three
-  * capability set pointers may be NULL -- indicating that that set is
--- 
-1.5.1.1.GIT
-
+Alan Stern
 
