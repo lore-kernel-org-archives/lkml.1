@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbXLCPeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbXLCPgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbXLCPeL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 10:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbXLCPd4
+	id S1752551AbXLCPgq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 10:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbXLCPge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 10:33:56 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:36537 "EHLO
-	dorka.pomaz.szeredi.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750713AbXLCPd4 (ORCPT
+	Mon, 3 Dec 2007 10:36:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51594 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbXLCPga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 10:33:56 -0500
-To: jmoyer@redhat.com, zach.brown@oracle.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-CC: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [2.6.24 BUG] 100% iowait on host while UML is running
-Message-Id: <E1IzDHv-0003xj-Af@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 03 Dec 2007 16:32:51 +0100
+	Mon, 3 Dec 2007 10:36:30 -0500
+Date: Mon, 3 Dec 2007 07:34:39 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: Mark Lord <lkml@rtr.ca>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+Message-ID: <20071203073439.7fe05875@laptopd505.fenrus.org>
+In-Reply-To: <1196670255.4127.21.camel@rukbat>
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<47515D39.9030900@rtr.ca>
+	<20071201111736.297dd99a@freepuppy.rosehill>
+	<20071201163035.321fd554@freepuppy.rosehill>
+	<475227B1.2060802@rtr.ca>
+	<1196670255.4127.21.camel@rukbat>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2.6.24, top started showing 100% iowait on one CPU when a UML
-instance was running (but completely idle).  I've traced it to this
-commit.  Reverting it cures the problem.
+On Mon, 03 Dec 2007 09:24:15 +0100
+Romano Giannetti <romanol@upcomillas.es> wrote:
 
-Miklos
+> 
+> 
+> On Sat, 2007-12-01 at 22:34 -0500, Mark Lord wrote:
+> > Stephen Hemminger wrote:.
+> > >>
+> > > I spoke too soon earlier, ndiswrapper builds and loads against
+> > > current 2.6.24-rc3. Vmware and proprietary VPN software probably
+> > > do not. Once again I don't give a damn, but the enterprise distro
+> > > vendors certainly care.
+> > ...
+> > 
+> > Naw, enterprise (or any other) distro vendors shouldn't have any
+> > issues here, since they can just patch their kernels around any
+> > issues.
+> 
+> Please pardon me for jumping in; 
+
+> 
+> What I think is that every time VMware or (worst) ndiswrapper breaks,
+
+if you had read the thread... ndiswrapper doesn't break, and vmware
+driver had some bugs that, once fixed, no no longer break either....
 
 
-
-commit 41d10da3717409de33d5441f2f6d8f072ab3fbb6
-Author: Jeff Moyer <jmoyer@redhat.com>
-Date:   Tue Oct 16 23:27:20 2007 -0700
-
-    aio: account I/O wait time properly
-    
-    Some months back I proposed changing the schedule() call in
-    read_events to an io_schedule():
-    	http://osdir.com/ml/linux.kernel.aio.general/2006-10/msg00024.html
-    This was rejected as there are AIO operations that do not initiate
-    disk I/O.  I've had another look at the problem, and the only AIO
-    operation that will not initiate disk I/O is IOCB_CMD_NOOP.  However,
-    this command isn't even wired up!
-    
-    Given that it doesn't work, and hasn't for *years*, I'm going to
-    suggest again that we do proper I/O accounting when using AIO.
-    
-    Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-    Acked-by: Zach Brown <zach.brown@oracle.com>
-    Cc: Benjamin LaHaise <bcrl@kvack.org>
-    Cc: Suparna Bhattacharya <suparna@in.ibm.com>
-    Cc: Badari Pulavarty <pbadari@us.ibm.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/fs/aio.c b/fs/aio.c
-index ea2e198..d02f43b 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -303,7 +303,7 @@ static void wait_for_all_aios(struct kioctx *ctx)
- 	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
- 	while (ctx->reqs_active) {
- 		spin_unlock_irq(&ctx->ctx_lock);
--		schedule();
-+		io_schedule();
- 		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
- 		spin_lock_irq(&ctx->ctx_lock);
- 	}
-@@ -323,7 +323,7 @@ ssize_t fastcall wait_on_sync_kiocb(struct kiocb *iocb)
- 		set_current_state(TASK_UNINTERRUPTIBLE);
- 		if (!iocb->ki_users)
- 			break;
--		schedule();
-+		io_schedule();
- 	}
- 	__set_current_state(TASK_RUNNING);
- 	return iocb->ki_user_data;
-@@ -1170,7 +1170,7 @@ retry:
- 			ret = 0;
- 			if (to.timed_out)	/* Only check after read evt */
- 				break;
--			schedule();
-+			io_schedule();
- 			if (signal_pending(tsk)) {
- 				ret = -EINTR;
- 				break;
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
