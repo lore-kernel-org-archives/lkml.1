@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbXLCSFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbXLCSKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752255AbXLCSFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 13:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbXLCSFI
+	id S1752628AbXLCSKn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 13:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXLCSKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 13:05:08 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47120 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbXLCSFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 13:05:06 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Mark Lord <lkml@rtr.ca>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
-	<20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca>
-	<1196670255.4127.21.camel@rukbat>
-Date: Mon, 03 Dec 2007 11:03:38 -0700
-In-Reply-To: <1196670255.4127.21.camel@rukbat> (Romano Giannetti's message of
-	"Mon, 03 Dec 2007 09:24:15 +0100")
-Message-ID: <m18x4b1wqt.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 3 Dec 2007 13:10:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42746 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbXLCSKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 13:10:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Date: Mon, 3 Dec 2007 19:28:52 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, andi@firstfloor.org, penberg@cs.helsinki.fi,
+       lkml@astralstorm.puszkin.org, arjan@infradead.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+References: <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203141925.GA8327@elte.hu> <20071203095736.7963553e.akpm@linux-foundation.org>
+In-Reply-To: <20071203095736.7963553e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712031928.53659.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Romano Giannetti <romanol@upcomillas.es> writes:
+On Monday, 3 of December 2007, Andrew Morton wrote:
+> On Mon, 3 Dec 2007 15:19:25 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > this patch extends the soft-lockup detector to automatically
+> > detect hung TASK_UNINTERRUPTIBLE tasks. Such hung tasks are
+> > printed the following way:
+> > 
+> >  ------------------>
+> >  INFO: task prctl:3042 blocked for more than 120 seconds.
+> >  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message
+> >  prctl         D fd5e3793     0  3042   2997
+> >         f6050f38 00000046 00000001 fd5e3793 00000009 c06d8264 c06dae80 00000286
+> >         f6050f40 f6050f00 f7d34d90 f7d34fc8 c1e1be80 00000001 f6050000 00000000
+> >         f7e92d00 00000286 f6050f18 c0489d1a f6050f40 00006605 00000000 c0133a5b
+> >  Call Trace:
+> >   [<c04883a5>] schedule_timeout+0x6d/0x8b
+> >   [<c04883d8>] schedule_timeout_uninterruptible+0x15/0x17
+> >   [<c0133a76>] msleep+0x10/0x16
+> >   [<c0138974>] sys_prctl+0x30/0x1e2
+> >   [<c0104c52>] sysenter_past_esp+0x5f/0xa5
+> >   =======================
+> >  2 locks held by prctl/3042:
+> >  #0:  (&sb->s_type->i_mutex_key#5){--..}, at: [<c0197d11>] do_fsync+0x38/0x7a
+> >  #1:  (jbd_handle){--..}, at: [<c01ca3d2>] journal_start+0xc7/0xe9
+> >  <------------------
+> > 
+> > the current default timeout is 120 seconds. Such messages are printed
+> > up to 10 times per bootup. If the system has crashed already then the
+> > messages are not printed.
+> > 
+> > if lockdep is enabled then all held locks are printed as well.
+> > 
+> > this feature is a natural extension to the softlockup-detector (kernel
+> > locked up without scheduling) and to the NMI watchdog (kernel locked up
+> > with IRQs disabled).
+> 
+> This feature will save one full reporter-developer round-trip during
+> investigation of a significant number of bug reports.
+> 
+> It might be more practical if it were to dump the traces for _all_
+> D-state processes when it fires - basically an auto-triggered sysrq-W.
 
-> Please pardon me for jumping in; I am not a kernel developer, but I try
-> to help with debugging whenever I can (and it's not just hand-waving, I
-> helped to track down a couple of nasty bugs on MMC or ACPI EC,
-> recently). And I am an engineer and IANAL, so I wouldn't speak about
-> laws here. But I think it's not just a distribution's problem.
->
-> Unfortunately, I need VMware and ndiswrapper to get work done with my
-> laptop. It's not the perfect world, but the only alternative is to boot
-> in XP. So I normally stick with vendors kernels and, when I have time to
-> "play" with new kernel, I go for it. If ndiswrapper and VMware work,
-> perfect, I can test extensively the new kernel; if I find problems, I
-> *know* I have to restart without proprietary modules, try to reproduce,
-> report back. I did it a lot of times.
->
-> What I think is that every time VMware or (worst) ndiswrapper breaks,
-> the kernel loose an awful lot of testers. In the span of time before
-> Giri and the VMware team post a patch (-rc1 and -rc4, tipically), my
-> testing activity is just occasional. And I guess a lot of people is in
-> the same situation. 
->
-> These are just my 2cents. I will continue to test new kernels every time
-> I can, and to use native solutions as often as I can (go, ath5k, go!;
-> and LabWindows/CVI for Linux, anyone?). But maybe a bit of tolerance can
-> help everyone...
-
-As a kernel developer let me say thank you for doing what testing you can.
-
-I think a bit of tolerance for others can help the conversation.  At the
-same time since out of tree modules (even GPL'd ones) have not chosen
-to play with us we have to move forward as best we can without their
-input.  It isn't possible to do anything else.
-
-Right now I have made some changes for good technical reasons, and
-some out of tree modules have broken.  Regardless of the flavor of
-EXPORT_SYMBOL they would have broken.
-
-Based on my experience with in-tree code and the few glimpses I
-have gotten of out of tree code the reason the out of tree code broke
-is because it is doing very questionable things.
-
-So the best I can say at this point, is my apologies that we have not
-served you better and made it possible to do what you need to do
-without relying on code of questionable character.  Hopefully this
-situation will be better in the future.
-
-Eric
+Er, it won't play well if that happen when tasks are frozen for suspend.
