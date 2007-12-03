@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbXLCUvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbXLCUzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751698AbXLCUvy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 15:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXLCUvr
+	id S1751947AbXLCUzQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 15:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXLCUzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 15:51:47 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:62605 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbXLCUvq (ORCPT
+	Mon, 3 Dec 2007 15:55:05 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:48520 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750979AbXLCUzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 15:51:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Lf9GdFN62aI2FkPryZP5WTacuXpkNzthm9UO3feyzdpcQgJ7Ln49ZzjRPVk0xgAwVTsp3pR/X7mEH6Qeg83tah4i9sV19EOZdGrhtweg177j2t2EX1TdUnzNC8ypTsN0kP1Df3BYm+oczqprkRputMy71JfHBllc+Q2BFhmKkPw=
-Message-ID: <b6a2187b0712031251wc0f3ecby5bc65c6fadb2d0e3@mail.gmail.com>
-Date: Tue, 4 Dec 2007 04:51:45 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Marvin FourtyTwo" <marvin24@gmx.de>
-Subject: Re: VMware on 2.6.34: patches to enable vmmon and vmet to build/run
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200712011304.08146.marvin24@gmx.de>
+	Mon, 3 Dec 2007 15:55:04 -0500
+Date: Mon, 3 Dec 2007 15:55:01 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng, kobject_add_ng, and
+ kobject_init_and_add functions
+In-Reply-To: <20071203190523.GA21776@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0712031552030.3115-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <475062C4.9090906@rtr.ca>
-	 <b6a2187b0711302357p31f87152kcd62e91ca193ec29@mail.gmail.com>
-	 <200712011304.08146.marvin24@gmx.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 1, 2007 8:04 PM, Marvin FourtyTwo <marvin24@gmx.de> wrote:
+On Mon, 3 Dec 2007, Greg KH wrote:
 
-> > Wonder anyone has a patch for vpnclient-linux-x86_64-4.8.00.0490-k9 for
-> > 2.6.24?
->
-> look here: http://www.unix-ag.uni-kl.de/~massar/vpnc/
+> > Did you want to add an extra kobject_put() to the end of kobject_del()?  
+> > Or did you want to define a new kobject_destroy() that combines calls 
+> > to kobject_del() and kobject_put()?
+> 
+> No, let's keep what we have there on the cleanup path for now.  I have
+> enough work to clean up the initializion part of the api for now :)
 
-Thanks for the pointer. I'll check it out.
+> +/**
+> + * kobject_add_ng - the main kobject add function
+> + * @kobj: the kobject to add
+> + * @parent: pointer to the parent of the kobject.
+> + * @fmt: format to name the kobject with.
+> + *
+> + * The kobject name is set and added to the kobject hierarchy in this
+> + * function.
+> + *
+> + * If @parent is set, then the parent of the @kobj will be set to it.
+> + * If @parent is NULL, then the parent of the @kobj will be set to the
+> + * kobject associted with the kset assigned to this kobject.  If no kset
+> + * is assigned to the kobject, then the kobject will be located in the
+> + * root of the sysfs tree.
+> + *
+> + * If this function returns an error, kobject_put() must be called to
+> + * properly clean up the memory associated with the object.
+> + *
+> + * If the function is successful, the only way to properly clean up the
+> + * memory is with a call to kobject_del(), in which case, a call to
+> + * kobject_put() is not necessary (kobject_del() does the final
+> + * kobject_put() to call the release function in the ktype's release
+> + * pointer.)
 
-Jeff.
+This comment is inconsistent with your decision above not to add an 
+extra kobject_put() into kobject_del().  (Unless such a line was added 
+while I wasn't looking...)
+
+Alan Stern
+
