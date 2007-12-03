@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXLCKd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbXLCKeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbXLCKd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 05:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXLCKdu
+	id S1753550AbXLCKeT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 05:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbXLCKd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 05:33:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39944 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbXLCKdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 05:33:49 -0500
-Date: Mon, 3 Dec 2007 11:33:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sched_yield: delete sysctl_sched_compat_yield
-Message-ID: <20071203103326.GD30050@elte.hu>
-References: <1196155985.25646.31.camel@ymzhang> <200712032017.19661.nickpiggin@yahoo.com.au> <20071203095719.GA23106@elte.hu> <200712032115.43275.nickpiggin@yahoo.com.au>
+	Mon, 3 Dec 2007 05:33:57 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39856 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753221AbXLCKd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 05:33:56 -0500
+Date: Mon, 3 Dec 2007 11:35:57 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <20071203103557.GT10305@enneenne.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712032115.43275.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: heartbeat for leds on i2c bus
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+on my custom board I have some leds mapped on a dedicated chip
+connected via i2c bus.
 
-> > > I was just talking about the default because I didn't know the 
-> > > reason for the way it was set -- now that I do, we should talk 
-> > > about trying to improve the actual code so we don't need 2 
-> > > defaults.
-> >
-> > I've got the patch below queued up: it uses the more agressive yield 
-> > implementation for SCHED_BATCH tasks. SCHED_BATCH is a natural 
-> > differentiator, it's a "I dont care about latency, it's all about 
-> > throughput for me" signal from the application.
-> 
-> First and foremost, do you realize that I'm talking about existing 
-> userspace working well on future kernels right? (ie. backwards 
-> compatibility).
+If I try to use the heartbeat trigger I hang the system... I suppose
+it is due the fact the led_set_brightness() function is called inside
+a kernel timer.
 
-given how poorly sched_yield() is/was defined the only "compatible" 
-solution would be to go back to the old yield code. (And note that you 
-are rehashing arguments that were covered on lkml months ago already.)
+How I can solve this problem? I thought to modify the trigger adding a
+kernel thread who manage the led which in turn is controlled by the
+kernel timer. It could be the right solution?
 
-> > But first and foremost, do you realize that there will be no easy 
-> > solutions to this topic, that it's not just about 'flipping a 
-> > default'?
-> 
-> Of course ;) I already answered that in the email that you're replying 
-> to:
-> 
-> > > I was just talking about the default because I didn't know the 
-> > > reason for the way it was set -- now that I do, we should talk 
-> > > about trying to improve the actual code so we don't need 2 
-> > > defaults.
+Thanks in advance,
 
-well, in case you were wondering why i was a bit pointy about this, this 
-topic of yield has been covered on lkml quite extensively a couple of 
-months ago. I assumed you knew about that already, but perhaps not?
+Rodolfo
 
-> Anyway, I'd hope it can actually be improved and even the sysctl 
-> removed completely.
+-- 
 
-i think the sanest long-term solution is to strongly discourage the use 
-of SCHED_OTHER::yield, because there's just no sane definition for yield 
-that apps could rely upon. (well Linus suggested a pretty sane 
-definition but that would necessiate the burdening of the scheduler 
-fastpath - we dont want to do that.) New ideas are welcome of course.
-
-[ also, actual technical feedback on the SCHED_BATCH patch i sent (which
-  was the only "forward looking" moment in this thread so far ;-) would
-  be nice too. ]
-
-	Ingo
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
