@@ -1,85 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbXLCJzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbXLCJ5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbXLCJzP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 04:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbXLCJzE
+	id S1753754AbXLCJ5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 04:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbXLCJ5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 04:55:04 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56019 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751602AbXLCJzC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 04:55:02 -0500
-Date: Mon, 3 Dec 2007 10:55:01 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203095501.GB28560@one.firstfloor.org>
-References: <20071201092037.GA32544@elte.hu> <p737ijwylet.fsf@bingen.suse.de> <20071202185945.GA25990@elte.hu> <20071202114152.3bf4332d@laptopd505.fenrus.org> <20071202200953.GA23994@one.firstfloor.org> <20071202202602.GA16480@elte.hu> <20071202204725.GA25891@one.firstfloor.org> <20071202144331.6abf1289@laptopd505.fenrus.org> <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org>
-Mime-Version: 1.0
+	Mon, 3 Dec 2007 04:57:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35469 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751494AbXLCJ5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 04:57:40 -0500
+Date: Mon, 3 Dec 2007 10:57:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071203095719.GA23106@elte.hu>
+References: <1196155985.25646.31.camel@ymzhang> <200712031527.57129.nickpiggin@yahoo.com.au> <20071203084557.GA13156@elte.hu> <200712032017.19661.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071202165913.3eaebee6@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200712032017.19661.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 04:59:13PM -0800, Arjan van de Ven wrote:
-> On Mon, 3 Dec 2007 01:07:41 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
+
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> > as far as desktop apps such as firefox goes, the exact opposite is 
+> > true. We had two choices basically: either a "more agressive" yield 
+> > than before or a "less agressive" yield. Desktop apps were reported 
+> > to hurt from a "more agressive" yield (firefox for example gets some 
+> > pretty bad delays), so we defaulted to the less agressive method. 
+> > (and we defaulted to that in v2.6.23 already)
 > 
-> > > We really need to get better diagnostics for the
-> > > bad-kernel-behavior-that-is-seen-as-bug cases. If we ever want to
-> > > get to the scenario where we have a more or less robust measure of
-> > > kernel quality (and we're not all that far off for several cases),
-> > > one thing
-> > 
-> > One measure to kernel quality is to recover well from IO errors
-> > (like network problems or broken block devices)
-> 
-> yes. and this patch will flag cases that don't (yet) work well
+> Yeah, I doubt the 2.6.23 scheduler will be usable for distros 
+> though...
 
-If the device/server/... takes more than 2 minutes to recover, how does this
-imply the error path "does not work well" ? Or is your goal to handle all 
-possible errors in less than two minutes? [That might be a worthy goal,
-but is probably far from easy and likely impossible in some cases]
+... which is a pretty gross exaggeration belied by distros already 
+running v2.6.23. Sure, "enterprise" distros might not run .23 (or .22 or 
+.21 or .24) because those are slow to adopt and pick _one_ upstream 
+kernel every 10 releases without bothering much about anything 
+inbetween. So the enterprise distros might in fact want to see 1-2 
+iterations of the scheduler before they switch to it. (But by that 
+argument 80% of the other upstream kernels were not used by enterprise 
+distros either, so this is nothing new.)
 
-> > This patch will likely work against that by breaking error paths.
-> 
-> it won't break error paths, it will at most put a warning in the log.
-> It doesn't kill or otherwise damage the system or process.
+> I was just talking about the default because I didn't know the reason 
+> for the way it was set -- now that I do, we should talk about trying 
+> to improve the actual code so we don't need 2 defaults.
 
->From the user perspective a kernel randomly throwing backtraces is 
-a broken kernel. 
+I've got the patch below queued up: it uses the more agressive yield 
+implementation for SCHED_BATCH tasks. SCHED_BATCH is a natural 
+differentiator, it's a "I dont care about latency, it's all about 
+throughput for me" signal from the application.
 
-> 
-> > 
-> > > This patch is a step in the right direction there, by quite a
-> > > lot.
-> > > 
-> > > I really don't understand what your objection is to this patch...
-> > > is it that an enterprise distro can't ship with it on? (Which is
-> > > fine btw)
-> > 
-> > Any distribution aimed at end users cannot ship with it on. 
-> 
-> That's a pretty bold statement; assuming that the TASK_KILLABLE patch
-> is in, I don't see the problem.
+But first and foremost, do you realize that there will be no easy 
+solutions to this topic, that it's not just about 'flipping a default'?
 
-iirc TASK_KILLABLE fixed NFS only. While that's a good thing there are
-unfortunately a lot more subsystems that would need the same treatment.
+	Ingo
 
-> > Also in general I have my doubts that the false positive:real bug
-> > ratio of this warning is well balanced.
-> 
-> I'll just have to disagree with you then; but both of us are making
-> wild guesses. Only one way to get the real false positive percentage.
+-------------->
+Subject: sched: default to more agressive yield for SCHED_BATCH tasks
+From: Ingo Molnar <mingo@elte.hu>
 
-Yes let's break things first instead of looking at the implications closely.
+do more agressive yield for SCHED_BATCH tasks.
 
--Andi
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_fair.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -824,8 +824,9 @@ static void dequeue_task_fair(struct rq 
+  */
+ static void yield_task_fair(struct rq *rq)
+ {
+-	struct cfs_rq *cfs_rq = task_cfs_rq(rq->curr);
+-	struct sched_entity *rightmost, *se = &rq->curr->se;
++	struct task_struct *curr = rq->curr;
++	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
++	struct sched_entity *rightmost, *se = &curr->se;
+ 
+ 	/*
+ 	 * Are we the only task in the tree?
+@@ -833,7 +834,7 @@ static void yield_task_fair(struct rq *r
+ 	if (unlikely(cfs_rq->nr_running == 1))
+ 		return;
+ 
+-	if (likely(!sysctl_sched_compat_yield)) {
++	if (likely(!sysctl_sched_compat_yield) && curr->policy != SCHED_BATCH) {
+ 		__update_rq_clock(rq);
+ 		/*
+ 		 * Update run-time statistics of the 'current'.
