@@ -1,61 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbXLCNua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbXLCNvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbXLCNua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 08:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXLCNuX
+	id S1754514AbXLCNvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 08:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXLCNvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 08:50:23 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:45916 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840AbXLCNuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 08:50:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=joz+IBMmcGM8OMhewWE2jPeOh06KndJmgnQVnLqtYIUZwM5Z3IhEaH/Galx4jpTmYJHJVNgJAiOJ05CZV9s223l8pYLhsrlTbJMyO+Ha9XnYtWTKC3bCMkh0uKxHOop3dP+Ycngjb9rHpojj2aQYhptPqLlvxgmUMqu9skBu4R4=
-Message-ID: <84144f020712030550x1cb4dac7q8eeb111f7784590d@mail.gmail.com>
-Date: Mon, 3 Dec 2007 15:50:15 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Radoslaw Szkodzinski" <lkml@astralstorm.puszkin.org>,
-       "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20071203121357.GB2986@one.firstfloor.org>
+	Mon, 3 Dec 2007 08:51:47 -0500
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:57686 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752701AbXLCNvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 08:51:47 -0500
+Date: Mon, 3 Dec 2007 16:52:47 +0300
+From: "Denis V. Lunev" <den@openvz.org>
+To: akpm@osdl.org
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       dev@openvz.org
+Subject: [PATCH] AB-BA deadlock in drop_caches sysctl (resend, the one sent
+	was for 2.6.18)
+Message-ID: <20071203135247.GA29579@iris.sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071202204725.GA25891@one.firstfloor.org>
-	 <20071203000741.GB26636@one.firstfloor.org>
-	 <20071202165913.3eaebee6@laptopd505.fenrus.org>
-	 <20071203095501.GB28560@one.firstfloor.org>
-	 <20071203111520.33ed2139@astralstorm.puszkin.org>
-	 <20071203102715.GC28560@one.firstfloor.org>
-	 <20071203103815.GA2707@elte.hu>
-	 <20071203110412.GD28560@one.firstfloor.org>
-	 <20071203115900.GB8432@elte.hu>
-	 <20071203121357.GB2986@one.firstfloor.org>
-X-Google-Sender-Auth: 4f842441ebf7491e
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+There is a AB-BA deadlock regarding drop_caches sysctl. Here are the code
+paths:
 
-On Mon, Dec 03, 2007 at 12:59:00PM +0100, Ingo Molnar wrote:
-> > "audit thousands of callsites in 8 million lines of code first" is a
-> > nice euphemism for hiding from the blame forever. We had 10 years for it
+drop_pagecache
+  spin_lock(&inode_lock);
+  invalidate_mapping_pages
+    try_to_release_page
+      ext3_releasepage
+        journal_try_to_free_buffers
+          __journal_try_to_free_buffer
+	    spin_lock(&journal->j_list_lock);
 
-On Dec 3, 2007 2:13 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> Ok your approach is then to "let's warn about it and hope
-> it will go away"
+__journal_temp_unlink_buffer (called under journal->j_list_lock by comments)
+  mark_buffer_dirty
+    __set_page_dirty
+      __mark_inode_dirty
+        spin_lock(&inode_lock);
 
-It's more like "lets warn about it and fix the problems when we find
-some." Btw, how is this different from how the lockdep patches went
-in?
+The patch tries to address the issue - it drops inode_lock before digging into
+invalidate_inode_pages. This seems sane as inode hold should not gone from the
+list and should not change its place.
 
-                                Pekka
+Signed-off-by: Denis V. Lunev <den@openvz.org>
+--
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index 59375ef..4ac80d8 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -14,15 +14,27 @@ int sysctl_drop_caches;
+ 
+ static void drop_pagecache_sb(struct super_block *sb)
+ {
+-	struct inode *inode;
++	struct inode *inode, *old;
+ 
++	old = NULL;
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+ 			continue;
+-		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
++		__iget(inode);
++		spin_unlock(&inode_lock);
++
++		if (old != NULL)
++			iput(old);
++		invalidate_mapping_pages(inode->i_mapping, 0, -1);
++		old = inode;
++
++		spin_lock(&inode_lock);
+ 	}
+ 	spin_unlock(&inode_lock);
++
++	if (old != NULL)
++		iput(old);
+ }
+ 
+ void drop_pagecache(void)
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index b3ec4a4..b424dff 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1649,9 +1649,6 @@ extern int __invalidate_device(struct block_device *);
+ extern int invalidate_partition(struct gendisk *, int);
+ #endif
+ extern int invalidate_inodes(struct super_block *);
+-unsigned long __invalidate_mapping_pages(struct address_space *mapping,
+-					pgoff_t start, pgoff_t end,
+-					bool be_atomic);
+ unsigned long invalidate_mapping_pages(struct address_space *mapping,
+ 					pgoff_t start, pgoff_t end);
+ 
+diff --git a/mm/truncate.c b/mm/truncate.c
+index cadc156..5cbe1e7 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -266,8 +266,21 @@ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
+ }
+ EXPORT_SYMBOL(truncate_inode_pages);
+ 
+-unsigned long __invalidate_mapping_pages(struct address_space *mapping,
+-				pgoff_t start, pgoff_t end, bool be_atomic)
++/**
++ * invalidate_mapping_pages - Invalidate all the unlocked pages of one inode
++ * @mapping: the address_space which holds the pages to invalidate
++ * @start: the offset 'from' which to invalidate
++ * @end: the offset 'to' which to invalidate (inclusive)
++ *
++ * This function only removes the unlocked pages, if you want to
++ * remove all the pages of one inode, you must call truncate_inode_pages.
++ *
++ * invalidate_mapping_pages() will not block on IO activity. It will not
++ * invalidate pages which are dirty, locked, under writeback or mapped into
++ * pagetables.
++ */
++unsigned long invalidate_mapping_pages(struct address_space *mapping,
++				pgoff_t start, pgoff_t end)
+ {
+ 	struct pagevec pvec;
+ 	pgoff_t next = start;
+@@ -308,30 +321,10 @@ unlock:
+ 				break;
+ 		}
+ 		pagevec_release(&pvec);
+-		if (likely(!be_atomic))
+-			cond_resched();
++		cond_resched();
+ 	}
+ 	return ret;
+ }
+-
+-/**
+- * invalidate_mapping_pages - Invalidate all the unlocked pages of one inode
+- * @mapping: the address_space which holds the pages to invalidate
+- * @start: the offset 'from' which to invalidate
+- * @end: the offset 'to' which to invalidate (inclusive)
+- *
+- * This function only removes the unlocked pages, if you want to
+- * remove all the pages of one inode, you must call truncate_inode_pages.
+- *
+- * invalidate_mapping_pages() will not block on IO activity. It will not
+- * invalidate pages which are dirty, locked, under writeback or mapped into
+- * pagetables.
+- */
+-unsigned long invalidate_mapping_pages(struct address_space *mapping,
+-				pgoff_t start, pgoff_t end)
+-{
+-	return __invalidate_mapping_pages(mapping, start, end, false);
+-}
+ EXPORT_SYMBOL(invalidate_mapping_pages);
+ 
+ /*
