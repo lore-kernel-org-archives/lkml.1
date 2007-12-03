@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbXLCK1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbXLCKbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbXLCK1Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 05:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXLCK1R
+	id S1753663AbXLCKbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 05:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbXLCKbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 05:27:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54300 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbXLCK1R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 05:27:17 -0500
-Date: Mon, 3 Dec 2007 11:27:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203102715.GC28560@one.firstfloor.org>
-References: <20071202185945.GA25990@elte.hu> <20071202114152.3bf4332d@laptopd505.fenrus.org> <20071202200953.GA23994@one.firstfloor.org> <20071202202602.GA16480@elte.hu> <20071202204725.GA25891@one.firstfloor.org> <20071202144331.6abf1289@laptopd505.fenrus.org> <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203095501.GB28560@one.firstfloor.org> <20071203111520.33ed2139@astralstorm.puszkin.org>
+	Mon, 3 Dec 2007 05:31:45 -0500
+Received: from mx2.go2.pl ([193.17.41.42]:53511 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751245AbXLCKbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 05:31:44 -0500
+Date: Mon, 3 Dec 2007 11:36:30 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Need lockdep help
+Message-ID: <20071203103630.GB2429@ff.dom.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071203111520.33ed2139@astralstorm.puszkin.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.44L0.0712021430140.4185-100000@netrider.rowland.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Kernel waiting 2 minutes on TASK_UNINTERRUPTIBLE is certainly broken.
-
-What should it do when the NFS server doesn't answer anymore or 
-when the network to the SAN RAID array located a few hundred KM away develops 
-some hickup?  Or just the SCSI driver decides to do lengthy error 
-recovery  -- you could argue that is broken if it takes longer 
-than 2 minutes, but in practice these things are hard to test
-and to fix.
-
-> Yes, that's exactly why the patch is needed - to find the bugs and fix
-
-The way to find that would be to use source auditing, not break
-perfectly fine error handling paths. Especially since this at least
-traditionally hasn't been considered a bug, but a fundamental design
-parameter of network/block/etc. file systems 
-
-> CIFS and similar have to be fixed - it tends to lock the app
-> using it, in unkillable state.
-
-Actually that's not true. You can umount -f and then kill for at least
-NFS and CIFS. Not sure it is true for the other network file systems
-though.
-
-You could in theory do TASK_KILLABLE for all block devices too (not 
-a bad thing; I would love to have it). 
-
-But it would be equivalent in work (has to patch all the same places with 
-similar code) to Suparna's big old fs AIO retry
-patchkit that never went forward because everyone was too worried
-about excessive code impact. Maybe that has changed, maybe not ... 
-
-And even then you would need to check all possible error handling
-paths (scsi_error and low level drivers at least) that they all 
-finish in less than two minutes.
-
-> > > wild guesses. Only one way to get the real false positive percentage.
-> > 
-> > Yes let's break things first instead of looking at the implications closely.
+On 02-12-2007 20:45, Alan Stern wrote:
+> Ingo:
 > 
-> Throwing _rare_ stack traces is not breakage. 120s task_uninterruptible
+> I ran into a lockdep reporting issue just now with some new code under 
+> development.  I think it's a false positive; the question is how best 
+> to deal with it.
+> 
+> Here's the situation.  The new code runs during a system sleep (i.e., 
+> suspend or hibernation).  Certain activities have to be deferred during 
+> a system sleep, so I defined an rwsem: system_sleep_in_progress_rwsem.
+> 
+> Subroutines carrying out these activities acquire a read lock on the
+> rwsem, so normally they proceed with no hindrance.  During a sleep
+> transition, I acquire a write lock -- this is done via a PM-notifier
+> callout routine.  That is, during a PM_HIBERNATION_PREPARE or
+> PM_SUSPEND_PREPARE notification the routine does down_write(), and
+> during a PM_POST_HIBERNATION or PM_POST_SUSPEND notification the
+> routine does up_write().
+> 
+> The problem is that the notifier chain itself is under the control of 
+> an rwsem (to prevent the chain from being modified while it is in use).  
+> The resulting actions look like this:
+> 
+> System sleep start:
+> 		down_read(notifier-chain rwsem);
+> 		call the notifier routine
+> 			down_write(&system_sleep_in_progress_rwsem);
+> 		up_read(notifier-chain rwsem);
+> 
+> System sleep end:
+> 		down_read(notifier-chain rwsem);
+> 		call the notifier routine
+> 			up_write(&system_sleep_in_progress_rwsem);
+> 		up_read(notifier-chain rwsem);
+> 
+> This creates a lockdep violation; each rwsem in turn is locked while 
+> the other is being held.  However the only way this could lead to 
+> deadlock would be if there was already a bug in the system Power 
+> Management code (overlapping notifications).
 
-Sorry that's total bogus. Throwing a stack trace is the kernel
-equivalent of sending S.O.S. and worrying the user significantly,
-taxing reporting resources etc.  and in the interest of saving
-everybody trouble it should only do that when it is really
-sure it is truly broken. 
+Actually, IMHO, there is no reason for any lockdep violation:
 
-> in the usual case (no errors) is already broken - there are no sane
-> loads that can invoke that IMO.
+thread #1: has down_read(A); waits for #2 to down_write(B)
+thread #2: has down_write(B); never waits for #1 to down_read(A)
 
-You are wrong on that.
+So, deadlock isn't possible here. If lockdep reports something else it
+should be fixed (and you'd be right to omit lockdep until this is
+done).
 
--Andi
+Regards,
+Jarek P.
 
+PS: Peter Zijlstra added to CC
