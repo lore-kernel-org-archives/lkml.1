@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXLFMir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbXLFMzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXLFMir (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 07:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbXLFMij
+	id S1757649AbXLFMzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 07:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbXLFMod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 07:38:39 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38497 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbXLFMij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 07:38:39 -0500
-Message-ID: <4757ED3B.1000703@s5r6.in-berlin.de>
-Date: Thu, 06 Dec 2007 13:38:19 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: "Jaursch, Bill" <bjaursch@aeshen.com>, linux-kernel@vger.kernel.org
-Subject: Re: FW: Guidance on resources for User Space Device Drivers on 2.6
- kernel
-References: <32A49E5BEBD67A4F877032926EFAA4D209283BD7@ms08.mse3.exchange.ms> <20071206114912.GL15974@stusta.de>
-In-Reply-To: <20071206114912.GL15974@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Dec 2007 07:44:33 -0500
+Received: from nic2.axis.se ([193.13.178.10]:45015 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753131AbXLFMoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 07:44:32 -0500
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Message-Id: <b7459b0dc261cc213217c3f321167ea226292d94.1196848533.git.jesper.nilsson@axis.com>
+In-Reply-To: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
+References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
+Date: Mon, 3 Dec 2007 10:54:15 +0100
+Subject: [PATCH 42/47] Minor updates to CRISv32 kernel/process.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Dec 05, 2007 at 01:29:23AM -0500, Jaursch, Bill wrote:
->> I have am in the process of writing a driver that is software only.
->> I would like to avoid the caveats of a kernel mode installable module.
->>...
-> 
-> What is "a driver that is software only"
-> (all kernel code is also software only...)?
-> 
-> You must describe what you want to do for people being able to actually 
-> help you.
+- Shorten include paths for machine dependent header files.
+- Remove unused extern declaration of etrax_gpio_wake_up_check.
+- Register name for first timer is now regi_timer0.
 
-Although "software only" is a wrong term here, it's certainly clear from
-context what he meant.  However, what's missing is information about the
-kind of device he plans to support.  Is it a USB device or is it sitting
-behind a similar bus?  Or is it a device on a local bus like PCI?  In
-the latter case, is DMA involved?
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+---
+ arch/cris/arch-v32/kernel/process.c |   16 ++++++----------
+ 1 files changed, 6 insertions(+), 10 deletions(-)
 
->> I found FUSD (http://svn.xiph.org/trunk/fusd/), but would like to know
->> if this is a stable project.
-
-This question should be directed to the authors or maintainers of FUSD.
- Note, AFAIU from its documentation, FUSD is not a means to implement
-arbitrary kinds of device drivers in userspace.  It allows for "proxying
-*device file* callbacks into user-space, allowing *device files* to be
-implemented by" userspace programs (emphasis is mine).  I.e. FUSD gives
-userspace programs only the ability to supply a character special file
-to other userspace programs.  In order to drive real hardware, the FUSD
-client would additionally need to access other userspace interfaces of
-the kernel, provided by actual kernelspace drivers.
+diff --git a/arch/cris/arch-v32/kernel/process.c b/arch/cris/arch-v32/kernel/process.c
+index b72a155..3933c04 100644
+--- a/arch/cris/arch-v32/kernel/process.c
++++ b/arch/cris/arch-v32/kernel/process.c
+@@ -12,17 +12,13 @@
+ #include <linux/err.h>
+ #include <linux/fs.h>
+ #include <linux/slab.h>
+-#include <asm/arch/hwregs/reg_rdwr.h>
+-#include <asm/arch/hwregs/reg_map.h>
+-#include <asm/arch/hwregs/timer_defs.h>
+-#include <asm/arch/hwregs/intr_vect_defs.h>
++#include <hwregs/reg_rdwr.h>
++#include <hwregs/reg_map.h>
++#include <hwregs/timer_defs.h>
++#include <hwregs/intr_vect_defs.h>
+ 
+ extern void stop_watchdog(void);
+ 
+-#ifdef CONFIG_ETRAX_GPIO
+-extern void etrax_gpio_wake_up_check(void); /* Defined in drivers/gpio.c. */
+-#endif
+-
+ extern int cris_hlt_counter;
+ 
+ /* We use this if we don't have any better idle routine. */
+@@ -82,7 +78,7 @@ hard_reset_now(void)
+ 	wd_ctrl.cmd = regk_timer_start;
+ 
+         arch_enable_nmi();
+-	REG_WR(timer, regi_timer, rw_wd_ctrl, wd_ctrl);
++	REG_WR(timer, regi_timer0, rw_wd_ctrl, wd_ctrl);
+ }
+ #endif
+ 
+@@ -162,7 +158,7 @@ copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
+ 	/* Put the switch stack right below the pt_regs. */
+ 	swstack = ((struct switch_stack *) childregs) - 1;
+ 
+-	/* Parameter to ret_from_sys_call. 0 is don't restart the syscall. */
++	/* Paramater to ret_from_sys_call. 0 is don't restart the syscall. */
+ 	swstack->r9 = 0;
+ 
+ 	/*
 -- 
-Stefan Richter
--=====-=-=== ==-- --==-
-http://arcgraph.de/sr/
+1.5.3.6.970.gd25430
+
