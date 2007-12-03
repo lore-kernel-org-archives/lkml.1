@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbXLCUCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXLCUDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbXLCUCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 15:02:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXLCUCg
+	id S1753958AbXLCUDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 15:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXLCUDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 15:02:36 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:33188 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbXLCUCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 15:02:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oh5jD4Gxfkt69vPMeYvE+dcFuAjdl0BuWZIiOHnGAZ7HOFNxFBhXeZdCw2hFdMhqVgl3249A/mXBBMtBsM6M+ZV+HyaXj6v/gCphomHJTXv4yrhA5YPQOa7ep1LTiGXMuUxp/pSThRBb2Z8bwI/WcRZMKLcFbE4HNhO3UTJlB4M=
-Message-ID: <cd73a99e0712031202u71efc0e1g8cf910760475bb5d@mail.gmail.com>
-Date: Mon, 3 Dec 2007 22:02:33 +0200
-From: "Andrew Victor" <avictor.za@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH][AT91] Fix compile error for at91rm9200 in latest git
-Cc: "Jan Altenberg" <jan.altenberg@linutronix.de>, linux@maxim.org.za,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <200712031053.43316.david-b@pacbell.net>
+	Mon, 3 Dec 2007 15:03:09 -0500
+Received: from mx12.go2.pl ([193.17.41.142]:56046 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753079AbXLCUDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 15:03:08 -0500
+X-Greylist: delayed 20052 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Dec 2007 15:03:05 EST
+Message-ID: <475460EA.4050606@o2.pl>
+Date: Mon, 03 Dec 2007 21:02:50 +0100
+From: Warpme <warpme@o2.pl>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1196675122.3832.18.camel@bender.lan>
-	 <200712031053.43316.david-b@pacbell.net>
+To: linux kernel <linux-kernel@vger.kernel.org>
+Subject: S3 resume stability problems
+Content-Type: multipart/mixed;
+ boundary="------------020401000900000109080902"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+This is a multi-part message in MIME format.
+--------------020401000900000109080902
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Which is a combination of two patches, which seems to have dropped the
-> chunk you show below.  The reason this seems to have my signoff is
-> that I originated one of those patches, and parts of the second, but
-> in fact I had never seen f230d3f53d72d05bcb5666ab7e2eccd49c8b3a15
-> until after this email ...
+Hi *
 
-I guess in my rush to get those patches submitted before leaving SAN
-People I missed that chunk.  Sorry.
+I'm setting up 2 appliances based on AMD x2 4400 CPU and Nvidia Mobos: 
+ASUS M2NPV-VM (6150 based) and Abit AN-M2HD (7050 based). Kernel is 
+2.6.23.9.
 
-David: The Signed-off line was kept as-is to keep the attribution correct.
+My issue is stability of S3 resume:
+-on ASUS it hangs every 3-10 try and it not depends on maxcpus setting.
+-on Abit also it hangs every 3-10 try, but with maxcpus=1 is stable.
+
+It is not depending on enabled HW on mobos - even with all HW disabled 
+in BIOS S3, resume is still unstable.
+
+Observing resume process I didn't see any errors in syslog. Also when 
+resume hangs it hangs always with still lightning CapsLock keyb led 
+(keyb is not reacting on CapsLock pressing) -> it leads me that it isn't 
+video issue.
+
+As Abit with maxcpus=1 is working OK - it hints me that resume issue is 
+related to non-booting processor initialization.
+
+Do somebody can help me investigate problem ?
+
+br
 
 
-> Your patch looks correct, and seems to be the only obvious chunk
-> that's missing.  So, I'll ack it FWIW ... usual policy for these
-> patches is to go through Russell.
+--------------020401000900000109080902
+Content-Type: text/x-vcard; charset=utf-8;
+ name="warpme.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="warpme.vcf"
 
-You can add my Ack for what it's worth.
+begin:vcard
+fn:Warpme
+n:;Warpme
+email;internet:warpme@o2.pl
+version:2.1
+end:vcard
 
 
-Regards,
-  Andrew Victor
+--------------020401000900000109080902--
