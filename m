@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbXLCMoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbXLCM5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbXLCMoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 07:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbXLCMoQ
+	id S1753290AbXLCM5c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 07:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXLCM5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 07:44:16 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:7541 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751430AbXLCMoP (ORCPT
+	Mon, 3 Dec 2007 07:57:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58210 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbXLCM5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 07:44:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aMpWYxOk5G4+zI2FIWCWGyi44DqmryNUolqI43UzoOQWNXS5dhnv8lpkCn+BKkeAqG2d7874cmB0uS+3YQZVtt+6Rhze4mF7w8dDqv+AVJR/e+HdqplVkhmQoTj+5myhYIl+IILxM1td9EACEEvuSwwG0O2PEK2jKOZbWozkW+g=
-Subject: Re: Kernel Development & Objective-C
-From: Gilboa Davara <gilboad@gmail.com>
-To: LKML Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Avi Kivity <avi@argo.co.il>
-In-Reply-To: <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
-References: <474EAD18.6040408@stellatravel.co.uk>
-	 <20071130143445.GA2310@csclub.uwaterloo.ca>
-	 <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
-	 <4751BE0D.3050609@argo.co.il> <p733aukyl8n.fsf@bingen.suse.de>
-	 <47539030.10600@argo.co.il>
-	 <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 14:44:06 +0200
-Message-Id: <1196685846.3969.27.camel@gilboa-work-dev.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Dec 2007 07:57:23 -0500
+Date: Mon, 3 Dec 2007 04:57:39 -0800
+From: Greg KH <greg@kroah.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [stable] [kvm-devel] [PATCH 00/10]: KVM updates for 2.6.23.9
+	(-stable)
+Message-ID: <20071203125739.GA12233@kroah.com>
+References: <1196594327338-git-send-email-avi@qumranet.com> <20071202190829.GA22385@kroah.com> <4753CB07.7080807@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4753CB07.7080807@qumranet.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 03, 2007 at 11:23:19AM +0200, Avi Kivity wrote:
+> Greg KH wrote:
+> > On Sun, Dec 02, 2007 at 01:18:37PM +0200, Avi Kivity wrote:
+> >   
+> >> The following patchset fixes some bugs in KVM for the next 2.6.23.y stable
+> >> release.  Please apply.
+> >>     
+> >
+> > I'm guessing that all of these are already upstream in Linus's tree?
+> >
+> >   
+> 
+> Yes, except one, which has been changed in a different way for 2.6.24.
+> 
+> > If so, can you give me the git commit ids for them all if you happen to
+> > know them, so that I don't have to guess at them?  :)
+> >
+> >   
+> 
+> 1 a012e65aee48379a7a87eadafa74f878b61522b9
+> 2 4e62417bf317504c0b85e0d7abd236f334f54eaf
+> 3 651a3e29b3d19418d7a8a9787906061f9be7cc5f
+> 4 cf5a94d1331b411b84414c13e43f578260942d6b
+> 5 00b2ef475d4728ca53a2bc788c7978042907e354
+> 6 N/A
+> 7 404fb881b82cf0cf6981832f8d31a7484e4dee81
+> 8 0967b7bf1c22b55777aba46ff616547feed0b141
+> 9 78f7826868da8e27d097802139a3fec39f47f3b8
+> 10 8668a3c468ed55d19514117a5a959d91d3d03823
 
-On Mon, 2007-12-03 at 14:35 +0200, Gilboa Davara wrote:
-> Intel's newest dual 10GbE NIC can easily (?) throw ~14M packets per
-> second. (theoretical peak at 1514bytes/frame)
-> Granted, installing such a device on a single CPU/single core machine is
-> absurd - but even on an 8 core machine (2 x Xeon 53xx/54xx / AMD
-> Barcelona) it can still generate ~1M packets/s per core.
+Thanks, I appreciate it.
 
-Sigh... Sorry. Please ignore the broken math on my part.
-Make that 1.8M frames/second per card and ~100K packets/second per core.
-
-- Gilboa
-
-
+greg k-h
