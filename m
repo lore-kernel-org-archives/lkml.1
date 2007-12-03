@@ -1,94 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbXLCS7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXLCTC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbXLCS7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 13:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXLCS73
+	id S1753865AbXLCTC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 14:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbXLCTCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 13:59:29 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:40787 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbXLCS71 (ORCPT
+	Mon, 3 Dec 2007 14:02:21 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55429 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751754AbXLCTCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 13:59:27 -0500
-Message-ID: <475451B1.1030006@free.fr>
-Date: Mon, 03 Dec 2007 19:57:53 +0100
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ben Greear <greearb@candelatech.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       Mark Lord <lkml@rtr.ca>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca>	<20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill>	<475227B1.2060802@rtr.ca>	<20071201202354.672aed18@freepuppy.rosehill>	<47530778.7030605@candelatech.com>	<47530FAC.1070804@trash.net>	<m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com> <47544896.7070101@candelatech.com>
-In-Reply-To: <47544896.7070101@candelatech.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 3 Dec 2007 14:02:20 -0500
+Date: Mon, 3 Dec 2007 11:01:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Denis V. Lunev" <den@openvz.org>
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       dev@openvz.org
+Subject: Re: [PATCH] AB-BA deadlock in drop_caches sysctl (resend, the one
+ sent was for 2.6.18)
+Message-Id: <20071203110143.a18ab4d0.akpm@linux-foundation.org>
+In-Reply-To: <20071203135247.GA29579@iris.sw.ru>
+References: <20071203135247.GA29579@iris.sw.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear wrote:
-> Eric W. Biederman wrote:
->> Patrick McHardy <kaber@trash.net> writes:
->>
->>  
->>> Ben Greear wrote:
->>>    
->>>> I have a binary module that uses dev_get_by_name...it's sort of a 
->>>> bridge-like
->>>> thing and
->>>> needs user-space to tell it which device to listen for packets on...
->>>>
->>>> This code doesn't need or care about name-spaces, so I don't see how 
->>>> it could
->>>> really
->>>> be infringing on the author's code (any worse than loading a binary 
->>>> driver
->>>> into the kernel
->>>> ever does).
->>>>       
->>
->> Regardless of infringement it is incompatible with a complete network
->> namespace implementation.  Further it sounds like the module you are
->> describing defines a kernel ABI without being merged and hopes that
->> ABI will still be supportable in the future.  Honestly I think doing so
->> is horrible code maintenance policy.
->>   
-> I don't mind if the ABI changes, so long as I can still use something 
-> similar.
-> 
-> The namespace logic is interesting to me in general, but at this point I 
-> can't think of a way that
-> it actually helps this particular module.  All I really need is a way to 
-> grab every frame
-> from eth0 and then transmit it to eth1.  I'm currently doing this by 
-> finding the netdevice
-> and registering a raw-packet protocol (ie, like tcpdump would do).  At 
-> least up to 2.6.23,
-> this does not require any hacks to the kernel and uses only non GPL 
-> exported symbols.
-> 
-> Based on my understanding of the namespace logic, if I never add any 
-> namespaces,
-> the general network layout should look similar to how it does today, so 
-> I should have
-> no logical problem with my module.
-> 
->> Once things are largely complete it makes sense to argue with out of
->> tree module authors that because they don't have network namespace
->> support in their modules, their modules are broken.     
-> Does this imply that every module that accesses the network code *must* 
-> become
-> GPL simply because it must interact with namespace logic that is 
-> exported as GPL only symbols?
+On Mon, 3 Dec 2007 16:52:47 +0300
+"Denis V. Lunev" <den@openvz.org> wrote:
 
-That's right, with init_net's EXPORT_SYMBOL_GPL and dev_get_xx, we 
-enforce people to be GPL whatever they didn't asked to have the 
-namespaces in their code.
+> There is a AB-BA deadlock regarding drop_caches sysctl. Here are the code
+> paths:
+> 
+> drop_pagecache
+>   spin_lock(&inode_lock);
+>   invalidate_mapping_pages
+>     try_to_release_page
+>       ext3_releasepage
+>         journal_try_to_free_buffers
+>           __journal_try_to_free_buffer
+> 	    spin_lock(&journal->j_list_lock);
+> 
+> __journal_temp_unlink_buffer (called under journal->j_list_lock by comments)
+>   mark_buffer_dirty
+>     __set_page_dirty
+>       __mark_inode_dirty
+>         spin_lock(&inode_lock);
+> 
+> The patch tries to address the issue - it drops inode_lock before digging into
+> invalidate_inode_pages. This seems sane as inode hold should not gone from the
+> list and should not change its place.
+> 
+> Signed-off-by: Denis V. Lunev <den@openvz.org>
+> --
+> diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+> index 59375ef..4ac80d8 100644
+> --- a/fs/drop_caches.c
+> +++ b/fs/drop_caches.c
+> @@ -14,15 +14,27 @@ int sysctl_drop_caches;
+>  
+>  static void drop_pagecache_sb(struct super_block *sb)
+>  {
+> -	struct inode *inode;
+> +	struct inode *inode, *old;
+>  
+> +	old = NULL;
+>  	spin_lock(&inode_lock);
+>  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+>  			continue;
+> -		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
+> +		__iget(inode);
+> +		spin_unlock(&inode_lock);
+> +
+> +		if (old != NULL)
+> +			iput(old);
+> +		invalidate_mapping_pages(inode->i_mapping, 0, -1);
+> +		old = inode;
+> +
+> +		spin_lock(&inode_lock);
+>  	}
+>  	spin_unlock(&inode_lock);
+> +
+> +	if (old != NULL)
+> +		iput(old);
+>  }
 
-Eric, why can we simply change EXPORT_SYMBOL_GPL to EXPORT_SYMBOL for 
-init_net ?
+We need to hold onto inode_lock while walking sb->s_inodes.  Otherwise the
+inode which we're currently looking at could get removed from i_sb_list and
+bad things will happen (drop_pagecache_sb will go infinite, or will oops, I
+guess).
+
+drop_caches is bad this way - it has a couple of ranking errors.  A
+suitable fix would be to remove the drop_caches feature, but it seems to be
+fairly popular as a developer thing.  The approach thus far has been "yeah,
+sorry about that, but drop_caches is only for development and it is
+root-only anyway".
+
+We could fix this particular issue by changing JBD to run
+mark_inode_dirty() outside list_lock (which would be a good change
+independent of the drop_caches issue) but other problems with drop_caches
+will remain.
+
+One way to fix jbd (and jbd2) would be:
+
+static void __journal_temp_unlink_buffer(struct journal_head *jh,
+					struct buffer_head **bh_to_dirty)
+{
+	*bh_to_dirty = NULL;
+	...
+	if (test_clear_buffer_jbddirty(bh))
+		*bh_to_dirty = bh;
+}
+
+{
+	struct buffer_head *bh_to_dirty;	/* probably needs uninitialized_var() */
+
+	...
+	__journal_temp_unlink_buffer(jh, &bh_to_dirty);
+	...
+	jbd_mark_buffer_dirty(bh_to_dirty);
+	brelse(bh_to_dirty);
+	...
+}
+
+static inline void jbd_mark_buffer_dirty(struct buffer_head *bh)
+{
+	if (bh)
+		mark_buffer_dirty(bh);
+}
 
 
