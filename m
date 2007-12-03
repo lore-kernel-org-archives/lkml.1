@@ -1,262 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbXLCWwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbXLCWxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177AbXLCWwv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 17:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXLCWwk
+	id S1752707AbXLCWxm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 17:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXLCWxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 17:52:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41072 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbXLCWwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 17:52:38 -0500
-Date: Mon, 03 Dec 2007 17:52:12 -0500 (EST)
-Message-Id: <20071203.175212.52162634.k-ueda@ct.jp.nec.com>
-To: bzolnier@gmail.com
-Cc: jens.axboe@oracle.com, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 26/28] blk_end_request: changing ide-cd (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <200712012342.52134.bzolnier@gmail.com>
-References: <20071130.183447.82055860.k-ueda@ct.jp.nec.com>
-	<200712012342.52134.bzolnier@gmail.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+	Mon, 3 Dec 2007 17:53:35 -0500
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:41508 "EHLO
+	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbXLCWxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 17:53:34 -0500
+X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Dec 2007 17:53:34 EST
+X-Authority-Analysis: v=1.0 c=1 a=YP7E5MQV5OkA:10 a=YgcX7VosQu49YQD9qsUA:9 a=hKDyIZ1KVOtulOTWmRQA:7 a=BGzGSh0UXzL4pj0sUccK2yw4SiwA:4 a=WuK_CZDBSqoA:10
+Subject: Re: pnpacpi : exceeded the max number of IO resources
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: yakui.zhao@intel.com, shaohua.li@intel.com, linux-kernel@vger.kernel.org,
+       hidave.darkstar@gmail.com, bjorn.helgaas@hp.com, trenn@suse.de,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <475436A3.90906@keyaccess.nl>
+References: <1196428488.7066.6.camel@localhost>
+	 <47508D3C.9050507@keyaccess.nl>  <475436A3.90906@keyaccess.nl>
+Content-Type: text/plain
+Date: Mon, 03 Dec 2007 16:51:20 -0600
+Message-Id: <1196722280.24704.11.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bartlomiej,
 
-On Sat, 1 Dec 2007 23:42:51 +0100, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> On Saturday 01 December 2007, Kiyoshi Ueda wrote:
-> > This patch converts ide-cd (cdrom_newpc_intr()) to use blk_end_request().
+On Mon, 2007-12-03 at 18:02 +0100, Rene Herman wrote:
+> On 30-11-07 23:22, Rene Herman wrote:
+> 
+> > On 30-11-07 14:14, Chris Holvenstot wrote:
 > > 
-> > ide-cd (cdrom_newpc_intr()) has some tricky behaviors below which
-> > need to use blk_end_request_callback().
-> > Needs to:
-> >   1. call post_transform_command() to modify request contents
-> 
-> Seems like post_transform_command() call can be removed (patch below).
-> 
-> >   2. wait completing request until DRQ_STAT is cleared
-> 
-> Would be great if somebody convert cdrom_newpc_intr() to use scatterlists
-> also for PIO transfers (ide_pio_sector() in ide-taskfile.c should serve
-> as a good starting base to see how to do PIO transfers using scatterlists)
-> so we could get rid of partial request completions in cdrom_newpc_intr()
-> and just fully complete request when the transfer is done.  Shouldn't be
-> difficult but I guess that we can live with blk_end_request_callback() for
-> the time being...
-> 
-> > after end_that_request_first() and before end_that_request_last().
+> >> For what it is worth I too have seen this problem this morning and it
+> >> DOES appear to be new (in contrast to a previous comment)
+> >>
+> >> The message:  pnpacpi: exceeded the max number of mem resources: 12
+> >>
+> >> is displayed each time the system is booted with the 2.6.24-rc3-git5
+> >> kernel but is NOT displayed when booting 2.6.24-rc3-git4
+> >>
+> >> I have made no changes in my config file between these two kernels other
+> >> than to accept any new defaults when running make oldconfig.
+> >>
+> >> If you had already narrowed it down to a change between git4 and git5 I
+> >> apologize for wasting your time.  Have to run to work now.
 > > 
-> > As for the second one, ide-cd will wait for the interrupt from device.
-> > So blk_end_request_callback() has to return without completing request
-> > even if no leftover in the request.
-> > ide-cd uses a dummy callback function, which just returns value '1',
-> > to tell blk_end_request_callback() about that.
+> > Thanks, and re-added the proper CCs. Sigh...
 > > 
-> > Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> > Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+> > Well, yes, the warning is actually new as well. Previously your kernel 
+> > just silently ignored 8 more mem resources than it does now it seems.
+> > 
+> > Given that people are hitting these limits, it might make sense to just 
+> > do away with the warning for 2.6.24 again while waiting for the dynamic 
+> > code?
 > 
-> [PATCH] ide-cd: remove dead post_transform_command()
+> Ping. Should these warnings be reverted for 2.6.24?
 > 
-> post_transform_command() call in cdrom_newpc_intr() has no effect because
-> it is done after the request has already been fully completed (rq->bio and
-> rq->data are always NULL).  It was verified to be true regardless whether
-> INQUIRY command is using DMA or PIO to transfer data (by using modified
-> Tejun Heo's test-shortsg.c utility and adding a few printk()-s to ide-cd).
+> Rene.
 > 
-> This was uncovered thanks to the "blk_end_request: full I/O completion
-> handler (take 3)" patch series from Kiyoshi Ueda.
-> 
-> Cc: jens.axboe@oracle.com
-> Cc: bharrosh@panasas.com
-> Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com
-> Cc: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> Cc: Tejun Heo <htejun@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> Kiyoshi: please rebase your patch on top of this one (I'll send
-> it to Linus in the next IDE update), should make your patch a bit
-> simpler.
-> 
-> Tejun: you had really good timing with posting test-shortsg.c
-> (it saved me some time coding user-space SG_IO tester), thanks!
-> 
->  drivers/ide/ide-cd.c |   28 ----------------------------
->  1 file changed, 28 deletions(-)
-> 
-> Index: b/drivers/ide/ide-cd.c
-> ===================================================================
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -1650,31 +1650,6 @@ static int cdrom_write_check_ireason(ide
->  	return 1;
->  }
->  
-> -static void post_transform_command(struct request *req)
-> -{
-> -	u8 *c = req->cmd;
-> -	char *ibuf;
-> -
-> -	if (!blk_pc_request(req))
-> -		return;
-> -
-> -	if (req->bio)
-> -		ibuf = bio_data(req->bio);
-> -	else
-> -		ibuf = req->data;
-> -
-> -	if (!ibuf)
-> -		return;
-> -
-> -	/*
-> -	 * set ansi-revision and response data as atapi
-> -	 */
-> -	if (c[0] == GPCMD_INQUIRY) {
-> -		ibuf[2] |= 2;
-> -		ibuf[3] = (ibuf[3] & 0xf0) | 2;
-> -	}
-> -}
-> -
->  typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
->  
->  /*
-> @@ -1810,9 +1785,6 @@ static ide_startstop_t cdrom_newpc_intr(
->  	return ide_started;
->  
->  end_request:
-> -	if (!rq->data_len)
-> -		post_transform_command(rq);
-> -
->  	spin_lock_irqsave(&ide_lock, flags);
->  	blkdev_dequeue_request(rq);
->  	end_that_request_last(rq, 1);
 
-Thank you for the comments.
-I rebased my patch on top of 2.6.24-rc3-mm2 + the patch to remove
-post_transform_command().
+Rene - 
 
-As a result, one callback function for DMA mode has been removed.
-What do you think about the patch below?
+Thanks for the follow up - from my perspective now that I know that the
+condition that caused the warning messages has been with us for some
+time, and that previously the messages were suppressed it really does
+not make that much difference to me if the warnings are reverted or not.
 
+So I guess that I vote for doing whatever is best for the developer.
+After all they are the ones doing the heavy lifting. If the warning
+message is able to provide some insight into the problem so much the
+better.
 
+At this point my goal is just to learn enough to be an asset as a tester
+instead of a net loss (defined as someone whose efforts cost the team
+more man-hours than their contribution is worth)
 
-Subject: [PATCH 26/28] blk_end_request: changing ide-cd (take 3)
+Chris
 
-
-This patch converts ide-cd (cdrom_newpc_intr()) to use blk_end_request
-interfaces.
-
-In PIO mode, ide-cd (cdrom_newpc_intr()) needs to defer
-end_that_request_last() until the device clears DRQ_STAT and raises
-an interrupt after end_that_request_first().
-So blk_end_request() has to return without completing request
-even if no leftover in the request.
-
-ide-cd uses blk_end_request_callback() and a dummy callback function,
-which just returns value '1', to tell blk_end_request_callback()
-about that.
-
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/ide/ide-cd.c |   49 +++++++++++++++++++++++++++++++++++--------------
- 1 files changed, 35 insertions(+), 14 deletions(-)
-
-Index: 2.6.24-rc3-mm2/drivers/ide/ide-cd.c
-===================================================================
---- 2.6.24-rc3-mm2.orig/drivers/ide/ide-cd.c
-+++ 2.6.24-rc3-mm2/drivers/ide/ide-cd.c
-@@ -1644,6 +1644,17 @@ static int cdrom_write_check_ireason(ide
- 	return 1;
- }
- 
-+/*
-+ * Called from blk_end_request_callback() after the data of the request
-+ * is completed and before the request is completed.
-+ * By returning value '1', blk_end_request_callback() returns immediately
-+ * without completing the request.
-+ */
-+static int cdrom_newpc_intr_dummy_cb(struct request *rq)
-+{
-+	return 1;
-+}
-+
- typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
- 
- /*
-@@ -1682,9 +1693,13 @@ static ide_startstop_t cdrom_newpc_intr(
- 			return ide_error(drive, "dma error", stat);
- 		}
- 
--		end_that_request_chunk(rq, 1, rq->data_len);
--		rq->data_len = 0;
--		goto end_request;
-+		spin_lock_irqsave(&ide_lock, flags);
-+		if (__blk_end_request(rq, 1, rq->data_len))
-+			BUG();
-+		HWGROUP(drive)->rq = NULL;
-+		spin_unlock_irqrestore(&ide_lock, flags);
-+
-+		return ide_stopped;
- 	}
- 
- 	/*
-@@ -1702,8 +1717,15 @@ static ide_startstop_t cdrom_newpc_intr(
- 	/*
- 	 * If DRQ is clear, the command has completed.
- 	 */
--	if ((stat & DRQ_STAT) == 0)
--		goto end_request;
-+	if ((stat & DRQ_STAT) == 0) {
-+		spin_lock_irqsave(&ide_lock, flags);
-+		if (__blk_end_request(rq, 1, 0))
-+			BUG();
-+		HWGROUP(drive)->rq = NULL;
-+		spin_unlock_irqrestore(&ide_lock, flags);
-+
-+		return ide_stopped;
-+	}
- 
- 	/*
- 	 * check which way to transfer data
-@@ -1756,7 +1778,14 @@ static ide_startstop_t cdrom_newpc_intr(
- 		rq->data_len -= blen;
- 
- 		if (rq->bio)
--			end_that_request_chunk(rq, 1, blen);
-+			/*
-+	 		 * The request can't be completed until DRQ is cleared.
-+			 * So complete the data, but don't complete the request
-+			 * using the dummy function for the callback feature
-+			 * of blk_end_request_callback().
-+			 */
-+			blk_end_request_callback(rq, 1, blen,
-+						 cdrom_newpc_intr_dummy_cb);
- 		else
- 			rq->data += blen;
- 	}
-@@ -1777,14 +1806,6 @@ static ide_startstop_t cdrom_newpc_intr(
- 
- 	ide_set_handler(drive, cdrom_newpc_intr, rq->timeout, NULL);
- 	return ide_started;
--
--end_request:
--	spin_lock_irqsave(&ide_lock, flags);
--	blkdev_dequeue_request(rq);
--	end_that_request_last(rq, 1);
--	HWGROUP(drive)->rq = NULL;
--	spin_unlock_irqrestore(&ide_lock, flags);
--	return ide_stopped;
- }
- 
- static ide_startstop_t cdrom_write_intr(ide_drive_t *drive)
-
-Thanks,
-Kiyoshi Ueda
