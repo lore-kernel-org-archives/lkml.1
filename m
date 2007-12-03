@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbXLCFAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbXLCFPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbXLCFAT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 00:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXLCFAI
+	id S1753562AbXLCFPH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 00:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbXLCFOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 00:00:08 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:49763 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707AbXLCFAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 00:00:06 -0500
-Message-ID: <47538CCE.90607@cn.fujitsu.com>
-Date: Mon, 03 Dec 2007 12:57:50 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 3 Dec 2007 00:14:55 -0500
+Received: from il.qumranet.com ([82.166.9.18]:51437 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbXLCFOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 00:14:54 -0500
+Message-ID: <47539030.10600@argo.co.il>
+Date: Mon, 03 Dec 2007 07:12:16 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: tony.luck@intel.com, linux-ia64@vger.kernel.org
-Subject: [PATCH] IA64 signal : fix missing error checkings
-Content-Type: text/plain; charset=UTF-8
+To: Andi Kleen <andi@firstfloor.org>
+CC: Kyle Moffett <mrmacman_g4@mac.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Ben Crowhurst <Ben.Crowhurst@stellatravel.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+References: <474EAD18.6040408@stellatravel.co.uk>	<20071130143445.GA2310@csclub.uwaterloo.ca>	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>	<4751BE0D.3050609@argo.co.il> <p733aukyl8n.fsf@bingen.suse.de>
+In-Reply-To: <p733aukyl8n.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not all the return value of __copy_from_user and
-__put_user is checked.This patch fixed it.
+Andi Kleen wrote:
+> Avi Kivity <avi@argo.co.il> writes:
+>   
+>> [I really doubt there are that many of these; syscall
+>> entry/dispatch/exit, interrupt dispatch, context switch, what else?]
+>>     
+>
+> Networking, block IO, page fault, ... But only the fast paths in these 
+> cases. A lot of the kernel is slow path code and could probably
+> be written even in an interpreted language without much trouble.
+>
+>   
 
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
+Even these (with the exception of the page fault path) are hardly "we 
+care about a single instruction" material suggested above.  Even with a 
+million packets per second per core (does such a setup actually exist?)  
+You have a few thousand cycles per packet.  For block you'd need around 
+5,000 disks per core to reach such rates.
 
----
-diff -x '*.o*' -urp linux-2.6.24-rc3-git6.orig/arch/ia64/kernel/signal.c linux-2.6.24-rc3-git6/arch/ia64/kernel/signal.c
---- linux-2.6.24-rc3-git6.orig/arch/ia64/kernel/signal.c	2007-12-03 12:04:22.000000000 +0800
-+++ linux-2.6.24-rc3-git6/arch/ia64/kernel/signal.c	2007-12-03 12:50:15.000000000 +0800
-@@ -98,7 +98,7 @@ restore_sigcontext (struct sigcontext __
- 	if ((flags & IA64_SC_FLAG_FPH_VALID) != 0) {
- 		struct ia64_psr *psr = ia64_psr(&scr->pt);
- 
--		__copy_from_user(current->thread.fph, &sc->sc_fr[32], 96*16);
-+		err |= __copy_from_user(current->thread.fph, &sc->sc_fr[32], 96*16);
- 		psr->mfh = 0;	/* drop signal handler's fph contents... */
- 		preempt_disable();
- 		if (psr->dfh)
-@@ -244,7 +244,7 @@ static long
- setup_sigcontext (struct sigcontext __user *sc, sigset_t *mask, struct sigscratch *scr)
- {
- 	unsigned long flags = 0, ifs, cfm, nat;
--	long err;
-+	long err = 0;
- 
- 	ifs = scr->pt.cr_ifs;
- 
-@@ -257,12 +257,12 @@ setup_sigcontext (struct sigcontext __us
- 	ia64_flush_fph(current);
- 	if ((current->thread.flags & IA64_THREAD_FPH_VALID)) {
- 		flags |= IA64_SC_FLAG_FPH_VALID;
--		__copy_to_user(&sc->sc_fr[32], current->thread.fph, 96*16);
-+		err = __copy_to_user(&sc->sc_fr[32], current->thread.fph, 96*16);
- 	}
- 
- 	nat = ia64_get_scratch_nat_bits(&scr->pt, scr->scratch_unat);
- 
--	err  = __put_user(flags, &sc->sc_flags);
-+	err |= __put_user(flags, &sc->sc_flags);
- 	err |= __put_user(nat, &sc->sc_nat);
- 	err |= PUT_SIGSET(mask, &sc->sc_mask);
- 	err |= __put_user(cfm, &sc->sc_cfm);
+The real benefits aren't in keeping close to the metal, but in high 
+level optimizations.  Ironically, these are easier when the code is a 
+little more abstracted.  You can add quite a lot of instructions if it 
+allows you not to do some of the I/O at all.
+
 
