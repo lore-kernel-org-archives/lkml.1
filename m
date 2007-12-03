@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbXLCKgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbXLCKiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbXLCKgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 05:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLCKgH
+	id S1754138AbXLCKiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 05:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXLCKim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 05:36:07 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:58153 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbXLCKgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 05:36:06 -0500
-Subject: Re: [RFC v2] Documentation about unaligned memory access
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, avuton@gmail.com, hancockr@shaw.ca,
-       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org, mrmacman_g4@mac.com,
-       dean@arctic.org, argggh@dolphinics.no, jengelh@computergmbh.de,
-       shdl@zakalwe.fi, vlobanov@speakeasy.net, drzeus-list@drzeus.cx,
-       strange@nsk.no-ip.org, dm.n9107@gmail.com
-In-Reply-To: <20071129161523.E0C349D4B52@zog.reactivated.net>
-References: <20071129161523.E0C349D4B52@zog.reactivated.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-GWpspBqA4h1s8LgcaDR8"
-Date: Mon, 03 Dec 2007 10:26:29 +0100
-Message-Id: <1196673989.6060.5.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Mon, 3 Dec 2007 05:38:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36784 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbXLCKim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 05:38:42 -0500
+Date: Mon, 3 Dec 2007 11:38:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+Message-ID: <20071203103815.GA2707@elte.hu>
+References: <20071202114152.3bf4332d@laptopd505.fenrus.org> <20071202200953.GA23994@one.firstfloor.org> <20071202202602.GA16480@elte.hu> <20071202204725.GA25891@one.firstfloor.org> <20071202144331.6abf1289@laptopd505.fenrus.org> <20071203000741.GB26636@one.firstfloor.org> <20071202165913.3eaebee6@laptopd505.fenrus.org> <20071203095501.GB28560@one.firstfloor.org> <20071203111520.33ed2139@astralstorm.puszkin.org> <20071203102715.GC28560@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071203102715.GC28560@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-GWpspBqA4h1s8LgcaDR8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Andi Kleen <andi@firstfloor.org> wrote:
 
+> > Kernel waiting 2 minutes on TASK_UNINTERRUPTIBLE is certainly broken.
+> 
+> What should it do when the NFS server doesn't answer anymore or when 
+> the network to the SAN RAID array located a few hundred KM away 
+> develops some hickup?  [...]
 
-> 	void myfunc(u8 *data, u32 value)
-> 	{
-> 		[...]
-> 		value =3D cpu_to_le32(value);
-> 		put_unaligned(value, data);
+maybe: if the user does a Ctrl-C (or a kill -9), the kernel should try 
+to honor it, instead of staying there stuck for a very long time 
+(possibly forever)?
 
-> 	u32 value =3D get_unaligned(data);
+I think you are somehow confusing two issues: this patch in no way 
+declares that "long waits are bad" - if the user _choses_ to wait for 
+the NFS server (after phoning IT quickly or whatever), he can wait an 
+hour. This patch only declares that "long waits _that the user has no 
+way to stop_ are quite likely bad".
 
-Actually, this is wrong. put_unaligned and get_unaligned use the type of
-the "data" pointer, e.g. on powerpc get_unaligned does just "*data".
+Do you see the important distinction between the two cases? Please 
+reconsider your position (or re-state it differently), it just makes no 
+rational sense to me so far.
 
-Hence, here you'll want to use
-
-	put_unaligned(value, (u32 *)data);
-
-and
-
-	u32 value =3D get_unaligned((u32 *)data);
-
-or you end up with a single-byte store/load.
-
-johannes
-
---=-GWpspBqA4h1s8LgcaDR8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR1PLxKVg1VMiehFYAQIgog//Qjh2wt8k9S7fnICwStfpsByNJFeHzTff
-mEHBbHW0HBhOnspY8vxlNHV4eShIjBVoyTURGXz1RiaO7U2bPEfWI5qdp62+oSrt
-6BwVN9MUF4I/ObnkC1vB5u+Sl+pCWh+BX7AAkA7bF2LFrItHXGxAmwL019gf1xbx
-hDeKtObBpb3qk+R613FMEcehA6AvPTEXKaIDw677J6NCaggJM3VGSwPSddSQVOQ7
-Mhvhfr8ZnTS9msXUuqGmwFzYi7ChHqSMLpnCzUlg3/hZVXO6MTxImkqpqDjokAHv
-yyZ3to7DGDuYyU6Q0NXgjeaEnvap2z+frqeih/pGTP1ps4AZ/WjhTo1eBAREw9u4
-XOJfjK7r5qS4idpxjbOjclmu58EYIo8SnruqYr+1d4QWLGzyF0TdXXKThhifivpF
-M8hvovK5gD9s2xQXmsXDZ098TtLW2/bNE73lgOa+cRS0dnvVLjRBn5NQ54Vqa/69
-WeJo8FKQNZjBVWly1UsAt3e+BrPpdVmqa4YbG/wvZOHqSdg15RHY9VcBpVoVtwwv
-LaF6L0Z6WzMwEHRAF3c6FRskcfv/08IJmD9fQ9lrfpdJ/ZhnDxAK3euq8d7mkK17
-Z5AsCIRSk5TmK/EJzyaTlG78Oa8MGiw+I86bOs2A3aN22TG+uSardkRO+XEXZ+rc
-sCxvE1F1rf0=
-=etEa
------END PGP SIGNATURE-----
-
---=-GWpspBqA4h1s8LgcaDR8--
-
+	Ingo
