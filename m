@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbXLCVrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbXLCVsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbXLCVrb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 16:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXLCVrS
+	id S1753066AbXLCVsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 16:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbXLCVs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 16:47:18 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38696 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751296AbXLCVrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 16:47:16 -0500
-Date: Mon, 3 Dec 2007 22:47:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Timers SMP] can this machine be helped?
-Message-ID: <20071203214756.GB8704@elf.ucw.cz>
-References: <Pine.LNX.4.64.0711292144260.6673@axis700.grange> <20071202183048.GC4721@ucw.cz> <Pine.LNX.4.64.0712032242540.7783@axis700.grange>
+	Mon, 3 Dec 2007 16:48:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42483 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751135AbXLCVs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 16:48:27 -0500
+Date: Mon, 3 Dec 2007 22:48:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Chris Friesen <cfriesen@nortel.com>, davids@webmaster.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Message-ID: <20071203214803.GA8989@elte.hu>
+References: <MDEHLPKNGKAHNMBLJOLKEEHJIJAC.davids@webmaster.com> <47545F88.6070609@nortel.com> <4754777F.7020302@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712032242540.7783@axis700.grange>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <4754777F.7020302@rtr.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-12-03 22:45:06, Guennadi Liakhovetski wrote:
-> On Sun, 2 Dec 2007, Pavel Machek wrote:
-> 
-> > > I compiled a .24-ish kernel for it with CONFIG_NO_HZ and 
-> > > CONFIG_HIGH_RES_TIMERS. To get the system boot at least sometimes I have 
-> > > to specify nohz=off. Then I get
-> > 
-> > Try highres=off, too... Hehe, and even idle=poll might help.
-> 
-> Ok, for now I've compiled a kernel with all "advanced" features off like 
-> hrt, nohz. Will see how it behaves. But thanks for the hints.
 
-Let us know...
+* Mark Lord <lkml@rtr.ca> wrote:
 
-> > > CR0: 8005003b CR2: 081dcf88 CR3: 07e46000 CR4: 000002d0
-> > > DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> > > DR6: ffff0ff0 DR7: 00000400
-> > >  [<c01053fa>] show_trace_log_lvl+0x1a/0x30
-> > >  [<c0105f42>] show_trace+0x12/0x20
-> > 
-> > ...and disable softlockup watchdog, too...
-> 
-> So, you think those BUGs are bogus?
+> That's not the same thing at all. I think that David is suggesting 
+> that the reinsertion logic should pretend that the task used up all of 
+> the CPU time it was offered in the slot leading up to the 
+> sched_yield() call.
 
-Well.... you want to make old machine usable, right? Disabling
-warnings is fair game.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+we have tried this too, and this has problems too (artificial inflation 
+of the vruntime metric and a domino effects on other portions of the 
+scheduler). So this is a worse solution than what we have now. (and this 
+has all been pointed out in past discussions in which David 
+participated. I'll certainly reply to any genuinely new idea.)
+
+	Ingo
