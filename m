@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbXLCJRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbXLCJUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbXLCJRj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 04:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXLCJRb
+	id S1754775AbXLCJUV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 04:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXLCJUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 04:17:31 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:26231 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751409AbXLCJRa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 04:17:30 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=coiBR5TYzsVBoA9W1TQXmpGHsh+xbUB+ji/MqCvz3igZcyE+veMY75DsEpcNHQ/PD4HH7ro4d+ZMoz30Edc2TXXyGsVPgHO7FifJGoKFYG1B7wdaFIPkxt0gmQEinzRbtl97CS6Vdpt6081Xa7CUANjV6T3kjCl27FdhssY6Czg=  ;
-X-YMail-OSG: 4nyPsJEVM1ld1JE2xo8PRzqEsXv.rGwttWEQX.fUaFwibPPJtvLBDqBFj58ZgvnKqImrjA8M9A--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: sched_yield: delete sysctl_sched_compat_yield
-Date: Mon, 3 Dec 2007 20:17:19 +1100
-User-Agent: KMail/1.9.5
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1196155985.25646.31.camel@ymzhang> <200712031527.57129.nickpiggin@yahoo.com.au> <20071203084557.GA13156@elte.hu>
-In-Reply-To: <20071203084557.GA13156@elte.hu>
+	Mon, 3 Dec 2007 04:20:08 -0500
+Received: from il.qumranet.com ([82.166.9.18]:46005 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752038AbXLCJUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 04:20:07 -0500
+Message-ID: <4753CB07.7080807@qumranet.com>
+Date: Mon, 03 Dec 2007 11:23:19 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Greg KH <greg@kroah.com>
+CC: kvm-devel@lists.sourceforge.net, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [stable] [PATCH 00/10]: KVM updates for 2.6.23.9
+ (-stable)
+References: <1196594327338-git-send-email-avi@qumranet.com> <20071202190829.GA22385@kroah.com>
+In-Reply-To: <20071202190829.GA22385@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712032017.19661.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 December 2007 19:45, Ingo Molnar wrote:
-> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > On Friday 30 November 2007 21:08, Ingo Molnar wrote:
-> > > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > > Haven't we been asking JVMs to use futexes or posix locking for years
-> > > > and years now? [...]
-> > >
-> > > i'm curious, with what JVM was it tested and where's the source so i
-> > > can fix their locking for them? Can the problem be reproduced with:
-> >
-> > Sure, but why shouldn't the compat behaviour be the default, and the
-> > sysctl go away?
-> >
-> > It makes older JVMs work better, it is slightly closer to the old
-> > behaviour, and it is arguably a less surprising result.
+Greg KH wrote:
+> On Sun, Dec 02, 2007 at 01:18:37PM +0200, Avi Kivity wrote:
+>   
+>> The following patchset fixes some bugs in KVM for the next 2.6.23.y stable
+>> release.  Please apply.
+>>     
 >
-> as far as desktop apps such as firefox goes, the exact opposite is true.
-> We had two choices basically: either a "more agressive" yield than
-> before or a "less agressive" yield. Desktop apps were reported to hurt
-> from a "more agressive" yield (firefox for example gets some pretty bad
-> delays), so we defaulted to the less agressive method. (and we defaulted
-> to that in v2.6.23 already)
+> I'm guessing that all of these are already upstream in Linus's tree?
+>
+>   
 
-Yeah, I doubt the 2.6.23 scheduler will be usable for distros though...
+Yes, except one, which has been changed in a different way for 2.6.24.
+
+> If so, can you give me the git commit ids for them all if you happen to
+> know them, so that I don't have to guess at them?  :)
+>
+>   
+
+1 a012e65aee48379a7a87eadafa74f878b61522b9
+2 4e62417bf317504c0b85e0d7abd236f334f54eaf
+3 651a3e29b3d19418d7a8a9787906061f9be7cc5f
+4 cf5a94d1331b411b84414c13e43f578260942d6b
+5 00b2ef475d4728ca53a2bc788c7978042907e354
+6 N/A
+7 404fb881b82cf0cf6981832f8d31a7484e4dee81
+8 0967b7bf1c22b55777aba46ff616547feed0b141
+9 78f7826868da8e27d097802139a3fec39f47f3b8
+10 8668a3c468ed55d19514117a5a959d91d3d03823
 
 
-> Really, in this sense volanomark is another 
-> test like dbench - we care about it but not unconditionally and in this
-> case it's a really silly API use that is at the center of the problem.
+-- 
+error compiling committee.c: too many arguments to function
 
-Sure, but do you whether _real_ java server applications are OK? Is it
-possible to reduce the aggressiveness of yield to a mid-way? Are the
-firefox tests also like dbench (ie. were they done with make -j huge or
-some other insane scheduler loads)
-
-
-> Talking about the default alone will not bring us forward, but we can
-> certainly add helpers to identify SCHED_OTHER::yield tasks - a once per
-> bootup warning perhaps?
-
-I don't care about keeping the behaviour for future apps. But for older
-code out there, it is very important to still work well.
-
-I was just talking about the default because I didn't know the reason
-for the way it was set -- now that I do, we should talk about trying to
-improve the actual code so we don't need 2 defaults.
