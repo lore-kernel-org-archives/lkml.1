@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbXLCLxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbXLCLzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbXLCLxQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 06:53:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXLCLxE
+	id S1754982AbXLCLzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 06:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbXLCLy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 06:53:04 -0500
-Received: from ns1.suse.de ([195.135.220.2]:41506 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753633AbXLCLxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 06:53:03 -0500
-Subject: Re: [PATCH] Declare PNP option parsing functions as __init
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, "Li, Shaohua" <shaohua.li@intel.com>
-In-Reply-To: <200711301652.42110.bjorn.helgaas@hp.com>
-References: <1196442277.23251.318.camel@queen.suse.de>
-	 <47509EB6.20300@keyaccess.nl>  <200711301652.42110.bjorn.helgaas@hp.com>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Mon, 03 Dec 2007 12:53:01 +0100
-Message-Id: <1196682781.23251.349.camel@queen.suse.de>
+	Mon, 3 Dec 2007 06:54:57 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4986 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753633AbXLCLy4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 06:54:56 -0500
+Date: Mon, 3 Dec 2007 22:54:35 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Cc: Wang Chen <wangchen@cn.fujitsu.com>, Gerrit Renker <gerrit@erg.abdn.ac.uk>,
+       davem@davemloft.net, andi@firstfloor.org, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
+Message-ID: <20071203115435.GA4202@gondor.apana.org.au>
+References: <474F7EE8.2040009@cn.fujitsu.com> <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071203114912.GA4425@ms2.inr.ac.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-11-30 at 16:52 -0700, Bjorn Helgaas wrote:
-> On Friday 30 November 2007 04:37:26 pm Rene Herman wrote:
-> > On 30-11-07 18:04, Thomas Renninger wrote:
-> > > If I have not overseen something, it should be rather obvious that those
-> > > can all be declared __init...
-> > > ---------------
-> > > 
-> > > Declare PNP option parsing functions as __init
-> > > 
-> > > There are three kind of parse functions provided by PNP acpi/bios:
-> > >  - get current resources
-> > >  - set resources
-> > >  - get possible resources
-> > > The first two may be needed later at runtime.
-> > > The possible resource settings should never change dynamically.
-> > > And even if this would make any sense (I doubt it), the current implementation
-> > > only parses possible resource settings at early init time:
-> > >   -> declare all the option parsing __init
-> > > 
-> > > Signed-off-by: Thomas Renninger <trenn@suse.de>
-> > 
-> > Yes. Obviousness aside,
-> > 
-> > (0) pnpacpi_add_device                          is only caller of
-> > ...
+On Mon, Dec 03, 2007 at 02:49:12PM +0300, Alexey Kuznetsov wrote:
+> On Mon, Dec 03, 2007 at 10:39:35PM +1100, Herbert Xu wrote:
+> > So we need to fix this, and whatever the fix is will probably render
+> > the BH/USER distinction obsolete.
 > 
-> I agree this is probably safe in the current implementation.
-> 
-> However, I think the current implementation is just broken because
-> we can't really handle hotplug of ACPI devices.  Specifically, I think
-> the first TBD in acpi_bus_check_device() should be fleshed out so it
-> does something like pnpacpi_add_device().
-> 
-> So my dissenting opinion is that this patch would just get reverted
-> soon anyway when somebody finishes implementing ACPI hotplug, and
-> therefore it's not worth doing.
+> Hmm, I would think opposite. USER (or generic) is expensive variant,
+> BH is lite. No?
 
-Ok, this all applies to the ACPI parts, but for pnpbios it probably
-makes sense to only evaluate possible resources only once at boot time?
+Yes that would certainly be the obvious fix.  In other words, just use
+smp_processor_id instead of the raw version.  I suppose the only issue
+would be that disabling/enabling preemption isn't exactly cost-free and
+we're going to be doing that for every single increment.
 
-   Thomas
+Hmm, wasn't someone else talking about a non-atomic version of atomic
+ops lately (i.e., atomic with respect to the local CPU only)? Perhaps
+this is the killer app for it :)
 
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
