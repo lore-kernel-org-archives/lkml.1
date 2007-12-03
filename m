@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbXLCAHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXLCAUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbXLCAHv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 19:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXLCAHn
+	id S1754078AbXLCAUO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 19:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXLCAT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 19:07:43 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:60474 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbXLCAHn (ORCPT
+	Sun, 2 Dec 2007 19:19:59 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48992 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751130AbXLCAT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 19:07:43 -0500
-Date: Mon, 3 Dec 2007 01:07:41 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203000741.GB26636@one.firstfloor.org>
-References: <20071201092037.GA32544@elte.hu> <p737ijwylet.fsf@bingen.suse.de> <20071202185945.GA25990@elte.hu> <20071202114152.3bf4332d@laptopd505.fenrus.org> <20071202200953.GA23994@one.firstfloor.org> <20071202202602.GA16480@elte.hu> <20071202204725.GA25891@one.firstfloor.org> <20071202144331.6abf1289@laptopd505.fenrus.org>
+	Sun, 2 Dec 2007 19:19:58 -0500
+Date: Mon, 3 Dec 2007 00:14:41 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: davids@webmaster.com
+Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "Mark Lord" <lkml@rtr.ca>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, "Greg KH" <greg@kroah.com>,
+       "Tejun Heo" <htejun@gmail.com>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       <netdev@vger.kernel.org>, <cornelia.huck@de.ibm.com>,
+       <stern@rowland.harvard.edu>, <kay.sievers@vrfy.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "David Miller" <davem@davemloft.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+Message-ID: <20071203001441.02cd6f2a@the-village.bc.nu>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEDMIJAC.davids@webmaster.com>
+References: <20071201192341.6750fbdb@the-village.bc.nu>
+	<MDEHLPKNGKAHNMBLJOLKGEDMIJAC.davids@webmaster.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071202144331.6abf1289@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We really need to get better diagnostics for the
-> bad-kernel-behavior-that-is-seen-as-bug cases. If we ever want to get
-> to the scenario where we have a more or less robust measure of kernel
-> quality (and we're not all that far off for several cases), one thing
-
-One measure to kernel quality is to recover well from IO errors
-(like network problems or broken block devices)
-
-This patch will likely work against that by breaking error paths.
-
-> This patch is a step in the right direction there, by quite a
-> lot.
+> You license yours under the GPL, so they should respect the GPL.
 > 
-> I really don't understand what your objection is to this patch... is it
-> that an enterprise distro can't ship with it on? (Which is fine btw)
+> It sounds like we're back to where we were years ago. Didn't we already
+> agree that EXPORT_SYMBOL_GPL was *NOT* a GPL-enforcement mechanism and had
+> nothing to do with respecting the GPL? After all, if it s a GPL-enforcement
 
-Any distribution aimed at end users cannot ship with it on. 
-Most likely not even a standard Linus kernel should really enable
-it without warnings.
+No we seem to be back recycling the fact that certain people were making
+statements that might be construed, unanswered, as giving permission to
+violate the GPL.
 
-Also in general I have my doubts that the false positive:real bug
-ratio of this warning is well balanced. Just consider the original
-example of dead network servers. Even in my relatively small
-home network that that is a quite common occurrence. This patch
-will break that all by throwing random backtraces when this 
-happens.
+I'm merely reminding people that I've not waived my GPL rights, I've not
+said modules are somehow magically OK, and I don't agree with Linus. 
 
--Andi
+The GPL very clearly says that you can make your own unredistributed
+modifications and keep them that way.
 
+Alan
