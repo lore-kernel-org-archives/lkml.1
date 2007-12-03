@@ -1,126 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbXLCI5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbXLCI6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbXLCI5N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 03:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXLCI46
+	id S1754629AbXLCI6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 03:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbXLCI6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 03:56:58 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33177 "EHLO il.qumranet.com"
+	Mon, 3 Dec 2007 03:58:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37070 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751610AbXLCI45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 03:56:57 -0500
-Message-ID: <4753C59A.4030206@qumranet.com>
-Date: Mon, 03 Dec 2007 11:00:10 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Amit Shah <amit.shah@qumranet.com>
-CC: kvm-devel@lists.sourceforge.net, Anthony Liguori <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure (v2)
-References: <11898788932902-git-send-email-aliguori@us.ibm.com> <200712021917.28706.amit.shah@qumranet.com> <475339A6.9020207@us.ibm.com> <200712031416.51710.amit.shah@qumranet.com>
-In-Reply-To: <200712031416.51710.amit.shah@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751585AbXLCI63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 03:58:29 -0500
+Date: Mon, 3 Dec 2007 03:58:17 -0500
+From: Jakub Jelinek <jakub@redhat.com>
+To: Thomas Gleixner <tglx@www.tglx.de>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Fedora's latest gcc produces unbootable kernels
+Message-ID: <20071203085817.GQ16835@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <20071201154223.1b052d39@poseidon.drzeus.cx> <20071201184752.33536d09@poseidon.drzeus.cx> <20071201212054.2377c8be@poseidon.drzeus.cx> <23803.203.197.163.97.1196669842.squirrel@www.tglx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <23803.203.197.163.97.1196669842.squirrel@www.tglx.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amit Shah wrote:
-> * Anthony Liguori wrote:
->   
->> Amit Shah wrote:
->>     
->>> * Anthony Liguori wrote:
->>>  
->>>
->>>       
->>>> This patch refactors the current hypercall infrastructure to better
->>>> support live migration and SMP.  It eliminates the hypercall page by
->>>> trapping the UD exception that would occur if you used the wrong
->>>> hypercall instruction for the underlying architecture and replacing it
->>>> with the right one lazily. 
->>>>         
->>> This doesn't work right for SVM. It keeps looping indefinitely; on a
->>> kvm_stat run, I get about 230,000 light vm exits per second, with the
->>> hypercall never returning to the guest.
->>>
->>> ...
->>>  
->>>       
->> What are you using to issue the hypercall?
->>     
->
-> +       r = kvm_hypercall1(KVM_PV_PCI_DEVICE, page_gfn);
->
-> Setup is done by:
->
-> +       if (!kvm_para_available()) {
-> +               printk(KERN_ERR "KVM paravirt support not available\n");
-> +               r = -ENODEV;
-> +               goto out_dereg;
-> +       }
->   
+On Mon, Dec 03, 2007 at 09:17:22AM +0100, Thomas Gleixner wrote:
+> I looked at the disassembly but I can not spot the problem.
+> 
+> I think the real problem is somewhere else. Likely candidates are
+> hrtimer_forward() or hrtimer_start() - in that order.
 
-There was a bug where instructions with a modrm byte specifying a 
-register would try to access memory.  In the memory was not mapped,  
-emulation would fail. vmcall is one such instruction.  This was fixed by
+Should be hopefully fixed in latest Fedora gcc.  The problem was in code like
+typedef union { long long int s; } U;
+typedef struct { U u; } S;
 
-commit f83562246921d6a8a7de8b76853a6835ace3699d
-Author: Aurelien Jarno <aurelien@aurel32.net>
-Date:   Wed Oct 17 19:30:41 2007 +0200
+void foo (S *s, long long int x, unsigned long int y)
+{
+  s->u = ({ (U) { .s = s->u.s + x * y }; });
+}
 
-    KVM: x86 emulator: fix access registers for instructions with ModR/M 
-byte and Mod = 3
+where a backport of a recent optimization of mine, without which gcc handles
+terribly initializers from compound literals (which is something hrtimer
+uses just everywhere - why can't ktime.h for #if BITS_PER_LONG == 64 || defined(CONFIG_KTIME_SCALAR)
+just use a scalar rather than union with a scalar in it??), sets the LHS
+object to the compound literal's initializer rather than forcing creation of
+a temporary object (the compound literal).  Unfortunately the gimplifier
+had some bugs in case the initializer references (or at least might
+reference) parts of LHS object.  Fixed by backporting 2 Ada bugfixes for the
+gimplifier from GCC trunk (Ada was hitting those bugs even without this
+compound literal optimization).
 
-    The patch belows changes the access type to register from memory for
-    instructions that are declared as SrcMem or DstMem, but have a
-    ModR/M byte with Mod = 3.
-
-    It fixes (at least) the lmsw and smsw instructions on an AMD64 CPU,
-    which are needed for FreeBSD.
-
-    Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 7c95ae5..8c50496 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -835,6 +835,14 @@ modrm_done:
-                if (c->twobyte && c->b == 0x01
-                                    && c->modrm_reg == 7)
-                        break;
-+               /*
-+                * For instructions with a ModR/M byte, switch to register
-+                * access if Mod = 3.
-+                */
-+               if ((c->d & ModRM) && c->modrm_mod == 3) {
-+                       c->src.type = OP_REG;
-+                       break;
-+               }
- srcmem_common:
-                c->src.type = OP_MEM;
-                break;
-@@ -897,7 +905,14 @@ srcmem_common:
-                }
-                break;
-        case DstMem:
--               c->dst.type = OP_MEM;
-+               /*
-+                * For instructions with a ModR/M byte, switch to register
-+                * access if Mod = 3.
-+                */
-+               if ((c->d & ModRM) && c->modrm_mod == 3)
-+                       c->dst.type = OP_REG;
-+               else
-+                       c->dst.type = OP_MEM;
-                break;
-        }
-
-
-
-
--- 
-error compiling committee.c: too many arguments to function
-
+	Jakub
