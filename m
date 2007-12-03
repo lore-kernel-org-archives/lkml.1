@@ -1,69 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbXLCW5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752028AbXLCXEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbXLCW5b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 17:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbXLCW5V
+	id S1752028AbXLCXEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 18:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbXLCXE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 17:57:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38440 "EHLO mx1.redhat.com"
+	Mon, 3 Dec 2007 18:04:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55810 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbXLCW5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 17:57:19 -0500
-Date: Mon, 03 Dec 2007 17:55:44 -0500 (EST)
-Message-Id: <20071203.175544.13775421.k-ueda@ct.jp.nec.com>
-To: Geert.Uytterhoeven@sonycom.com
-Cc: jens.axboe@oracle.com, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, linuxppc-dev@ozlabs.org,
-       k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 09/28] blk_end_request: changing ps3disk (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <Pine.LNX.4.64.0712021032490.29349@anakin>
-References: <20071130.182810.98558485.k-ueda@ct.jp.nec.com>
-	<Pine.LNX.4.64.0712021032490.29349@anakin>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+	id S1751362AbXLCXE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 18:04:28 -0500
+Date: Tue, 4 Dec 2007 00:04:22 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Supriya Kannery <supriyak@in.ibm.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: remap_file_pages() broken in 2.6.23?
+Message-ID: <20071203230422.GA23556@wotan.suse.de>
+References: <474F16D3.5060009@redhat.com> <20071129233058.GA10359@wotan.suse.de> <4753F72C.6060202@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4753F72C.6060202@in.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
-
-On Sun, 2 Dec 2007 10:34:56 +0100 (CET), Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> On Fri, 30 Nov 2007, Kiyoshi Ueda wrote:
-> > This patch converts ps3disk to use blk_end_request().
->                                      ^^^^^^^^^^^^^^^
-> Patch subject and description are inconsistent with actual change.
-> 
-> > Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> > Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> > ---
-> >  drivers/block/ps3disk.c |    6 +-----
-> >  1 files changed, 1 insertion(+), 5 deletions(-)
-> > 
-> > Index: 2.6.24-rc3-mm2/drivers/block/ps3disk.c
-> > ===================================================================
-> > --- 2.6.24-rc3-mm2.orig/drivers/block/ps3disk.c
-> > +++ 2.6.24-rc3-mm2/drivers/block/ps3disk.c
-> > @@ -280,11 +280,7 @@ static irqreturn_t ps3disk_interrupt(int
-> >  	}
+On Mon, Dec 03, 2007 at 06:01:40PM +0530, Supriya Kannery wrote:
+> Nick Piggin wrote:
+> >On Thu, Nov 29, 2007 at 02:45:23PM -0500, Chuck Ebbert wrote:
 > >  
-> >  	spin_lock(&priv->lock);
-> > -	if (!end_that_request_first(req, uptodate, num_sectors)) {
-> > -		add_disk_randomness(req->rq_disk);
-> > -		blkdev_dequeue_request(req);
-> > -		end_that_request_last(req, uptodate);
-> > -	}
-> > +	__blk_end_request(req, uptodate, num_sectors << 9);
->       ^^^^^^^^^^^^^^^^^
+> >>Original report: https://bugzilla.redhat.com/show_bug.cgi?id=404201
+> >>
+> >>The test case below, taken from the LTP test code, prints -1 (as
+> >>expected) on 2.6.22 and 0 on 2.6.23. It tries to remap an out-of-range
+> >>page. Proposed patch follows the program. Bug was apparently caused by
+> >>commit 54cb8821de07f2ffcd28c380ce9b93d5784b40d7.
+> >>    
+> >
+> >Ah, that's not such good behaviour anyway. mmap is allowed to map
+> >outside the file offset, so you're telling me that remap_file_pages
+> >just magically should not be allowed to remap these...?
+> >
+> >  
+> Validation check for pgoff was there in populate() in earlier 
+> kernels.When populate() got removed and populate_range() was added, 
+> during the specified commit, validation for pgoff also got removed. This 
+> symantic would break existing apps that expects an error from 
+> remap_file_pages when a large value for pgoff is given. Though the 
+> change is error handling related, it breaks ABI from previous kernel 
+> versions.
 
-Thank you for the comment.
-The description meant the blk_end_request family, not actual function,
-blk_end_request().  But as you pointed out, it is misleading.
-I'll change the description of all related patches.
+But only Oracle uses it AFAIK, and they don't require this behaviour.
+
+ 
+> For validation, we check whether the pgoff + size exceeds the file size, 
+> all in page units. And while calculating file size in page units, one 
+> additional page unit is taken into account to get the exact number of 
+> pages that contain the file size in bytes.
+> f_size = i_size_read(mapping->host) + PAGE_CACHE_SIZE - 1;
+> <---- file size in bytes -------> <--- helps in rounding to next page 
+> unit -->
+> 
+> mmap() will be mapping the minimum number of pages that can contain a 
+> file. So offset cannot be a large value compared to file size. mmap() is 
+> also supposed to return EINVAL when the offset is a large/invalid value 
+> as man page mandates.
+
+I don't think it is required that mmap must fail if it maps past i_size.
+I don't think Linux fails in this case.
+
+
+> >  
+> >>Patch:
+> >>
+> >>Signed-off-by: Supriya Kannery <supriyak@in.ibm.com>
+> >>
+> >>--- linux-2.6.23/mm/fremap.c.orig	2007-11-22 00:56:09.000000000 -0600
+> >>+++ linux-2.6.23/mm/fremap.c	2007-11-26 03:08:55.000000000 -0600
+> >>@@ -124,6 +124,7 @@ asmlinkage long sys_remap_file_pages(uns
+> >> 	struct vm_area_struct *vma;
+> >> 	int err = -EINVAL;
+> >> 	int has_write_lock = 0;
+> >>+	unsigned long f_size = 0;
+> >> 
+> >> 	if (__prot)
+> >> 		return err;
+> >>@@ -181,6 +182,14 @@ asmlinkage long sys_remap_file_pages(uns
+> >> 			goto retry;
+> >> 		}
+> >> 		mapping = vma->vm_file->f_mapping;
+> >>+
+> >>+		f_size = i_size_read(mapping->host) + PAGE_CACHE_SIZE - 1;
+> >>+		f_size = f_size >> PAGE_CACHE_SHIFT;
+> >>+		if ((pgoff + size >> PAGE_CACHE_SHIFT) > f_size) {
+> >>+			err = -EINVAL;
+> >>+			goto out;
+> >>+		}
+> >>+
+> >> 		/*
+> >> 		 * page_mkclean doesn't work on nonlinear vmas, so if
+> >> 		 * dirty pages need to be accounted, emulate with linear
+> >>    
+> >
+> >
+> >I don't think there is anything preventing truncate races here. 
+> >Theoretically
+> >we could do it by taking i_mutex around here, but anyway then a subsequent
+> >truncate is just going to be able to cause the mapping to be out of bounds
+> >anyway.
+> >
+> >  
+> i_size_read() is taking care of syncing between the writes/truncations 
+> in SMP/ pre-emtable kernel. For SMP, it specifically takes care to get 
+> the value again if any changes happen to the source.
+
+And then right afterwards, the file gets truncated, and you hav eremapped
+past i_size. So what's the point of preventing it? We have SIGBUS for
+that.
 
 Thanks,
-Kiyoshi Ueda
+Nick
