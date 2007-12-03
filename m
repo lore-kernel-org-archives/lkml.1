@@ -1,104 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbXLCVg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbXLCViz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbXLCVg2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 16:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbXLCVgK
+	id S1752436AbXLCViz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 16:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbXLCVis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 16:36:10 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:48832 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752540AbXLCVgH (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 16:36:07 -0500
-Date: Tue, 4 Dec 2007 08:35:58 +1100
-From: David Chinner <dgc@sgi.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: neilb@suse.de
-Subject: Regression - 2.6.24-rc3 - umem nvram card driver oops
-Message-ID: <20071203213558.GP115527101@sgi.com>
+	Mon, 3 Dec 2007 16:38:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58788 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751267AbXLCVir (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 16:38:47 -0500
+Date: Mon, 3 Dec 2007 13:38:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef
+ CONFIG_SYSCTL
+Message-Id: <20071203133844.40804dab.akpm@linux-foundation.org>
+In-Reply-To: <475009FA.20409@openvz.org>
+References: <475008F5.3000506@openvz.org>
+	<475009FA.20409@openvz.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil,
+On Fri, 30 Nov 2007 16:02:50 +0300
+Pavel Emelyanov <xemul@openvz.org> wrote:
 
-I just upgraded an ia64 (Altix, 16k page size) test box to 2.6.24-rc3
-from 2.6.23 and I get it panicing on boot in the umem driver.
+> This includes the tables themselves and the call to the
+> register_sysctl_table(). Since this call is done from the __init
+> call, I hope this is OK to keep the #ifdef inside the function, 
+> rather than making proper helpers outside it.
+> 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+> 
+> diff --git a/fs/dquot.c b/fs/dquot.c
+> index 50e7c2a..efee14d 100644
+> --- a/fs/dquot.c
+> +++ b/fs/dquot.c
+> @@ -1821,6 +1821,7 @@ struct quotactl_ops vfs_quotactl_ops = {
+>  	.set_dqblk	= vfs_set_dqblk
+>  };
+>  
+> +#ifdef CONFIG_SYSCTL
+>  static ctl_table fs_dqstats_table[] = {
+>  	{
+>  		.ctl_name	= FS_DQ_LOOKUPS,
+> @@ -1918,6 +1919,7 @@ static ctl_table sys_table[] = {
+>  	},
+>  	{ .ctl_name = 0 },
+>  };
+> +#endif
+>  
+>  static int __init dquot_init(void)
+>  {
+> @@ -1926,7 +1928,9 @@ static int __init dquot_init(void)
+>  
+>  	printk(KERN_NOTICE "VFS: Disk quotas %s\n", __DQUOT_VERSION__);
+>  
+> +#ifdef CONFIG_SYSCTL
+>  	register_sysctl_table(sys_table);
+> +#endif
+>  
+>  	dquot_cachep = kmem_cache_create("dquot",
+>  			sizeof(struct dquot), sizeof(unsigned long) * 4,
 
-[   55.499300] v2.3 : Micro Memory(tm) PCI memory board block driver
-[   55.519331] ACPI: Unable to derive IRQ for device 0006:00:01.0
-[   55.528294] ACPI: PCI Interrupt 0006:00:01.0[A]: no GSI
-[   55.529214] umem 0006:00:01.0: Micro Memory(tm) controller found (PCI Mem Module (Battery Backup))
-[   55.530968] umem 0006:00:01.0: CSR 0xc00000080da00000 -> 0xc00000080da00000 (0x100)
-[   55.552881] umem 0006:00:01.0: Size 1048576 KB, Battery 1 Disabled (FAILURE), Battery 2 Disabled (FAILURE)
-[   55.559064] umem 0006:00:01.0: Window size 16777216 bytes, IRQ 64
-[   55.560131] umem 0006:00:01.0: memory already initialized
-[   55.561501]  umema:<1>Unable to handle kernel NULL pointer dereference (address 000000000000002a)
-[   55.580231] swapper[0]: Oops 8813272891392 [1]
-[   55.581096] Modules linked in: umem qla2xxx
-[   55.582022]
-[   55.582023] Pid: 0, CPU 0, comm:              swapper
-[   55.608663] psr : 0000101008026018 ifs : 8000000000000b9c ip  : [<a0000002046e1ce0>]    Not tainted
-[   55.610226] ip is at process_page+0x1c0/0x760 [umem]
-[   55.611107] unat: 0000000000000000 pfs : 0000000000000b9c rsc : 0000000000000003
-[   55.660528] rnat: e0000030023e5e40 bsps: e000003002563000 pr  : a56911155aa696a5
-[   55.661866] ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c0270033f
-[   55.663204] csd : 0000000000000000 ssd : 0000000000000000
-[   55.712930] b0  : a0000002046e1b70 b6  : a0000002046e1b20 b7  : a00000010008d300
-[   55.714267] f6  : 1003e0000060100000000 f7  : 1003e0000000000400000
-[   55.715395] f8  : 1003e0000000000180400 f9  : 1003e0000000080000000
-[   55.816292] f10 : 1003e0000000000000400 f11 : 1003e0000000000049919
-[   55.817422] r1  : a0000002046ebe80 r2  : a0000002046f7640 r3  : 0000000000000040
-[   55.818747] r8  : 0000000000000000 r9  : 0000000000000000 r10 : 0000000000000000
-[   55.866550] r11 : 0000000000000003 r12 : a000000100bfbbb0 r13 : a000000100bf4000
-[   55.867886] r14 : 000000000000002a r15 : 0000000000000000 r16 : 0000000000000003
-[   55.894776] r17 : a0000002046e5630 r18 : 0000000000000000 r19 : 0000000000000003
-[   55.896113] r20 : e00000398c980030 r21 : e000003988381f40 r22 : 0000000000000000
-[   55.897450] r23 : 0000000000000001 r24 : 0000000000000001 r25 : e000003988381f28
-[   55.927571] r26 : 0000000000000001 r27 : 0000000000000000 r28 : 0000000000040000
-[   55.928734] r29 : 00000000cf0c01d0 r30 : e00000398c980038 r31 : 0000000000000000
-[   55.930075]
-[   55.930077] Call Trace:
-[   56.031008]  [<a000000100015e00>] show_stack+0x80/0xa0
-[   56.031010]                                 sp=a000000100bfb780 bsp=a000000100bf5238
-[   56.033460]  [<a0000001000166f0>] show_regs+0x870/0x8a0
-[   56.033462]                                 sp=a000000100bfb950 bsp=a000000100bf51d8
-[   56.093627]  [<a00000010003e830>] die+0x210/0x3a0
-[   56.093629]                                 sp=a000000100bfb950 bsp=a000000100bf5190
-[   56.213913]  [<a00000010006eca0>] ia64_do_page_fault+0x9c0/0xb00
-[   56.213915]                                 sp=a000000100bfb950 bsp=a000000100bf5138
-[   56.231427]  [<a00000010000b640>] ia64_leave_kernel+0x0/0x280
-[   56.231429]                                 sp=a000000100bfb9e0 bsp=a000000100bf5138
-[   56.278001]  [<a0000002046e1ce0>] process_page+0x1c0/0x760 [umem]
-[   56.278004]                                 sp=a000000100bfbbb0 bsp=a000000100bf5058
-[   56.280476]  [<a0000001000dab30>] tasklet_action+0x270/0x360
-[   56.280478]                                 sp=a000000100bfbbb0 bsp=a000000100bf5018
-[   56.370160]  [<a0000001000d9a60>] __do_softirq+0x200/0x240
-[   56.370162]                                 sp=a000000100bfbbb0 bsp=a000000100bf4f80
-[   56.476607]  [<a0000001000d9b10>] do_softirq+0x70/0xc0
-[   56.476609]                                 sp=a000000100bfbbb0 bsp=a000000100bf4f20
-[   56.478889]  [<a0000001000d9be0>] irq_exit+0x80/0xc0
-[   56.478891]                                 sp=a000000100bfbbb0 bsp=a000000100bf4f08
-[   56.529780]  [<a000000100012b90>] ia64_handle_irq+0x1b0/0x3c0
-[   56.529782]                                 sp=a000000100bfbbb0 bsp=a000000100bf4e98
-[   56.636341]  [<a00000010000b640>] ia64_leave_kernel+0x0/0x280
-[   56.636343]                                 sp=a000000100bfbbb0 bsp=a000000100bf4e98
-[   56.638823]  [<a000000100017140>] default_idle+0x1a0/0x1c0
-[   56.638825]                                 sp=a000000100bfbd80 bsp=a000000100bf4e30
-[   56.689924]  [<a000000100015a70>] cpu_idle+0x210/0x440
-[   56.689926]                                 sp=a000000100bfbe20 bsp=a000000100bf4db8
-[   56.796362]  [<a000000100928850>] rest_init+0x110/0x140
-[   56.796364]                                 sp=a000000100bfbe20 bsp=a000000100bf4da0
-[   56.798668]  [<a000000100b49d20>] start_kernel+0x7c0/0x880
-[   56.798670]                                 sp=a000000100bfbe20 bsp=a000000100bf4d28
-[   56.850239]  [<a000000100930670>] __kprobes_text_end+0x6d0/0x6f0
-[   56.850241]                                 sp=a000000100bfbe30 bsp=a000000100bf4c40
+We should avoid the ifdefs around the register_sysctl_table() call.
 
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+At present the !CONFIG_SYSCTL implementation of register_sysctl_table() is
+a non-inlined NULL-returning stub.  All we have to do is to inline that stub
+then these ifdefs can go away.
+
+The same applies to register_sysctl_paths().
+
+
+If that's all agreeable then there isn't a lot of point in me merging these
+seven patches.
+
+
+
+btw, administrivia detail: please don't put the patch's subsystem
+identifier in [].  IOW, this:
+
+Subject: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef CONFIG_SYSCTL
+
+should have been
+
+Subject: [PATCH 1/7] quota: move sysctl management code under ifdef CONFIG_SYSCTL
+
+for reasons described in section 2 of
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt.
+
+
+Thanks.
+
