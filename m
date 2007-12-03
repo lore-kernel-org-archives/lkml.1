@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXLCF0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbXLCF0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbXLCF0P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 00:26:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbXLCFZ7
+	id S1754760AbXLCF0b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 00:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXLCF0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 00:25:59 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:8804 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070AbXLCFZ6 (ORCPT
+	Mon, 3 Dec 2007 00:26:21 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:35504 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbXLCF0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 00:25:58 -0500
+	Mon, 3 Dec 2007 00:26:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NwknuhtCXuUu/RhvXTHr722G1fb8HnemrXMG8TvUkM/BMfp9//lqHP5MdXHGFwaGGw05sLPuuA5pIDnEnK64lA/pjeOxqVeclQx5nfUgyV9ecVTo7W2sLo6uHig/Q0XyqZyiQ2MN/HYlRl0FbxO5JJcxdYR6RXFImvMk+nC5yXc=
-Message-ID: <aa79d98a0712022125ne3743a4r583dcbdbf2dc2d74@mail.gmail.com>
-Date: Mon, 3 Dec 2007 08:25:57 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Thomas Tuttle" <linux-kernel@ttuttle.net>
-Subject: Re: Oops with 2.6.24 git when loading iwl3945
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1196617561.16481.1224371239@webmail.messagingengine.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=W6whML2YzZWb/6rzGaSOmFbcJUdqUH8lDGGNx/v6W3NeCYtAVCQz2k9CZG+xXkO+7+UGaMiOsYFYRpot2jfwrnL21ffRsb+2PkKj2DYB8sT6lv5CsaNpZ7Fw7CnKTwVqMAC8iLaoXW/0SFoaW1EnVStVa5Zh51K/5DEu4i7cX2M=
+Message-ID: <47539374.1090402@gmail.com>
+Date: Mon, 03 Dec 2007 14:26:12 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Thomas Lindroth <thomas.lindroth@gmail.com>
+Subject: Re: 2.6.24-rc3-git6: Reported regressions from 2.6.23
+References: <200712012312.42136.rjw@sisk.pl> <200712020347.01769.bzolnier@gmail.com>
+In-Reply-To: <200712020347.01769.bzolnier@gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1196196237.19410.1223544787@webmail.messagingengine.com>
-	 <20071202164316.GB7377@cvg>
-	 <1196617561.16481.1224371239@webmail.messagingengine.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/2/07, Thomas Tuttle <linux-kernel@ttuttle.net> wrote:
-> On Sun, 2 Dec 2007 19:43:16 +0300, "Cyrill Gorcunov"
-> <gorcunov@gmail.com> said:
-> > [Thomas Tuttle - Tue, Nov 27, 2007 at 03:43:57PM -0500]
-> > | Hey.
-> > |
-> > | I'm using a git snapshot that gentoo distributed mere hours ago (so I'm
-> > | fairly confident it's current), and I'm getting an Oops when I try to
-> > | load the iwl3945 driver.  I've attached it as plain text.
-> > |
-> > | Hope this helps,
-> > |
-> > | Thomas Tuttle
-> >
-> > Hi Thomas,
-> > Could you please test the patch?
->
-> It didn't help.  The original oops says the problem was in strcmp.  It
-> was a GPF, which suggests to me that one of the arguments is NULL.
-> Since ops->name is checked at the beginning of the function, the only
-> other possibility is that alg->ops->name is NULL.  I added a bit of code
-> to check for this, and it turns out that one of the strings was indeed
-> NULL.  I didn't know where to go from there in debugging, but I hope it
-> helps.
->
-> Thanks,
->
-> Thomas Tuttle
->
-Hi Thomas,
-could you please attach your kernel's .config (and in bugzilla too).
+Bartlomiej Zolnierkiewicz wrote:
+> On Saturday 01 December 2007, Rafael J. Wysocki wrote:
+> 
+>> Subject		: 2.6.24-rc1: pata_amd fails to detect 80-pin wire
+>> Submitter	: "Thomas Lindroth" <thomas.lindroth@gmail.com>
+>> References	: http://lkml.org/lkml/2007/11/7/152
+>> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9322
+>> Handled-By	: Tejun Heo <htejun@gmail.com>
+>> 		  Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>> Patch		: http://lkml.org/lkml/2007/11/11/115
+> 
+> Tejun's rework of cable detection code which fixes the problem has
+> been just applied into "upstream" (not "upstream-fixes") so it is
+> destined for 2.6.25 (I wasn't on cc: BTW) and since I got no feedback
+> on my patch (below) which also happens to fix the regression, was
+> acked by Alan, tested by Thomas and has been in -mm for 3 weeks now
+> I assume that everybody is happy with it (Jeff/Tejun: you were also
+> on cc: when the patch was merged into -mm)..
+
+I wasn't too sure about the fix because this doesn't deal with many
+cases where 40C cables are detected as 80C but it should definitely fix
+the specific regression && looks sane for #upstream too.
+
 Thanks.
 
-Cyrill
+-- 
+tejun
