@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbXLCLEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXLCLRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbXLCLEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 06:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXLCLEe
+	id S1753882AbXLCLRW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 06:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbXLCLRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 06:04:34 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:28500 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbXLCLEc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 06:04:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=H7HpgyOagZfO/NLH412mnQ+o7N/y5JbccOVEWL3xBIKaSofKJ0ySNAMDKaYIJeWssLufjLDIFw878fKFH6bdHnMSrin3a4xI1nj/HbgvWVswC+hiDfF6J0KuTWjzsA4JTi+lbbDwgZKIU09oKbb4Dn5TN+J4ZvhYMe14Dj3fyrM=
-Message-ID: <fbe8b1780712030304q14ed9e62wb0da75d8f4884c0b@mail.gmail.com>
-Date: Mon, 3 Dec 2007 12:04:30 +0100
-From: "Peter Stahlir" <peter.stahlir@googlemail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: cgit for kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Dec 2007 06:17:06 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38557 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751508AbXLCLRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 06:17:04 -0500
+Date: Mon, 3 Dec 2007 14:16:27 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Matt Mackall <mpm@selenic.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [1/4] dst: Distributed storage documentation.
+Message-ID: <20071203111626.GB5283@2ka.mipt.ru>
+References: <11963408033624@2ka.mipt.ru> <11963408034050@2ka.mipt.ru> <20071203045059.GM17536@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071203045059.GM17536@waste.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Matt.
 
-I suggest setting up cgit for kernel.org
-cgit is a fast web interface for git.
-It is located at
+On Sun, Dec 02, 2007 at 10:50:59PM -0600, Matt Mackall (mpm@selenic.com) wrote:
+> > Distributed storage documentation.
+> > 
+> > Algorithms used in the system, userspace interfaces
+> > (sysfs dirs and files), design and implementation details
+> > are described here.
+> 
+> Can you give us a summary of how this differs from using device mapper
+> with NBD?
 
-http://hjemli.net/git/cgit/
+>From the higher point ov view it does not, but it operates quite differently:
+it has async processing of the requests, thus not blocking, it has
+different protocol with smaller overhead, supports strong checksums, has
+in-kernel export server, which supports simple security attributes (i.e.
+allow to connect, to read or write). It uses smaller amount of memory
+(zero additional allocations in the common path for linear mapping,
+not including network allocations, it uses smaller amount of additional
+allocations for mirroring case).
+DST supports failure recovery in case of dropped connection (core will
+reconnect to the remote node when it is ready), thus it is possible to
+turn off and on remote nodes without special administration steps. DST
+has simple autoconfiguration at the startup time (support checksums and
+storage size autonegotiation). It is possible to turn one of the mirror
+nodes off and use it as a offline backup, since dst mirror node stores
+data at the end of the storage, so it can be mounted locally.
 
-I tried it at
-
-http://cgit.freedesktop.org/
-
-and it feels much snappier than gitweb.
-
-Thanks,
-
-Peter
+-- 
+	Evgeniy Polyakov
