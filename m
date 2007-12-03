@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbXLCJUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbXLCJ02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbXLCJUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 04:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXLCJUI
+	id S1752877AbXLCJ02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 04:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbXLCJ0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 04:20:08 -0500
-Received: from il.qumranet.com ([82.166.9.18]:46005 "EHLO il.qumranet.com"
+	Mon, 3 Dec 2007 04:26:21 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:8360 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752038AbXLCJUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 04:20:07 -0500
-Message-ID: <4753CB07.7080807@qumranet.com>
-Date: Mon, 03 Dec 2007 11:23:19 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: kvm-devel@lists.sourceforge.net, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [stable] [PATCH 00/10]: KVM updates for 2.6.23.9
- (-stable)
-References: <1196594327338-git-send-email-avi@qumranet.com> <20071202190829.GA22385@kroah.com>
-In-Reply-To: <20071202190829.GA22385@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1750715AbXLCJ0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 04:26:20 -0500
+Date: Mon, 3 Dec 2007 12:26:07 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: gregkh@suse.de, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: kobject ->k_name memory leak
+Message-ID: <20071203092607.GA22477@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sun, Dec 02, 2007 at 01:18:37PM +0200, Avi Kivity wrote:
->   
->> The following patchset fixes some bugs in KVM for the next 2.6.23.y stable
->> release.  Please apply.
->>     
->
-> I'm guessing that all of these are already upstream in Linus's tree?
->
->   
+Hi, Greg!
 
-Yes, except one, which has been changed in a different way for 2.6.24.
+Commit ce2c9cb0259acd2aed184499ebe41ab00da13b25 aka
+"kobject: remove the static array for the name" introduced memory leak
+of a module name after modprobe/rmmod. Apparently for modules ->release
+callback is NULL.
 
-> If so, can you give me the git commit ids for them all if you happen to
-> know them, so that I don't have to guess at them?  :)
->
->   
-
-1 a012e65aee48379a7a87eadafa74f878b61522b9
-2 4e62417bf317504c0b85e0d7abd236f334f54eaf
-3 651a3e29b3d19418d7a8a9787906061f9be7cc5f
-4 cf5a94d1331b411b84414c13e43f578260942d6b
-5 00b2ef475d4728ca53a2bc788c7978042907e354
-6 N/A
-7 404fb881b82cf0cf6981832f8d31a7484e4dee81
-8 0967b7bf1c22b55777aba46ff616547feed0b141
-9 78f7826868da8e27d097802139a3fec39f47f3b8
-10 8668a3c468ed55d19514117a5a959d91d3d03823
-
-
--- 
-error compiling committee.c: too many arguments to function
+kobject_cleanup: ->release = 00000000, name = 'foo_sysctl'
+Pid: 1927, comm: rmmod Not tainted 2.6.24-rc3-e1cca7e8d484390169777b423a7fe46c7021fec1 #5
+ [<c10d4a58>] kobject_cleanup+0xb8/0xc0
+ [<c10d4a60>] kobject_release+0x0/0x10
+ [<c10d587b>] kref_put+0x2b/0xa0
+ [<c11dbe85>] _spin_unlock+0x25/0x40
+ [<c1045b78>] free_module+0x78/0xd0
+ [<c104773f>] sys_delete_module+0x12f/0x1a0
 
