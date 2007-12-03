@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbXLCOry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbXLCOx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbXLCOry (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 09:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXLCOrr
+	id S1754041AbXLCOx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 09:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXLCOxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 09:47:47 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:58477 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbXLCOrq (ORCPT
+	Mon, 3 Dec 2007 09:53:19 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:38850 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784AbXLCOxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 09:47:46 -0500
-Message-ID: <47541701.9060705@s5r6.in-berlin.de>
-Date: Mon, 03 Dec 2007 15:47:29 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.9) Gecko/20071030 SeaMonkey/1.1.6
+	Mon, 3 Dec 2007 09:53:19 -0500
+Date: Mon, 3 Dec 2007 15:53:17 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Arjan van de Ven <arjan@infradead.org>, Chris Snook <csnook@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Avoid overflows in kernel/time.c
+In-Reply-To: <474F8984.4010602@zytor.com>
+Message-ID: <Pine.LNX.4.64.0711302017100.18767@fbirervta.pbzchgretzou.qr>
+References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org>
+ <474F6E7A.3090705@redhat.com> <474F7DC4.8000607@zytor.com>
+ <20071129194027.10046988@laptopd505.fenrus.org> <474F8984.4010602@zytor.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Peter Stahlir <peter.stahlir@googlemail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: cgit for kernel.org
-References: <fbe8b1780712030304q14ed9e62wb0da75d8f4884c0b@mail.gmail.com> <Pine.LNX.4.64.0712031331580.21880@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0712031331580.21880@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Dec 3 2007 12:04, Peter Stahlir wrote:
->>I suggest setting up cgit for kernel.org
->>cgit is a fast web interface for git.
->>It is located at
->>
->>http://hjemli.net/git/cgit/
->>
->>I tried it at
->>
->>http://cgit.freedesktop.org/
->>
->>and it feels much snappier than gitweb.
->>
-> 
-> cgit looks so bare.
 
-This is a compliment to cgit, right?  Anyway, the UI looks OK to me.
-The only essential functionality which seems to be missing according to
-my first quick glance at cgit.freedesktop.org is to get log and diff of
-a commit in plain text.
--- 
-Stefan Richter
--=====-=-=== ==-- ---==
-http://arcgraph.de/sr/
+On Nov 29 2007 19:54, H. Peter Anvin wrote:
+> Arjan van de Ven wrote:
+>> >
+>> > Anyway, I don't think compiling bc is hard on anything which has a C
+>> > compiler.
+>> 
+>> alternative is to just also ship the precomputed values ;-)
+>> 
+>
+> Oh, come on... it's not like bc is some obscure thing.  It's a POSIX utility.
+
+People try building linux on not-so-posix systems these days...
+
