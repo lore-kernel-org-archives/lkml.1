@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXLCLvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbXLCLxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbXLCLvb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 06:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbXLCLvY
+	id S1754949AbXLCLxQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 06:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXLCLxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 06:51:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41910 "EHLO mx1.redhat.com"
+	Mon, 3 Dec 2007 06:53:04 -0500
+Received: from ns1.suse.de ([195.135.220.2]:41506 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752298AbXLCLvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 06:51:23 -0500
-Date: Mon, 3 Dec 2007 06:51:12 -0500
-From: Jakub Jelinek <jakub@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Thomas Gleixner <tglx@www.tglx.de>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Fedora's latest gcc produces unbootable kernels
-Message-ID: <20071203115112.GT16835@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20071201154223.1b052d39@poseidon.drzeus.cx> <20071201184752.33536d09@poseidon.drzeus.cx> <20071201212054.2377c8be@poseidon.drzeus.cx> <23803.203.197.163.97.1196669842.squirrel@www.tglx.de> <20071203085817.GQ16835@devserv.devel.redhat.com> <alpine.LFD.0.9999.0712031231370.6765@localhost.localdomain>
+	id S1753633AbXLCLxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 06:53:03 -0500
+Subject: Re: [PATCH] Declare PNP option parsing functions as __init
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, "Li, Shaohua" <shaohua.li@intel.com>
+In-Reply-To: <200711301652.42110.bjorn.helgaas@hp.com>
+References: <1196442277.23251.318.camel@queen.suse.de>
+	 <47509EB6.20300@keyaccess.nl>  <200711301652.42110.bjorn.helgaas@hp.com>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Mon, 03 Dec 2007 12:53:01 +0100
+Message-Id: <1196682781.23251.349.camel@queen.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712031231370.6765@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 12:34:17PM +0100, Thomas Gleixner wrote:
-> Of course just to annoy you :)
+On Fri, 2007-11-30 at 16:52 -0700, Bjorn Helgaas wrote:
+> On Friday 30 November 2007 04:37:26 pm Rene Herman wrote:
+> > On 30-11-07 18:04, Thomas Renninger wrote:
+> > > If I have not overseen something, it should be rather obvious that those
+> > > can all be declared __init...
+> > > ---------------
+> > > 
+> > > Declare PNP option parsing functions as __init
+> > > 
+> > > There are three kind of parse functions provided by PNP acpi/bios:
+> > >  - get current resources
+> > >  - set resources
+> > >  - get possible resources
+> > > The first two may be needed later at runtime.
+> > > The possible resource settings should never change dynamically.
+> > > And even if this would make any sense (I doubt it), the current implementation
+> > > only parses possible resource settings at early init time:
+> > >   -> declare all the option parsing __init
+> > > 
+> > > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > 
+> > Yes. Obviousness aside,
+> > 
+> > (0) pnpacpi_add_device                          is only caller of
+> > ...
+> 
+> I agree this is probably safe in the current implementation.
+> 
+> However, I think the current implementation is just broken because
+> we can't really handle hotplug of ACPI devices.  Specifically, I think
+> the first TBD in acpi_bus_check_device() should be fleshed out so it
+> does something like pnpacpi_add_device().
+> 
+> So my dissenting opinion is that this patch would just get reverted
+> soon anyway when somebody finishes implementing ACPI hotplug, and
+> therefore it's not worth doing.
 
-It doesn't matter whether I'm annoyed about this or not, but whether gcc is
-able to generate decent code with it or not.  And especially with union it
-is not, at least through all the tree ssa passes.  You already have a lot of
-the details hidden in ktime.h accessor inlines, so I don't think it would be
-hard to add further one or two.
+Ok, this all applies to the ACPI parts, but for pnpbios it probably
+makes sense to only evaluate possible resources only once at boot time?
 
-Anyway, even just using typedef struct ktime { s64 tv64; } ktime_t; could
-make things better in case you have just one field.  Unlike unions, structs
-can be (and in this case most likely will be) scalarized by SRA, so
-half of tree SSA passes will see it as integral var and will be able to
-perform optimizations on it.
+   Thomas
 
-	Jakub
