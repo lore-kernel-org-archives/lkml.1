@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbXLCOdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXLCOjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbXLCOdx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 09:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXLCOdq
+	id S1753931AbXLCOjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 09:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXLCOjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 09:33:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35811 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752592AbXLCOdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 09:33:45 -0500
-Date: Mon, 3 Dec 2007 15:33:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
-Message-ID: <20071203143300.GA9518@elte.hu>
-References: <20071203115900.GB8432@elte.hu> <20071203121357.GB2986@one.firstfloor.org> <20071203122833.GA20232@elte.hu> <20071203124144.GC2986@one.firstfloor.org> <20071203130003.GA26372@elte.hu> <20071203131442.GA4004@one.firstfloor.org> <20071203132955.GA31354@elte.hu> <20071203134801.GB4004@one.firstfloor.org> <20071203135547.GA4245@elte.hu> <20071203141739.GC4719@one.firstfloor.org>
+	Mon, 3 Dec 2007 09:39:35 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:49280 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752087AbXLCOjf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 09:39:35 -0500
+Date: Mon, 3 Dec 2007 14:39:26 +0000
+From: Ben Dooks <ben@fluff.org>
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: Pierre Ossman <drzeus@drzeus.cx>, Vitaly Luban <vitaly@luban.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Tokyo Electron SDIO controller (Ellen) support
+Message-ID: <20071203143926.GC7855@fluff.org.uk>
+References: <47511ADA.20506@luban.org> <20071201215010.2fa3b334@poseidon.drzeus.cx> <20071203142207.GA28101@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071203141739.GC4719@one.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071203142207.GA28101@gate.crashing.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > debugging feature can be disabled/enabled on a wide scale already:
-> > 
-> >  - in the .config
-> > 
-> >  - runtime, temporarily, via:
-> > 
-> >      echo 0 > /proc/sys/kernel/hung_task_timeout_secs
+On Mon, Dec 03, 2007 at 08:22:07AM -0600, Matt Porter wrote:
+> On Sat, Dec 01, 2007 at 09:50:10PM +0100, Pierre Ossman wrote:
+> > As for the patch, it's a big NAK at this point. Vendors who can't be bothered to follow
+> > the standard will have to wait for Ben's separation patches before they can be supported.
+> > Then they can have some voodoo front-end to handle their mistakes instead of turning
+> > sdhci.c into a collection of hacks and workarounds.
 > 
-> That won't address my concerns about already "breaking" (as in 
-> frightening the user etc.) common error handling scenarios by default.
+> What's the status of Ben's separation patches? I haven't seen a posting of those
+> versus a recent kernel. I've got some SDHCI driver glue for the non-pci Arasan core
+> running in an older kernel tree with those patches. It's just waiting for the separation
+> patches to hit the mmc or mainline tree.
 
-wow, now you again use big scary words like "breaking" and 
-"frightening", with is a nice addition to the ticking timebomb 
-metaphore.
+I need to go back and try and sort out the last of Pierre's last
+comments, and update to the latest kernel version. I was waiting
+for 2.6.24-rc4 to re-start the effort to try and ensure there are
+fewer changes due to fixes.
 
-Andi, sadly you are not listening AT ALL, you are repeating the same 
-argument again and again that has been disputed and countered. Either 
-come up with a new argument or please stop wasting everyone's time.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-It is undisputable that for most users an unexplained hang is far more 
-"frightening" than a hang followed by an explanation in the syslog. That 
-is a _hard fact_, and if you cannot accept that it's really your 
-cognitive problem not ours...
-
-	Ingo
+  'a smiley only costs 4 bytes'
