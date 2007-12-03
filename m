@@ -1,171 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902AbXLCPtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXLCPx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751902AbXLCPtn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 10:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXLCPtf
+	id S1752549AbXLCPx1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 10:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXLCPxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 10:49:35 -0500
-Received: from homer.mvista.com ([63.81.120.158]:4593 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750806AbXLCPtf (ORCPT
+	Mon, 3 Dec 2007 10:53:20 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:31255 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbXLCPxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 10:49:35 -0500
-Message-Id: <20071203153834.972501159@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 03 Dec 2007 07:38:34 -0800
-Message-Id: <20071203153743.119714913@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 03 Dec 2007 07:37:43 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Cc: linux@bohmer.net
-Cc: jonathan@jonmasters.org
-Subject: [PATCH] isapnp driver semaphore to mutex
+	Mon, 3 Dec 2007 10:53:19 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: trenn@suse.de
+Subject: Re: [PATCH] Declare PNP option parsing functions as __init
+Date: Mon, 3 Dec 2007 08:52:36 -0700
+User-Agent: KMail/1.9.6
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, "Li, Shaohua" <shaohua.li@intel.com>
+References: <1196442277.23251.318.camel@queen.suse.de> <200711301652.42110.bjorn.helgaas@hp.com> <1196682781.23251.349.camel@queen.suse.de>
+In-Reply-To: <1196682781.23251.349.camel@queen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712030852.36945.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changed the isapnp semaphore to a mutex.
+On Monday 03 December 2007 04:53:01 am Thomas Renninger wrote:
+> On Fri, 2007-11-30 at 16:52 -0700, Bjorn Helgaas wrote:
+> > On Friday 30 November 2007 04:37:26 pm Rene Herman wrote:
+> > > On 30-11-07 18:04, Thomas Renninger wrote:
+> > > > If I have not overseen something, it should be rather obvious that those
+> > > > can all be declared __init...
+> > > > ---------------
+> > > > 
+> > > > Declare PNP option parsing functions as __init
+> > > > 
+> > > > There are three kind of parse functions provided by PNP acpi/bios:
+> > > >  - get current resources
+> > > >  - set resources
+> > > >  - get possible resources
+> > > > The first two may be needed later at runtime.
+> > > > The possible resource settings should never change dynamically.
+> > > > And even if this would make any sense (I doubt it), the current implementation
+> > > > only parses possible resource settings at early init time:
+> > > >   -> declare all the option parsing __init
+> > > > 
+> > > > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > > 
+> > > Yes. Obviousness aside,
+> > > 
+> > > (0) pnpacpi_add_device                          is only caller of
+> > > ...
+> > 
+> > I agree this is probably safe in the current implementation.
+> > 
+> > However, I think the current implementation is just broken because
+> > we can't really handle hotplug of ACPI devices.  Specifically, I think
+> > the first TBD in acpi_bus_check_device() should be fleshed out so it
+> > does something like pnpacpi_add_device().
+> > 
+> > So my dissenting opinion is that this patch would just get reverted
+> > soon anyway when somebody finishes implementing ACPI hotplug, and
+> > therefore it's not worth doing.
+> 
+> Ok, this all applies to the ACPI parts, but for pnpbios it probably
+> makes sense to only evaluate possible resources only once at boot time?
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+There are PNPBIOS functions that are related to hotplug (for docking
+stations and the like), but it doesn't look like we ever use them.
+There's not much use in implementing PNPBIOS hotplug now, so I think
+you're right that we could make PNPBIOS a boot-time only thing.
 
----
- drivers/pnp/interface.c |   11 ++++++-----
- drivers/pnp/manager.c   |   19 ++++++++++---------
- 2 files changed, 16 insertions(+), 14 deletions(-)
-
-Index: linux-2.6.23/drivers/pnp/interface.c
-===================================================================
---- linux-2.6.23.orig/drivers/pnp/interface.c
-+++ linux-2.6.23/drivers/pnp/interface.c
-@@ -13,6 +13,7 @@
- #include <linux/stat.h>
- #include <linux/ctype.h>
- #include <linux/slab.h>
-+#include <linux/mutex.h>
- #include <asm/uaccess.h>
- 
- #include "base.h"
-@@ -315,7 +316,7 @@ static ssize_t pnp_show_current_resource
- 	return ret;
- }
- 
--extern struct semaphore pnp_res_mutex;
-+extern struct mutex pnp_res_mutex;
- 
- static ssize_t
- pnp_set_current_resources(struct device *dmdev, struct device_attribute *attr,
-@@ -361,10 +362,10 @@ pnp_set_current_resources(struct device 
- 		goto done;
- 	}
- 	if (!strnicmp(buf, "get", 3)) {
--		down(&pnp_res_mutex);
-+		mutex_lock(&pnp_res_mutex);
- 		if (pnp_can_read(dev))
- 			dev->protocol->get(dev, &dev->res);
--		up(&pnp_res_mutex);
-+		mutex_unlock(&pnp_res_mutex);
- 		goto done;
- 	}
- 	if (!strnicmp(buf, "set", 3)) {
-@@ -373,7 +374,7 @@ pnp_set_current_resources(struct device 
- 			goto done;
- 		buf += 3;
- 		pnp_init_resource_table(&dev->res);
--		down(&pnp_res_mutex);
-+		mutex_lock(&pnp_res_mutex);
- 		while (1) {
- 			while (isspace(*buf))
- 				++buf;
-@@ -455,7 +456,7 @@ pnp_set_current_resources(struct device 
- 			}
- 			break;
- 		}
--		up(&pnp_res_mutex);
-+		mutex_unlock(&pnp_res_mutex);
- 		goto done;
- 	}
- 
-Index: linux-2.6.23/drivers/pnp/manager.c
-===================================================================
---- linux-2.6.23.orig/drivers/pnp/manager.c
-+++ linux-2.6.23/drivers/pnp/manager.c
-@@ -12,9 +12,10 @@
- #include <linux/pnp.h>
- #include <linux/slab.h>
- #include <linux/bitmap.h>
-+#include <linux/mutex.h>
- #include "base.h"
- 
--DECLARE_MUTEX(pnp_res_mutex);
-+DEFINE_MUTEX(pnp_res_mutex);
- 
- static int pnp_assign_port(struct pnp_dev *dev, struct pnp_port *rule, int idx)
- {
-@@ -297,7 +298,7 @@ static int pnp_assign_resources(struct p
- 	if (!pnp_can_configure(dev))
- 		return -ENODEV;
- 
--	down(&pnp_res_mutex);
-+	mutex_lock(&pnp_res_mutex);
- 	pnp_clean_resource_table(&dev->res);	/* start with a fresh slate */
- 	if (dev->independent) {
- 		port = dev->independent->port;
-@@ -366,12 +367,12 @@ static int pnp_assign_resources(struct p
- 	} else if (dev->dependent)
- 		goto fail;
- 
--	up(&pnp_res_mutex);
-+	mutex_unlock(&pnp_res_mutex);
- 	return 1;
- 
- fail:
- 	pnp_clean_resource_table(&dev->res);
--	up(&pnp_res_mutex);
-+	mutex_unlock(&pnp_res_mutex);
- 	return 0;
- }
- 
-@@ -396,7 +397,7 @@ int pnp_manual_config_dev(struct pnp_dev
- 		return -ENOMEM;
- 	*bak = dev->res;
- 
--	down(&pnp_res_mutex);
-+	mutex_lock(&pnp_res_mutex);
- 	dev->res = *res;
- 	if (!(mode & PNP_CONFIG_FORCE)) {
- 		for (i = 0; i < PNP_MAX_PORT; i++) {
-@@ -416,14 +417,14 @@ int pnp_manual_config_dev(struct pnp_dev
- 				goto fail;
- 		}
- 	}
--	up(&pnp_res_mutex);
-+	mutex_unlock(&pnp_res_mutex);
- 
- 	kfree(bak);
- 	return 0;
- 
- fail:
- 	dev->res = *bak;
--	up(&pnp_res_mutex);
-+	mutex_unlock(&pnp_res_mutex);
- 	kfree(bak);
- 	return -EINVAL;
- }
-@@ -547,9 +548,9 @@ int pnp_disable_dev(struct pnp_dev *dev)
- 	dev->active = 0;
- 
- 	/* release the resources so that other devices can use them */
--	down(&pnp_res_mutex);
-+	mutex_lock(&pnp_res_mutex);
- 	pnp_clean_resource_table(&dev->res);
--	up(&pnp_res_mutex);
-+	mutex_unlock(&pnp_res_mutex);
- 
- 	return 1;
- }
--- 
-
--- 
+Bjorn
