@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbXLDWXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbXLDW1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbXLDWXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXLDWXc
+	id S1753651AbXLDW1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXLDW1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:23:32 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:52529 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbXLDWXa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:23:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=CYGZVolEE2PVAFwu6BYMjd8fq7nbn9mvST6nxN6Le3hoDcT0Pui0LMGYuJFnVSkHX5PpQdtFRGX3rnjuKBMG0vnjZxrgkN3qCHNl3uo/Edf0BTFk/FNLsYG1Chj9mD7OExpYCNKPHvzZZBlcuSFz3LNj8O1W1LwPewxzXm8m7lk=
-Message-ID: <4755D42E.7050602@gmail.com>
-Date: Tue, 04 Dec 2007 23:26:54 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Tue, 4 Dec 2007 17:27:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57531 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751625AbXLDW1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 17:27:33 -0500
+Date: Tue, 4 Dec 2007 23:27:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
+Message-ID: <20071204222717.GA25974@elte.hu>
+References: <1196801629.10408.26.camel@brick> <20071204213247.GA11216@elte.hu> <1196806868.10408.33.camel@brick>
 MIME-Version: 1.0
-To: Joonwoo Park <joonwpark81@gmail.com>
-CC: netdev@vger.kernel.org,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: Re: NET: ASSERT_RTNL in __dev_set_promiscuity makes debug warning
-References: <000001c8365a$e0e500c0$9c94fea9@jason>
-In-Reply-To: <000001c8365a$e0e500c0$9c94fea9@jason>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196806868.10408.33.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joonwoo Park wrote, On 12/04/2007 10:48 AM:
 
-> Hi,
-> dev_set_rx_mode calls __dev_set_rx_mode with softirq disabled (by netif_tx_lock_bh)
-> therefore __dev_set_promiscuity can be called with softirq disabled.
-> It will cause in_interrupt() to return true and ASSERT_RTNL warning.
-> Is there a good solution to fix it besides blowing ASSERT_RTNL up?
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
+> On Tue, 2007-12-04 at 22:32 +0100, Ingo Molnar wrote:
+> > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> > 
+> > > I'm not sure if the definition of asmlinkage and prevent_tail_call can 
+> > > be omitted as well and let the linux/linkage.h version get picked up 
+> > > instead.
+> > 
+> > no, we cannot remove them - asmlinkage is needed for the syscall 
+> > entry (and other entry code) to work, the and the prevent_tail_call 
+> > works around a compiler bug. (which might or might not be fixed in 
+> > latest gcc - but we generally dont remove workarounds unless we are 
+> > really sure it's fine.)
+> 
+> OK, but if this patch is acceptable, then there is no more places in 
+> the tree that define the FASTCALL macro, other than the empty default 
+> in include/linux/linkage.h.  So I think a second step would be to 
+> start to get rid of FASTCALL callers elsewhere in the tree...thoughts?
 
-Fixing ASSERT_RTNL up?!
+the removal of FASTCALL is fine: the default (and only) compiler model 
+for x86 (32-bit) is regparm(3), so the regparm(3) macro is equivalent to 
+the empty one in linux/linkage.h.
 
-But, IMHO, blowing ASSERT_RTNL up in a few places shouldn't be much
-worse. After all, how long such a debugging code should be kept. It
-seems, at least sometimes we should be a bit more confident of how
-it's called.
+btw., removal of FASTCALL from the tree is worthwile after this: it 
+should probably be done via the -mm tree, because it's more of a generic 
+kernel matter than an arch/x86 matter.
 
-Regards,
-Jarek P.
+	Ingo
