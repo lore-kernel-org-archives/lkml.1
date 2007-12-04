@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbXLDQAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbXLDQA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbXLDQAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 11:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbXLDQAZ
+	id S1755322AbXLDQA6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 11:00:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXLDQAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 11:00:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60125 "EHLO mx2.mail.elte.hu"
+	Tue, 4 Dec 2007 11:00:48 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:37893 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753627AbXLDQAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 11:00:24 -0500
-Date: Tue, 4 Dec 2007 17:00:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       herton@mandriva.com.br, dvgevers@xs4all.nl
-Subject: Re: [local DoS] Re: Linux 2.6.24-rc4
-Message-ID: <20071204160005.GA29783@elte.hu>
-References: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org> <20071204120715.4ea204a8@mandriva.com.br> <alpine.LFD.0.9999.0712040751170.2981@woody.linux-foundation.org>
-MIME-Version: 1.0
+	id S1753954AbXLDQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 11:00:46 -0500
+Date: Tue, 4 Dec 2007 19:00:40 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [0/4] DST: Distributed storage.
+Message-ID: <20071204160040.GA8055@2ka.mipt.ru>
+References: <aqqqqasdzxczc036@2ka.mipt.ru> <11967790263179@2ka.mipt.ru> <170fa0d20712040725o506a47cayb137993041ec3a63@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712040751170.2981@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <170fa0d20712040725o506a47cayb137993041ec3a63@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Mike.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+On Tue, Dec 04, 2007 at 10:25:29AM -0500, Mike Snitzer (snitzer@gmail.com) wrote:
+> Thanks for your continued work on DST.  I'd like to know if you've
+> thought further about how synchronous mirroring would be best
+> implemented with DST.
 > 
+> You shared you views some time ago via comments on your blog:
+> http://tservice.net.ru/~s0mbre/blog/devel/dst/2007_11_05.html
 > 
-> On Tue, 4 Dec 2007, Luiz Fernando N. Capitulino wrote:
-> >
-> > 	sched_rr_get_interval(1, NULL);
+> At that time you were saying you'd add a sync bit to the request
+> structure that is sent to remote nodes.  I'd imagine this would also
+> require ordering of the block io, no?  Is order guaranteed when the
+> requests are submitted over the DST protocol?  Otherwise how can you
+> ensure a valid remote mirror (in the case of network disconnects,
+> etc)?
 > 
-> Looks like we have a zero "cfs_rq->load.weight".
+> Guaranteeing consistent data on all members of a mirror is important.
+> The main question is: what mechanisms _should_ be used in DST to
+> provide this consistency?  And do you have a timeframe for when DST
+> might support such mechanisms for consistent data?
 > 
-> Ingo? Both sched_slice() and __sched_slice() do a divide by the 
-> runqueue weight, and at least dequeue_task_fair() explicitly checks 
-> for that being zero, so clearly zero is a possible value. Hmm?
+> For the purpose of this discussion please assume that the disk cache
+> is either write-through or battery-backed.
 
-yeah, i can reproduce this crash too.
+In this case sync bit would only imply waiting until all pending
+requests reached remote nodes. This is not implemented yet.
+Order of the requests for given node is guaranteed by DST core,
+it is possible to perform multiple requests in parallel for/from
+different nodes.
 
-The problem is on SMP: if sched_rr_get_interval() gets a task from an 
-otherwise idle runqueue, then rq->load.weight is 0. Normally 
-sched_slice() is only used on a busy runqueue. So the correct fixup site 
-is not in sched_slice() but in sys_sched_rr_get_interval() - i'm working 
-on the right fix, i hope to be able to send a pull request in a few 
-minutes.
+In the more generic case it should wait until data has reached media,
+i.e. perform flushing.
+I did not implement that since actually no multiple-device system in
+Linux supports barriers (please note, that in this discussion sync bit
+actually means a barrier in the block layer).
 
-	Ingo
+Protocol changes are pretty trivial and are absolutely transparent for
+the DST core - only remote targets (both userspace and kernelspace)
+should be changed to invoke ->issue_flush_fn() callback when needed for
+underlying device and do not process new requests until flush completed.
+Thus barrier bit can be attached to data packets and can also be single
+requests without data.
+
+DST will continue to collect data, but will not send it to remote nodes
+(actually it can send it, but data will not be processed and will stay
+in the remote's receiving queue). This is a main concern about barrier -
+should or not main node continue to process requests if previous ones
+have not reached media yet, thus I have not yet implemented barriers.
+
+> regards,
+> Mike
+
+-- 
+	Evgeniy Polyakov
