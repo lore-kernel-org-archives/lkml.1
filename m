@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbXLDVQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbXLDVQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbXLDVQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbXLDVJu
+	id S1756022AbXLDVQn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbXLDVKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:09:50 -0500
-Received: from waste.org ([66.93.16.53]:48039 "EHLO waste.org"
+	Tue, 4 Dec 2007 16:10:05 -0500
+Received: from cantor.suse.de ([195.135.220.2]:44149 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755702AbXLDVJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:09:49 -0500
-Date: Tue, 4 Dec 2007 15:08:27 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Theodore Tso <tytso@mit.edu>, Ray Lee <ray@madrabbit.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       mmcgrath@redhat.com
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071204210827.GE19691@waste.org>
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204165502.0a8f695e@the-village.bc.nu> <20071204180237.GU19691@waste.org> <20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu>
+	id S1755813AbXLDVKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 16:10:00 -0500
+From: Andi Kleen <ak@suse.de>
+To: Bernhard Kaindl <bkaindl@ffii.org>
+Subject: Re: remote debugging via FireWire * __fast__ firedump!
+Date: Tue, 4 Dec 2007 08:39:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Bernhard Kaindl <bk@suse.de>, linux-kernel@vger.kernel.org
+References: <200702101242.48467.ak@suse.de> <45CDCDCD.5000609@s5r6.in-berlin.de> <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org>
+In-Reply-To: <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071204204036.484f11ac@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200712040839.39984.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 08:40:36PM +0000, Alan Cox wrote:
-> > Alan, are you sure you're not talking about Helge Deller's attempt to
-> > push a Time-based UUID generator into the kernel because you can get
-> > duplicates from the current userspace library?
-> 
-> Yes
-> 
-> > I've not heard of *any* claim where the kernel uuid random generator
-> > has been returning duplicates.
-> 
-> Then the original reports got lost somewhere.
+On Tuesday 04 December 2007 04:45:22 am Bernhard Kaindl wrote:
+>     I just wanted to let you know that I'll have picked up the early
+> firewire patch again and cleaned it up very much so that it should
+> be ready to submit it and but it on the patch-submission road.
 
-Pretty sad that such an interesting security bug didn't make it to
-either of the /dev/random maintainers.
- 
-> The Fedora tools use a kernel random uuid for system identifiers (to
-> preserve anonymity while allowing system profiles etc to be generated and
-> to know which are duplicates).
+Nice.
 
-It's possible that on machines with no real entropy, the initial
-startup seeds were having no effect on the /dev/urandom output.
-That's fixed here:
+> I have just had the guts to explore __fast__ memory dumping over
+> firewire for full-system dumps (reading quadlets is __painfully__
+> show if you want to read 2GB of memory over the bus, you only get
+> about some some kilobytes each second) using raw1394_start_read()
+> to allow also block reads instead of just quatlet reads.
 
-http://www.kernel.org/hg/linux-2.6/rev/8298e254985e
+Unfortunately it won't work for >3GB or so AFAIK.
 
-which would have been in v2.6.22-rc4 through the normal CVE process.
-The only other bits in there are wall time and utsname, so systems
-with no CMOS clock would behave repeatably. Can we find out what
-kernels are affected?
+> The biggest block size that worked here was 2048 bytes, which was
+> enough to get nearly 10MB/s of data transfer rate from the remote
+> memory to disk. Dumping 2GB of remote memory was just a matter of
+> about 3 few short minutes which quickly ran by.
+>
+> Afterwards, the victim was dead (I excluded the low MB of memory,
+> so something else must have caused this), at least the start of
 
-> We seen a huge number of duplicates for certain values:
-> 
-> >From Mike McGrath (added to Cc)
-> 
-> > Here's the top 5:
-> >
-> >    266 28caf2c3-9766-4fe1-9e4c-d6b0ba8a0132
-> >    336 810e7126-1c69-4aff-b8b1-9db0fa8aa15a
-> >    402 c8dbb9d3-a9bd-4ba6-b92e-4a294ba5a95f
-> >    884 06e84493-e024-44b1-9b32-32d78af04039
-> >    931 e2b67e1d-e325-4740-b938-795addb45280
-> >
-> > The left number is times this month someone has submitted a profile with
-> > that UUID.  If we take the last one as an example has come from over 800
-> > IP's in the last 20 days.  It seems very unlikely that one person would
-> > find his way to 800 different IP's this month.  Let me know if you'd
-> > like more.
+Did you run into the PCI memory hole below 4GB? 
 
-Any other details would be interesting.
+I suppose the best way would be to require a System.map and
+then read e820.nr_map/e820.map[] and only dump real memory.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+-Andi
