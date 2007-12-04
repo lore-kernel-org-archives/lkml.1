@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXLDTuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbXLDTxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbXLDTuz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbXLDTus
+	id S1752621AbXLDTxs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbXLDTxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:50:48 -0500
-Received: from thunk.org ([69.25.196.29]:45411 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbXLDTur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:50:47 -0500
-Date: Tue, 4 Dec 2007 14:50:21 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071204195021.GB7259@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matt Mackall <mpm@selenic.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
-	Marc Haber <mh+linux-kernel@zugschlus.de>,
-	linux-kernel@vger.kernel.org
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204165502.0a8f695e@the-village.bc.nu> <20071204180237.GU19691@waste.org>
+	Tue, 4 Dec 2007 14:53:39 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49896
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751455AbXLDTxi convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 14:53:38 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch] rewrite rd
+Date: Tue, 4 Dec 2007 13:53:29 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <axboe@kernel.dk>
+References: <20071204042628.GA26636@wotan.suse.de> <200712040155.21124.rob@landley.net> <20071204092940.GA9618@wotan.suse.de>
+In-Reply-To: <20071204092940.GA9618@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-In-Reply-To: <20071204180237.GU19691@waste.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200712041353.31086.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 12:02:37PM -0600, Matt Mackall wrote:
-> On Tue, Dec 04, 2007 at 04:55:02PM +0000, Alan Cox wrote:
-> > > cryptographically strong stream it'll provide when /dev/random is
-> > > tapped? In principle, this'd leave more entropy available for
-> > > applications that really need it, especially on platforms that don't
-> > > generate a lot of entropy in the first place (servers).
-> > 
-> > 
-> > As reported about a month ago, the evidence is that the /dev/random
-> > stream is not cryptographically strong. Collecting uuids generated from
-> > the kernel uuid random generator from the random generator in the kernel
-> > shows abnormal patterns of duplicates.
-> 
-> Pointer, please.
+On Tuesday 04 December 2007 03:29:40 Nick Piggin wrote:
+> On Tue, Dec 04, 2007 at 01:55:17AM -0600, Rob Landley wrote:
+> > On Monday 03 December 2007 22:26:28 Nick Piggin wrote:
+> > > There is one slight downside -- direct block device access and
+> > > filesystem metadata access goes through an extra copy and gets stored
+> > > in RAM twice. However, this downside is only slight, because the real
+> > > buffercache of the device is now reclaimable (because we're not playing
+> > > crazy games with it), so under memory intensive situations, footprint
+> > > should effectively be the same -- maybe even a slight advantage to the
+> > > new driver because it can also reclaim buffer heads.
+> >
+> > For the embedded world, initramfs has pretty much rendered initrd
+> > obsolete, and that was the biggest user of the ramdisk code I know of. 
+> > Beyond that, loopback mounts give you more flexible transient block
+> > devices than ramdisks do.  (In fact, ramdisks are such an amazing pain to
+> > use/size/free that if I really needed something like that I'd just make a
+> > loopback mount in a ramfs instance.)
+>
+> They are, although we could easily hook up a couple more ioctls for them
+> now (if anybody is interested).
 
-Alan, are you sure you're not talking about Helge Deller's attempt to
-push a Time-based UUID generator into the kernel because you can get
-duplicates from the current userspace library?
+>From a usability perspective, an ioctl is no substitute for being able to 
+resize a device with "dd".  (Or for that matter, make it sparse.)
 
-I've not heard of *any* claim where the kernel uuid random generator
-has been returning duplicates.
+> The rd driver can potentially be a _lot_ more scalable than the loop
+> driver. It's completely lockless in the fastpath and doesn't even dirty any
+> cachelines except for the actual destination memory. OK, this is only
+> really important for testing purposes (eg. testing scalability of a
+> filesystem etc.) But it is one reason why I (personally) want brd...
 
-						- Ted
+I wouldn't say not important: The "database in RAM" people will probably love 
+you, at least if they insist on using Oracle.  (Filesystem schmilesystem, 
+gimme a raw block device and let me implement my own filesystem from 
+userspace...)
 
-P.S.  Probably the right approach for Helge is to create a daemon
-started at boot time with privileges to write the appropriate state
-file to prevent duplicates across reboots, and then to change the uuid
-library to use the daemon if it is available (accessed via a Unix
-domain socket), or to use its existing algorithm (which is fine unless
-you have multiple threads wanting to generate large numbers of UUIDs
-per second in parallel), and you want to use time-based UUID's because
-they have better b-tree characteristics when you use them as indexes
-into a database.
+But I'm not personally likely to care. :)
+
+> > Embedded users who still want a block interface for memory are generally
+> > trying to use a cramfs or squashfs image out of ROM or flash, although
+> > there are flash-specific filesystems for this and I dunno if they're
+> > actually mounting /dev/mem at an offset or something (md?  losetup -o? 
+> > Beats me, I haven't tried that myself yet...)
+>
+> OK, it would be interesting to hear from anyone using rd for things like
+> cramfs.
+
+I'd be interested in that too.  I've heard it proposed a lot but not actually 
+seen anyone bother to implement it yet...
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
