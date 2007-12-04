@@ -1,120 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbXLDNrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbXLDNsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbXLDNrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 08:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbXLDNrb
+	id S1754067AbXLDNsa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 08:48:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbXLDNsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 08:47:31 -0500
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:60388 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750831AbXLDNra convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 08:47:30 -0500
-Subject: RE: 2.6.22.14 oops msg with commvault galaxy ?
-From: Vincent Fortier <vincent.fortier1@ec.gc.ca>
-Reply-To: vincent.fortier1@ec.gc.ca
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0B8998E@ecqcmtlmail3.quebec.int.ec.gc.ca>
-References: <1196427774.10204.4.camel@kayak.wul.qc.ec.gc.ca>
-	 <20071130091239.708173db.randy.dunlap@oracle.com>
-	 <F1D642E5A91BC94D9504EC83AE19E6B0B8998E@ecqcmtlmail3.quebec.int.ec.gc.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Dec 2007 08:48:16 -0500
+Received: from odyssey.analogic.com ([204.178.40.5]:2570 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbXLDNsP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 08:48:15 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-Organization: Environnement Canada
-Date: Tue, 04 Dec 2007 13:47:01 +0000
-Message-Id: <1196776021.14468.2.camel@kayak.wul.qc.ec.gc.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-X-OriginalArrivalTime: 04 Dec 2007 13:47:02.0175 (UTC) FILETIME=[2604C2F0:01C8367C]
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 04 Dec 2007 13:48:12.0573 (UTC) FILETIME=[4FFAA4D0:01C8367C]
+Content-class: urn:content-classes:message
+Subject: Re: Is the PCI clock within the spec?
+Date: Tue, 4 Dec 2007 08:48:06 -0500
+Message-ID: <Pine.LNX.4.61.0712040839250.8751@chaos.analogic.com>
+in-reply-to: <475555A6.3060202@free.fr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Is the PCI clock within the spec?
+thread-index: Acg2fFAGAz3A789PTfyTKLVEJEBjtw==
+References: <475532A7.1000408@free.fr> <20071204134254.5db8e27d@bull.net> <475555A6.3060202@free.fr>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "John Sigler" <linux.kernel@free.fr>
+Cc: "Sebastien Dugue" <sebastien.dugue@bull.net>,
+       <linux-kernel@vger.kernel.org>, <linux-pci@atrey.karlin.mff.cuni.cz>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 30 novembre 2007 à 12:35 -0500, Fortier,Vincent [Montreal] a
-écrit :
-> > -----Message d'origine-----
-> > De : Randy Dunlap [mailto:randy.dunlap@oracle.com] 
-> > Envoyé : 30 novembre 2007 12:13
-> > 
-> > On Fri, 30 Nov 2007 13:02:54 +0000 Vincent Fortier wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > I'm using a 2.6.22.14 + CFS v24 and I got theses errors 
-> > when starting 
-> > > up my commvault galaxy client...  Do anybody know what this could mean?
-> > 
-> > Can you provide a few lines of syslog before the Oops: line, 
-> > which should contain some info about what happened, e.g.:
-> > 
-> > Unable to handle kernel paging request at virtual address 
-> > e4a85017 printing eip:
-> > c01d915a
-> > *pde = 37d0d067
-> > *pte = 00000000
-> 
 
-I've umounted the XFS/DRBD filesystem/container (tought it might have
-been related?) but it did not helped... still getting the same kernel
-oops.
+On Tue, 4 Dec 2007, John Sigler wrote:
 
-[1097523.808915] BUG: unable to handle kernel paging request at virtual
-address 80000000
-[1097523.808950]  printing eip:
-[1097523.808963] c01d915a
-[1097523.808977] *pdpt = 00000000220ea001
-[1097523.808992] *pde = 0000000000000000
-[1097523.809009] Oops: 0000 [#27]
-[1097523.809023] SMP
-[1097523.809040] Modules linked in: xfs drbd cn nfs nfsd exportfs lockd
-nfs_acl sunrpc ppdev parport_pc lp parport button ac battery ipv6 fuse
-ide_cd ide_generic usbkbd usbmouse tsdev serio_raw sg psmouse iTCO_wdt
-iTCO_vendor_support floppy e752x_edac sr_mod pcspkr evdev edac_mc shpchp
-pci_hotplug cdrom ext3 jbd mbcache dm_mirror dm_snapshot dm_mod generic
-piix ide_core ehci_hcd uhci_hcd tg3 ata_piix usbcore thermal processor
-fan mptscsih mptbase megaraid_sas megaraid_mbox megaraid_mm cciss
-aacraid
-[1097523.809266] CPU:    0
-[1097523.809268] EIP:    0060:[<c01d915a>]    Not tainted VLI
-[1097523.809269] EFLAGS: 00010297   (2.6.22.14-cfs-etch-686-envcan #1)
-[1097523.809323] EIP is at vsnprintf+0x2af/0x48c
-[1097523.809341] eax: 80000000   ebx: ffffffff   ecx: 80000000   edx:
-fffffffe
-[1097523.809361] esi: d89c6017   edi: dd1ffeac   ebp: ffffffff   esp:
-dd1ffe4c
-[1097523.809382] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[1097523.809403] Process clBackup (pid: 30311, ti=dd1fe000 task=f7043290
-task.ti=dd1fe000)
-[1097523.809423] Stack: dbc2a000 00001000 c033b638 f89e056c c02360f1
-dbc2a000 27639fe8 d89c6017
-[1097523.809469]        008e2408 00000000 ffffffff 00000000 ffffffff
-c0337eab 00000003 00000017
-[1097523.809512]        c037a340 dbc2a000 c01d93b8 dd1ffeac dd1ffeac
-c023566c d89c6017 c0337eaa
-[1097523.809559] Call Trace:
-[1097523.809588]  [<c02360f1>] dev_uevent+0x189/0x1e0
-[1097523.809614]  [<c01d93b8>] sprintf+0x20/0x23
-[1097523.809635]  [<c023566c>] show_uevent+0xad/0xd5
-[1097523.809658]  [<c01571d1>] get_page_from_freelist+0x273/0x30a
-[1097523.809686]  [<c01323fc>] group_send_sig_info+0x12/0x56
-[1097523.809711]  [<c01572ba>] __alloc_pages+0x52/0x286
-[1097523.809734]  [<c02355bf>] show_uevent+0x0/0xd5
-[1097523.809754]  [<c023517e>] dev_attr_show+0x15/0x18
-[1097523.809775]  [<c01a8e9f>] sysfs_read_file+0x87/0xd8
-[1097523.809796]  [<c01880bc>] sys_getxattr+0x46/0x4e
-[1097523.809818]  [<c01a8e18>] sysfs_read_file+0x0/0xd8
-[1097523.809839]  [<c0171fb7>] vfs_read+0xa6/0x128
-[1097523.809861]  [<c01723b3>] sys_read+0x41/0x67
-[1097523.809881]  [<c0103d8a>] syscall_call+0x7/0xb
-[1097523.809906]  =======================
-[1097523.809921] Code: 74 24 28 73 03 c6 06 20 4d 46 85 ed 7f f1 e9 b9
-00 00 00 8b 0f b8 39 0a 33 c0 8b 54 24 30 81 f9 ff 0f 00 00 0f 46 c8 89
-c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 f6 44 24 2c 10 89
-c3
-[1097523.810088] EIP: [<c01d915a>] vsnprintf+0x2af/0x48c SS:ESP
-0068:dd1ffe4c
+> Hello Sébastien,
+>
+> Sébastien Dugué wrote:
+>
+>> John Sigler wrote:
+>>
+>>> I have an x86 system, running Linux 2.6.22.1-rt9, in which I plug one
+>>> or two PCI I/O boards. I had been experiencing complete system lock-ups
+>>> until I sent the system to the board manufacturer, and he fixed the
+>>> problem. However, he told me that the PCI clock seemed out of spec,
+>>> as far as voltage is concerned.
+>>>
+>>> (Disclaimer: my knowledge of PCI is 0.)
+>>>
+>>> The board manufacturer sent me the plot of (what appears to be) voltage
+>>> versus time for the PCI clock.
+>>>
+>>> http://linux.kernel.free.fr/plot1.jpg
+>>>
+>>> The system manufacturer sent me a similar plot.
+>>>
+>>> http://linux.kernel.free.fr/plot2.jpg
+>>
+>> Why did they send you those plots? What was their point?
+>
+> The board manufacturer originally thought that the voltage under-
+> and overshot might be responsible for the system lock-ups we were
+> experiencing. They sent us the first plot to document the problem.
+> (In the end, the lock-up was linked to a bug in their DMA engine.)
+> I asked the system manufacturer whether they could reproduce the
+> voltage issue, and they sent me the second plot.
+>
+>>> As far as my understanding goes, the signal should alternate between
+>>> 0 V and 3.3 V (??).
+>>
+>>   Yep, that's the idealized 3.3V signaling case. However, it looks like
+>> the signal is overshooting a bit (-0.8V below 0 and +0.8V over 3.3V from looking
+>> at the 1st plot) which may be due to incorrect impedance matching on the bus,
+>> probes artifacts, ...
+>>
+>>> In the second plot, it looks like Vmax ~ 4.6V
+>>> and Vmin ~ -1.4V (Pk-Pk(C1)=6.08V might mean peak-to-peak voltage?)
+>>
+>>   This one looks a bit high (if they measured the same voltages I wonder
+>> where they got their scopes calibrated ;-) )
+>
+> The first plot was obtained on my system. The second plot was obtained
+> on a different system, presumably identical to mine, but I don't know
+> for sure.
+>
+>>> 0) What is this C1 both plots mention?
+>>
+>>   Scope Channel 1
+>>
+>>> 1) Am I reading the plot correctly?
+>>
+>>   Yep
+>>
+>>> 2) Is -1.4V in DC even possible?
+>>
+>>   Why not!
+>
+> Errr... I need to think about it :-)
+>
+>>> 3) 4.6V is 1.3V above 3.3V and -1.4V is -1.4V below 0. (Assuming I read
+>>> the numbers correctly) Are these values within the PCI spec? Or are
+>>> these voltages dangerous and / or might cause some problems with some
+>>> PCI boards?
+>>
+>>   Well it depends on which of the plot is lying. Looking at the PCI spec
+>> (4.2.2.1) the Vih max for a device is Vcc-max+0.5 = 3.6 + 0.5 = 4.1V
+>> the Vil min is -0.5V so in this case it looks a bit high. But I would not
+>> worry too much, those are only the overshoots, and the circuits have
+>> clamping diodes on their inputs.
+>>
+>>   The test waveform voltages for the maximum ratings (4.2.2.3) against which
+>> every PCI device should be qualified are higher than what you have here: 7.1V
+>> peak-to-peak.
+>
+> OK. I suppose I should not worry then :-)
+>
+>>   Hope this helps.
+>
+> Very much! Thanks.
+>
+> Regards.
+>
 
-Help would really be appreciated.
+You can't just touch a scope-probe to the PCI
+clock pin and clip the scope-probe grounding
+lead to a convenient "ground" to make these
+measurements! You need a special fixture that
+will make a low-inductance connection to the
+PCI bus in the same manner as the interface chip.
 
-- vin
+A scope probe will allow you to see if there is
+a clock signal. That's all. You can't determine
+its quality. A 4-inch ground lead on the scope
+probe will result in 10-20% overshoot and undershoot
+being observed.
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.27 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
