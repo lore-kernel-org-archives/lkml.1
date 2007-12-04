@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbXLDNyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbXLDNyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbXLDNyR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 08:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXLDNyG
+	id S1754431AbXLDNyf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 08:54:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXLDNyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 08:54:06 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:40105 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbXLDNyF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 08:54:05 -0500
-Subject: Re: [SPARC64] Export symbols for sunvnet and sunvdc to be built
-	modular
-From: Ben Collins <ben.collins@ubuntu.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071204.002350.93835897.davem@davemloft.net>
-References: <1196373730.13800.2.camel@cunning>
-	 <20071204.002350.93835897.davem@davemloft.net>
-Content-Type: text/plain
-Organization: Canonical
-Date: Tue, 04 Dec 2007 08:54:03 -0500
-Message-Id: <1196776443.5907.49.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Dec 2007 08:54:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59474 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752944AbXLDNyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 08:54:24 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com
+Subject: [PATCH 0/10] Integrate msr.h
+Date: Tue,  4 Dec 2007 09:09:54 -0200
+Message-Id: <11967666042130-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Tue, 2007-12-04 at 00:23 -0800, David Miller wrote:
-> From: Ben Collins <ben.collins@ubuntu.com>
-> Date: Thu, 29 Nov 2007 17:02:10 -0500
-> 
-> > Fixes this build failure:
-> >     
-> > ERROR: "vio_driver_init" [drivers/net/sunvnet.ko] undefined!
-> > ERROR: "vio_driver_init" [drivers/block/sunvdc.ko] undefined!
-> > ERROR: "ldc_map_sg" [drivers/block/sunvdc.ko] undefined!
-> >     
-> > Signed-off-by: Ben Collins <bcollins@ubuntu.com>
-> 
-> Please check what you are patching against.
-> 
-> Every 2.6.x tree I have access to has these exports in
-> the precise locations you are adding them.
-> 
-> I suspect you have some local change intergration issue
-> in the tree where you encountered this build error.
+This series of patches integrates msr.h header.
+What it really does, is a series of steps to allow us
+to get rid of duplicate code between i386 and x86_64 versions
 
-I was pretty sure I diff'd the tree I have against linux-2.6/master, but
-maybe not.
+With this done, achieving paravirt for x86_64 gets really easy,
+just a couple of extra code.
 
-Thanks
+The first patch was already sent a while ago, but was not yet pushed
+to any tree , to my knowledge. So it is sent again. Also, 
+patches 9 and 10 relies on b02f15537b3bf43e347214cf14bad80aeaef1caf,
+already in the x86 tree.
 
--- 
-Ubuntu   : http://www.ubuntu.com/
-Linux1394: http://wiki.linux1394.org/
-SwissDisk: http://www.swissdisk.com/
+Other than that, it should apply fine ontop of linus today git.
+
+Comments are welcome
+
 
