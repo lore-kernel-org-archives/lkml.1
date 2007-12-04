@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbXLDWbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXLDWbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbXLDWbf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbXLDWb1
+	id S1755279AbXLDWbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbXLDWbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:31:27 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:39461 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750862AbXLDWb0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:31:26 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAHpjVUdMROHU/2dsb2JhbACBWg
-Date: Tue, 4 Dec 2007 17:31:23 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Paulo Marques <pmarques@grupopie.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [-mm PATCH] kallsyms should prefer non weak symbols
-Message-ID: <20071204223123.GA11100@Krystal>
-References: <4755BA14.8060706@grupopie.com> <20071204133405.13ccd3bb@laptopd505.fenrus.org>
-Mime-Version: 1.0
+	Tue, 4 Dec 2007 17:31:35 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:60284 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753355AbXLDWbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 17:31:34 -0500
+Date: Tue, 4 Dec 2007 23:31:51 +0100
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: gregkh@suse.de, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: [PATCH] USB testing driver: convert dev->sem to mutex
+Message-ID: <20071204223151.GB480@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Daniel Walker <dwalker@mvista.com>, gregkh@suse.de,
+	linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <20071204165540.GH6729@traven> <1196795342.1568.41.camel@jnielson-xp.ddns.mvista.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071204133405.13ccd3bb@laptopd505.fenrus.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:24:08 up 31 days,  3:29,  6 users,  load average: 0.08, 0.36,
-	0.57
+In-Reply-To: <1196795342.1568.41.camel@jnielson-xp.ddns.mvista.com>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven (arjan@infradead.org) wrote:
-> On Tue, 04 Dec 2007 20:35:32 +0000
-> Paulo Marques <pmarques@grupopie.com> wrote:
+El Tue, Dec 04, 2007 at 11:09:02AM -0800 Daniel Walker ha dit:
+
+> On Tue, 2007-12-04 at 17:55 +0100, Matthias Kaehlcke wrote:
+> > @@ -1990,7 +1991,7 @@ static void usbtest_disconnect (struct
+> > usb_interface *intf)
+> >  {
+> >         struct usbtest_dev      *dev = usb_get_intfdata (intf);
+> >  
+> > -       down (&dev->sem);
+> > +       mutex_lock(&dev->lock);
+> >  
+> >         usb_set_intfdata (intf, NULL);
+> >         dev_dbg (&intf->dev, "disconnect\n"); 
 > 
-> > 
-> > When resolving symbol names from addresses with aliased symbol names, 
-> > kallsyms_lookup always returns the first symbol, even if it is a weak 
-> > symbol.
-> > 
-> > This patch changes this by sorting the symbols with the weak symbols 
-> > last before feeding them to the kernel. This way the kernel runtime 
-> > isn't changed at all, only the kallsyms build system is changed.
-> > 
+> This looks like a bit of an anomaly.. The code that isn't shown above is
+> the "kfree(dev)" .. So this isn't legal since it's freeing a locked
+> mutex. Here's a excerpt from the comment above mutex_lock(),
 > 
-> what user of this api is affected by this?
-> 
+>  * The mutex must later on be released by the same task that
+>  * acquired it. Recursive locking is not allowed. The task
+>  * may not exit without first unlocking the mutex. Also, kernel
+>  * memory where the mutex resides mutex must not be freed with
+>  * the mutex still locked. The mutex must first be initialized
+>  * (or statically defined) before it can be locked. memset()-ing
+>  * the mutex to 0 is not allowed.
 
-grep -r kallsyms_lookup * does a pretty good job at it ;)
+you're absolutely right that freeing a locked mutex isn't a good idea
 
-kernel/kprobes.c
-arch/x86/kernel/traps_64.c
-blackfin/kernel/traps.c
-parisc/kernel/unwind.c
-powerpc/xmon/xmon.c
-sh64/kernel/unwind.c
-kernel/kallsyms.c : sprint_symbol()
-
-Then, sprint_symbol users :
-
-kernel/lockdep_proc.c
-kernel/softirq.c
-mm/slub.c
-fs/gfs2/glock.c
-arch/x86/kernel/traps_32.c
-arch/x86/kernel/traps_64.c
-x86/kernel/syscall_64.c
-
-Mathieu
-
-> 
-> -- 
-> If you want to reach me at my work email, use arjan@linux.intel.com
-> For development, discussion and tips for power savings, 
-> visit http://www.lesswatts.org
-> 
+thanks for pointing it out!
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Matthias Kaehlcke
+Linux System Developer
+Barcelona
+
+                Don't walk behind me, I may not lead
+             Don't walk in front of me, I may not follow
+                Just walk beside me and be my friend
+                          (Albert Camus)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
