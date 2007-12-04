@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160AbXLDIO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565AbXLDIPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160AbXLDIO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbXLDIOw
+	id S1751565AbXLDIPZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:15:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXLDIPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:14:52 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:26031 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbXLDIOv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:14:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FmBgN4ZvMTn/q47AZ4cyc+OSMAuNV2b5AmF5TCBQtJbw8nUT6YBPLzo0DFX/ut+9ivEBgtrNZ2NMSeBytyN6uo/1N2PQhLR4EV30WNSnV8GnEwVH9IA9H0TLQknRKRFpRYXDM2V01DeCpgGwsqkw7HEcNO4JVFdMbqdXlBBaZfk=
-Message-ID: <32209efe0712040014y6acbbc11y428caf3471a9f341@mail.gmail.com>
-Date: Tue, 4 Dec 2007 00:14:50 -0800
-From: "Natalie Protasevich" <protasnb@gmail.com>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: Linux Kernel - Future works
-Cc: "Muhammad Nowbuth" <muhammad.nowbuth@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47550B66.2060406@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Dec 2007 03:15:08 -0500
+Received: from www.tglx.de ([62.245.132.106]:53525 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751070AbXLDIPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:15:06 -0500
+Subject: Re: [PATCH][AT91] Fix compile error for at91rm9200 in latest git
+From: Jan Altenberg <jan.altenberg@linutronix.de>
+To: Andrew Victor <avictor.za@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, linux@maxim.org.za,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+In-Reply-To: <cd73a99e0712031202u71efc0e1g8cf910760475bb5d@mail.gmail.com>
+References: <1196675122.3832.18.camel@bender.lan>
+	 <200712031053.43316.david-b@pacbell.net>
+	 <cd73a99e0712031202u71efc0e1g8cf910760475bb5d@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 09:14:29 +0100
+Message-Id: <1196756069.3835.7.camel@bender.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <29d31a040712032259s1ff656a3n45564a7db42f2d29@mail.gmail.com>
-	 <47550B66.2060406@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is also Rick's page:
-http://kernelnewbies.org/KernelProjects
+Hi all,
 
-On Dec 4, 2007 12:10 AM, Chris Snook <csnook@redhat.com> wrote:
-> Muhammad Nowbuth wrote:
-> > Hi all,
-> >
-> > Could anyone give some ideas of future pending works which are needed
-> > on the linux kernel?
->
-> http://kernelnewbies.org/KernelHacking
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> > Your patch looks correct, and seems to be the only obvious chunk
+> > that's missing.  So, I'll ack it FWIW ... usual policy for these
+> > patches is to go through Russell.
+> 
+> You can add my Ack for what it's worth.
+
+OK, CC'ed Russell and added your Acked-by.
+
+Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
+Acked-by: Andrew Victor <avictor.za@gmail.com>
+
+---
+diff --git a/arch/arm/mach-at91/board-ek.c b/arch/arm/mach-at91/board-ek.c
+index d05b1b2..53a5ef9 100644
+--- a/arch/arm/mach-at91/board-ek.c
++++ b/arch/arm/mach-at91/board-ek.c
+@@ -109,6 +109,15 @@ static struct spi_board_info ek_spi_devices[] = {
+ #endif
+ };
+ 
++static struct i2c_board_info __initdata ek_i2c_devices[] = {
++	{
++		I2C_BOARD_INFO("ics1523", 0x26),
++	},
++	{
++		I2C_BOARD_INFO("dac3550", 0x4d),
++	}
++};
++
+ #define EK_FLASH_BASE	AT91_CHIPSELECT_0
+ #define EK_FLASH_SIZE	0x200000
+ 
+
+
