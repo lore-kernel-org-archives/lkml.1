@@ -1,45 +1,60 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbXLDUt5 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 4 Dec 2007 15:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXLDUtr
+	id S1755320AbXLDWYX (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 4 Dec 2007 17:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbXLDWYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:49:47 -0500
-Received: from smtp-out3.libero.it ([212.52.84.43]:49230 "EHLO
-	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbXLDUtq convert rfc822-to-8bit (ORCPT
+	Tue, 4 Dec 2007 17:24:12 -0500
+Received: from web72315.mail.tp2.yahoo.com ([203.188.200.105]:34120 "HELO
+	web72315.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752204AbXLDWYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:49:46 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAINMVUdRyk+W/2dsb2JhbAAIkFs/
-Date: Tue,  4 Dec 2007 21:49:45 +0100
-Message-Id: <JSJLUX$09C580370B0F6D6B0DF4FFA814119E85@libero.it>
-Subject: MRS GREGGE VAN DER HOOFD.
+	Tue, 4 Dec 2007 17:24:11 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 17:24:11 EST
+X-YMail-OSG: 3BAbf6UVM1mTsjQKVEbfW1kG7GG1xwQSiOtNW6yOuLFj__yc3M.GBjzaqSaFEiqcGnmLV1HjJAOJtCKsaMBC8vNq9CufNnsEVThdL1yPtcQbRrthOi88NBTJh4qaiY5bMFi_FfhCJZ0p5n7P54w6g.irN.44ZJnz809VfSVrwFa7ii9HMpsLhf7xxpD3uLbI
+Date: Wed, 5 Dec 2007 06:17:28 +0800 (CST)
+From: <e123039380@yahoo.com.tw>
+To: linktoshare@hotmail.com, linkwest@goingoti.com,
+	linnette45@hotmail.com, linnurse50@hotmail.com, linny48@flash.net,
+	lino.cipo@altavista.com, linoclaudio3@hotmail.com,
+	linofer2002@hotmail.com, linosoto@hotmail.com, lino_se@hotmail.com,
+	linrit@earthlink.net, linsing@bellsouth.net, lintao00162@sina.com,
+	linuppthejo@hotmail.com, linuraj@hotmail.com,
+	linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
+	linux-lvm@redhat.com, linux-precision@dell.com,
+	linux0212@hotmail.com, linuxgames@sunsite.dk, linuxkde@hotmail.com,
+	linuxmanagers@linuxmanagers.org, linuxneo411@hotmail.com,
+	linuxragu@hotmail.com, linyang@siscom.net,
+	linzeysharon@hotmail.com, liomsJessica@hotmail.com,
+	lion200380@hotmail.com, lionceau_ward@hotmail.com,
+	liondance999@hotmail.com, lionelguigui@hotmail.com,
+	lionelharvey@tiscali.co.uk, lionelle329@hotmail.com,
+	lioness620@hotmail.com
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=big5
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-From: "info_iieee" <info_iieee@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 81.202.79.150
-To: unlisted-recipients:; (no To-header on input)
+Message-ID: <23866.89025.qm@web72315.mail.tp2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753738AbXLDUt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755320AbXLDWYX@vger.kernel.org>
 
-Important Information, Please your urgent response is needed.
-It is a pleasure to inform you through this medium thatYour
-emailaddress won a prize of =80950,000.00 in category 'A'micronetemaill=
-ottery with Reference number: LSLUK/2031/8161/07.
-Please contact our FOREIGN TRANSFER MANAGER.
-Dr. Paul Anderson
-TEL: +34-652-063-073.
-Email: finansseguros1@aim.com
+Nice day to you !!!
+Now there is one honest  online shop in Beijng ,China
+. They offer very good quality products on website
+,and offer old clients very good price .=20
+There are so many nice items for you here .
+Grasp this chance to get your smart items ,you also
+can make much profit on them .=20
+website:  www.bbsimona.com
+E-mail: jie9858@hotmail.com
+MSN:   jie9858@hotmail.com=20
+Skype: tiff856@hotmail.com
 
-Yours Sincerely,
-MRS GREGGE VAN DER HOOFD.
 
-
+      _________________________________________________________________=
+____________________
+=B0=A8=A4W=C5=E9=C5=E7=A5=FE=B7sYahoo!=A9_=BC=AF=B9q=A4l=ABH=BDc2.0=A1C=
+ http://tw.mg0.mail.yahoo.com/dc/landing
 --
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
  in
