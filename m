@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbXLDTtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXLDTuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbXLDTtb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXLDTtY
+	id S1753640AbXLDTuz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbXLDTus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:49:24 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50076 "EHLO ogre.sisk.pl"
+	Tue, 4 Dec 2007 14:50:48 -0500
+Received: from thunk.org ([69.25.196.29]:45411 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbXLDTtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:49:23 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Giacomo A. Catenazzi" <cate@cateee.net>
-Subject: Re: [Bug 9246] On 2.6.24-rc1-gc9927c2b BUG: unable to handle kernel paging request at virtual address 3d15b925
-Date: Tue, 4 Dec 2007 21:08:14 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <20071204100832.GA11031@elte.hu> <475584A4.6080800@cateee.net>
-In-Reply-To: <475584A4.6080800@cateee.net>
+	id S1750764AbXLDTur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 14:50:47 -0500
+Date: Tue, 4 Dec 2007 14:50:21 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071204195021.GB7259@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Matt Mackall <mpm@selenic.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
+	Marc Haber <mh+linux-kernel@zugschlus.de>,
+	linux-kernel@vger.kernel.org
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204165502.0a8f695e@the-village.bc.nu> <20071204180237.GU19691@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712042108.15262.rjw@sisk.pl>
+In-Reply-To: <20071204180237.GU19691@waste.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 4 of December 2007, Giacomo A. Catenazzi wrote:
-> Ingo Molnar wrote:
-> > hi,
+On Tue, Dec 04, 2007 at 12:02:37PM -0600, Matt Mackall wrote:
+> On Tue, Dec 04, 2007 at 04:55:02PM +0000, Alan Cox wrote:
+> > > cryptographically strong stream it'll provide when /dev/random is
+> > > tapped? In principle, this'd leave more entropy available for
+> > > applications that really need it, especially on platforms that don't
+> > > generate a lot of entropy in the first place (servers).
 > > 
-> > * Giacomo Catenazzi <cate@cateee.net> wrote:
 > > 
-> >> On 2.6.24-rc1-gc9927c2b BUG: unable to handle kernel paging request at 
-> >> virtual address 3d15b925
-> >>
-> >> In last git, I see the following BUGs in various programs.  It seems 
-> >> reproducible, but sometime I've hard lookup on poweroff.
-> > 
-> > do you still get this with more recent kernels? We had a number of fixes 
-> > for memory corruptors since -rc1 - perhaps one of them took care of your 
-> > problem as well.
+> > As reported about a month ago, the evidence is that the /dev/random
+> > stream is not cryptographically strong. Collecting uuids generated from
+> > the kernel uuid random generator from the random generator in the kernel
+> > shows abnormal patterns of duplicates.
 > 
-> No, the problem was solved few days after the report.
+> Pointer, please.
 
-Can you point me to the fix, please?
+Alan, are you sure you're not talking about Helge Deller's attempt to
+push a Time-based UUID generator into the kernel because you can get
+duplicates from the current userspace library?
 
-Rafael
+I've not heard of *any* claim where the kernel uuid random generator
+has been returning duplicates.
+
+						- Ted
+
+P.S.  Probably the right approach for Helge is to create a daemon
+started at boot time with privileges to write the appropriate state
+file to prevent duplicates across reboots, and then to change the uuid
+library to use the daemon if it is available (accessed via a Unix
+domain socket), or to use its existing algorithm (which is fine unless
+you have multiple threads wanting to generate large numbers of UUIDs
+per second in parallel), and you want to use time-based UUID's because
+they have better b-tree characteristics when you use them as indexes
+into a database.
