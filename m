@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbXLDKdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbXLDKd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbXLDKdN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 05:33:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXLDKc7
+	id S1753421AbXLDKd5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 05:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbXLDKdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 05:32:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45019 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Dec 2007 05:33:50 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:51838 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbXLDKc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 05:32:58 -0500
-Date: Tue, 4 Dec 2007 11:32:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ptiedem@de.ibm.com, braunu@de.ibm.com, jeff@garzik.org,
-       linux-s390@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [build failure] Re: Linux 2.6.24-rc4 on S390x
-Message-ID: <20071204103237.GA15038@elte.hu>
-References: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org> <47552A98.9010108@linux.vnet.ibm.com>
+	id S1752246AbXLDKdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 05:33:49 -0500
+Date: Tue, 4 Dec 2007 11:32:53 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Patrick Boettcher <pb@linuxtv.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [build bug] undefined reference to `dib3000mc_get_tuner_i2c_master'
+In-Reply-To: <20071204083904.GA15694@elte.hu>
+Message-ID: <Pine.LNX.4.64.0712041130310.16564@twin.jikos.cz>
+References: <20071204083904.GA15694@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47552A98.9010108@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 4 Dec 2007, Ingo Molnar wrote:
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> with the attached config i get this build failure:
+>  drivers/built-in.o: In function `dibusb_dib3000mc_tuner_attach':
+>  : undefined reference to `dib3000mc_get_tuner_i2c_master'
+>  drivers/built-in.o: In function `dibusb_dib3000mc_tuner_attach':
+>  : undefined reference to `dib3000mc_set_config'
+> on 2.6.24-rc-latest.
 
-> The patch ctc: make use of alloc_netdev() (commit 
-> 1c1478859017452a1179dbbdf7b9eb5b48438746) introduces the build failure
-> 
->   CC [M]  drivers/s390/net/fsm.o
->   CC [M]  drivers/s390/net/smsgiucv.o
->   CC [M]  drivers/s390/net/ctcmain.o
-> drivers/s390/net/ctcmain.c: In function `ctc_init_netdevice':
-> drivers/s390/net/ctcmain.c:2805: error: implicit declaration of function `SET_MODULE_OWNER'
-> make[2]: *** [drivers/s390/net/ctcmain.o] Error 1
-> make[1]: *** [drivers/s390/net] Error 2
-> make: *** [drivers/s390] Error 2
+Hmm, seems like -common part contains also code that is not completely 
+common to all the modules.
 
-the patch below should fix this.
+How about this?
 
-	Ingo
 
------------->
-Subject: drivers/s390/net/ctcmain.c: fix build bug
-From: Ingo Molnar <mingo@elte.hu>
 
-SET_MODULE_OWNER() is obsolete.
+From: Jiri Kosina <jkosina@suse.cz>
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/s390/net/ctcmain.c |    1 -
- 1 file changed, 1 deletion(-)
+DVB: Compile 3000MC-specific DIB code only for CONFIG_DVB_DIB3000MC
 
-Index: linux/drivers/s390/net/ctcmain.c
-===================================================================
---- linux.orig/drivers/s390/net/ctcmain.c
-+++ linux/drivers/s390/net/ctcmain.c
-@@ -2802,7 +2802,6 @@ void ctc_init_netdevice(struct net_devic
- 	dev->type = ARPHRD_SLIP;
- 	dev->tx_queue_len = 100;
- 	dev->flags = IFF_POINTOPOINT | IFF_NOARP;
--	SET_MODULE_OWNER(dev);
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/drivers/media/dvb/dvb-usb/dibusb-common.c b/drivers/media/dvb/dvb-usb/dibusb-common.c
+index 9a184da..b95b1eb 100644
+--- a/drivers/media/dvb/dvb-usb/dibusb-common.c
++++ b/drivers/media/dvb/dvb-usb/dibusb-common.c
+@@ -223,6 +223,7 @@ static struct dibx000_agc_config dib3000p_panasonic_agc_config = {
+ 	.agc2_slope2 = 0x1e,
+ };
+ 
++#ifdef CONFIG_DVB_DIB3000MC
+ static struct dib3000mc_config mod3000p_dib3000p_config = {
+ 	&dib3000p_panasonic_agc_config,
+ 
+@@ -305,6 +306,7 @@ int dibusb_dib3000mc_tuner_attach(struct dvb_usb_adapter *adap)
+ 	return 0;
  }
+ EXPORT_SYMBOL(dibusb_dib3000mc_tuner_attach);
++#endif
  
- 
+ /*
+  * common remote control stuff
