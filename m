@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbXLDQA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbXLDQE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbXLDQA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 11:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXLDQAs
+	id S1754872AbXLDQE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 11:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbXLDQEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 11:00:48 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:37893 "EHLO 2ka.mipt.ru"
+	Tue, 4 Dec 2007 11:04:22 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36595 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753954AbXLDQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 11:00:46 -0500
-Date: Tue, 4 Dec 2007 19:00:40 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [0/4] DST: Distributed storage.
-Message-ID: <20071204160040.GA8055@2ka.mipt.ru>
-References: <aqqqqasdzxczc036@2ka.mipt.ru> <11967790263179@2ka.mipt.ru> <170fa0d20712040725o506a47cayb137993041ec3a63@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20712040725o506a47cayb137993041ec3a63@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	id S1750764AbXLDQEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 11:04:21 -0500
+Message-ID: <47557A7D.6010409@garzik.org>
+Date: Tue, 04 Dec 2007 11:04:13 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Nicolas Pitre <nico@cam.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.24-rc4
+References: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org> <alpine.LFD.0.99999.0712040819080.555@xanadu.home>
+In-Reply-To: <alpine.LFD.0.99999.0712040819080.555@xanadu.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike.
-
-On Tue, Dec 04, 2007 at 10:25:29AM -0500, Mike Snitzer (snitzer@gmail.com) wrote:
-> Thanks for your continued work on DST.  I'd like to know if you've
-> thought further about how synchronous mirroring would be best
-> implemented with DST.
+Nicolas Pitre wrote:
+> On Mon, 3 Dec 2007, Linus Torvalds wrote:
 > 
-> You shared you views some time ago via comments on your blog:
-> http://tservice.net.ru/~s0mbre/blog/devel/dst/2007_11_05.html
+>> That said, none of the changes are really _exciting_ or really scary. And 
+>> we should have fixed a number of regressions, although more certainly 
+>> remain.
 > 
-> At that time you were saying you'd add a sync bit to the request
-> structure that is sent to remote nodes.  I'd imagine this would also
-> require ordering of the block io, no?  Is order guaranteed when the
-> requests are submitted over the DST protocol?  Otherwise how can you
-> ensure a valid remote mirror (in the case of network disconnects,
-> etc)?
+> Any reason for this:
 > 
-> Guaranteeing consistent data on all members of a mirror is important.
-> The main question is: what mechanisms _should_ be used in DST to
-> provide this consistency?  And do you have a timeframe for when DST
-> might support such mechanisms for consistent data?
-> 
-> For the purpose of this discussion please assume that the disk cache
-> is either write-through or battery-backed.
+>  mode change 100644 => 100755 drivers/net/chelsio/cxgb2.c
+>  mode change 100644 => 100755 drivers/net/chelsio/pm3393.c
+>  mode change 100644 => 100755 drivers/net/chelsio/sge.c
+>  mode change 100644 => 100755 drivers/net/chelsio/sge.h
 
-In this case sync bit would only imply waiting until all pending
-requests reached remote nodes. This is not implemented yet.
-Order of the requests for given node is guaranteed by DST core,
-it is possible to perform multiple requests in parallel for/from
-different nodes.
+As repeatedly mentioned on the list :) it is a mistake.
 
-In the more generic case it should wait until data has reached media,
-i.e. perform flushing.
-I did not implement that since actually no multiple-device system in
-Linux supports barriers (please note, that in this discussion sync bit
-actually means a barrier in the block layer).
+	Jeff
 
-Protocol changes are pretty trivial and are absolutely transparent for
-the DST core - only remote targets (both userspace and kernelspace)
-should be changed to invoke ->issue_flush_fn() callback when needed for
-underlying device and do not process new requests until flush completed.
-Thus barrier bit can be attached to data packets and can also be single
-requests without data.
 
-DST will continue to collect data, but will not send it to remote nodes
-(actually it can send it, but data will not be processed and will stay
-in the remote's receiving queue). This is a main concern about barrier -
-should or not main node continue to process requests if previous ones
-have not reached media yet, thus I have not yet implemented barriers.
 
-> regards,
-> Mike
-
--- 
-	Evgeniy Polyakov
