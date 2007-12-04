@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbXLDE3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbXLDEoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752247AbXLDE3S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 23:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXLDE3L
+	id S1751983AbXLDEoB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 23:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXLDEny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 23:29:11 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:32873 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbXLDE3J (ORCPT
+	Mon, 3 Dec 2007 23:43:54 -0500
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:36737 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751334AbXLDEnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 23:29:09 -0500
-Message-ID: <4754D76B.8080406@ak.jp.nec.com>
-Date: Tue, 04 Dec 2007 13:28:27 +0900
-From: KaiGai Kohei <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 3 Dec 2007 23:43:53 -0500
+Date: Tue, 4 Dec 2007 15:43:51 +1100
+To: Paul Mackerras <paulus@samba.org>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Frederik Himpe <fhimpe@telenet.be>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: [PATCH] Fix hardware IRQ time accounting problem.
+Message-ID: <20071204044351.GQ24243@bakeyournoodle.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Stephen Smalley <sds@epoch.ncsc.mil>, jmorris@sergelap.austin.ibm.com,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] capabilities: introduce per-process capability bounding
- set (v10)
-References: <20071126200908.GA13287@sergelap.austin.ibm.com>
-In-Reply-To: <20071126200908.GA13287@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge,
+The commit fa13a5a1f25f671d084d8884be96fc48d9b68275, unconditionally calls
+update_process_tick() in system context.  In the deterministic accounting case
+this is the correct thing to do.  However, in the non-deterministic accounting
+case we need to not do this, and results in the time accounted as
+hardware irq time being artificially elevated.
 
-Please tell me the meanings of the following condition.
+Also this patch collapses 2 consecutive '#ifdef CONFIG_VIRT_CPU_ACCOUNTING'
+checks in time.h into for neatness.
 
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 3a95990..cb71bb0 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -133,6 +119,12 @@ int cap_capset_check (struct task_struct *target, kernel_cap_t *effective,
->  		/* incapable of using this inheritable set */
->  		return -EPERM;
->  	}
-> +	if (!!cap_issubset(*inheritable,
-> +			   cap_combine(target->cap_inheritable,
-> +				       current->cap_bset))) {
-> +		/* no new pI capabilities outside bounding set */
-> +		return -EPERM;
-> +	}
->  
->  	/* verify restrictions on target's new Permitted set */
->  	if (!cap_issubset (*permitted,
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+The problem was seen and reported by Johannes Berg  and Frederik Himpe.
+Paul, I think this is good for 2.6.24.
 
-It seems to me this condition requires the new inheritable capability
-set must have a capability more than bounding set, at least.
-What is the purpose of this checking?
 
-In the initial state, any process have no inheritable capability set
-and full bounding set. Thus, we cannot do capset() always.
+ arch/powerpc/kernel/process.c |    2 +-
+ include/asm-powerpc/time.h    |   12 ++++--------
+ 2 files changed, 5 insertions(+), 9 deletions(-)
 
-Thanks,
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 41e13f4..b9d8837 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -350,7 +350,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	local_irq_save(flags);
+ 
+ 	account_system_vtime(current);
+-	account_process_tick(current, 0);
++	account_process_vtime(current);
+ 	calculate_steal_time();
+ 
+ 	last = _switch(old_thread, new_thread);
+diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
+index 780f826..8a2c8db 100644
+--- a/include/asm-powerpc/time.h
++++ b/include/asm-powerpc/time.h
+@@ -237,18 +237,14 @@ struct cpu_usage {
+ 
+ DECLARE_PER_CPU(struct cpu_usage, cpu_usage_array);
+ 
+-#ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-extern void account_process_vtime(struct task_struct *tsk);
+-#else
+-#define account_process_vtime(tsk)		do { } while (0)
+-#endif
+-
+ #if defined(CONFIG_VIRT_CPU_ACCOUNTING)
+ extern void calculate_steal_time(void);
+ extern void snapshot_timebases(void);
++#define account_process_vtime(tsk)	account_process_tick(current, 0);
+ #else
+-#define calculate_steal_time()			do { } while (0)
+-#define snapshot_timebases()			do { } while (0)
++#define calculate_steal_time()		do { } while (0)
++#define snapshot_timebases()		do { } while (0)
++#define account_process_vtime(tsk)	do { } while (0)
+ #endif
+ 
+ extern void secondary_cpu_time_init(void);
 -- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+1.5.3.6
+
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
