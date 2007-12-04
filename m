@@ -1,36 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXLDRA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbXLDRAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbXLDRA0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 12:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbXLDRAO
+	id S1755139AbXLDRAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 12:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbXLDRA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 12:00:14 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:35793 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751331AbXLDRAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 12:00:13 -0500
-Date: Tue, 4 Dec 2007 17:59:51 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: rtc-linux@googlegroups.com, "Bryan Wu" <bryan.wu@analog.com>,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       "Mike Frysinger" <michael.frysinger@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [rtc-linux] Re: [PATCH 1/7] Blackfin RTC driver: the frequency
- function is in units of Hz, not units of seconds, so lock our driver down
- to 1 Hz
-Message-ID: <20071204175951.6c47fee4@i1501.lan.towertech.it>
-In-Reply-To: <8bd0f97a0712040856j530c1389l82adafcba07b89ae@mail.gmail.com>
-References: <1195812512-25979-1-git-send-email-bryan.wu@analog.com>
-	<1195812512-25979-2-git-send-email-bryan.wu@analog.com>
-	<20071204172634.50492e1e@i1501.lan.towertech.it>
-	<8bd0f97a0712040829i116496deu384453c6eccfa252@mail.gmail.com>
-	<20071204174146.19bedb54@i1501.lan.towertech.it>
-	<8bd0f97a0712040847m73bb479dx814d83985e5223d5@mail.gmail.com>
-	<20071204174947.5c468e3d@i1501.lan.towertech.it>
-	<8bd0f97a0712040856j530c1389l82adafcba07b89ae@mail.gmail.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
+	Tue, 4 Dec 2007 12:00:26 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59379 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753959AbXLDRAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 12:00:25 -0500
+Date: Tue, 4 Dec 2007 16:55:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Ray Lee" <ray@madrabbit.org>
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Matt Mackall" <mpm@selenic.com>,
+       "Marc Haber" <mh+linux-kernel@zugschlus.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071204165502.0a8f695e@the-village.bc.nu>
+In-Reply-To: <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com>
+References: <20071204114125.GA17310@torres.zugschlus.de>
+	<20071204161811.GB15974@stusta.de>
+	<2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -38,42 +33,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 11:56:54 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
+> cryptographically strong stream it'll provide when /dev/random is
+> tapped? In principle, this'd leave more entropy available for
+> applications that really need it, especially on platforms that don't
+> generate a lot of entropy in the first place (servers).
 
-> On Dec 4, 2007 11:49 AM, Alessandro Zummo <alessandro.zummo@towertech.it> wrote:
-> > On Tue, 4 Dec 2007 11:47:56 -0500
-> > "Mike Frysinger" <vapier.adi@gmail.com> wrote:
-> > > the return of ENOTTY is to say "changing of freq isnt supported", not
-> > > that the value is invalid.  but i can get the same behavior by
-> > > deleting the function as the rtc-dev layer will take care of returning
-> > > ENOTTY.
-> > >
-> > > so the behavior is for the RTC_IRQP_SET ioctl:
-> > >  - return ENOTTY if you cannot change freq
-> > >    - the rtc-dev layer will do this for you if you do not set irq_set_freq
-> > >  - return EINVAL if the requested freq is not within the capabilities
-> > > of the hardware
-> > >
-> > > sound about right ?
-> >
-> >  yes, it is. I agree about deleting it.
-> 
-> so, merge this patch and i'll follow up with another to delete the
-> func and update the documentation ?
 
- ok. You have my 
+As reported about a month ago, the evidence is that the /dev/random
+stream is not cryptographically strong. Collecting uuids generated from
+the kernel uuid random generator from the random generator in the kernel
+shows abnormal patterns of duplicates.
 
- Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
-
- on the whole patch set.
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Alan
