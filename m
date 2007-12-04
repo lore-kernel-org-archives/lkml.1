@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbXLDVNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbXLDVOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbXLDVNr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbXLDVH5
+	id S1755822AbXLDVOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbXLDVIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:07:57 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53496
+	Tue, 4 Dec 2007 16:08:04 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53501
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755306AbXLDVH4 (ORCPT
+	by vger.kernel.org with ESMTP id S1755356AbXLDVIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:07:56 -0500
+	Tue, 4 Dec 2007 16:08:01 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 18/23] Subject: SCHED - Optimize cpu search with hamming weight
+Subject: [PATCH 19/23] Subject: SCHED - Optimize out cpu_clears
 To: mingo@elte.hu
 Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:45:56 -0500
-Message-ID: <20071204204556.3567.19342.stgit@novell1.haskins.net>
+Date: Tue, 04 Dec 2007 15:46:01 -0500
+Message-ID: <20071204204601.3567.77236.stgit@novell1.haskins.net>
 In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,77 +27,103 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can cheaply track the number of bits set in the cpumask for the lowest
-priority CPUs.  Therefore, compute the mask's weight and use it to skip
-the optimal domain search logic when there is only one CPU available.
+From: Steven Rostedt <srostedt@redhat.com>
 
+This patch removes several cpumask operations by keeping track
+of the first of the CPUS that is of the lowest priority. When
+the search for the lowest priority runqueue is completed, all
+the bits up to the first CPU with the lowest priority runqueue
+is cleared.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched_rt.c |   25 ++++++++++++++++++-------
- 1 files changed, 18 insertions(+), 7 deletions(-)
+ kernel/sched_rt.c |   49 ++++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 36 insertions(+), 13 deletions(-)
 
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index fe0b43f..0514b27 100644
+index 0514b27..039be04 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -301,7 +301,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
- 	int       cpu;
- 	cpumask_t *valid_mask = &__get_cpu_var(valid_cpu_mask);
- 	int       lowest_prio = -1;
--	int       ret         = 0;
-+	int       count       = 0;
+@@ -294,29 +294,36 @@ static struct task_struct *pick_next_highest_task_rt(struct rq *rq,
+ }
  
- 	cpus_clear(*lowest_mask);
- 	cpus_and(*valid_mask, cpu_online_map, task->cpus_allowed);
-@@ -314,7 +314,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
+-static DEFINE_PER_CPU(cpumask_t, valid_cpu_mask);
+ 
+ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ {
+-	int       cpu;
+-	cpumask_t *valid_mask = &__get_cpu_var(valid_cpu_mask);
+ 	int       lowest_prio = -1;
++	int       lowest_cpu  = -1;
+ 	int       count       = 0;
++	int       cpu;
+ 
+-	cpus_clear(*lowest_mask);
+-	cpus_and(*valid_mask, cpu_online_map, task->cpus_allowed);
++	cpus_and(*lowest_mask, cpu_online_map, task->cpus_allowed);
+ 
+ 	/*
+ 	 * Scan each rq for the lowest prio.
+ 	 */
+-	for_each_cpu_mask(cpu, *valid_mask) {
++	for_each_cpu_mask(cpu, *lowest_mask) {
+ 		struct rq *rq = cpu_rq(cpu);
  
  		/* We look for lowest RT prio or non-rt CPU */
  		if (rq->rt.highest_prio >= MAX_RT_PRIO) {
--			if (ret)
-+			if (count)
+-			if (count)
++			/*
++			 * if we already found a low RT queue
++			 * and now we found this non-rt queue
++			 * clear the mask and set our bit.
++			 * Otherwise just return the queue as is
++			 * and the count==1 will cause the algorithm
++			 * to use the first bit found.
++			 */
++			if (lowest_cpu != -1) {
  				cpus_clear(*lowest_mask);
- 			cpu_set(rq->cpu, *lowest_mask);
+-			cpu_set(rq->cpu, *lowest_mask);
++				cpu_set(rq->cpu, *lowest_mask);
++			}
  			return 1;
-@@ -326,14 +326,17 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ 		}
+ 
+@@ -326,13 +333,29 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
  			if (rq->rt.highest_prio > lowest_prio) {
  				/* new low - clear old data */
  				lowest_prio = rq->rt.highest_prio;
--				cpus_clear(*lowest_mask);
-+				if (count) {
-+					cpus_clear(*lowest_mask);
-+					count = 0;
-+				}
+-				if (count) {
+-					cpus_clear(*lowest_mask);
+-					count = 0;
+-				}
++				lowest_cpu = cpu;
++				count = 0;
  			}
- 			cpu_set(rq->cpu, *lowest_mask);
--			ret = 1;
-+			count++;
+-			cpu_set(rq->cpu, *lowest_mask);
+ 			count++;
++		} else
++			cpu_clear(cpu, *lowest_mask);
++	}
++
++	/*
++	 * Clear out all the set bits that represent
++	 * runqueues that were of higher prio than
++	 * the lowest_prio.
++	 */
++	if (lowest_cpu > 0) {
++		/*
++		 * Perhaps we could add another cpumask op to
++		 * zero out bits. Like cpu_zero_bits(cpumask, nrbits);
++		 * Then that could be optimized to use memset and such.
++		 */
++		for_each_cpu_mask(cpu, *lowest_mask) {
++			if (cpu >= lowest_cpu)
++				break;
++			cpu_clear(cpu, *lowest_mask);
  		}
  	}
  
--	return ret;
-+	return count;
- }
- 
- static inline int pick_optimal_cpu(int this_cpu, cpumask_t *mask)
-@@ -357,9 +360,17 @@ static int find_lowest_rq(struct task_struct *task)
- 	cpumask_t *lowest_mask = &__get_cpu_var(local_cpu_mask);
- 	int this_cpu = smp_processor_id();
- 	int cpu      = task_cpu(task);
-+	int count    = find_lowest_cpus(task, lowest_mask);
- 
--	if (!find_lowest_cpus(task, lowest_mask))
--		return -1;
-+	if (!count)
-+		return -1; /* No targets found */
-+
-+	/*
-+	 * There is no sense in performing an optimal search if only one
-+	 * target is found.
-+	 */
-+	if (count == 1)
-+		return first_cpu(*lowest_mask);
- 
- 	/*
- 	 * At this point we have built a mask of cpus representing the
 
