@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbXLDM1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbXLDM1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbXLDM1U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 07:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbXLDM1L
+	id S1754352AbXLDM1c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 07:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXLDM1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 07:27:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50615 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752671AbXLDM1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 07:27:10 -0500
-Date: Tue, 4 Dec 2007 13:26:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
-Message-ID: <20071204122649.GB27286@elte.hu>
-References: <200711280121.18376.lenb@kernel.org>
+	Tue, 4 Dec 2007 07:27:21 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:25799 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754128AbXLDM1U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 07:27:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=D4fqPFUBBhwQJYcDeYrvg7bIhRgqyfJJa1I6aXYZOZwsMMvt0WMeZpSRpCFyxuhiNO7070C4F6YxXAylg1kipMAaSYaK6g76OWeL59sAAnFP+D7erVHI0IrinQtIzKKf1USQg96hMQXUjUeMmPpIIfBy7a+5tSEQCwES+BPHl4o=
+Message-ID: <fbe8b1780712040427x448a3f14i6f54288fa416b1c8@mail.gmail.com>
+Date: Tue, 4 Dec 2007 13:27:17 +0100
+From: "Peter Stahlir" <peter.stahlir@googlemail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: cgit for kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0712031331580.21880@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200711280121.18376.lenb@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <fbe8b1780712030304q14ed9e62wb0da75d8f4884c0b@mail.gmail.com>
+	 <Pine.LNX.4.64.0712031331580.21880@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Len Brown <lenb@kernel.org> wrote:
+2007/12/3, Jan Engelhardt <jengelh@computergmbh.de>:
+>
+> cgit looks so bare.
 
->     So while the irq compression code on i386 should really
->     be deleted -- even before merging the x86_64 irq-overhaul,
->     this patch simply disables it on all high volume systems
->     to avoid problems #1 and #2 on most all i386 systems.
->     
->     A large system with pin numbers >=64 will still have compression
->     to conserve limited IRQ numbers for sparse IOAPICS.  However,
->     the vast majority of the planet, those with only pin numbers < 64
->     will use an identity GSI -> IRQ mapping.
->     
->     Signed-off-by: Len Brown <len.brown@intel.com>
+... but it is incredible fast!
 
-thanks for the patch and the extensive description. I've applied this to 
-x86.git. Do you agree that this has no urgency for v2.6.24 and is thus 
-v2.6.25 material?
+Try to load both websites:
+http://cgit.freedesktop.org/
+http://gitweb.freedesktop.org/
 
-would you be interested in doing a follow-up patch as well that just 
-yanks all of the irq compression code? That would keep things nicely 
-bisectable and testable - the second, larger patch would be a NOP in 
-theory on most systems.
+For me, it's 6 seconds for gitweb and less than one with cgit.
+It's just more fun! :)
 
-	Ingo
+peter
