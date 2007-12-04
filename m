@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbXLDN4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbXLDN40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbXLDN4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 08:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXLDNyh
+	id S1754987AbXLDN40 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 08:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXLDNyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 08:54:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59515 "EHLO mx1.redhat.com"
+	Tue, 4 Dec 2007 08:54:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59539 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754458AbXLDNyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 08:54:36 -0500
+	id S1754565AbXLDNyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 08:54:47 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,44 +17,122 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 1/10] Wipe out traditional opt from x86_64 Makefile
-Date: Tue,  4 Dec 2007 09:09:55 -0200
-Message-Id: <11967666111489-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 6/10] introduce native_read_tscp
+Date: Tue,  4 Dec 2007 09:10:00 -0200
+Message-Id: <11967666351395-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11967666042130-git-send-email-gcosta@redhat.com>
-References: <11967666042130-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11967666303321-git-send-email-gcosta@redhat.com>
+References: <11967666042130-git-send-email-gcosta@redhat.com> <11967666111489-git-send-email-gcosta@redhat.com> <11967666161585-git-send-email-gcosta@redhat.com> <11967666212496-git-send-email-gcosta@redhat.com> <11967666263502-git-send-email-gcosta@redhat.com> <11967666303321-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Among other things, using -traditional as a gcc option stops us from
-using macro token pasting, which is a feature we heavily rely on.
-
-There was still a use of -traditional in arch/x86/kernel/Makefile_64,
-which this patch removes.
-
-I don't see any problems building kernels in my x86_64 box without
--traditional.
+Targetting paravirt, this patch introduces native_read_tscp, in
+place of rdtscp() macro. When in a paravirt guest, this will
+involve a function call, and thus, cannot be done in the vdso area.
+These users then have to call the native version directly
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 ---
- arch/x86/kernel/Makefile_64 |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/x86/kernel/vsyscall_64.c |    4 ++--
+ arch/x86/vdso/vgetcpu.c       |    4 ++--
+ include/asm-x86/msr.h         |   29 +++++++++++++++++++++--------
+ 3 files changed, 25 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
-index 5a88890..da0b1e5 100644
---- a/arch/x86/kernel/Makefile_64
-+++ b/arch/x86/kernel/Makefile_64
-@@ -4,7 +4,6 @@
+diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
+index ad4005c..1425d02 100644
+--- a/arch/x86/kernel/vsyscall_64.c
++++ b/arch/x86/kernel/vsyscall_64.c
+@@ -190,7 +190,7 @@ time_t __vsyscall(1) vtime(time_t *t)
+ long __vsyscall(2)
+ vgetcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
+ {
+-	unsigned int dummy, p;
++	unsigned int p;
+ 	unsigned long j = 0;
  
- extra-y 	:= head_64.o head64.o init_task.o vmlinux.lds
- CPPFLAGS_vmlinux.lds += -Ux86_64
--EXTRA_AFLAGS	:= -traditional
+ 	/* Fast cache - only recompute value once per jiffies and avoid
+@@ -205,7 +205,7 @@ vgetcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
+ 		p = tcache->blob[1];
+ 	} else if (__vgetcpu_mode == VGETCPU_RDTSCP) {
+ 		/* Load per CPU data from RDTSCP */
+-		rdtscp(dummy, dummy, p);
++		native_read_tscp(&p);
+ 	} else {
+ 		/* Load per CPU data from GDT */
+ 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
+diff --git a/arch/x86/vdso/vgetcpu.c b/arch/x86/vdso/vgetcpu.c
+index 3b1ae1a..c8097f1 100644
+--- a/arch/x86/vdso/vgetcpu.c
++++ b/arch/x86/vdso/vgetcpu.c
+@@ -15,11 +15,11 @@
  
- obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
- 		ptrace_64.o time_64.o ioport_64.o ldt_64.o setup_64.o i8259_64.o sys_x86_64.o \
+ long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
+ {
+-	unsigned int dummy, p;
++	unsigned int p;
+ 
+ 	if (*vdso_vgetcpu_mode == VGETCPU_RDTSCP) {
+ 		/* Load per CPU data from RDTSCP */
+-		rdtscp(dummy, dummy, p);
++		native_read_tscp(&p);
+ 	} else {
+ 		/* Load per CPU data from GDT */
+ 		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
+diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
+index 5fa30bd..0296358 100644
+--- a/include/asm-x86/msr.h
++++ b/include/asm-x86/msr.h
+@@ -3,6 +3,27 @@
+ 
+ #include <asm/msr-index.h>
+ 
++#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
++static inline unsigned long long native_read_tscp(int *aux)
++{
++	unsigned long low, high;
++	asm volatile (".byte 0x0f,0x01,0xf9"
++		      : "=a" (low), "=d" (high), "=c" (*aux));
++	return low | ((u64)high >> 32);
++}
++
++#define rdtscp(low, high, aux)						\
++       do {                                                            \
++               unsigned long long _val = native_read_tscp(&(aux));     \
++               (low) = (u32)_val;                                      \
++               (high) = (u32)(_val >> 32);                             \
++       } while (0)
++
++#define rdtscpll(val, aux) (val) = native_read_tscp(&(aux))
++#endif
++#endif
++
+ #ifdef __i386__
+ 
+ #ifdef __KERNEL__
+@@ -206,8 +227,6 @@ static inline int wrmsr_safe(u32 __msr, u32 __low, u32 __high)
+ #define rdtscl(low) \
+      __asm__ __volatile__ ("rdtsc" : "=a" (low) : : "edx")
+ 
+-#define rdtscp(low,high,aux) \
+-     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (low), "=d" (high), "=c" (aux))
+ 
+ #define rdtscll(val) do { \
+      unsigned int __a,__d; \
+@@ -215,12 +234,6 @@ static inline int wrmsr_safe(u32 __msr, u32 __low, u32 __high)
+      (val) = ((unsigned long)__a) | (((unsigned long)__d)<<32); \
+ } while(0)
+ 
+-#define rdtscpll(val, aux) do { \
+-     unsigned long __a, __d; \
+-     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (__a), "=d" (__d), "=c" (aux)); \
+-     (val) = (__d << 32) | __a; \
+-} while (0)
+-
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+ 
+ #define write_rdtscp_aux(val) wrmsr(0xc0000103, val, 0)
 -- 
 1.4.4.2
 
