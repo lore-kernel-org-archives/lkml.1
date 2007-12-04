@@ -1,90 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbXLDRqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbXLDRuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184AbXLDRqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 12:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXLDRpw
+	id S1752968AbXLDRuz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 12:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXLDRur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 12:45:52 -0500
-Received: from mail.gmx.net ([213.165.64.20]:41412 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751547AbXLDRpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 12:45:51 -0500
-X-Authenticated: #19452082
-X-Provags-ID: V01U2FsdGVkX1+OxQppUCSO3RyyIA2B2Qs/EBzwX9l2sWISS+zkrn
-	otelKN/AW5P/Xw
-Date: Tue, 4 Dec 2007 18:45:38 +0100
-From: Thomas Kuther <gimpel@sonnenkinder.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       Peter Zijlstra <peterz@infradead.org>, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 9291] pdflush stuck in D state with
- v2.6.24-rc1-192-gef49c32
-Message-ID: <20071204184538.6f5f0278@sirius>
-In-Reply-To: <20071204102802.GA14490@elte.hu>
-References: <20071031175318.GU25561@iucha.net>
-	<E1InUH6-0001vE-1Y@localhost>
-	<20071101122558.GX25561@iucha.net>
-	<E1InZht-0004lr-NN@localhost>
-	<20071101141414.GZ25561@iucha.net>
-	<E1InlPV-0001f1-SL@localhost>
-	<20071102021002.GF25561@iucha.net>
-	<E1Inw51-0001e8-PS@localhost>
-	<20071102133239.GI25561@iucha.net>
-	<loom.20071111T133858-314@post.gmane.org>
-	<20071204102802.GA14490@elte.hu>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Q3boc3DBC+epJXGiCmEj2ch";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
+	Tue, 4 Dec 2007 12:50:47 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:51028 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751239AbXLDRur (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 12:50:47 -0500
+Date: Tue, 4 Dec 2007 12:50:46 -0500
+To: Gilboa Davara <gilboad@gmail.com>
+Cc: LKML Linux Kernel <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@argo.co.il>
+Subject: Re: Kernel Development & Objective-C
+Message-ID: <20071204175046.GC2310@csclub.uwaterloo.ca>
+References: <474EAD18.6040408@stellatravel.co.uk> <20071130143445.GA2310@csclub.uwaterloo.ca> <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com> <4751BE0D.3050609@argo.co.il> <p733aukyl8n.fsf@bingen.suse.de> <47539030.10600@argo.co.il> <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Q3boc3DBC+epJXGiCmEj2ch
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Mon, Dec 03, 2007 at 02:35:31PM +0200, Gilboa Davara wrote:
+> Intel's newest dual 10GbE NIC can easily (?) throw ~14M packets per
+> second. (theoretical peak at 1514bytes/frame)
+> Granted, installing such a device on a single CPU/single core machine is
+> absurd - but even on an 8 core machine (2 x Xeon 53xx/54xx / AMD
+> Barcelona) it can still generate ~1M packets/s per core.
 
-On Di, 04.12.07 11:28 Ingo Molnar <mingo@elte.hu> wrote:
+10GbE can't do 14M packets per second if the packets are 1514 bytes.  At
+10M packets per second you have less than 1000 bits per packet, which is
+far from 1514bytes.
 
->=20
-> * Thomas <gimpel@sonnenkinder.org> wrote:
->=20
-> > I can confirm this issue too on any .24-rc. I'm also using reiserfs
-> > on a LVM.
-> >=20
-> > And there is one more user on Gentoo forums having the same issue.=20
-> > http://forums.gentoo.org/viewtopic-t-612959.html
-> >=20
-> > So you are not alone, florian.
->=20
-> any progress on this issue? Seems a bit stalled.
->=20
-> 	Ingo
+10Gbps gives you at most 1.25GBps, which at 1514 bytes per packet works
+out to 825627 packets per second.  You could reach ~14M packets per
+second with only the smallest packet size, which is rather unusual for
+high throughput traffic, since you waste almost all the bytes on
+overhead in that case.  But you do want to be able to handle at least a
+million or two packets per second to do 10GbE.
 
-For me the two patches
- * mm-speed-up-writeback-ramp-up-on-clean-systems.patch=20
- * reiserfs-writeback-fix.patch
-solved the issue.
-
-IIRC one was from this thread, the other from
-http://lkml.org/lkml/2007/10/23/93
-
-So since 2.6.24-rc2-git5 all is fine again. No problems since.
-
-Regards,
-Thomas
-
---Sig_/Q3boc3DBC+epJXGiCmEj2ch
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFHVZJLMQFfAqZTGfwRAk5NAJ9UNHed2C9ps6yVN9+G/UaSA3RQ8wCfawJr
-gvL1RCgny2srPfJgq6e/hNI=
-=U6kW
------END PGP SIGNATURE-----
-
---Sig_/Q3boc3DBC+epJXGiCmEj2ch--
+--
+Len Sorensen
