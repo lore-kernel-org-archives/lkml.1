@@ -1,61 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbXLDI12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565AbXLDIbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbXLDI12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXLDI1U
+	id S1751565AbXLDIbF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:31:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbXLDIaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:27:20 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:23225 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbXLDI1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:27:19 -0500
-Date: Tue, 4 Dec 2007 09:25:11 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Jan Glauber <jang@linux.vnet.ibm.com>,
-       linux-crypto <linux-crypto@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: HMAC broken on s390
-Message-ID: <20071204082511.GC23294@kernel.dk>
-References: <1196688700.4799.5.camel@localhost.localdomain> <20071203220900.GA8573@gondor.apana.org.au>
+	Tue, 4 Dec 2007 03:30:55 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:45403 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751499AbXLDIay (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:30:54 -0500
+Date: Tue, 4 Dec 2007 09:30:44 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Milton Miller <miltonm@bga.com>
+cc: Geoff Levand <geoffrey.levand@am.sony.com>,
+       Christoph Lameter <clameter@sgi.com>, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
+In-Reply-To: <b91f94dd5b35247fecf52090c0b3890f@bga.com>
+Message-ID: <Pine.LNX.4.62.0712040925470.16793@pademelon.sonytel.be>
+References: <47537F2E.2070204@am.sony.com> <b91f94dd5b35247fecf52090c0b3890f@bga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071203220900.GA8573@gondor.apana.org.au>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-674796541-1196757044=:16793"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04 2007, Herbert Xu wrote:
-> On Mon, Dec 03, 2007 at 02:31:40PM +0100, Jan Glauber wrote:
-> > Hi Herbert,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-674796541-1196757044=:16793
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 3 Dec 2007, Milton Miller wrote:
+> On Dec 2, 2007, at 9:59 PM, Geoff Levand wrote:
+> > I'm finding that recently kexec'ed kernels on PS3 will
+> > panic on startup.  It seems the trouble was introduced
+> > with the ppc64 SPARSEMEM_VMEMMAP support.  The problem
+> > is the same when starting either new or old kernels:
 > > 
-> > commit 788fefa33b0b50581585925c53c230a36af35d0e in cryptodev breaks hmac
-> > on s390 du to the usage of sg_chain():
-> > 
-> > static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
-> >                             struct scatterlist *sgl)
-> > {
-> > #ifndef ARCH_HAS_SG_CHAIN
-> >         BUG();
-> > #endif
-> > 
-> > ARCH_HAS_SG_CHAIN is false for s390 (and also for some other arch's).
-> > 
-> > What should we do with this?
+> > 2.6.24 -> 2.6.23 ok
+> > 2.6.24 -> 2.6.23 panic
+> > 2.6.24 -> 2.6.24 panic
 > 
-> Looks like we took a step backwards because the chaining I had
-> before worked on all architectures :)
+> I'm not sure I completely follow this.  What is the difference between 1 and 2
+> ?   Also, you are talking about starting with kexec, but I don't see how that
+
+I think the first line should be `2.6.23 -> 2.6.23' (i.e. a 2.6.23 kernel
+kexec's a 2.6.24(-rc) kernel).
+
+> fits in the failure you have below.  In other words, there may be more than
+> one failure.  But I can talk a bit about the scope of the problem in the
+> current traceback.
+
+The problem can be triggered in other ways, e.g. playing with the ps3fb=xxxM
+parameter, which specifies how much memory is reserved for ps3fb.
+With 2.6.23, I can boot with `ps3fb=48M'. Very early in 2.6.24-rc*, this
+changed.
+2.6.24 seems to be easier fragmented than 2.6.23.
+
+> > These are the commits that seem to introduce the problem:
+> > 
+> >   d29eff7bca60c9ee401d691d4562a4abca8de543 ppc64: SPARSEMEM_VMEMMAP suppor
+> >   8f6aac419bd590f535fb110875a51f7db2b62b5b Generic Virtual Memmap support
+> > for SPARSEMEM
+> > 
+> > 
+> > Below is a startup dump.  Any help in finding the problem
+> > would be appreciated.
+> > 
+> > -Geoff
+> > 
+> > 
+> > 
+> > ps3_mm_add_memory:317: start_addr 740320000000h, start_pfn 740320000h,
+> > nr_pages 17000h
+> > <4>swapper: page allocation failure. order:12, mode:0x80d0
+> > Call Trace:
+> > [c000000006047820] [c00000000000e700] .show_stack+0x68/0x1b0 (unreliable)
+> > [c0000000060478c0] [c000000000089eb4] .__alloc_pages+0x358/0x3ac
+> > [c0000000060479b0] [c0000000000a3964] .vmemmap_alloc_block+0x6c/0xf4
+> > [c000000006047a40] [c000000000026544] .vmemmap_populate+0x74/0x100
+> > [c000000006047ae0] [c0000000000a385c] .sparse_mem_map_populate+0x38/0x5c
+> > [c000000006047b70] [c0000000000a36e4] .sparse_add_one_section+0x64/0x128
+> > [c000000006047c20] [c0000000000aa74c] .__add_pages+0xac/0x18c
+> > [c000000006047cd0] [c000000000025fd4] .arch_add_memory+0x44/0x60
+> > [c000000006047d60] [c0000000000aa5b0] .add_memory+0xd4/0x124
+> > [c000000006047e00] [c000000000452544] .ps3_mm_add_memory+0x8c/0x108
+> > [c000000006047ea0] [c0000000004417c4] .kernel_init+0x1f4/0x3b8
+> > [c000000006047f90] [c000000000021d88] .kernel_thread+0x4c/0x68
+> > Mem-info:
+> > DMA per-cpu:
+> > CPU    0: Hot: hi:   42, btch:   7 usd:   0   Cold: hi:   14, btch:   3 usd:
+> > 0
+> > CPU    1: Hot: hi:   42, btch:   7 usd:   0   Cold: hi:   14, btch:   3 usd:
+> > 0
+> > Active:0 inactive:0 dirty:0 writeback:0 unstable:0
+> >  free:18094 slab:122 mapped:0 pagetables:0 bounce:0
+> > DMA free:72376kB min:0kB low:0kB high:0kB active:0kB inactive:0kB
+> > present:129280kB pages_scanned:0 all_unreclaimable? no
+> > lowmem_reserve[]: 0 0 0
+> > DMA: 8*4kB 5*8kB 5*16kB 7*32kB 3*64kB 5*128kB 4*256kB 3*512kB 5*1024kB
+> > 3*2048kB 4*4096kB 5*8192kB 0*16384kB = 72376kB
+> > Swap cache: add 0, delete 0, find 0/0, race 0+0
+> > Free swap  = 0kB
+> > Total swap = 0kB
+> > Free swap:            0kB
+> > 32768 pages of RAM
+> > 10403 reserved pages
+> > 0 pages shared
+> > 0 pages swap cached
 > 
-> I suppose either we'll have to do our own chaining again or implement
-> it for all architectures.  I'll look into this.
+> The kernel is using 16MB pages for the linear mapping and, since its in the
+> same region, the sparse virtural memmap.  PS3 uses hotplug for all most all of
+> its memory.   In this case, its trying to allocate an additional page to cover
+> a new region of the memory map.   However, the initial 128 MB is fragmented,
+> we have 8 8M chunks but no 16MB ones.
+> 
+> > <1>Unable to handle kernel paging request for data at address
+> > 0xcf0001960b000010
+> > <1>Faulting instruction address: 0xc000000000087340
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > SMP NR_CPUS=2 PS3
+> > Modules linked in:
+> > NIP: c000000000087340 LR: c00000000008733c CTR: 0000000000000000
+> > REGS: c000000006047900 TRAP: 0300   Not tainted
+> > (2.6.24-rc3-ps3-linux-dev-g91428d55-dirty)
+> > MSR: 8000000000008032 <EE,IR,DR>  CR: 22004444  XER: 00000000
+> > DAR: cf0001960b000010, DSISR: 0000000042000000
+> > TASK = c000000006041080[1] 'swapper' THREAD: c000000006044000 CPU: 1
+> > <6>GPR00: 0000000000000000 c000000006047b80 c00000000052b410
+> > c000000006001b40
+> > <6>GPR04: 0000000000000001 0000000000000003 0000000000000008
+> > 0000000000000000
+> > <6>GPR08: 0000000000000002 cf0001960b000008 c000000006051240
+> > 0000000000000003
+> > <6>GPR12: 0000000000000003 c000000000484080 00000000100d0000
+> > 0000000000bc5000
+> > <6>GPR16: 0000000007fff000 0000000000000001 00000000100a0000
+> > 00000000100d0000
+> > <6>GPR20: 0000000000000000 00000000100df628 00000000100df458
+> > 00000000100df678
+> > <6>GPR24: 0000000000740336 c000000000492c00 0000000000000000
+> > 0000000000000001
+> > <6>GPR28: 0000000740325000 0000000740324924 c0000000004ce9a8
+> > cf0001960affffe0
+> > NIP [c000000000087340] .memmap_init_zone+0xf0/0x134
+> > LR [c00000000008733c] .memmap_init_zone+0xec/0x134
+> > Call Trace:
+> > [c000000006047b80] [c0000000001da530] .add_memory_block+0xd8/0x108
+> > (unreliable)
+> > [c000000006047c20] [c0000000000aa7ac] .__add_pages+0x10c/0x18c
+> > [c000000006047cd0] [c000000000025fd4] .arch_add_memory+0x44/0x60
+> > [c000000006047d60] [c0000000000aa5b0] .add_memory+0xd4/0x124
+> > [c000000006047e00] [c000000000452544] .ps3_mm_add_memory+0x8c/0x108
+> > [c000000006047ea0] [c0000000004417c4] .kernel_init+0x1f4/0x3b8
+> > [c000000006047f90] [c000000000021d88] .kernel_thread+0x4c/0x68
+> > Instruction dump:
+> > 901f000c 38000400 7d20f8a8 7d290378 7d20f9ad 40a2fff4 7ba00521 7fe3fb78
+> > 38800002 41820008 4bffff0d 393f0028 <f9290008> f93f0028 3bbd0001 3bff0038
+> > <0>Kernel panic - not syncing: Attempted to kill init!
+> 
+> Instead of detecting the fail and aborting the add, we proceed to dereference
+> the memory map.
+> 
+> Chris, as you can see, PS3 needs to allocate 1/8th of total initial memory to
+> add any more memory.  Geoff, can you predict what linear address the
+> additional memory will occupy?  Judging from the attempted address toa add,
+> maybe not.   If not, my only thought is to pre-reserve an additional page and
+> consume it on the first add.   Additional adds will likely draw from the first
+> added region, pinning.
 
-You should continue to do your own chaining if it's a requirement for
-the driver/layer to function, until we get rid of ARCH_HAS_SG_CHAIN.
-That'll happen when all archs are converted.
+To me it sounds a bit strange that hotplug memory relies on having huge
+contiguous blocks of memory available. If this isn't done very early in the
+boot process, changes are high it will fail.
 
-So don't rely on scatterlist helping you with chaining just yet, sorry.
+Would it be possible to allocate the memory from the newly added block, which
+is guaranteed to be unfragmented?
 
--- 
-Jens Axboe
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-674796541-1196757044=:16793--
