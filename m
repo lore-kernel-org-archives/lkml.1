@@ -1,116 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbXLDBMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbXLDBPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751745AbXLDBMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 20:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXLDBMW
+	id S1751937AbXLDBPS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 20:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXLDBPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 20:12:22 -0500
-Received: from mail46.e.nsc.no ([193.213.115.46]:46910 "EHLO mail46.e.nsc.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbXLDBMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 20:12:22 -0500
-X-Greylist: delayed 2467 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Dec 2007 20:12:21 EST
-From: Lars Hjemli <hjemli@gmail.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: linux-kernel@vger.kernel.org, Lars Hjemli <hjemli@gmail.com>
-Subject: cgit for kernel.org
-Date: Tue,  4 Dec 2007 01:30:22 +0100
-Message-Id: <1196728222-17300-1-git-send-email-hjemli@gmail.com>
-X-Mailer: git-send-email 1.5.3.6.961.gecf4
-In-Reply-To: <9wlfz-4hf-9@gated-at.bofh.it>
-References: <9wlfz-4hf-9@gated-at.bofh.it>
+	Mon, 3 Dec 2007 20:15:06 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:32927 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbXLDBPE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 20:15:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=fkt1khmn3Y4LHqHlKKDS1G9aPW1G+x4KWkNf97syo1oy2gsiJt3WWy7imofzkJ4v/D4rcb726YVy6rHayWEaNBgXJtBObDLrOVf17yS8Lkf212RhDvQ6PHxS7ASZdwUsvRjXBoCqNxbXl56oCqjB4xkKcAxaoXU6geQr51CnSbA=
+Date: Tue, 4 Dec 2007 09:15:40 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, yakui.zhao@intel.com,
+       Chris Holvenstot <cholvenstot@comcast.net>,
+       linux-kernel@vger.kernel.org, bjorn.helgaas@hp.com, trenn@suse.de,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: pnpacpi : exceeded the max number of IO resources
+Message-ID: <20071204011540.GA2713@darkstar.lan>
+References: <1196428488.7066.6.camel@localhost> <47508D3C.9050507@keyaccess.nl> <475436A3.90906@keyaccess.nl> <1196729713.13969.1.camel@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196729713.13969.1.camel@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Repository overview.
-> 	CGIT: http://cgit.freedesktop.org/
-> 	GITWEB: http://git.kernel.org/
+On Tue, Dec 04, 2007 at 08:55:13AM +0800, Shaohua Li wrote:
+> 
+> On Mon, 2007-12-03 at 18:02 +0100, Rene Herman wrote:
+> > On 30-11-07 23:22, Rene Herman wrote:
+> > 
+> > > On 30-11-07 14:14, Chris Holvenstot wrote:
+> > > 
+> > >> For what it is worth I too have seen this problem this morning and it
+> > >> DOES appear to be new (in contrast to a previous comment)
+> > >>
+> > >> The message:  pnpacpi: exceeded the max number of mem resources: 12
+> > >>
+> > >> is displayed each time the system is booted with the 2.6.24-rc3-git5
+> > >> kernel but is NOT displayed when booting 2.6.24-rc3-git4
+> > >>
+> > >> I have made no changes in my config file between these two kernels other
+> > >> than to accept any new defaults when running make oldconfig.
+> > >>
+> > >> If you had already narrowed it down to a change between git4 and git5 I
+> > >> apologize for wasting your time.  Have to run to work now.
+> > > 
+> > > Thanks, and re-added the proper CCs. Sigh...
+> > > 
+> > > Well, yes, the warning is actually new as well. Previously your kernel 
+> > > just silently ignored 8 more mem resources than it does now it seems.
+> > > 
+> > > Given that people are hitting these limits, it might make sense to just 
+> > > do away with the warning for 2.6.24 again while waiting for the dynamic 
+> > > code?
+> > 
+> > Ping. Should these warnings be reverted for 2.6.24?
+> Revert the warning doesn't make any sense. I'd suggest changing the IO
+> resources number bigger till Thomas's patch in.
+Agree.
+Change it to 90 works for me, But I think maybe 128 is better.
 
-Why not compare more equal pages? freedesktop.org also runs gitweb:
-  http://gitweb.freedesktop.org
+include/linux/pnp.h |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
 
->
-> 	Remarks:
-> 	cgit is lacking the links "shortlog", "log", "tree" and "git"
-> 	which gitweb prints for each repository line.
-
-Adding "enable-index-links=1" to /etc/cgitrc will print links to "summary",
-"log" and "tree" for each repository line, but you still have to open the
-summary page to get the git (clone) link. It wouldn't be very hard to add
-another link (see http://hjemli.net/git/cgit/tree/ui-repolist.c#n96), but I'm
-not sure what actual value such a link would provide.
-
->
-> Inside a repository.
-> 	CGIT: http://cgit.freedesktop.org/hal/
-
-The similar page in gitweb:
-  http://gitweb.freedesktop.org/?p=hal.git;a=summary
-
-> 	GITWEB:
->http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=summary
-
-The similar page in cgit:
-  http://hjemli.net/git/linux/
-
-> 	Remarks:
-> 	In cgit, the left gray panel went by quite unnoticed
-
-IMHO the sidebar makes cgit way easier to navigate (especially the dropdown box
-to switch between branches is pretty handy).
-
->
-> Clicking on a commit.
-> 	CGIT:
->http://cgit.freedesktop.org/hal/commit/?id=b8f72cec53415ebc2d32805b049dcc94cef4a854
-
-Similar page in gitweb:
-http://gitweb.freedesktop.org/?p=hal.git;a=commit;h=b8f72cec53415ebc2d32805b049dcc94cef4a854
-
-
-> 	GITWEB:
->http://git.kernel.org/?p=linux/kernel/git/jgarzik/misc-2.6.git;a=commit;h=8c27eba54970c6ebbb408186e5baa2274435e869
-
-Similar page in cgit:
-http://hjemli.net/git/linux/commit/?id=8c27eba54970c6ebbb408186e5baa2274435e869
-
-
->
-> 	Remarks:
-> 	cgit comes with a diffstat. Not that I look at diffstats all that
-> 	often anyway. Still need to click on "(diff)" go get a diff.
-
-There's always the link in the sidebar ;-)
-
-But seriously, showing the diff on the same page as the commit message would
-sometimes be nice and sometimes it would be a bit too much:
-http://hjemli.net/git/linux/commit/?id=b5faa4b89e4d83203b1f44f143a351b518f7cda2
-http://git.kernel.org/?p=linux/kernel/git/jgarzik/misc-2.6.git;a=commit;h=b5faa4b89e4d83203b1f44f143a351b518f7cda2
-
-
->
-> 	Filenames are displayed with monospace font in gitweb :)
-> 	Clicking on the commit actually shows its diff in gitweb.
-
-I belive cgit and gitweb displays roughly the same information on their commit
-pages; I don't see a diff in gitweb either unless I click one of the diff-
-links.
-
-
->
-> Final remark:
-> 	gitweb has the warmer colors.
-
-Yes, gitweb definitly looks more polished. It's a bit slow, though...
-
-Another remark - IMHO there are some practical benefits to be had from the
-virtual url support in cgit, e.g. linking to blobs:
-
-http://gitweb.freedesktop.org/?p=xorg/xserver.git;a=blob;h=ace11817054bfb5bcc8d55a31bd51b9dea49bbed;hb=fe25f897c62bb324660217e15dbd3091c808dbba;f=GL/mesa/X/Makefile.am
-
-http://cgit.freedesktop.org/xorg/xserver/tree/GL/mesa/X/Makefile.am
-
---
-larsh
+diff -upr linux/include/linux/pnp.h linux.new/include/linux/pnp.h
+--- linux/include/linux/pnp.h	2007-12-04 09:09:23.000000000 +0800
++++ linux.new/include/linux/pnp.h	2007-12-04 09:09:40.000000000 +0800
+@@ -13,7 +13,7 @@
+ #include <linux/errno.h>
+ #include <linux/mod_devicetable.h>
+ 
+-#define PNP_MAX_PORT		24
++#define PNP_MAX_PORT		128
+ #define PNP_MAX_MEM		12
+ #define PNP_MAX_IRQ		2
+ #define PNP_MAX_DMA		2
