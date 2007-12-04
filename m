@@ -1,111 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbXLDFEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbXLDFIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751865AbXLDFEo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 00:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbXLDFEg
+	id S1752011AbXLDFIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 00:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXLDFIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 00:04:36 -0500
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:47077 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750831AbXLDFEf (ORCPT
+	Tue, 4 Dec 2007 00:08:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48811 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750798AbXLDFIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 00:04:35 -0500
-X-YMail-OSG: y4FhiwUVM1mmXNDkjUQNhyYfYUdiFGrV3rE8pLL8cRGQzLLJ
-X-RocketYMMF: rancidfat
-Date: Mon, 3 Dec 2007 21:04:34 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] (2.6.24-rc3-mm2) -mm Smack mutex cleanup
-To: Jiri Slaby <jirislaby@gmail.com>, casey@schaufler-ca.com
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <47548F40.8090309@gmail.com>
+	Tue, 4 Dec 2007 00:08:14 -0500
+Date: Mon, 3 Dec 2007 21:08:12 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.24-rc4
+Message-ID: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <267816.97172.qm@web36601.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Jiri Slaby <jirislaby@gmail.com> wrote:
+We should have one week between -rc releases, but I was gone for a week 
+over thanksgiving (as were some other kernel developers), so this one is a 
+bit late. It's been almost the rule rather than the exception, but I 
+promise I'll be better...
 
-> On 12/03/2007 07:39 PM, Casey Schaufler wrote:
-> > From: Casey Schaufler <casey@schaufler-ca.com>
-> > 
-> > Clean out unnecessary mutex initializations for Smack list locks.
-> > Once this is done, there is no need for them to be shared among
-> > multiple files, so pull them out of the header file and put them
-> > in the files where they belong.
-> 
-> Then it might be static.
+Anyway, there aren't a lot of exciting changes here, but there's still a 
+_lot_ more churn than I really hoped for at the -rc4 stage. Blackfin, MIPS 
+and Power do stand out in the diffstats, but ARM and x86 got some updates 
+too.
 
-Doh. Right you are.
- 
-> > Pull unnecessary locking from smack_inode_setsecurity, it used
-> > to be required when the assignment was not guaranteed to be a
-> > scalar value but isn't now.
-> > 
-> > Change uses of __capable(current,...) to capable(...).
-> > Take out an inappropriate cast. Use container_of() instead
-> > of doing the same calculation by hand.
-> > Fix comment spelling errors.
-> 
-> Too many different changes according to the name of the patch.
+And we had some ACPI churn (processor throttling etc), along with various 
+driver updates: ATA, IDE, infiniband, SCSI, USB and network drivers.. And 
+on the filesystem side, cifs, NFS, ocfs2 and proc. Ugh. Too much.
 
-OK, that's fair.
- 
-> > Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-> > 
-> > ---
-> > 
-> > Tested with stamp-2007-11-30-16-39
-> > 
-> >  security/smack/smack.h        |    3 --
-> >  security/smack/smack_access.c |    3 ++
-> >  security/smack/smack_lsm.c    |   34 +++++++++-----------------------
-> >  security/smack/smackfs.c      |    6 +++++
-> >  4 files changed, 19 insertions(+), 27 deletions(-)
-> > 
-> > diff -uprN -X linux-2.6.24-rc3-mm2-base/Documentation/dontdiff
-> linux-2.6.24-rc3-mm2-base/security/smack/smack_lsm.c
-> linux-2.6.24-rc3-mm2-smack/security/smack/smack_lsm.c
-> > --- linux-2.6.24-rc3-mm2-base/security/smack/smack_lsm.c	2007-11-27
-> 16:47:05.000000000 -0800
-> > +++ linux-2.6.24-rc3-mm2-smack/security/smack/smack_lsm.c	2007-11-28
-> 11:46:13.000000000 -0800
-> [...]
-> > @@ -748,9 +746,7 @@ static int smack_inode_setsecurity(struc
-> >  		return -EINVAL;
-> >  
-> >  	if (strcmp(name, XATTR_SMACK_SUFFIX) == 0) {
-> > -		mutex_lock(&nsp->smk_lock);
-> >  		nsp->smk_inode = sp;
-> > -		mutex_unlock(&nsp->smk_lock);
-> >  		return 0;
-> >  	}
-> >  	/*
-> 
-> Ok, it still might be atomic as a variable change, but it will break
-> scenarios
-> such as
-> 
-> mutex_lock(&nsp->smk_lock);
-> create(nsp->smk_inode);
-> cook_a_dinner();
-> get_info(nsp->smk_inode);
-> mutex_unlock(&nsp->smk_lock);
-> 
-> While cook_a_dinner(), smack_inode_setsecurity() is called and the attribute
-> changed...
-> 
-> Doesn't this matter?
+In fact, the diff from -rc3 is almost 36,000 lines, and that's the smaller 
+git one with the renames shown as renames (not the ones I upload as 
+patches to kernel.org - those are done so that people with GNU patch and 
+other legacy patch programs can use the diffs). I'll blame the two-week 
+window for some of it, but even so, this is a bit disheartening. I'm 
+really hoping that we're slowing down and -rc5 won't be anywhere near that 
+large.
 
-The only place dinner can get cooked is during d_instantiate, and
-you can't call inode_security until after that's finished. No,
-it doesn't matter.
+That said, none of the changes are really _exciting_ or really scary. And 
+we should have fixed a number of regressions, although more certainly 
+remain.
 
-
-Casey Schaufler
-casey@schaufler-ca.com
+				Linus
