@@ -1,97 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbXLDS6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbXLDTBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbXLDS6Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 13:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXLDS55
+	id S1753161AbXLDTBB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbXLDTAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 13:57:57 -0500
-Received: from ns2.lanforge.com ([66.165.47.211]:38702 "EHLO ns2.lanforge.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752697AbXLDS5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 13:57:55 -0500
-Message-ID: <4755A2FD.9020608@candelatech.com>
-Date: Tue, 04 Dec 2007 10:57:01 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Tue, 4 Dec 2007 14:00:54 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:52317 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbXLDTAx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 14:00:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=FMCFqNwqneQgVhSrjdp1uiynrf/b7Sfn3cb/QvI/RuPrlTLMQnrYikX9y0d1z8YpOYtyEAUO5slfXBgYkcRJSBIwsDLpGjXWXSD3FsIPJ10IdbUqDPPtur0udczC3f+EUZQsaFa+rq8gs9qu8Qr7x7k6VBlC6S6v/YfB5fNl4w8=
+Message-ID: <4755A457.5080405@gmail.com>
+Date: Tue, 04 Dec 2007 20:02:47 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, containers@lists.osdl.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca>	<20071201202354.672aed18@freepuppy.rosehill>	<47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>	<m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com>	<47544896.7070101@candelatech.com> <m18x4axrx2.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m18x4axrx2.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Need lockdep help
+References: <Pine.LNX.4.44L0.0712041000540.4321-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0712041000540.4321-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Ben Greear <greearb@candelatech.com> writes:
->
->   
->>> Regardless of infringement it is incompatible with a complete network
->>> namespace implementation.  Further it sounds like the module you are
->>> describing defines a kernel ABI without being merged and hopes that
->>> ABI will still be supportable in the future.  Honestly I think doing so
->>> is horrible code maintenance policy.
->>>
->>>       
->> I don't mind if the ABI changes, so long as I can still use something similar.
->>     
->
-> It has occurred to me that I am seeing an implication here that may in fact not
-> exist.
->
-> My impression of dev_get_by_xxxx is that the function is only able to be used
-> sanely when being part of the definition of a kernel/userspace interface.  With
-> the further assumption on my part that you need to define a new instance of
-> dev_get_by_xxxx 
->
-> It has just occurred to me that it is possible to reuse the SIOCBRADDIF
-> and SIOCBRDELIF for that same purpose without defining a new kernel/userspace
-> interface.
->
-> What and how are you using dev_get_by_xxx?
->   
-I have a module that has a collection of 2-port bridges.  These bridges 
-are used for emulation
-purposes (somewhat similar to netem's feature set).  Each bridge is 
-logically independent
-of the others.   To set up a bridge, I do something like:
+Alan Stern wrote, On 12/04/2007 04:17 PM:
+...
 
-echo add_my_bridge my_br1 eth0 eth1 > /proc/net/foo/config
-
-Inside the module, it reads "eth0" and "eth1" and needs to find those
-devices (ie, dev_get_by_name).  It then registers to receive all pkts from
-eth1 and transmit them on eth0, and vice versa.
-
-If it would not require GPL symbols, I have no problem changing my API 
-to be something
-like:
-
-echo add_my_bridge my_br1 eth0 namespaceX eth1 namespaceY > 
-/proc/net/foo/config
-
-I am using procfs so that I don't have to define any new 'official'
-kernel ABI, as that would more likely be a derivative work, and is a pain
-to keep up to date with changing kernels anyway...
-
-Personally, it seems useful for my module to be able to have eth0 in one 
-namespace
-and eth1 in another, but I won't complain if they both have to be in the 
-same namespace
-or even just in the default namespace due to GPL symbol issues.
-
-Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
+> Furthermore, in this case deadlock isn't really impossible -- it could 
+> occur if there were a bug somewhere else in the kernel.  So lockdep was 
+> correct to warn that deadlock might occur.
 
 
+Alan, if the scenario was like you described at the beginning, there was
+no deadlock possible, unless some errors in the notifier. These #1-#3
+threads were only helpful to guess what lockdep could 'think', but I
+guess notifier doesn't use 2 rivaling threads for a wake, so, lockdep
+probably needed additional information. And you really can't consider
+any hypothetical kernel bugs here because then each lock is vulnerable.
+
+Regards,
+Jarek P.
