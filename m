@@ -1,99 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbXLDMj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXLDMmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbXLDMj5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 07:39:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbXLDMju
+	id S1753840AbXLDMmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 07:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXLDMmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 07:39:50 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:49362 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752944AbXLDMjt (ORCPT
+	Tue, 4 Dec 2007 07:42:07 -0500
+Received: from ns1.primeinteractive.net ([195.95.205.253]:52971 "EHLO
+	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbXLDMmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 07:39:49 -0500
-Date: Tue, 4 Dec 2007 13:39:47 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
- resources
-In-Reply-To: <20071204060911.EA82BDDE19@ozlabs.org>
-Message-ID: <Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
-References: <20071204060911.EA82BDDE19@ozlabs.org>
+	Tue, 4 Dec 2007 07:42:06 -0500
+X-Greylist: delayed 635 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 07:42:05 EST
+X-Quarantine-ID: <xKLfsp7T-2rf>
+From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+Organization: Prime Interactive Ltd.
+To: linux-kernel@vger.kernel.org
+Subject: ICH9 & Core2 Duo - kernel crash
+Date: Tue, 4 Dec 2007 13:31:24 +0100
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1571979154-1196771987=:12181"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712041331.24678.pavol.cvengros@primeinteractive.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello,
 
----584337861-1571979154-1196771987=:12181
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+I am trying LKML to get some help on one linux kernel related problem.
+Lately we got a machine with new HW from Intel. CPU is Intel Core2 Duo E6850 
+3GHz with 2GB of RAM. Motherboard is Intel DG33BU with G33 chipset.
 
-On Tue, 4 Dec 2007, Benjamin Herrenschmidt wrote:
-> The current pci_assign_unassigned_resources() code doesn't work properly
-> on 32 bits platforms with 64 bits resources. The main reason is the use
-> of unsigned long in various places instead of resource_size_t.
-> 
-> This fixes it, along with some tricks to avoid casting to 64 bits on
-> platforms that don't need it in every printk around.
-> 
-> This is a pre-requisite for making powerpc use the generic code instead of
-> its own half-useful implementation.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
->  drivers/pci/pci.h       |   11 +++++++++++
->  drivers/pci/setup-bus.c |   32 +++++++++++++++++---------------
->  drivers/pci/setup-res.c |    5 ++---
->  include/linux/pci.h     |    4 ++--
->  4 files changed, 32 insertions(+), 20 deletions(-)
-> 
-> Index: linux-work/drivers/pci/pci.h
-> ===================================================================
-> --- linux-work.orig/drivers/pci/pci.h	2007-12-04 17:00:43.000000000 +1100
-> +++ linux-work/drivers/pci/pci.h	2007-12-04 17:02:11.000000000 +1100
-> @@ -91,3 +91,14 @@ pci_match_one_device(const struct pci_de
->  }
->  
->  struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
-> +
-> +#ifdef CONFIG_RESOURCES_64BIT
-> +#define RESOURCE_ORDER(order)	(1ULL << (order))
-> +#define RES_PR			"%016llx"
-> +#else
-> +#define RESOURCE_ORDER(order)	(1UL << (order))
-> +#define RES_PR			"%08lx"
-> +#endif
-> +
-> +#define RANGE_PR		RES_PR "-" RES_PR
+After long fight with kernel crashes on different things, we figured out that 
+if the multicore is disabled in bios, everything is ok and machine is running 
+good. No kernel crashes no problems, but with one core only.
 
-Can we please have them in <linux/ioport.h>? They look very useful to me
-elsewhere (other bus drivers, device drivers), too.
+This small table will maybe explain:
 
-What about naming the printf format specifier macros more like in C99, e.g.
-PRI*?
+Cores   -     kernel   -   state
+   2  -   nonsmp or smp  - crash
+   1  -  smp or nonsmp  - ok
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+All crashes have been different (swaper, rcu, irq, init.....) or we just got 
+internal gcc compiler error while compiling kernel/glibc/.... and the machine 
+was frozen.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1571979154-1196771987=:12181--
+Please can somebody advise what to do to identify that problem more precisely.
+(debug kernel options?)
+
+Our immpresion - ICH9 & ICH9R support in kernel is bad... sorry to say..
+
+lspci:
+00:00.0 Host bridge: Intel Corporation DRAM Controller (rev 02)
+00:02.0 VGA compatible controller: Intel Corporation Integrated Graphics 
+Controller (rev 02)
+00:03.0 Communication controller: Intel Corporation MEI Controller (rev 02)
+00:1a.0 USB Controller: Intel Corporation USB UHCI Controller #4 (rev 02)
+00:1a.1 USB Controller: Intel Corporation USB UHCI Controller #5 (rev 02)
+00:1a.2 USB Controller: Intel Corporation USB UHCI Controller #6 (rev 02)
+00:1a.7 USB Controller: Intel Corporation USB2 EHCI Controller #2 (rev 02)
+00:1c.0 PCI bridge: Intel Corporation PCI Express Port 1 (rev 02)
+00:1c.1 PCI bridge: Intel Corporation PCI Express Port 2 (rev 02)
+00:1c.2 PCI bridge: Intel Corporation PCI Express Port 3 (rev 02)
+00:1c.3 PCI bridge: Intel Corporation PCI Express Port 4 (rev 02)
+00:1c.4 PCI bridge: Intel Corporation PCI Express Port 5 (rev 02)
+00:1d.0 USB Controller: Intel Corporation USB UHCI Controller #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation USB UHCI Controller #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation USB UHCI Controller #3 (rev 02)
+00:1d.7 USB Controller: Intel Corporation USB2 EHCI Controller #1 (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 92)
+00:1f.0 ISA bridge: Intel Corporation LPC Interface Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 4 port SATA IDE Controller (rev 02)
+00:1f.3 SMBus: Intel Corporation SMBus Controller (rev 02)
+00:1f.5 IDE interface: Intel Corporation 2 port SATA IDE Controller (rev 02)
+02:00.0 IDE interface: Marvell Technology Group Ltd. 88SE6101 single-port 
+PATA133 interface (rev b1)
+06:01.0 Ethernet controller: Realtek Semiconductor Co., Ltd. 
+RTL-8139/8139C/8139C+ (rev 10)
+
+Thanks for any kind of help...
+
+Best regards,
+
+Pavol Cvengros
+
+-- 
+-----------[ Signature ]---------
+Name: Pavol Cvengros
+Company: Prime Interactive, Ltd.
+E-mail: pavol.cvengros@primeinteractive.net
+Web: http://www.primeinteractive.net
+Personal web: http://orpheus.grass.sk
