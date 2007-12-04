@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXLCXqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbXLCXrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587AbXLCXqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 18:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXLCXqM
+	id S1752477AbXLCXrT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 18:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbXLCXrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 18:46:12 -0500
-Received: from mail.transmode.se ([83.241.175.147]:31073 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751355AbXLCXqL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 18:46:11 -0500
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Mark Fasheh'" <mark.fasheh@oracle.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <056a01c835e9$5b7203f0$5267a8c0@Jocke> <20071203213406.GJ28607@ca-server1.us.oracle.com>
-Subject: RE: what happened to RELATIME?
-Date: Tue, 4 Dec 2007 00:46:04 +0100
-Message-ID: <057e01c83606$aadc09f0$5267a8c0@Jocke>
+	Mon, 3 Dec 2007 18:47:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43926 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751008AbXLCXrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 18:47:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Freezer: Fix JFFS2 garbage collector freezing issue (was: Re: JFFS2 garbage collection threads not freezing?)
+Date: Tue, 4 Dec 2007 01:05:32 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Pete MacKay" <armlinux@architechnical.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+References: <36289.69.30.123.186.1196443476.squirrel@architechnical.net> <200712012114.10881.rjw@sisk.pl>
+In-Reply-To: <200712012114.10881.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-In-Reply-To: <20071203213406.GJ28607@ca-server1.us.oracle.com>
-thread-index: Acg19HRT9z25kxgCTIOYA69wGjgc4QAEbV1g
-X-OriginalArrivalTime: 03 Dec 2007 23:46:07.0894 (UTC) FILETIME=[ACEC7360:01C83606]
+Content-Disposition: inline
+Message-Id: <200712040105.32771.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Mark Fasheh [mailto:mark.fasheh@oracle.com] 
-> Sent: den 3 december 2007 22:34
-> To: Joakim Tjernlund
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: what happened to RELATIME?
+On Saturday, 1 of December 2007, Rafael J. Wysocki wrote:
+> On Friday, 30 of November 2007, Pete MacKay wrote:
+[--snip--]
+> ---
+> Subject: Freezer: Fix JFFS2 garbage collector freezing issue
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> On Mon, Dec 03, 2007 at 09:16:15PM +0100, Joakim Tjernlund wrote:
-> > Looking in 2.6.23 sources it seems like only ocfs2 has added
-> > support for RELATIME. Was RELATIME a bad idea or is there
-> > some other reason other filesystems hasn't added support?
+> Fix breakage caused by commit d5d8c5976d6adeddb8208c240460411e2198b393
+> "freezer: do not send signals to kernel threads" in
+> jffs2_garbage_collect_thread() that assumed it would be sent signals
+> by the freezer.
 > 
-> Ocfs2 just needs a bit of explicit support - as far as I 
-> recall, other file
-> systems should have gotten it automagically via the generic 
-> vfs changes.
-> 	--Mark
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pete MacKay <armlinux@architechnical.net>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  fs/jffs2/background.c |    8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/fs/jffs2/background.c
+> ===================================================================
+> --- linux-2.6.orig/fs/jffs2/background.c
+> +++ linux-2.6/fs/jffs2/background.c
+> @@ -103,15 +103,17 @@ static int jffs2_garbage_collect_thread(
+>  		   get there first. */
+>  		yield();
+>  
+> +		/* If system suspend is in progress, go to the refrigerator and
+> +		   start again when the suspend is done */
+> +		if (try_to_freeze())
+> +			goto again;
+> +
 
-Ahh, that explains it. Can anyone confirm that all in
-FS:es honours relatime?
+This still has the problem that, if the freeze request comes exactly here, the
+loop below will not allow us to freeze.
 
-Thanks, Jocke
+>  		/* Put_super will send a SIGKILL and then wait on the sem.
+>  		 */
+>  		while (signal_pending(current)) {
+>  			siginfo_t info;
+>  			unsigned long signr;
+>  
+> -			if (try_to_freeze())
+> -				goto again;
+> -
+>  			signr = dequeue_signal_lock(current, &current->blocked, &info);
+>  
+>  			switch(signr) {
+> --
 
+I'll send another patch for this in a while.
+
+Greetings,
+Rafael
