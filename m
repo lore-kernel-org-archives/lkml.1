@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbXLDS6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbXLDS6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbXLDS6F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 13:58:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXLDS5w
+	id S1754821AbXLDS6Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 13:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXLDS55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 13:57:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48410 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbXLDS5v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 13:57:51 -0500
-Date: Tue, 4 Dec 2007 18:57:44 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>, David Smith <dsmith@redhat.com>
-Subject: Re: [patch 2/2] Linux Kernel Markers - Create modpost file
-Message-ID: <20071204185744.GB21568@infradead.org>
-References: <20071204181845.895090222@polymtl.ca> <20071204182403.319351701@polymtl.ca>
+	Tue, 4 Dec 2007 13:57:57 -0500
+Received: from ns2.lanforge.com ([66.165.47.211]:38702 "EHLO ns2.lanforge.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697AbXLDS5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 13:57:55 -0500
+Message-ID: <4755A2FD.9020608@candelatech.com>
+Date: Tue, 04 Dec 2007 10:57:01 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071204182403.319351701@polymtl.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Mark Lord <lkml@rtr.ca>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, containers@lists.osdl.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca>	<20071201202354.672aed18@freepuppy.rosehill>	<47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>	<m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com>	<47544896.7070101@candelatech.com> <m18x4axrx2.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m18x4axrx2.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 01:18:47PM -0500, Mathieu Desnoyers wrote:
-> This adds some new magic in the MODPOST phase for CONFIG_MARKERS.
-> Analogous to the Module.symvers file, the build will now write a
-> Module.markers file when CONFIG_MARKERS=y is set.  This file lists
-> the name, defining module, and format string of each marker,
-> separated by \t characters.  This simple text file can be used by
-> offline build procedures for instrumentation code, analogous to
-> how System.map and Module.symvers can be useful to have for
-> kernels other than the one you are running right now.
-> 
-> The strings are made easy to extract by having the __trace_mark macro
-> define the name and format together in a single array called __mstrtab_*
-> in the __markers_strings section.  This is straightforward and reliable
-> as long as the marker structs are always defined by this macro.  It is
-> an unreasonable amount of hairy work to extract the string pointers from
-> the __markers section structs, which entails handling a relocation type
-> for every machine under the sun.
+Eric W. Biederman wrote:
+> Ben Greear <greearb@candelatech.com> writes:
+>
+>   
+>>> Regardless of infringement it is incompatible with a complete network
+>>> namespace implementation.  Further it sounds like the module you are
+>>> describing defines a kernel ABI without being merged and hopes that
+>>> ABI will still be supportable in the future.  Honestly I think doing so
+>>> is horrible code maintenance policy.
+>>>
+>>>       
+>> I don't mind if the ABI changes, so long as I can still use something similar.
+>>     
+>
+> It has occurred to me that I am seeing an implication here that may in fact not
+> exist.
+>
+> My impression of dev_get_by_xxxx is that the function is only able to be used
+> sanely when being part of the definition of a kernel/userspace interface.  With
+> the further assumption on my part that you need to define a new instance of
+> dev_get_by_xxxx 
+>
+> It has just occurred to me that it is possible to reuse the SIOCBRADDIF
+> and SIOCBRDELIF for that same purpose without defining a new kernel/userspace
+> interface.
+>
+> What and how are you using dev_get_by_xxx?
+>   
+I have a module that has a collection of 2-port bridges.  These bridges 
+are used for emulation
+purposes (somewhat similar to netem's feature set).  Each bridge is 
+logically independent
+of the others.   To set up a bridge, I do something like:
 
-Generating something like this might make sense.  But until you actually
-add ome example code, e.g. to generate a tracing module for each probe
-marker in a given module I don't see any point in adding this.
+echo add_my_bridge my_br1 eth0 eth1 > /proc/net/foo/config
+
+Inside the module, it reads "eth0" and "eth1" and needs to find those
+devices (ie, dev_get_by_name).  It then registers to receive all pkts from
+eth1 and transmit them on eth0, and vice versa.
+
+If it would not require GPL symbols, I have no problem changing my API 
+to be something
+like:
+
+echo add_my_bridge my_br1 eth0 namespaceX eth1 namespaceY > 
+/proc/net/foo/config
+
+I am using procfs so that I don't have to define any new 'official'
+kernel ABI, as that would more likely be a derivative work, and is a pain
+to keep up to date with changing kernels anyway...
+
+Personally, it seems useful for my module to be able to have eth0 in one 
+namespace
+and eth1 in another, but I won't complain if they both have to be in the 
+same namespace
+or even just in the default namespace due to GPL symbol issues.
+
+Thanks,
+Ben
+
+-- 
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
 
