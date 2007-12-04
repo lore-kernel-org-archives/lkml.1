@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbXLDLXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbXLDL1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbXLDLXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 06:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbXLDLXa
+	id S1753269AbXLDL1U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 06:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbXLDL1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 06:23:30 -0500
-Received: from ns2.suse.de ([195.135.220.15]:33516 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbXLDLX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 06:23:29 -0500
-Date: Tue, 4 Dec 2007 12:23:28 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Tue, 4 Dec 2007 06:27:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54496 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752068AbXLDL1K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 06:27:10 -0500
+Date: Tue, 4 Dec 2007 03:26:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, rob@landley.net,
+       "Eric W. Biederman" <ebiederm@xmission.com>, rob@landley.net,
        Jens Axboe <axboe@kernel.dk>
-Subject: [patch] ext2: xip check fix
-Message-ID: <20071204112327.GB20420@wotan.suse.de>
-References: <20071204042628.GA26636@wotan.suse.de> <200712041054.51599.borntraeger@de.ibm.com> <20071204101009.GB9618@wotan.suse.de> <20071204112100.GA20420@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Subject: Re: [patch] rd: support XIP
+Message-Id: <20071204032620.aaee039b.akpm@linux-foundation.org>
 In-Reply-To: <20071204112100.GA20420@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+References: <20071204042628.GA26636@wotan.suse.de>
+	<200712041054.51599.borntraeger@de.ibm.com>
+	<20071204101009.GB9618@wotan.suse.de>
+	<20071204112100.GA20420@wotan.suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am I missing something here? I wonder how s390 works without this change?
+On Tue, 4 Dec 2007 12:21:00 +0100 Nick Piggin <npiggin@suse.de> wrote:
 
---
-ext2 should not worry about checking sb->s_blocksize for XIP before the
-sb's blocksize actually gets set.
+> +	 *
+> +	 * Cannot support XIP and highmem, because our ->direct_access
+> +	 * routine for XIP must return memory that is always addressable.
+> +	 * If XIP was reworked to use pfns and kmap throughout, this
+> +	 * restriction might be able to be lifted.
+>  	 */
+> +	gfp_flags = GFP_NOIO | __GFP_ZERO;
+> +#ifndef CONFIG_BLK_DEV_XIP
+> +	gfp_flags |= __GFP_HIGHMEM;
+> +#endif
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/fs/ext2/super.c
-===================================================================
---- linux-2.6.orig/fs/ext2/super.c
-+++ linux-2.6/fs/ext2/super.c
-@@ -844,8 +844,7 @@ static int ext2_fill_super(struct super_
- 
- 	blocksize = BLOCK_SIZE << le32_to_cpu(sbi->s_es->s_log_block_size);
- 
--	if ((ext2_use_xip(sb)) && ((blocksize != PAGE_SIZE) ||
--				  (sb->s_blocksize != blocksize))) {
-+	if (ext2_use_xip(sb) && blocksize != PAGE_SIZE) {
- 		if (!silent)
- 			printk("XIP: Unsupported blocksize\n");
- 		goto failed_mount;
+A dubious tradeoff?
