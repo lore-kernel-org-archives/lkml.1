@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbXLDXPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbXLDX0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbXLDXPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 18:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXLDXPZ
+	id S1752170AbXLDX0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 18:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXLDX0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 18:15:25 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41011 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751055AbXLDXPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 18:15:24 -0500
-Date: Wed, 5 Dec 2007 00:15:19 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
-Message-ID: <20071204231519.GI15974@stusta.de>
-References: <1196801629.10408.26.camel@brick> <20071204213247.GA11216@elte.hu> <1196806868.10408.33.camel@brick> <20071204222717.GA25974@elte.hu> <20071204224543.GH15974@stusta.de> <1196809075.10408.42.camel@brick>
+	Tue, 4 Dec 2007 18:26:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53973 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbXLDX0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 18:26:10 -0500
+Message-ID: <4755E174.7040106@ce.jp.nec.com>
+Date: Tue, 04 Dec 2007 18:23:32 -0500
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1196809075.10408.42.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Gary Hade <garyhade@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Greg KH <gregkh@suse.de>, jbeulich@novell.com
+Subject: Re: [PATCH] pci: Omit error message for benign allocation failure
+References: <4755AC14.20605@ce.jp.nec.com> <20071204214907.GB9194@us.ibm.com>
+In-Reply-To: <20071204214907.GB9194@us.ibm.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 02:57:55PM -0800, Harvey Harrison wrote:
+Hi Gary,
+
+Gary Hade wrote:
+> On Tue, Dec 04, 2007 at 02:35:48PM -0500, Jun'ichi Nomura wrote:
+>> On a system with PCI-to-PCI bridges, following errors are observed:
+>>
+>> PCI: Failed to allocate mem resource #8:100000@d8200000 for 0000:02:00.0
+>> PCI: Failed to allocate mem resource #6:10000@0 for 0000:03:01.0
+>>
+>> '#6' is for expansion ROM and '#8' for the bridge where the device
+>> with the expansion ROM is connected.
 > 
-> On Tue, 2007-12-04 at 23:45 +0100, Adrian Bunk wrote:
-> > On Tue, Dec 04, 2007 at 11:27:17PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> > > 
-> > > > On Tue, 2007-12-04 at 22:32 +0100, Ingo Molnar wrote:
-> > > > > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> > > > > 
-> > > > > > I'm not sure if the definition of asmlinkage and prevent_tail_call can 
-> > > > > > be omitted as well and let the linux/linkage.h version get picked up 
-> > > > > > instead.
-> > > > > 
-> > > > > no, we cannot remove them - asmlinkage is needed for the syscall 
-> > > > > entry (and other entry code) to work, the and the prevent_tail_call 
-> > > > > works around a compiler bug. (which might or might not be fixed in 
-> > > > > latest gcc - but we generally dont remove workarounds unless we are 
-> > > > > really sure it's fine.)
-> > > > 
-> > > > OK, but if this patch is acceptable, then there is no more places in 
-> > > > the tree that define the FASTCALL macro, other than the empty default 
-> > > > in include/linux/linkage.h.  So I think a second step would be to 
-> > > > start to get rid of FASTCALL callers elsewhere in the tree...thoughts?
-> > > 
-> > > the removal of FASTCALL is fine: the default (and only) compiler model 
-> > > for x86 (32-bit) is regparm(3), so the regparm(3) macro is equivalent to 
-> > > the empty one in linux/linkage.h.
-> > >...
-> > 
-> > But please ensure that they stay in assembler code also used by UML.
+> I believe there is a good chance that may be another instance
+> of the regression caused by my "Avoid creating P2P prefetch
+> window for expansion ROMs" patch that was recently reported by
+> Jan Beulich.
+>   http://marc.info/?l=linux-kernel&m=119555581103023&w=2
+
+Sorry, I was not clear about that.
+I've seen the above errors even with 2.6.22 and RHEL5, which is
+based on 2.6.18.
+So it's not a regression.
+
+> I am working on a better fix for the problem that the patch
+> was attempting to address but this is turning out to be much
+> more difficult than I expected.  If I don't have a solution
+> very soon I plan to publish a revert patch.
 > 
-> I'm curious how UML is using FASTCALL/fastcall.  Any pointers?
+>> But I think the failure is benign because the allocation is
+>> not necessary for these resources.
+> 
+> This is an interesting idea.  Could you elaborate?  As far
+> as I can tell, the kernel always tries to allocate memory
+> for expansion ROMs which it also exports to user level.
 
-UML can't switch to the regparm(3) convention on i386 since it links 
-with userspace code, so if assembler code uses this calling convention 
-we need the C prototype of it annotated accordingly.
+Kernel always tries to. But it's best effort basis, IMO.
+(Maybe your patch is going to fix that?)
+In the 1st stage (pcibios_allocate_resources, etc.),
+it allocates resources based on PCI configuration provided by BIOS,
+except for expansion ROMs.
+In the 2nd stage (pci_assign_unassigned_resources, etc.),
+it allocates resources for unallocated ones including expansion ROMs.
+The 2nd stage doesn't reprogram the bridge settings.
+So if the expansion ROM is under the bridge where other resource
+is already allocated, the allocation failure occurs.
+There are comments in drivers/pci/setup-bus.c:
+  /* Helper function for sizing routines: find first available
+     bus resource of a given type. Note: we intentionally skip
+     the bus resources which have already been assigned (that is,
+     have non-NULL parent resource). */
 
-> Harvey
+Fixing the above might be a better solution.
+But I don't know if there are any users who need it.
 
-cu
-Adrian
+> I have assumed that some drivers or user level apps may
+> need to access this space.  Is this not true?
 
+I haven't heard of applications which depend on the kernel resource
+allocation for expansion ROMs.
+X is a big user of expansion ROMs but I heard it solves the resource
+conflict itself.
+If there is a counter example, I would like to know it.
+
+Thanks,
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jun'ichi Nomura, NEC Corporation of America
