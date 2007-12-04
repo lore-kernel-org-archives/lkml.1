@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbXLDKd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbXLDKpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbXLDKd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 05:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbXLDKdu
+	id S1752862AbXLDKpm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 05:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXLDKpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 05:33:50 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:51838 "EHLO twin.jikos.cz"
+	Tue, 4 Dec 2007 05:45:34 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:36807 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbXLDKdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 05:33:49 -0500
-Date: Tue, 4 Dec 2007 11:32:53 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Patrick Boettcher <pb@linuxtv.org>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [build bug] undefined reference to `dib3000mc_get_tuner_i2c_master'
-In-Reply-To: <20071204083904.GA15694@elte.hu>
-Message-ID: <Pine.LNX.4.64.0712041130310.16564@twin.jikos.cz>
-References: <20071204083904.GA15694@elte.hu>
+	id S1751216AbXLDKpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 05:45:33 -0500
+Date: Tue, 4 Dec 2007 11:45:29 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: PATCH: Hitachi disk quirk
+Message-ID: <20071204104529.GA4098@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="PNTmBPCT7hxwcZjr"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 04 Dec 2007 11:45:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007, Ingo Molnar wrote:
 
-> with the attached config i get this build failure:
->  drivers/built-in.o: In function `dibusb_dib3000mc_tuner_attach':
->  : undefined reference to `dib3000mc_get_tuner_i2c_master'
->  drivers/built-in.o: In function `dibusb_dib3000mc_tuner_attach':
->  : undefined reference to `dib3000mc_set_config'
-> on 2.6.24-rc-latest.
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Hmm, seems like -common part contains also code that is not completely 
-common to all the modules.
+Hello,
 
-How about this?
+the following patch should be applied into 2.6.24-rc3 as the mentioned Hitachi
+disk has also problem with NCQ.
 
+-- 
+Luká¹ Hejtmánek
 
+--PNTmBPCT7hxwcZjr
+Content-Type: text/x-diff; charset=iso-8859-2
+Content-Disposition: attachment; filename="ata.patch"
 
-From: Jiri Kosina <jkosina@suse.cz>
+--- a/drivers/ata/libata-core.c	2007-12-04 11:08:20.000000000 +0100
++++ b/drivers/ata/libata-core.c	2007-12-04 11:09:23.000000000 +0100
+@@ -4159,6 +4159,7 @@
+ 	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
+ 	{ "HDT722516DLA380",	"V43OA96A",	ATA_HORKAGE_NONCQ, },
+ 	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
++	{ "HITACHI HTS541616J9SA00", "SB4IC7UP", ATA_HORKAGE_NONCQ, },
+ 	{ "Hitachi HTS542525K9SA00", "BBFOC31P", ATA_HORKAGE_NONCQ, },
+ 	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
+ 	{ "WDC WD3200AAJS-00RYA0", "12.01B01",	ATA_HORKAGE_NONCQ, },
 
-DVB: Compile 3000MC-specific DIB code only for CONFIG_DVB_DIB3000MC
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/drivers/media/dvb/dvb-usb/dibusb-common.c b/drivers/media/dvb/dvb-usb/dibusb-common.c
-index 9a184da..b95b1eb 100644
---- a/drivers/media/dvb/dvb-usb/dibusb-common.c
-+++ b/drivers/media/dvb/dvb-usb/dibusb-common.c
-@@ -223,6 +223,7 @@ static struct dibx000_agc_config dib3000p_panasonic_agc_config = {
- 	.agc2_slope2 = 0x1e,
- };
- 
-+#ifdef CONFIG_DVB_DIB3000MC
- static struct dib3000mc_config mod3000p_dib3000p_config = {
- 	&dib3000p_panasonic_agc_config,
- 
-@@ -305,6 +306,7 @@ int dibusb_dib3000mc_tuner_attach(struct dvb_usb_adapter *adap)
- 	return 0;
- }
- EXPORT_SYMBOL(dibusb_dib3000mc_tuner_attach);
-+#endif
- 
- /*
-  * common remote control stuff
+--PNTmBPCT7hxwcZjr--
