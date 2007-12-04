@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXLDMgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbXLDMia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXLDMgy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 07:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXLDMgq
+	id S1753918AbXLDMia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 07:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXLDMiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 07:36:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50969 "EHLO mx2.mail.elte.hu"
+	Tue, 4 Dec 2007 07:38:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51325 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752944AbXLDMgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 07:36:46 -0500
-Date: Tue, 4 Dec 2007 13:36:30 +0100
+	id S1753023AbXLDMiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 07:38:23 -0500
+Date: Tue, 4 Dec 2007 13:38:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Joerg Roedel <joerg.roedel@amd.com>
 Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 1/3] x86_64: define all _PAGE_* in terms of _PAGE_BIT_*
-Message-ID: <20071204123629.GC27286@elte.hu>
+Message-ID: <20071204123809.GD27286@elte.hu>
 References: <11966016811565-git-send-email-joerg.roedel@amd.com> <11966016814058-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,7 +28,7 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0035]
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,9 +36,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> This patch defines the _PAGE_* paging attributes in pgtable_64.h in 
-> terms of the former defined _PAGE_BIT_* values.
+> +#define _PAGE_PRESENT	(_AC(1,UL)<<_PAGE_BIT_PRESENT)
 
-thanks, applied to x86.git.
+please run patches through scripts/checkpatch.pl, it gives:
+
+  total: 10 errors, 0 warnings, 42 lines checked
+
+(please send a followup cleanup patch - i picked up your series and this 
+is a minor cleanliness issue)
 
 	Ingo
