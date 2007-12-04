@@ -1,54 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXLDUxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbXLDUyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbXLDUxs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXLDUx1
+	id S1755043AbXLDUyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXLDUyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:53:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55445 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430AbXLDUx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:53:26 -0500
-Message-ID: <4755BD0C.2060808@redhat.com>
-Date: Tue, 04 Dec 2007 14:48:12 -0600
-From: Mike McGrath <mmcgrath@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Theodore Tso <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
-       Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-References: <20071204114125.GA17310@torres.zugschlus.de>	<20071204161811.GB15974@stusta.de>	<2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com>	<20071204165502.0a8f695e@the-village.bc.nu>	<20071204180237.GU19691@waste.org>	<20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu>
-In-Reply-To: <20071204204036.484f11ac@the-village.bc.nu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Tue, 4 Dec 2007 15:54:07 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:56711 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbXLDUyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 15:54:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=C9yhi6lX08dVur62MUs61JuauAO3+avra8k07uHK/U0r6ttiB0O+rZpIesPhc0orF122UQ8MQ/E+vnZPrZJF6r9UxF5oj9egbctsw9CD5YGw5T/nFKDTfHAWMyJPAsaV2BX2uBrf5fl02tgEDKRige1WFVcY2QGdF1XwHCAQ8ek=
+Subject: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 12:53:49 -0800
+Message-Id: <1196801629.10408.26.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Here's the top 5:
->>
->>    266 28caf2c3-9766-4fe1-9e4c-d6b0ba8a0132
->>    336 810e7126-1c69-4aff-b8b1-9db0fa8aa15a
->>    402 c8dbb9d3-a9bd-4ba6-b92e-4a294ba5a95f
->>    884 06e84493-e024-44b1-9b32-32d78af04039
->>    931 e2b67e1d-e325-4740-b938-795addb45280
->>
->> The left number is times this month someone has submitted a profile with
->> that UUID.  If we take the last one as an example has come from over 800
->> IP's in the last 20 days.  It seems very unlikely that one person would
->> find his way to 800 different IP's this month.  Let me know if you'd
->> like more.
->>     
-Background - Smolt runs this during its install:
+Adding LKML to CC
 
-/bin/cat /proc/sys/kernel/random/uuid > /etc/sysconfig/hw-uuid
+Remove definitions of FASTCALL/fastcall from linkage_32 as compiled with
+-regparm=3 by default since 2.6.20 and should no longer be needed.
 
-For most users this would be run by the RPM %post scripts during install 
-from anaconda. For some reason there are some UUID's (like those listed 
-above) that come up more often then it seems they should if they are 
-truly random.
+CONFIG X86_64 and CONFIG_X86_ALIGNMENT_16 are mutually exclusive as found
+in Kconfig.cpu so it should be fine to test them separately.
 
--Mike
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+I'm not sure if the definition of asmlinkage and prevent_tail_call can be
+omitted as well and let the linux/linkage.h version get picked up instead.
+
+Smarter people than I will have to figure that out.
+ include/asm-x86/linkage.h    |   21 ++++++++++++++++++---
+ include/asm-x86/linkage_32.h |   15 ---------------
+ include/asm-x86/linkage_64.h |    6 ------
+ 3 files changed, 18 insertions(+), 24 deletions(-)
+
+diff --git a/include/asm-x86/linkage.h b/include/asm-x86/linkage.h
+index 94b257f..5a4c959 100644
+--- a/include/asm-x86/linkage.h
++++ b/include/asm-x86/linkage.h
+@@ -1,5 +1,20 @@
++#ifndef __ASM_LINKAGE_H
++#define __ASM_LINKAGE_H
++
++#ifdef CONFIG_X86_64
++#define __ALIGN .p2align 4,,15
++#define __ALIGN_STR ".p2align 4,,15"
++#endif
++
+ #ifdef CONFIG_X86_32
+-# include "linkage_32.h"
+-#else
+-# include "linkage_64.h"
++#define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
++#define prevent_tail_call(ret) __asm__ ("" : "=r" (ret) : "0" (ret))
++#endif
++
++#ifdef CONFIG_X86_ALIGNMENT_16
++#define __ALIGN .align 16,0x90
++#define __ALIGN_STR ".align 16,0x90"
++#endif
++
+ #endif
++
+diff --git a/include/asm-x86/linkage_32.h b/include/asm-x86/linkage_32.h
+deleted file mode 100644
+index f4a6eba..0000000
+--- a/include/asm-x86/linkage_32.h
++++ /dev/null
+@@ -1,15 +0,0 @@
+-#ifndef __ASM_LINKAGE_H
+-#define __ASM_LINKAGE_H
+-
+-#define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
+-#define FASTCALL(x)	x __attribute__((regparm(3)))
+-#define fastcall	__attribute__((regparm(3)))
+-
+-#define prevent_tail_call(ret) __asm__ ("" : "=r" (ret) : "0" (ret))
+-
+-#ifdef CONFIG_X86_ALIGNMENT_16
+-#define __ALIGN .align 16,0x90
+-#define __ALIGN_STR ".align 16,0x90"
+-#endif
+-
+-#endif
+diff --git a/include/asm-x86/linkage_64.h b/include/asm-x86/linkage_64.h
+deleted file mode 100644
+index b5f39d0..0000000
+--- a/include/asm-x86/linkage_64.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __ASM_LINKAGE_H
+-#define __ASM_LINKAGE_H
+-
+-#define __ALIGN .p2align 4,,15
+-
+-#endif
+-- 
+1.5.3.7.2094.gff6c
+
+
+
