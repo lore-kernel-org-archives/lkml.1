@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbXLDULV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXLDULf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754275AbXLDULV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXLDULD
+	id S1754504AbXLDULf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXLDULQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:11:03 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:52426 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754112AbXLDULB (ORCPT
+	Tue, 4 Dec 2007 15:11:16 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54932 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754176AbXLDULN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:11:01 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAF5DVUdMROHU/2dsb2JhbACBWg
-Date: Tue, 4 Dec 2007 15:05:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mbligh@google.com
-Subject: Re: [RFC PATCH] LTTng instrumentation mm (updated)
-Message-ID: <20071204200558.GB1988@Krystal>
-References: <20071129023421.GA711@Krystal> <1196317552.18851.47.camel@localhost> <20071130161155.GA29634@Krystal> <1196444801.18851.127.camel@localhost> <20071130170516.GA31586@Krystal> <1196448122.19681.16.camel@localhost> <20071130191006.GB3955@Krystal> <y0mve7ez2y3.fsf@ton.toronto.redhat.com> <20071204192537.GC31752@Krystal> <1196797259.6073.17.camel@localhost>
-Mime-Version: 1.0
+	Tue, 4 Dec 2007 15:11:13 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ben Greear <greearb@candelatech.com>
+Cc: Daniel Lezcano <daniel.lezcano@free.fr>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       Mark Lord <lkml@rtr.ca>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>
+	<20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca>
+	<20071201202354.672aed18@freepuppy.rosehill>
+	<47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>
+	<m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com>
+	<47544896.7070101@candelatech.com> <475451B1.1030006@free.fr>
+	<m163zexrqi.fsf@ebiederm.dsl.xmission.com>
+	<4755A025.8090903@candelatech.com>
+	<m1odd6w9p6.fsf@ebiederm.dsl.xmission.com>
+	<4755AC13.1060904@candelatech.com>
+Date: Tue, 04 Dec 2007 13:09:24 -0700
+In-Reply-To: <4755AC13.1060904@candelatech.com> (Ben Greear's message of "Tue,
+	04 Dec 2007 11:35:47 -0800")
+Message-ID: <m1bq96w7bf.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1196797259.6073.17.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:49:52 up 31 days, 55 min,  7 users,  load average: 0.48, 0.52,
-	0.54
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> On Tue, 2007-12-04 at 14:25 -0500, Mathieu Desnoyers wrote:
-> > 
-> > - I also dump the equivalent of /proc/swaps (with kernel internal
-> >   information) at trace start to know what swap files are currently
-> >   used.
-> 
-> What about just enhancing /proc/swaps so that this information can be
-> useful to people other than those doing traces?
-> 
+Ben Greear <greearb@candelatech.com> writes:
 
-It includes an in-kernel struct file pointer, exporting it to userspace
-would be somewhat ugly.
+> Ok, but can a netdev at least know what namespace it is in?  I don't
+> need this for my module, but it seems very useful knowledge...
 
-> Now that we have /proc/$pid/pagemap, we expose some of the same
-> information about which userspace virtual addresses are stored where and
-> in which swapfile.  
-> 
+Sure.   dev->nd_net
+It is a don't care not a don't know, and there should be device
+events when it goes in and out of a network namespace.
 
-The problems with /proc :
+I don't know if the device gets those or not.
 
-- It exports all the data in formatted text. What I need for my traces
-  is pure binary, compact representation.
-- It's not very neat to export in-kernel pointer information like a
-  kernel tracer would need.
-- The locking is very often wrong. I started correcting /proc/modules a
-  while ago, but I fear there are quite a few cases where a procfile
-  reader could release the locks between two consecutive reads of the
-  same list and therefore cause missing information or corruption. While
-  being manageable for a proc text file, this is _highly_ unwanted in a
-  trace. See my previous "seq file sorted" and "module.c sort module
-  list" patches about this. My tracer deals with addition/removal of
-  elements to a list between dumps done by "chunks" by tracing the
-  modifications done to the list at the same time. However, /proc seq
-  files will just get corrupted or forget about an element not touched
-  by the modification, which my tracer cannot cope with.
-
-Mathieu
-
-
-> -- Dave
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Eric
