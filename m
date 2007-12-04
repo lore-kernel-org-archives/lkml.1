@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXLDWbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbXLDWdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbXLDWbt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbXLDWbf
+	id S1754712AbXLDWdn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXLDWdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:31:35 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:60284 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753355AbXLDWbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:31:34 -0500
-Date: Tue, 4 Dec 2007 23:31:51 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: gregkh@suse.de, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: [PATCH] USB testing driver: convert dev->sem to mutex
-Message-ID: <20071204223151.GB480@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Daniel Walker <dwalker@mvista.com>, gregkh@suse.de,
-	linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <20071204165540.GH6729@traven> <1196795342.1568.41.camel@jnielson-xp.ddns.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1196795342.1568.41.camel@jnielson-xp.ddns.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 4 Dec 2007 17:33:35 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:33880 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbXLDWdf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 17:33:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=R8OCVDjslk7e82fd+ffrVIHmRO6vsx6NRE0XTA4sdEbXPkJPEf+wGHLLY9gpARlISGMxKDRuVlNLGBTPKoHvg0aeuw4frLmfU52eAjKcnDaReWrhCiKEvc0sB38TkQhfzbg03M4xzuVbMCqIad1UkMCzFwIKW5prVSfvsdnfkqo=
+Subject: Re: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071204222717.GA25974@elte.hu>
+References: <1196801629.10408.26.camel@brick>
+	 <20071204213247.GA11216@elte.hu> <1196806868.10408.33.camel@brick>
+	 <20071204222717.GA25974@elte.hu>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 14:33:32 -0800
+Message-Id: <1196807612.10408.41.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, Dec 04, 2007 at 11:09:02AM -0800 Daniel Walker ha dit:
-
-> On Tue, 2007-12-04 at 17:55 +0100, Matthias Kaehlcke wrote:
-> > @@ -1990,7 +1991,7 @@ static void usbtest_disconnect (struct
-> > usb_interface *intf)
-> >  {
-> >         struct usbtest_dev      *dev = usb_get_intfdata (intf);
-> >  
-> > -       down (&dev->sem);
-> > +       mutex_lock(&dev->lock);
-> >  
-> >         usb_set_intfdata (intf, NULL);
-> >         dev_dbg (&intf->dev, "disconnect\n"); 
+On Tue, 2007-12-04 at 23:27 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> > OK, but if this patch is acceptable, then there is no more places in 
+> > the tree that define the FASTCALL macro, other than the empty default 
+> > in include/linux/linkage.h.  So I think a second step would be to 
+> > start to get rid of FASTCALL callers elsewhere in the tree...thoughts?
 > 
-> This looks like a bit of an anomaly.. The code that isn't shown above is
-> the "kfree(dev)" .. So this isn't legal since it's freeing a locked
-> mutex. Here's a excerpt from the comment above mutex_lock(),
+> the removal of FASTCALL is fine: the default (and only) compiler model 
+> for x86 (32-bit) is regparm(3), so the regparm(3) macro is equivalent to 
+> the empty one in linux/linkage.h.
 > 
->  * The mutex must later on be released by the same task that
->  * acquired it. Recursive locking is not allowed. The task
->  * may not exit without first unlocking the mutex. Also, kernel
->  * memory where the mutex resides mutex must not be freed with
->  * the mutex still locked. The mutex must first be initialized
->  * (or statically defined) before it can be locked. memset()-ing
->  * the mutex to 0 is not allowed.
+> btw., removal of FASTCALL from the tree is worthwile after this: it 
+> should probably be done via the -mm tree, because it's more of a generic 
+> kernel matter than an arch/x86 matter.
+> 
+> 	Ingo
 
-you're absolutely right that freeing a locked mutex isn't a good idea
+Agreed, just noting that there was nobody defining it anymore, it's
+widespread enough that I'll submit them separately to appropriate
+maintainers and they can dribble in over time.
 
-thanks for pointing it out!
+Cheers,
 
--- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
+Harvey
 
-                Don't walk behind me, I may not lead
-             Don't walk in front of me, I may not follow
-                Just walk beside me and be my friend
-                          (Albert Camus)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
