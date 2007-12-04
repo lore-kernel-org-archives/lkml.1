@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXLDTlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbXLDTlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbXLDTlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXLDTlb
+	id S1752446AbXLDTlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbXLDTlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:41:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58454 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751296AbXLDTla (ORCPT
+	Tue, 4 Dec 2007 14:41:32 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:32813 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbXLDTla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 4 Dec 2007 14:41:30 -0500
-Date: Tue, 4 Dec 2007 11:39:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH] LTTng instrumentation mm (updated)
+From: Dave Hansen <haveblue@us.ibm.com>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org, mmlnx@us.ibm.com,
-       dipankar@in.ibm.com, dsmith@redhat.com, paulmck@us.ibm.com
-Subject: Re: [patch 1/2] Linux Kernel Markers - Support Multiple Probes
-Message-Id: <20071204113954.c1dc9d87.akpm@linux-foundation.org>
-In-Reply-To: <20071204192100.GB31752@Krystal>
-References: <20071204181845.895090222@polymtl.ca>
-	<20071204182402.940135178@polymtl.ca>
-	<20071204110648.dd918789.akpm@linux-foundation.org>
-	<20071204192100.GB31752@Krystal>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mbligh@google.com
+In-Reply-To: <20071204192537.GC31752@Krystal>
+References: <20071128140953.GA8018@Krystal>
+	 <1196268856.18851.20.camel@localhost> <20071129023421.GA711@Krystal>
+	 <1196317552.18851.47.camel@localhost> <20071130161155.GA29634@Krystal>
+	 <1196444801.18851.127.camel@localhost> <20071130170516.GA31586@Krystal>
+	 <1196448122.19681.16.camel@localhost> <20071130191006.GB3955@Krystal>
+	 <y0mve7ez2y3.fsf@ton.toronto.redhat.com>  <20071204192537.GC31752@Krystal>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 11:40:59 -0800
+Message-Id: <1196797259.6073.17.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 14:21:00 -0500
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> > > + */
-> > > +void marker_probe_cb(const struct marker *mdata, void *call_private,
-> > > +	const char *fmt, ...)
-> > > +{
-> > > +	va_list args;
-> > > +	char ptype;
-> > > +
-> > > +	preempt_disable();
-> > 
-> > What are the preempt_disable()s doing in here?
-> > 
-> > Unless I missed something obvious, a comment is needed here (at least).
-> > 
+On Tue, 2007-12-04 at 14:25 -0500, Mathieu Desnoyers wrote:
 > 
-> They make sure the teardown of the callbacks can be done correctly when
-> they are in modules and they insure RCU read coherency. Will add
-> comment.
+> - I also dump the equivalent of /proc/swaps (with kernel internal
+>   information) at trace start to know what swap files are currently
+>   used.
 
-So shouldn't it be using rcu_read_lock()?  If that does not suit, should we
-be adding new rcu primitives rather than open-coding and adding dependencies?
+What about just enhancing /proc/swaps so that this information can be
+useful to people other than those doing traces?
+
+Now that we have /proc/$pid/pagemap, we expose some of the same
+information about which userspace virtual addresses are stored where and
+in which swapfile.  
+
+-- Dave
+
