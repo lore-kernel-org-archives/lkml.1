@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbXLDPhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbXLDPjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754377AbXLDPhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXLDPgy
+	id S1754661AbXLDPjg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXLDPj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:36:54 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:56457 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753151AbXLDPgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:36:53 -0500
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-In-Reply-To: <20071204121618.GA26132@elte.hu> "from Ingo Molnar at Dec 4, 2007
- 01:16:18 pm"
-To: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 4 Dec 2007 09:36:40 -0600 (CST)
-CC: Michael Cree <mcree@orcon.net.nz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-scsi@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Dec 2007 10:39:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41863 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbXLDPj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 10:39:28 -0500
+Date: Tue, 4 Dec 2007 07:37:29 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: <tovarekl@centrum.cz>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: EIP problem (kernel: BUG: unable to handle kernel NULL pointer)
+Message-ID: <20071204073729.212c2b3f@laptopd505.fenrus.org>
+In-Reply-To: <200712041540.24458@centrum.cz>
+References: <200712041345.380@centrum.cz>
+	<200712041540.24458@centrum.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20071204153641.2938DDBA2@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> once you are done with the download of the initial cloned git repository 
-> (which is 200MB+), all the bisection steps will be local and you'll be 
-> only limited by kernel rebuild speed and by bootup and testing speed, 
-> not by network bandwidth.
+On Tue, 04 Dec 2007 15:40:15 +0100
+<tovarekl@centrum.cz> wrote:
 
-ACK.  Have tested two kernels in the past 24 hours, and the third is
-building as I type this.  The builds seem to be taking about 3 hours
-each.  First two tests good, so the offending commit is somewhere in
-the last 25% (roughly) of the changes between -rc2 and -rc3: git says
-82 revisions left to test.  Might have this painted into a corner in
-the next day or so.  I'll try to be quick about it, since -rc4 is out.
+> 
+> Hi Kernel Gurus,
+> 
+> Please find kindly the description of EIP problems below.
+> I greatfully appreciate your kind help.
+> 
 
-> ( once you have the cloned repository i'd suggest for you to keep it - 
->   that way you can track susequent kernels via "git-pull" and it uses a 
->   very network-efficient delta protocol. )
+Hi,
 
-Will do...  I'm in the fortunate position of having enough disk space
-on my Alpha that I can maintain multiple trees for this kind of effort.
+your oops is the first crash reported against generic_make_request in
+2.6.18 (in fact, in the last year pretty much) so it's not a very
+common pattern. However, you're running a 2.6.18 kernel, which is
+really really old (and has many known security issues fixed since);
+it's probably a good idea to do a yum upgrade to get a more current
+kernel; fc6 ships something like a 2.6.22 or 2.6.23 nowadays as
+update...
 
+Greetings,
+   Arjan van de Ven
 -- 
-------------------------------------------------------------------------
-Bob Tracy          |  "They couldn't hit an elephant at this dist- "
-rct@frus.com       |   - Last words of Union General John Sedgwick,
-                   |  Battle of Spotsylvania Court House, U.S. Civil War
-------------------------------------------------------------------------
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
