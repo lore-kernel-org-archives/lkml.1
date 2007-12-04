@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbXLDWP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbXLDWRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbXLDWP6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXLDWPv
+	id S1753953AbXLDWRF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:17:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXLDWQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:15:51 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34195 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbXLDWPu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:15:50 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4755D186.20204@s5r6.in-berlin.de>
-Date: Tue, 04 Dec 2007 23:15:34 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.9) Gecko/20071122 SeaMonkey/1.1.6
+	Tue, 4 Dec 2007 17:16:54 -0500
+Received: from waste.org ([66.93.16.53]:33164 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbXLDWQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 17:16:54 -0500
+Date: Tue, 4 Dec 2007 16:15:25 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Mike McGrath <mmcgrath@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071204221525.GG19691@waste.org>
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204165502.0a8f695e@the-village.bc.nu> <20071204180237.GU19691@waste.org> <20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu> <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com>
 MIME-Version: 1.0
-To: Bernhard Kaindl <bkaindl@ffii.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andi Kleen <ak@suse.de>,
-       Bernhard Kaindl <bk@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: remote debugging via FireWire * __fast__ firedump!
-References: <200702101242.48467.ak@suse.de> <45CDCDCD.5000609@s5r6.in-berlin.de> <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org>
-In-Reply-To: <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4755C423.60907@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernhard Kaindl wrote:
-> The biggest block size that worked here was 2048 bytes, which was
-> enough to get nearly 10MB/s of data transfer rate from the remote
-> memory to disk.
+On Tue, Dec 04, 2007 at 03:18:27PM -0600, Mike McGrath wrote:
+> Matt Mackall wrote:
+> >which would have been in v2.6.22-rc4 through the normal CVE process.
+> >The only other bits in there are wall time and utsname, so systems
+> >with no CMOS clock would behave repeatably. Can we find out what
+> >kernels are affected?
+> >
+> >  
+> We can but it will likely take a few weeks to get a good sampling. UUID 
+> is unique in the db so when someone checks in with the same UUID, the 
+> old one gets overwritten.
 
-The maximum payload size of block requests depends on three things:
-1. speed of the connection between the two nodes (debugged machine and
-debugging machine), 2. link layer controllers of the two nodes, 3.
-software on the debugging machine.
+We can probably assume that for whatever reason the two things with
+duplicate UUID had the same seed. If not, we've got -much- bigger
+problems.
 
-1.) S100: 512 bytes, S200: 1024 bytes, S400: 2048 bytes, S800 and more:
-4096 bytes.
+> >>>   931 e2b67e1d-e325-4740-b938-795addb45280
+> >>>
+> >>>The left number is times this month someone has submitted a profile with
+> >>>that UUID.  If we take the last one as an example has come from over 800
+> >>>IP's in the last 20 days.  It seems very unlikely that one person would
+> >>>find his way to 800 different IP's this month.  Let me know if you'd
+> >>>like more.
+> >
+> >Any other details would be interesting.
+> 
+> We'll be able to get lots of stuff. Here's a profile of whats currently 
+> in e2b67e1d-e325-4740-b938-795addb45280.
+> 
+> u_u_id: e2b67e1d-e325-4740-b938-795addb45280
+> o_s: Fedora release 7.92 (Rawhide)
+..
+> kernel_version: 2.6.23.1-23.fc8
 
-2.) Controllers on CardBus cards are limited to 1024 bytes payload of
-asynchronous packets, for reasons I don't know.  The other available
-controllers only have the above mentioned speed-dependent limit.
+Hmmm, a kernel where the fingered bug is already fixed.
 
-3.) The ohci1394 driver has an implementation limitation which requires
-that all packets including headers don't exceed PAGE_SIZE.  This does
-not affect the packets which go through the physical response unit
-(which they do on the debugged machine) but it affects the debugging
-machine.
+So what's being used for the seed here? I assume you either ship all
+CDs with no seed file or the same seed file, yes? That leaves utsname,
+presumably a constant across a large number of machines and time of day.
+Still possible, I suppose, that's it's 931 boxes booted with the same
+time of day. How many total machines are you tracking?
 
-A quick note to this text from
-http://www.suse.de/~bk/firewire/ohci1394_dma_early.diff :
-> +	  As all changes to the FireWire bus such as enabling and disabling
-> +	  devices cause a bus reset and thereby disable remote DMA for all
-> +	  devices, be sure to have FireWire enabled on the debug host (and
-> +	  the cable plugged) before booting the debug target for debugging.
+If it is a time of day weirdness (ie N machines with dead CMOS
+batteries or no CMOS clock at all), then you'd expect to see a normal
+distribution of collisions around the average time to get to the
+initialization function, with a rapid falloff on either side. Or,
+looked at from a histogram of collision counts, a round peak rapidly
+rolling off.
 
-Bus resets are also caused by bus managing software, which Linux' old
-and new FireWire stacks and the stacks of all other FireWire capable
-desktop OSs are to varying degrees.  I wonder if the following could
-happen:  The two PCs are directly connected, only the PHY of the
-debugging PC is active, then the PHY of the debugged PC is activated,
-becomes root node, debugging PC examines the bus, then resets the bus to
-force its own PHY to become root node in order to get a working
-isochronous resource manager.  This bus reset would switch remote DMA on
-the debugged PC off.
+Other failure modes would tend to give you a much more uniform (and
+therefore likely invisible) distribution.
+
+> platform: i686
+> bogomips: 3660.33
+> system_memory: 2025
+> system_swap: 964
+> vendor: Sony Corporation
+> system: VGN-FE31Z C3LMPJWX
+> cpu_vendor: GenuineIntel
+> cpu_model: Intel(R) Core(TM)2 CPU T
+> num_cp_us: 2
+> cpu_speed: 1833
+> language: en_US.UT
+> default_runlevel: 5
+
+Some bastard snuck a patch in to use ktime_get_real() in the pool init
+function, so we should have nanosecond resolution here, but only a) if
+TSC actually works and b) if all the clock sources get initialized
+before the RNG. Otherwise, we might be using jiffies or worse here.
+
 -- 
-Stefan Richter
--=====-=-=== ==-- --=--
-http://arcgraph.de/sr/
+Mathematics is the supreme nostalgia of our time.
