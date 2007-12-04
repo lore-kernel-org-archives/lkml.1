@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXLDCtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbXLDDhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbXLDCtK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 21:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXLDCs6
+	id S1751743AbXLDDhg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 22:37:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXLDDh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 21:48:58 -0500
-Received: from mx1.suse.de ([195.135.220.2]:39878 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbXLDCs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 21:48:57 -0500
-From: Neil Brown <neilb@suse.de>
-To: David Chinner <dgc@sgi.com>
-Date: Tue, 4 Dec 2007 13:48:51 +1100
+	Mon, 3 Dec 2007 22:37:27 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:37348 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbXLDDh1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Dec 2007 22:37:27 -0500
+To: linux-rt-users@vger.kernel.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH -rt] ARM: compile fix for event tracing
+From: Kevin Hilman <khilman@mvista.com>
+Organization: MontaVista Software, Inc.
+Date: Mon, 03 Dec 2007 19:37:51 -0800
+Message-ID: <87fxyjruy8.fsf@vence.hilman.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18260.49171.818248.794797@notabene.brown>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Regression - 2.6.24-rc3 - umem nvram card driver oops
-In-Reply-To: message from David Chinner on Tuesday December 4
-References: <20071203213558.GP115527101@sgi.com>
-	<18260.39892.215075.795664@notabene.brown>
-	<20071204022015.GX119954183@sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday December 4, dgc@sgi.com wrote:
-> On Tue, Dec 04, 2007 at 11:14:12AM +1100, Neil Brown wrote:
-> > On Tuesday December 4, dgc@sgi.com wrote:
-> > > Neil,
-> > > 
-> > > I just upgraded an ia64 (Altix, 16k page size) test box to 2.6.24-rc3
-> > > from 2.6.23 and I get it panicing on boot in the umem driver.
-> > 
-> > Cool - someone is using umem!  And even testing it.  Thanks!
-> > 
-> > A quick look shows a probable NULL deref.  Let me know if this fixes
-> > it.  I'll read through the offending patch more carefully and make
-> > sure there is nothing else wrong.
-> 
-> Yeah, that appears to fix the problem.
-> 
-> Tested-by: Dave Chinner <dgc@sgi.com>
+The cycles/usecs conversion macros should be dependent on
+CONFIG_EVENT_TRACE instead of CONFIG_LATENCY_TIMING.
 
-Thanks. 
-I couldn't find any other issues in the code.
+Signed-off-by: Kevin Hilman <khilman@mvista.com>
 
-NeilBrown
+--- a/include/asm-arm/timex.h
++++ b/include/asm-arm/timex.h
+@@ -18,7 +18,7 @@ typedef unsigned long cycles_t;
+ 
+ #ifndef mach_read_cycles
+  #define mach_read_cycles() (0)
+-#ifdef CONFIG_LATENCY_TIMING
++#ifdef CONFIG_EVENT_TRACE
+  #define mach_cycles_to_usecs(d) (d)
+  #define mach_usecs_to_cycles(d) (d)
+ #endif
