@@ -1,43 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbXLDIFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbXLDIK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752932AbXLDIFe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbXLDIF1
+	id S1752667AbXLDIK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLDIKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:05:27 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52641 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbXLDIF0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:05:26 -0500
-Date: Tue, 4 Dec 2007 10:05:24 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Dave Young <hidave.darkstar@gmail.com>
-cc: petero2@telia.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pktcdvd : add kobject_put when kobject register fails
-In-Reply-To: <a8e1da0712040000n7f94c5bbk3e6526ed395d62d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0712041004250.20088@sbz-30.cs.Helsinki.FI>
-References: <20071204013144.GA2850@darkstar.lan> 
- <84144f020712032345r6fc1f44cg5f35b23bdb8191be@mail.gmail.com>
- <a8e1da0712040000n7f94c5bbk3e6526ed395d62d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 4 Dec 2007 03:10:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55463 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbXLDIKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:10:20 -0500
+Message-ID: <47550B66.2060406@redhat.com>
+Date: Tue, 04 Dec 2007 03:10:14 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Muhammad Nowbuth <muhammad.nowbuth@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux Kernel - Future works
+References: <29d31a040712032259s1ff656a3n45564a7db42f2d29@mail.gmail.com>
+In-Reply-To: <29d31a040712032259s1ff656a3n45564a7db42f2d29@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
-
-On Tue, 4 Dec 2007, Dave Young wrote:
-> the kobject reference is get in kobject_init, and then kobject_add, if
-> kobject_add fail, it will only cleanup the reference got by itsself.
+Muhammad Nowbuth wrote:
+> Hi all,
 > 
-> This topic is discussed in:
-> http://lkml.org/lkml/2007/11/30/9
+> Could anyone give some ideas of future pending works which are needed
+> on the linux kernel?
 
-Ok, thanks! Please the explanation to the changelog too.
-
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-
-			Pekka
+http://kernelnewbies.org/KernelHacking
