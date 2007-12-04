@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbXLDPlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbXLDPr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbXLDPlb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXLDPlZ
+	id S1754375AbXLDPr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXLDPrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:41:25 -0500
-Received: from ccs17.jlab.org ([129.57.35.82]:49012 "EHLO ccs17.jlab.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753270AbXLDPlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:41:24 -0500
-Message-ID: <47557520.2000106@jlab.org>
-Date: Tue, 04 Dec 2007 10:41:20 -0500
-From: Jie Chen <chen@jlab.org>
-Organization: Jefferson Lab
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 4 Dec 2007 10:47:21 -0500
+Received: from mail1.asahi-net.or.jp ([202.224.39.197]:47116 "EHLO
+	mail.asahi-net.or.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753659AbXLDPrU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 10:47:20 -0500
+X-Greylist: delayed 1514 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 10:47:20 EST
+Message-ID: <4755701C.7070407@ak.jp.nec.com>
+Date: Wed, 05 Dec 2007 00:19:56 +0900
+From: KaiGai Kohei <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
-References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com> <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu>
-In-Reply-To: <20071204131707.GA4232@elte.hu>
+To: Andrew Morgan <morgan@kernel.org>
+CC: KaiGai Kohei <kaigai@ak.jp.nec.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] capabilities: introduce per-process capability bounding
+ set (v10)
+References: <20071126200908.GA13287@sergelap.austin.ibm.com> <4754D76B.8080406@ak.jp.nec.com> <4754F053.8060303@kernel.org>
+In-Reply-To: <4754F053.8060303@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jie Chen <chen@jlab.org> wrote:
+Andrew Morgan wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
->> Simon Holm Th??gersen wrote:
->>> ons, 21 11 2007 kl. 20:52 -0500, skrev Jie Chen:
->>> There is a backport of the CFS scheduler to 2.6.21, see
->>> http://lkml.org/lkml/2007/11/19/127
->>>
->> Hi, Simon:
+> KaiGai Kohei wrote:
+>> Serge,
 >>
->> I will try that after the thanksgiving holiday to find out whether the 
->> odd behavior will show up using 2.6.21 with back ported CFS.
+>> Please tell me the meanings of the following condition.
+>>
+>>> diff --git a/security/commoncap.c b/security/commoncap.c
+>>> index 3a95990..cb71bb0 100644
+>>> --- a/security/commoncap.c
+>>> +++ b/security/commoncap.c
+>>> @@ -133,6 +119,12 @@ int cap_capset_check (struct task_struct *target,
+>>> kernel_cap_t *effective,
+>>>          /* incapable of using this inheritable set */
+>>>          return -EPERM;
+>>>      }
+>>> +    if (!!cap_issubset(*inheritable,
+>>> +               cap_combine(target->cap_inheritable,
+>>> +                       current->cap_bset))) {
+>>> +        /* no new pI capabilities outside bounding set */
+>>> +        return -EPERM;
+>>> +    }
+>>>  
+>>>      /* verify restrictions on target's new Permitted set */
+>>>      if (!cap_issubset (*permitted,
+>> It seems to me this condition requires the new inheritable capability
+>> set must have a capability more than bounding set, at least.
+>> What is the purpose of this checking?
 > 
-> would be also nice to test this with 2.6.24-rc4.
-> 
-> 	Ingo
-Hi, Ingo:
+> Yes, the !! was a bug. The correct check is a single !.
 
-I will test 2.6.24-rc4 this week and let you know the result. Thanks.
+I was in trouble with getting -EPERM at pam_cap.so :-)
 
--- 
-#############################################################################
-# Jie Chen
-# Scientific Computing Group
-# Thomas Jefferson National Accelerator Facility
-# Newport News, VA 23606
-#
-# chen@jlab.org
-# (757)269-5046 (office)
-# (757)269-6248 (fax)
-#############################################################################
+> (Thus, the correct check says no 'new' pI bits can be outside cap_bset.)
+
+If this condition intends to dominate 'new' pI bits by 'old' pI bits masked
+with bounding set, we should not apply cap_combine() here.
+I think applying cap_intersect() is correct for the purpose.
+
+Thanks,
+--
+KaiGai Kohei
