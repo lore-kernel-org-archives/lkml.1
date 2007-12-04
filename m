@@ -1,119 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbXLDN7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbXLDN75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbXLDN7h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 08:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbXLDNz6
+	id S1756128AbXLDN75 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 08:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXLDN5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 08:55:58 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:14963 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754799AbXLDNz4 (ORCPT
+	Tue, 4 Dec 2007 08:57:36 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:36709 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbXLDN5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 08:55:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BzLeNQlPcnkmkeI/RVcLbHSFEtZNa7nU6GHG2VAxKGaEkMIzqMcB+GL8WzOkndYfvEaxVmcYahcpU6e5jq6K5tA2vrXE8z2Wgb0cj1CMZJDl8OEtmvrNWWpBz3RP8FblqdVb1K8mgEcYlkYjWwBQxzqvuPMfIEgTHlYYDBNKLEM=
-Message-ID: <47555C64.8070607@gmail.com>
-Date: Tue, 04 Dec 2007 22:55:48 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 4 Dec 2007 08:57:34 -0500
+X-Greylist: delayed 1041 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 08:57:33 EST
+Message-ID: <47555C90.2080609@panasas.com>
+Date: Tue, 04 Dec 2007 15:56:32 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: sam@ravnborg.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       notting@redhat.com, rusty@rustcorp.com.au, kay.sievers@vrfy.org,
-       greg@kroah.com
-Subject: [PATCH] depmod: sort output according to modules.order
-References: <47555AF1.8090304@gmail.com>
-In-Reply-To: <47555AF1.8090304@gmail.com>
-X-Enigmail-Version: 0.95.3
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 01/28] blk_end_request: add new request completion interface
+ (take 3)
+References: <20071130.182422.18574732.k-ueda@ct.jp.nec.com>
+In-Reply-To: <20071130.182422.18574732.k-ueda@ct.jp.nec.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kbuild now generates and installs modules.order along with modules.
-This patch updates depmod such that it sorts module list according to
-the file before generating output files.  Modules which aren't on
-modules.order are put after modules which are ordered by
-modules.order.
+On Sat, Dec 01 2007 at 1:24 +0200, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
+> This patch adds 2 new interfaces for request completion:
+>   o blk_end_request()   : called without queue lock
+>   o __blk_end_request() : called with queue lock held
+> 
+> Some device drivers call some generic functions below between
+> end_that_request_{first/chunk} and end_that_request_last().
+>   o add_disk_randomness()
+>   o blk_queue_end_tag()
+>   o blkdev_dequeue_request()
+> These are called in the blk_end_request() as a part of generic
+> request completion.
+> So all device drivers become to call above functions.
+> 
+> "Normal" drivers can be converted to use blk_end_request()
+> in a standard way shown below.
+> 
+>  a) end_that_request_{chunk/first}
+>     spin_lock_irqsave()
+>     (add_disk_randomness(), blk_queue_end_tag(), blkdev_dequeue_request())
+>     end_that_request_last()
+>     spin_unlock_irqrestore()
+>     => blk_end_request()
+> 
+>  b) spin_lock_irqsave()
+>     end_that_request_{chunk/first}
+>     (add_disk_randomness(), blk_queue_end_tag(), blkdev_dequeue_request())
+>     end_that_request_last()
+>     spin_unlock_irqrestore()
+>     => spin_lock_irqsave()
+>        __blk_end_request()
+>        spin_unlock_irqsave()
+> 
+>  c) end_that_request_last()
+>     => __blk_end_request()
+> 
+> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 
-This makes modprobe to prioritize modules according to kernel
-Makefile's just as built-in modules are link-ordered by them.
+comments in body
 
-This patch is against module-init-tools 3.3-pre1.
+> ---
+>  block/ll_rw_blk.c      |   67 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/blkdev.h |    2 +
+>  2 files changed, 69 insertions(+)
+> 
+> Index: 2.6.24-rc3-mm2/block/ll_rw_blk.c
+> ===================================================================
+> --- 2.6.24-rc3-mm2.orig/block/ll_rw_blk.c
+> +++ 2.6.24-rc3-mm2/block/ll_rw_blk.c
+> @@ -3769,6 +3769,73 @@ void end_request(struct request *req, in
+>  }
+>  EXPORT_SYMBOL(end_request);
+>  
+> +static void complete_request(struct request *rq, int uptodate)
+> +{
+> +	if (blk_rq_tagged(rq))
+> +		blk_queue_end_tag(rq->q, rq);
+> +
+> +	/* rq->queuelist of dequeued request should be list_empty() */
+> +	if (!list_empty(&rq->queuelist))
+> +		blkdev_dequeue_request(rq);
+> +
+> +	end_that_request_last(rq, uptodate);
+> +}
+> +
+> +/**
+> + * blk_end_request - Helper function for drivers to complete the request.
+> + * @rq:       the request being processed
+> + * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+> + * @nr_bytes: number of bytes to complete
+> + *
+> + * Description:
+> + *     Ends I/O on a number of bytes attached to @rq.
+> + *     If @rq has leftover, sets it up for the next range of segments.
+> + *
+> + * Return:
+> + *     0 - we are done with this request
+> + *     1 - still buffers pending for this request
+> + **/
+> +int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Bill Nottingham <notting@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
----
- depmod.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+I always hated that uptodate boolean with possible negative error value.
+I guess it was done for backward compatibility of then users of 
+end_that_request_first(). But since you are introducing a new API then
+this is not the case. Just have regular status int where 0 means ALL_OK
+and negative value means error code. 
+Just my $0.02.
 
-diff --git a/depmod.c b/depmod.c
-index ea7ad05..e5b9bc3 100644
---- a/depmod.c
-+++ b/depmod.c
-@@ -585,6 +585,52 @@ static struct module *grab_basedir(const char *dirname)
- 	return list;
- }
- 
-+static void sort_modules(const char *dirname, struct module **listp)
-+{
-+	struct module *list = *listp, *tlist = NULL, **tpos = &tlist;
-+	FILE *modorder;
-+	int dir_len = strlen(dirname) + 1;
-+	char file_name[dir_len + strlen("modules.order") + 1];
-+	char line[dir_len + 10240];
-+
-+	sprintf(file_name, "%s/%s", dirname, "modules.order");
-+
-+	modorder = fopen(file_name, "r");
-+	if (!modorder) {
-+		if (errno == ENOENT)
-+			return;
-+		fatal("Could not open '%s': %s\n", file_name, strerror(errno));
-+	}
-+
-+	sprintf(line, "%s/", dirname);
-+
-+	/* move modules listed in modorder file to tlist in order */
-+	while (fgets(line + dir_len, sizeof(line) - dir_len, modorder)) {
-+		struct module **pos, *mod;
-+		int len = strlen(line);
-+
-+		if (line[len - 1] == '\n')
-+			line[len - 1] = '\0';
-+
-+		for (pos = &list; (mod = *pos); pos = &(*pos)->next) {
-+			if (strcmp(line, mod->pathname) == 0) {
-+				*pos = mod->next;
-+				mod->next = NULL;
-+				*tpos = mod;
-+				tpos = &mod->next;
-+				break;
-+			}
-+		}
-+	}
-+
-+	/* append the rest */
-+	*tpos = list;
-+
-+	fclose(modorder);
-+
-+	*listp = tlist;
-+}
-+
- static void parse_modules(struct module *list)
- {
- 	struct module *i;
-@@ -857,6 +903,7 @@ int main(int argc, char *argv[])
- 	} else {
- 		list = grab_basedir(dirname);
- 	}
-+	sort_modules(dirname, &list);
- 	parse_modules(list);
- 
- 	for (i = 0; i < sizeof(depfiles)/sizeof(depfiles[0]); i++) {
+> +{
+> +	struct request_queue *q = rq->q;
+> +	unsigned long flags = 0UL;
+> +
+> +	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+> +		if (__end_that_request_first(rq, uptodate, nr_bytes))
+> +			return 1;
+> +	}
+> +
+> +	add_disk_randomness(rq->rq_disk);
+> +
+> +	spin_lock_irqsave(q->queue_lock, flags);
+> +	complete_request(rq, uptodate);
+> +	spin_unlock_irqrestore(q->queue_lock, flags);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(blk_end_request);
+> +
+> +/**
+> + * __blk_end_request - Helper function for drivers to complete the request.
+> + *
+> + * Description:
+> + *     Must be called with queue lock held unlike blk_end_request().
+> + **/
+> +int __blk_end_request(struct request *rq, int uptodate, int nr_bytes)
+> +{
+> +	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+> +		if (__end_that_request_first(rq, uptodate, nr_bytes))
+> +			return 1;
+> +	}
+> +
+> +	add_disk_randomness(rq->rq_disk);
+> +
+> +	complete_request(rq, uptodate);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(__blk_end_request);
+> +
+>  static void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+>  			    struct bio *bio)
+>  {
+> Index: 2.6.24-rc3-mm2/include/linux/blkdev.h
+> ===================================================================
+> --- 2.6.24-rc3-mm2.orig/include/linux/blkdev.h
+> +++ 2.6.24-rc3-mm2/include/linux/blkdev.h
+> @@ -725,6 +725,8 @@ static inline void blk_run_address_space
+>   * for parts of the original function. This prevents
+>   * code duplication in drivers.
+>   */
+> +extern int blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+> +extern int __blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+>  extern int end_that_request_first(struct request *, int, int);
+>  extern int end_that_request_chunk(struct request *, int, int);
+>  extern void end_that_request_last(struct request *, int);
+
+I don't like it that you have two Identical but slightly different implementations
+I wish you would do an internal-with-flags implementation and then API ones can
+call the internal one. Or maybe just hold the spin_lock just a bit longer and have
+one call the other. To prove my case see how hard it is to add new code
+like with the bidi patch, where you need to add exact same code in 3 places.
+(OK only 2 places actually, if _callback is gone)
+
+I want to say that this is grate work and thanks for doing this, I like this code
+a lot.
+
+Boaz
