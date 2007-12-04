@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbXLDAbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbXLDAsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751658AbXLDAbB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 19:31:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbXLDAax
+	id S1751502AbXLDAsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 19:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbXLDAsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 19:30:53 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:4874 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbXLDAax (ORCPT
+	Mon, 3 Dec 2007 19:48:11 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:48845 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbXLDAsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 19:30:53 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Mark Lord" <lkml@rtr.ca>, "Ingo Molnar" <mingo@elte.hu>
-Cc: "Chris Friesen" <cfriesen@nortel.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Subject: RE: sched_yield: delete sysctl_sched_compat_yield
-Date: Mon, 3 Dec 2007 16:30:26 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEINIJAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Mon, 3 Dec 2007 19:48:09 -0500
+Subject: newlist: public malware discussion [Re: Out of tree module using
+	LSM]
+From: Jon Masters <jonathan@jonmasters.org>
+To: 7eggert@gmx.de
+Cc: Ray Lee <ray-lk@madrabbit.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       tvrtko.ursulin@sophos.com, Al Viro <viro@ftp.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu
+In-Reply-To: <E1IzK2o-00045u-Ha@be1.7eggert.dyndns.org>
+References: <9uzZr-6iz-19@gated-at.bofh.it> <9uUrm-5w3-27@gated-at.bofh.it>
+	 <9uVGz-7uQ-19@gated-at.bofh.it> <9uWCC-xI-13@gated-at.bofh.it>
+	 <9uWMp-Ix-13@gated-at.bofh.it> <9uX5A-1rs-1@gated-at.bofh.it>
+	 <9uXyK-24f-23@gated-at.bofh.it>  <E1IzK2o-00045u-Ha@be1.7eggert.dyndns.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Mon, 03 Dec 2007 19:47:00 -0500
+Message-Id: <1196729221.27258.72.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20071203220559.GA11906@elte.hu>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Mon, 03 Dec 2007 16:31:34 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Mon, 03 Dec 2007 16:31:35 -0800
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> * Mark Lord <lkml@rtr.ca> wrote:
+On Mon, 2007-12-03 at 23:45 +0100, Bodo Eggert wrote:
+> Jon Masters <jonathan@jonmasters.org> wrote:
+> > On Thu, 2007-11-29 at 11:11 -0800, Ray Lee wrote:
+> >> On Nov 29, 2007 10:56 AM, Jon Masters <jonathan@jonmasters.org> wrote:
+> >> > On Thu, 2007-11-29 at 10:40 -0800, Ray Lee wrote:
+> >> > > On Nov 29, 2007 9:36 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> >> > > > > closed. But more importantly further access to it can be blocked
+> >> > > > > until appropriate actions are taken which also applies with your
+> >> > > > > example, no? Is
+> >> > > >
+> >> > > > That bit is hard- very hard.
+> 
+> >> To lift Alan's example, a naive first implementation
+> >> would be to create a suffix tree of all of ESR's works, then scan each
+> >> page on fault to see if there are any partial matches in the tree.
+> > 
+> > Ah, but I could write a sequence of pages that on their own looked
+> > garbage, but in reality, when executed would print out a copy of the
+> > Jargon File in all its glory. And if you still think you could look for
+> > patterns, how about executable code that self-modifies in random ways
+> > but when executed as a whole actually has the functionality of fetchmail
+> > embedded within it? How would you guard against that?
+> 
+> You can't scan all possible code for malware:
+> Take a random piece of code, possibly halting. Replace all halting conditions
+> using a piece of malware. Scan it. If it were possible to detect the malware
+> without false positives, you'd have solved the halting problem.
 
-> > Ack.  And what of the suggestion to try to ensure that a yielding task
-> > simply not end up as the very next one chosen to run?  Maybe by
-> > swapping it with another (adjacent?) task in the tree if it comes out
-> > on top again?
+Good. I think you got the point of my sarcasm. My *point* was that we
+have two different camps of people here:
 
-> we did that too for quite some time in CFS - it was found to be "not
-> agressive enough" by some folks and "too agressive" by others. Then when
-> people started bickering over this we added these two simple corner
-> cases - switchable via a flag. (minimum agression and maximum agression)
+* Those who think some solution is better than none.
+* Those who want an unobtainable, perfect solution.
 
-They are both correct. It is not agressive enough if there are tasks other
-than those two that are at the same static priority level and ready to run.
-It is too agressive if the task it is swapped with is at a lower static
-priority level.
+I'm not criticising, each has their position. However, I was attempting
+to explain that I do fully "get it" by running through an example of how
+to work around more elementary on-access scanning schemes. I know that
+(no matter what marketing exists to the contrary), it is never possible
+to have perfect anti-malware software. But I do think there is a time
+and a place for Linux to help make some folks feel safer - on access
+file scanning isn't evil, and you don't have to use it! Freedom! :-)
 
-Perhaps it might be possible to scan for the task at the same static
-priority level that is ready-to-run but last in line among other
-ready-to-run tasks and put it after that task? I think that's about as close
-as we can get to the POSIX-specified behavior.
+Having spoken to a few people, I've created the following mailing list,
+so we can rant away and come up with a list of requirements to present
+for further discussion. Note that this is a case where I actually expect
+people to be *happy* with yet another email list :-) 
 
-> > Thanks Ingo -- I *really* like this scheduler!
+http://lists.printk.net/cgi-bin/mailman/listinfo/malware-list
 
-Just in case this isn't clear, I like CFS too and sincerely appreciate the
-work Ingo, Con, and others have done on it.
+Please sign up, and encourage interested third parties to do so too.
+Let's work this all out. Then I'll come back sometime over the holidays
+with a summary and some followup.
 
-DS
+> If I had to design a virus scanner interface, I'd e.g. create a library*
+> providing an {open|mmap}_and_scan() function that would give me a clean
+> copy/really-private mapping of a scanned file, and a scan_{blob,file}()
+> function that would scan a block of memory/a file.
+
+Although I'm open to the idea, I'm almost 100% convinced that nobody is
+going to buy modifying userspace applications one at a time. I think
+there is a legitimate feeling of this needing to be massaged by the
+kernel on some level. But I might be wrong - don't flame me.
+
+Jon.
 
 
