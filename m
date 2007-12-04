@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbXLDPxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbXLDPyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbXLDPxo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXLDPxg
+	id S1755000AbXLDPyj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:54:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbXLDPyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:53:36 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:36651 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751356AbXLDPxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:53:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:to:cc:subject:references:from:date:in-reply-to:message-id:user-agent:mime-version:content-type:sender;
-        b=mdxp5JMoPgoFaY1r8jIM6ARrd6lK/2Az8XkcSqG1fpZjUoY1zisMAXTgNQJA7RvQLgjnsVLSfdolZ2Txv2Hzwr+UhwCpIgks9il/KK4zNQF2p5O45YA9E0dgnVbZ01dc3CU1EwUwracbHLc81g4T4zDrMFeLc7OvLraXU9N19io=
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/3] drivers/serial/uartlite.c: Add missing of_node_put
-References: <Pine.LNX.4.64.0712022105480.3361@ask.diku.dk>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 04 Dec 2007 16:53:20 +0100
-In-Reply-To: <Pine.LNX.4.64.0712022105480.3361@ask.diku.dk> (Julia Lawall's message of "Sun\, 2 Dec 2007 21\:06\:54 +0100 \(CET\)")
-Message-ID: <87bq96xxqn.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 4 Dec 2007 10:54:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36693 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbXLDPyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 10:54:32 -0500
+Message-ID: <475576A0.5020601@redhat.com>
+Date: Tue, 04 Dec 2007 13:47:44 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
+Subject: Re: [PATCH 0/10] Integrate msr.h
+References: <11967666042130-git-send-email-gcosta@redhat.com> <20071204140939.GA16328@elte.hu>
+In-Reply-To: <20071204140939.GA16328@elte.hu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Julia" == Julia Lawall <julia@diku.dk> writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
- Julia> From: Julia Lawall <julia@diku.dk>
- Julia> There should be an of_node_put when breaking out of a loop
- Julia> that iterates using for_each_compatible_node.
+Ingo Molnar escreveu:
+> * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+> 
+>> Hello,
+>>
+>> This series of patches integrates msr.h header. What it really does, 
+>> is a series of steps to allow us to get rid of duplicate code between 
+>> i386 and x86_64 versions
+>>
+>> With this done, achieving paravirt for x86_64 gets really easy, just a 
+>> couple of extra code.
+> 
+> thanks, the patches look certainly sane and i've picked them up into 
+> x86.git. A quick build & boot test was successful on both 64-bit and 
+> 32-bit, with paravirt on/off. I've pushed out the latest tree into the 
+> 'mm' branch of:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-x86.git
+> 
+> minor nit: some of your patches had scripts/checkpatch.pl failures, 
+> could you try to fix them up? (If possible then as a follow-up second 
+> patch series.) Thanks!
+Sure. I'll resend them.
 
-..
+> [ btw., how far away are you from having Kconfig selectable 64-bit
+>   paravirt support? Just curious :-) ]
+> 
+Not too much. Jeremy is handling the page table code, and I'm basically
+taking care of the rest. I don't go to far in integration in other
+areas, so the patches are the same that were already previously sent
+some days ago. I'll just rebase and send again.
 
- Julia> Signed-off-by: Julia Lawall <julia@diku.dk>
+The only rebase I'm expecting to be troublesome is the paravirt.c /
+paravirt.h files. So I'd say we're close.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
--- 
-Bye, Peter Korsgaard
+iD8DBQFHVXagjYI8LaFUWXMRAhHjAKDVDesU/iRyDXDgQB6Pxx23PTizyQCgzzcU
+rZsECAdjqaGeZqAxWY2lhro=
+=qrHF
+-----END PGP SIGNATURE-----
