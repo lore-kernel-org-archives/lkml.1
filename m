@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbXLDWp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbXLDWuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbXLDWp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbXLDWpu
+	id S1753937AbXLDWuz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbXLDWur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:45:50 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46249 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752010AbXLDWpt (ORCPT
+	Tue, 4 Dec 2007 17:50:47 -0500
+Received: from lazybastard.de ([212.112.238.170]:38376 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbXLDWur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:45:49 -0500
-Date: Tue, 4 Dec 2007 23:45:43 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
-Message-ID: <20071204224543.GH15974@stusta.de>
-References: <1196801629.10408.26.camel@brick> <20071204213247.GA11216@elte.hu> <1196806868.10408.33.camel@brick> <20071204222717.GA25974@elte.hu>
-MIME-Version: 1.0
+	Tue, 4 Dec 2007 17:50:47 -0500
+Date: Tue, 4 Dec 2007 23:45:25 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Friesen <cfriesen@nortel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: solid state drive access and context switching
+Message-ID: <20071204224525.GC26112@lazybastard.org>
+References: <47548BF4.3010907@nortel.com> <20071203230629.725f4c7a@the-village.bc.nu> <6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com> <20071204203536.2bf6d025@the-village.bc.nu> <6934efce0712041354n47c11d6ckbc7f4aa1e7c85f@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071204222717.GA25974@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6934efce0712041354n47c11d6ckbc7f4aa1e7c85f@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 11:27:17PM +0100, Ingo Molnar wrote:
+On Tue, 4 December 2007 13:54:21 -0800, Jared Hulbert wrote:
 > 
-> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > On Tue, 2007-12-04 at 22:32 +0100, Ingo Molnar wrote:
-> > > * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> > > 
-> > > > I'm not sure if the definition of asmlinkage and prevent_tail_call can 
-> > > > be omitted as well and let the linux/linkage.h version get picked up 
-> > > > instead.
-> > > 
-> > > no, we cannot remove them - asmlinkage is needed for the syscall 
-> > > entry (and other entry code) to work, the and the prevent_tail_call 
-> > > works around a compiler bug. (which might or might not be fixed in 
-> > > latest gcc - but we generally dont remove workarounds unless we are 
-> > > really sure it's fine.)
-> > 
-> > OK, but if this patch is acceptable, then there is no more places in 
-> > the tree that define the FASTCALL macro, other than the empty default 
-> > in include/linux/linkage.h.  So I think a second step would be to 
-> > start to get rid of FASTCALL callers elsewhere in the tree...thoughts?
-> 
-> the removal of FASTCALL is fine: the default (and only) compiler model 
-> for x86 (32-bit) is regparm(3), so the regparm(3) macro is equivalent to 
-> the empty one in linux/linkage.h.
->...
+> Maybe I'm missing something but I don't see it.  We want a block
+> interface for these devices, we just need a faster slimmer interface.
+> Maybe a new mtdblock interface that doesn't do erase would be the
+> place for?
 
-But please ensure that they stay in assembler code also used by UML.
+Doesn't do erase?  MTD has to learn almost all tricks from the block
+layer, as devices are becoming high-latency high-bandwidth, compared to
+what MTD was designed for.  In order to get any decent performance, we
+need asynchronous operations, request queues and caching.
 
-> 	Ingo
+The only useful advantage MTD does have over block devices is an
+_explicit_ erase operation.  Did you mean "doesn't do _implicit_ erase".
 
-cu
-Adrian
+Jörn
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+It's just what we asked for, but not what we want!
+-- anonymous
