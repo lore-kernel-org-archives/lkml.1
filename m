@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbXLDVie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbXLDVkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756881AbXLDVie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbXLDViM
+	id S1755598AbXLDVkN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbXLDVj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:38:12 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:3675 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbXLDViJ (ORCPT
+	Tue, 4 Dec 2007 16:39:59 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:46920 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbXLDVj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:38:09 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux.kernel@free.fr>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: Is the PCI clock within the spec?
-Date: Tue, 4 Dec 2007 13:37:31 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEPFIJAC.davids@webmaster.com>
+	Tue, 4 Dec 2007 16:39:59 -0500
+Date: Tue, 4 Dec 2007 16:39:24 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Holmes - Sun Microsystems <David.Holmes@Sun.COM>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix for futex_wait signal stack corruption
+Message-ID: <20071204213924.GA14915@goodmis.org>
+References: <1196801858.1645.37.camel@localhost.localdomain> <alpine.LFD.0.9999.0712041307270.32379@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <47556E48.40703@free.fr>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 04 Dec 2007 13:38:48 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 04 Dec 2007 13:38:48 -0800
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0712041307270.32379@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 04, 2007 at 01:09:36PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 4 Dec 2007, Steven Rostedt wrote:
+> >
+> > The solution I did to solve this is to allocate a temporary buffer when
+> > setting up the block and free it in futex_wait_restart. This patch
+> > allows David's test program to actually pass.
+> 
+> No. Unacceptable. This is a memory leak in case nobody retries it. It's 
+> basically not how you can do this thing.
 
-> > A scope probe will allow you to see if there is
-> > a clock signal. That's all. You can't determine
-> > its quality. A 4-inch ground lead on the scope
-> > probe will result in 10-20% overshoot and undershoot
-> > being observed.
+Fair enough.
 
-> I don't understand this 10-20% figure.
-> (0V + 10-20% is still 0V.)
+I was misguided, that the return func had to be called.
 
-If you're jumping from a 900 foot marker to a 910 foot marker, does a 10%
-overshoot mean you jumped 1 foot too far or 90 feet too far? The percentage
-is of the distance you were trying to go, not of where you started or where
-you ended up.
+> 
+> The *only* thing you can pass for a system call restart is the argument 
+> block register state. If that is not enough, then you cannot restart it. 
+> It's that simple.
+> 
+> Andrew, please do *not* put this in any queues. It's fundamentally broken, 
+> and cannot be fixed as is. 
 
-> AFAIU, the nominal peak-to-peak voltage is 3.3V. The observed
-> peak-to-peak voltage is 6.08V (3.3V + 84%).
+Yep, trash it.
 
-So a 10% undershoot would mean that rather than going from 3.3V to 0V, you
-overshot 0V by 10% or the distance you travelled. The voltages could just as
-well be 100V and 103.3V, the transitions would still be the same. What you
-call zero is, at least in principle, arbitrary.
+Seems that arg3 is not used here and since the timer is 64 bits, we can
+store the bottom 32 bits in arg2 and the top in arg3 (this will work for
+both 32 and 64 bit archs).
 
-DS
+This will eliminate the need for kmalloc (I didn't like that solution
+anyway).
 
+New patch on its way (after I get some food to eat).
+
+Thanks,
+
+-- Steve
 
