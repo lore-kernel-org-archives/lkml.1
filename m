@@ -1,252 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbXLDUKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbXLDULV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbXLDUKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXLDUKo
+	id S1754275AbXLDULV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXLDULD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:10:44 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:48908 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbXLDUKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:10:43 -0500
-Date: Tue, 4 Dec 2007 15:10:42 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes
-Message-ID: <20071204201042.GA20425@havoc.gtf.org>
-MIME-Version: 1.0
+	Tue, 4 Dec 2007 15:11:03 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:52426 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754112AbXLDULB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 15:11:01 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAF5DVUdMROHU/2dsb2JhbACBWg
+Date: Tue, 4 Dec 2007 15:05:58 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mbligh@google.com
+Subject: Re: [RFC PATCH] LTTng instrumentation mm (updated)
+Message-ID: <20071204200558.GB1988@Krystal>
+References: <20071129023421.GA711@Krystal> <1196317552.18851.47.camel@localhost> <20071130161155.GA29634@Krystal> <1196444801.18851.127.camel@localhost> <20071130170516.GA31586@Krystal> <1196448122.19681.16.camel@localhost> <20071130191006.GB3955@Krystal> <y0mve7ez2y3.fsf@ton.toronto.redhat.com> <20071204192537.GC31752@Krystal> <1196797259.6073.17.camel@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <1196797259.6073.17.camel@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:49:52 up 31 days, 55 min,  7 users,  load average: 0.48, 0.52,
+	0.54
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Dave Hansen (haveblue@us.ibm.com) wrote:
+> On Tue, 2007-12-04 at 14:25 -0500, Mathieu Desnoyers wrote:
+> > 
+> > - I also dump the equivalent of /proc/swaps (with kernel internal
+> >   information) at trace start to know what swap files are currently
+> >   used.
+> 
+> What about just enhancing /proc/swaps so that this information can be
+> useful to people other than those doing traces?
+> 
 
-Fixes several ugly bugs...
+It includes an in-kernel struct file pointer, exporting it to userspace
+would be somewhat ugly.
+
+> Now that we have /proc/$pid/pagemap, we expose some of the same
+> information about which userspace virtual addresses are stored where and
+> in which swapfile.  
+> 
+
+The problems with /proc :
+
+- It exports all the data in formatted text. What I need for my traces
+  is pure binary, compact representation.
+- It's not very neat to export in-kernel pointer information like a
+  kernel tracer would need.
+- The locking is very often wrong. I started correcting /proc/modules a
+  while ago, but I fear there are quite a few cases where a procfile
+  reader could release the locks between two consecutive reads of the
+  same list and therefore cause missing information or corruption. While
+  being manageable for a proc text file, this is _highly_ unwanted in a
+  trace. See my previous "seq file sorted" and "module.c sort module
+  list" patches about this. My tracer deals with addition/removal of
+  elements to a list between dumps done by "chunks" by tracing the
+  modifications done to the list at the same time. However, /proc seq
+  files will just get corrupted or forget about an element not touched
+  by the modification, which my tracer cannot cope with.
+
+Mathieu
 
 
-Please pull from 'upstream-fixes' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-fixes
+> -- Dave
+> 
 
-to receive the following updates:
-
- drivers/net/fec_mpc52xx.c    |    4 ++--
- drivers/net/gianfar.c        |    2 +-
- drivers/net/pasemi_mac.c     |    4 ++--
- drivers/net/phy/mdio_bus.c   |    9 +++++----
- drivers/net/phy/phy_device.c |   12 ++++++++++++
- drivers/net/sky2.c           |    6 ++----
- drivers/net/smc911x.c        |    2 +-
- include/linux/phy.h          |    1 +
- 8 files changed, 26 insertions(+), 14 deletions(-)
- mode change 100755 => 100644 drivers/net/chelsio/cxgb2.c
- mode change 100755 => 100644 drivers/net/chelsio/pm3393.c
- mode change 100755 => 100644 drivers/net/chelsio/sge.c
- mode change 100755 => 100644 drivers/net/chelsio/sge.h
-
-Anton Vorontsov (1):
-      PHY: Add the phy_device_release device method.
-
-David Woodhouse (1):
-      Don't claim to do IPv6 checksum offload
-
-Divy Le Ray (1):
-      cxgb - revert file mode changes.
-
-Grant Likely (1):
-      gianfar: fix compile warning
-
-Jon Smirl (1):
-      Fix memory corruption in fec_mpc52xx
-
-Olof Johansson (1):
-      pasemi_mac: Fix reuse of free'd skb
-
-Stephen Hemminger (1):
-      sky2: recovery deadlock fix
-
-Wang Chen (1):
-      SMC911X: Fix using of dereferenced skb after netif_rx
-
-diff --git a/drivers/net/chelsio/cxgb2.c b/drivers/net/chelsio/cxgb2.c
-old mode 100755
-new mode 100644
-diff --git a/drivers/net/chelsio/pm3393.c b/drivers/net/chelsio/pm3393.c
-old mode 100755
-new mode 100644
-diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
-old mode 100755
-new mode 100644
-diff --git a/drivers/net/chelsio/sge.h b/drivers/net/chelsio/sge.h
-old mode 100755
-new mode 100644
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index bf5a7ca..79f7ead 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- 
- 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
- 				(struct bcom_bd **)&bd);
--		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
-+		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
- 
- 		/* Test for errors in received frame */
- 		if (status & BCOM_FEC_RX_BD_ERRORS) {
-@@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- 			bcom_prepare_next_buffer(priv->rx_dmatsk);
- 
- 		bd->status = FEC_RX_BUFFER_SIZE;
--		bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
-+		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
- 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
- 
- 		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 38268d7..0431e9e 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -696,7 +696,7 @@ int startup_gfar(struct net_device *dev)
- {
- 	struct txbd8 *txbdp;
- 	struct rxbd8 *rxbdp;
--	dma_addr_t addr;
-+	dma_addr_t addr = 0;
- 	unsigned long vaddr;
- 	int i;
- 	struct gfar_private *priv = netdev_priv(dev);
-diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
-index 09b4fde..816a59e 100644
---- a/drivers/net/pasemi_mac.c
-+++ b/drivers/net/pasemi_mac.c
-@@ -586,7 +586,7 @@ static int pasemi_mac_clean_rx(struct pasemi_mac *mac, int limit)
- 			/* CRC error flagged */
- 			mac->netdev->stats.rx_errors++;
- 			mac->netdev->stats.rx_crc_errors++;
--			dev_kfree_skb_irq(skb);
-+			/* No need to free skb, it'll be reused */
- 			goto next;
- 		}
- 
-@@ -1362,7 +1362,7 @@ pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	netif_napi_add(dev, &mac->napi, pasemi_mac_poll, 64);
- 
--	dev->features = NETIF_F_HW_CSUM | NETIF_F_LLTX | NETIF_F_SG;
-+	dev->features = NETIF_F_IP_CSUM | NETIF_F_LLTX | NETIF_F_SG;
- 
- 	/* These should come out of the device tree eventually */
- 	mac->dma_txch = index;
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index fc2f0e6..c30196d 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -91,9 +91,12 @@ int mdiobus_register(struct mii_bus *bus)
- 
- 			err = device_register(&phydev->dev);
- 
--			if (err)
-+			if (err) {
- 				printk(KERN_ERR "phy %d failed to register\n",
- 						i);
-+				phy_device_free(phydev);
-+				phydev = NULL;
-+			}
- 		}
- 
- 		bus->phy_map[i] = phydev;
-@@ -110,10 +113,8 @@ void mdiobus_unregister(struct mii_bus *bus)
- 	int i;
- 
- 	for (i = 0; i < PHY_MAX_ADDR; i++) {
--		if (bus->phy_map[i]) {
-+		if (bus->phy_map[i])
- 			device_unregister(&bus->phy_map[i]->dev);
--			kfree(bus->phy_map[i]);
--		}
- 	}
- }
- EXPORT_SYMBOL(mdiobus_unregister);
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index f6e4848..5b9e175 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -44,6 +44,16 @@ static struct phy_driver genphy_driver;
- extern int mdio_bus_init(void);
- extern void mdio_bus_exit(void);
- 
-+void phy_device_free(struct phy_device *phydev)
-+{
-+	kfree(phydev);
-+}
-+
-+static void phy_device_release(struct device *dev)
-+{
-+	phy_device_free(to_phy_device(dev));
-+}
-+
- struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
- {
- 	struct phy_device *dev;
-@@ -54,6 +64,8 @@ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
- 	if (NULL == dev)
- 		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
- 
-+	dev->dev.release = phy_device_release;
-+
- 	dev->speed = 0;
- 	dev->duplex = -1;
- 	dev->pause = dev->asym_pause = 0;
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 3d1dfc9..6197afb 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2906,16 +2906,14 @@ static void sky2_restart(struct work_struct *work)
- 	int i, err;
- 
- 	rtnl_lock();
--	sky2_write32(hw, B0_IMSK, 0);
--	sky2_read32(hw, B0_IMSK);
--	napi_disable(&hw->napi);
--
- 	for (i = 0; i < hw->ports; i++) {
- 		dev = hw->dev[i];
- 		if (netif_running(dev))
- 			sky2_down(dev);
- 	}
- 
-+	napi_disable(&hw->napi);
-+	sky2_write32(hw, B0_IMSK, 0);
- 	sky2_reset(hw);
- 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
- 	napi_enable(&hw->napi);
-diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
-index 1a3d80b..76cc1d3 100644
---- a/drivers/net/smc911x.c
-+++ b/drivers/net/smc911x.c
-@@ -1299,9 +1299,9 @@ smc911x_rx_dma_irq(int dma, void *data)
- 	PRINT_PKT(skb->data, skb->len);
- 	dev->last_rx = jiffies;
- 	skb->protocol = eth_type_trans(skb, dev);
--	netif_rx(skb);
- 	dev->stats.rx_packets++;
- 	dev->stats.rx_bytes += skb->len;
-+	netif_rx(skb);
- 
- 	spin_lock_irqsave(&lp->lock, flags);
- 	pkts = (SMC_GET_RX_FIFO_INF() & RX_FIFO_INF_RXSUSED_) >> 16;
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index e10763d..554836e 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -403,6 +403,7 @@ int phy_mii_ioctl(struct phy_device *phydev,
- int phy_start_interrupts(struct phy_device *phydev);
- void phy_print_status(struct phy_device *phydev);
- struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id);
-+void phy_device_free(struct phy_device *phydev);
- 
- extern struct bus_type mdio_bus_type;
- #endif /* __PHY_H */
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
