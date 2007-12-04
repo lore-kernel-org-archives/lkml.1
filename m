@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbXLDVoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXLDVsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbXLDVoG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:44:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXLDVnv
+	id S1754222AbXLDVsG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXLDVry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:43:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32873 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751071AbXLDVnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:43:50 -0500
-Date: Tue, 04 Dec 2007 16:37:49 -0500 (EST)
-Message-Id: <20071204.163749.39152828.k-ueda@ct.jp.nec.com>
-To: bharrosh@panasas.com, jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 01/28] blk_end_request: add new request completion
- interface (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <47555C90.2080609@panasas.com>
-References: <20071130.182422.18574732.k-ueda@ct.jp.nec.com>
-	<47555C90.2080609@panasas.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+	Tue, 4 Dec 2007 16:47:54 -0500
+Received: from smtp.ono.com ([62.42.230.12]:33797 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751821AbXLDVrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 16:47:53 -0500
+Date: Tue, 4 Dec 2007 22:47:45 +0100
+From: "J.A. =?ISO-8859-1?Q?Magall=F3n?=" <jamagallon@ono.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+Message-ID: <20071204224745.51e6c2b1@werewolf>
+In-Reply-To: <20071203215727.543fc757@the-village.bc.nu>
+References: <474EAD18.6040408@stellatravel.co.uk>
+	<20071130143445.GA2310@csclub.uwaterloo.ca>
+	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
+	<4751BE0D.3050609@argo.co.il>
+	<p733aukyl8n.fsf@bingen.suse.de>
+	<47539030.10600@argo.co.il>
+	<20071203095022.GA28560@one.firstfloor.org>
+	<4753ECA5.2010604@argo.co.il>
+	<20071203211353.GA4009@1wt.eu>
+	<20071203223902.1194aa69@werewolf>
+	<20071203215727.543fc757@the-village.bc.nu>
+X-Mailer: Claws Mail 3.1.0cvs49 (GTK+ 2.12.2; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boaz and Jens,
+On Mon, 3 Dec 2007 21:57:27 +0000, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-On Tue, 04 Dec 2007 15:56:32 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> > +/**
-> > + * blk_end_request - Helper function for drivers to complete the request.
-> > + * @rq:       the request being processed
-> > + * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
-> > + * @nr_bytes: number of bytes to complete
-> > + *
-> > + * Description:
-> > + *     Ends I/O on a number of bytes attached to @rq.
-> > + *     If @rq has leftover, sets it up for the next range of segments.
-> > + *
-> > + * Return:
-> > + *     0 - we are done with this request
-> > + *     1 - still buffers pending for this request
-> > + **/
-> > +int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
+> > You could write an equally effcient kernel in languages like C++,
+> > using C++ abstractions as a high level organization, where
 > 
-> I always hated that uptodate boolean with possible negative error value.
-> I guess it was done for backward compatibility of then users of 
-> end_that_request_first(). But since you are introducing a new API then
-> this is not the case. Just have regular status int where 0 means ALL_OK
-> and negative value means error code. 
-> Just my $0.02.
+> It's very very hard to generate good C code because of the numerous ways
+> objects get temporarily created, and the week aliasing rules (as with C).
+> 
 
-Thank you for the comment.
-I think it's quite reasonable.
-By doing that, we don't need end_io_error() anymore.
+That is what I like of C++, with good placement of high level features
+like const's and & (references) one can gain fine control over what
+gets copied or not.
+Try to write a Vector class that does ops with SSE without storing
+temporals on the stack. Its a good example of how one can get low
+level control, and gcc is pretty good simplifying things like u=v+2*w
+and not putting anything on the stack, all in xmm registers.
+
+The advantage is you onle has to be careful one time, when you write
+the class.
+
+> There are reasons that Fortran lives on (and no I'm not suggesting one
+> should rewrite the kernel in Fortran ;)) and the fact its not really got
+> pointer aliasing or "address of" operators and all the resulting
+> optimsation problems is one of the big ones.
+> 
 
 
-Jens,
-What do you think?
-If you agree with the interface change above, I would prefer to
-separate the patch-set from blk_end_request patch-set like below:
-    o blk_end_request: remove end_that_request_*
-    o change interface of 'uptodate' in blk_end_request to 'error'
-It makes the purpose of blk_end_request patch-set clear
-(and also, each patch of device drivers could be smaller).
-But, it doubles your merging work.  So if you would like to get
-the changes at once, I'll merge them into blk_end_request patch-set.
- 
-As for the patch inclusion, do you push the driver changes to Linus
-all at once?  Or should I ask each maintainer to take the patch?
-
-Thanks,
-Kiyoshi Ueda
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux 2.6.23-jam03 (gcc 4.2.2 (4.2.2-1mdv2008.1)) SMP Sat Nov
