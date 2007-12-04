@@ -1,118 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbXLDBsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbXLDCKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751816AbXLDBsj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Dec 2007 20:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbXLDBsc
+	id S1751608AbXLDCKF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Dec 2007 21:10:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXLDCJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Dec 2007 20:48:32 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:35216 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbXLDBsc (ORCPT
+	Mon, 3 Dec 2007 21:09:56 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:25201 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750709AbXLDCJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Dec 2007 20:48:32 -0500
-Date: Tue, 4 Dec 2007 02:48:14 +0100 (MET)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: hverkuil@xs4all.nl, mchehab@infradead.org
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20071204013436.7739.99885.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] ivtv: Some general fixes
+	Mon, 3 Dec 2007 21:09:55 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Konr8JsTPtYME7550yE2JygFiwoPsm6YMBW4J2cv1+dLRQ6uf9mGLesZKWIZyhWBSvSJW5GzsWDZla2KIxwhw/6PSWfmsYrI9LbY496E57ehUN2XLeEbgY3RnoFqDlzvMZ6vpGID/ALgrxeTppi4OcDAIJyXJ/QHNiiRZi6JrBo=  ;
+X-YMail-OSG: O3u3IWsVM1ksFYmxaJGVzlRAte28K08rm4_3Yo5XQH5Ro9kpKAcJn4B.xzGFBr9lAOpmO9QV7w--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: davids@webmaster.com
+Subject: Re: sched_yield: delete sysctl_sched_compat_yield
+Date: Tue, 4 Dec 2007 13:09:48 +1100
+User-Agent: KMail/1.9.5
+Cc: "Mark Lord" <lkml@rtr.ca>, "Ingo Molnar" <mingo@elte.hu>,
+       "Chris Friesen" <cfriesen@nortel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKKEINIJAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEINIJAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712041309.48451.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix "warning: Using plain integer as NULL pointer".
-Convert 'x < y ? x : y' to use min() instead.
+On Tuesday 04 December 2007 11:30, David Schwartz wrote:
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
----
-Compile-tested on i386 with "allyesconfig" and "allmodconfig".
-Resend, since the 'Remove a gcc-2.95 requirement'-part is taken away.
+> Perhaps it might be possible to scan for the task at the same static
+> priority level that is ready-to-run but last in line among other
+> ready-to-run tasks and put it after that task?
 
- ivtv-driver.c  |    2 +-
- ivtv-ioctl.c   |    2 +-
- ivtv-irq.c     |    4 ++--
- ivtv-streams.c |    4 ++--
- ivtvfb.c       |    2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+Nice level versus posix static priority level debate aside, this
+is the exact behaviour which the compat mode does now basically,
+when you have all tasks running at nice 0 (which I assume is the
+essentially the case in both the jvm and firefox tests) (some
+things, eg. kernel threads or X server could run at a higher prio,
+but these are not the ones calling yield anyway...)
 
 
-diff --git a/drivers/media/video/ivtv/ivtv-driver.c b/drivers/media/video/ivtv/ivtv-driver.c
-index 6d2dd87..96f340c 100644
---- a/drivers/media/video/ivtv/ivtv-driver.c
-+++ b/drivers/media/video/ivtv/ivtv-driver.c
-@@ -979,7 +979,7 @@ static int __devinit ivtv_probe(struct pci_dev *dev,
- 	}
- 
- 	itv = kzalloc(sizeof(struct ivtv), GFP_ATOMIC);
--	if (itv == 0) {
-+	if (itv == NULL) {
- 		spin_unlock(&ivtv_cards_lock);
- 		return -ENOMEM;
- 	}
-diff --git a/drivers/media/video/ivtv/ivtv-ioctl.c b/drivers/media/video/ivtv/ivtv-ioctl.c
-index fd6826f..24270de 100644
---- a/drivers/media/video/ivtv/ivtv-ioctl.c
-+++ b/drivers/media/video/ivtv/ivtv-ioctl.c
-@@ -688,7 +688,7 @@ static int ivtv_debug_ioctls(struct file *filp, unsigned int cmd, void *arg)
- 			ivtv_reset_ir_gpio(itv);
- 		}
- 		if (val & 0x02) {
--			itv->video_dec_func(itv, cmd, 0);
-+			itv->video_dec_func(itv, cmd, NULL);
- 		}
- 		break;
- 	}
-diff --git a/drivers/media/video/ivtv/ivtv-irq.c b/drivers/media/video/ivtv/ivtv-irq.c
-index fd1688e..1384615 100644
---- a/drivers/media/video/ivtv/ivtv-irq.c
-+++ b/drivers/media/video/ivtv/ivtv-irq.c
-@@ -204,7 +204,7 @@ static int stream_enc_dma_append(struct ivtv_stream *s, u32 data[CX2341X_MBOX_MA
- 		s->sg_pending[idx].dst = buf->dma_handle;
- 		s->sg_pending[idx].src = offset;
- 		s->sg_pending[idx].size = s->buf_size;
--		buf->bytesused = (size < s->buf_size) ? size : s->buf_size;
-+		buf->bytesused = min(size, s->buf_size);
- 		buf->dma_xfer_cnt = s->dma_xfer_cnt;
- 
- 		s->q_predma.bytesused += buf->bytesused;
-@@ -705,7 +705,7 @@ static void ivtv_irq_dec_data_req(struct ivtv *itv)
- 		s = &itv->streams[IVTV_DEC_STREAM_TYPE_YUV];
- 	}
- 	else {
--		itv->dma_data_req_size = data[2] >= 0x10000 ? 0x10000 : data[2];
-+		itv->dma_data_req_size = min_t(u32, data[2], 0x10000);
- 		itv->dma_data_req_offset = data[1];
- 		s = &itv->streams[IVTV_DEC_STREAM_TYPE_MPG];
- 	}
-diff --git a/drivers/media/video/ivtv/ivtv-streams.c b/drivers/media/video/ivtv/ivtv-streams.c
-index aa03e61..0e9e7d0 100644
---- a/drivers/media/video/ivtv/ivtv-streams.c
-+++ b/drivers/media/video/ivtv/ivtv-streams.c
-@@ -572,10 +572,10 @@ int ivtv_start_v4l2_encode_stream(struct ivtv_stream *s)
- 		clear_bit(IVTV_F_I_EOS, &itv->i_flags);
- 
- 		/* Initialize Digitizer for Capture */
--		itv->video_dec_func(itv, VIDIOC_STREAMOFF, 0);
-+		itv->video_dec_func(itv, VIDIOC_STREAMOFF, NULL);
- 		ivtv_msleep_timeout(300, 1);
- 		ivtv_vapi(itv, CX2341X_ENC_INITIALIZE_INPUT, 0);
--		itv->video_dec_func(itv, VIDIOC_STREAMON, 0);
-+		itv->video_dec_func(itv, VIDIOC_STREAMON, NULL);
- 	}
- 
- 	/* begin_capture */
-diff --git a/drivers/media/video/ivtv/ivtvfb.c b/drivers/media/video/ivtv/ivtvfb.c
-index 52ffd15..f73ce98 100644
---- a/drivers/media/video/ivtv/ivtvfb.c
-+++ b/drivers/media/video/ivtv/ivtvfb.c
-@@ -1053,7 +1053,7 @@ static int ivtvfb_init_card(struct ivtv *itv)
- 	}
- 
- 	itv->osd_info = kzalloc(sizeof(struct osd_info), GFP_ATOMIC);
--	if (itv->osd_info == 0) {
-+	if (itv->osd_info == NULL) {
- 		IVTVFB_ERR("Failed to allocate memory for osd_info\n");
- 		return -ENOMEM;
- 	}
+> I think that's about as 
+> close as we can get to the POSIX-specified behavior.
+
+I don't think it is a question of POSIX being a bit fuzzy, or some
+problem we have implementing it. It is explicitly specified to
+allow any behaviour.
+
+So the current default is not wrong, any more than the compat mode
+is right.
