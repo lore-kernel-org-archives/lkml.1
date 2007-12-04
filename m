@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565AbXLDIPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbXLDISb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751565AbXLDIPZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:15:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXLDIPI
+	id S1752473AbXLDISb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXLDISY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:15:08 -0500
-Received: from www.tglx.de ([62.245.132.106]:53525 "EHLO www.tglx.de"
+	Tue, 4 Dec 2007 03:18:24 -0500
+Received: from mx1.suse.de ([195.135.220.2]:45573 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070AbXLDIPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:15:06 -0500
-Subject: Re: [PATCH][AT91] Fix compile error for at91rm9200 in latest git
-From: Jan Altenberg <jan.altenberg@linutronix.de>
-To: Andrew Victor <avictor.za@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, linux@maxim.org.za,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-In-Reply-To: <cd73a99e0712031202u71efc0e1g8cf910760475bb5d@mail.gmail.com>
-References: <1196675122.3832.18.camel@bender.lan>
-	 <200712031053.43316.david-b@pacbell.net>
-	 <cd73a99e0712031202u71efc0e1g8cf910760475bb5d@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 04 Dec 2007 09:14:29 +0100
-Message-Id: <1196756069.3835.7.camel@bender.lan>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1750924AbXLDISX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:18:23 -0500
+Date: Tue, 4 Dec 2007 00:20:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The use of KOBJ_NAME_LEN
+Message-ID: <20071204082027.GA3014@suse.de>
+References: <20071204064547.GA17094@darkstar.lan> <20071204074612.GA25316@suse.de> <a8e1da0712032353m1a705ec6ged4d503818ad8f58@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0712032353m1a705ec6ged4d503818ad8f58@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-> > Your patch looks correct, and seems to be the only obvious chunk
-> > that's missing.  So, I'll ack it FWIW ... usual policy for these
-> > patches is to go through Russell.
+On Tue, Dec 04, 2007 at 03:53:15PM +0800, Dave Young wrote:
+> On Dec 4, 2007 3:46 PM, Greg KH <gregkh@suse.de> wrote:
+> > On Tue, Dec 04, 2007 at 02:45:47PM +0800, Dave Young wrote:
+> > > Hi,
+> > > Does the KOBJ_NAME_LEN really means the limit of kobject name length? seems
+> > > not . And if it's true, is the KOBJ_NAME_LEN of 20 enough to use?
+> >
+> > No, not anymore, the kobject name is totally dynamic.
 > 
-> You can add my Ack for what it's worth.
+> Eh, Why does this macro still exist? If KOBJ_NAME_LEN is really
+> needed, maybe it should be renamed to something else to avoid
+> misleading.
 
-OK, CC'ed Russell and added your Acked-by.
+Right now other .h files use it also.  It isn't hurting anything for
+now, and Kay has some patches he is working on to get rid of the static
+bus_id array, which will then let us get rid of that define entirely.
 
-Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
-Acked-by: Andrew Victor <avictor.za@gmail.com>
+thanks,
 
----
-diff --git a/arch/arm/mach-at91/board-ek.c b/arch/arm/mach-at91/board-ek.c
-index d05b1b2..53a5ef9 100644
---- a/arch/arm/mach-at91/board-ek.c
-+++ b/arch/arm/mach-at91/board-ek.c
-@@ -109,6 +109,15 @@ static struct spi_board_info ek_spi_devices[] = {
- #endif
- };
- 
-+static struct i2c_board_info __initdata ek_i2c_devices[] = {
-+	{
-+		I2C_BOARD_INFO("ics1523", 0x26),
-+	},
-+	{
-+		I2C_BOARD_INFO("dac3550", 0x4d),
-+	}
-+};
-+
- #define EK_FLASH_BASE	AT91_CHIPSELECT_0
- #define EK_FLASH_SIZE	0x200000
- 
-
-
+greg k-h
