@@ -1,73 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbXLDSGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbXLDSHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbXLDSGf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 13:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbXLDSGZ
+	id S1755167AbXLDSHv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 13:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXLDSHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 13:06:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752264AbXLDSGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 13:06:23 -0500
-Date: Tue, 04 Dec 2007 13:04:41 -0500 (EST)
-Message-Id: <20071204.130441.41629552.k-ueda@ct.jp.nec.com>
-To: bzolnier@gmail.com
-Cc: jens.axboe@oracle.com, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-Subject: Re: [PATCH 24/28] blk_end_request: changing ide normal caller
- (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <200712041447.00238.bzolnier@gmail.com>
-References: <200712012353.05187.bzolnier@gmail.com>
-	<20071203.181252.58460084.k-ueda@ct.jp.nec.com>
-	<200712041447.00238.bzolnier@gmail.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 4 Dec 2007 13:07:42 -0500
+Received: from an-out-0708.google.com ([209.85.132.241]:33979 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbXLDSHk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 13:07:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=d/ECI9ZDYjpHwa5SAqfyNBeOMXGcPTU6P8/kRKNArqpfHISDR1YcyTq9QDQqK/138SviiSYA946SeRKYUgKMVAojrBK19Lx5XAkI90yAonIt34mRn09g4GNlYfsqCpLb/TC4dkVhaErstFYClvvwHYU/jSgtRwTeiQI1Xt5S+tk=
+Message-ID: <a430082a0712041007u3c863h28414ce62317609e@mail.gmail.com>
+Date: Tue, 4 Dec 2007 19:07:40 +0100
+From: "Markus Metzger" <markus.t.metzger@googlemail.com>
+To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: [patch 2/2] man: man pages for ptrace BTS extensions
+Cc: akpm@linux-foundation.org, markus.t.metzger@googlemail.com,
+       markus.t.metzger@intel.com, mtk.manpages@gmail.com, roland@redhat.com,
+       suresh.b.siddha@intel.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bartlomiej,
+Changes to the last version:
+- ported to v 2.68
 
-On Tue, 4 Dec 2007 14:47:00 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > Hmmm, this seems to change the old behavior (the request should
-> > > be dequeued from the queue only if 'dequeue' variable is set)
-> > > and AFAIR some error handling code (in ide-cd?) depends on the
-> > > old behavior so please revisit this patch.
-> > 
-> > blk_end_request() takes care of the dequeue like below,
-> > so I think no problem.  (Please see PATCH 01)
-> > 
-> > > +	/* rq->queuelist of dequeued request should be list_empty() */
-> > > +	if (!list_empty(&rq->queuelist))
-> > > +		blkdev_dequeue_request(rq);
-> > 
-> > In the case of ide-cd,
-> >   o 'dequeue' variable is 1 only when the request is still linked
-> >     to the queue (i.e. rq->queuelist is not empty)
-> >   o 'dequeue' variable is 0 only when the request has already been
-> >     removed from the queue (i.e. rq->queuelist is empty)
-> > So blk_end_request() can handle it correctly.
-> 
-> It would be helpful to add the above explanation to a patch description.
-> 
-> > If there are any drivers which don't want dequeue the queued request,
-> > the code above would not work.
-> > But, as far as I investigated, I have never seen such a requirement
-> > in device drivers.
-> > 
-> > Do you think that ide may still gets a problem for the 'dequeue'?
-> 
-> Everything seems to be fine now.
-> 
-> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-Thank you for the check.
-OK, I'll add the explanation about the 'dequeue' to patch description.
-
-Thanks,
-Kiyoshi Ueda
+Index: man-pages-2.68/man2/ptrace.2
+===================================================================
+--- man-pages-2.68.orig/man2/ptrace.2	2007-11-30 17:22:59.%N +0100
++++ man-pages-2.68/man2/ptrace.2	2007-11-30 17:26:48.%N +0100
+@@ -40,6 +40,9 @@
+ .\"        PTRACE_SETSIGINFO, PTRACE_SYSEMU, PTRACE_SYSEMU_SINGLESTEP
+ .\"    (Thanks to Blaisorblade, Daniel Jacobowitz and others who helped.)
+ .\"
++.\" Modified Nov 2007, Markus Metzger <markus.t.metzger@intel.com>
++.\"     Added PTRACE_BTS_* commands
++.\"
+ .TH PTRACE 2 2007-11-15 "Linux" "Linux Programmer's Manual"
+ .SH NAME
+ ptrace \- process trace
+@@ -378,6 +381,95 @@
+ detached in this way regardless of which method was used to initiate
+ tracing.
+ (\fIaddr\fP is ignored.)
++.LP
++The following ptrace commands provide access to the hardware's last
++branch recording. They may not be available on all architectures.
++.LP
++Last branch recording stores an execution trace of the traced process
++in a circular buffer (called Branch Trace Store). For every
++(conditional) control flow change, the source and destination address
++are stored. On some architectures, control flow changes inside the
++kernel may be recorded, as well. On later architectures, these are
++automatically filtered out.
++.LP
++In addition to branches, timestamps may optionally be recorded when
++the traced process arrives and departs, respectively. This information
++can be used to obtain a qualitative execution order, if more than one
++process is traced.
++.LP
++.nf
++enum ptrace_bts_qualifier {
++	PTRACE_BTS_INVALID = 0,
++	PTRACE_BTS_BRANCH,
++	PTRACE_BTS_TASK_ARRIVES,
++	PTRACE_BTS_TASK_DEPARTS
++};
++.sp
++struct ptrace_bts_record {
++	enum ptrace_bts_qualifier qualifier;
++	union {
++		/* PTRACE_BTS_BRANCH */
++		struct {
++			void *from_ip;
++			void *to_ip;
++		} lbr;
++		/* PTRACE_BTS_TASK_ARRIVES or
++		   PTRACE_BTS_TASK_DEPARTS */
++		unsigned long long timestamp;
++	} variant;
++};
++.fi
++.LP
++.TP
++PTRACE_BTS_MAX_BUFFER_SIZE
++Returns the maximal BTS buffer size.
++.TP
++PTRACE_BTS_ALLOCATE_BUFFER
++Allocate a new BTS buffer big enough to hold \fIdata\fP \fBstruct
++ptrace_bts_record\fP entries.
++\fIData\fP must be in the range of 0..PTRACE_BTS_MAX_BUFFER_SIZE.
++If a buffer is already allocated, that buffer is freed after the new
++buffer was successfully allocated. The new buffer initially contains
++invalid entries.
++Typically, a buffer is allocated once when tracing starts. It is
++automatically deallocated when the parent detaches from the child.
++(\fIaddr\fP is ignored.)
++.TP
++PTRACE_BTS_GET_BUFFER_SIZE
++Returns the actual BTS buffer size in number of BTS records. The
++command fails, if no buffer has been allocated.
++(\fIaddr\fP and \fIdata\fP are ignored.)
++.TP
++PTRACE_BTS_GET_INDEX
++Returns the index of the next entry to be (over)written by the tracing
++hardware. This can be used to determine the end of the current
++execution trace.
++(\fIaddr\fP and \fIdata\fP are ignored.)
++.TP
++PTRACE_BTS_READ_RECORD
++Reads the BTS record at index \fIdata\fP into \fIaddr\fP. The caller
++is responsible for allocating memory at \fIaddr\fP of at least
++\fB sizeof(struct ptrace_bts_record)\fP bytes. The index \fIdata\fP
++must be in the range 0..PTRACE_BTS_GET_BUFFER_SIZE - 1.
++.TP
++PTRACE_BTS_CONFIG
++Configures last branch recording from \fIdata\fP in the parent.
++(\fIaddr\fP is ignored.)
++\fIdata\fP is interpreted
++as a bitmask of options, which are specified by the following flags:
++.RS
++.TP
++PTRACE_BTS_O_TRACE_TASK
++Record last branch records for control flow changes.
++.TP
++PTRACE_BTS_O_TIMESTAMPS
++Record timestamps when child arrives and departs, respectively.
++.RE
++.TP
++PTRACE_BTS_STATUS
++Returns the current BTS configuration as a bitmask of the above
++options.
++(\fIaddr\fP and \fIdata\fP are ignored.)
+ .SH "RETURN VALUE"
+ On success,
+ .B PTRACE_PEEK*
+@@ -432,6 +524,16 @@
+ .B ESRCH
+ The specified process does not exist, or is not currently being traced
+ by the caller, or is not stopped (for requests that require that).
++.TP
++.B EOPNOTSUPP
++The operation is not supported on this architecture.
++.TP
++.B ENOMEM
++Not enough memory to allocate the BTS buffer.
++.TP
++.B ENXIO
++An attempt to access BTS information has been made without allocating
++a BTS buffer first.
+ .SH "CONFORMING TO"
+ SVr4, 4.3BSD
+ .SH NOTES
