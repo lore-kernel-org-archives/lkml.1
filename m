@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbXLDMuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbXLDMvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbXLDMuO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 07:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXLDMuB
+	id S1753704AbXLDMvc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 07:51:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXLDMvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 07:50:01 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60198 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbXLDMuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 07:50:01 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef CONFIG_SYSCTL
-References: <475008F5.3000506@openvz.org> <475009FA.20409@openvz.org>
-	<20071203133844.40804dab.akpm@linux-foundation.org>
-	<475516B6.5000504@openvz.org>
-	<20071204012301.4349bbd0.akpm@linux-foundation.org>
-	<47551E79.6080802@openvz.org>
-	<20071204014549.8fe47f7f.akpm@linux-foundation.org>
-	<m1zlwqy9g5.fsf@ebiederm.dsl.xmission.com>
-	<20071204034836.47211436.akpm@linux-foundation.org>
-	<475540D9.9010109@openvz.org>
-Date: Tue, 04 Dec 2007 05:48:45 -0700
-In-Reply-To: <475540D9.9010109@openvz.org> (Pavel Emelyanov's message of "Tue,
-	04 Dec 2007 14:58:17 +0300")
-Message-ID: <m1ve7ey6aa.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 4 Dec 2007 07:51:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37161 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751356AbXLDMvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 07:51:24 -0500
+Date: Tue, 4 Dec 2007 13:51:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Subject: Re: [PATCH] fix x86-32 early fixmap initialization.
+Message-ID: <20071204125101.GA31590@elte.hu>
+References: <47520F37.20657.4A6846F1@pageexec.freemail.hu> <m163zh5181.fsf@ebiederm.dsl.xmission.com> <86802c440712011824v4fdac3c4pfaf2f4d5ce93fe18@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440712011824v4fdac3c4pfaf2f4d5ce93fe18@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
 
-> [snip]
->
->>> We do have some current code in the network stack that fails miserably
->>> when  register_sysctl_table returns NULL, and there are explicit
->>> checks for that.
->> 
->> So that code would be failing today with CONFIG_SYSCTL=n?  Unless the
->> failing code is itself under #ifdef CONFIG_SYSCTL, in which case we don't
->> need to change anything?
->
-> Exactly! If the code checks for the return value it won't work
-> with CONFIG_SYSCTL=n, if it dies not - it may happily use the
-> sysctl stub and avoid extra ifdefs.
->
-> But this difference looks clumsy :(
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-So we remove the check as we clean up the code.
-Unless we happen to find something that can do something useful and
-reasonable is register_sysctl_xxxx fails.
+> On Dec 1, 2007 5:34 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> >
+> > pageexec@freemail.hu writes:
+> >
+> > > hello,
+> > >
+> > > i've just noticed that the chunk in i386/kernel/head.S ended up in a
+> > > weird place, namely, it's not going to be executed as it's just after
+> > > a 'jmp 3f' and before startup_32_smp, probably not what you intended.
+> > > on a sidenote, the whole thing can be done in a single insn, like:
+> > >
+> > > movl $(swapper_pg_pmd - __PAGE_OFFSET + 0x067), (swapper_pg_dir -
+> > > __PAGE_OFFSET+ 4092)
+> > >
+> > > PS: your email address ebiderman@xmisson.com in the commit seems to
+> > > be wrong as well.
+> >
+> > Yes.  YH refresh one of my old patches and apparently got my email
+> > address wrong.
+> >
+> > Thanks for the reminder I thought we had fixed this problem a while 
+> > ago.
+> 
+> i sent fix to andrew and andi. but it seems they missed it.
 
-Eric
+ok, this one is now upstream, it's in -rc4:
+
+ ------------->
+ commit 17d57a9206b4de6ad082ac9f2d2346985abbd2aa
+ Author: Eric W. Biederman <ebiederm@xmission.com>
+ Date:   Sat Dec 1 18:34:06 2007 -0700
+
+     x86: fix x86-32 early fixmap initialization.
+
+     pageexec@freemail.hu writes:
+
