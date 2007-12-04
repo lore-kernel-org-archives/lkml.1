@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbXLDTyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbXLDT6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbXLDTyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXLDTyF
+	id S1753074AbXLDT6q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbXLDT6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:54:05 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47960 "EHLO mail.dvmed.net"
+	Tue, 4 Dec 2007 14:58:39 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57165 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbXLDTyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:54:02 -0500
-Message-ID: <4755B058.7070402@garzik.org>
-Date: Tue, 04 Dec 2007 14:54:00 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Divy Le Ray <divy@chelsio.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cxgb - revert file mode changes.
-References: <20071201235717.22418.24800.stgit@speedy5>
-In-Reply-To: <20071201235717.22418.24800.stgit@speedy5>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751531AbXLDT6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 14:58:39 -0500
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linuxppc-dev@ozlabs.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
+References: <20071204060911.EA82BDDE19@ozlabs.org>
+	 <Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Wed, 05 Dec 2007 06:57:59 +1100
+Message-Id: <1196798279.13230.312.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Divy Le Ray wrote:
-> From: Divy Le Ray <divy@chelsio.com>
-> 
-> revert inavertant file mode changes
-> 
-> Signed-off-by: Divy Le Ray <divy@chelsio.com>
-> ---
-> 
->  drivers/net/chelsio/cxgb2.c  |    0 
->  drivers/net/chelsio/pm3393.c |    0 
->  drivers/net/chelsio/sge.c    |    0 
->  drivers/net/chelsio/sge.h    |    0 
->  4 files changed, 0 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/chelsio/cxgb2.c b/drivers/net/chelsio/cxgb2.c
-> old mode 100755
-> new mode 100644
-> diff --git a/drivers/net/chelsio/pm3393.c b/drivers/net/chelsio/pm3393.c
-> old mode 100755
-> new mode 100644
-> diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
-> old mode 100755
-> new mode 100644
-> diff --git a/drivers/net/chelsio/sge.h b/drivers/net/chelsio/sge.h
-> old mode 100755
-> new mode 100644
 
-applied #upstream-fixes
+On Tue, 2007-12-04 at 13:39 +0100, Geert Uytterhoeven wrote:
+> 
+> Can we please have them in <linux/ioport.h>? They look very useful to
+> me
+> elsewhere (other bus drivers, device drivers), too.
+> 
+> What about naming the printf format specifier macros more like in C99,
+> e.g.
+> PRI*?
+
+That's a can of worms I just didn't want to open...
+
+Ben.
 
 
