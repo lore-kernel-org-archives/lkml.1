@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbXLDRuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbXLDRyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbXLDRuz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 12:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXLDRur
+	id S1753460AbXLDRyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 12:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbXLDRyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 12:50:47 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:51028 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751239AbXLDRur (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 12:50:47 -0500
-Date: Tue, 4 Dec 2007 12:50:46 -0500
-To: Gilboa Davara <gilboad@gmail.com>
-Cc: LKML Linux Kernel <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@argo.co.il>
-Subject: Re: Kernel Development & Objective-C
-Message-ID: <20071204175046.GC2310@csclub.uwaterloo.ca>
-References: <474EAD18.6040408@stellatravel.co.uk> <20071130143445.GA2310@csclub.uwaterloo.ca> <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com> <4751BE0D.3050609@argo.co.il> <p733aukyl8n.fsf@bingen.suse.de> <47539030.10600@argo.co.il> <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Tue, 4 Dec 2007 12:54:14 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:50383 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbXLDRyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 12:54:13 -0500
+Message-Id: <20071204174358.271253130@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 04 Dec 2007 12:43:58 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [patch 0/4] Instrumentation menu removal
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue,  4 Dec 2007 17:53:59 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 02:35:31PM +0200, Gilboa Davara wrote:
-> Intel's newest dual 10GbE NIC can easily (?) throw ~14M packets per
-> second. (theoretical peak at 1514bytes/frame)
-> Granted, installing such a device on a single CPU/single core machine is
-> absurd - but even on an 8 core machine (2 x Xeon 53xx/54xx / AMD
-> Barcelona) it can still generate ~1M packets/s per core.
+Hi Andrew,
 
-10GbE can't do 14M packets per second if the packets are 1514 bytes.  At
-10M packets per second you have less than 1000 bits per packet, which is
-far from 1514bytes.
+Here is the instrumentation menu removal patchset, updated to take care of
+recent avr32 changes. It has been done on top of 2.6.24-rc4 with the following
+patches applied :
 
-10Gbps gives you at most 1.25GBps, which at 1514 bytes per packet works
-out to 825627 packets per second.  You could reach ~14M packets per
-second with only the smallest packet size, which is rather unusual for
-high throughput traffic, since you waste almost all the bytes on
-overhead in that case.  But you do want to be able to handle at least a
-million or two packets per second to do 10GbE.
+[PATCH 1/2] [AVR32] Include instrumentation menu
+[PATCH 2/2] [AVR32] Oprofile support
 
---
-Len Sorensen
+(which have been merged in the avr32 tree by Haavard)
+
+Applying it in the current -mm after the "git-avr32.patch" in the following
+order should work fine :
+
+add-kconfig-to-arch.patch
+add-have-oprofile.patch
+add-have-kprobes.patch
+move-kconfig-instrumentation-to-arch.patch
+
+If you have any problem applying them, just tell me. I think there is no
+difference between 2.6.24-rc4 + those two patches and your tree in that aspect,
+but if there happen to be one, I'll get a -mm tree and do a clean patchset.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
