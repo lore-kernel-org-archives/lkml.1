@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbXLDPjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbXLDPlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbXLDPjg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXLDPj3
+	id S1754702AbXLDPlb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXLDPlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:39:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41863 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbXLDPj2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:39:28 -0500
-Date: Tue, 4 Dec 2007 07:37:29 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: <tovarekl@centrum.cz>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: EIP problem (kernel: BUG: unable to handle kernel NULL pointer)
-Message-ID: <20071204073729.212c2b3f@laptopd505.fenrus.org>
-In-Reply-To: <200712041540.24458@centrum.cz>
-References: <200712041345.380@centrum.cz>
-	<200712041540.24458@centrum.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Dec 2007 10:41:25 -0500
+Received: from ccs17.jlab.org ([129.57.35.82]:49012 "EHLO ccs17.jlab.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbXLDPlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 10:41:24 -0500
+Message-ID: <47557520.2000106@jlab.org>
+Date: Tue, 04 Dec 2007 10:41:20 -0500
+From: Jie Chen <chen@jlab.org>
+Organization: Jefferson Lab
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com> <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu>
+In-Reply-To: <20071204131707.GA4232@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Dec 2007 15:40:15 +0100
-<tovarekl@centrum.cz> wrote:
-
+Ingo Molnar wrote:
+> * Jie Chen <chen@jlab.org> wrote:
 > 
-> Hi Kernel Gurus,
+>> Simon Holm Th??gersen wrote:
+>>> ons, 21 11 2007 kl. 20:52 -0500, skrev Jie Chen:
+>>> There is a backport of the CFS scheduler to 2.6.21, see
+>>> http://lkml.org/lkml/2007/11/19/127
+>>>
+>> Hi, Simon:
+>>
+>> I will try that after the thanksgiving holiday to find out whether the 
+>> odd behavior will show up using 2.6.21 with back ported CFS.
 > 
-> Please find kindly the description of EIP problems below.
-> I greatfully appreciate your kind help.
+> would be also nice to test this with 2.6.24-rc4.
 > 
+> 	Ingo
+Hi, Ingo:
 
-Hi,
+I will test 2.6.24-rc4 this week and let you know the result. Thanks.
 
-your oops is the first crash reported against generic_make_request in
-2.6.18 (in fact, in the last year pretty much) so it's not a very
-common pattern. However, you're running a 2.6.18 kernel, which is
-really really old (and has many known security issues fixed since);
-it's probably a good idea to do a yum upgrade to get a more current
-kernel; fc6 ships something like a 2.6.22 or 2.6.23 nowadays as
-update...
-
-Greetings,
-   Arjan van de Ven
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+#############################################################################
+# Jie Chen
+# Scientific Computing Group
+# Thomas Jefferson National Accelerator Facility
+# Newport News, VA 23606
+#
+# chen@jlab.org
+# (757)269-5046 (office)
+# (757)269-6248 (fax)
+#############################################################################
