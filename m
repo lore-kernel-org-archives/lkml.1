@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbXLDWXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbXLDWXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbXLDWXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXLDWXI
+	id S1755171AbXLDWXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXLDWXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:23:08 -0500
-Received: from mu-out-0910.google.com ([209.85.134.187]:62734 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbXLDWXF convert rfc822-to-8bit (ORCPT
+	Tue, 4 Dec 2007 17:23:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:52529 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbXLDWXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:23:05 -0500
+	Tue, 4 Dec 2007 17:23:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=ajT04+OADxu+dG09Z7EVfkwnaKY9duszCr5dcKWgYrxcmbcE8Hls3Sr7F2V/J4WnaVF10s0VsvLtwzV7VvIdlVWRtTNvXqka/kReUpOdSgU7rBDBBGvXtJFJk48nFOI/XT1CC4XDc+bNoUwHc03ZSDaz7PgzqMF8HzUbZZImsMg=
-Date: Tue, 4 Dec 2007 23:20:45 +0100
-From: Diego Calleja <diegocg@gmail.com>
-To: =?ISO-8859-1?B?IkouQS4gTWFnYWxs824i?= <jamagallon@ono.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Development & Objective-C
-Message-Id: <20071204232045.212ba1bf.diegocg@gmail.com>
-In-Reply-To: <20071204224745.51e6c2b1@werewolf>
-References: <474EAD18.6040408@stellatravel.co.uk>
-	<20071130143445.GA2310@csclub.uwaterloo.ca>
-	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
-	<4751BE0D.3050609@argo.co.il>
-	<p733aukyl8n.fsf@bingen.suse.de>
-	<47539030.10600@argo.co.il>
-	<20071203095022.GA28560@one.firstfloor.org>
-	<4753ECA5.2010604@argo.co.il>
-	<20071203211353.GA4009@1wt.eu>
-	<20071203223902.1194aa69@werewolf>
-	<20071203215727.543fc757@the-village.bc.nu>
-	<20071204224745.51e6c2b1@werewolf>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=CYGZVolEE2PVAFwu6BYMjd8fq7nbn9mvST6nxN6Le3hoDcT0Pui0LMGYuJFnVSkHX5PpQdtFRGX3rnjuKBMG0vnjZxrgkN3qCHNl3uo/Edf0BTFk/FNLsYG1Chj9mD7OExpYCNKPHvzZZBlcuSFz3LNj8O1W1LwPewxzXm8m7lk=
+Message-ID: <4755D42E.7050602@gmail.com>
+Date: Tue, 04 Dec 2007 23:26:54 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+MIME-Version: 1.0
+To: Joonwoo Park <joonwpark81@gmail.com>
+CC: netdev@vger.kernel.org,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: Re: NET: ASSERT_RTNL in __dev_set_promiscuity makes debug warning
+References: <000001c8365a$e0e500c0$9c94fea9@jason>
+In-Reply-To: <000001c8365a$e0e500c0$9c94fea9@jason>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 4 Dec 2007 22:47:45 +0100, "J.A. Magallón" <jamagallon@ono.com> escribió:
+Joonwoo Park wrote, On 12/04/2007 10:48 AM:
 
-> That is what I like of C++, with good placement of high level features
-> like const's and & (references) one can gain fine control over what
-> gets copied or not.
+> Hi,
+> dev_set_rx_mode calls __dev_set_rx_mode with softirq disabled (by netif_tx_lock_bh)
+> therefore __dev_set_promiscuity can be called with softirq disabled.
+> It will cause in_interrupt() to return true and ASSERT_RTNL warning.
+> Is there a good solution to fix it besides blowing ASSERT_RTNL up?
 
-But...if there's some way Linux can get "language improvements", is with
-new C standards/gccextensions/etc. It'd be nice if people tried to add
-(useful) C extensions to gcc, instead of proposing some random language :)
+
+Fixing ASSERT_RTNL up?!
+
+But, IMHO, blowing ASSERT_RTNL up in a few places shouldn't be much
+worse. After all, how long such a debugging code should be kept. It
+seems, at least sometimes we should be a bit more confident of how
+it's called.
+
+Regards,
+Jarek P.
