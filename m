@@ -1,138 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbXLDPPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXLDPRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbXLDPPc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXLDPPY
+	id S1754773AbXLDPRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXLDPRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:15:24 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:45761 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753720AbXLDPPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:15:23 -0500
-Date: Tue, 4 Dec 2007 16:15:40 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: gregkh@suse.de, linux-usb-users@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Edgeport USB Serial Converter: convert es_sem to mutex
-Message-ID: <20071204151540.GG6729@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	gregkh@suse.de, linux-usb-users@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	Tue, 4 Dec 2007 10:17:08 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36058 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753863AbXLDPRG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 10:17:06 -0500
+Date: Tue, 4 Dec 2007 10:17:04 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jarek Poplawski <jarkao2@gmail.com>
+cc: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Need lockdep help
+In-Reply-To: <4754907E.9060203@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0712041000540.4321-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Edgeport USB Serial Converter: convert semaphore es_sem to the
-mutex API
+On Tue, 4 Dec 2007, Jarek Poplawski wrote:
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com> 
+> Alan Stern wrote, On 12/03/2007 04:08 PM:
+> 
+> > On Mon, 3 Dec 2007, Jarek Poplawski wrote:
+> > 
 
---
+> >> Actually, IMHO, there is no reason for any lockdep violation:
+> >>
+> >> thread #1: has down_read(A); waits for #2 to down_write(B)
+> >> thread #2: has down_write(B); never waits for #1 to down_read(A)
+> >>
+> >> So, deadlock isn't possible here. If lockdep reports something else it
+> >> should be fixed (and you'd be right to omit lockdep until this is
+> >> done).
+> > 
+> > I think the reasoning goes the way Arjan described.  Suppose in between
+> > #1 and #2 there is thread #3 trying to do down_write(A) and waiting for
+> > #1.  Then thread #2 doesn't have to wait for #1 directly, but it would
+> > have to wait for #3.
+> 
+> 
+> As a matter of fact I completely missed Arjan's point because I thought
+> you described these locks according to lockdep's report, and there is
+> an information about read or write... Since, you still seem to guess
+> above about possible scenario, maybe it would be easier to show this
+> report (and maybe a piece of this code if possible)?
 
-diff --git a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
-index b867090..f7fdf1c 100644
---- a/drivers/usb/serial/io_ti.c
-+++ b/drivers/usb/serial/io_ti.c
-@@ -34,6 +34,7 @@
- #include <linux/tty_flip.h>
- #include <linux/module.h>
- #include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/serial.h>
- #include <linux/ioctl.h>
- #include <asm/uaccess.h>
-@@ -133,7 +134,7 @@ struct edgeport_serial {
- 	struct product_info product_info;
- 	u8 TI_I2C_Type;			// Type of I2C in UMP
- 	u8 TiReadI2C;			// Set to TRUE if we have read the I2c in Boot Mode
--	struct semaphore es_sem;
-+	struct mutex es_lock;
- 	int num_ports_open;
- 	struct usb_serial *serial;
- };
-@@ -2044,7 +2045,7 @@ static int edge_open (struct usb_serial_port *port, struct file * filp)
- 	dbg ("ShadowMCR 0x%X", edge_port->shadow_mcr);
- 
- 	edge_serial = edge_port->edge_serial;
--	if (down_interruptible(&edge_serial->es_sem))
-+	if (mutex_lock_interruptible(&edge_serial->es_lock))
- 		return -ERESTARTSYS;
- 	if (edge_serial->num_ports_open == 0) {
- 		/* we are the first port to be opened, let's post the interrupt urb */
-@@ -2052,7 +2053,7 @@ static int edge_open (struct usb_serial_port *port, struct file * filp)
- 		if (!urb) {
- 			dev_err (&port->dev, "%s - no interrupt urb present, exiting\n", __FUNCTION__);
- 			status = -EINVAL;
--			goto up_es_sem;
-+			goto release_es_lock;
- 		}
- 		urb->complete = edge_interrupt_callback;
- 		urb->context = edge_serial;
-@@ -2060,7 +2061,7 @@ static int edge_open (struct usb_serial_port *port, struct file * filp)
- 		status = usb_submit_urb (urb, GFP_KERNEL);
- 		if (status) {
- 			dev_err (&port->dev, "%s - usb_submit_urb failed with value %d\n", __FUNCTION__, status);
--			goto up_es_sem;
-+			goto release_es_lock;
- 		}
- 	}
- 
-@@ -2092,13 +2093,13 @@ static int edge_open (struct usb_serial_port *port, struct file * filp)
- 
- 	dbg("%s - exited", __FUNCTION__);
- 
--	goto up_es_sem;
-+	goto release_es_lock;
- 
- unlink_int_urb:
- 	if (edge_port->edge_serial->num_ports_open == 0)
- 		usb_kill_urb(port->serial->port[0]->interrupt_in_urb);
--up_es_sem:
--	up(&edge_serial->es_sem);
-+release_es_lock:
-+	mutex_unlock(&edge_serial->es_lock);
- 	return status;
- }
- 
-@@ -2137,14 +2138,14 @@ static void edge_close (struct usb_serial_port *port, struct file *filp)
- 				     0,
- 				     NULL,
- 				     0);
--	down(&edge_serial->es_sem);
-+	mutex_lock(&edge_serial->es_lock);
- 	--edge_port->edge_serial->num_ports_open;
- 	if (edge_port->edge_serial->num_ports_open <= 0) {
- 		/* last port is now closed, let's shut down our interrupt urb */
- 		usb_kill_urb(port->serial->port[0]->interrupt_in_urb);
- 		edge_port->edge_serial->num_ports_open = 0;
- 	}
--	up(&edge_serial->es_sem);
-+	mutex_unlock(&edge_serial->es_lock);
- 	edge_port->close_pending = 0;
- 
- 	dbg("%s - exited", __FUNCTION__);
-@@ -2743,7 +2744,7 @@ static int edge_startup (struct usb_serial *serial)
- 		dev_err(&serial->dev->dev, "%s - Out of memory\n", __FUNCTION__);
- 		return -ENOMEM;
- 	}
--	sema_init(&edge_serial->es_sem, 1);
-+	mutex_init(&edge_serial->es_lock);
- 	edge_serial->serial = serial;
- 	usb_set_serial_data(serial, edge_serial);
- 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+I have changed my new code, so now the problem is avoided.
 
-             "The only important thing Windows does better
-            than Debian is implementing the win32 platform"
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+> Btw., if it were like you're suggesting, it still shouldn't make any
+> difference: if thread #3 is only waiting for the lock taken for reading,
+> then I can't see why thread #2 has to wait for anything.
+
+The deadlock occurs because:
+
+	Thread #1 has locked A for reading and is waiting for
+	#2 to release B so that #1 can lock B for writing.
+
+	Thread #3 is waiting for #1 to release A so that #3
+	can lock A for writing.
+
+	Thread #2 has locked B for writing and is waiting for
+	#3 to finish using A so that #2 can lock A for reading.
+
+So #1 is waiting for #2, #2 is waiting for #3, and #3 is waiting for 
+#1.  Lockdep warns because this might happen.
+
+Perhaps the point you're missing is that if #3 does down_write(A)  
+before #2 does down_read(A) then #2 has to wait until #3 releases the
+write lock.  #2 isn't allowed to sneak in front of #3; that's what
+Arjan meant when he said that rwsems are fair.
+
+The same sort of problem occurs when a thread does nested read locks on
+a single rwsem.  If a different thread were to try to acquire a write
+lock in between, another deadlock would occur.  That's why lockdep
+warns about nested (or recursive) read locks.
+
+> Probably more
+> dangerous, at least for lockdep, could look taking down_write(A) by
+> thread #1 in between, but if it all were possible only within one
+> thread, then still there should be no reason to change good program
+> only to please lockdep.
+
+I believe the idea behind lockdep is to warn about situations that
+might reasonably be expected to occur.  A thread deadlocking itself by
+doing down_read(A) followed immediately by down_write(A) isn't
+reasonable, so lockdep doesn't worry about that possibility.
+
+> > In my case the simplest answer appears to be the replace the rwsem
+> > with something slightly more complicated (a mutex plus a boolean flag 
+> > -- the loss of concurrency won't matter much since it isn't on a hot 
+> > path).
+> 
+> I'm not sure I can understand your plan, but I doubt there should be
+> such problems with taking rwsem for sleeping, so maybe it would be
+> better to figure out what really scares lockdep, to fix the right place?
+
+The real problem is that lockdep has to make some generalizations.  It
+can't be aware of the details of every possible situation, and it
+doesn't have a global view of the entire kernel, so it doesn't know
+when special circumstances make deadlock impossible.
+
+Furthermore, in this case deadlock isn't really impossible -- it could 
+occur if there were a bug somewhere else in the kernel.  So lockdep was 
+correct to warn that deadlock might occur.
+
+Alan Stern
+
