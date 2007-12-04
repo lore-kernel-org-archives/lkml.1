@@ -1,67 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbXLDStj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXLDStz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbXLDStj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 13:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbXLDSs2
+	id S1753958AbXLDStz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 13:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXLDSsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 13:48:28 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56043 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752538AbXLDSs0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 13:48:26 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <lenb@kernel.org>, Natalie Protasevich <protasnb@gmail.com>,
-       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
-References: <200711280121.18376.lenb@kernel.org>
-	<20071204122649.GB27286@elte.hu>
-Date: Tue, 04 Dec 2007 11:46:36 -0700
-In-Reply-To: <20071204122649.GB27286@elte.hu> (Ingo Molnar's message of "Tue,
-	4 Dec 2007 13:26:49 +0100")
-Message-ID: <m1sl2iwb5f.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 4 Dec 2007 13:48:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56171 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752587AbXLDSsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 13:48:30 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH 4/10] split get_cycles_sync
+Date: Tue,  4 Dec 2007 14:03:54 -0200
+Message-Id: <11967842622658-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11967842573035-git-send-email-gcosta@redhat.com>
+References: 20071204140939.GA16328@elte.hu <11967842402729-git-send-email-gcosta@redhat.com> <11967842482873-git-send-email-gcosta@redhat.com> <11967842531735-git-send-email-gcosta@redhat.com> <11967842573035-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+This patch splits get_cycles_sync() into  __get_cycles_sync(),
+and the rdtscll part. Paravirt guests cannot issue rdtscl directly,
+as it involves a function call in vdso area.
 
-> * Len Brown <lenb@kernel.org> wrote:
->
->>     So while the irq compression code on i386 should really
->>     be deleted -- even before merging the x86_64 irq-overhaul,
->>     this patch simply disables it on all high volume systems
->>     to avoid problems #1 and #2 on most all i386 systems.
->>     
->>     A large system with pin numbers >=64 will still have compression
->>     to conserve limited IRQ numbers for sparse IOAPICS.  However,
->>     the vast majority of the planet, those with only pin numbers < 64
->>     will use an identity GSI -> IRQ mapping.
->>     
->>     Signed-off-by: Len Brown <len.brown@intel.com>
->
-> thanks for the patch and the extensive description. I've applied this to 
-> x86.git. Do you agree that this has no urgency for v2.6.24 and is thus 
-> v2.6.25 material?
->
-> would you be interested in doing a follow-up patch as well that just 
-> yanks all of the irq compression code? That would keep things nicely 
-> bisectable and testable - the second, larger patch would be a NOP in 
-> theory on most systems.
+So, using the __get_cycles_sync() base, we introduce vget_cycles_sync,
+which then calls the native version of rdtscll. Ideally, however, a guest
+should define its own clocksource, together with a vread function
 
-With respect to a follow on patch that removes irq compression.
-We must raise NR_IRQs.
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/tsc_64.c |    2 +-
+ include/asm-x86/tsc.h    |   37 +++++++++++++++++++++++++++++++++----
+ 2 files changed, 34 insertions(+), 5 deletions(-)
 
-I have seen systems with > 256 GSIs (in the 4k ballpark) that
-people occasionally boot 32bit kernels on.
+diff --git a/arch/x86/kernel/tsc_64.c b/arch/x86/kernel/tsc_64.c
+index 5158476..4502539 100644
+--- a/arch/x86/kernel/tsc_64.c
++++ b/arch/x86/kernel/tsc_64.c
+@@ -269,7 +269,7 @@ static cycle_t read_tsc(void)
+ 
+ static cycle_t __vsyscall_fn vread_tsc(void)
+ {
+-	cycle_t ret = (cycle_t)get_cycles_sync();
++	cycle_t ret = (cycle_t)vget_cycles_sync();
+ 	return ret;
+ }
+ 
+diff --git a/include/asm-x86/tsc.h b/include/asm-x86/tsc.h
+index 6baab30..d6cb056 100644
+--- a/include/asm-x86/tsc.h
++++ b/include/asm-x86/tsc.h
+@@ -33,14 +33,14 @@ static inline cycles_t get_cycles(void)
+ }
+ 
+ /* Like get_cycles, but make sure the CPU is synchronized. */
+-static __always_inline cycles_t get_cycles_sync(void)
++static __always_inline cycles_t __get_cycles_sync(void)
+ {
+ 	unsigned long long ret;
+ 	unsigned eax, edx;
+ 
+ 	/*
+-  	 * Use RDTSCP if possible; it is guaranteed to be synchronous
+- 	 * and doesn't cause a VMEXIT on Hypervisors
++	 * Use RDTSCP if possible; it is guaranteed to be synchronous
++	 * and doesn't cause a VMEXIT on Hypervisors
+ 	 */
+ 	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
+ 		       ASM_OUTPUT2("=a" (eax), "=d" (edx)),
+@@ -55,11 +55,40 @@ static __always_inline cycles_t get_cycles_sync(void)
+ 	 */
+ 	alternative_io("cpuid", ASM_NOP2, X86_FEATURE_SYNC_RDTSC,
+ 			  "=a" (eax), "0" (1) : "ebx","ecx","edx","memory");
+-	rdtscll(ret);
+ 
++	return 0;
++}
++
++static __always_inline cycles_t get_cycles_sync(void)
++{
++	unsigned long long ret;
++	ret = __get_cycles_sync();
++	if (!ret)
++		rdtscll(ret);
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_PARAVIRT
++/*
++ * For paravirt guests, some functionalities are executed through function
++ * pointers in the various pvops structures.
++ * These function pointers exist inside the kernel and can not
++ * be accessed by user space. To avoid this, we make a copy of the
++ * get_cycles_sync (called in kernel) but force the use of native_read_tsc.
++ * Ideally, the guest should set up it's own clock and vread
++ */
++static __always_inline long long vget_cycles_sync(void)
++{
++	unsigned long long ret;
++	ret = __get_cycles_sync();
++	if (!ret)
++		ret = native_read_tsc();
++	return ret;
++}
++#else
++# define vget_cycles_sync() get_cycles_sync()
++#endif
++
+ extern void tsc_init(void);
+ extern void mark_tsc_unstable(char *reason);
+ extern int unsynchronized_tsc(void);
+-- 
+1.4.4.2
 
-However those systems seemed to use fewer then 200 or so of those irqs.
-So as long as we are allocating vectors to irqs on demand (i.e. when
-we find that the irq is hooked up or later) we should be ok.
-
-Eric
