@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbXLDICR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbXLDIFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026AbXLDICR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXLDICI
+	id S1752932AbXLDIFe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbXLDIF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:02:08 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:58284 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbXLDICH (ORCPT
+	Tue, 4 Dec 2007 03:05:27 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52641 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbXLDIF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:02:07 -0500
-Date: Tue, 4 Dec 2007 03:02:02 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Greg KH <gregkh@suse.de>
-cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: The use of KOBJ_NAME_LEN
-In-Reply-To: <20071204074656.GB25316@suse.de>
-Message-ID: <alpine.LFD.0.9999.0712040301380.3025@localhost.localdomain>
-References: <20071204064547.GA17094@darkstar.lan> <alpine.LFD.0.9999.0712040150010.31686@localhost.localdomain> <20071204074656.GB25316@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 4 Dec 2007 03:05:26 -0500
+Date: Tue, 4 Dec 2007 10:05:24 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: petero2@telia.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pktcdvd : add kobject_put when kobject register fails
+In-Reply-To: <a8e1da0712040000n7f94c5bbk3e6526ed395d62d@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0712041004250.20088@sbz-30.cs.Helsinki.FI>
+References: <20071204013144.GA2850@darkstar.lan> 
+ <84144f020712032345r6fc1f44cg5f35b23bdb8191be@mail.gmail.com>
+ <a8e1da0712040000n7f94c5bbk3e6526ed395d62d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Dec 2007, Greg KH wrote:
+Hi Dave,
 
-> On Tue, Dec 04, 2007 at 01:50:53AM -0500, Robert P. J. Day wrote:
-> > On Tue, 4 Dec 2007, Dave Young wrote:
-> >
-> > > Hi,
-> > > Does the KOBJ_NAME_LEN really means the limit of kobject name length? seems not . And if it's true, is the KOBJ_NAME_LEN of 20 enough to use?
-> > >
-> > > In the kobject_set_name, the limit is 1024. Looks like either the comment or the code should be updated.
-> > >
-> > > /**
-> > >  *      kobject_set_name - Set the name of an object
-> > >  *      @kobj:  object.
-> > >  *      @fmt:   format string used to build the name
-> > >  *
-> > >  *      If strlen(name) >= KOBJ_NAME_LEN, then use a dynamically allocated
-> > >  *      string that @kobj->k_name points to. Otherwise, use the static
-> > >  *      @kobj->name array.
-> > >  */
-> >
-> > the comment seems fairly clear -- if the name is sufficiently short,
-> > it's stored in the static array.  if not, then it's stored in
-> > dynamically allocated space.
->
-> Unfortunately, it's totally wrong, the code was updated by the comment
-> wasn't, sorry.  See my patch to fix this.
+On Tue, 4 Dec 2007, Dave Young wrote:
+> the kobject reference is get in kobject_init, and then kobject_add, if
+> kobject_add fail, it will only cleanup the reference got by itsself.
+> 
+> This topic is discussed in:
+> http://lkml.org/lkml/2007/11/30/9
 
-ah, quite right, now i see what dave was talking about.
+Ok, thanks! Please the explanation to the changelog too.
 
-rday
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-http://crashcourse.ca
-========================================================================
+			Pekka
