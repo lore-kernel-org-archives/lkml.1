@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbXLDHpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbXLDHxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbXLDHpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 02:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbXLDHpJ
+	id S1752600AbXLDHxZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 02:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXLDHxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 02:45:09 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:58720 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbXLDHpH (ORCPT
+	Tue, 4 Dec 2007 02:53:17 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:13555 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbXLDHxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 02:45:07 -0500
+	Tue, 4 Dec 2007 02:53:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=TEmgvvJCmUVyclLv31PPKNGhT0HXFaefRWYtnoDPDo3K6WrJqStdmQ0RRMK45vdQEIjQ4QJdIzs8H9mHD7NyXsTumU0gU4qWoyV44KDg8iphQQAH5HKa/cPXBHEvBFdxe/leDKJqw8NHlRS+782g+cQoHHW1g0cgTwYUU0OG8Fo=
-Message-ID: <84144f020712032345r6fc1f44cg5f35b23bdb8191be@mail.gmail.com>
-Date: Tue, 4 Dec 2007 09:45:06 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH] pktcdvd : add kobject_put when kobject register fails
-Cc: petero2@telia.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20071204013144.GA2850@darkstar.lan>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xbN/O8lldA8+QrXCPwJcaSxzyXAa+NiQNVRBbPK2NEMzvF/GNp3Ff2ru5E7mnqSqJ5OlQUhGYzumcqmShLJMjV+UJqBkWffHyP6VW51y7zLNpgljgKM6YCHfAlA7NAMalE4nX25WBI5dDEREUcjSWsiEJterZpmjWORkobDC2ys=
+Message-ID: <a8e1da0712032353m1a705ec6ged4d503818ad8f58@mail.gmail.com>
+Date: Tue, 4 Dec 2007 15:53:15 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: The use of KOBJ_NAME_LEN
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071204074612.GA25316@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071204013144.GA2850@darkstar.lan>
-X-Google-Sender-Auth: 24c7a31f6819b807
+References: <20071204064547.GA17094@darkstar.lan>
+	 <20071204074612.GA25316@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Dec 4, 2007 3:46 PM, Greg KH <gregkh@suse.de> wrote:
+> On Tue, Dec 04, 2007 at 02:45:47PM +0800, Dave Young wrote:
+> > Hi,
+> > Does the KOBJ_NAME_LEN really means the limit of kobject name length? seems
+> > not . And if it's true, is the KOBJ_NAME_LEN of 20 enough to use?
+>
+> No, not anymore, the kobject name is totally dynamic.
 
-On Dec 4, 2007 3:31 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> Kobject_put should be called when kobject register functioin fails, so the
-> the kobj ref count touch zero and then the proper cleanup routines will be
-> called.
+Eh, Why does this macro still exist? If KOBJ_NAME_LEN is really
+needed, maybe it should be renamed to something else to avoid
+misleading.
 
-[snip]
+>
+> > In the kobject_set_name, the limit is 1024. Looks like either the comment or
+> > the code should be updated.
+>
+> Here's a patch below for the comment updating it.
 
-> diff -upr linux/drivers/block/pktcdvd.c linux.new/drivers/block/pktcdvd.c
-> --- linux/drivers/block/pktcdvd.c       2007-11-30 13:13:44.000000000 +0800
-> +++ linux.new/drivers/block/pktcdvd.c   2007-11-30 13:24:08.000000000 +0800
-> @@ -117,8 +117,10 @@ static struct pktcdvd_kobj* pkt_kobj_cre
->         p->kobj.parent = parent;
->         p->kobj.ktype = ktype;
->         p->pd = pd;
-> -       if (kobject_register(&p->kobj) != 0)
-> +       if (kobject_register(&p->kobj) != 0) {
-> +               kobject_put(&p->kobj);
->                 return NULL;
-
-This looks wrong to me. AFAICT the only thing that can fail
-kobject_register() is kobject_add() and it cleans up after itself. Am
-I missing something here?
-
-                           Pekka
+Thanks
+>
+> I also have a patch in my -mm series that takes away the 1024 character
+> limit, but for 2.6.24 we'll have to live with it :)
+>
+> thanks,
+>
+> greg k-h
+>
+>
+> ---
+>  lib/kobject.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+>
+> --- a/lib/kobject.c
+> +++ b/lib/kobject.c
+> @@ -234,13 +234,13 @@ int kobject_register(struct kobject * ko
+>
+>
+>  /**
+> - *     kobject_set_name - Set the name of an object
+> - *     @kobj:  object.
+> - *     @fmt:   format string used to build the name
+> + * kobject_set_name - Set the name of a kobject
+> + * @kobj: kobject to name
+> + * @fmt: format string used to build the name
+>   *
+> - *     If strlen(name) >= KOBJ_NAME_LEN, then use a dynamically allocated
+> - *     string that @kobj->k_name points to. Otherwise, use the static
+> - *     @kobj->name array.
+> + * This sets the name of the kobject.  If you have already added the
+> + * kobject to the system, you must call kobject_rename() in order to
+> + * change the name of the kobject.
+>   */
+>  int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
+>  {
+>
