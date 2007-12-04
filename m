@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbXLDTW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXLDT2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbXLDTW6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbXLDTWt
+	id S1752195AbXLDT2k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXLDT2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:22:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53125 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751455AbXLDTWs (ORCPT
+	Tue, 4 Dec 2007 14:28:32 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36100 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750914AbXLDT2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:22:48 -0500
-Date: Tue, 4 Dec 2007 19:22:43 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       roland@redhat.com, dsmith@redhat.com, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch 2/2] Linux Kernel Markers - Create modpost file
-Message-ID: <20071204192243.GA23609@infradead.org>
-References: <20071204181845.895090222@polymtl.ca> <20071204182403.319351701@polymtl.ca> <20071204111026.9f7d8ed5.akpm@linux-foundation.org> <20071204191528.GA31752@Krystal>
+	Tue, 4 Dec 2007 14:28:32 -0500
+Date: Tue, 4 Dec 2007 14:28:31 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jarek Poplawski <jarkao2@gmail.com>
+cc: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Need lockdep help
+In-Reply-To: <4755A457.5080405@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0712041424270.13516-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071204191528.GA31752@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 02:15:28PM -0500, Mathieu Desnoyers wrote:
-> Yup. What I would really like is to, at least, get the API stabilised
-> for 2.6.24. It that means extracting the API changes from the first
-> patch, I could do it. Then we would have plenty of time to discuss the
-> multiple probes support.
+On Tue, 4 Dec 2007, Jarek Poplawski wrote:
 
-We don't have a stable API anyway.  No need to hurry.  The only
-markers user submitted to far is my suptrace and I'll happily adjust
-APIs when they happen to change.
+> Alan Stern wrote, On 12/04/2007 04:17 PM:
+> ...
+> 
+> > Furthermore, in this case deadlock isn't really impossible -- it could 
+> > occur if there were a bug somewhere else in the kernel.  So lockdep was 
+> > correct to warn that deadlock might occur.
+> 
+> 
+> Alan, if the scenario was like you described at the beginning, there was
+> no deadlock possible, unless some errors in the notifier.
+
+Or errors in the notifier's caller.
+
+> These #1-#3
+> threads were only helpful to guess what lockdep could 'think', but I
+> guess notifier doesn't use 2 rivaling threads for a wake, so, lockdep
+> probably needed additional information. And you really can't consider
+> any hypothetical kernel bugs here because then each lock is vulnerable.
+
+But you have to consider hypothetical kernel bugs.  That's exactly what 
+lockdep is for -- to warn you about possible deadlocks that could be 
+caused by bugs.
+
+As a simple example, if thread #1 does "lock(A); lock(B)" and thread 
+#2 does "lock(B); lock(A)" then there's a possible bug.  Lockdep should 
+warn about you, and it does -- even if those two threads can never run 
+at the same time.
+
+If lockdep warned about deadlocks only when they actually happened, it 
+wouldn't be nearly so useful.
+
+Alan Stern
 
