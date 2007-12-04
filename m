@@ -1,90 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751829AbXLDTmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbXLDTp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751829AbXLDTmN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:42:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbXLDTlo
+	id S1753944AbXLDTp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXLDTpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:41:44 -0500
-Received: from nz-out-0506.google.com ([64.233.162.226]:38362 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbXLDTlm (ORCPT
+	Tue, 4 Dec 2007 14:45:10 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:36536 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753225AbXLDTpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:41:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=C7H9G0JBkeZDo6Ef1D89MYnBMzxtm6ifr+/69UmIKnabJKdYdkEDJ6FEOzsA6KUv7G4vn/169qKKyxNTxpiXPWx+WDzNhBLnbjmM3cua9g6CD1jTRvvwjjsHwOsB76IyzyenZFKXiXiGnkca1EIXNy9xEa/p4b9X9givrHHye7c=
-Message-ID: <5d6222a80712041141p5fbc0c0ei68696f054cc8a303@mail.gmail.com>
-Date: Tue, 4 Dec 2007 17:41:41 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com
-In-Reply-To: <4755A809.4050305@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Dec 2007 14:45:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAEc9VUdMROHU/2dsb2JhbACBWg
+Date: Tue, 4 Dec 2007 14:45:06 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org, mmlnx@us.ibm.com,
+       dipankar@in.ibm.com, dsmith@redhat.com, paulmck@us.ibm.com
+Subject: Re: [patch 1/2] Linux Kernel Markers - Support Multiple Probes
+Message-ID: <20071204194506.GA1431@Krystal>
+References: <20071204181845.895090222@polymtl.ca> <20071204182402.940135178@polymtl.ca> <20071204110648.dd918789.akpm@linux-foundation.org> <20071204192100.GB31752@Krystal> <20071204113954.c1dc9d87.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <11967843881946-git-send-email-gcosta@redhat.com>
-	 <11967843943958-git-send-email-gcosta@redhat.com>
-	 <11967843983411-git-send-email-gcosta@redhat.com>
-	 <11967844032081-git-send-email-gcosta@redhat.com>
-	 <11967844071346-git-send-email-gcosta@redhat.com>
-	 <4755A809.4050305@qumranet.com>
+In-Reply-To: <20071204113954.c1dc9d87.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:42:11 up 31 days, 47 min,  6 users,  load average: 0.61, 0.44,
+	0.55
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 4, 2007 5:18 PM, Avi Kivity <avi@qumranet.com> wrote:
-> Glauber de Oliveira Costa wrote:
-> > This patch moves the i386 control registers manipulation functions,
-> > wbinvd, and clts functions to system.h. They are essentially the same
-> > as in x86_64, except for the cr8 register, which we add.
-> >
-> > +
-> > +static inline unsigned long native_read_cr8(void)
-> > +{
-> > +     unsigned long cr8;
-> > +     asm volatile("mov %%cr8,%0" : "=r" (cr8), "=m" (__force_order));
-> > +     return cr8;
-> > +}
-> > +
-> >
->
-> There is no cr8 register on i386.  This had better be protected by an
-> #ifdef.
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Tue, 4 Dec 2007 14:21:00 -0500
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > > > + */
+> > > > +void marker_probe_cb(const struct marker *mdata, void *call_private,
+> > > > +	const char *fmt, ...)
+> > > > +{
+> > > > +	va_list args;
+> > > > +	char ptype;
+> > > > +
+> > > > +	preempt_disable();
+> > > 
+> > > What are the preempt_disable()s doing in here?
+> > > 
+> > > Unless I missed something obvious, a comment is needed here (at least).
+> > > 
+> > 
+> > They make sure the teardown of the callbacks can be done correctly when
+> > they are in modules and they insure RCU read coherency. Will add
+> > comment.
+> 
+> So shouldn't it be using rcu_read_lock()?  If that does not suit, should we
+> be adding new rcu primitives rather than open-coding and adding dependencies?
 
-Sure. I mentioned it in the changelog. I, however, am not sure If I
-agree it should be enclosed
-in ifdefs. Me and Jeremy discussed it a while ago, and we seem to
-agree that for those functions
-that are exclusive of one architecture, there were no need for ifdefs.
-Any usage by the other arch
-is a bug.
-
-But I admit that I'm not particularly biased here, and I can change
-it, if there's agreement that
-an ifdef here is the way to go.
-
-> (you're likely not getting an error since it's a static inline, so the
-> asm is never emitted)
->
-Which also means it does not affect the binary in anyway. No bigger
-code, no nothing.
-My current approach is to save the ifdefs for pieces that in fact can
-save us some resources
-in the final image. But again... I can change it.
-
+Hrm, yes, good point. Since there seems to be extra magic under
+__acquire(RCU);  and  rcu_read_acquire();, the the fact that I use
+rcu_barrier() for synchronization, we should. I'll change it.
 
 
 -- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
