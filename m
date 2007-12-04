@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbXLDUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbXLDUkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbXLDUjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbXLDUiN
+	id S1754173AbXLDUkV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXLDUkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:38:13 -0500
-Received: from mga09.intel.com ([134.134.136.24]:44562 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753764AbXLDUiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:38:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,250,1194249600"; 
-   d="scan'208";a="223801806"
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-kernel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 4/7] dmapool: Validate parameters to dma_pool_create
-Date: Tue,  4 Dec 2007 13:26:05 -0800
-Message-Id: <11968035682211-git-send-email-matthew@wil.cx>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <11968035684180-git-send-email-matthew@wil.cx>
-References: <20071204170915.GE9405@parisc-linux.org> <11968035682899-git-send-email-matthew@wil.cx> <11968035681680-git-send-email-matthew@wil.cx> <11968035684180-git-send-email-matthew@wil.cx>
+	Tue, 4 Dec 2007 15:40:06 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49691 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751964AbXLDUkE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 15:40:04 -0500
+Date: Tue, 4 Dec 2007 20:35:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Jared Hulbert" <jaredeh@gmail.com>
+Cc: "Chris Friesen" <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+Subject: Re: solid state drive access and context switching
+Message-ID: <20071204203536.2bf6d025@the-village.bc.nu>
+In-Reply-To: <6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com>
+References: <47548BF4.3010907@nortel.com>
+	<20071203230629.725f4c7a@the-village.bc.nu>
+	<6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check that 'align' is a power of two, like the API specifies.
-Align 'size' to 'align' correctly -- the current code has an off-by-one.
-The ALIGN macro in kernel.h doesn't.
+> microseconds level and an order of magnitude higher bandwidth than
+> SATA.  Is that fast enough to warrant this more synchronous IO?
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-Acked-by: David S. Miller <davem@davemloft.net>
----
- mm/dmapool.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+See the mtd layer.
 
-diff --git a/mm/dmapool.c b/mm/dmapool.c
-index b5ff9ce..744d541 100644
---- a/mm/dmapool.c
-+++ b/mm/dmapool.c
-@@ -106,17 +106,18 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
- {
- 	struct dma_pool *retval;
- 
--	if (align == 0)
-+	if (align == 0) {
- 		align = 1;
--	if (size == 0)
-+	} else if (align & (align - 1)) {
- 		return NULL;
--	else if (size < align)
--		size = align;
--	else if ((size % align) != 0) {
--		size += align + 1;
--		size &= ~(align - 1);
- 	}
- 
-+	if (size == 0)
-+		return NULL;
-+
-+	if ((size % align) != 0)
-+		size = ALIGN(size, align);
-+
- 	if (allocation == 0) {
- 		if (PAGE_SIZE < size)
- 			allocation = size;
--- 
-1.4.4.4
+> BTW - This trend toward faster, lower latency busses is marching
+> forward.  2 examples; the ioDrive from Fusion IO, Micron's RAM-module
+> like SSD concept.
+
+Very much so but we can do quite a bit in 10,000 processor cycles ...
+
+Alan
