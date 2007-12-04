@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbXLDVID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbXLDVIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbXLDVID (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXLDVGg
+	id S1751745AbXLDVIf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:08:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbXLDVGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:06:36 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53417
+	Tue, 4 Dec 2007 16:06:42 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53422
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751081AbXLDVGf (ORCPT
+	by vger.kernel.org with ESMTP id S1754308AbXLDVGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:06:35 -0500
+	Tue, 4 Dec 2007 16:06:40 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 02/23] Subject: SCHED - track highest prio queued on runqueue
+Subject: [PATCH 03/23] Subject: SCHED - push RT tasks
 To: mingo@elte.hu
 Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:44:36 -0500
-Message-ID: <20071204204436.3567.59146.stgit@novell1.haskins.net>
+Date: Tue, 04 Dec 2007 15:44:41 -0500
+Message-ID: <20071204204441.3567.38458.stgit@novell1.haskins.net>
 In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -29,76 +29,320 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-This patch adds accounting to each runqueue to keep track of the
-highest prio task queued on the run queue. We only care about
-RT tasks, so if the run queue does not contain any active RT tasks
-its priority will be considered MAX_RT_PRIO.
+This patch adds an algorithm to push extra RT tasks off a run queue to
+other CPU runqueues.
 
-This information will be used for later patches.
+When more than one RT task is added to a run queue, this algorithm takes
+an assertive approach to push the RT tasks that are not running onto other
+run queues that have lower priority.  The way this works is that the highest
+RT task that is not running is looked at and we examine the runqueues on
+the CPUS for that tasks affinity mask. We find the runqueue with the lowest
+prio in the CPU affinity of the picked task, and if it is lower in prio than
+the picked task, we push the task onto that CPU runqueue.
+
+We continue pushing RT tasks off the current runqueue until we don't push any
+more.  The algorithm stops when the next highest RT task can't preempt any
+other processes on other CPUS.
+
+TODO: The algorithm may stop when there are still RT tasks that can be
+ migrated. Specifically, if the highest non running RT task CPU affinity
+ is restricted to CPUs that are running higher priority tasks, there may
+ be a lower priority task queued that has an affinity with a CPU that is
+ running a lower priority task that it could be migrated to.  This
+ patch set does not address this issue.
+
+Note: checkpatch reveals two over 80 character instances. I'm not sure
+ that breaking them up will help visually, so I left them as is.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched.c    |    3 +++
- kernel/sched_rt.c |   18 ++++++++++++++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
+ kernel/sched.c    |    8 ++
+ kernel/sched_rt.c |  225 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 231 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 4751c2f..90c04fd 100644
+index 90c04fd..7748d14 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -267,6 +267,8 @@ struct rt_rq {
- 	int rt_load_balance_idx;
- 	struct list_head *rt_load_balance_head, *rt_load_balance_curr;
- 	unsigned long rt_nr_running;
-+	/* highest queued rt task prio */
-+	int highest_prio;
- };
+@@ -1883,6 +1883,8 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	finish_lock_switch(rq, prev);
++	schedule_tail_balance_rt(rq);
++
+ 	fire_sched_in_preempt_notifiers(current);
+ 	if (mm)
+ 		mmdrop(mm);
+@@ -2116,11 +2118,13 @@ static void double_rq_unlock(struct rq *rq1, struct rq *rq2)
+ /*
+  * double_lock_balance - lock the busiest runqueue, this_rq is locked already.
+  */
+-static void double_lock_balance(struct rq *this_rq, struct rq *busiest)
++static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
+ 	__releases(this_rq->lock)
+ 	__acquires(busiest->lock)
+ 	__acquires(this_rq->lock)
+ {
++	int ret = 0;
++
+ 	if (unlikely(!irqs_disabled())) {
+ 		/* printk() doesn't work good under rq->lock */
+ 		spin_unlock(&this_rq->lock);
+@@ -2131,9 +2135,11 @@ static void double_lock_balance(struct rq *this_rq, struct rq *busiest)
+ 			spin_unlock(&this_rq->lock);
+ 			spin_lock(&busiest->lock);
+ 			spin_lock(&this_rq->lock);
++			ret = 1;
+ 		} else
+ 			spin_lock(&busiest->lock);
+ 	}
++	return ret;
+ }
  
  /*
-@@ -6783,6 +6785,7 @@ void __init sched_init(void)
- 		rq->cpu = i;
- 		rq->migration_thread = NULL;
- 		INIT_LIST_HEAD(&rq->migration_queue);
-+		rq->rt.highest_prio = MAX_RT_PRIO;
- #endif
- 		atomic_set(&rq->nr_iowait, 0);
- 
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index a6271f4..4d5b9b2 100644
+index 4d5b9b2..b5ef4b8 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -30,6 +30,10 @@ static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
- {
- 	WARN_ON(!rt_task(p));
- 	rq->rt.rt_nr_running++;
-+#ifdef CONFIG_SMP
-+	if (p->prio < rq->rt.highest_prio)
-+		rq->rt.highest_prio = p->prio;
-+#endif /* CONFIG_SMP */
+@@ -135,6 +135,227 @@ static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
  }
  
- static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
-@@ -37,6 +41,20 @@ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
- 	WARN_ON(!rt_task(p));
- 	WARN_ON(!rq->rt.rt_nr_running);
- 	rq->rt.rt_nr_running--;
-+#ifdef CONFIG_SMP
-+	if (rq->rt.rt_nr_running) {
-+		struct rt_prio_array *array;
+ #ifdef CONFIG_SMP
++/* Only try algorithms three times */
++#define RT_MAX_TRIES 3
 +
-+		WARN_ON(p->prio < rq->rt.highest_prio);
-+		if (p->prio == rq->rt.highest_prio) {
-+			/* recalculate */
-+			array = &rq->rt.active;
-+			rq->rt.highest_prio =
-+				sched_find_first_bit(array->bitmap);
-+		} /* otherwise leave rq->highest prio alone */
-+	} else
-+		rq->rt.highest_prio = MAX_RT_PRIO;
-+#endif /* CONFIG_SMP */
++static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
++static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep);
++
++/* Return the second highest RT task, NULL otherwise */
++static struct task_struct *pick_next_highest_task_rt(struct rq *rq)
++{
++	struct rt_prio_array *array = &rq->rt.active;
++	struct task_struct *next;
++	struct list_head *queue;
++	int idx;
++
++	assert_spin_locked(&rq->lock);
++
++	if (likely(rq->rt.rt_nr_running < 2))
++		return NULL;
++
++	idx = sched_find_first_bit(array->bitmap);
++	if (unlikely(idx >= MAX_RT_PRIO)) {
++		WARN_ON(1); /* rt_nr_running is bad */
++		return NULL;
++	}
++
++	queue = array->queue + idx;
++	next = list_entry(queue->next, struct task_struct, run_list);
++	if (unlikely(next != rq->curr))
++		return next;
++
++	if (queue->next->next != queue) {
++		/* same prio task */
++		next = list_entry(queue->next->next, struct task_struct, run_list);
++		return next;
++	}
++
++	/* slower, but more flexible */
++	idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
++	if (unlikely(idx >= MAX_RT_PRIO)) {
++		WARN_ON(1); /* rt_nr_running was 2 and above! */
++		return NULL;
++	}
++
++	queue = array->queue + idx;
++	next = list_entry(queue->next, struct task_struct, run_list);
++
++	return next;
++}
++
++static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
++
++/* Will lock the rq it finds */
++static struct rq *find_lock_lowest_rq(struct task_struct *task,
++				      struct rq *this_rq)
++{
++	struct rq *lowest_rq = NULL;
++	int cpu;
++	int tries;
++	cpumask_t *cpu_mask = &__get_cpu_var(local_cpu_mask);
++
++	cpus_and(*cpu_mask, cpu_online_map, task->cpus_allowed);
++
++	for (tries = 0; tries < RT_MAX_TRIES; tries++) {
++		/*
++		 * Scan each rq for the lowest prio.
++		 */
++		for_each_cpu_mask(cpu, *cpu_mask) {
++			struct rq *rq = &per_cpu(runqueues, cpu);
++
++			if (cpu == this_rq->cpu)
++				continue;
++
++			/* We look for lowest RT prio or non-rt CPU */
++			if (rq->rt.highest_prio >= MAX_RT_PRIO) {
++				lowest_rq = rq;
++				break;
++			}
++
++			/* no locking for now */
++			if (rq->rt.highest_prio > task->prio &&
++			    (!lowest_rq || rq->rt.highest_prio > lowest_rq->rt.highest_prio)) {
++				lowest_rq = rq;
++			}
++		}
++
++		if (!lowest_rq)
++			break;
++
++		/* if the prio of this runqueue changed, try again */
++		if (double_lock_balance(this_rq, lowest_rq)) {
++			/*
++			 * We had to unlock the run queue. In
++			 * the mean time, task could have
++			 * migrated already or had its affinity changed.
++			 * Also make sure that it wasn't scheduled on its rq.
++			 */
++			if (unlikely(task_rq(task) != this_rq ||
++				     !cpu_isset(lowest_rq->cpu, task->cpus_allowed) ||
++				     task_running(this_rq, task) ||
++				     !task->se.on_rq)) {
++				spin_unlock(&lowest_rq->lock);
++				lowest_rq = NULL;
++				break;
++			}
++		}
++
++		/* If this rq is still suitable use it. */
++		if (lowest_rq->rt.highest_prio > task->prio)
++			break;
++
++		/* try again */
++		spin_unlock(&lowest_rq->lock);
++		lowest_rq = NULL;
++	}
++
++	return lowest_rq;
++}
++
++/*
++ * If the current CPU has more than one RT task, see if the non
++ * running task can migrate over to a CPU that is running a task
++ * of lesser priority.
++ */
++static int push_rt_task(struct rq *this_rq)
++{
++	struct task_struct *next_task;
++	struct rq *lowest_rq;
++	int ret = 0;
++	int paranoid = RT_MAX_TRIES;
++
++	assert_spin_locked(&this_rq->lock);
++
++	next_task = pick_next_highest_task_rt(this_rq);
++	if (!next_task)
++		return 0;
++
++ retry:
++	if (unlikely(next_task == this_rq->curr))
++		return 0;
++
++	/*
++	 * It's possible that the next_task slipped in of
++	 * higher priority than current. If that's the case
++	 * just reschedule current.
++	 */
++	if (unlikely(next_task->prio < this_rq->curr->prio)) {
++		resched_task(this_rq->curr);
++		return 0;
++	}
++
++	/* We might release this_rq lock */
++	get_task_struct(next_task);
++
++	/* find_lock_lowest_rq locks the rq if found */
++	lowest_rq = find_lock_lowest_rq(next_task, this_rq);
++	if (!lowest_rq) {
++		struct task_struct *task;
++		/*
++		 * find lock_lowest_rq releases this_rq->lock
++		 * so it is possible that next_task has changed.
++		 * If it has, then try again.
++		 */
++		task = pick_next_highest_task_rt(this_rq);
++		if (unlikely(task != next_task) && task && paranoid--) {
++			put_task_struct(next_task);
++			next_task = task;
++			goto retry;
++		}
++		goto out;
++	}
++
++	assert_spin_locked(&lowest_rq->lock);
++
++	deactivate_task(this_rq, next_task, 0);
++	set_task_cpu(next_task, lowest_rq->cpu);
++	activate_task(lowest_rq, next_task, 0);
++
++	resched_task(lowest_rq->curr);
++
++	spin_unlock(&lowest_rq->lock);
++
++	ret = 1;
++out:
++	put_task_struct(next_task);
++
++	return ret;
++}
++
++/*
++ * TODO: Currently we just use the second highest prio task on
++ *       the queue, and stop when it can't migrate (or there's
++ *       no more RT tasks).  There may be a case where a lower
++ *       priority RT task has a different affinity than the
++ *       higher RT task. In this case the lower RT task could
++ *       possibly be able to migrate where as the higher priority
++ *       RT task could not.  We currently ignore this issue.
++ *       Enhancements are welcome!
++ */
++static void push_rt_tasks(struct rq *rq)
++{
++	/* push_rt_task will return true if it moved an RT */
++	while (push_rt_task(rq))
++		;
++}
++
++static void schedule_tail_balance_rt(struct rq *rq)
++{
++	/*
++	 * If we have more than one rt_task queued, then
++	 * see if we can push the other rt_tasks off to other CPUS.
++	 * Note we may release the rq lock, and since
++	 * the lock was owned by prev, we need to release it
++	 * first via finish_lock_switch and then reaquire it here.
++	 */
++	if (unlikely(rq->rt.rt_nr_running > 1)) {
++		spin_lock_irq(&rq->lock);
++		push_rt_tasks(rq);
++		spin_unlock_irq(&rq->lock);
++	}
++}
++
+ /*
+  * Load-balancing iterator. Note: while the runqueue stays locked
+  * during the whole iteration, the current task might be
+@@ -239,7 +460,9 @@ move_one_task_rt(struct rq *this_rq, int this_cpu, struct rq *busiest,
+ 	return iter_move_one_task(this_rq, this_cpu, busiest, sd, idle,
+ 				  &rt_rq_iterator);
  }
+-#endif
++#else /* CONFIG_SMP */
++# define schedule_tail_balance_rt(rq)	do { } while (0)
++#endif /* CONFIG_SMP */
  
- static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+ static void task_tick_rt(struct rq *rq, struct task_struct *p)
+ {
 
