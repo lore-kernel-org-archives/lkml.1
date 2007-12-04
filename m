@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbXLDWO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbXLDWP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246AbXLDWO3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 17:14:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbXLDWOW
+	id S1753535AbXLDWP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 17:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXLDWPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:14:22 -0500
-Received: from an-out-0708.google.com ([209.85.132.241]:10795 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbXLDWOV (ORCPT
+	Tue, 4 Dec 2007 17:15:51 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34195 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbXLDWPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:14:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VvVZvAMmGAIWEMidI7Ixxiq67hvo04t00gEanlBi+Z5stWpJ3B5EE6TPp9IJ0Akx0pRnkEibMFfe4yuZjzAvnUMJ54XK55zI7XQz0KqjL9FVZo9bbmV3DIycMNhzcZocMDYQVhSZWfwLE5CcF8dIuuCEiZlg85Q1/vy2Me7S85E=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: "Glauber de Oliveira Costa" <glommer@gmail.com>
-Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
-Date: Tue, 4 Dec 2007 14:14:13 -0800
-User-Agent: KMail/1.9.1
-Cc: "Avi Kivity" <avi@qumranet.com>,
-       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com
-References: <11967843881946-git-send-email-gcosta@redhat.com> <4755A809.4050305@qumranet.com> <5d6222a80712041141p5fbc0c0ei68696f054cc8a303@mail.gmail.com>
-In-Reply-To: <5d6222a80712041141p5fbc0c0ei68696f054cc8a303@mail.gmail.com>
+	Tue, 4 Dec 2007 17:15:50 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4755D186.20204@s5r6.in-berlin.de>
+Date: Tue, 04 Dec 2007 23:15:34 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.9) Gecko/20071122 SeaMonkey/1.1.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Bernhard Kaindl <bkaindl@ffii.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andi Kleen <ak@suse.de>,
+       Bernhard Kaindl <bk@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: remote debugging via FireWire * __fast__ firedump!
+References: <200702101242.48467.ak@suse.de> <45CDCDCD.5000609@s5r6.in-berlin.de> <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org>
+In-Reply-To: <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712041414.14159.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 December 2007 11:41, Glauber de Oliveira Costa wrote:
-> On Dec 4, 2007 5:18 PM, Avi Kivity <avi@qumranet.com> wrote:
-> > There is no cr8 register on i386.  This had better be protected by an
-> > #ifdef.
->
-> Sure. I mentioned it in the changelog. I, however, am not sure If I
-> agree it should be enclosed
-> in ifdefs. Me and Jeremy discussed it a while ago, and we seem to
-> agree that for those functions
-> that are exclusive of one architecture, there were no need for ifdefs.
-> Any usage by the other arch
-> is a bug.
->
-> But I admit that I'm not particularly biased here, and I can change
-> it, if there's agreement that
-> an ifdef here is the way to go.
->
-> > (you're likely not getting an error since it's a static inline, so the
-> > asm is never emitted)
->
-> Which also means it does not affect the binary in anyway. No bigger
-> code, no nothing.
+Bernhard Kaindl wrote:
+> The biggest block size that worked here was 2048 bytes, which was
+> enough to get nearly 10MB/s of data transfer rate from the remote
+> memory to disk.
 
-If future changes will mistakenly make 32-bit x86 call native_read_cr8(),
-you will get no warning. (Hmmm. Maybe as will complain, I'm not sure).
-If it explicitly ifdefed out for 32 bits, it's easier to detect misuse.
---
-vda
+The maximum payload size of block requests depends on three things:
+1. speed of the connection between the two nodes (debugged machine and
+debugging machine), 2. link layer controllers of the two nodes, 3.
+software on the debugging machine.
+
+1.) S100: 512 bytes, S200: 1024 bytes, S400: 2048 bytes, S800 and more:
+4096 bytes.
+
+2.) Controllers on CardBus cards are limited to 1024 bytes payload of
+asynchronous packets, for reasons I don't know.  The other available
+controllers only have the above mentioned speed-dependent limit.
+
+3.) The ohci1394 driver has an implementation limitation which requires
+that all packets including headers don't exceed PAGE_SIZE.  This does
+not affect the packets which go through the physical response unit
+(which they do on the debugged machine) but it affects the debugging
+machine.
+
+A quick note to this text from
+http://www.suse.de/~bk/firewire/ohci1394_dma_early.diff :
+> +	  As all changes to the FireWire bus such as enabling and disabling
+> +	  devices cause a bus reset and thereby disable remote DMA for all
+> +	  devices, be sure to have FireWire enabled on the debug host (and
+> +	  the cable plugged) before booting the debug target for debugging.
+
+Bus resets are also caused by bus managing software, which Linux' old
+and new FireWire stacks and the stacks of all other FireWire capable
+desktop OSs are to varying degrees.  I wonder if the following could
+happen:  The two PCs are directly connected, only the PHY of the
+debugging PC is active, then the PHY of the debugged PC is activated,
+becomes root node, debugging PC examines the bus, then resets the bus to
+force its own PHY to become root node in order to get a working
+isochronous resource manager.  This bus reset would switch remote DMA on
+the debugged PC off.
+-- 
+Stefan Richter
+-=====-=-=== ==-- --=--
+http://arcgraph.de/sr/
