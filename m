@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXLDVtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbXLDVxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXLDVtb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbXLDVtR
+	id S1753596AbXLDVxd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXLDVx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:49:17 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56500 "EHLO e6.ny.us.ibm.com"
+	Tue, 4 Dec 2007 16:53:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57340 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074AbXLDVtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:49:16 -0500
-Date: Tue, 4 Dec 2007 13:49:07 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Greg KH <gregkh@suse.de>, jbeulich@novell.com
-Subject: Re: [PATCH] pci: Omit error message for benign allocation failure
-Message-ID: <20071204214907.GB9194@us.ibm.com>
-References: <4755AC14.20605@ce.jp.nec.com>
-Mime-Version: 1.0
+	id S1751081AbXLDVxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 16:53:25 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4755AC14.20605@ce.jp.nec.com>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Shi Weihua <shiwh@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound
+	occurs
+In-Reply-To: Ingo Molnar's message of  Tuesday, 4 December 2007 14:02:18 +0100 <20071204130218.GE31590@elte.hu>
+References: <474CF7D5.6010702@cn.fujitsu.com>
+	<474D05AE.60905@cn.fujitsu.com>
+	<20071204130218.GE31590@elte.hu>
+X-Zippy-Says: Do you guys know we just passed thru a BLACK HOLE in space?
+Message-Id: <20071204215251.60C6326F8D9@magilla.localdomain>
+Date: Tue,  4 Dec 2007 13:52:51 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 02:35:48PM -0500, Jun'ichi Nomura wrote:
-> Hi,
+> > Thank you for your detailed explanation and patch. I tested your 
+> > patch, unfortunately it can not stop all kinds of overflow.
+> [...]
+> > So, the patch I posted is still needed 
 > 
-> On a system with PCI-to-PCI bridges, following errors are observed:
-> 
-> PCI: Failed to allocate mem resource #8:100000@d8200000 for 0000:02:00.0
-> PCI: Failed to allocate mem resource #6:10000@0 for 0000:03:01.0
-> 
-> '#6' is for expansion ROM and '#8' for the bridge where the device
-> with the expansion ROM is connected.
+> thanks, i've picked up your fix for x86.git, for 2.6.25 merging.
 
-I believe there is a good chance that may be another instance
-of the regression caused by my "Avoid creating P2P prefetch
-window for expansion ROMs" patch that was recently reported by
-Jan Beulich.
-  http://marc.info/?l=linux-kernel&m=119555581103023&w=2
+I just explained that not all overflows would be caught and that doing so
+would violate the semantics of e.g. longjmp.  I don't see how the patch
+you've included now doesn't still have all those problems.  I think it's wrong.
 
-You might want to try reverting my changes to see if the
-problem disappears.
-
-I am working on a better fix for the problem that the patch
-was attempting to address but this is turning out to be much
-more difficult than I expected.  If I don't have a solution
-very soon I plan to publish a revert patch.
-
-> But I think the failure is benign because the allocation is
-> not necessary for these resources.
-
-This is an interesting idea.  Could you elaborate?  As far
-as I can tell, the kernel always tries to allocate memory
-for expansion ROMs which it also exports to user level.
-I have assumed that some drivers or user level apps may
-need to access this space.  Is this not true?
-
-If this is due to my change, sorry for the trouble.
 
 Thanks,
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Roland
