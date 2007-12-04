@@ -1,33 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXLDQuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbXLDQwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbXLDQuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 11:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXLDQuJ
+	id S1754047AbXLDQwM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 11:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXLDQv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 11:50:09 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:33117 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751202AbXLDQuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 11:50:08 -0500
-Date: Tue, 4 Dec 2007 17:49:47 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: rtc-linux@googlegroups.com, "Bryan Wu" <bryan.wu@analog.com>,
-       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       "Mike Frysinger" <michael.frysinger@analog.com>
-Subject: Re: [rtc-linux] Re: [PATCH 1/7] Blackfin RTC driver: the frequency
- function is in units of Hz, not units of seconds, so lock our driver down
- to 1 Hz
-Message-ID: <20071204174947.5c468e3d@i1501.lan.towertech.it>
-In-Reply-To: <8bd0f97a0712040847m73bb479dx814d83985e5223d5@mail.gmail.com>
-References: <1195812512-25979-1-git-send-email-bryan.wu@analog.com>
-	<1195812512-25979-2-git-send-email-bryan.wu@analog.com>
-	<20071204172634.50492e1e@i1501.lan.towertech.it>
-	<8bd0f97a0712040829i116496deu384453c6eccfa252@mail.gmail.com>
-	<20071204174146.19bedb54@i1501.lan.towertech.it>
-	<8bd0f97a0712040847m73bb479dx814d83985e5223d5@mail.gmail.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
+	Tue, 4 Dec 2007 11:51:58 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38271 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751145AbXLDQv5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 11:51:57 -0500
+Date: Tue, 4 Dec 2007 16:47:20 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071204164720.6e4dc2c4@the-village.bc.nu>
+In-Reply-To: <20071204161811.GB15974@stusta.de>
+References: <20071204114125.GA17310@torres.zugschlus.de>
+	<20071204161811.GB15974@stusta.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,32 +30,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 11:47:56 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
+> No matter what you consider as being better, changing a 12 years old and 
+> widely used userspace interface like /dev/urandom is simply not an 
+> option.
 
-> 
-> the return of ENOTTY is to say "changing of freq isnt supported", not
-> that the value is invalid.  but i can get the same behavior by
-> deleting the function as the rtc-dev layer will take care of returning
-> ENOTTY.
-> 
-> so the behavior is for the RTC_IRQP_SET ioctl:
->  - return ENOTTY if you cannot change freq
->    - the rtc-dev layer will do this for you if you do not set irq_set_freq
->  - return EINVAL if the requested freq is not within the capabilities
-> of the hardware
-> 
-> sound about right ?
-
- yes, it is. I agree about deleting it.
-
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Fixing it to be more efficient in its use of entropy and also fixing the
+fact its not actually a good random number source would be worth looking
+at however.
