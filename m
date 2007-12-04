@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbXLDUKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbXLDUKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbXLDUKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXLDUKK
+	id S1754066AbXLDUKy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXLDUKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:10:10 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:54254 "EHLO havoc.gtf.org"
+	Tue, 4 Dec 2007 15:10:44 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:48908 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751569AbXLDUKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:10:08 -0500
-Date: Tue, 4 Dec 2007 15:10:07 -0500
+	id S1751865AbXLDUKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 15:10:43 -0500
+Date: Tue, 4 Dec 2007 15:10:42 -0500
 From: Jeff Garzik <jeff@garzik.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20071204201007.GA20326@havoc.gtf.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20071204201042.GA20425@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,175 +25,228 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+Fixes several ugly bugs...
+
+
+Please pull from 'upstream-fixes' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-fixes
 
 to receive the following updates:
 
- drivers/ata/ahci.c     |    4 ++++
- drivers/ata/pata_amd.c |    5 +++--
- drivers/ata/pata_via.c |    4 ++--
- drivers/ata/sata_mv.c  |    9 +++++++++
- drivers/ata/sata_nv.c  |   32 +++++++++++++++++++++++---------
- 5 files changed, 41 insertions(+), 13 deletions(-)
+ drivers/net/fec_mpc52xx.c    |    4 ++--
+ drivers/net/gianfar.c        |    2 +-
+ drivers/net/pasemi_mac.c     |    4 ++--
+ drivers/net/phy/mdio_bus.c   |    9 +++++----
+ drivers/net/phy/phy_device.c |   12 ++++++++++++
+ drivers/net/sky2.c           |    6 ++----
+ drivers/net/smc911x.c        |    2 +-
+ include/linux/phy.h          |    1 +
+ 8 files changed, 26 insertions(+), 14 deletions(-)
+ mode change 100755 => 100644 drivers/net/chelsio/cxgb2.c
+ mode change 100755 => 100644 drivers/net/chelsio/pm3393.c
+ mode change 100755 => 100644 drivers/net/chelsio/sge.c
+ mode change 100755 => 100644 drivers/net/chelsio/sge.h
 
-Bartlomiej Zolnierkiewicz (1):
-      pata_amd/pata_via: de-couple programming of PIO/MWDMA and UDMA timings
+Anton Vorontsov (1):
+      PHY: Add the phy_device_release device method.
 
-Mark Lord (1):
-      sata_mv:  Warn about HPT RocketRAID BIOS treatment of "Legacy" drives
+David Woodhouse (1):
+      Don't claim to do IPv6 checksum offload
 
-Robert Hancock (1):
-      sata_nv: don't use legacy DMA in ADMA mode (v3)
+Divy Le Ray (1):
+      cxgb - revert file mode changes.
 
-peerchen (1):
-      ahci: add the Device IDs of MCP79 AHCI controller to ahci.c
+Grant Likely (1):
+      gianfar: fix compile warning
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index ed9b407..4688dbf 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -536,6 +536,10 @@ static const struct pci_device_id ahci_pci_tbl[] = {
- 	{ PCI_VDEVICE(NVIDIA, 0x0ad9), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ada), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0adb), board_ahci },		/* MCP77 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab4), board_ahci },		/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab5), board_ahci },		/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab6), board_ahci },		/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0x0ab7), board_ahci },		/* MCP79 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ab8), board_ahci },		/* MCP79 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ab9), board_ahci },		/* MCP79 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0aba), board_ahci },		/* MCP79 */
-diff --git a/drivers/ata/pata_amd.c b/drivers/ata/pata_amd.c
-index c5779ad..3cc27b5 100644
---- a/drivers/ata/pata_amd.c
-+++ b/drivers/ata/pata_amd.c
-@@ -25,7 +25,7 @@
- #include <linux/libata.h>
+Jon Smirl (1):
+      Fix memory corruption in fec_mpc52xx
+
+Olof Johansson (1):
+      pasemi_mac: Fix reuse of free'd skb
+
+Stephen Hemminger (1):
+      sky2: recovery deadlock fix
+
+Wang Chen (1):
+      SMC911X: Fix using of dereferenced skb after netif_rx
+
+diff --git a/drivers/net/chelsio/cxgb2.c b/drivers/net/chelsio/cxgb2.c
+old mode 100755
+new mode 100644
+diff --git a/drivers/net/chelsio/pm3393.c b/drivers/net/chelsio/pm3393.c
+old mode 100755
+new mode 100644
+diff --git a/drivers/net/chelsio/sge.c b/drivers/net/chelsio/sge.c
+old mode 100755
+new mode 100644
+diff --git a/drivers/net/chelsio/sge.h b/drivers/net/chelsio/sge.h
+old mode 100755
+new mode 100644
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index bf5a7ca..79f7ead 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
  
- #define DRV_NAME "pata_amd"
--#define DRV_VERSION "0.3.9"
-+#define DRV_VERSION "0.3.10"
+ 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
+ 				(struct bcom_bd **)&bd);
+-		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
++		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
  
- /**
-  *	timing_setup		-	shared timing computation and load
-@@ -115,7 +115,8 @@ static void timing_setup(struct ata_port *ap, struct ata_device *adev, int offse
- 	}
+ 		/* Test for errors in received frame */
+ 		if (status & BCOM_FEC_RX_BD_ERRORS) {
+@@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
+ 			bcom_prepare_next_buffer(priv->rx_dmatsk);
  
- 	/* UDMA timing */
--	pci_write_config_byte(pdev, offset + 0x10 + (3 - dn), t);
-+	if (at.udma)
-+		pci_write_config_byte(pdev, offset + 0x10 + (3 - dn), t);
- }
+ 		bd->status = FEC_RX_BUFFER_SIZE;
+-		bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
++		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
+ 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
  
- /**
-diff --git a/drivers/ata/pata_via.c b/drivers/ata/pata_via.c
-index a4175fb..453d72b 100644
---- a/drivers/ata/pata_via.c
-+++ b/drivers/ata/pata_via.c
-@@ -63,7 +63,7 @@
- #include <linux/dmi.h>
- 
- #define DRV_NAME "pata_via"
--#define DRV_VERSION "0.3.2"
-+#define DRV_VERSION "0.3.3"
- 
- /*
-  *	The following comes directly from Vojtech Pavlik's ide/pci/via82cxxx
-@@ -296,7 +296,7 @@ static void via_do_set_mode(struct ata_port *ap, struct ata_device *adev, int mo
- 	}
- 
- 	/* Set UDMA unless device is not UDMA capable */
--	if (udma_type) {
-+	if (udma_type && t.udma) {
- 		u8 cable80_status;
- 
- 		/* Get 80-wire cable detection bit */
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 8d864e5..fe0105d 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -2503,6 +2503,15 @@ static int mv_chip_id(struct ata_host *host, unsigned int board_idx)
- 
- 	case chip_7042:
- 		hp_flags |= MV_HP_PCIE;
-+		if (pdev->vendor == PCI_VENDOR_ID_TTI &&
-+		    (pdev->device == 0x2300 || pdev->device == 0x2310))
-+		{
-+			printk(KERN_WARNING "sata_mv: Highpoint RocketRAID BIOS"
-+				" will CORRUPT DATA on attached drives when"
-+				" configured as \"Legacy\".  BEWARE!\n");
-+			printk(KERN_WARNING "sata_mv: Use BIOS \"JBOD\" volumes"
-+				" instead for safety.\n");
-+		}
- 	case chip_6042:
- 		hpriv->ops = &mv6xxx_ops;
- 		hp_flags |= MV_HP_GEN_IIE;
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 44f9e5d..ed5dc7c 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -791,11 +791,13 @@ static int nv_adma_check_atapi_dma(struct ata_queued_cmd *qc)
- 
- static void nv_adma_tf_read(struct ata_port *ap, struct ata_taskfile *tf)
+ 		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 38268d7..0431e9e 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -696,7 +696,7 @@ int startup_gfar(struct net_device *dev)
  {
--	/* Since commands where a result TF is requested are not
--	   executed in ADMA mode, the only time this function will be called
--	   in ADMA mode will be if a command fails. In this case we
--	   don't care about going into register mode with ADMA commands
--	   pending, as the commands will all shortly be aborted anyway. */
-+	/* Other than when internal or pass-through commands are executed,
-+	   the only time this function will be called in ADMA mode will be
-+	   if a command fails. In the failure case we don't care about going
-+	   into register mode with ADMA commands pending, as the commands will
-+	   all shortly be aborted anyway. We assume that NCQ commands are not
-+	   issued via passthrough, which is the only way that switching into
-+	   ADMA mode could abort outstanding commands. */
- 	nv_adma_register_mode(ap);
+ 	struct txbd8 *txbdp;
+ 	struct rxbd8 *rxbdp;
+-	dma_addr_t addr;
++	dma_addr_t addr = 0;
+ 	unsigned long vaddr;
+ 	int i;
+ 	struct gfar_private *priv = netdev_priv(dev);
+diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
+index 09b4fde..816a59e 100644
+--- a/drivers/net/pasemi_mac.c
++++ b/drivers/net/pasemi_mac.c
+@@ -586,7 +586,7 @@ static int pasemi_mac_clean_rx(struct pasemi_mac *mac, int limit)
+ 			/* CRC error flagged */
+ 			mac->netdev->stats.rx_errors++;
+ 			mac->netdev->stats.rx_crc_errors++;
+-			dev_kfree_skb_irq(skb);
++			/* No need to free skb, it'll be reused */
+ 			goto next;
+ 		}
  
- 	ata_tf_read(ap, tf);
-@@ -1359,11 +1361,9 @@ static int nv_adma_use_reg_mode(struct ata_queued_cmd *qc)
- 	struct nv_adma_port_priv *pp = qc->ap->private_data;
+@@ -1362,7 +1362,7 @@ pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
- 	/* ADMA engine can only be used for non-ATAPI DMA commands,
--	   or interrupt-driven no-data commands, where a result taskfile
--	   is not required. */
-+	   or interrupt-driven no-data commands. */
- 	if ((pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) ||
--	   (qc->tf.flags & ATA_TFLAG_POLLING) ||
--	   (qc->flags & ATA_QCFLAG_RESULT_TF))
-+	   (qc->tf.flags & ATA_TFLAG_POLLING))
- 		return 1;
+ 	netif_napi_add(dev, &mac->napi, pasemi_mac_poll, 64);
  
- 	if ((qc->flags & ATA_QCFLAG_DMAMAP) ||
-@@ -1381,6 +1381,8 @@ static void nv_adma_qc_prep(struct ata_queued_cmd *qc)
- 		       NV_CPB_CTL_IEN;
+-	dev->features = NETIF_F_HW_CSUM | NETIF_F_LLTX | NETIF_F_SG;
++	dev->features = NETIF_F_IP_CSUM | NETIF_F_LLTX | NETIF_F_SG;
  
- 	if (nv_adma_use_reg_mode(qc)) {
-+		BUG_ON(!(pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) &&
-+			(qc->flags & ATA_QCFLAG_DMAMAP));
- 		nv_adma_register_mode(qc->ap);
- 		ata_qc_prep(qc);
- 		return;
-@@ -1425,9 +1427,21 @@ static unsigned int nv_adma_qc_issue(struct ata_queued_cmd *qc)
+ 	/* These should come out of the device tree eventually */
+ 	mac->dma_txch = index;
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index fc2f0e6..c30196d 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -91,9 +91,12 @@ int mdiobus_register(struct mii_bus *bus)
  
- 	VPRINTK("ENTER\n");
+ 			err = device_register(&phydev->dev);
  
-+	/* We can't handle result taskfile with NCQ commands, since
-+	   retrieving the taskfile switches us out of ADMA mode and would abort
-+	   existing commands. */
-+	if (unlikely(qc->tf.protocol == ATA_PROT_NCQ &&
-+		     (qc->flags & ATA_QCFLAG_RESULT_TF))) {
-+		ata_dev_printk(qc->dev, KERN_ERR,
-+			"NCQ w/ RESULT_TF not allowed\n");
-+		return AC_ERR_SYSTEM;
-+	}
+-			if (err)
++			if (err) {
+ 				printk(KERN_ERR "phy %d failed to register\n",
+ 						i);
++				phy_device_free(phydev);
++				phydev = NULL;
++			}
+ 		}
+ 
+ 		bus->phy_map[i] = phydev;
+@@ -110,10 +113,8 @@ void mdiobus_unregister(struct mii_bus *bus)
+ 	int i;
+ 
+ 	for (i = 0; i < PHY_MAX_ADDR; i++) {
+-		if (bus->phy_map[i]) {
++		if (bus->phy_map[i])
+ 			device_unregister(&bus->phy_map[i]->dev);
+-			kfree(bus->phy_map[i]);
+-		}
+ 	}
+ }
+ EXPORT_SYMBOL(mdiobus_unregister);
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index f6e4848..5b9e175 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -44,6 +44,16 @@ static struct phy_driver genphy_driver;
+ extern int mdio_bus_init(void);
+ extern void mdio_bus_exit(void);
+ 
++void phy_device_free(struct phy_device *phydev)
++{
++	kfree(phydev);
++}
 +
- 	if (nv_adma_use_reg_mode(qc)) {
- 		/* use ATA register mode */
- 		VPRINTK("using ATA register mode: 0x%lx\n", qc->flags);
-+		BUG_ON(!(pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) &&
-+			(qc->flags & ATA_QCFLAG_DMAMAP));
- 		nv_adma_register_mode(qc->ap);
- 		return ata_qc_issue_prot(qc);
- 	} else
++static void phy_device_release(struct device *dev)
++{
++	phy_device_free(to_phy_device(dev));
++}
++
+ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+ {
+ 	struct phy_device *dev;
+@@ -54,6 +64,8 @@ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+ 	if (NULL == dev)
+ 		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
+ 
++	dev->dev.release = phy_device_release;
++
+ 	dev->speed = 0;
+ 	dev->duplex = -1;
+ 	dev->pause = dev->asym_pause = 0;
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index 3d1dfc9..6197afb 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -2906,16 +2906,14 @@ static void sky2_restart(struct work_struct *work)
+ 	int i, err;
+ 
+ 	rtnl_lock();
+-	sky2_write32(hw, B0_IMSK, 0);
+-	sky2_read32(hw, B0_IMSK);
+-	napi_disable(&hw->napi);
+-
+ 	for (i = 0; i < hw->ports; i++) {
+ 		dev = hw->dev[i];
+ 		if (netif_running(dev))
+ 			sky2_down(dev);
+ 	}
+ 
++	napi_disable(&hw->napi);
++	sky2_write32(hw, B0_IMSK, 0);
+ 	sky2_reset(hw);
+ 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
+ 	napi_enable(&hw->napi);
+diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
+index 1a3d80b..76cc1d3 100644
+--- a/drivers/net/smc911x.c
++++ b/drivers/net/smc911x.c
+@@ -1299,9 +1299,9 @@ smc911x_rx_dma_irq(int dma, void *data)
+ 	PRINT_PKT(skb->data, skb->len);
+ 	dev->last_rx = jiffies;
+ 	skb->protocol = eth_type_trans(skb, dev);
+-	netif_rx(skb);
+ 	dev->stats.rx_packets++;
+ 	dev->stats.rx_bytes += skb->len;
++	netif_rx(skb);
+ 
+ 	spin_lock_irqsave(&lp->lock, flags);
+ 	pkts = (SMC_GET_RX_FIFO_INF() & RX_FIFO_INF_RXSUSED_) >> 16;
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index e10763d..554836e 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -403,6 +403,7 @@ int phy_mii_ioctl(struct phy_device *phydev,
+ int phy_start_interrupts(struct phy_device *phydev);
+ void phy_print_status(struct phy_device *phydev);
+ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id);
++void phy_device_free(struct phy_device *phydev);
+ 
+ extern struct bus_type mdio_bus_type;
+ #endif /* __PHY_H */
