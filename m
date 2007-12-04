@@ -1,94 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbXLDTgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXLDTlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbXLDTgn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXLDTge
+	id S1752648AbXLDTlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXLDTlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:36:34 -0500
-Received: from ns2.lanforge.com ([66.165.47.211]:45486 "EHLO ns2.lanforge.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbXLDTgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:36:33 -0500
-Message-ID: <4755AC13.1060904@candelatech.com>
-Date: Tue, 04 Dec 2007 11:35:47 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Daniel Lezcano <daniel.lezcano@free.fr>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       Mark Lord <lkml@rtr.ca>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: namespace support requires network modules to say "GPL"
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca> <20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill> <475227B1.2060802@rtr.ca>	<20071201202354.672aed18@freepuppy.rosehill>	<47530778.7030605@candelatech.com> <47530FAC.1070804@trash.net>	<m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com>	<47544896.7070101@candelatech.com> <475451B1.1030006@free.fr>	<m163zexrqi.fsf@ebiederm.dsl.xmission.com>	<4755A025.8090903@candelatech.com> <m1odd6w9p6.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1odd6w9p6.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 4 Dec 2007 14:41:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58454 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751296AbXLDTla (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 14:41:30 -0500
+Date: Tue, 4 Dec 2007 11:39:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org, mmlnx@us.ibm.com,
+       dipankar@in.ibm.com, dsmith@redhat.com, paulmck@us.ibm.com
+Subject: Re: [patch 1/2] Linux Kernel Markers - Support Multiple Probes
+Message-Id: <20071204113954.c1dc9d87.akpm@linux-foundation.org>
+In-Reply-To: <20071204192100.GB31752@Krystal>
+References: <20071204181845.895090222@polymtl.ca>
+	<20071204182402.940135178@polymtl.ca>
+	<20071204110648.dd918789.akpm@linux-foundation.org>
+	<20071204192100.GB31752@Krystal>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Ben Greear <greearb@candelatech.com> writes:
+On Tue, 4 Dec 2007 14:21:00 -0500
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> > > + */
+> > > +void marker_probe_cb(const struct marker *mdata, void *call_private,
+> > > +	const char *fmt, ...)
+> > > +{
+> > > +	va_list args;
+> > > +	char ptype;
+> > > +
+> > > +	preempt_disable();
+> > 
+> > What are the preempt_disable()s doing in here?
+> > 
+> > Unless I missed something obvious, a comment is needed here (at least).
+> > 
 > 
->> Eric W. Biederman wrote:
->>> However there also seem to be simpler cases like Ben's bridge module,
->>> that don't appear to have any global state.
->>>
->> Well, my module has some global state, but I don't think it needs to care about
->> namespaces.  My first impression is that my module should be able to bridge
->> namespaces...not be contained within one.  I can have user-space make sure that
->> I don't bridge between
->> devices in different name-spaces, or perhaps bridging between namespaces
->> wouldn't be a problem anyway. 
-> 
-> Bridging between namespaces should not be a problem, but it could be
-> a bit of a challenge to setup (in finding the network devices).
-> Probably the easy way is to setup the bridging and then move one of the
-> network devices to the other network namespace.
-> 
-> Essentially bridging between two network devices in two network
-> namespaces looks like bridging between two network devices on two
-> separate network stacks.   Although internally things look a little
-> better.
+> They make sure the teardown of the callbacks can be done correctly when
+> they are in modules and they insure RCU read coherency. Will add
+> comment.
 
-Ok, that sounds fine.
-
->> Currently I use procfs and ioctls bound to a procfs file descriptor.
-> 
-> Which is where it gets tricky   You are defining new userspace ABIs.
-> I can see where they occasionally make sense during development
-> and prototyping but long term out of tree userspace interfaces appear
-> to me to be a real maintenance problem.
-
-They are completely contained within my module, and no one is going
-to change my module w/out me knowing, so actually I have very little
-problem here :)
-
->> For namespaces in general, will there be a way to just do a dev_get_by_* and
->> find the
->> device in *any* namespace and query the device to see what namespace it is in?
->> Then my module or some other more clever piece of code can determine the
->> namespaces
->> (by comparing pointers if nothing else) and make proper decision.  For instance,
->> maybe
->> we want to bridge two namespaces, or maybe we want to forbid that ever
->> happening...
-> 
-> The issue is that fundamentally all userspace device identifiers can
-> be duped between namespaces.  So since there is no unique identifier
-> we can not implement a function to do that.
-
-Ok, but can a netdev at least know what namespace it is in?  I don't
-need this for my module, but it seems very useful knowledge...
-
-Thanks,
-Ben
-
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
+So shouldn't it be using rcu_read_lock()?  If that does not suit, should we
+be adding new rcu primitives rather than open-coding and adding dependencies?
