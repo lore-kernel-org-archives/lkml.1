@@ -1,30 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXLDJfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbXLDJhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbXLDJfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 04:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXLDJfh
+	id S1753120AbXLDJhf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 04:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbXLDJh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 04:35:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58377 "EHLO mx2.mail.elte.hu"
+	Tue, 4 Dec 2007 04:37:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58717 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbXLDJfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 04:35:36 -0500
-Date: Tue, 4 Dec 2007 10:34:51 +0100
+	id S1750862AbXLDJh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 04:37:27 -0500
+Date: Tue, 4 Dec 2007 10:37:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Mark Lord <lkml@rtr.ca>, Pavel Machek <pavel@ucw.cz>,
-       Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       rjw@sisk.pl
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Message-ID: <20071204093451.GA4541@elte.hu>
-References: <20071202141117.GB9516@lazybastard.org> <20071202154746.GA27069@elte.hu> <20071202195501.GB10657@lazybastard.org> <20071202200722.GA12101@elte.hu> <20071202203016.GC10657@lazybastard.org> <20071202204559.GA28550@elte.hu> <20071202211026.GB11522@lazybastard.org> <20071202211900.GB7439@elte.hu> <20071203005702.GA12215@lazybastard.org> <20071204000655.GA17212@lazybastard.org>
+To: Neil Brown <neilb@suse.de>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression - 2.6.24-rc3 - umem nvram card driver oops
+Message-ID: <20071204093716.GB4541@elte.hu>
+References: <20071203213558.GP115527101@sgi.com> <18260.39892.215075.795664@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071204000655.GA17212@lazybastard.org>
+In-Reply-To: <18260.39892.215075.795664@notabene.brown>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,33 +34,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jörn Engel <joern@logfs.org> wrote:
+* Neil Brown <neilb@suse.de> wrote:
 
-> On Mon, 3 December 2007 01:57:02 +0100, Jörn Engel wrote:
-> > 
-> > After an eternity of compile time, this config does generate some useful
-> > output.  qemu is not to blame.
+> ### Diffstat output
+>  ./drivers/block/umem.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> Or is it?  The output definitely looks suspicious.  Large amounts of 
-> code get processed within a microsecond, while update_wall_time() 
-> appears to cause huge delays every time it is called: 
-> http://logfs.org/~joern/trace
-> 
-> Does this output make sense or does it rather indicate some sloppiness 
-> wrt. time in the qemu virtual machine?
+> diff .prev/drivers/block/umem.c ./drivers/block/umem.c
+> --- .prev/drivers/block/umem.c	2007-12-04 11:11:30.000000000 +1100
+> +++ ./drivers/block/umem.c	2007-12-04 11:11:42.000000000 +1100
+> @@ -484,7 +484,8 @@ static void process_page(unsigned long d
+>  		page->idx++;
+>  		if (page->idx >= bio->bi_vcnt) {
+>  			page->bio = bio->bi_next;
+> -			page->idx = page->bio->bi_idx;
+> +			if (page->bio)
+> +				page->idx = page->bio->bi_idx;
+>  		}
+>  
+>  		pci_unmap_page(card->dev, desc->data_dma_handle,
 
-not sure. It could be qemu being scheduled away? You could try to run 
-qemu with nice -20 or so, to avoid getting preempted. If time lapses 
-like this still show up:
+btw., if anyone feels so inclined, this file has quite a number of 
+coding style issues, as per scripts/checkpatch.pl output:
 
- trace-cm 434   0D.h. 1008us!: do_timer (tick_periodic)
- trace-cm 434   0D.h. 1972us+: update_wall_time (do_timer)
-
- trace-cm 434   0D.h. 1008us!: do_timer (tick_periodic)
- trace-cm 434   0D.h. 1972us+: update_wall_time (do_timer)
-
-then that could indicate a timekeeping weirdness, OR it could mean that 
-qemu is simply very slow. (there could be timer hw access between those 
-two function calls)
+ total: 28 errors, 54 warnings, 1221 lines checked
 
 	Ingo
