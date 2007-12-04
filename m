@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXLDQEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbXLDQID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbXLDQEr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 11:04:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXLDQEh
+	id S1754768AbXLDQID (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 11:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbXLDQHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 11:04:37 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:55203 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753512AbXLDQEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 11:04:36 -0500
-Date: Tue, 4 Dec 2007 14:04:25 -0200
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       herton@mandriva.com.br, dvgevers@xs4all.nl
-Subject: Re: [local DoS] Re: Linux 2.6.24-rc4
-Message-ID: <20071204140425.05b0b458@mandriva.com.br>
-In-Reply-To: <20071204160005.GA29783@elte.hu>
-References: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org>
-	<20071204120715.4ea204a8@mandriva.com.br>
-	<alpine.LFD.0.9999.0712040751170.2981@woody.linux-foundation.org>
-	<20071204160005.GA29783@elte.hu>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i586-mandriva-linux-gnu)
+	Tue, 4 Dec 2007 11:07:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48225 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbXLDQHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 11:07:49 -0500
+Subject: [PATCH] VM/Security: add security hook to do_brk
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: jmorris@namei.org, alan@redhat.com, chrisw@redhat.com,
+       akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       solar@openwall.com, wtarreau@hera.kernel.org
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 11:06:55 -0500
+Message-Id: <1196784415.2912.164.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-7.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 4 Dec 2007 17:00:05 +0100
-Ingo Molnar <mingo@elte.hu> escreveu:
+Given a specifically crafted binary do_brk() can be used to get low
+pages available in userspace virtually memory and can thus be used to
+circumvent the mmap_min_addr low memory protection.  Add security checks
+in do_brk().
 
-| 
-| * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-| 
-| > 
-| > 
-| > On Tue, 4 Dec 2007, Luiz Fernando N. Capitulino wrote:
-| > >
-| > > 	sched_rr_get_interval(1, NULL);
-| > 
-| > Looks like we have a zero "cfs_rq->load.weight".
-| > 
-| > Ingo? Both sched_slice() and __sched_slice() do a divide by the 
-| > runqueue weight, and at least dequeue_task_fair() explicitly checks 
-| > for that being zero, so clearly zero is a possible value. Hmm?
-| 
-| yeah, i can reproduce this crash too.
-| 
-| The problem is on SMP: if sched_rr_get_interval() gets a task from an 
-| otherwise idle runqueue, then rq->load.weight is 0. Normally 
-| sched_slice() is only used on a busy runqueue. So the correct fixup site 
-| is not in sched_slice() but in sys_sched_rr_get_interval() - i'm working 
-| on the right fix, i hope to be able to send a pull request in a few 
-| minutes.
+Signed-off-by: Eric Paris <eparis@redhat.com>
 
- Ingo, I can reproduce this w/o SMP support as well.
+---
 
- (Also, the backtrace I sent was reproduced on a UP machine with a
-SMP kernel).
+ mm/mmap.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
--- 
-Luiz Fernando N. Capitulino
+diff --git a/mm/mmap.c b/mm/mmap.c
+index f4cfc6a..15678aa 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1941,6 +1941,10 @@ unsigned long do_brk(unsigned long addr, unsigned long len)
+ 	if (is_hugepage_only_range(mm, addr, len))
+ 		return -EINVAL;
+ 
++	error = security_file_mmap(0, 0, 0, 0, addr, 1);
++	if (error)
++		return error;
++
+ 	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+ 
+ 	error = arch_mmap_check(addr, len, flags);
+
+
