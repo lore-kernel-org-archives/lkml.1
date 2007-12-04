@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbXLDVKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbXLDVLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755286AbXLDVKx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbXLDVHP
+	id S1755100AbXLDVLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbXLDVHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:07:15 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53451
+	Tue, 4 Dec 2007 16:07:21 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53456
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755203AbXLDVHN (ORCPT
+	by vger.kernel.org with ESMTP id S1754408AbXLDVHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:07:13 -0500
+	Tue, 4 Dec 2007 16:07:17 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 09/23] Subject: SCHED - Consistency cleanup for this_rq usage
+Subject: [PATCH 10/23] Subject: SCHED - Remove some CFS specific code from the
+	wakeup path of RT tasks
 To: mingo@elte.hu
 Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:45:11 -0500
-Message-ID: <20071204204511.3567.79678.stgit@novell1.haskins.net>
+Date: Tue, 04 Dec 2007 15:45:16 -0500
+Message-ID: <20071204204516.3567.46993.stgit@novell1.haskins.net>
 In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,85 +28,482 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"this_rq" is normally used to denote the RQ on the current cpu
-(i.e. "cpu_rq(this_cpu)").  So clean up the usage of this_rq to be
-more consistent with the rest of the code.
+The current wake-up code path tries to determine if it can optimize the
+wake-up to "this_cpu" by computing load calculations.  The problem is that
+these calculations are only relevant to CFS tasks where load is king.  For
+RT tasks, priority is king.  So the load calculation is completely wasted
+bandwidth.
+
+Therefore, we create a new sched_class interface to help with
+pre-wakeup routing decisions and move the load calculation as a function
+of CFS task's class.
+
+(Note that there is one checkpatch error due to braces, but this code was
+simply moved from kernel/sched.c to kernel/sched_fail.c so I don't want to
+modify it)
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
 
- kernel/sched_rt.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+ include/linux/sched.h   |    1 
+ kernel/sched.c          |  167 ++++++++---------------------------------------
+ kernel/sched_fair.c     |  148 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched_idletask.c |    9 +++
+ kernel/sched_rt.c       |   10 +++
+ 5 files changed, 195 insertions(+), 140 deletions(-)
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index a3dc53b..809658c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -827,6 +827,7 @@ struct sched_class {
+ 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
+ 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
+ 	void (*yield_task) (struct rq *rq);
++	int  (*select_task_rq)(struct task_struct *p, int sync);
+ 
+ 	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p);
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 70f08de..6fa511d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -866,6 +866,13 @@ static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
+ static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
+ #endif
+ 
++#ifdef CONFIG_SMP
++static unsigned long source_load(int cpu, int type);
++static unsigned long target_load(int cpu, int type);
++static unsigned long cpu_avg_load_per_task(int cpu);
++static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
++#endif /* CONFIG_SMP */
++
+ #include "sched_stats.h"
+ #include "sched_idletask.c"
+ #include "sched_fair.c"
+@@ -1051,7 +1058,7 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
+ /*
+  * Is this task likely cache-hot:
+  */
+-static inline int
++static int
+ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+ {
+ 	s64 delta;
+@@ -1276,7 +1283,7 @@ static unsigned long target_load(int cpu, int type)
+ /*
+  * Return the average load per task on the cpu's run queue
+  */
+-static inline unsigned long cpu_avg_load_per_task(int cpu)
++static unsigned long cpu_avg_load_per_task(int cpu)
+ {
+ 	struct rq *rq = cpu_rq(cpu);
+ 	unsigned long total = weighted_cpuload(cpu);
+@@ -1433,58 +1440,6 @@ static int sched_balance_self(int cpu, int flag)
+ 
+ #endif /* CONFIG_SMP */
+ 
+-/*
+- * wake_idle() will wake a task on an idle cpu if task->cpu is
+- * not idle and an idle cpu is available.  The span of cpus to
+- * search starts with cpus closest then further out as needed,
+- * so we always favor a closer, idle cpu.
+- *
+- * Returns the CPU we should wake onto.
+- */
+-#if defined(ARCH_HAS_SCHED_WAKE_IDLE)
+-static int wake_idle(int cpu, struct task_struct *p)
+-{
+-	cpumask_t tmp;
+-	struct sched_domain *sd;
+-	int i;
+-
+-	/*
+-	 * If it is idle, then it is the best cpu to run this task.
+-	 *
+-	 * This cpu is also the best, if it has more than one task already.
+-	 * Siblings must be also busy(in most cases) as they didn't already
+-	 * pickup the extra load from this cpu and hence we need not check
+-	 * sibling runqueue info. This will avoid the checks and cache miss
+-	 * penalities associated with that.
+-	 */
+-	if (idle_cpu(cpu) || cpu_rq(cpu)->nr_running > 1)
+-		return cpu;
+-
+-	for_each_domain(cpu, sd) {
+-		if (sd->flags & SD_WAKE_IDLE) {
+-			cpus_and(tmp, sd->span, p->cpus_allowed);
+-			for_each_cpu_mask(i, tmp) {
+-				if (idle_cpu(i)) {
+-					if (i != task_cpu(p)) {
+-						schedstat_inc(p,
+-							se.nr_wakeups_idle);
+-					}
+-					return i;
+-				}
+-			}
+-		} else {
+-			break;
+-		}
+-	}
+-	return cpu;
+-}
+-#else
+-static inline int wake_idle(int cpu, struct task_struct *p)
+-{
+-	return cpu;
+-}
+-#endif
+-
+ /***
+  * try_to_wake_up - wake up a thread
+  * @p: the to-be-woken-up thread
+@@ -1506,8 +1461,6 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 	long old_state;
+ 	struct rq *rq;
+ #ifdef CONFIG_SMP
+-	struct sched_domain *sd, *this_sd = NULL;
+-	unsigned long load, this_load;
+ 	int new_cpu;
+ #endif
+ 
+@@ -1527,90 +1480,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 	if (unlikely(task_running(rq, p)))
+ 		goto out_activate;
+ 
+-	new_cpu = cpu;
+-
+-	schedstat_inc(rq, ttwu_count);
+-	if (cpu == this_cpu) {
+-		schedstat_inc(rq, ttwu_local);
+-		goto out_set_cpu;
+-	}
+-
+-	for_each_domain(this_cpu, sd) {
+-		if (cpu_isset(cpu, sd->span)) {
+-			schedstat_inc(sd, ttwu_wake_remote);
+-			this_sd = sd;
+-			break;
+-		}
+-	}
+-
+-	if (unlikely(!cpu_isset(this_cpu, p->cpus_allowed)))
+-		goto out_set_cpu;
+-
+-	/*
+-	 * Check for affine wakeup and passive balancing possibilities.
+-	 */
+-	if (this_sd) {
+-		int idx = this_sd->wake_idx;
+-		unsigned int imbalance;
+-
+-		imbalance = 100 + (this_sd->imbalance_pct - 100) / 2;
+-
+-		load = source_load(cpu, idx);
+-		this_load = target_load(this_cpu, idx);
+-
+-		new_cpu = this_cpu; /* Wake to this CPU if we can */
+-
+-		if (this_sd->flags & SD_WAKE_AFFINE) {
+-			unsigned long tl = this_load;
+-			unsigned long tl_per_task;
+-
+-			/*
+-			 * Attract cache-cold tasks on sync wakeups:
+-			 */
+-			if (sync && !task_hot(p, rq->clock, this_sd))
+-				goto out_set_cpu;
+-
+-			schedstat_inc(p, se.nr_wakeups_affine_attempts);
+-			tl_per_task = cpu_avg_load_per_task(this_cpu);
+-
+-			/*
+-			 * If sync wakeup then subtract the (maximum possible)
+-			 * effect of the currently running task from the load
+-			 * of the current CPU:
+-			 */
+-			if (sync)
+-				tl -= current->se.load.weight;
+-
+-			if ((tl <= load &&
+-				tl + target_load(cpu, idx) <= tl_per_task) ||
+-			       100*(tl + p->se.load.weight) <= imbalance*load) {
+-				/*
+-				 * This domain has SD_WAKE_AFFINE and
+-				 * p is cache cold in this domain, and
+-				 * there is no bad imbalance.
+-				 */
+-				schedstat_inc(this_sd, ttwu_move_affine);
+-				schedstat_inc(p, se.nr_wakeups_affine);
+-				goto out_set_cpu;
+-			}
+-		}
+-
+-		/*
+-		 * Start passive balancing when half the imbalance_pct
+-		 * limit is reached.
+-		 */
+-		if (this_sd->flags & SD_WAKE_BALANCE) {
+-			if (imbalance*this_load <= 100*load) {
+-				schedstat_inc(this_sd, ttwu_move_balance);
+-				schedstat_inc(p, se.nr_wakeups_passive);
+-				goto out_set_cpu;
+-			}
+-		}
+-	}
+-
+-	new_cpu = cpu; /* Could not wake to this_cpu. Wake to cpu instead */
+-out_set_cpu:
+-	new_cpu = wake_idle(new_cpu, p);
++	new_cpu = p->sched_class->select_task_rq(p, sync);
+ 	if (new_cpu != cpu) {
+ 		set_task_cpu(p, new_cpu);
+ 		task_rq_unlock(rq, &flags);
+@@ -1626,6 +1496,23 @@ out_set_cpu:
+ 		cpu = task_cpu(p);
+ 	}
+ 
++#ifdef CONFIG_SCHEDSTATS
++	schedstat_inc(rq, ttwu_count);
++	if (cpu == this_cpu)
++		schedstat_inc(rq, ttwu_local);
++	else {
++		struct sched_domain *sd;
++		for_each_domain(this_cpu, sd) {
++			if (cpu_isset(cpu, sd->span)) {
++				schedstat_inc(sd, ttwu_wake_remote);
++				break;
++			}
++		}
++	}
++
++#endif
++
++
+ out_activate:
+ #endif /* CONFIG_SMP */
+ 	schedstat_inc(p, se.nr_wakeups);
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index c33f0ce..3be0a99 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -837,6 +837,151 @@ static void yield_task_fair(struct rq *rq)
+ }
+ 
+ /*
++ * wake_idle() will wake a task on an idle cpu if task->cpu is
++ * not idle and an idle cpu is available.  The span of cpus to
++ * search starts with cpus closest then further out as needed,
++ * so we always favor a closer, idle cpu.
++ *
++ * Returns the CPU we should wake onto.
++ */
++#if defined(ARCH_HAS_SCHED_WAKE_IDLE)
++static int wake_idle(int cpu, struct task_struct *p)
++{
++	cpumask_t tmp;
++	struct sched_domain *sd;
++	int i;
++
++	/*
++	 * If it is idle, then it is the best cpu to run this task.
++	 *
++	 * This cpu is also the best, if it has more than one task already.
++	 * Siblings must be also busy(in most cases) as they didn't already
++	 * pickup the extra load from this cpu and hence we need not check
++	 * sibling runqueue info. This will avoid the checks and cache miss
++	 * penalities associated with that.
++	 */
++	if (idle_cpu(cpu) || cpu_rq(cpu)->nr_running > 1)
++		return cpu;
++
++	for_each_domain(cpu, sd) {
++		if (sd->flags & SD_WAKE_IDLE) {
++			cpus_and(tmp, sd->span, p->cpus_allowed);
++			for_each_cpu_mask(i, tmp) {
++				if (idle_cpu(i)) {
++					if (i != task_cpu(p)) {
++						schedstat_inc(p,
++						       se.nr_wakeups_idle);
++					}
++					return i;
++				}
++			}
++		} else {
++			break;
++		}
++	}
++	return cpu;
++}
++#else
++static inline int wake_idle(int cpu, struct task_struct *p)
++{
++	return cpu;
++}
++#endif
++
++#ifdef CONFIG_SMP
++static int select_task_rq_fair(struct task_struct *p, int sync)
++{
++	int cpu, this_cpu;
++	struct rq *rq;
++	struct sched_domain *sd, *this_sd = NULL;
++	int new_cpu;
++
++	cpu      = task_cpu(p);
++	rq       = task_rq(p);
++	this_cpu = smp_processor_id();
++	new_cpu  = cpu;
++
++	for_each_domain(this_cpu, sd) {
++		if (cpu_isset(cpu, sd->span)) {
++			this_sd = sd;
++			break;
++		}
++	}
++
++	if (unlikely(!cpu_isset(this_cpu, p->cpus_allowed)))
++		goto out_set_cpu;
++
++	/*
++	 * Check for affine wakeup and passive balancing possibilities.
++	 */
++	if (this_sd) {
++		int idx = this_sd->wake_idx;
++		unsigned int imbalance;
++		unsigned long load, this_load;
++
++		imbalance = 100 + (this_sd->imbalance_pct - 100) / 2;
++
++		load = source_load(cpu, idx);
++		this_load = target_load(this_cpu, idx);
++
++		new_cpu = this_cpu; /* Wake to this CPU if we can */
++
++		if (this_sd->flags & SD_WAKE_AFFINE) {
++			unsigned long tl = this_load;
++			unsigned long tl_per_task;
++
++			/*
++			 * Attract cache-cold tasks on sync wakeups:
++			 */
++			if (sync && !task_hot(p, rq->clock, this_sd))
++				goto out_set_cpu;
++
++			schedstat_inc(p, se.nr_wakeups_affine_attempts);
++			tl_per_task = cpu_avg_load_per_task(this_cpu);
++
++			/*
++			 * If sync wakeup then subtract the (maximum possible)
++			 * effect of the currently running task from the load
++			 * of the current CPU:
++			 */
++			if (sync)
++				tl -= current->se.load.weight;
++
++			if ((tl <= load &&
++				tl + target_load(cpu, idx) <= tl_per_task) ||
++			       100*(tl + p->se.load.weight) <= imbalance*load) {
++				/*
++				 * This domain has SD_WAKE_AFFINE and
++				 * p is cache cold in this domain, and
++				 * there is no bad imbalance.
++				 */
++				schedstat_inc(this_sd, ttwu_move_affine);
++				schedstat_inc(p, se.nr_wakeups_affine);
++				goto out_set_cpu;
++			}
++		}
++
++		/*
++		 * Start passive balancing when half the imbalance_pct
++		 * limit is reached.
++		 */
++		if (this_sd->flags & SD_WAKE_BALANCE) {
++			if (imbalance*this_load <= 100*load) {
++				schedstat_inc(this_sd, ttwu_move_balance);
++				schedstat_inc(p, se.nr_wakeups_passive);
++				goto out_set_cpu;
++			}
++		}
++	}
++
++	new_cpu = cpu; /* Could not wake to this_cpu. Wake to cpu instead */
++out_set_cpu:
++	return wake_idle(new_cpu, p);
++}
++#endif /* CONFIG_SMP */
++
++
++/*
+  * Preempt the current task with a newly woken task if needed:
+  */
+ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+@@ -1109,6 +1254,9 @@ static const struct sched_class fair_sched_class = {
+ 	.enqueue_task		= enqueue_task_fair,
+ 	.dequeue_task		= dequeue_task_fair,
+ 	.yield_task		= yield_task_fair,
++#ifdef CONFIG_SMP
++	.select_task_rq		= select_task_rq_fair,
++#endif /* CONFIG_SMP */
+ 
+ 	.check_preempt_curr	= check_preempt_wakeup,
+ 
+diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
+index bf9c25c..ca53748 100644
+--- a/kernel/sched_idletask.c
++++ b/kernel/sched_idletask.c
+@@ -5,6 +5,12 @@
+  *  handled in sched_fair.c)
+  */
+ 
++#ifdef CONFIG_SMP
++static int select_task_rq_idle(struct task_struct *p, int sync)
++{
++	return task_cpu(p); /* IDLE tasks as never migrated */
++}
++#endif /* CONFIG_SMP */
+ /*
+  * Idle tasks are unconditionally rescheduled:
+  */
+@@ -72,6 +78,9 @@ const struct sched_class idle_sched_class = {
+ 
+ 	/* dequeue is not valid, we print a debug message there: */
+ 	.dequeue_task		= dequeue_task_idle,
++#ifdef CONFIG_SMP
++	.select_task_rq		= select_task_rq_idle,
++#endif /* CONFIG_SMP */
+ 
+ 	.check_preempt_curr	= check_preempt_curr_idle,
+ 
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index e5bce6a..d8f8738 100644
+index d8f8738..da21c7a 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -326,21 +326,21 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
-  * running task can migrate over to a CPU that is running a task
-  * of lesser priority.
+@@ -148,6 +148,13 @@ yield_task_rt(struct rq *rq)
+ 	requeue_task_rt(rq, rq->curr);
+ }
+ 
++#ifdef CONFIG_SMP
++static int select_task_rq_rt(struct task_struct *p, int sync)
++{
++	return task_cpu(p);
++}
++#endif /* CONFIG_SMP */
++
+ /*
+  * Preempt the current task with a newly woken task if needed:
   */
--static int push_rt_task(struct rq *this_rq)
-+static int push_rt_task(struct rq *rq)
- {
- 	struct task_struct *next_task;
- 	struct rq *lowest_rq;
- 	int ret = 0;
- 	int paranoid = RT_MAX_TRIES;
+@@ -663,6 +670,9 @@ const struct sched_class rt_sched_class = {
+ 	.enqueue_task		= enqueue_task_rt,
+ 	.dequeue_task		= dequeue_task_rt,
+ 	.yield_task		= yield_task_rt,
++#ifdef CONFIG_SMP
++	.select_task_rq		= select_task_rq_rt,
++#endif /* CONFIG_SMP */
  
--	assert_spin_locked(&this_rq->lock);
-+	assert_spin_locked(&rq->lock);
- 
--	next_task = pick_next_highest_task_rt(this_rq, -1);
-+	next_task = pick_next_highest_task_rt(rq, -1);
- 	if (!next_task)
- 		return 0;
- 
-  retry:
--	if (unlikely(next_task == this_rq->curr)) {
-+	if (unlikely(next_task == rq->curr)) {
- 		WARN_ON(1);
- 		return 0;
- 	}
-@@ -350,24 +350,24 @@ static int push_rt_task(struct rq *this_rq)
- 	 * higher priority than current. If that's the case
- 	 * just reschedule current.
- 	 */
--	if (unlikely(next_task->prio < this_rq->curr->prio)) {
--		resched_task(this_rq->curr);
-+	if (unlikely(next_task->prio < rq->curr->prio)) {
-+		resched_task(rq->curr);
- 		return 0;
- 	}
- 
--	/* We might release this_rq lock */
-+	/* We might release rq lock */
- 	get_task_struct(next_task);
- 
- 	/* find_lock_lowest_rq locks the rq if found */
--	lowest_rq = find_lock_lowest_rq(next_task, this_rq);
-+	lowest_rq = find_lock_lowest_rq(next_task, rq);
- 	if (!lowest_rq) {
- 		struct task_struct *task;
- 		/*
--		 * find lock_lowest_rq releases this_rq->lock
-+		 * find lock_lowest_rq releases rq->lock
- 		 * so it is possible that next_task has changed.
- 		 * If it has, then try again.
- 		 */
--		task = pick_next_highest_task_rt(this_rq, -1);
-+		task = pick_next_highest_task_rt(rq, -1);
- 		if (unlikely(task != next_task) && task && paranoid--) {
- 			put_task_struct(next_task);
- 			next_task = task;
-@@ -378,7 +378,7 @@ static int push_rt_task(struct rq *this_rq)
- 
- 	assert_spin_locked(&lowest_rq->lock);
- 
--	deactivate_task(this_rq, next_task, 0);
-+	deactivate_task(rq, next_task, 0);
- 	set_task_cpu(next_task, lowest_rq->cpu);
- 	activate_task(lowest_rq, next_task, 0);
+ 	.check_preempt_curr	= check_preempt_curr_rt,
  
 
