@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXLDP2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbXLDP2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXLDP2Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbXLDP12
+	id S1755511AbXLDP2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXLDP21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:27:28 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:60377 "EHLO
-	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754857AbXLDP11 (ORCPT
+	Tue, 4 Dec 2007 10:28:27 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:46162 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753206AbXLDP2Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:27:27 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-cc: linux-kernel@vger.kernel.org, "Joerg Roedel" <joerg.roedel@amd.com>
-Subject: [PATCH 3/3] x86_64: use __PAGE_KERNEL_EXEC in ioremap_64.c
-Date: Tue,  4 Dec 2007 16:23:51 +0100
-Message-ID: <11967818311122-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <11967818313616-git-send-email-joerg.roedel@amd.com>
-References: <11967818313616-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 04 Dec 2007 15:23:51.0100 (UTC)
- FILETIME=[AC685FC0:01C83689]
+	Tue, 4 Dec 2007 10:28:25 -0500
+Date: Tue, 4 Dec 2007 10:28:24 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject: add kobject_init_ng, kobject_add_ng, and
+ kobject_init_and_add functions
+In-Reply-To: <20071204110112.14488ece@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0712041023400.4321-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-X-WSS-ID: 6B4BAEC00QK3710789-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch replaces the manual permission setup for pages in ioremap_64.c with
-the pre-defined __PAGE_KERNEL_EXEC value.
+On Tue, 4 Dec 2007, Cornelia Huck wrote:
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/mm/ioremap_64.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+> > > > > + * If the function is successful, the only way to properly clean up the
+> > > > > + * memory is with a call to kobject_del().
+> > > > 
+> > > > In which case kobject_put() isn't needed?
+> > > 
+> > > kobject_del() should only undo what kobject_add() did. So kobject_put()
+> > > will still be needed to clean up the memory. Perhaps the wording should
+> > > be:
+> > > 
+> > > If the function is successful, the only way to properly clean up the
+> > > kobject is to call kobject_del() for removing the kobject from the
+> > > hierarchy and to subsequently call kobject_put() to clean up the memory.
+> > 
+> > But that's not what the code does today in the kobject_del() function.
+> 
+> Hm, if I'm not completely confused, kobject_del() just gives up the
+> extra reference obtained by kobject_add(). That leaves the initial
+> reference we got via kobject_init(_ng)(). If we want to clean up the
+> memory, we need to give up that reference as well.
 
-diff --git a/arch/x86/mm/ioremap_64.c b/arch/x86/mm/ioremap_64.c
-index 6cac90a..9a67fc6 100644
---- a/arch/x86/mm/ioremap_64.c
-+++ b/arch/x86/mm/ioremap_64.c
-@@ -103,8 +103,7 @@ void __iomem * __ioremap(unsigned long phys_addr, unsigned long size, unsigned l
- 	}
- #endif
- 
--	pgprot = __pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_GLOBAL
--			  | _PAGE_DIRTY | _PAGE_ACCESSED | flags);
-+	pgprot = __pgprot(__PAGE_KERNEL_EXEC | _PAGE_GLOBAL | flags);
- 	/*
- 	 * Mappings have to be page-aligned
- 	 */
--- 
-1.5.2.5
+That's right.  Furthermore there are other parts of the kernel that 
+expect to do the kobject_del() and the final kobject_put() separately.  
+For example, the driver core does kobject_del() as part of device_del() 
+and then it does the final kobject_put() as part of put_device().
 
-
+Alan Stern
 
