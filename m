@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbXLDVMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbXLDVMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753660AbXLDVMN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXLDVHd
+	id S1753814AbXLDVMb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbXLDVHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:07:33 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53471
+	Tue, 4 Dec 2007 16:07:39 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53476
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755268AbXLDVHb (ORCPT
+	by vger.kernel.org with ESMTP id S1755262AbXLDVHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:07:31 -0500
+	Tue, 4 Dec 2007 16:07:37 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 13/23] Subject: SCHED - Pre-route RT tasks on wakeup
+Subject: [PATCH 14/23] Subject: SCHED - Optimize our cpu selection based on
+	topology
 To: mingo@elte.hu
 Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:45:31 -0500
-Message-ID: <20071204204531.3567.99493.stgit@novell1.haskins.net>
+Date: Tue, 04 Dec 2007 15:45:36 -0500
+Message-ID: <20071204204536.3567.82521.stgit@novell1.haskins.net>
 In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,63 +28,163 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the original patch series that Steven Rostedt and I worked on together,
-we both took different approaches to low-priority wakeup path.  I utilized
-"pre-routing" (push the task away to a less important RQ before activating)
-approach, while Steve utilized a "post-routing" approach.  The advantage of
-my approach is that you avoid the overhead of a wasted activate/deactivate
-cycle and peripherally related burdens.  The advantage of Steve's method is
-that it neatly solves an issue preventing a "pull" optimization from being
-deployed.
+The current code base assumes a relatively flat CPU/core topology and will
+route RT tasks to any CPU fairly equally.  In the real world, there are
+various toplogies and affinities that govern where a task is best suited to
+run with the smallest amount of overhead.  NUMA and multi-core CPUs are
+prime examples of topologies that can impact cache performance.
 
-In the end, we ended up deploying Steve's idea.  But it later dawned on me
-that we could get the best of both worlds by deploying both ideas together,
-albeit slightly modified.
-
-The idea is simple:  Use a "light-weight" lookup for pre-routing, since we
-only need to approximate a good home for the task.  And we also retain the
-post-routing push logic to clean up any inaccuracies caused by a condition
-of "priority mistargeting" caused by the lightweight lookup.  Most of the
-time, the pre-routing should work and yield lower overhead.  In the cases
-where it doesnt, the post-router will bat cleanup.
+Fortunately, linux is already structured to represent these topologies via
+the sched_domains interface.  So we change our RT router to consult a
+combination of topology and affinity policy to best place tasks during
+migration.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
 
- kernel/sched_rt.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ kernel/sched.c    |    1 +
+ kernel/sched_rt.c |  100 +++++++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 89 insertions(+), 12 deletions(-)
 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6fa511d..651270e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -24,6 +24,7 @@
+  *  2007-07-01  Group scheduling enhancements by Srivatsa Vaddagiri
+  *  2007-10-22  RT overload balancing by Steven Rostedt
+  *                 (with thanks to Gregory Haskins)
++ *  2007-11-05  RT migration/wakeup tuning by Gregory Haskins
+  */
+ 
+ #include <linux/mm.h>
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 7e444f4..ea40851 100644
+index ea40851..67daa66 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -149,8 +149,27 @@ yield_task_rt(struct rq *rq)
+@@ -279,35 +279,111 @@ static struct task_struct *pick_next_highest_task_rt(struct rq *rq,
  }
  
- #ifdef CONFIG_SMP
-+static int find_lowest_rq(struct task_struct *task);
-+
- static int select_task_rq_rt(struct task_struct *p, int sync)
+ static DEFINE_PER_CPU(cpumask_t, local_cpu_mask);
++static DEFINE_PER_CPU(cpumask_t, valid_cpu_mask);
+ 
+-static int find_lowest_rq(struct task_struct *task)
++static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
  {
-+	struct rq *rq = task_rq(p);
-+
-+	/*
-+	 * If the task will not preempt the RQ, try to find a better RQ
-+	 * before we even activate the task
-+	 */
-+	if ((p->prio >= rq->rt.highest_prio)
-+	    && (p->nr_cpus_allowed > 1)) {
-+		int cpu = find_lowest_rq(p);
-+
-+		return (cpu == -1) ? task_cpu(p) : cpu;
+-	int cpu;
+-	cpumask_t *cpu_mask = &__get_cpu_var(local_cpu_mask);
+-	struct rq *lowest_rq = NULL;
++	int       cpu;
++	cpumask_t *valid_mask = &__get_cpu_var(valid_cpu_mask);
++	int       lowest_prio = -1;
++	int       ret         = 0;
+ 
+-	cpus_and(*cpu_mask, cpu_online_map, task->cpus_allowed);
++	cpus_clear(*lowest_mask);
++	cpus_and(*valid_mask, cpu_online_map, task->cpus_allowed);
+ 
+ 	/*
+ 	 * Scan each rq for the lowest prio.
+ 	 */
+-	for_each_cpu_mask(cpu, *cpu_mask) {
++	for_each_cpu_mask(cpu, *valid_mask) {
+ 		struct rq *rq = cpu_rq(cpu);
+ 
+ 		/* We look for lowest RT prio or non-rt CPU */
+ 		if (rq->rt.highest_prio >= MAX_RT_PRIO) {
+-			lowest_rq = rq;
+-			break;
++			if (ret)
++				cpus_clear(*lowest_mask);
++			cpu_set(rq->cpu, *lowest_mask);
++			return 1;
+ 		}
+ 
+ 		/* no locking for now */
+-		if (rq->rt.highest_prio > task->prio &&
+-		    (!lowest_rq || rq->rt.highest_prio > lowest_rq->rt.highest_prio)) {
+-			lowest_rq = rq;
++		if ((rq->rt.highest_prio > task->prio)
++		    && (rq->rt.highest_prio >= lowest_prio)) {
++			if (rq->rt.highest_prio > lowest_prio) {
++				/* new low - clear old data */
++				lowest_prio = rq->rt.highest_prio;
++				cpus_clear(*lowest_mask);
++			}
++			cpu_set(rq->cpu, *lowest_mask);
++			ret = 1;
++		}
 +	}
 +
++	return ret;
++}
++
++static inline int pick_optimal_cpu(int this_cpu, cpumask_t *mask)
++{
++	int first;
++
++	/* "this_cpu" is cheaper to preempt than a remote processor */
++	if ((this_cpu != -1) && cpu_isset(this_cpu, *mask))
++		return this_cpu;
++
++	first = first_cpu(*mask);
++	if (first != NR_CPUS)
++		return first;
++
++	return -1;
++}
++
++static int find_lowest_rq(struct task_struct *task)
++{
++	struct sched_domain *sd;
++	cpumask_t *lowest_mask = &__get_cpu_var(local_cpu_mask);
++	int this_cpu = smp_processor_id();
++	int cpu      = task_cpu(task);
++
++	if (!find_lowest_cpus(task, lowest_mask))
++		return -1;
++
 +	/*
-+	 * Otherwise, just let it ride on the affined RQ and the
-+	 * post-schedule router will push the preempted task away
++	 * At this point we have built a mask of cpus representing the
++	 * lowest priority tasks in the system.  Now we want to elect
++	 * the best one based on our affinity and topology.
++	 *
++	 * We prioritize the last cpu that the task executed on since
++	 * it is most likely cache-hot in that location.
 +	 */
- 	return task_cpu(p);
++	if (cpu_isset(cpu, *lowest_mask))
++		return cpu;
++
++	/*
++	 * Otherwise, we consult the sched_domains span maps to figure
++	 * out which cpu is logically closest to our hot cache data.
++	 */
++	if (this_cpu == cpu)
++		this_cpu = -1; /* Skip this_cpu opt if the same */
++
++	for_each_domain(cpu, sd) {
++		if (sd->flags & SD_WAKE_AFFINE) {
++			cpumask_t domain_mask;
++			int       best_cpu;
++
++			cpus_and(domain_mask, sd->span, *lowest_mask);
++
++			best_cpu = pick_optimal_cpu(this_cpu,
++						    &domain_mask);
++			if (best_cpu != -1)
++				return best_cpu;
+ 		}
+ 	}
+ 
+-	return lowest_rq ? lowest_rq->cpu : -1;
++	/*
++	 * And finally, if there were no matches within the domains
++	 * just give the caller *something* to work with from the compatible
++	 * locations.
++	 */
++	return pick_optimal_cpu(this_cpu, lowest_mask);
  }
- #endif /* CONFIG_SMP */
+ 
+ /* Will lock the rq it finds */
 
