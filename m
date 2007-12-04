@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbXLDMIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbXLDMQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbXLDMIe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 07:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbXLDMIY
+	id S1753476AbXLDMQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 07:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXLDMQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 07:08:24 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:14729 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752979AbXLDMIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 07:08:22 -0500
-Date: Tue, 4 Dec 2007 13:06:13 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-Subject: Re: [PATCH 00/28] blk_end_request: full I/O completion handler
-	(take 3)
-Message-ID: <20071204120612.GP23294@kernel.dk>
-References: <20071130.182351.115904044.k-ueda@ct.jp.nec.com>
+	Tue, 4 Dec 2007 07:16:09 -0500
+Received: from torres.zugschlus.de ([85.214.68.41]:60190 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbXLDMQI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 07:16:08 -0500
+X-Greylist: delayed 2077 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 07:16:07 EST
+Date: Tue, 4 Dec 2007 12:41:25 +0100
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: linux-kernel@vger.kernel.org
+Subject: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071204114125.GA17310@torres.zugschlus.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071130.182351.115904044.k-ueda@ct.jp.nec.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 30 2007, Kiyoshi Ueda wrote:
-> Hello Jens,
-> 
-> The following is the updated patch-set for blk_end_request().
-> Changes since the last version are only minor updates to catch up
-> with the base kernel changes.
-> Do you agree the implementation of blk_end_request()?
-> If there's no problem, could you merge it to your tree?
-> Or does it have to be merged to -mm tree first?
+While debugging Exim4's GnuTLS interface, I recently found out that
+reading from /dev/urandom depletes entropy as much as reading from
+/dev/random would. This has somehow surprised me since I have always
+believed that /dev/urandom has lower quality entropy than /dev/random,
+but lots of it.
 
-Looks good to me now, I'll queue it up. Thanks!
+This also means that I can "sabotage" applications reading from
+/dev/random just by continuously reading from /dev/urandom, even not
+meaning to do any harm.
+
+Before I file a bug on bugzilla, can I ask why /dev/urandom wasn't
+implemented as a PRNG which is periodically (say, every 1024 bytes or
+even more) seeded from /dev/random? That way, /dev/random has a much
+higher chance of holding enough entropy for applications that really
+need "good" entropy.
+
+Entropy depletion has become an issue on Linux systems since the
+network was removed from the group of entropy sources a few years ago.
+Of the around 20 Linux systems that I currently have root privileges
+on, only two have a hardware RNG.
+
+What can I do to keep sufficiently high entropy pools even if I read
+from /dev/urandom more than once in a while?
+
+Greetings
+Marc
 
 -- 
-Jens Axboe
-
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
