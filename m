@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbXLDOyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbXLDO6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbXLDOyg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 09:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXLDOy2
+	id S1754150AbXLDO6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 09:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXLDO6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 09:54:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40439 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbXLDOy2 (ORCPT
+	Tue, 4 Dec 2007 09:58:13 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:42773 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753270AbXLDO6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 09:54:28 -0500
-Date: Tue, 4 Dec 2007 06:52:32 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ICH9 & Core2 Duo - kernel crash
-Message-ID: <20071204065232.2376f90b@laptopd505.fenrus.org>
-In-Reply-To: <200712041331.24678.pavol.cvengros@primeinteractive.net>
-References: <200712041331.24678.pavol.cvengros@primeinteractive.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Dec 2007 09:58:12 -0500
+Message-ID: <47556AE5.8010708@linux.vnet.ibm.com>
+Date: Tue, 04 Dec 2007 20:27:41 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@debian.org>
+Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
+References: <474D0AAC.5010005@linux.vnet.ibm.com> <20071127225328.9e3f3827.akpm@linux-foundation.org> <474D15FF.5080508@linux.vnet.ibm.com> <20071127232552.ad16e95c.akpm@linux-foundation.org> <474E5CAC.9000108@linux.vnet.ibm.com> <20071129003533.54b4b20e.akpm@linux-foundation.org> <20071130063929.GD2754@fattire.cabal.ca> <20071129230047.1b482562.akpm@linux-foundation.org> <20071129230204.8698f47e.akpm@linux-foundation.org> <474FBB86.5000004@linux.vnet.ibm.com> <20071204122005.GA27286@elte.hu>
+In-Reply-To: <20071204122005.GA27286@elte.hu>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 13:31:24 +0100
-Pavol Cvengros <pavol.cvengros@primeinteractive.net> wrote:
-
-> Hello,
+Ingo Molnar wrote:
+> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 > 
-> I am trying LKML to get some help on one linux kernel related problem.
-> Lately we got a machine with new HW from Intel. CPU is Intel Core2
-> Duo E6850 3GHz with 2GB of RAM. Motherboard is Intel DG33BU with G33
-> chipset.
+>>> So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
+>> Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
 > 
-> After long fight with kernel crashes on different things, we figured
-> out that if the multicore is disabled in bios, everything is ok and
-> machine is running good. No kernel crashes no problems, but with one
-> core only.
+> just to make sure: this is a real lockup and failed bootup (or device 
+> init), not just a message, right?
 > 
+> 	Ingo
+> --
 
-to be honest, this looks like a thermal issue
-are all your fans running?
-is there anything in the case blocking air flow?
+Hi Ingo,
 
+This softlockup is seen in the 2.6.24-rc4 either and looks like a message because 
+this is seen while running tbench and machine continues running other test's after 
+the softlockup messages and some times seen with the bootup, but the machines reaches the 
+login prompt and able to continue running tests.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
