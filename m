@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbXLDMbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXLDMgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbXLDMbk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 07:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXLDMbd
+	id S1753648AbXLDMgy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 07:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXLDMgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 07:31:33 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:40621 "EHLO minas.ics.muni.cz"
+	Tue, 4 Dec 2007 07:36:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50969 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbXLDMbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 07:31:32 -0500
-Date: Tue, 4 Dec 2007 13:31:21 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PATCH: Hitachi disk quirk
-Message-ID: <20071204123121.GA8704@ics.muni.cz>
-References: <20071204104529.GA4098@ics.muni.cz> <47553E8B.303@msgid.tls.msk.ru>
+	id S1752944AbXLDMgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 07:36:46 -0500
+Date: Tue, 4 Dec 2007 13:36:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86_64: define all _PAGE_* in terms of _PAGE_BIT_*
+Message-ID: <20071204123629.GC27286@elte.hu>
+References: <11966016811565-git-send-email-joerg.roedel@amd.com> <11966016814058-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47553E8B.303@msgid.tls.msk.ru>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+In-Reply-To: <11966016814058-git-send-email-joerg.roedel@amd.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Muni-Spam-TestIP: 147.251.54.96
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 04 Dec 2007 13:31:22 +0100 (CET)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0035]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 02:48:27PM +0300, Michael Tokarev wrote:
-> Which problems, exactly?
 
-it is spurious completitions and I saw that because of that the drives are
-blacklisted. Moreover, the same drive is already blacklisted but with
-different firmware. 
- 
-> Note that recent massive "NCQ horkage" isn't necessary due to drives fault.
-> Search for "spurious completions during NCQ" for recent discussions
-> (many of them).
-> 
-> > --- a/drivers/ata/libata-core.c	2007-12-04 11:08:20.000000000 +0100
-> > +++ b/drivers/ata/libata-core.c	2007-12-04 11:09:23.000000000 +0100
-> >  	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
-> > +	{ "HITACHI HTS541616J9SA00", "SB4IC7UP", ATA_HORKAGE_NONCQ, },
-> >  	{ "Hitachi HTS542525K9SA00", "BBFOC31P", ATA_HORKAGE_NONCQ, },
-> 
-> /mjt
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
--- 
-Luká¹ Hejtmánek
+> This patch defines the _PAGE_* paging attributes in pgtable_64.h in 
+> terms of the former defined _PAGE_BIT_* values.
+
+thanks, applied to x86.git.
+
+	Ingo
