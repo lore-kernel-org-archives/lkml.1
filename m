@@ -1,133 +1,1037 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbXLDUfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbXLDUhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbXLDUfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXLDUfg
+	id S1753284AbXLDUhM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXLDUg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:35:36 -0500
-Received: from bipbip.grupopie.com ([195.23.16.24]:36224 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbXLDUff (ORCPT
+	Tue, 4 Dec 2007 15:36:59 -0500
+Received: from mga06.intel.com ([134.134.136.21]:48079 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751493AbXLDUg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:35:35 -0500
-Message-ID: <4755BA14.8060706@grupopie.com>
-Date: Tue, 04 Dec 2007 20:35:32 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [-mm PATCH] kallsyms should prefer non weak symbols
-Content-Type: multipart/mixed;
- boundary="------------080302070401040104060003"
+	Tue, 4 Dec 2007 15:36:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,250,1194249600"; 
+   d="scan'208";a="237993344"
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-kernel@vger.kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 1/7] Move dmapool.c to mm/ directory
+Date: Tue,  4 Dec 2007 13:26:02 -0800
+Message-Id: <11968035682899-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <20071204170915.GE9405@parisc-linux.org>
+References: <20071204170915.GE9405@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080302070401040104060003
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ drivers/base/Makefile  |    2 +-
+ drivers/base/dmapool.c |  481 ------------------------------------------------
+ mm/Makefile            |    1 +
+ mm/dmapool.c           |  481 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 483 insertions(+), 482 deletions(-)
 
-
-When resolving symbol names from addresses with aliased symbol names, 
-kallsyms_lookup always returns the first symbol, even if it is a weak 
-symbol.
-
-This patch changes this by sorting the symbols with the weak symbols 
-last before feeding them to the kernel. This way the kernel runtime 
-isn't changed at all, only the kallsyms build system is changed.
-
-Another side effect is that the symbols get sorted by address, too. So, 
-even if future binutils version have some bug in "nm" that makes it fail 
-to correctly sort symbols by address, the kernel won't be affected by this.
-
-
-From: Paulo Marques <pmarques@grupopie.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
--- 
-Paulo Marques - www.grupopie.com
-
-"There cannot be a crisis today; my schedule is already full."
-
---------------080302070401040104060003
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
---- ./scripts/kallsyms.c.orig	2007-10-30 18:51:28.000000000 +0000
-+++ ./scripts/kallsyms.c	2007-10-30 19:07:58.000000000 +0000
-@@ -34,7 +34,7 @@
+diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+index b39ea3f..ed0a722 100644
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -5,7 +5,7 @@ obj-y			:= core.o sys.o bus.o dd.o \
+ 			   cpu.o firmware.o init.o map.o devres.o \
+ 			   attribute_container.o transport_class.o
+ obj-y			+= power/
+-obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o dmapool.o
++obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o
+ obj-$(CONFIG_ISA)	+= isa.o
+ obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
+ obj-$(CONFIG_NUMA)	+= node.o
+diff --git a/drivers/base/dmapool.c b/drivers/base/dmapool.c
+deleted file mode 100644
+index b5034dc..0000000
+--- a/drivers/base/dmapool.c
++++ /dev/null
+@@ -1,481 +0,0 @@
+-
+-#include <linux/device.h>
+-#include <linux/mm.h>
+-#include <asm/io.h>		/* Needed for i386 to build */
+-#include <linux/dma-mapping.h>
+-#include <linux/dmapool.h>
+-#include <linux/slab.h>
+-#include <linux/module.h>
+-#include <linux/poison.h>
+-#include <linux/sched.h>
+-
+-/*
+- * Pool allocator ... wraps the dma_alloc_coherent page allocator, so
+- * small blocks are easily used by drivers for bus mastering controllers.
+- * This should probably be sharing the guts of the slab allocator.
+- */
+-
+-struct dma_pool {	/* the pool */
+-	struct list_head	page_list;
+-	spinlock_t		lock;
+-	size_t			blocks_per_page;
+-	size_t			size;
+-	struct device		*dev;
+-	size_t			allocation;
+-	char			name [32];
+-	wait_queue_head_t	waitq;
+-	struct list_head	pools;
+-};
+-
+-struct dma_page {	/* cacheable header for 'allocation' bytes */
+-	struct list_head	page_list;
+-	void			*vaddr;
+-	dma_addr_t		dma;
+-	unsigned		in_use;
+-	unsigned long		bitmap [0];
+-};
+-
+-#define	POOL_TIMEOUT_JIFFIES	((100 /* msec */ * HZ) / 1000)
+-
+-static DEFINE_MUTEX (pools_lock);
+-
+-static ssize_t
+-show_pools (struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	unsigned temp;
+-	unsigned size;
+-	char *next;
+-	struct dma_page *page;
+-	struct dma_pool *pool;
+-
+-	next = buf;
+-	size = PAGE_SIZE;
+-
+-	temp = scnprintf(next, size, "poolinfo - 0.1\n");
+-	size -= temp;
+-	next += temp;
+-
+-	mutex_lock(&pools_lock);
+-	list_for_each_entry(pool, &dev->dma_pools, pools) {
+-		unsigned pages = 0;
+-		unsigned blocks = 0;
+-
+-		list_for_each_entry(page, &pool->page_list, page_list) {
+-			pages++;
+-			blocks += page->in_use;
+-		}
+-
+-		/* per-pool info, no real statistics yet */
+-		temp = scnprintf(next, size, "%-16s %4u %4Zu %4Zu %2u\n",
+-				pool->name,
+-				blocks, pages * pool->blocks_per_page,
+-				pool->size, pages);
+-		size -= temp;
+-		next += temp;
+-	}
+-	mutex_unlock(&pools_lock);
+-
+-	return PAGE_SIZE - size;
+-}
+-static DEVICE_ATTR (pools, S_IRUGO, show_pools, NULL);
+-
+-/**
+- * dma_pool_create - Creates a pool of consistent memory blocks, for dma.
+- * @name: name of pool, for diagnostics
+- * @dev: device that will be doing the DMA
+- * @size: size of the blocks in this pool.
+- * @align: alignment requirement for blocks; must be a power of two
+- * @allocation: returned blocks won't cross this boundary (or zero)
+- * Context: !in_interrupt()
+- *
+- * Returns a dma allocation pool with the requested characteristics, or
+- * null if one can't be created.  Given one of these pools, dma_pool_alloc()
+- * may be used to allocate memory.  Such memory will all have "consistent"
+- * DMA mappings, accessible by the device and its driver without using
+- * cache flushing primitives.  The actual size of blocks allocated may be
+- * larger than requested because of alignment.
+- *
+- * If allocation is nonzero, objects returned from dma_pool_alloc() won't
+- * cross that size boundary.  This is useful for devices which have
+- * addressing restrictions on individual DMA transfers, such as not crossing
+- * boundaries of 4KBytes.
+- */
+-struct dma_pool *
+-dma_pool_create (const char *name, struct device *dev,
+-	size_t size, size_t align, size_t allocation)
+-{
+-	struct dma_pool		*retval;
+-
+-	if (align == 0)
+-		align = 1;
+-	if (size == 0)
+-		return NULL;
+-	else if (size < align)
+-		size = align;
+-	else if ((size % align) != 0) {
+-		size += align + 1;
+-		size &= ~(align - 1);
+-	}
+-
+-	if (allocation == 0) {
+-		if (PAGE_SIZE < size)
+-			allocation = size;
+-		else
+-			allocation = PAGE_SIZE;
+-		// FIXME: round up for less fragmentation
+-	} else if (allocation < size)
+-		return NULL;
+-
+-	if (!(retval = kmalloc_node (sizeof *retval, GFP_KERNEL, dev_to_node(dev))))
+-		return retval;
+-
+-	strlcpy (retval->name, name, sizeof retval->name);
+-
+-	retval->dev = dev;
+-
+-	INIT_LIST_HEAD (&retval->page_list);
+-	spin_lock_init (&retval->lock);
+-	retval->size = size;
+-	retval->allocation = allocation;
+-	retval->blocks_per_page = allocation / size;
+-	init_waitqueue_head (&retval->waitq);
+-
+-	if (dev) {
+-		int ret;
+-
+-		mutex_lock(&pools_lock);
+-		if (list_empty (&dev->dma_pools))
+-			ret = device_create_file (dev, &dev_attr_pools);
+-		else
+-			ret = 0;
+-		/* note:  not currently insisting "name" be unique */
+-		if (!ret)
+-			list_add (&retval->pools, &dev->dma_pools);
+-		else {
+-			kfree(retval);
+-			retval = NULL;
+-		}
+-		mutex_unlock(&pools_lock);
+-	} else
+-		INIT_LIST_HEAD (&retval->pools);
+-
+-	return retval;
+-}
+-
+-
+-static struct dma_page *
+-pool_alloc_page (struct dma_pool *pool, gfp_t mem_flags)
+-{
+-	struct dma_page	*page;
+-	int		mapsize;
+-
+-	mapsize = pool->blocks_per_page;
+-	mapsize = (mapsize + BITS_PER_LONG - 1) / BITS_PER_LONG;
+-	mapsize *= sizeof (long);
+-
+-	page = kmalloc(mapsize + sizeof *page, mem_flags);
+-	if (!page)
+-		return NULL;
+-	page->vaddr = dma_alloc_coherent (pool->dev,
+-					    pool->allocation,
+-					    &page->dma,
+-					    mem_flags);
+-	if (page->vaddr) {
+-		memset (page->bitmap, 0xff, mapsize);	// bit set == free
+-#ifdef	CONFIG_DEBUG_SLAB
+-		memset (page->vaddr, POOL_POISON_FREED, pool->allocation);
+-#endif
+-		list_add (&page->page_list, &pool->page_list);
+-		page->in_use = 0;
+-	} else {
+-		kfree (page);
+-		page = NULL;
+-	}
+-	return page;
+-}
+-
+-
+-static inline int
+-is_page_busy (int blocks, unsigned long *bitmap)
+-{
+-	while (blocks > 0) {
+-		if (*bitmap++ != ~0UL)
+-			return 1;
+-		blocks -= BITS_PER_LONG;
+-	}
+-	return 0;
+-}
+-
+-static void
+-pool_free_page (struct dma_pool *pool, struct dma_page *page)
+-{
+-	dma_addr_t	dma = page->dma;
+-
+-#ifdef	CONFIG_DEBUG_SLAB
+-	memset (page->vaddr, POOL_POISON_FREED, pool->allocation);
+-#endif
+-	dma_free_coherent (pool->dev, pool->allocation, page->vaddr, dma);
+-	list_del (&page->page_list);
+-	kfree (page);
+-}
+-
+-
+-/**
+- * dma_pool_destroy - destroys a pool of dma memory blocks.
+- * @pool: dma pool that will be destroyed
+- * Context: !in_interrupt()
+- *
+- * Caller guarantees that no more memory from the pool is in use,
+- * and that nothing will try to use the pool after this call.
+- */
+-void
+-dma_pool_destroy (struct dma_pool *pool)
+-{
+-	mutex_lock(&pools_lock);
+-	list_del (&pool->pools);
+-	if (pool->dev && list_empty (&pool->dev->dma_pools))
+-		device_remove_file (pool->dev, &dev_attr_pools);
+-	mutex_unlock(&pools_lock);
+-
+-	while (!list_empty (&pool->page_list)) {
+-		struct dma_page		*page;
+-		page = list_entry (pool->page_list.next,
+-				struct dma_page, page_list);
+-		if (is_page_busy (pool->blocks_per_page, page->bitmap)) {
+-			if (pool->dev)
+-				dev_err(pool->dev, "dma_pool_destroy %s, %p busy\n",
+-					pool->name, page->vaddr);
+-			else
+-				printk (KERN_ERR "dma_pool_destroy %s, %p busy\n",
+-					pool->name, page->vaddr);
+-			/* leak the still-in-use consistent memory */
+-			list_del (&page->page_list);
+-			kfree (page);
+-		} else
+-			pool_free_page (pool, page);
+-	}
+-
+-	kfree (pool);
+-}
+-
+-
+-/**
+- * dma_pool_alloc - get a block of consistent memory
+- * @pool: dma pool that will produce the block
+- * @mem_flags: GFP_* bitmask
+- * @handle: pointer to dma address of block
+- *
+- * This returns the kernel virtual address of a currently unused block,
+- * and reports its dma address through the handle.
+- * If such a memory block can't be allocated, null is returned.
+- */
+-void *
+-dma_pool_alloc (struct dma_pool *pool, gfp_t mem_flags, dma_addr_t *handle)
+-{
+-	unsigned long		flags;
+-	struct dma_page		*page;
+-	int			map, block;
+-	size_t			offset;
+-	void			*retval;
+-
+-restart:
+-	spin_lock_irqsave (&pool->lock, flags);
+-	list_for_each_entry(page, &pool->page_list, page_list) {
+-		int		i;
+-		/* only cachable accesses here ... */
+-		for (map = 0, i = 0;
+-				i < pool->blocks_per_page;
+-				i += BITS_PER_LONG, map++) {
+-			if (page->bitmap [map] == 0)
+-				continue;
+-			block = ffz (~ page->bitmap [map]);
+-			if ((i + block) < pool->blocks_per_page) {
+-				clear_bit (block, &page->bitmap [map]);
+-				offset = (BITS_PER_LONG * map) + block;
+-				offset *= pool->size;
+-				goto ready;
+-			}
+-		}
+-	}
+-	if (!(page = pool_alloc_page (pool, GFP_ATOMIC))) {
+-		if (mem_flags & __GFP_WAIT) {
+-			DECLARE_WAITQUEUE (wait, current);
+-
+-			__set_current_state(TASK_INTERRUPTIBLE);
+-			add_wait_queue (&pool->waitq, &wait);
+-			spin_unlock_irqrestore (&pool->lock, flags);
+-
+-			schedule_timeout (POOL_TIMEOUT_JIFFIES);
+-
+-			remove_wait_queue (&pool->waitq, &wait);
+-			goto restart;
+-		}
+-		retval = NULL;
+-		goto done;
+-	}
+-
+-	clear_bit (0, &page->bitmap [0]);
+-	offset = 0;
+-ready:
+-	page->in_use++;
+-	retval = offset + page->vaddr;
+-	*handle = offset + page->dma;
+-#ifdef	CONFIG_DEBUG_SLAB
+-	memset (retval, POOL_POISON_ALLOCATED, pool->size);
+-#endif
+-done:
+-	spin_unlock_irqrestore (&pool->lock, flags);
+-	return retval;
+-}
+-
+-
+-static struct dma_page *
+-pool_find_page (struct dma_pool *pool, dma_addr_t dma)
+-{
+-	unsigned long		flags;
+-	struct dma_page		*page;
+-
+-	spin_lock_irqsave (&pool->lock, flags);
+-	list_for_each_entry(page, &pool->page_list, page_list) {
+-		if (dma < page->dma)
+-			continue;
+-		if (dma < (page->dma + pool->allocation))
+-			goto done;
+-	}
+-	page = NULL;
+-done:
+-	spin_unlock_irqrestore (&pool->lock, flags);
+-	return page;
+-}
+-
+-
+-/**
+- * dma_pool_free - put block back into dma pool
+- * @pool: the dma pool holding the block
+- * @vaddr: virtual address of block
+- * @dma: dma address of block
+- *
+- * Caller promises neither device nor driver will again touch this block
+- * unless it is first re-allocated.
+- */
+-void
+-dma_pool_free (struct dma_pool *pool, void *vaddr, dma_addr_t dma)
+-{
+-	struct dma_page		*page;
+-	unsigned long		flags;
+-	int			map, block;
+-
+-	if ((page = pool_find_page(pool, dma)) == NULL) {
+-		if (pool->dev)
+-			dev_err(pool->dev, "dma_pool_free %s, %p/%lx (bad dma)\n",
+-				pool->name, vaddr, (unsigned long) dma);
+-		else
+-			printk (KERN_ERR "dma_pool_free %s, %p/%lx (bad dma)\n",
+-				pool->name, vaddr, (unsigned long) dma);
+-		return;
+-	}
+-
+-	block = dma - page->dma;
+-	block /= pool->size;
+-	map = block / BITS_PER_LONG;
+-	block %= BITS_PER_LONG;
+-
+-#ifdef	CONFIG_DEBUG_SLAB
+-	if (((dma - page->dma) + (void *)page->vaddr) != vaddr) {
+-		if (pool->dev)
+-			dev_err(pool->dev, "dma_pool_free %s, %p (bad vaddr)/%Lx\n",
+-				pool->name, vaddr, (unsigned long long) dma);
+-		else
+-			printk (KERN_ERR "dma_pool_free %s, %p (bad vaddr)/%Lx\n",
+-				pool->name, vaddr, (unsigned long long) dma);
+-		return;
+-	}
+-	if (page->bitmap [map] & (1UL << block)) {
+-		if (pool->dev)
+-			dev_err(pool->dev, "dma_pool_free %s, dma %Lx already free\n",
+-				pool->name, (unsigned long long)dma);
+-		else
+-			printk (KERN_ERR "dma_pool_free %s, dma %Lx already free\n",
+-				pool->name, (unsigned long long)dma);
+-		return;
+-	}
+-	memset (vaddr, POOL_POISON_FREED, pool->size);
+-#endif
+-
+-	spin_lock_irqsave (&pool->lock, flags);
+-	page->in_use--;
+-	set_bit (block, &page->bitmap [map]);
+-	if (waitqueue_active (&pool->waitq))
+-		wake_up (&pool->waitq);
+-	/*
+-	 * Resist a temptation to do
+-	 *    if (!is_page_busy(bpp, page->bitmap)) pool_free_page(pool, page);
+-	 * Better have a few empty pages hang around.
+-	 */
+-	spin_unlock_irqrestore (&pool->lock, flags);
+-}
+-
+-/*
+- * Managed DMA pool
+- */
+-static void dmam_pool_release(struct device *dev, void *res)
+-{
+-	struct dma_pool *pool = *(struct dma_pool **)res;
+-
+-	dma_pool_destroy(pool);
+-}
+-
+-static int dmam_pool_match(struct device *dev, void *res, void *match_data)
+-{
+-	return *(struct dma_pool **)res == match_data;
+-}
+-
+-/**
+- * dmam_pool_create - Managed dma_pool_create()
+- * @name: name of pool, for diagnostics
+- * @dev: device that will be doing the DMA
+- * @size: size of the blocks in this pool.
+- * @align: alignment requirement for blocks; must be a power of two
+- * @allocation: returned blocks won't cross this boundary (or zero)
+- *
+- * Managed dma_pool_create().  DMA pool created with this function is
+- * automatically destroyed on driver detach.
+- */
+-struct dma_pool *dmam_pool_create(const char *name, struct device *dev,
+-				  size_t size, size_t align, size_t allocation)
+-{
+-	struct dma_pool **ptr, *pool;
+-
+-	ptr = devres_alloc(dmam_pool_release, sizeof(*ptr), GFP_KERNEL);
+-	if (!ptr)
+-		return NULL;
+-
+-	pool = *ptr = dma_pool_create(name, dev, size, align, allocation);
+-	if (pool)
+-		devres_add(dev, ptr);
+-	else
+-		devres_free(ptr);
+-
+-	return pool;
+-}
+-
+-/**
+- * dmam_pool_destroy - Managed dma_pool_destroy()
+- * @pool: dma pool that will be destroyed
+- *
+- * Managed dma_pool_destroy().
+- */
+-void dmam_pool_destroy(struct dma_pool *pool)
+-{
+-	struct device *dev = pool->dev;
+-
+-	dma_pool_destroy(pool);
+-	WARN_ON(devres_destroy(dev, dmam_pool_release, dmam_pool_match, pool));
+-}
+-
+-EXPORT_SYMBOL (dma_pool_create);
+-EXPORT_SYMBOL (dma_pool_destroy);
+-EXPORT_SYMBOL (dma_pool_alloc);
+-EXPORT_SYMBOL (dma_pool_free);
+-EXPORT_SYMBOL (dmam_pool_create);
+-EXPORT_SYMBOL (dmam_pool_destroy);
+diff --git a/mm/Makefile b/mm/Makefile
+index 5c0b0ea..e222cc5 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -15,6 +15,7 @@ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
  
- struct sym_entry {
- 	unsigned long long addr;
--	unsigned int len;
-+	unsigned int len, start_pos;
- 	unsigned char *sym;
- };
- 
-@@ -202,8 +202,10 @@ static void read_map(FILE *in)
- 				exit (1);
- 			}
- 		}
--		if (read_symbol(in, &table[table_cnt]) == 0)
-+		if (read_symbol(in, &table[table_cnt]) == 0) {
-+			table[table_cnt].start_pos = table_cnt;
- 			table_cnt++;
+ obj-$(CONFIG_BOUNCE)	+= bounce.o
+ obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
++obj-$(CONFIG_HAS_DMA)	+= dmapool.o
+ obj-$(CONFIG_HUGETLBFS)	+= hugetlb.o
+ obj-$(CONFIG_NUMA) 	+= mempolicy.o
+ obj-$(CONFIG_SPARSEMEM)	+= sparse.o
+diff --git a/mm/dmapool.c b/mm/dmapool.c
+new file mode 100644
+index 0000000..b5034dc
+--- /dev/null
++++ b/mm/dmapool.c
+@@ -0,0 +1,481 @@
++
++#include <linux/device.h>
++#include <linux/mm.h>
++#include <asm/io.h>		/* Needed for i386 to build */
++#include <linux/dma-mapping.h>
++#include <linux/dmapool.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/poison.h>
++#include <linux/sched.h>
++
++/*
++ * Pool allocator ... wraps the dma_alloc_coherent page allocator, so
++ * small blocks are easily used by drivers for bus mastering controllers.
++ * This should probably be sharing the guts of the slab allocator.
++ */
++
++struct dma_pool {	/* the pool */
++	struct list_head	page_list;
++	spinlock_t		lock;
++	size_t			blocks_per_page;
++	size_t			size;
++	struct device		*dev;
++	size_t			allocation;
++	char			name [32];
++	wait_queue_head_t	waitq;
++	struct list_head	pools;
++};
++
++struct dma_page {	/* cacheable header for 'allocation' bytes */
++	struct list_head	page_list;
++	void			*vaddr;
++	dma_addr_t		dma;
++	unsigned		in_use;
++	unsigned long		bitmap [0];
++};
++
++#define	POOL_TIMEOUT_JIFFIES	((100 /* msec */ * HZ) / 1000)
++
++static DEFINE_MUTEX (pools_lock);
++
++static ssize_t
++show_pools (struct device *dev, struct device_attribute *attr, char *buf)
++{
++	unsigned temp;
++	unsigned size;
++	char *next;
++	struct dma_page *page;
++	struct dma_pool *pool;
++
++	next = buf;
++	size = PAGE_SIZE;
++
++	temp = scnprintf(next, size, "poolinfo - 0.1\n");
++	size -= temp;
++	next += temp;
++
++	mutex_lock(&pools_lock);
++	list_for_each_entry(pool, &dev->dma_pools, pools) {
++		unsigned pages = 0;
++		unsigned blocks = 0;
++
++		list_for_each_entry(page, &pool->page_list, page_list) {
++			pages++;
++			blocks += page->in_use;
 +		}
- 	}
- }
- 
-@@ -507,6 +509,35 @@ static void optimize_token_table(void)
- }
- 
- 
-+static int compare_symbols(const void *a, const void *b)
++
++		/* per-pool info, no real statistics yet */
++		temp = scnprintf(next, size, "%-16s %4u %4Zu %4Zu %2u\n",
++				pool->name,
++				blocks, pages * pool->blocks_per_page,
++				pool->size, pages);
++		size -= temp;
++		next += temp;
++	}
++	mutex_unlock(&pools_lock);
++
++	return PAGE_SIZE - size;
++}
++static DEVICE_ATTR (pools, S_IRUGO, show_pools, NULL);
++
++/**
++ * dma_pool_create - Creates a pool of consistent memory blocks, for dma.
++ * @name: name of pool, for diagnostics
++ * @dev: device that will be doing the DMA
++ * @size: size of the blocks in this pool.
++ * @align: alignment requirement for blocks; must be a power of two
++ * @allocation: returned blocks won't cross this boundary (or zero)
++ * Context: !in_interrupt()
++ *
++ * Returns a dma allocation pool with the requested characteristics, or
++ * null if one can't be created.  Given one of these pools, dma_pool_alloc()
++ * may be used to allocate memory.  Such memory will all have "consistent"
++ * DMA mappings, accessible by the device and its driver without using
++ * cache flushing primitives.  The actual size of blocks allocated may be
++ * larger than requested because of alignment.
++ *
++ * If allocation is nonzero, objects returned from dma_pool_alloc() won't
++ * cross that size boundary.  This is useful for devices which have
++ * addressing restrictions on individual DMA transfers, such as not crossing
++ * boundaries of 4KBytes.
++ */
++struct dma_pool *
++dma_pool_create (const char *name, struct device *dev,
++	size_t size, size_t align, size_t allocation)
 +{
-+	struct sym_entry *sa, *sb;
-+	int wa, wb;
++	struct dma_pool		*retval;
 +
-+	sa = (struct sym_entry *) a;
-+	sb = (struct sym_entry *) b;
++	if (align == 0)
++		align = 1;
++	if (size == 0)
++		return NULL;
++	else if (size < align)
++		size = align;
++	else if ((size % align) != 0) {
++		size += align + 1;
++		size &= ~(align - 1);
++	}
 +
-+	// sort by address first
-+	if (sa->addr > sb->addr)
-+		return 1;
-+	if (sa->addr < sb->addr)
-+		return -1;
++	if (allocation == 0) {
++		if (PAGE_SIZE < size)
++			allocation = size;
++		else
++			allocation = PAGE_SIZE;
++		// FIXME: round up for less fragmentation
++	} else if (allocation < size)
++		return NULL;
 +
-+	// sort by "weakness" type
-+	wa = (sa->sym[0] == 'w') || (sa->sym[0] == 'W');
-+	wb = (sb->sym[0] == 'w') || (sb->sym[0] == 'W');
-+	if (wa != wb)
-+		return wa - wb;
++	if (!(retval = kmalloc_node (sizeof *retval, GFP_KERNEL, dev_to_node(dev))))
++		return retval;
 +
-+	// sort by initial order, so that other symbols are left undisturbed
-+	return sa->start_pos - sb->start_pos;
++	strlcpy (retval->name, name, sizeof retval->name);
++
++	retval->dev = dev;
++
++	INIT_LIST_HEAD (&retval->page_list);
++	spin_lock_init (&retval->lock);
++	retval->size = size;
++	retval->allocation = allocation;
++	retval->blocks_per_page = allocation / size;
++	init_waitqueue_head (&retval->waitq);
++
++	if (dev) {
++		int ret;
++
++		mutex_lock(&pools_lock);
++		if (list_empty (&dev->dma_pools))
++			ret = device_create_file (dev, &dev_attr_pools);
++		else
++			ret = 0;
++		/* note:  not currently insisting "name" be unique */
++		if (!ret)
++			list_add (&retval->pools, &dev->dma_pools);
++		else {
++			kfree(retval);
++			retval = NULL;
++		}
++		mutex_unlock(&pools_lock);
++	} else
++		INIT_LIST_HEAD (&retval->pools);
++
++	return retval;
 +}
 +
-+static void sort_symbols(void)
++
++static struct dma_page *
++pool_alloc_page (struct dma_pool *pool, gfp_t mem_flags)
 +{
-+	qsort(table, table_cnt, sizeof(struct sym_entry), compare_symbols);
++	struct dma_page	*page;
++	int		mapsize;
++
++	mapsize = pool->blocks_per_page;
++	mapsize = (mapsize + BITS_PER_LONG - 1) / BITS_PER_LONG;
++	mapsize *= sizeof (long);
++
++	page = kmalloc(mapsize + sizeof *page, mem_flags);
++	if (!page)
++		return NULL;
++	page->vaddr = dma_alloc_coherent (pool->dev,
++					    pool->allocation,
++					    &page->dma,
++					    mem_flags);
++	if (page->vaddr) {
++		memset (page->bitmap, 0xff, mapsize);	// bit set == free
++#ifdef	CONFIG_DEBUG_SLAB
++		memset (page->vaddr, POOL_POISON_FREED, pool->allocation);
++#endif
++		list_add (&page->page_list, &pool->page_list);
++		page->in_use = 0;
++	} else {
++		kfree (page);
++		page = NULL;
++	}
++	return page;
 +}
 +
- int main(int argc, char **argv)
- {
- 	if (argc >= 2) {
-@@ -527,6 +558,7 @@ int main(int argc, char **argv)
- 		usage();
- 
- 	read_map(stdin);
-+	sort_symbols();
- 	optimize_token_table();
- 	write_src();
- 
-
-
---------------080302070401040104060003--
++
++static inline int
++is_page_busy (int blocks, unsigned long *bitmap)
++{
++	while (blocks > 0) {
++		if (*bitmap++ != ~0UL)
++			return 1;
++		blocks -= BITS_PER_LONG;
++	}
++	return 0;
++}
++
++static void
++pool_free_page (struct dma_pool *pool, struct dma_page *page)
++{
++	dma_addr_t	dma = page->dma;
++
++#ifdef	CONFIG_DEBUG_SLAB
++	memset (page->vaddr, POOL_POISON_FREED, pool->allocation);
++#endif
++	dma_free_coherent (pool->dev, pool->allocation, page->vaddr, dma);
++	list_del (&page->page_list);
++	kfree (page);
++}
++
++
++/**
++ * dma_pool_destroy - destroys a pool of dma memory blocks.
++ * @pool: dma pool that will be destroyed
++ * Context: !in_interrupt()
++ *
++ * Caller guarantees that no more memory from the pool is in use,
++ * and that nothing will try to use the pool after this call.
++ */
++void
++dma_pool_destroy (struct dma_pool *pool)
++{
++	mutex_lock(&pools_lock);
++	list_del (&pool->pools);
++	if (pool->dev && list_empty (&pool->dev->dma_pools))
++		device_remove_file (pool->dev, &dev_attr_pools);
++	mutex_unlock(&pools_lock);
++
++	while (!list_empty (&pool->page_list)) {
++		struct dma_page		*page;
++		page = list_entry (pool->page_list.next,
++				struct dma_page, page_list);
++		if (is_page_busy (pool->blocks_per_page, page->bitmap)) {
++			if (pool->dev)
++				dev_err(pool->dev, "dma_pool_destroy %s, %p busy\n",
++					pool->name, page->vaddr);
++			else
++				printk (KERN_ERR "dma_pool_destroy %s, %p busy\n",
++					pool->name, page->vaddr);
++			/* leak the still-in-use consistent memory */
++			list_del (&page->page_list);
++			kfree (page);
++		} else
++			pool_free_page (pool, page);
++	}
++
++	kfree (pool);
++}
++
++
++/**
++ * dma_pool_alloc - get a block of consistent memory
++ * @pool: dma pool that will produce the block
++ * @mem_flags: GFP_* bitmask
++ * @handle: pointer to dma address of block
++ *
++ * This returns the kernel virtual address of a currently unused block,
++ * and reports its dma address through the handle.
++ * If such a memory block can't be allocated, null is returned.
++ */
++void *
++dma_pool_alloc (struct dma_pool *pool, gfp_t mem_flags, dma_addr_t *handle)
++{
++	unsigned long		flags;
++	struct dma_page		*page;
++	int			map, block;
++	size_t			offset;
++	void			*retval;
++
++restart:
++	spin_lock_irqsave (&pool->lock, flags);
++	list_for_each_entry(page, &pool->page_list, page_list) {
++		int		i;
++		/* only cachable accesses here ... */
++		for (map = 0, i = 0;
++				i < pool->blocks_per_page;
++				i += BITS_PER_LONG, map++) {
++			if (page->bitmap [map] == 0)
++				continue;
++			block = ffz (~ page->bitmap [map]);
++			if ((i + block) < pool->blocks_per_page) {
++				clear_bit (block, &page->bitmap [map]);
++				offset = (BITS_PER_LONG * map) + block;
++				offset *= pool->size;
++				goto ready;
++			}
++		}
++	}
++	if (!(page = pool_alloc_page (pool, GFP_ATOMIC))) {
++		if (mem_flags & __GFP_WAIT) {
++			DECLARE_WAITQUEUE (wait, current);
++
++			__set_current_state(TASK_INTERRUPTIBLE);
++			add_wait_queue (&pool->waitq, &wait);
++			spin_unlock_irqrestore (&pool->lock, flags);
++
++			schedule_timeout (POOL_TIMEOUT_JIFFIES);
++
++			remove_wait_queue (&pool->waitq, &wait);
++			goto restart;
++		}
++		retval = NULL;
++		goto done;
++	}
++
++	clear_bit (0, &page->bitmap [0]);
++	offset = 0;
++ready:
++	page->in_use++;
++	retval = offset + page->vaddr;
++	*handle = offset + page->dma;
++#ifdef	CONFIG_DEBUG_SLAB
++	memset (retval, POOL_POISON_ALLOCATED, pool->size);
++#endif
++done:
++	spin_unlock_irqrestore (&pool->lock, flags);
++	return retval;
++}
++
++
++static struct dma_page *
++pool_find_page (struct dma_pool *pool, dma_addr_t dma)
++{
++	unsigned long		flags;
++	struct dma_page		*page;
++
++	spin_lock_irqsave (&pool->lock, flags);
++	list_for_each_entry(page, &pool->page_list, page_list) {
++		if (dma < page->dma)
++			continue;
++		if (dma < (page->dma + pool->allocation))
++			goto done;
++	}
++	page = NULL;
++done:
++	spin_unlock_irqrestore (&pool->lock, flags);
++	return page;
++}
++
++
++/**
++ * dma_pool_free - put block back into dma pool
++ * @pool: the dma pool holding the block
++ * @vaddr: virtual address of block
++ * @dma: dma address of block
++ *
++ * Caller promises neither device nor driver will again touch this block
++ * unless it is first re-allocated.
++ */
++void
++dma_pool_free (struct dma_pool *pool, void *vaddr, dma_addr_t dma)
++{
++	struct dma_page		*page;
++	unsigned long		flags;
++	int			map, block;
++
++	if ((page = pool_find_page(pool, dma)) == NULL) {
++		if (pool->dev)
++			dev_err(pool->dev, "dma_pool_free %s, %p/%lx (bad dma)\n",
++				pool->name, vaddr, (unsigned long) dma);
++		else
++			printk (KERN_ERR "dma_pool_free %s, %p/%lx (bad dma)\n",
++				pool->name, vaddr, (unsigned long) dma);
++		return;
++	}
++
++	block = dma - page->dma;
++	block /= pool->size;
++	map = block / BITS_PER_LONG;
++	block %= BITS_PER_LONG;
++
++#ifdef	CONFIG_DEBUG_SLAB
++	if (((dma - page->dma) + (void *)page->vaddr) != vaddr) {
++		if (pool->dev)
++			dev_err(pool->dev, "dma_pool_free %s, %p (bad vaddr)/%Lx\n",
++				pool->name, vaddr, (unsigned long long) dma);
++		else
++			printk (KERN_ERR "dma_pool_free %s, %p (bad vaddr)/%Lx\n",
++				pool->name, vaddr, (unsigned long long) dma);
++		return;
++	}
++	if (page->bitmap [map] & (1UL << block)) {
++		if (pool->dev)
++			dev_err(pool->dev, "dma_pool_free %s, dma %Lx already free\n",
++				pool->name, (unsigned long long)dma);
++		else
++			printk (KERN_ERR "dma_pool_free %s, dma %Lx already free\n",
++				pool->name, (unsigned long long)dma);
++		return;
++	}
++	memset (vaddr, POOL_POISON_FREED, pool->size);
++#endif
++
++	spin_lock_irqsave (&pool->lock, flags);
++	page->in_use--;
++	set_bit (block, &page->bitmap [map]);
++	if (waitqueue_active (&pool->waitq))
++		wake_up (&pool->waitq);
++	/*
++	 * Resist a temptation to do
++	 *    if (!is_page_busy(bpp, page->bitmap)) pool_free_page(pool, page);
++	 * Better have a few empty pages hang around.
++	 */
++	spin_unlock_irqrestore (&pool->lock, flags);
++}
++
++/*
++ * Managed DMA pool
++ */
++static void dmam_pool_release(struct device *dev, void *res)
++{
++	struct dma_pool *pool = *(struct dma_pool **)res;
++
++	dma_pool_destroy(pool);
++}
++
++static int dmam_pool_match(struct device *dev, void *res, void *match_data)
++{
++	return *(struct dma_pool **)res == match_data;
++}
++
++/**
++ * dmam_pool_create - Managed dma_pool_create()
++ * @name: name of pool, for diagnostics
++ * @dev: device that will be doing the DMA
++ * @size: size of the blocks in this pool.
++ * @align: alignment requirement for blocks; must be a power of two
++ * @allocation: returned blocks won't cross this boundary (or zero)
++ *
++ * Managed dma_pool_create().  DMA pool created with this function is
++ * automatically destroyed on driver detach.
++ */
++struct dma_pool *dmam_pool_create(const char *name, struct device *dev,
++				  size_t size, size_t align, size_t allocation)
++{
++	struct dma_pool **ptr, *pool;
++
++	ptr = devres_alloc(dmam_pool_release, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return NULL;
++
++	pool = *ptr = dma_pool_create(name, dev, size, align, allocation);
++	if (pool)
++		devres_add(dev, ptr);
++	else
++		devres_free(ptr);
++
++	return pool;
++}
++
++/**
++ * dmam_pool_destroy - Managed dma_pool_destroy()
++ * @pool: dma pool that will be destroyed
++ *
++ * Managed dma_pool_destroy().
++ */
++void dmam_pool_destroy(struct dma_pool *pool)
++{
++	struct device *dev = pool->dev;
++
++	dma_pool_destroy(pool);
++	WARN_ON(devres_destroy(dev, dmam_pool_release, dmam_pool_match, pool));
++}
++
++EXPORT_SYMBOL (dma_pool_create);
++EXPORT_SYMBOL (dma_pool_destroy);
++EXPORT_SYMBOL (dma_pool_alloc);
++EXPORT_SYMBOL (dma_pool_free);
++EXPORT_SYMBOL (dmam_pool_create);
++EXPORT_SYMBOL (dmam_pool_destroy);
+-- 
+1.4.4.4
