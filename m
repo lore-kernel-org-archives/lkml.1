@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbXLDULw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbXLDUSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbXLDULw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbXLDULj
+	id S1752759AbXLDUSV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXLDUSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:11:39 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:46394 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754515AbXLDULh (ORCPT
+	Tue, 4 Dec 2007 15:18:09 -0500
+Received: from smtp117.sbc.mail.re3.yahoo.com ([66.196.96.90]:27731 "HELO
+	smtp117.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750969AbXLDUSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:11:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=VCnbz/Uhny50bfhZNdCT8nEEV5T+RadQOKKCyHK1Y9SGNc+0SZglGvEhfgtS6n2QO1+n9I65tEgs5C/UjTAocLVLy0CLzq38PelsN9YKrvPJXvOKWaZ6kxVBdDo2xQ4jIiafh/91jJv0T+oJ0RGXaGsvW5l+AHQF0VJEFKoKf90=
-Message-ID: <4755B508.9020806@gmail.com>
-Date: Tue, 04 Dec 2007 21:14:00 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Tue, 4 Dec 2007 15:18:07 -0500
+X-YMail-OSG: ni3D14kVM1mY0Sv4Up1WNdSjdh4BTRqqIQ6lq1Imd8t7oz2wltLjiJsmiQFdPUyJoqUn_WeZOQ--
+Date: Tue, 4 Dec 2007 14:17:13 -0600
+From: serge@hallyn.com
+To: KaiGai Kohei <kaigai@ak.jp.nec.com>
+Cc: Andrew Morgan <morgan@kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] capabilities: introduce per-process capability
+	bounding set (v10)
+Message-ID: <20071204201709.GA9915@vino.hallyn.com>
+References: <20071126200908.GA13287@sergelap.austin.ibm.com> <4754D76B.8080406@ak.jp.nec.com> <4754F053.8060303@kernel.org> <4755701C.7070407@ak.jp.nec.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Need lockdep help
-References: <Pine.LNX.4.44L0.0712041424270.13516-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0712041424270.13516-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4755701C.7070407@ak.jp.nec.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote, On 12/04/2007 08:28 PM:
+Quoting KaiGai Kohei (kaigai@ak.jp.nec.com):
+> Andrew Morgan wrote:
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>> KaiGai Kohei wrote:
+>>> Serge,
+>>>
+>>> Please tell me the meanings of the following condition.
+>>>
+>>>> diff --git a/security/commoncap.c b/security/commoncap.c
+>>>> index 3a95990..cb71bb0 100644
+>>>> --- a/security/commoncap.c
+>>>> +++ b/security/commoncap.c
+>>>> @@ -133,6 +119,12 @@ int cap_capset_check (struct task_struct *target,
+>>>> kernel_cap_t *effective,
+>>>>          /* incapable of using this inheritable set */
+>>>>          return -EPERM;
+>>>>      }
+>>>> +    if (!!cap_issubset(*inheritable,
+>>>> +               cap_combine(target->cap_inheritable,
+>>>> +                       current->cap_bset))) {
+>>>> +        /* no new pI capabilities outside bounding set */
+>>>> +        return -EPERM;
+>>>> +    }
+>>>>       /* verify restrictions on target's new Permitted set */
+>>>>      if (!cap_issubset (*permitted,
+>>> It seems to me this condition requires the new inheritable capability
+>>> set must have a capability more than bounding set, at least.
+>>> What is the purpose of this checking?
+>> Yes, the !! was a bug. The correct check is a single !.
+>
+> I was in trouble with getting -EPERM at pam_cap.so :-)
+>
+>> (Thus, the correct check says no 'new' pI bits can be outside cap_bset.)
+>
+> If this condition intends to dominate 'new' pI bits by 'old' pI bits masked
+> with bounding set, we should not apply cap_combine() here.
+> I think applying cap_intersect() is correct for the purpose.
 
-> On Tue, 4 Dec 2007, Jarek Poplawski wrote:
+That would have been my first inclination, but Andrew actually
+wanted to be able to keep a pI with bits not in the capability
+bounding set.  And it's really not a big problem, since
 
-...
+	1. you can never grow cap_bset
+	2. the capbound.c program just makes sure to call capset
+	   to take the bit being removed from cap_bset out of
+	   pI'
+	3. It could be advantageous for some daemon to keep a bit
+	   in pI which can never be gained through fP but can be
+	   gained by a child through (fI&pI).
 
-> But you have to consider hypothetical kernel bugs.  That's exactly what 
-> lockdep is for -- to warn you about possible deadlocks that could be 
-> caused by bugs.
-> 
-> As a simple example, if thread #1 does "lock(A); lock(B)" and thread 
-> #2 does "lock(B); lock(A)" then there's a possible bug.  Lockdep should 
-> warn about you, and it does -- even if those two threads can never run 
-> at the same time.
-> 
-> If lockdep warned about deadlocks only when they actually happened, it 
-> wouldn't be nearly so useful.
+Does that seem reasonable to you?
 
+(On the one hand man 7 capabilities shows cap_bset affecting
+fP and not pP', on the other hand we're definately getting into
+the territory where we'll have to rewrite the manpages anyway)
 
-Sure! I probably missed your point... Lockdep always names reported locks,
-so I meant 'hypothetical' only trying to explain lockdep with some other,
-unknown or unnamed bugs.
-
-So, depending on the code, above example with A & B could be a real bug
-(even if very improbable but logically justified) or a false alarm (eg.
-when we know both threads could never work at the same).
-
-Jarek P.
+thanks,
+-serge
