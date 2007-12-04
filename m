@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbXLDVNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbXLDVNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbXLDVNL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbXLDVHt
+	id S1756492AbXLDVNa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXLDVHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:07:49 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53486
+	Tue, 4 Dec 2007 16:07:53 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53491
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755015AbXLDVHq (ORCPT
+	by vger.kernel.org with ESMTP id S1755220AbXLDVHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:07:46 -0500
+	Tue, 4 Dec 2007 16:07:51 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 16/23] Subject: SCHED - Avoid overload
+Subject: [PATCH 17/23] Subject: SCHED - restore the migratable conditional
 To: mingo@elte.hu
 Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:45:46 -0500
-Message-ID: <20071204204546.3567.66464.stgit@novell1.haskins.net>
+Date: Tue, 04 Dec 2007 15:45:51 -0500
+Message-ID: <20071204204551.3567.39375.stgit@novell1.haskins.net>
 In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -27,71 +27,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+We don't need to bother searching if the task cannot be migrated
 
-This patch changes the searching for a run queue by a waking RT task
-to try to pick another runqueue if the currently running task
-is an RT task.
-
-The reason is that RT tasks behave different than normal
-tasks. Preempting a normal task to run a RT task to keep
-its cache hot is fine, because the preempted non-RT task
-may wait on that same runqueue to run again unless the
-migration thread comes along and pulls it off.
-
-RT tasks behave differently. If one is preempted, it makes
-an active effort to continue to run. So by having a high
-priority task preempt a lower priority RT task, that lower
-RT task will then quickly try to run on another runqueue.
-This will cause that lower RT task to replace its nice
-hot cache (and TLB) with a completely cold one. This is
-for the hope that the new high priority RT task will keep
- its cache hot.
-
-Remeber that this high priority RT task was just woken up.
-So it may likely have been sleeping for several milliseconds,
-and will end up with a cold cache anyway. RT tasks run till
-they voluntarily stop, or are preempted by a higher priority
-task. This means that it is unlikely that the woken RT task
-will have a hot cache to wake up to. So pushing off a lower
-RT task is just killing its cache for no good reason.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
 
- kernel/sched_rt.c |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
+ kernel/sched_rt.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 19db3a9..e007d2b 100644
+index e007d2b..fe0b43f 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -158,11 +158,23 @@ static int select_task_rq_rt(struct task_struct *p, int sync)
- 	struct rq *rq = task_rq(p);
- 
- 	/*
--	 * If the task will not preempt the RQ, try to find a better RQ
--	 * before we even activate the task
-+	 * If the current task is an RT task, then
-+	 * try to see if we can wake this RT task up on another
-+	 * runqueue. Otherwise simply start this RT task
-+	 * on its current runqueue.
-+	 *
-+	 * We want to avoid overloading runqueues. Even if
-+	 * the RT task is of higher priority than the current RT task.
-+	 * RT tasks behave differently than other tasks. If
-+	 * one gets preempted, we try to push it off to another queue.
-+	 * So trying to keep a preempting RT task on the same
-+	 * cache hot CPU will force the running RT task to
-+	 * a cold CPU. So we waste all the cache for the lower
-+	 * RT task in hopes of saving some of a RT task
-+	 * that is just being woken and probably will have
-+	 * cold cache anyway.
+@@ -174,7 +174,8 @@ static int select_task_rq_rt(struct task_struct *p, int sync)
+ 	 * that is just being woken and probably will have
+ 	 * cold cache anyway.
  	 */
--	if ((p->prio >= rq->rt.highest_prio)
--	    && (p->nr_cpus_allowed > 1)) {
-+	if (unlikely(rt_task(rq->curr))) {
+-	if (unlikely(rt_task(rq->curr))) {
++	if (unlikely(rt_task(rq->curr)) &&
++	    (p->nr_cpus_allowed > 1)) {
  		int cpu = find_lowest_rq(p);
  
  		return (cpu == -1) ? task_cpu(p) : cpu;
