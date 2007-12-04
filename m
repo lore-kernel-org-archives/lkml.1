@@ -1,81 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXLDUxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbXLDUxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750944AbXLDUxA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXLDUw0
+	id S1754955AbXLDUxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbXLDUwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:52:26 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:23052 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751755AbXLDUwY (ORCPT
+	Tue, 4 Dec 2007 15:52:34 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:53172 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbXLDUwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:52:24 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=R7j8q5445o/M/IZStypfS7PJ9YQpXHyQN3BGb7KrPm7MVYhq2UalAZ7+D+b/Dya6f3elbKfcIAtHA55pQ/zXC2Exd8XM/ihmcYKHRlJKQkHEpLxVTJ/WVbqM08g/4prtWhyu+r3tZQT/LuDToeZw1l3NKeKzlGZlYkaq/hDYwAc=  ;
-X-YMail-OSG: ZxQ8klkVM1m7vB33oKLHyJbJ_DCvLtkGFrhJcPaPDm4wQEfsCZ9PHnL3c.4LmlukeFvFpv4NhA--
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.24-rc4] pcmcia stops updating dev->power.power_state
-Date: Tue, 4 Dec 2007 12:28:07 -0800
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-pcmcia@lists.infradead.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 4 Dec 2007 15:52:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=bFQlvHvxBJl/nQvu3NvUEFsT75oBLdSkBDoc5KvFEw+8G4La3HmeiwllbzlIOOlCnxP4/Tvu9YD+fFMttT/cnqEHvCd7+o+GMFMv2GdaBeDOhPfJ/ayQy1BBNvgI4WEY3I76lKkFANdPwXbrhDr/sz+n5DFrv9J3BgNzdD8moxs=
+Subject: [RFC PATCH] Unify mmap_[32|64].c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 12:52:33 -0800
+Message-Id: <1196801553.10408.24.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712041228.07688.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This stops the pcmcia core from using dev->power.power_state;
-that field is deprecated (overdue for removal) and the only reason
-to update it was to make the /sys/devices/.../power/state files
-(now removed) work better.
+x86: Unify mmap_32.c mmap_64.c
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Start from mmap_32.c and add X86_64 specific function as well.
 
---- pstate.orig/drivers/pcmcia/ds.c	2007-12-04 09:33:12.000000000 -0800
-+++ pstate/drivers/pcmcia/ds.c	2007-12-04 09:36:15.000000000 -0800
-@@ -1129,8 +1129,6 @@ static int runtime_suspend(struct device
- 	down(&dev->sem);
- 	rc = pcmcia_dev_suspend(dev, PMSG_SUSPEND);
- 	up(&dev->sem);
--	if (!rc)
--		dev->power.power_state.event = PM_EVENT_SUSPEND;
- 	return rc;
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Just a preliminary patch to see if this is an acceptable approach, tested
+only on X86_32 at the moment.  Suggestions welcome.  Further iterations can
+start to make it a bit cleaner.
+
+ arch/x86/mm/Makefile_32           |    2 +-
+ arch/x86/mm/Makefile_64           |    3 +-
+ arch/x86/mm/{mmap_32.c => mmap.c} |   57 ++++++++++++++++++++-----------------
+ arch/x86/mm/mmap_64.c             |   32 --------------------
+ 4 files changed, 33 insertions(+), 61 deletions(-)
+
+diff --git a/arch/x86/mm/Makefile_32 b/arch/x86/mm/Makefile_32
+index 362b4ad..a01aca7 100644
+--- a/arch/x86/mm/Makefile_32
++++ b/arch/x86/mm/Makefile_32
+@@ -2,7 +2,7 @@
+ # Makefile for the linux i386-specific parts of the memory manager.
+ #
+ 
+-obj-y	:= init_32.o pgtable_32.o fault_32.o ioremap_32.o extable_32.o pageattr_32.o mmap_32.o
++obj-y	:= init_32.o pgtable_32.o fault_32.o ioremap_32.o extable_32.o pageattr_32.o mmap.o
+ 
+ obj-$(CONFIG_NUMA) += discontig_32.o
+ obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
+diff --git a/arch/x86/mm/Makefile_64 b/arch/x86/mm/Makefile_64
+index d18baed..b5a7448 100644
+--- a/arch/x86/mm/Makefile_64
++++ b/arch/x86/mm/Makefile_64
+@@ -2,9 +2,8 @@
+ # Makefile for the linux x86_64-specific parts of the memory manager.
+ #
+ 
+-obj-y	 := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap_64.o
++obj-y	 := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap.o
+ obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
+ obj-$(CONFIG_NUMA) += numa_64.o
+ obj-$(CONFIG_K8_NUMA) += k8topology_64.o
+ obj-$(CONFIG_ACPI_NUMA) += srat_64.o
+-obj-$(CONFIG_IA32_EMULATION) += mmap_32.o
+diff --git a/arch/x86/mm/mmap_32.c b/arch/x86/mm/mmap.c
+similarity index 62%
+rename from arch/x86/mm/mmap_32.c
+rename to arch/x86/mm/mmap.c
+index d490662..0462f11 100644
+--- a/arch/x86/mm/mmap_32.c
++++ b/arch/x86/mm/mmap.c
+@@ -1,30 +1,12 @@
+ /*
+- *  linux/arch/i386/mm/mmap.c
+- *
+- *  flexible mmap layout support
++ * Combined x86 flexible mmap layout support
+  *
++ * Started by Ingo Molnar <mingo@elte.hu>
+  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
+- * All Rights Reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ * Copyright 2005 Andi Kleen, SuSE Labs.
+  *
+- *
+- * Started by Ingo Molnar <mingo@elte.hu>
+  */
+ 
+-#include <linux/personality.h>
+ #include <linux/mm.h>
+ #include <linux/random.h>
+ #include <linux/sched.h>
+@@ -57,11 +39,7 @@ static inline unsigned long mmap_base(struct mm_struct *mm)
+  * This function, called very early during the creation of a new
+  * process VM image, sets up which VM layout function to use:
+  */
+-#ifdef CONFIG_X86_32
+-void arch_pick_mmap_layout(struct mm_struct *mm)
+-#else
+-void ia32_pick_mmap_layout(struct mm_struct *mm)
+-#endif
++static void ia32_pick_mmap_layout(struct mm_struct *mm)
+ {
+ 	/*
+ 	 * Fall back to the standard layout if the personality
+@@ -79,3 +57,30 @@ void ia32_pick_mmap_layout(struct mm_struct *mm)
+ 		mm->unmap_area = arch_unmap_area_topdown;
+ 	}
  }
- 
-@@ -1141,8 +1139,6 @@ static void runtime_resume(struct device
- 	down(&dev->sem);
- 	rc = pcmcia_dev_resume(dev);
- 	up(&dev->sem);
--	if (!rc)
--		dev->power.power_state.event = PM_EVENT_ON;
- }
- 
- /************************ per-device sysfs output ***************************/
-@@ -1264,6 +1260,9 @@ static int pcmcia_dev_suspend(struct dev
- 	struct pcmcia_driver *p_drv = NULL;
- 	int ret = 0;
- 
-+	if (p_dev->suspended)
-+		return 0;
 +
- 	ds_dbg(2, "suspending %s\n", dev->bus_id);
- 
- 	if (dev->driver)
-@@ -1300,6 +1299,9 @@ static int pcmcia_dev_resume(struct devi
-         struct pcmcia_driver *p_drv = NULL;
- 	int ret = 0;
- 
-+	if (!p_dev->suspended)
-+		return 0;
++/* TODO: move the mmap code from sys_x86_64.c over here. */
++void arch_pick_mmap_layout(struct mm_struct *mm)
++{
++#ifdef CONFIG_X86_32
++	return ia32_pick_mmap_layout(mm);
++#endif
++#ifdef CONFIG_IA32_EMULATION
++	if (current_thread_info()->flags & _TIF_IA32)
++		return ia32_pick_mmap_layout(mm);
++#endif
++	mm->mmap_base = TASK_UNMAPPED_BASE;
++	if (current->flags & PF_RANDOMIZE) {
++		/*
++		 * Add 28bit randomness which is about 40bits of
++		 * address space because mmap base has to be page
++		 * aligned.  or ~1/128 of the total user VM (total
++		 * user address space is 47bits)
++		 */
++		unsigned rnd = get_random_int() & 0xfffffff;
 +
- 	ds_dbg(2, "resuming %s\n", dev->bus_id);
- 
- 	if (dev->driver)
++		mm->mmap_base += ((unsigned long)rnd) << PAGE_SHIFT;
++	}
++	mm->get_unmapped_area = arch_get_unmapped_area;
++	mm->unmap_area = arch_unmap_area;
++}
++
+diff --git a/arch/x86/mm/mmap_64.c b/arch/x86/mm/mmap_64.c
+deleted file mode 100644
+index ffb71a3..0000000
+--- a/arch/x86/mm/mmap_64.c
++++ /dev/null
+@@ -1,32 +0,0 @@
+-/* Copyright 2005 Andi Kleen, SuSE Labs.
+- * Licensed under GPL, v.2
+- */
+-#include <linux/mm.h>
+-#include <linux/sched.h>
+-#include <linux/random.h>
+-#include <asm/ia32.h>
+-
+-/* Notebook: move the mmap code from sys_x86_64.c over here. */
+-
+-void arch_pick_mmap_layout(struct mm_struct *mm)
+-{
+-#ifdef CONFIG_IA32_EMULATION
+-	if (current_thread_info()->flags & _TIF_IA32)
+-		return ia32_pick_mmap_layout(mm);
+-#endif
+-	mm->mmap_base = TASK_UNMAPPED_BASE;
+-	if (current->flags & PF_RANDOMIZE) {
+-		/*
+-		 * Add 28bit randomness which is about 40bits of
+-		 * address space because mmap base has to be page
+-		 * aligned.  or ~1/128 of the total user VM (total
+-		 * user address space is 47bits)
+-		 */
+-		unsigned rnd = get_random_int() & 0xfffffff;
+-
+-		mm->mmap_base += ((unsigned long)rnd) << PAGE_SHIFT;
+-	}
+-	mm->get_unmapped_area = arch_get_unmapped_area;
+-	mm->unmap_area = arch_unmap_area;
+-}
+-
+
+
