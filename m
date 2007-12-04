@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXLDUbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbXLDUfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbXLDUbl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXLDUbf
+	id S1752726AbXLDUfR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXLDUfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:31:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:29809 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbXLDUbe (ORCPT
+	Tue, 4 Dec 2007 15:35:06 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35579 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751333AbXLDUfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:31:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=U0JFnFT7n/6jNFcYZvO3K/+ozYWmLkiOMZDvUcyg5fx41R2Qsg1yObZFtcyJ12gaq+p0r/Vxf3QKFe9bF0E+25Z054rOEzOR0pcPiv3YWu+krH2HGL1agw7q1vFhP0rdBwsbbHvVuGO9H0B6OsyHXVCS1RKGLTaxA0WgOaGEay4=
-Date: Tue, 4 Dec 2007 21:31:32 +0100
-To: rjw@sisk.pl
+	Tue, 4 Dec 2007 15:35:03 -0500
+Date: Tue, 4 Dec 2007 20:30:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Cc: linux-main <linux-kernel@vger.kernel.org>
-Subject: Suspend order
-Message-Id: <20071204213132.d806a24f.Kristoffer.ericson@gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Subject: Re: Best way to detect CF id strings
+Message-ID: <20071204203038.20e7ca55@the-village.bc.nu>
+In-Reply-To: <20071204201933.50d64f52.Kristoffer.ericson@gmail.com>
+References: <20071204201933.50d64f52.Kristoffer.ericson@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey rafael,
+On Tue, 4 Dec 2007 20:19:33 +0100
+Kristoffer Ericson <kristoffer.ericson@gmail.com> wrote:
 
-For obvious reasons it would be great to have serial output to be the last to enter suspend, thus giving every last drop of debugging
-before actually turning the machine "off".
+> Greetings,
+> 
+> Usually I detect them by attaching CF->PCMCIA adapter to my laptop, but would much rather be able to use my usb-CF adapter.
+> This would also alot easier to explain to users which are having issues (unsupported/unknown id's).
 
-I'm not aware of any specific order currently, from what I've seen currently  every driver is asked to go into suspend at the same time. This of course providing driver x isn't dependant on driver y. You following?
-
-So, without digging to much into this, is there any specific order?
-
-Best wishes
-Kristoffer
+What sort of "id" are we talking about here ?
