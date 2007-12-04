@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXLDT2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbXLDTaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbXLDT2k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 14:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXLDT2c
+	id S1752436AbXLDTaq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 14:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbXLDTak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 14:28:32 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:36100 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750914AbXLDT2c (ORCPT
+	Tue, 4 Dec 2007 14:30:40 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:34733 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750764AbXLDTaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 14:28:32 -0500
-Date: Tue, 4 Dec 2007 14:28:31 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jarek Poplawski <jarkao2@gmail.com>
-cc: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Need lockdep help
-In-Reply-To: <4755A457.5080405@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0712041424270.13516-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 4 Dec 2007 14:30:39 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAEs5VUdMROHU/2dsb2JhbACBWo9I
+Date: Tue, 4 Dec 2007 14:25:37 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Dave Hansen <haveblue@us.ibm.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mbligh@google.com
+Subject: Re: [RFC PATCH] LTTng instrumentation mm (updated)
+Message-ID: <20071204192537.GC31752@Krystal>
+References: <20071128140953.GA8018@Krystal> <1196268856.18851.20.camel@localhost> <20071129023421.GA711@Krystal> <1196317552.18851.47.camel@localhost> <20071130161155.GA29634@Krystal> <1196444801.18851.127.camel@localhost> <20071130170516.GA31586@Krystal> <1196448122.19681.16.camel@localhost> <20071130191006.GB3955@Krystal> <y0mve7ez2y3.fsf@ton.toronto.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <y0mve7ez2y3.fsf@ton.toronto.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:23:22 up 31 days, 28 min,  6 users,  load average: 0.33, 0.72,
+	0.93
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007, Jarek Poplawski wrote:
-
-> Alan Stern wrote, On 12/04/2007 04:17 PM:
-> ...
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 > 
-> > Furthermore, in this case deadlock isn't really impossible -- it could 
-> > occur if there were a bug somewhere else in the kernel.  So lockdep was 
-> > correct to warn that deadlock might occur.
+> > [...]
+> >> > We would like to be able to tell which swap file the information has
+> >> > been written to/read from at any given time during the trace.
+> >> 
+> >> Oh, tracing is expected to be on at all times?  I figured someone would
+> >> encounter a problem, then turn it on to dig down a little deeper, then
+> >> turn it off.
+> >
+> > Yep, it can be expected to be on at all times, especially on production
+> > systems using "flight recorder" tracing to record information in a
+> > circular buffer [...]
 > 
+> Considering how early in the boot sequence swap partitions are
+> activated, it seems optimistic to assume that the monitoring equipment
+> will always start up in time to catch the initial swapons.  It would
+> be more useful if a marker parameter was included in the swap events
+> to let a tool/user map to /proc/swaps or a file name.
 > 
-> Alan, if the scenario was like you described at the beginning, there was
-> no deadlock possible, unless some errors in the notifier.
+> - FChE
 
-Or errors in the notifier's caller.
+Not early at all ? We have userspace processes running.. this is _late_
+in the boot sequence! ;)
 
-> These #1-#3
-> threads were only helpful to guess what lockdep could 'think', but I
-> guess notifier doesn't use 2 rivaling threads for a wake, so, lockdep
-> probably needed additional information. And you really can't consider
-> any hypothetical kernel bugs here because then each lock is vulnerable.
+Anyhow, that I have now is a combination including your proposal :
 
-But you have to consider hypothetical kernel bugs.  That's exactly what 
-lockdep is for -- to warn you about possible deadlocks that could be 
-caused by bugs.
+- I dump the swapon/swapoff events.
+- I also dump the equivalent of /proc/swaps (with kernel internal
+  information) at trace start to know what swap files are currently
+  used.
 
-As a simple example, if thread #1 does "lock(A); lock(B)" and thread 
-#2 does "lock(B); lock(A)" then there's a possible bug.  Lockdep should 
-warn about you, and it does -- even if those two threads can never run 
-at the same time.
+Does it sound fair ?
 
-If lockdep warned about deadlocks only when they actually happened, it 
-wouldn't be nearly so useful.
+Mathieu
 
-Alan Stern
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
