@@ -1,200 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbXLDUxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXLDUxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbXLDUxa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbXLDUwe
+	id S1754069AbXLDUxs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXLDUx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:52:34 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:53172 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753317AbXLDUwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:52:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bFQlvHvxBJl/nQvu3NvUEFsT75oBLdSkBDoc5KvFEw+8G4La3HmeiwllbzlIOOlCnxP4/Tvu9YD+fFMttT/cnqEHvCd7+o+GMFMv2GdaBeDOhPfJ/ayQy1BBNvgI4WEY3I76lKkFANdPwXbrhDr/sz+n5DFrv9J3BgNzdD8moxs=
-Subject: [RFC PATCH] Unify mmap_[32|64].c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 04 Dec 2007 12:52:33 -0800
-Message-Id: <1196801553.10408.24.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 4 Dec 2007 15:53:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55445 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754430AbXLDUx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 15:53:26 -0500
+Message-ID: <4755BD0C.2060808@redhat.com>
+Date: Tue, 04 Dec 2007 14:48:12 -0600
+From: Mike McGrath <mmcgrath@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Theodore Tso <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
+       Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+References: <20071204114125.GA17310@torres.zugschlus.de>	<20071204161811.GB15974@stusta.de>	<2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com>	<20071204165502.0a8f695e@the-village.bc.nu>	<20071204180237.GU19691@waste.org>	<20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu>
+In-Reply-To: <20071204204036.484f11ac@the-village.bc.nu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: Unify mmap_32.c mmap_64.c
+Alan Cox wrote:
+>> Here's the top 5:
+>>
+>>    266 28caf2c3-9766-4fe1-9e4c-d6b0ba8a0132
+>>    336 810e7126-1c69-4aff-b8b1-9db0fa8aa15a
+>>    402 c8dbb9d3-a9bd-4ba6-b92e-4a294ba5a95f
+>>    884 06e84493-e024-44b1-9b32-32d78af04039
+>>    931 e2b67e1d-e325-4740-b938-795addb45280
+>>
+>> The left number is times this month someone has submitted a profile with
+>> that UUID.  If we take the last one as an example has come from over 800
+>> IP's in the last 20 days.  It seems very unlikely that one person would
+>> find his way to 800 different IP's this month.  Let me know if you'd
+>> like more.
+>>     
+Background - Smolt runs this during its install:
 
-Start from mmap_32.c and add X86_64 specific function as well.
+/bin/cat /proc/sys/kernel/random/uuid > /etc/sysconfig/hw-uuid
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Just a preliminary patch to see if this is an acceptable approach, tested
-only on X86_32 at the moment.  Suggestions welcome.  Further iterations can
-start to make it a bit cleaner.
+For most users this would be run by the RPM %post scripts during install 
+from anaconda. For some reason there are some UUID's (like those listed 
+above) that come up more often then it seems they should if they are 
+truly random.
 
- arch/x86/mm/Makefile_32           |    2 +-
- arch/x86/mm/Makefile_64           |    3 +-
- arch/x86/mm/{mmap_32.c => mmap.c} |   57 ++++++++++++++++++++-----------------
- arch/x86/mm/mmap_64.c             |   32 --------------------
- 4 files changed, 33 insertions(+), 61 deletions(-)
-
-diff --git a/arch/x86/mm/Makefile_32 b/arch/x86/mm/Makefile_32
-index 362b4ad..a01aca7 100644
---- a/arch/x86/mm/Makefile_32
-+++ b/arch/x86/mm/Makefile_32
-@@ -2,7 +2,7 @@
- # Makefile for the linux i386-specific parts of the memory manager.
- #
- 
--obj-y	:= init_32.o pgtable_32.o fault_32.o ioremap_32.o extable_32.o pageattr_32.o mmap_32.o
-+obj-y	:= init_32.o pgtable_32.o fault_32.o ioremap_32.o extable_32.o pageattr_32.o mmap.o
- 
- obj-$(CONFIG_NUMA) += discontig_32.o
- obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
-diff --git a/arch/x86/mm/Makefile_64 b/arch/x86/mm/Makefile_64
-index d18baed..b5a7448 100644
---- a/arch/x86/mm/Makefile_64
-+++ b/arch/x86/mm/Makefile_64
-@@ -2,9 +2,8 @@
- # Makefile for the linux x86_64-specific parts of the memory manager.
- #
- 
--obj-y	 := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap_64.o
-+obj-y	 := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap.o
- obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
- obj-$(CONFIG_NUMA) += numa_64.o
- obj-$(CONFIG_K8_NUMA) += k8topology_64.o
- obj-$(CONFIG_ACPI_NUMA) += srat_64.o
--obj-$(CONFIG_IA32_EMULATION) += mmap_32.o
-diff --git a/arch/x86/mm/mmap_32.c b/arch/x86/mm/mmap.c
-similarity index 62%
-rename from arch/x86/mm/mmap_32.c
-rename to arch/x86/mm/mmap.c
-index d490662..0462f11 100644
---- a/arch/x86/mm/mmap_32.c
-+++ b/arch/x86/mm/mmap.c
-@@ -1,30 +1,12 @@
- /*
-- *  linux/arch/i386/mm/mmap.c
-- *
-- *  flexible mmap layout support
-+ * Combined x86 flexible mmap layout support
-  *
-+ * Started by Ingo Molnar <mingo@elte.hu>
-  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
-- * All Rights Reserved.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ * Copyright 2005 Andi Kleen, SuSE Labs.
-  *
-- *
-- * Started by Ingo Molnar <mingo@elte.hu>
-  */
- 
--#include <linux/personality.h>
- #include <linux/mm.h>
- #include <linux/random.h>
- #include <linux/sched.h>
-@@ -57,11 +39,7 @@ static inline unsigned long mmap_base(struct mm_struct *mm)
-  * This function, called very early during the creation of a new
-  * process VM image, sets up which VM layout function to use:
-  */
--#ifdef CONFIG_X86_32
--void arch_pick_mmap_layout(struct mm_struct *mm)
--#else
--void ia32_pick_mmap_layout(struct mm_struct *mm)
--#endif
-+static void ia32_pick_mmap_layout(struct mm_struct *mm)
- {
- 	/*
- 	 * Fall back to the standard layout if the personality
-@@ -79,3 +57,30 @@ void ia32_pick_mmap_layout(struct mm_struct *mm)
- 		mm->unmap_area = arch_unmap_area_topdown;
- 	}
- }
-+
-+/* TODO: move the mmap code from sys_x86_64.c over here. */
-+void arch_pick_mmap_layout(struct mm_struct *mm)
-+{
-+#ifdef CONFIG_X86_32
-+	return ia32_pick_mmap_layout(mm);
-+#endif
-+#ifdef CONFIG_IA32_EMULATION
-+	if (current_thread_info()->flags & _TIF_IA32)
-+		return ia32_pick_mmap_layout(mm);
-+#endif
-+	mm->mmap_base = TASK_UNMAPPED_BASE;
-+	if (current->flags & PF_RANDOMIZE) {
-+		/*
-+		 * Add 28bit randomness which is about 40bits of
-+		 * address space because mmap base has to be page
-+		 * aligned.  or ~1/128 of the total user VM (total
-+		 * user address space is 47bits)
-+		 */
-+		unsigned rnd = get_random_int() & 0xfffffff;
-+
-+		mm->mmap_base += ((unsigned long)rnd) << PAGE_SHIFT;
-+	}
-+	mm->get_unmapped_area = arch_get_unmapped_area;
-+	mm->unmap_area = arch_unmap_area;
-+}
-+
-diff --git a/arch/x86/mm/mmap_64.c b/arch/x86/mm/mmap_64.c
-deleted file mode 100644
-index ffb71a3..0000000
---- a/arch/x86/mm/mmap_64.c
-+++ /dev/null
-@@ -1,32 +0,0 @@
--/* Copyright 2005 Andi Kleen, SuSE Labs.
-- * Licensed under GPL, v.2
-- */
--#include <linux/mm.h>
--#include <linux/sched.h>
--#include <linux/random.h>
--#include <asm/ia32.h>
--
--/* Notebook: move the mmap code from sys_x86_64.c over here. */
--
--void arch_pick_mmap_layout(struct mm_struct *mm)
--{
--#ifdef CONFIG_IA32_EMULATION
--	if (current_thread_info()->flags & _TIF_IA32)
--		return ia32_pick_mmap_layout(mm);
--#endif
--	mm->mmap_base = TASK_UNMAPPED_BASE;
--	if (current->flags & PF_RANDOMIZE) {
--		/*
--		 * Add 28bit randomness which is about 40bits of
--		 * address space because mmap base has to be page
--		 * aligned.  or ~1/128 of the total user VM (total
--		 * user address space is 47bits)
--		 */
--		unsigned rnd = get_random_int() & 0xfffffff;
--
--		mm->mmap_base += ((unsigned long)rnd) << PAGE_SHIFT;
--	}
--	mm->get_unmapped_area = arch_get_unmapped_area;
--	mm->unmap_area = arch_unmap_area;
--}
--
-
-
+-Mike
