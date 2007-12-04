@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbXLDV1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbXLDV2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbXLDV1i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXLDV10
+	id S1755153AbXLDV2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:28:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXLDV2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:27:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39950 "EHLO mx2.mail.elte.hu"
+	Tue, 4 Dec 2007 16:28:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40165 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbXLDV1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:27:25 -0500
-Date: Tue, 4 Dec 2007 22:27:05 +0100
+	id S1751701AbXLDV23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 16:28:29 -0500
+Date: Tue, 4 Dec 2007 22:28:05 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/23] RT balance v7
-Message-ID: <20071204212705.GA10360@elte.hu>
-References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
+To: Christian Kujau <christian@g-house.de>
+Cc: Len Brown <lenb@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
+Message-ID: <20071204212805.GB10360@elte.hu>
+References: <200711280121.18376.lenb@kernel.org> <20071204122649.GB27286@elte.hu> <alpine.DEB.0.99999.0712042152070.9287@sheep.housecafe.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
+In-Reply-To: <alpine.DEB.0.99999.0712042152070.9287@sheep.housecafe.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,17 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* Christian Kujau <christian@g-house.de> wrote:
 
-> Ingo,
-> 
-> This series applies on GIT commit 
-> 2254c2e0184c603f92fc9b81016ff4bb53da622d (2.6.24-rc4 (ish) git HEAD)
+> On Tue, 4 Dec 2007, Ingo Molnar wrote:
+>> thanks for the patch and the extensive description. I've applied this to
+>> x86.git. Do you agree that this has no urgency for v2.6.24 and is thus
+>> v2.6.25 material?
+>
+> Pardon my ignorance, but: aren't we in -rc already? I was under the 
+> assumption that during the -rc phase only (release-)critical bugfixes 
+> would be applied? So this one *must* be 2.6.25 material, right?
 
-please post patches against sched-devel.git - it has part of your 
-previous patches included already, plus some cleanups i did to them, so 
-this series of yours wont apply. sched-devel.git is at:
-
- git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+that was just a boilerplate question from me to make sure there's no 
+misunderstanding about where it got queued and what the planned timeline 
+is.
 
 	Ingo
