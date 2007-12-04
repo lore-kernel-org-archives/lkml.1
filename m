@@ -1,107 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbXLDI40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXLDI66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbXLDI40 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXLDI4S
+	id S1752599AbXLDI66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbXLDI6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:56:18 -0500
-Received: from mga03.intel.com ([143.182.124.21]:14952 "EHLO mga03.intel.com"
+	Tue, 4 Dec 2007 03:58:51 -0500
+Received: from sacred.ru ([62.205.161.221]:50964 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751531AbXLDI4R convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:56:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,247,1194249600"; 
-   d="scan'208";a="332308065"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751622AbXLDI6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:58:50 -0500
+Message-ID: <475516B6.5000504@openvz.org>
+Date: Tue, 04 Dec 2007 11:58:30 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Subject: RE: [patch 0/2] x86, ptrace: support for branch trace store(BTS)
-Date: Tue, 4 Dec 2007 08:52:13 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF5544401090315@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <200712031721.39013.ak@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 0/2] x86, ptrace: support for branch trace store(BTS)
-thread-index: Acg1yJ19xtJ+UMRPSG6CahT2UHW5VwAhc5NA
-References: <029E5BE7F699594398CA44E3DDF5544401024075@swsmsx413.ger.corp.intel.com> <20071201074044.GA13974@elte.hu> <a430082a0712030553v22e9b46bnb9da975a23b1c0db@mail.gmail.com> <200712031721.39013.ak@suse.de>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Andi Kleen" <ak@suse.de>, "Roland McGrath" <roland@redhat.com>
-Cc: <tglx@linutronix.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Michael Kerrisk" <mtk-manpages@gmx.net>, <markus.t.metzger@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Markus Metzger" <markus.t.metzger@googlemail.com>
-X-OriginalArrivalTime: 04 Dec 2007 08:52:10.0517 (UTC) FILETIME=[F4F7FC50:01C83652]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: ebiederm@xmission.com, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef CONFIG_SYSCTL
+References: <475008F5.3000506@openvz.org>	<475009FA.20409@openvz.org> <20071203133844.40804dab.akpm@linux-foundation.org>
+In-Reply-To: <20071203133844.40804dab.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 04 Dec 2007 11:58:35 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Fri, 30 Nov 2007 16:02:50 +0300
+> Pavel Emelyanov <xemul@openvz.org> wrote:
+> 
+>> This includes the tables themselves and the call to the
+>> register_sysctl_table(). Since this call is done from the __init
+>> call, I hope this is OK to keep the #ifdef inside the function, 
+>> rather than making proper helpers outside it.
+>>
+>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+>>
+>> ---
+>>
+>> diff --git a/fs/dquot.c b/fs/dquot.c
+>> index 50e7c2a..efee14d 100644
+>> --- a/fs/dquot.c
+>> +++ b/fs/dquot.c
+>> @@ -1821,6 +1821,7 @@ struct quotactl_ops vfs_quotactl_ops = {
+>>  	.set_dqblk	= vfs_set_dqblk
+>>  };
+>>  
+>> +#ifdef CONFIG_SYSCTL
+>>  static ctl_table fs_dqstats_table[] = {
+>>  	{
+>>  		.ctl_name	= FS_DQ_LOOKUPS,
+>> @@ -1918,6 +1919,7 @@ static ctl_table sys_table[] = {
+>>  	},
+>>  	{ .ctl_name = 0 },
+>>  };
+>> +#endif
+>>  
+>>  static int __init dquot_init(void)
+>>  {
+>> @@ -1926,7 +1928,9 @@ static int __init dquot_init(void)
+>>  
+>>  	printk(KERN_NOTICE "VFS: Disk quotas %s\n", __DQUOT_VERSION__);
+>>  
+>> +#ifdef CONFIG_SYSCTL
+>>  	register_sysctl_table(sys_table);
+>> +#endif
+>>  
+>>  	dquot_cachep = kmem_cache_create("dquot",
+>>  			sizeof(struct dquot), sizeof(unsigned long) * 4,
+> 
+> We should avoid the ifdefs around the register_sysctl_table() call.
+> 
+> At present the !CONFIG_SYSCTL implementation of register_sysctl_table() is
+> a non-inlined NULL-returning stub.  All we have to do is to inline that stub
+> then these ifdefs can go away.
 
->-----Original Message-----
->From: Andi Kleen [mailto:ak@suse.de] 
->Sent: Montag, 3. Dezember 2007 17:22
+What if some code checks for the return value to be not-NULL? In case
+CONFIG_SYSCTL=n this code will always think, that the registration failed.
 
->> What did you have in mind when you asked for kernel-mode support?
->
->I asked about that earlier too and I would like to see per CPU traces
->for ring 0 with some way to dump that on crashes or on user trigger.
+> The same applies to register_sysctl_paths().
+> 
+> 
+> If that's all agreeable then there isn't a lot of point in me merging these
+> seven patches.
+> 
+> 
+> 
+> btw, administrivia detail: please don't put the patch's subsystem
+> identifier in [].  IOW, this:
+> 
+> Subject: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef CONFIG_SYSCTL
+> 
+> should have been
+> 
+> Subject: [PATCH 1/7] quota: move sysctl management code under ifdef CONFIG_SYSCTL
+> 
+> for reasons described in section 2 of
+> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt.
 
-I will split it into two layers:
-- a lower layer that does the DS/BTS configuration
-- a higher layer that provides the ptrace interface
+OK. I saw people marking subsystems in this way in netdev tree and
+though it was a common practice.
 
-The lower layer works on a parameter DS pointer. Unfortunately,
-this will be an unsigned long, since we have different DS/BTS layout
-for different architectures.
+> Thanks.
 
-The higher layer uses the lower layer to do the real work. It stores
-a per-thread DS pointer in the thread_struct.
+Thanks,
+Pavel
 
-Kernel tracing would allocate a per_cpu array of DS pointers
-and use the lower layer for all the real work. I would leave it
-to someone who is more familiar with the kgdb patch, if that is OK.
-
-
-What's left is proper resource managememt. The kernel use of
-DS_SAVE_AREA
-and DEBUGCTL conflicts with the ptrace use of those MSR's. As far as I
-can
-tell, this is missing for all MSR's. The single/block_stepping support 
-certainly uses an optimistic approach.
-
-I guess this is a certain amount of work. It needs the idea of an
-'owner'
-of such an MSR, some means to acquire and release it, a global
-allocation 
-order, some protection from others who simply try to use it. It needs to
-be on register granularity for some; on bit granularity for others. It
-needs to be global for some; per-thread for others. And it probably
-needs 
-a lot of error handling code in a lot of different areas.
-
-I would hope that utrace is tackling some or all of these problems.
-I would therefore stay optimistic in this patch and rework it once
-utrace is in and provides a proper framework.
-This seems to be the approach that the new block-stepping support takes.
-
-
-thanks and regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
