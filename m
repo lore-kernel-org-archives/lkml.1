@@ -1,208 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbXLDSyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbXLDSye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbXLDSyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 13:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbXLDSwD
+	id S1755888AbXLDSye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 13:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbXLDSxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 13:52:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53329 "EHLO mx1.redhat.com"
+	Tue, 4 Dec 2007 13:53:25 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:44293 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978AbXLDSv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 13:51:59 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 7/8] move switch_to macro to system.h
-Date: Tue,  4 Dec 2007 14:06:27 -0200
-Message-Id: <11967844221894-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11967844173360-git-send-email-gcosta@redhat.com>
-References: <11967843881946-git-send-email-gcosta@redhat.com> <11967843943958-git-send-email-gcosta@redhat.com> <11967843983411-git-send-email-gcosta@redhat.com> <11967844032081-git-send-email-gcosta@redhat.com> <11967844071346-git-send-email-gcosta@redhat.com> <11967844123402-git-send-email-gcosta@redhat.com> <11967844173360-git-send-email-gcosta@redhat.com>
+	id S1754478AbXLDSxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 13:53:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+	b=hiOgqz62gMt66kbQ+yHRjSKgZ2aZ+MoLfMQHHZ62eGd/fwZfWD8eu+JfLcgngGUyaC6TiQveHkgsl8HB7NWW/r/6L7wfa1B3nmxFOyvo1OCJdG0hHSQj76Xx88FUacWS;
+Message-ID: <4755A21F.2020407@simon.arlott.org.uk>
+Date: Tue, 04 Dec 2007 18:53:19 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: sockets affected by IPsec always block (2.6.23)
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the switch_to() macro to system.h
+If I have a IPsec rule like:
+	spdadd 192.168.7.8 1.2.3.4 any -P out ipsec esp/transport//require;
+(i.e. a remote host 1.2.3.4 which will not respond)
 
-As those macros are fundamentally different between i386 and x86_64,
-they are enclosed around an ifdef.
+Then any attempt to communicate with 1.2.3.4 will block, even when using non-blocking sockets:
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
----
- include/asm-x86/system.h    |   61 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/system_32.h |   31 ----------------------
- include/asm-x86/system_64.h |   37 --------------------------
- 3 files changed, 61 insertions(+), 68 deletions(-)
+socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 3
+setsockopt(3, SOL_SOCKET, SO_LINGER, {onoff=1, linger=0}, 8) = 0
+setsockopt(3, SOL_SOCKET, SO_REUSEADDR, [1], 4) = 0
+fcntl64(3, F_GETFL)                     = 0x2 (flags O_RDWR)
+fcntl64(3, F_SETFL, O_RDWR|O_NONBLOCK)  = 0 <-- non-blocking socket
+connect(3, {sa_family=AF_INET, sin_port=htons(22), sin_addr=inet_addr("1.2.3.4")}, 16 <-- blocked connect()
 
-diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
-index ecb782b..da4bcd1 100644
---- a/include/asm-x86/system.h
-+++ b/include/asm-x86/system.h
-@@ -6,8 +6,69 @@
- #include <linux/kernel.h>
- 
- #ifdef CONFIG_X86_32
-+#define AT_VECTOR_SIZE_ARCH 2 /* entries in ARCH_DLINFO */
-+
-+struct task_struct; /* one of the stranger aspects of C forward declarations */
-+extern struct task_struct *FASTCALL(__switch_to(struct task_struct *prev,
-+						struct task_struct *next));
-+
-+/*
-+ * Saving eflags is important. It switches not only IOPL between tasks,
-+ * it also protects other tasks from NT leaking through sysenter etc.
-+ */
-+#define switch_to(prev, next, last) do {				\
-+	unsigned long esi, edi;						\
-+	asm volatile("pushfl\n\t"		/* Save flags */	\
-+		     "pushl %%ebp\n\t"					\
-+		     "movl %%esp,%0\n\t"	/* save ESP */		\
-+		     "movl %5,%%esp\n\t"	/* restore ESP */	\
-+		     "movl $1f,%1\n\t"		/* save EIP */		\
-+		     "pushl %6\n\t"		/* restore EIP */	\
-+		     "jmp __switch_to\n"				\
-+		     "1:\t"						\
-+		     "popl %%ebp\n\t"					\
-+		     "popfl"						\
-+		     :"=m" (prev->thread.esp), "=m" (prev->thread.eip),	\
-+		      "=a" (last), "=S" (esi), "=D" (edi)		\
-+		     :"m" (next->thread.esp), "m" (next->thread.eip),	\
-+		      "2" (prev), "d" (next));				\
-+} while (0)
-+
- # include "system_32.h"
- #else
-+#define __SAVE(reg, offset) "movq %%" #reg ",(14-" #offset ")*8(%%rsp)\n\t"
-+#define __RESTORE(reg, offset) "movq (14-" #offset ")*8(%%rsp),%%" #reg "\n\t"
-+
-+/* frame pointer must be last for get_wchan */
-+#define SAVE_CONTEXT    "pushf ; pushq %%rbp ; movq %%rsi,%%rbp\n\t"
-+#define RESTORE_CONTEXT "movq %%rbp,%%rsi ; popq %%rbp ; popf\t"
-+
-+#define __EXTRA_CLOBBER  \
-+	, "rcx", "rbx", "rdx", "r8", "r9", "r10", "r11", \
-+	  "r12", "r13", "r14", "r15"
-+
-+/* Save restore flags to clear handle leaking NT */
-+#define switch_to(prev, next, last) \
-+	asm volatile(SAVE_CONTEXT					  \
-+	     "movq %%rsp,%P[threadrsp](%[prev])\n\t" /* save RSP */	  \
-+	     "movq %P[threadrsp](%[next]),%%rsp\n\t" /* restore RSP */	  \
-+	     "call __switch_to\n\t"					  \
-+	     ".globl thread_return\n"					  \
-+	     "thread_return:\n\t"					  \
-+	     "movq %%gs:%P[pda_pcurrent],%%rsi\n\t"			  \
-+	     "movq %P[thread_info](%%rsi),%%r8\n\t"			  \
-+	     LOCK_PREFIX "btr  %[tif_fork],%P[ti_flags](%%r8)\n\t"	  \
-+	     "movq %%rax,%%rdi\n\t" 					  \
-+	     "jc   ret_from_fork\n\t"					  \
-+	     RESTORE_CONTEXT						  \
-+	     : "=a" (last)					  	  \
-+	     : [next] "S" (next), [prev] "D" (prev),			  \
-+	       [threadrsp] "i" (offsetof(struct task_struct, thread.rsp)),\
-+	       [ti_flags] "i" (offsetof(struct thread_info, flags)),	  \
-+	       [tif_fork] "i" (TIF_FORK),			  	  \
-+	       [thread_info] "i" (offsetof(struct task_struct, stack)),   \
-+	       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))  \
-+	     : "memory", "cc" __EXTRA_CLOBBER)
- # include "system_64.h"
- #endif
- 
-diff --git a/include/asm-x86/system_32.h b/include/asm-x86/system_32.h
-index 1201880..83af464 100644
---- a/include/asm-x86/system_32.h
-+++ b/include/asm-x86/system_32.h
-@@ -5,37 +5,6 @@
- #include <asm/cpufeature.h>
- #include <asm/cmpxchg.h>
- 
--#ifdef __KERNEL__
--#define AT_VECTOR_SIZE_ARCH 2 /* entries in ARCH_DLINFO */
--
--struct task_struct;	/* one of the stranger aspects of C forward declarations.. */
--extern struct task_struct * FASTCALL(__switch_to(struct task_struct *prev, struct task_struct *next));
--
--/*
-- * Saving eflags is important. It switches not only IOPL between tasks,
-- * it also protects other tasks from NT leaking through sysenter etc.
-- */
--#define switch_to(prev,next,last) do {					\
--	unsigned long esi,edi;						\
--	asm volatile("pushfl\n\t"		/* Save flags */	\
--		     "pushl %%ebp\n\t"					\
--		     "movl %%esp,%0\n\t"	/* save ESP */		\
--		     "movl %5,%%esp\n\t"	/* restore ESP */	\
--		     "movl $1f,%1\n\t"		/* save EIP */		\
--		     "pushl %6\n\t"		/* restore EIP */	\
--		     "jmp __switch_to\n"				\
--		     "1:\t"						\
--		     "popl %%ebp\n\t"					\
--		     "popfl"						\
--		     :"=m" (prev->thread.esp),"=m" (prev->thread.eip),	\
--		      "=a" (last),"=S" (esi),"=D" (edi)			\
--		     :"m" (next->thread.esp),"m" (next->thread.eip),	\
--		      "2" (prev), "d" (next));				\
--} while (0)
--
--#endif	/* __KERNEL__ */
--
--
- #include <linux/irqflags.h>
- 
- /*
-diff --git a/include/asm-x86/system_64.h b/include/asm-x86/system_64.h
-index 80be206..89af856 100644
---- a/include/asm-x86/system_64.h
-+++ b/include/asm-x86/system_64.h
-@@ -4,43 +4,6 @@
- #include <asm/segment.h>
- #include <asm/cmpxchg.h>
- 
--#ifdef __KERNEL__
--
--#define __SAVE(reg,offset) "movq %%" #reg ",(14-" #offset ")*8(%%rsp)\n\t"
--#define __RESTORE(reg,offset) "movq (14-" #offset ")*8(%%rsp),%%" #reg "\n\t"
--
--/* frame pointer must be last for get_wchan */
--#define SAVE_CONTEXT    "pushf ; pushq %%rbp ; movq %%rsi,%%rbp\n\t"
--#define RESTORE_CONTEXT "movq %%rbp,%%rsi ; popq %%rbp ; popf\t"
--
--#define __EXTRA_CLOBBER  \
--	,"rcx","rbx","rdx","r8","r9","r10","r11","r12","r13","r14","r15"
--
--/* Save restore flags to clear handle leaking NT */
--#define switch_to(prev,next,last) \
--	asm volatile(SAVE_CONTEXT						    \
--		     "movq %%rsp,%P[threadrsp](%[prev])\n\t" /* save RSP */	  \
--		     "movq %P[threadrsp](%[next]),%%rsp\n\t" /* restore RSP */	  \
--		     "call __switch_to\n\t"					  \
--		     ".globl thread_return\n"					\
--		     "thread_return:\n\t"					    \
--		     "movq %%gs:%P[pda_pcurrent],%%rsi\n\t"			  \
--		     "movq %P[thread_info](%%rsi),%%r8\n\t"			  \
--		     LOCK_PREFIX "btr  %[tif_fork],%P[ti_flags](%%r8)\n\t"	  \
--		     "movq %%rax,%%rdi\n\t" 					  \
--		     "jc   ret_from_fork\n\t"					  \
--		     RESTORE_CONTEXT						    \
--		     : "=a" (last)					  	  \
--		     : [next] "S" (next), [prev] "D" (prev),			  \
--		       [threadrsp] "i" (offsetof(struct task_struct, thread.rsp)), \
--		       [ti_flags] "i" (offsetof(struct thread_info, flags)),\
--		       [tif_fork] "i" (TIF_FORK),			  \
--		       [thread_info] "i" (offsetof(struct task_struct, stack)), \
--		       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))   \
--		     : "memory", "cc" __EXTRA_CLOBBER)
--
--#endif	/* __KERNEL__ */
--
- #include <linux/irqflags.h>
- 
- #endif
+[277657.564773] netcat        S b06bcf20     0  9450   9449
+[277657.564785]        c8d51d28 00200046 00200046 b06bcf20 00200286 c8d51d14 00200286 c8d51d84
+[277657.564814]        b06bcf20 c8d51d28 b013680b c8d51d84 eeae8800 c8d51d78 c8d51dd0 b04d3fc5
+[277657.564843]        c8d51da4 00000002 00000001 ede87284 00000002 00000040 e9318ac0 db3f20a0
+[277657.564874] Call Trace:
+[277657.564881]  [<b04d3fc5>] __xfrm_lookup+0x2f5/0x510
+[277657.564905]  [<b0494f9e>] ip_route_output_flow+0x4e/0x80
+[277657.564919]  [<b04af303>] tcp_v4_connect+0x183/0x6d0
+[277657.564934]  [<b04beaf2>] inet_stream_connect+0x122/0x1c0
+[277657.564949]  [<b0471c8e>] sys_connect+0x9e/0xd0
+[277657.564963]  [<b0472785>] sys_socketcall+0xa5/0x230
+[277657.564973]  [<b01042ba>] syscall_call+0x7/0xb
+[277657.564984]  =======================
+
+I had a process using non-blocking sockets stuck in connect() for over 8 hours because of this...
+
+00002630 <__xfrm_lookup>:
+...
+    290b:   b8 00 00 00 00          mov    $0x0,%eax
+            290c: R_386_32  km_waitq
+    2910:   e8 fc ff ff ff          call   2911 <__xfrm_lookup+0x2e1>
+            2911: R_386_PC32    add_wait_queue
+    2915:   a1 00 00 00 00          mov    0x0,%eax
+            2916: R_386_32  per_cpu__current_task
+    291a:   c7 00 01 00 00 00       movl   $0x1,(%eax)
+    2920:   e8 fc ff ff ff          call   2921 <__xfrm_lookup+0x2f1>
+            2921: R_386_PC32    schedule
+    2925:   a1 00 00 00 00          mov    0x0,%eax
+            2926: R_386_32  per_cpu__current_task
+    292a:   c7 00 00 00 00 00       movl   $0x0,(%eax)
+    2930:   b8 00 00 00 00          mov    $0x0,%eax
+            2931: R_386_32  km_waitq
+    2935:   89 da                   mov    %ebx,%edx
+    2937:   e8 fc ff ff ff          call   2938 <__xfrm_lookup+0x308>
+            2938: R_386_PC32    remove_wait_queue
+
 -- 
-1.4.4.2
-
+Simon Arlott
