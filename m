@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXLDU22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXLDUbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbXLDU22 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 15:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbXLDU2V
+	id S1752892AbXLDUbl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 15:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXLDUbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 15:28:21 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55573 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbXLDU2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 15:28:20 -0500
-Subject: Re: [RFC PATCH] LTTng instrumentation mm (updated)
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mbligh@google.com
-In-Reply-To: <20071204200558.GB1988@Krystal>
-References: <20071129023421.GA711@Krystal>
-	 <1196317552.18851.47.camel@localhost> <20071130161155.GA29634@Krystal>
-	 <1196444801.18851.127.camel@localhost> <20071130170516.GA31586@Krystal>
-	 <1196448122.19681.16.camel@localhost> <20071130191006.GB3955@Krystal>
-	 <y0mve7ez2y3.fsf@ton.toronto.redhat.com> <20071204192537.GC31752@Krystal>
-	 <1196797259.6073.17.camel@localhost>  <20071204200558.GB1988@Krystal>
-Content-Type: text/plain
-Date: Tue, 04 Dec 2007 12:28:16 -0800
-Message-Id: <1196800096.6073.25.camel@localhost>
+	Tue, 4 Dec 2007 15:31:35 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:29809 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbXLDUbe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 15:31:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=U0JFnFT7n/6jNFcYZvO3K/+ozYWmLkiOMZDvUcyg5fx41R2Qsg1yObZFtcyJ12gaq+p0r/Vxf3QKFe9bF0E+25Z054rOEzOR0pcPiv3YWu+krH2HGL1agw7q1vFhP0rdBwsbbHvVuGO9H0B6OsyHXVCS1RKGLTaxA0WgOaGEay4=
+Date: Tue, 4 Dec 2007 21:31:32 +0100
+To: rjw@sisk.pl
+Cc: linux-main <linux-kernel@vger.kernel.org>
+Subject: Suspend order
+Message-Id: <20071204213132.d806a24f.Kristoffer.ericson@gmail.com>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Or, think out of the box...
+Hey rafael,
 
-Maybe you can introduce some interfaces that expose information both in
-sysfs (in normal human-readable formats) and in a way that lets you get
-the same data out in some binary format.  
+For obvious reasons it would be great to have serial output to be the last to enter suspend, thus giving every last drop of debugging
+before actually turning the machine "off".
 
-Seems to me you'll have a lot easier time justifying all of these lines
-of code spread all over the kernel if there are a few more users off the
-bat.  
+I'm not aware of any specific order currently, from what I've seen currently  every driver is asked to go into suspend at the same time. This of course providing driver x isn't dependant on driver y. You following?
 
--- Dave
+So, without digging to much into this, is there any specific order?
 
+Best wishes
+Kristoffer
