@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbXLDVHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbXLDVHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbXLDVHB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:07:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXLDVGe
+	id S1754676AbXLDVHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXLDVGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:06:34 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53412
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751081AbXLDVGb (ORCPT
+	Tue, 4 Dec 2007 16:06:35 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55453 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751495AbXLDVGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:06:31 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 01/23] Subject: SCHED - Add rt_nr_running accounting
-To: mingo@elte.hu
-Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:44:31 -0500
-Message-ID: <20071204204431.3567.28305.stgit@novell1.haskins.net>
-In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
-References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 4 Dec 2007 16:06:32 -0500
+Date: Tue, 4 Dec 2007 21:02:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+Subject: Re: solid state drive access and context switching
+Message-ID: <20071204210202.7f9c513c@the-village.bc.nu>
+In-Reply-To: <4755BE04.8030909@garzik.org>
+References: <47548BF4.3010907@nortel.com>
+	<20071203230629.725f4c7a@the-village.bc.nu>
+	<4755BE04.8030909@garzik.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Tue, 04 Dec 2007 15:52:20 -0500
+Jeff Garzik <jeff@garzik.org> wrote:
 
-This patch adds accounting to keep track of the number of RT tasks running
-on a runqueue. This information will be used in later patches.
+> Alan Cox wrote:
+> > For things like SATA based devices they aren't that fast yet. 
+> 
+> You forget the Gigabyte i-RAM.
+> 
+> For others:  the i-RAM is a SATA-based device that plugs into a PCI slot 
+> on your motherboard (for power), providing RAM+battery backup as fast as 
+> your SATA bus and DIMMs will go.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- kernel/sched.c    |    1 +
- kernel/sched_rt.c |   17 +++++++++++++++++
- 2 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b062856..4751c2f 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -266,6 +266,7 @@ struct rt_rq {
- 	struct rt_prio_array active;
- 	int rt_load_balance_idx;
- 	struct list_head *rt_load_balance_head, *rt_load_balance_curr;
-+	unsigned long rt_nr_running;
- };
- 
- /*
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index ee9c8b6..a6271f4 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -26,12 +26,27 @@ static void update_curr_rt(struct rq *rq)
- 	cpuacct_charge(curr, delta_exec);
- }
- 
-+static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
-+{
-+	WARN_ON(!rt_task(p));
-+	rq->rt.rt_nr_running++;
-+}
-+
-+static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
-+{
-+	WARN_ON(!rt_task(p));
-+	WARN_ON(!rq->rt.rt_nr_running);
-+	rq->rt.rt_nr_running--;
-+}
-+
- static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
- {
- 	struct rt_prio_array *array = &rq->rt.active;
- 
- 	list_add_tail(&p->run_list, array->queue + p->prio);
- 	__set_bit(p->prio, array->bitmap);
-+
-+	inc_rt_tasks(p, rq);
- }
- 
- /*
-@@ -46,6 +61,8 @@ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int sleep)
- 	list_del(&p->run_list);
- 	if (list_empty(array->queue + p->prio))
- 		__clear_bit(p->prio, array->bitmap);
-+
-+	dec_rt_tasks(p, rq);
- }
- 
- /*
-
+Actually even allowing for the iRAM the SATA stuff is way too slow to be
+worth using synchronously. The latency is a killer.
