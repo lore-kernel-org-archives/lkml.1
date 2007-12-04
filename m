@@ -1,118 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXLDPRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXLDPVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbXLDPRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 10:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXLDPRI
+	id S1754069AbXLDPVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 10:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXLDPVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 10:17:08 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:36058 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753863AbXLDPRG (ORCPT
+	Tue, 4 Dec 2007 10:21:24 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:28444 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbXLDPVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 10:17:06 -0500
-Date: Tue, 4 Dec 2007 10:17:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jarek Poplawski <jarkao2@gmail.com>
-cc: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Need lockdep help
-In-Reply-To: <4754907E.9060203@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0712041000540.4321-100000@iolanthe.rowland.org>
+	Tue, 4 Dec 2007 10:21:23 -0500
+Message-ID: <4755700A.5020105@fr.ibm.com>
+Date: Tue, 04 Dec 2007 16:19:38 +0100
+From: Daniel Lezcano <dlezcano@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+CC: Ben Greear <greearb@candelatech.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Mark Lord <lkml@rtr.ca>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: namespace support requires network modules to say "GPL"
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>	<47515D39.9030900@rtr.ca>	<20071201111736.297dd99a@freepuppy.rosehill>	<20071201163035.321fd554@freepuppy.rosehill>	<475227B1.2060802@rtr.ca>	<20071201202354.672aed18@freepuppy.rosehill>	<47530778.7030605@candelatech.com>	<47530FAC.1070804@trash.net>	<m1fxyj1y1y.fsf@ebiederm.dsl.xmission.com> <47544896.7070101@candelatech.com> <475451B1.1030006@free.fr>
+In-Reply-To: <475451B1.1030006@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007, Jarek Poplawski wrote:
-
-> Alan Stern wrote, On 12/03/2007 04:08 PM:
+Daniel Lezcano wrote:
+> Ben Greear wrote:
+>> Eric W. Biederman wrote:
+>>> Patrick McHardy <kaber@trash.net> writes:
+>>>
+>>>  
+>>>> Ben Greear wrote:
+>>>>   
+>>>>> I have a binary module that uses dev_get_by_name...it's sort of a 
+>>>>> bridge-like
+>>>>> thing and
+>>>>> needs user-space to tell it which device to listen for packets on...
+>>>>>
+>>>>> This code doesn't need or care about name-spaces, so I don't see 
+>>>>> how it could
+>>>>> really
+>>>>> be infringing on the author's code (any worse than loading a binary 
+>>>>> driver
+>>>>> into the kernel
+>>>>> ever does).
+>>>>>       
+>>>
+>>> Regardless of infringement it is incompatible with a complete network
+>>> namespace implementation.  Further it sounds like the module you are
+>>> describing defines a kernel ABI without being merged and hopes that
+>>> ABI will still be supportable in the future.  Honestly I think doing so
+>>> is horrible code maintenance policy.
+>>>   
+>> I don't mind if the ABI changes, so long as I can still use something 
+>> similar.
+>>
+>> The namespace logic is interesting to me in general, but at this point 
+>> I can't think of a way that
+>> it actually helps this particular module.  All I really need is a way 
+>> to grab every frame
+>> from eth0 and then transmit it to eth1.  I'm currently doing this by 
+>> finding the netdevice
+>> and registering a raw-packet protocol (ie, like tcpdump would do).  At 
+>> least up to 2.6.23,
+>> this does not require any hacks to the kernel and uses only non GPL 
+>> exported symbols.
+>>
+>> Based on my understanding of the namespace logic, if I never add any 
+>> namespaces,
+>> the general network layout should look similar to how it does today, 
+>> so I should have
+>> no logical problem with my module.
+>>
+>>> Once things are largely complete it makes sense to argue with out of
+>>> tree module authors that because they don't have network namespace
+>>> support in their modules, their modules are broken.     
+>> Does this imply that every module that accesses the network code 
+>> *must* become
+>> GPL simply because it must interact with namespace logic that is 
+>> exported as GPL only symbols?
 > 
-> > On Mon, 3 Dec 2007, Jarek Poplawski wrote:
-> > 
-
-> >> Actually, IMHO, there is no reason for any lockdep violation:
-> >>
-> >> thread #1: has down_read(A); waits for #2 to down_write(B)
-> >> thread #2: has down_write(B); never waits for #1 to down_read(A)
-> >>
-> >> So, deadlock isn't possible here. If lockdep reports something else it
-> >> should be fixed (and you'd be right to omit lockdep until this is
-> >> done).
-> > 
-> > I think the reasoning goes the way Arjan described.  Suppose in between
-> > #1 and #2 there is thread #3 trying to do down_write(A) and waiting for
-> > #1.  Then thread #2 doesn't have to wait for #1 directly, but it would
-> > have to wait for #3.
+> That's right, with init_net's EXPORT_SYMBOL_GPL and dev_get_xx, we 
+> enforce people to be GPL whatever they didn't asked to have the 
+> namespaces in their code.
 > 
-> 
-> As a matter of fact I completely missed Arjan's point because I thought
-> you described these locks according to lockdep's report, and there is
-> an information about read or write... Since, you still seem to guess
-> above about possible scenario, maybe it would be easier to show this
-> report (and maybe a piece of this code if possible)?
+> Eric, why can we simply change EXPORT_SYMBOL_GPL to EXPORT_SYMBOL for 
+> init_net ?
 
-I have changed my new code, so now the problem is avoided.
+Another suggestion/question, is it acceptable to say non-gpl driver 
+should use init_task.nsproxy->net_ns instead of &init_net ?
 
-> Btw., if it were like you're suggesting, it still shouldn't make any
-> difference: if thread #3 is only waiting for the lock taken for reading,
-> then I can't see why thread #2 has to wait for anything.
-
-The deadlock occurs because:
-
-	Thread #1 has locked A for reading and is waiting for
-	#2 to release B so that #1 can lock B for writing.
-
-	Thread #3 is waiting for #1 to release A so that #3
-	can lock A for writing.
-
-	Thread #2 has locked B for writing and is waiting for
-	#3 to finish using A so that #2 can lock A for reading.
-
-So #1 is waiting for #2, #2 is waiting for #3, and #3 is waiting for 
-#1.  Lockdep warns because this might happen.
-
-Perhaps the point you're missing is that if #3 does down_write(A)  
-before #2 does down_read(A) then #2 has to wait until #3 releases the
-write lock.  #2 isn't allowed to sneak in front of #3; that's what
-Arjan meant when he said that rwsems are fair.
-
-The same sort of problem occurs when a thread does nested read locks on
-a single rwsem.  If a different thread were to try to acquire a write
-lock in between, another deadlock would occur.  That's why lockdep
-warns about nested (or recursive) read locks.
-
-> Probably more
-> dangerous, at least for lockdep, could look taking down_write(A) by
-> thread #1 in between, but if it all were possible only within one
-> thread, then still there should be no reason to change good program
-> only to please lockdep.
-
-I believe the idea behind lockdep is to warn about situations that
-might reasonably be expected to occur.  A thread deadlocking itself by
-doing down_read(A) followed immediately by down_write(A) isn't
-reasonable, so lockdep doesn't worry about that possibility.
-
-> > In my case the simplest answer appears to be the replace the rwsem
-> > with something slightly more complicated (a mutex plus a boolean flag 
-> > -- the loss of concurrency won't matter much since it isn't on a hot 
-> > path).
-> 
-> I'm not sure I can understand your plan, but I doubt there should be
-> such problems with taking rwsem for sleeping, so maybe it would be
-> better to figure out what really scares lockdep, to fix the right place?
-
-The real problem is that lockdep has to make some generalizations.  It
-can't be aware of the details of every possible situation, and it
-doesn't have a global view of the entire kernel, so it doesn't know
-when special circumstances make deadlock impossible.
-
-Furthermore, in this case deadlock isn't really impossible -- it could 
-occur if there were a bug somewhere else in the kernel.  So lockdep was 
-correct to warn that deadlock might occur.
-
-Alan Stern
+Or does it make sense to have init_net gpl-exported, since we can access 
+it through init_task which is exported without gpl mention ?
 
