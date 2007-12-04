@@ -1,121 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbXLDOHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbXLDOKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbXLDOHk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 09:07:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXLDOHc
+	id S1754425AbXLDOKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 09:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXLDOKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 09:07:32 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:44787 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752908AbXLDOHb (ORCPT
+	Tue, 4 Dec 2007 09:10:25 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:37046 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752712AbXLDOKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 09:07:31 -0500
-Date: Tue, 4 Dec 2007 12:07:15 -0200
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       herton@mandriva.com.br, dvgevers@xs4all.nl
-Subject: [local DoS] Re: Linux 2.6.24-rc4
-Message-ID: <20071204120715.4ea204a8@mandriva.com.br>
-In-Reply-To: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org>
-References: <alpine.LFD.0.9999.0712032055080.2981@woody.linux-foundation.org>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Dec 2007 09:10:24 -0500
+Message-ID: <47555F98.8030504@panasas.com>
+Date: Tue, 04 Dec 2007 16:09:28 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jens Axboe <axboe@kernel.dk>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 00/28] blk_end_request: full I/O completion handler	(take
+ 3)
+References: <20071130.182351.115904044.k-ueda@ct.jp.nec.com> <20071204121623.GQ23294@kernel.dk>
+In-Reply-To: <20071204121623.GQ23294@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 3 Dec 2007 21:08:12 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> escreveu:
+On Tue, Dec 04 2007 at 14:16 +0200, Jens Axboe <axboe@kernel.dk> wrote:
+> On Fri, Nov 30 2007, Kiyoshi Ueda wrote:
+>> Hello Jens,
+>>
+>> The following is the updated patch-set for blk_end_request().
+>> Changes since the last version are only minor updates to catch up
+>> with the base kernel changes.
+>> Do you agree the implementation of blk_end_request()?
+>> If there's no problem, could you merge it to your tree?
+>> Or does it have to be merged to -mm tree first?
+>>
+>>
+>> Boaz,
+>> Could you review the newly added PATCH 27 which converts the bidi part,
+>> and give me your comments?
+>> It uses blk_end_request_callback() in PATCH 25, which was only for
+>> the tricky ide-cd driver.
+>> If bidi added a 'resid' member to struct request instead of reusing
+>> 'data_len' for the other purpose, it could use the standard
+>> blk_end_request() instead.
+>>
+>> ------------------ Changes from the previous post ---------------------
+>> Changes between take2 and take3:
+>>   o Rebased on top of 2.6.24-rc3-mm2
+> 
+> OK, so this means that I can't apply it unfortunately. It depends on
+> other patches in -mm (bidi).
+> 
+> SCSI sits on block, so the best approach imho is to base this patchset
+> on mainline so I can include the block bits.
+> 
+> 
 
-| That said, none of the changes are really _exciting_ or really scary. And 
-| we should have fixed a number of regressions, although more certainly 
-| remain.
+I was wishing that the bidi work can go into 2.6.25, I guess that's 
+James to say. If so than it is not important what order they go in.
 
- A Mandriva user reported this bug last week. Run the following program
-as a normal user.
+Or the patchset can be submitted in two parts, with scsi and remove-of-
+old-API in a later stage. 
 
-"""
-#include <stdio.h>
-#include <sched.h>
+Or *rant* Boaz can just rebase his work again *rant*.
 
-int main(void)
-{
-	sched_rr_get_interval(1, NULL);
-	return 0;
-}
-"""
+Kiyoshi, It's OK, if you have a maintainer that is willing to
+accept your work then go head, My code can wait, no problem.
+Just resolve the resid issue in scsi_io_completion()
+(See my other mail)
 
- You should get the following OOPS and the machine will hang.
-
-"""
-divide error: 0000 [#1] SMP 
-Modules linked in: af_packet snd_seq_dummy snd_seq_oss snd_seq_midi_event ipv6 snd_seq snd_pcm_oss snd_mie
-
-Pid: 4202, comm: unhide Not tainted (2.6.24-desktop-0.rc3.2mdv #1)
-EIP: 0060:[<c01276cb>] EFLAGS: 00010046 CPU: 0
-EIP is at sched_slice+0x3b/0x60
-EAX: 00000004 EBX: c4b40000 ECX: 00000004 EDX: 00000000
-ESI: 00000000 EDI: 00000000 EBP: d7d2bf84 ESP: d7d2bf78
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process unhide (pid: 4202, ti=d7d2a000 task=d7d29580 task.ti=d7d2a000)
-Stack: c140a0a0 df98a000 00000000 d7d2bfb0 c012cc1e d7d2bfb8 d7c019f4 00000064 
-       0804a898 00000000 00000286 00000001 b7f3acc0 00000000 d7d2a000 c010830e 
-       00000001 bffdc2b8 b7f0cff4 b7f3acc0 00000000 bffdc2c8 000000a1 0000007b 
-Call Trace:
- [<c01094ca>] show_trace_log_lvl+0x1a/0x30
- [<c010958b>] show_stack_log_lvl+0xab/0xd0
- [<c010966d>] show_registers+0xbd/0x1c0
- [<c0109894>] die+0x124/0x250
- [<c0109a51>] do_trap+0x91/0xc0
- [<c0109f55>] do_divide_error+0x85/0x90
- [<c033bc6a>] error_code+0x72/0x78
- [<c012cc1e>] sys_sched_rr_get_interval+0x7e/0xf0
- [<c010830e>] sysenter_past_esp+0x6b/0xa1
- =======================
-Code: d6 89 7c 24 08 8b 40 08 e8 b3 fe ff ff 8b 0e 8b 3b 89 d6 0f af f1 f7 e1 8d 1c 16 89 da 89 d1 31 d2  
-EIP: [<c01276cb>] sched_slice+0x3b/0x60 SS:ESP 0068:d7d2bf78
-"""
-
- That OOPS is from a -rc3-git1 Mandriva kernel, but the same thing
-happens with you're latest tree.
-
- I've reported it to vendor-sec but looks like it's only
-present in 2.6.24-rcs and Ingo's CFS backports.
-
- As Ingo's usually very responsive and he didn't answer me so
-far I'm starting to think you can't reproduce this problem?
-
- Anyway, the problem seems to be in sched_slice() called by
-sys_sched_rr_get_interval():
-
-time_slice = NS_TO_JIFFIES(sched_slice(cfs_rq_of(se), se));
-
- sched_slice() will use 'cfs_rq->load.weight' as the base for a
-division, which is zero for process 1.
-
- The following hack fixes the problem for me.
-
------
-
-Index: linux-2.6.23/kernel/sched_fair.c
-===================================================================
---- linux-2.6.23.orig/kernel/sched_fair.c
-+++ linux-2.6.23/kernel/sched_fair.c
-@@ -266,7 +266,8 @@ static u64 sched_slice(struct cfs_rq *cf
- 	u64 slice = __sched_period(cfs_rq->nr_running);
- 
- 	slice *= se->load.weight;
--	do_div(slice, cfs_rq->load.weight);
-+	if (likely(cfs_rq->load.weight))
-+		do_div(slice, cfs_rq->load.weight);
- 
- 	return slice;
- }
-
-
--- 
-Luiz Fernando N. Capitulino
+Thanks for doing this
+Boaz
