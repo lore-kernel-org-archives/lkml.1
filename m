@@ -1,61 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbXLDHzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbXLDIAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbXLDHzj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 02:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXLDHzb
+	id S1751973AbXLDIAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbXLDIAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 02:55:31 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59122
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751288AbXLDHza (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 02:55:30 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch] rewrite rd
-Date: Tue, 4 Dec 2007 01:55:17 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <axboe@kernel.dk>
-References: <20071204042628.GA26636@wotan.suse.de>
-In-Reply-To: <20071204042628.GA26636@wotan.suse.de>
+	Tue, 4 Dec 2007 03:00:08 -0500
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:53990 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751978AbXLDIAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:00:07 -0500
+Message-ID: <47550943.7010909@sw.ru>
+Date: Tue, 04 Dec 2007 11:01:07 +0300
+From: "Denis V. Lunev" <den@sw.ru>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Denis V. Lunev" <den@openvz.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, dev@openvz.org
+Subject: Re: [PATCH] AB-BA deadlock in drop_caches sysctl (resend, the one
+ sent was for 2.6.18)
+References: <20071203135247.GA29579@iris.sw.ru> <20071203110143.a18ab4d0.akpm@linux-foundation.org>
+In-Reply-To: <20071203110143.a18ab4d0.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712040155.21124.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 December 2007 22:26:28 Nick Piggin wrote:
-> There is one slight downside -- direct block device access and filesystem
-> metadata access goes through an extra copy and gets stored in RAM twice.
-> However, this downside is only slight, because the real buffercache of the
-> device is now reclaimable (because we're not playing crazy games with it),
-> so under memory intensive situations, footprint should effectively be the
-> same -- maybe even a slight advantage to the new driver because it can also
-> reclaim buffer heads.
+Andrew Morton wrote:
+> On Mon, 3 Dec 2007 16:52:47 +0300
+> "Denis V. Lunev" <den@openvz.org> wrote:
+> 
+>> There is a AB-BA deadlock regarding drop_caches sysctl. Here are the code
+>> paths:
+>>
+>> drop_pagecache
+>>   spin_lock(&inode_lock);
+>>   invalidate_mapping_pages
+>>     try_to_release_page
+>>       ext3_releasepage
+>>         journal_try_to_free_buffers
+>>           __journal_try_to_free_buffer
+>> 	    spin_lock(&journal->j_list_lock);
+>>
+>> __journal_temp_unlink_buffer (called under journal->j_list_lock by comments)
+>>   mark_buffer_dirty
+>>     __set_page_dirty
+>>       __mark_inode_dirty
+>>         spin_lock(&inode_lock);
+>>
+>> The patch tries to address the issue - it drops inode_lock before digging into
+>> invalidate_inode_pages. This seems sane as inode hold should not gone from the
+>> list and should not change its place.
+>>
+>> Signed-off-by: Denis V. Lunev <den@openvz.org>
+>> --
+>> diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+>> index 59375ef..4ac80d8 100644
+>> --- a/fs/drop_caches.c
+>> +++ b/fs/drop_caches.c
+>> @@ -14,15 +14,27 @@ int sysctl_drop_caches;
+>>  
+>>  static void drop_pagecache_sb(struct super_block *sb)
+>>  {
+>> -	struct inode *inode;
+>> +	struct inode *inode, *old;
+>>  
+>> +	old = NULL;
+>>  	spin_lock(&inode_lock);
+>>  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>>  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+>>  			continue;
+>> -		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
+>> +		__iget(inode);
+>> +		spin_unlock(&inode_lock);
+>> +
+>> +		if (old != NULL)
+>> +			iput(old);
+>> +		invalidate_mapping_pages(inode->i_mapping, 0, -1);
+>> +		old = inode;
+>> +
+>> +		spin_lock(&inode_lock);
+>>  	}
+>>  	spin_unlock(&inode_lock);
+>> +
+>> +	if (old != NULL)
+>> +		iput(old);
+>>  }
+> 
+> We need to hold onto inode_lock while walking sb->s_inodes.  Otherwise the
+> inode which we're currently looking at could get removed from i_sb_list and
+> bad things will happen (drop_pagecache_sb will go infinite, or will oops, I
+> guess).
 
-For the embedded world, initramfs has pretty much rendered initrd obsolete, 
-and that was the biggest user of the ramdisk code I know of.  Beyond that, 
-loopback mounts give you more flexible transient block devices than ramdisks 
-do.  (In fact, ramdisks are such an amazing pain to use/size/free that if I 
-really needed something like that I'd just make a loopback mount in a ramfs 
-instance.)
+as far as I understand, there are the following place removing inode
+from i_sb_list:
+- generic_delete_inode (via iput_final)
+- generic_forget_inode (via iput_final)
+- hugetlbfs_forget_inode
+- dispose_list after the check under inode_lock for i_count
 
-Embedded users who still want a block interface for memory are generally 
-trying to use a cramfs or squashfs image out of ROM or flash, although there 
-are flash-specific filesystems for this and I dunno if they're actually 
-mounting /dev/mem at an offset or something (md?  losetup -o?  Beats me, I 
-haven't tried that myself yet...)
+So, the patch is sane from disappearing point of view:
+- I hold inode under inode_lock
+- and iput it after new inode to clean has been found and hold
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Nevertheless we'll think a bit about ext3 fix. Though other staff like
+gfs2 etc can also be affected.
+
+Regards,
+	Den
