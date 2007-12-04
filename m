@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbXLDJqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbXLDJtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbXLDJqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 04:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXLDJpw
+	id S1752704AbXLDJtd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 04:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXLDJtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 04:45:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57502 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751973AbXLDJpw (ORCPT
+	Tue, 4 Dec 2007 04:49:23 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:53867 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751063AbXLDJtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 04:45:52 -0500
-Date: Tue, 4 Dec 2007 01:45:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH 1/7][QUOTA] Move sysctl management code under ifdef
- CONFIG_SYSCTL
-Message-Id: <20071204014549.8fe47f7f.akpm@linux-foundation.org>
-In-Reply-To: <47551E79.6080802@openvz.org>
-References: <475008F5.3000506@openvz.org>
-	<475009FA.20409@openvz.org>
-	<20071203133844.40804dab.akpm@linux-foundation.org>
-	<475516B6.5000504@openvz.org>
-	<20071204012301.4349bbd0.akpm@linux-foundation.org>
-	<47551E79.6080802@openvz.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Dec 2007 04:49:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:x-mimeole;
+        b=qyni0v/LhdL9Y5iSPqtLB6+HWgvtQn9SJiIFfXkATPZ5y/YEHWH1JIFmPHQZfMcnua5MSymJIOAUssOnsxEiepGpE0bfTJbrb45/q8xsIz4k5SV6ohZ0TH8daXM8BtMeWX94HT3fP/ED8/IebghxdfNybvA2Gyzma0h2qfzFgig=
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: <netdev@vger.kernel.org>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: NET: ASSERT_RTNL in __dev_set_promiscuity makes debug warning
+Date: Tue, 4 Dec 2007 18:48:24 +0900
+Message-ID: <000001c8365a$e0e500c0$9c94fea9@jason>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: Acg2WqnJqlBt2MhzT0m6+kks5K+lxg==
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Dec 2007 12:31:37 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
+Hi,
+dev_set_rx_mode calls __dev_set_rx_mode with softirq disabled (by netif_tx_lock_bh)
+therefore __dev_set_promiscuity can be called with softirq disabled.
+It will cause in_interrupt() to return true and ASSERT_RTNL warning.
+Is there a good solution to fix it besides blowing ASSERT_RTNL up?
 
-> Andrew Morton wrote:
-> > On Tue, 04 Dec 2007 11:58:30 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
-> > 
-> >>>> +#ifdef CONFIG_SYSCTL
-> >>>>  	register_sysctl_table(sys_table);
-> >>>> +#endif
-> >>>>  
-> >>>>  	dquot_cachep = kmem_cache_create("dquot",
-> >>>>  			sizeof(struct dquot), sizeof(unsigned long) * 4,
-> >>> We should avoid the ifdefs around the register_sysctl_table() call.
-> >>>
-> >>> At present the !CONFIG_SYSCTL implementation of register_sysctl_table() is
-> >>> a non-inlined NULL-returning stub.  All we have to do is to inline that stub
-> >>> then these ifdefs can go away.
-> >> What if some code checks for the return value to be not-NULL? In case
-> >> CONFIG_SYSCTL=n this code will always think, that the registration failed.
-> > 
-> > The stub function should return success?
-> 
-> Well, I think yes. If some functionality is turned off, then the 
-> caller should think that everything is going fine (or he should
-> explicitly removes the call to it with some other ifdef). 
-> 
-> At least this is true for stubs that return the error code, not 
-> the pointer. E.g. copy_semundo() always returns success if SYSVIPC 
-> is off, or namespaces cloning routines act in a similar way.
-> 
-> Thus I though, that routines, that return pointers should better
-> report that everything is OK (somehow) to reduce the number of 
-> "helpers" in the outer code. No?
-> 
+Thanks.
+Joonwoo
 
-Dunno.  Returning NULL should be OK.  If anyone is dereferenceing that
-pointer with CONFIG_SYSCTL=n then they might need some attention?  
+---
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 86d6261..6f8e72f 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2747,8 +2747,6 @@ static void __dev_set_promiscuity(struct net_device *dev, int inc)
+ {
+ 	unsigned short old_flags = dev->flags;
+ 
+-	ASSERT_RTNL();
+-
+ 	if ((dev->promiscuity += inc) == 0)
+ 		dev->flags &= ~IFF_PROMISC;
+ 	else
+---
+
+message from e1000 (netdev->set_rx_mode is NULL) + vlan device mac address chage.
+
+WARNING: at kernel/mutex.c:324 __mutex_trylock_slowpath()
+Pid: 4523, comm: ifconfig Not tainted 2.6.24-rc3 #179
+ [<c400544a>] show_trace_log_lvl+0x1a/0x30
+ [<c4005fa2>] show_trace+0x12/0x20
+ [<c400679e>] dump_stack+0x6e/0x80
+ [<c43b084d>] mutex_trylock+0xcd/0x130
+ [<c42dccfd>] rtnl_trylock+0xd/0x10
+ [<c42d1f49>] __dev_set_promiscuity+0x19/0x130
+ [<c42d20b4>] __dev_set_rx_mode+0x54/0x90
+ [<c42d2151>] dev_unicast_add+0x61/0xb0
+ [<c438c764>] vlan_set_mac_address+0x104/0x150
+ [<c42d2ee1>] dev_set_mac_address+0x51/0x70
+ [<c42d3dca>] dev_ifsioc+0x11a/0x270
+ [<c42d4131>] dev_ioctl+0x211/0x510
+ [<c42c699a>] sock_ioctl+0xea/0x220
+ [<c408a468>] do_ioctl+0x28/0x80
+ [<c408a517>] vfs_ioctl+0x57/0x280
+ [<c408a779>] sys_ioctl+0x39/0x60
+ [<c40043ee>] sysenter_past_esp+0x5f/0x85
+ =======================
+
