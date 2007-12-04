@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbXLDVO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbXLDVOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbXLDVO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbXLDVIJ
+	id S1756756AbXLDVOm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbXLDVIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:08:09 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53506
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754928AbXLDVIH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:08:07 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 20/23] Subject: SCHED - balance RT tasks no new wake up
-To: mingo@elte.hu
-Cc: rostedt@goodmis.org, ghaskins@novell.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Tue, 04 Dec 2007 15:46:07 -0500
-Message-ID: <20071204204606.3567.49460.stgit@novell1.haskins.net>
-In-Reply-To: <20071204204236.3567.65491.stgit@novell1.haskins.net>
-References: <20071204204236.3567.65491.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
+	Tue, 4 Dec 2007 16:08:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32825 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755373AbXLDVII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 16:08:08 -0500
+Date: Tue, 4 Dec 2007 22:07:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86_64: define all _PAGE_* in terms of _PAGE_BIT_*
+Message-ID: <20071204210751.GH32018@elte.hu>
+References: <11966016811565-git-send-email-joerg.roedel@amd.com> <11966016814058-git-send-email-joerg.roedel@amd.com> <20071204123809.GD27286@elte.hu> <20071204150652.GJ6945@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071204150652.GJ6945@amd.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
 
-Run the RT balancing code on wake up to an RT task.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+> On Tue, Dec 04, 2007 at 01:38:09PM +0100, Ingo Molnar wrote:
+> > 
+> > * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > 
+> > > +#define _PAGE_PRESENT	(_AC(1,UL)<<_PAGE_BIT_PRESENT)
+> > 
+> > please run patches through scripts/checkpatch.pl, it gives:
+> > 
+> >   total: 10 errors, 0 warnings, 42 lines checked
+> > 
+> > (please send a followup cleanup patch - i picked up your series and this 
+> > is a minor cleanliness issue)
+> 
+> Sorry, forgot to check the patches before submission. Will cleanup and 
+> resubmit soon.
 
- kernel/sched.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+please if possible send a delta against x86.git, not a replacement 
+patch. It's easier for the patchflow.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ed031bd..ba9eadb 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1656,6 +1656,7 @@ void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- 		inc_nr_running(p, rq);
- 	}
- 	check_preempt_curr(rq, p);
-+	wakeup_balance_rt(rq, p);
- 	task_rq_unlock(rq, &flags);
- }
- 
-
+	Ingo
