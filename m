@@ -1,158 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbXLDNDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbXLDNDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbXLDNDZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 08:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbXLDNDI
+	id S1754614AbXLDNDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 08:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbXLDND3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 08:03:08 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50649 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbXLDNDF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 08:03:05 -0500
-Message-ID: <47554EBD.1090106@jp.fujitsu.com>
-Date: Tue, 04 Dec 2007 21:57:33 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       pcihpd-discuss@lists.sourceforge.net, Gary Hade <garyhade@us.ibm.com>,
-       Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de,
-       kristen.c.accardi@intel.com, lenb@kernel.org, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/4, v3] Physical PCI slot objects
-References: <20071117182954.GA25003@ldl.fc.hp.com> <20071119233225.GA6931@us.ibm.com> <20071126222253.GA31708@ldl.fc.hp.com> <474E6E82.40307@jp.fujitsu.com> <20071130015105.GH24707@ldl.fc.hp.com> <4753786F.1040703@jp.fujitsu.com> <20071203224331.GA29227@ldl.fc.hp.com>
-In-Reply-To: <20071203224331.GA29227@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Dec 2007 08:03:29 -0500
+Received: from mx1.suse.de ([195.135.220.2]:41164 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754521AbXLDND2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 08:03:28 -0500
+Date: Tue, 4 Dec 2007 14:03:26 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, rob@landley.net,
+       Jens Axboe <axboe@kernel.dk>
+Subject: [patch] rd: support XIP (updated)
+Message-ID: <20071204130326.GA19041@wotan.suse.de>
+References: <20071204042628.GA26636@wotan.suse.de> <200712041054.51599.borntraeger@de.ibm.com> <20071204101009.GB9618@wotan.suse.de> <20071204112100.GA20420@wotan.suse.de> <e9e943910712040406g17ae4293u72ddb63b55549e63@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9e943910712040406g17ae4293u72ddb63b55549e63@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex-san,
+On Tue, Dec 04, 2007 at 12:06:23PM +0000, Duane Griffin wrote:
+> On 04/12/2007, Nick Piggin <npiggin@suse.de> wrote:
+> > +       gfp_flags = GFP_NOIO | __GFP_ZERO;
+> > +#ifndef CONFIG_BLK_DEV_XIP
+> > +       gfp_flags |= __GFP_HIGHMEM;
+> > +#endif
+> >         page = alloc_page(GFP_NOIO | __GFP_HIGHMEM | __GFP_ZERO);
+> 
+> I think that should be alloc_page(gfp_flags), no?
 
-> Hi Kenji-san,
-> 
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> Hi Alex-san,
->>
->>>> On my system, hotplug slots themselves can be added, removed
->>>> and replaced with the ohter type of I/O box. 
-> 
-> Are you talking about some sort of I/O cabinet/chassis that you
-> can attach to the actual computer? Can the I/O expander unit be
-> hotplugged? Or do you need to power your machine down to attach
-> it?
-> 
-> If you can hotplug it, I'm guessing that is why your firmware
-> presents SxFy objects in the namespace with "weird" _SUN values,
-> and it's why you have to check _STA to see if the slots are valid
-> or not. That means the value returned by _SUN will change too,
-> right? What will it turn into?
->
+Yes. Here is a resend. Andrew, please apply this one (has passed some
+testing with ext2 XIP).
 
-Currently, it's not hotpluggable (will be hotpluggable in the future).
-Here is a sample AML code to explain what my firmware is doing.
+--
 
-Device (PCI0) {
-	Device (P2PA) {
-		Device (P2PB) {	// for I/O unit (A)
-			Name (_ADR, ...)
-			Method (_STA) { ... }
-		}
-		Device (S0F0) {	// for I/O unit (B)
-			Name (_ADR, ...)
-			Method (_STA) { ... }
-			Method (_EJx) { ... }
-			Method (_SUN) { ... }
-		}
-		...
-	}
-	...
-}
+Support direct_access XIP method with brd.
 
-If the I/O unit (A) is connected, _STA of P2PB returns as present
-and _STA of S0F0 returns as not present.
-If the I/O unit (B) is connected, _STA of P2PB returns as not
-present and _STA of S0F0 returns as present.
-
->> In addtion, I think we should not trust the _SUN value of
->> non-existing device because the ACPI spec says in "6.5.1 _INI
->> (Init)" that _INI method is run before _ADR, _CID, _HID, _SUN, and
->> _UID are run. It means _SUN could be initialized in _INI method
->> implecitely. And it also says that "If the _STA method indicates
->> that the device is not present, OSPM will not run the _INI and will
->> not examine the children of the device for _INI methods.". After all,
->> _SUN for non-existing device is not reliable because it might not
->> initialized by _INI method.
-> 
-> This is true, but HP platforms provide _INI at the root
-> device/host bridge level, not on SxFy objects, so it doesn't seem
-> that we would need to call _STA before calling _SUN for SxFy.
-> 
-> Does your firmware provide _INI on SxFy objects?
-
-No, it doesn't. But what I wanted to say was we should not use _SUN
-value of non-existing device object.
-
-> 
-> Our firmware teams seem to think that _STA should give the status
-> of the card for hotplug support and general functional state.
-> They claim that it doesn't makes much sense to support _STA on
-> the slot itself unless you can physically change the slot
-> topology on the machine at runtime, which we can't do (although
-> maybe you can).
-> 
-> The section of the spec you quoted is correct as long as we are
-> talking ACPI 2.0 or later. My platforms implement ACPI 1.0b for
-> legacy reasons. :-/
-> 
-> In ACPI 1.0b, _EJx definition says (section 6.3.2):
-> 
-> 	For hot removal, the device must be immediately ejected
-> 	when the OS calls the _EJ0 control method. The _EJ0
-> 	control method does not return until ejection is
-> 	complete. After calling _EJ0, the OS will call _STA to
-> 	determine whether or not the eject succeeded.
-> 
-> So your firmware implementation does not seem backward compatible
-> with the 1.0b spec. The different versions of ACPI is part of the
-> reason why my patch is breaking on your machine.
-> 
-
-I think this is the real reason. My platform implements ACPI 2.0 or
-later. I didn't notice the chage to_EJx definition. Maybe we need to
-check ACPI version in pci_slot driver.
-
-> But as long as we are quoting the spec...  :)
-> 
-> 	_SUN evaluates to a DWORD that is the number to be used
-> 	in the user interface. This number is required to be
-> 	unique among the slots of the same type. It is also
-> 	recommended that this number match the slot number
-> 	printed on the physical slot whenever possible.
-> 
-> 	section 6.1.6 of ACPI 2.0c
-> 
-> My question is, why is your firmware returning multiple values of
-> 1023 then? This seems to be the real reason why my patch is
-> breaking on your machine.
-> 
-> While depending on ACPI 1.0b behavior might be somewhat risky,
-> returning the same value for _SUN multiple times, for slots of
-> the same type, definitely seems non-compliant.
-> 
-
-The reason is very simple. The reason is your patch is evaluating
-invalid _SUN method. We must skip non-existing device object. This
-is what your patch is already doing for pci root bridges.
-In addition, even if those _SUN method were changed to return unique
-number, none of the problems would be solved. Maybe pci_slot driver
-would detect many unknown slots.
-
-Thanks,
-Kenji Kaneshige
-
-
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/drivers/block/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/block/Kconfig
++++ linux-2.6/drivers/block/Kconfig
+@@ -346,6 +346,16 @@ config BLK_DEV_RAM_SIZE
+ 	  The default value is 4096 kilobytes. Only change this if you know
+ 	  what you are doing.
+ 
++config BLK_DEV_XIP
++	bool "Support XIP filesystems on RAM block device"
++	depends on BLK_DEV_RAM
++	default n
++	help
++	  Support XIP filesystems (such as ext2 with XIP support on) on
++	  top of block ram device. This will slightly enlarge the kernel, and
++	  will prevent RAM block device backing store memory from being
++	  allocated from highmem (only a problem for highmem systems).
++
+ config CDROM_PKTCDVD
+ 	tristate "Packet writing on CD/DVD media"
+ 	depends on !UML
+Index: linux-2.6/drivers/block/brd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/brd.c
++++ linux-2.6/drivers/block/brd.c
+@@ -89,6 +89,7 @@ static struct page *brd_insert_page(stru
+ {
+ 	pgoff_t idx;
+ 	struct page *page;
++	gfp_t gfp_flags;
+ 
+ 	page = brd_lookup_page(brd, sector);
+ 	if (page)
+@@ -97,8 +98,17 @@ static struct page *brd_insert_page(stru
+ 	/*
+ 	 * Must use NOIO because we don't want to recurse back into the
+ 	 * block or filesystem layers from page reclaim.
++	 *
++	 * Cannot support XIP and highmem, because our ->direct_access
++	 * routine for XIP must return memory that is always addressable.
++	 * If XIP was reworked to use pfns and kmap throughout, this
++	 * restriction might be able to be lifted.
+ 	 */
+-	page = alloc_page(GFP_NOIO | __GFP_HIGHMEM | __GFP_ZERO);
++	gfp_flags = GFP_NOIO | __GFP_ZERO;
++#ifndef CONFIG_BLK_DEV_XIP
++	gfp_flags |= __GFP_HIGHMEM;
++#endif
++	page = alloc_page(gfp_flags);
+ 	if (!page)
+ 		return NULL;
+ 
+@@ -307,6 +317,28 @@ out:
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_BLK_DEV_XIP
++static int brd_direct_access (struct block_device *bdev, sector_t sector,
++			unsigned long *data)
++{
++	struct brd_device *brd = bdev->bd_disk->private_data;
++	struct page *page;
++
++	if (!brd)
++		return -ENODEV;
++	if (sector & (PAGE_SECTORS-1))
++		return -EINVAL;
++	if (sector + PAGE_SECTORS > get_capacity(bdev->bd_disk))
++		return -ERANGE;
++	page = brd_insert_page(brd, sector);
++	if (!page)
++		return -ENOMEM;
++	*data = (unsigned long)page_address(page);
++
++	return 0;
++}
++#endif
++
+ static int brd_ioctl(struct inode *inode, struct file *file,
+ 			unsigned int cmd, unsigned long arg)
+ {
+@@ -342,8 +374,11 @@ static int brd_ioctl(struct inode *inode
+ }
+ 
+ static struct block_device_operations brd_fops = {
+-	.owner =	THIS_MODULE,
+-	.ioctl =	brd_ioctl,
++	.owner =		THIS_MODULE,
++	.ioctl =		brd_ioctl,
++#ifdef CONFIG_BLK_DEV_XIP
++	.direct_access =	brd_direct_access,
++#endif
+ };
+ 
+ /*
