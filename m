@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbXLDI0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbXLDI12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbXLDI0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 03:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXLDI0K
+	id S1753210AbXLDI12 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 03:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXLDI1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 03:26:10 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:1168 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbXLDI0J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 03:26:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=WYHQSLrRY3erZkk8UIqNOr8dqqsP+EjFr9iF1WFqEZXMmuBBGwGVMgWKcnInaqfjgyMTrK2dnnlt3ywhfg/zVgnVirne43o+vHtUpxmHtZ9P9NquaRBGPqxubh/Uq6MIYvhd3eTDoFsNPgd1nImsvPsOUMnJkxTZ0I5ZsVIYKdE=
-Date: Tue, 4 Dec 2007 16:26:41 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: petero2@telia.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pktcdvd : add kobject_put when kobject register fails
-Message-ID: <20071204082641.GA21746@darkstar.te-china.tietoenator.com>
-References: <20071204013144.GA2850@darkstar.lan> <84144f020712032345r6fc1f44cg5f35b23bdb8191be@mail.gmail.com> <a8e1da0712040000n7f94c5bbk3e6526ed395d62d@mail.gmail.com> <Pine.LNX.4.64.0712041004250.20088@sbz-30.cs.Helsinki.FI>
+	Tue, 4 Dec 2007 03:27:20 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:23225 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbXLDI1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 03:27:19 -0500
+Date: Tue, 4 Dec 2007 09:25:11 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jan Glauber <jang@linux.vnet.ibm.com>,
+       linux-crypto <linux-crypto@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: HMAC broken on s390
+Message-ID: <20071204082511.GC23294@kernel.dk>
+References: <1196688700.4799.5.camel@localhost.localdomain> <20071203220900.GA8573@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712041004250.20088@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071203220900.GA8573@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 10:05:24AM +0200, Pekka J Enberg wrote:
-> Hi Dave,
-> 
-> On Tue, 4 Dec 2007, Dave Young wrote:
-> > the kobject reference is get in kobject_init, and then kobject_add, if
-> > kobject_add fail, it will only cleanup the reference got by itsself.
+On Tue, Dec 04 2007, Herbert Xu wrote:
+> On Mon, Dec 03, 2007 at 02:31:40PM +0100, Jan Glauber wrote:
+> > Hi Herbert,
 > > 
-> > This topic is discussed in:
-> > http://lkml.org/lkml/2007/11/30/9
+> > commit 788fefa33b0b50581585925c53c230a36af35d0e in cryptodev breaks hmac
+> > on s390 du to the usage of sg_chain():
+> > 
+> > static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
+> >                             struct scatterlist *sgl)
+> > {
+> > #ifndef ARCH_HAS_SG_CHAIN
+> >         BUG();
+> > #endif
+> > 
+> > ARCH_HAS_SG_CHAIN is false for s390 (and also for some other arch's).
+> > 
+> > What should we do with this?
 > 
-> Ok, thanks! Please the explanation to the changelog too.
+> Looks like we took a step backwards because the chaining I had
+> before worked on all architectures :)
 > 
+> I suppose either we'll have to do our own chaining again or implement
+> it for all architectures.  I'll look into this.
 
-Ok, lets add some explanation.
-------------------------------
+You should continue to do your own chaining if it's a requirement for
+the driver/layer to function, until we get rid of ARCH_HAS_SG_CHAIN.
+That'll happen when all archs are converted.
 
-kobject_put should be called when kobject register functioin fails.
+So don't rely on scatterlist helping you with chaining just yet, sorry.
 
-In kobject_register, the kobject reference is get in kobject_init, and then kobject_add. If kobject_add fail, it will only cleanup the reference got by itself.
+-- 
+Jens Axboe
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-
----
-drivers/block/pktcdvd.c |    4 +++-
-1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff -upr linux/drivers/block/pktcdvd.c linux.new/drivers/block/pktcdvd.c
---- linux/drivers/block/pktcdvd.c	2007-11-30 13:13:44.000000000 +0800
-+++ linux.new/drivers/block/pktcdvd.c	2007-11-30 13:24:08.000000000 +0800
-@@ -117,8 +117,10 @@ static struct pktcdvd_kobj* pkt_kobj_cre
- 	p->kobj.parent = parent;
- 	p->kobj.ktype = ktype;
- 	p->pd = pd;
--	if (kobject_register(&p->kobj) != 0)
-+	if (kobject_register(&p->kobj) != 0) {
-+		kobject_put(&p->kobj);
- 		return NULL;
-+	}
- 	return p;
- }
- /*
