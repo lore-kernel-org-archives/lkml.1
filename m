@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbXLDVbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbXLDVbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbXLDVbQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 16:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXLDVbB
+	id S1756247AbXLDVbd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 16:31:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbXLDVbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 16:31:01 -0500
-Received: from cantor.suse.de ([195.135.220.2]:49266 "EHLO mx1.suse.de"
+	Tue, 4 Dec 2007 16:31:04 -0500
+Received: from mail.suse.de ([195.135.220.2]:49281 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbXLDVbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 16:31:00 -0500
-Date: Tue, 4 Dec 2007 15:30:14 +0100
+	id S1752169AbXLDVbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 16:31:02 -0500
+Date: Tue, 4 Dec 2007 14:56:50 +0100
 From: Andi Kleen <ak@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove unused arguments in zone_init_free_lists()
-Message-ID: <20071204143014.GH11764@bingen.suse.de>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
+Subject: Re: [PATCH 3/10] allow sched clock to be overridden by paravirt
+Message-ID: <20071204135650.GG11764@bingen.suse.de>
+References: <11967666042130-git-send-email-gcosta@redhat.com> <11967666111489-git-send-email-gcosta@redhat.com> <11967666161585-git-send-email-gcosta@redhat.com> <11967666212496-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <11967666212496-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 04, 2007 at 09:09:57AM -0200, Glauber de Oliveira Costa wrote:
+> This patch turns the sched_clock into native_sched_clock.
+> sched clock becomes a weak symbol, which can then give its
+> place to a paravirt definition.
 
-As subject says.
+I ended up regretting that solution on i386, it would be better
+to solve that more clearly with ifdefs.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/mm/page_alloc.c
-===================================================================
---- linux.orig/mm/page_alloc.c
-+++ linux-hack/mm/page_alloc.c
-@@ -2561,8 +2561,7 @@ void __meminit memmap_init_zone(unsigned
- 	}
- }
- 
--static void __meminit zone_init_free_lists(struct pglist_data *pgdat,
--				struct zone *zone, unsigned long size)
-+static void __meminit zone_init_free_lists(struct zone *zone)
- {
- 	int order, t;
- 	for_each_migratetype_order(order, t) {
-@@ -2841,7 +2840,7 @@ __meminit int init_currently_empty_zone(
- 
- 	memmap_init(size, pgdat->node_id, zone_idx(zone), zone_start_pfn);
- 
--	zone_init_free_lists(pgdat, zone, zone->spanned_pages);
-+	zone_init_free_lists(zone);
- 
- 	return 0;
- }
+-Andi
