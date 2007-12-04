@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbXLDGbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXLDGk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752302AbXLDGbQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 01:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbXLDGbE
+	id S1751978AbXLDGk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 01:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbXLDGkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 01:31:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43607 "EHLO hera.kernel.org"
+	Tue, 4 Dec 2007 01:40:16 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35609 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751499AbXLDGbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 01:31:03 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Freezer: Fix JFFS2 garbage collector freezing issue (rev. 2)
-Date: Tue, 4 Dec 2007 01:30:35 -0500
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Pete MacKay <armlinux@architechnical.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200712040111.10494.rjw@sisk.pl>
-In-Reply-To: <200712040111.10494.rjw@sisk.pl>
+	id S1750931AbXLDGkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 01:40:14 -0500
+Date: Tue, 4 Dec 2007 01:40:13 -0500
+From: Amos Waterland <apw@us.ibm.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Updates to nfsroot documentation
+Message-ID: <20071204064012.GA31154@us.ibm.com>
+References: <20071204034345.GA30364@us.ibm.com> <20071204042438.GA11229@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712040130.35299.lenb@kernel.org>
+In-Reply-To: <20071204042438.GA11229@verge.net.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied to suspend branch.
+On Tue, Dec 04, 2007 at 01:24:40PM +0900, Simon Horman wrote:
+> On Mon, Dec 03, 2007 at 10:43:45PM -0500, Amos Waterland wrote:
+> > The difference between ip=off and ip=::::::off has been a cause of much
+> > confusion.  Document how each behaves, and do not contradict ourselves
+> > by saying that "off" is the default when in fact "any" is the default
+> > and is descibed as being so lower in the file.
+> 
+> Is that really how it works? If so it sounds a bit silly to me.
+> Surely it would be desirable for ip=off and ip=::::::off to
+> do the same thing. Or am I missing the point?
 
-thanks,
--len
+Yes, that is how it works.  Pretty confusing, so I figured I'd better
+send in a patch to document it.
 
-On Monday 03 December 2007 19:11, Rafael J. Wysocki wrote:
-> [This is a replacement for
-> freezer-fix-jffs2-garbage-collector-freezing-issue.patch]
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Fix breakage caused by commit d5d8c5976d6adeddb8208c240460411e2198b393
-> "freezer: do not send signals to kernel threads" in
-> jffs2_garbage_collect_thread() that assumed it would be sent signals
-> by the freezer.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Pete MacKay <armlinux@architechnical.net>
-> ---
->  fs/jffs2/background.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/fs/jffs2/background.c
-> ===================================================================
-> --- linux-2.6.orig/fs/jffs2/background.c
-> +++ linux-2.6/fs/jffs2/background.c
-> @@ -105,7 +105,7 @@ static int jffs2_garbage_collect_thread(
->  
->  		/* Put_super will send a SIGKILL and then wait on the sem.
->  		 */
-> -		while (signal_pending(current)) {
-> +		while (signal_pending(current) || freezing(current)) {
->  			siginfo_t info;
->  			unsigned long signr;
->  
-> 
+In the ip=::::::off case, the code in ip_auto_config() sees that
+ic_enable is asserted but that ic_myaddr is NONE and proceeds to do
+autoconfiguration.
+
+I'd welcome comments from people on whether we should change how it
+works instead of just document it.
+
