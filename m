@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbXLDHxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbXLDHzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbXLDHxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 02:53:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXLDHxR
+	id S1752755AbXLDHzj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 02:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXLDHzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 02:53:17 -0500
-Received: from wr-out-0506.google.com ([64.233.184.235]:13555 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbXLDHxQ (ORCPT
+	Tue, 4 Dec 2007 02:55:31 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59122
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751288AbXLDHza (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 02:53:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xbN/O8lldA8+QrXCPwJcaSxzyXAa+NiQNVRBbPK2NEMzvF/GNp3Ff2ru5E7mnqSqJ5OlQUhGYzumcqmShLJMjV+UJqBkWffHyP6VW51y7zLNpgljgKM6YCHfAlA7NAMalE4nX25WBI5dDEREUcjSWsiEJterZpmjWORkobDC2ys=
-Message-ID: <a8e1da0712032353m1a705ec6ged4d503818ad8f58@mail.gmail.com>
-Date: Tue, 4 Dec 2007 15:53:15 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: The use of KOBJ_NAME_LEN
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071204074612.GA25316@suse.de>
+	Tue, 4 Dec 2007 02:55:30 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch] rewrite rd
+Date: Tue, 4 Dec 2007 01:55:17 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <axboe@kernel.dk>
+References: <20071204042628.GA26636@wotan.suse.de>
+In-Reply-To: <20071204042628.GA26636@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071204064547.GA17094@darkstar.lan>
-	 <20071204074612.GA25316@suse.de>
+Message-Id: <200712040155.21124.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 4, 2007 3:46 PM, Greg KH <gregkh@suse.de> wrote:
-> On Tue, Dec 04, 2007 at 02:45:47PM +0800, Dave Young wrote:
-> > Hi,
-> > Does the KOBJ_NAME_LEN really means the limit of kobject name length? seems
-> > not . And if it's true, is the KOBJ_NAME_LEN of 20 enough to use?
->
-> No, not anymore, the kobject name is totally dynamic.
+On Monday 03 December 2007 22:26:28 Nick Piggin wrote:
+> There is one slight downside -- direct block device access and filesystem
+> metadata access goes through an extra copy and gets stored in RAM twice.
+> However, this downside is only slight, because the real buffercache of the
+> device is now reclaimable (because we're not playing crazy games with it),
+> so under memory intensive situations, footprint should effectively be the
+> same -- maybe even a slight advantage to the new driver because it can also
+> reclaim buffer heads.
 
-Eh, Why does this macro still exist? If KOBJ_NAME_LEN is really
-needed, maybe it should be renamed to something else to avoid
-misleading.
+For the embedded world, initramfs has pretty much rendered initrd obsolete, 
+and that was the biggest user of the ramdisk code I know of.  Beyond that, 
+loopback mounts give you more flexible transient block devices than ramdisks 
+do.  (In fact, ramdisks are such an amazing pain to use/size/free that if I 
+really needed something like that I'd just make a loopback mount in a ramfs 
+instance.)
 
->
-> > In the kobject_set_name, the limit is 1024. Looks like either the comment or
-> > the code should be updated.
->
-> Here's a patch below for the comment updating it.
+Embedded users who still want a block interface for memory are generally 
+trying to use a cramfs or squashfs image out of ROM or flash, although there 
+are flash-specific filesystems for this and I dunno if they're actually 
+mounting /dev/mem at an offset or something (md?  losetup -o?  Beats me, I 
+haven't tried that myself yet...)
 
-Thanks
->
-> I also have a patch in my -mm series that takes away the 1024 character
-> limit, but for 2.6.24 we'll have to live with it :)
->
-> thanks,
->
-> greg k-h
->
->
-> ---
->  lib/kobject.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->
-> --- a/lib/kobject.c
-> +++ b/lib/kobject.c
-> @@ -234,13 +234,13 @@ int kobject_register(struct kobject * ko
->
->
->  /**
-> - *     kobject_set_name - Set the name of an object
-> - *     @kobj:  object.
-> - *     @fmt:   format string used to build the name
-> + * kobject_set_name - Set the name of a kobject
-> + * @kobj: kobject to name
-> + * @fmt: format string used to build the name
->   *
-> - *     If strlen(name) >= KOBJ_NAME_LEN, then use a dynamically allocated
-> - *     string that @kobj->k_name points to. Otherwise, use the static
-> - *     @kobj->name array.
-> + * This sets the name of the kobject.  If you have already added the
-> + * kobject to the system, you must call kobject_rename() in order to
-> + * change the name of the kobject.
->   */
->  int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
->  {
->
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
