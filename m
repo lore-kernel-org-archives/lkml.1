@@ -1,125 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbXLEA5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbXLEA6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbXLEA5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 19:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbXLEA5E
+	id S1753308AbXLEA6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 19:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbXLEA6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 19:57:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:19868 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbXLEA5B (ORCPT
+	Tue, 4 Dec 2007 19:58:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50187 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750955AbXLEA6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 19:57:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=PrSY5rBxsFw/OxiVQwyNNCDydjUd7gsw4jK/YlCZYoXFlBgVYonGwJUgBD0L6oNY/QEr3g8YpTCfvtyEl6WLu1+lcsoJwBGGApgjOo6WH4bUsYQGdpAR0241z7JbiE3oDnvpHmilZqNcTjXuNETVD9NEeo1Pw9FP+zdMMIaz61k=
-Message-ID: <5a4c581d0712041656h1ff268bbga4465e9a522eccf6@mail.gmail.com>
-Date: Wed, 5 Dec 2007 01:56:59 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Linux Kernel list" <linux-kernel@vger.kernel.org>
-Subject: possible circular locking dependency detected in 2.6.24-rc3-git6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Dec 2007 19:58:13 -0500
+Date: Tue, 4 Dec 2007 16:57:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anders Henke <anders.henke@1und1.de>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in
+ directory)
+Message-Id: <20071204165738.48003b8a.akpm@linux-foundation.org>
+In-Reply-To: <20071129123150.GA24851@schlund.de>
+References: <20071128172132.GA30202@schlund.de>
+	<20071129123150.GA24851@schlund.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only saw this once, but it's a relatively short time since I moved
- to Fedora 8 (i686, UP) and began building my custom kernels
- there... apparently starting my 11.1.0.6 Oracle instance caused
- lockdep to trigger this (hoping GMail doesn't mangle the
- text too badly):
+On Thu, 29 Nov 2007 13:31:50 +0100
+Anders Henke <anders.henke@1und1.de> wrote:
 
- =======================================================
- [ INFO: possible circular locking dependency detected ]
- 2.6.24-rc3-git6 #7
- -------------------------------------------------------
- oracle/4715 is trying to acquire lock:
-  (&mm->mmap_sem){----}, at: [<c0182489>] dio_get_page+0x4d/0x159
+> On November 28 2007, Anders Henke wrote:
+> > As "everything is reported as being zero" is quite odd an Jan took a
+> > guess that it might be block-layer or driver-related, I've assumed
+> > that the driver is responsible for this; just out of the curiousity, 
+> > I've manually replaced the dpt_i2o driver by the 2.6.19 one by copying 
+> > driver/scsi/dpt_i2o.c driver/scsi/dpti.h and driver/scsi/dpt/ into a 
+> > vanilla 2.6.23.1. kernel; using this kernel fixed the issue for me.
+> > 
+> > I haven't yet fine-tested from which kernel release on the dpt_i2o driver 
+> > behaves like this and spews out zeroed blocks when trying to mount
+> > the rootfs. Maybe this is just some timing issue.
+> 
+> I've started the fine-tests and can say so far that dpt_i2o from 
+> 2.6.22 is still fine. Test is simple:
+> 
+> anders@ista:/usr/src/linux-2.6.22/drivers/scsi/dpt$ cp -r dpt/ dpt_i2o.c dpti.h /usr/src/linux-2.6.23.1/drivers/scsi/
+> 
+> ... recompile the kernel, reboot: works.
+> 
+> 2.6.22 and 2.6.23 differ in terms of the dpt_i2o driver by two different
+> patch sets:
+> -one 2 Kb small set of patches from 2.6.22 to 2.6.22-rc1
+> -one 7 Kb set of patches from 2.6.23-rc2 to 2.6.23-rc3
+> -one 162 Kb set of patches from 2.6.23-rc9 to 2.6.23-rc10.
+> 
+> When applying the 2.6.23-rc1-based driver to "my" 2.6.31.1 kernel,
+> the "zero blocks"-symptom show up, so it's the "lucky" situation
+> that the smallest patch actually seams to be the broken one.
+> 
+> According to the 2.6.23-rc1 short-form changelog, there is
+> one major edit on the dpt_i2o driver:
+> 
+> FUJITA Tomonori 
+> 
+>       [SCSI] dpt_i2o: convert to use the data buffer accessors
+> 
+> Stephen Rothwell 
+>       dpt_i2o depends on virt_to_bus
+> 
+> Fujita, would you please take a look at this?
 
- but task is already holding lock:
-  (jbd_handle){--..}, at: [<c01a825e>] journal_start+0xc8/0xf5
+He won't have seen this.  cc's added.
 
- which lock already depends on the new lock.
+> I think that something's broken in there, leading to the dpt_i2o 
+> sending out blocks of zeroes right after initialization, at least on
+> some specific controllers (in this case, Adaptec 2010S on Intel
+> SE7501WV2S-based boxes).
+> 
+> I don't have insight kernel driver development knowledge, so I'm
+> quite out of help right now. Nevertheless, I'll add the diff
+> from 2.6.22 to 2.6.23-rc1 in terms of dpt_i2o:
+> 
 
+Can you please confirm that this revert (against 2.6.24-rc4) fixes the data
+corruption problems?
 
- the existing dependency chain (in reverse order) is:
-
- -> #1 (jbd_handle){--..}:
-        [<c01331e2>] __lock_acquire+0xa08/0xc06
-        [<c013344f>] lock_acquire+0x6f/0x88
-        [<c01a8281>] journal_start+0xeb/0xf5
-        [<c01a1220>] ext3_journal_start_sb+0x48/0x4a
-        [<c019cd75>] ext3_dirty_inode+0x26/0x6b
-        [<c017a1fe>] __mark_inode_dirty+0x26/0x158
-        [<c0172a83>] touch_atime+0xb7/0xbc
-        [<c0145266>] generic_file_mmap+0x2d/0x42
-        [<c01543fc>] mmap_region+0x1d8/0x3a4
-        [<c01548f3>] do_mmap_pgoff+0x257/0x2b6
-        [<c010728a>] sys_mmap2+0x9a/0xb4
-        [<c0103e7a>] syscall_call+0x7/0xb
-        [<ffffffff>] 0xffffffff
-
- -> #0 (&mm->mmap_sem){----}:
-        [<c01330d2>] __lock_acquire+0x8f8/0xc06
-        [<c013344f>] lock_acquire+0x6f/0x88
-        [<c012bd13>] down_read+0x3f/0x50
-        [<c0182489>] dio_get_page+0x4d/0x159
-        [<c0182f73>] __blockdev_direct_IO+0x3f7/0xad1
-        [<c019cb6f>] ext3_direct_IO+0x10c/0x195
-        [<c0146367>] generic_file_direct_IO+0x124/0x139
-        [<c01463d2>] generic_file_direct_write+0x56/0xed
-        [<c0146c79>] __generic_file_aio_write_nolock+0x2f6/0x43e
-        [<c0146e19>] generic_file_aio_write+0x58/0xb6
-        [<c0198d13>] ext3_file_write+0x27/0x99
-        [<c0161283>] do_sync_write+0xc4/0x101
-        [<c0161a24>] vfs_write+0xa8/0x131
-        [<c0161fb6>] sys_pwrite64+0x45/0x5c
-        [<c0103e7a>] syscall_call+0x7/0xb
-        [<ffffffff>] 0xffffffff
-
- other info that might help us debug this:
-
- 2 locks held by oracle/4715:
-  #0:  (&sb->s_type->i_mutex_key#7){--..}, at: [<c0146e06>]
-generic_file_aio_write+0x45/0xb6
-  #1:  (jbd_handle){--..}, at: [<c01a825e>] journal_start+0xc8/0xf5
-
- stack backtrace:
- Pid: 4715, comm: oracle Not tainted 2.6.24-rc3-git6 #7
-  [<c010448a>] show_trace_log_lvl+0x1a/0x2f
-  [<c0104df7>] show_trace+0x12/0x14
-  [<c010568a>] dump_stack+0x6a/0x70
-  [<c01318a5>] print_circular_bug_tail+0x5e/0x67
-  [<c01330d2>] __lock_acquire+0x8f8/0xc06
-  [<c013344f>] lock_acquire+0x6f/0x88
-  [<c012bd13>] down_read+0x3f/0x50
-  [<c0182489>] dio_get_page+0x4d/0x159
-  [<c0182f73>] __blockdev_direct_IO+0x3f7/0xad1
-  [<c019cb6f>] ext3_direct_IO+0x10c/0x195
-  [<c0146367>] generic_file_direct_IO+0x124/0x139
-  [<c01463d2>] generic_file_direct_write+0x56/0xed
-  [<c0146c79>] __generic_file_aio_write_nolock+0x2f6/0x43e
-  [<c0146e19>] generic_file_aio_write+0x58/0xb6
-  [<c0198d13>] ext3_file_write+0x27/0x99
-  [<c0161283>] do_sync_write+0xc4/0x101
-  [<c0161a24>] vfs_write+0xa8/0x131
-  [<c0161fb6>] sys_pwrite64+0x45/0x5c
-  [<c0103e7a>] syscall_call+0x7/0xb
-  =======================
+Thanks.
 
 
-Let me know whether this is enough info or I should try
- and hammer the thing further to see if this reproduces.
+diff -puN drivers/scsi/dpt_i2o.c~revert-dpt_i2o-convert-to-use-the-data-buffer-accessors drivers/scsi/dpt_i2o.c
+--- a/drivers/scsi/dpt_i2o.c~revert-dpt_i2o-convert-to-use-the-data-buffer-accessors
++++ a/drivers/scsi/dpt_i2o.c
+@@ -2062,13 +2062,12 @@ static s32 adpt_scsi_to_i2o(adpt_hba* pH
+ 	u32 *lenptr;
+ 	int direction;
+ 	int scsidir;
+-	int nseg;
+ 	u32 len;
+ 	u32 reqlen;
+ 	s32 rcode;
+ 
+ 	memset(msg, 0 , sizeof(msg));
+-	len = scsi_bufflen(cmd);
++	len = cmd->request_bufflen;
+ 	direction = 0x00000000;	
+ 	
+ 	scsidir = 0x00000000;			// DATA NO XFER
+@@ -2125,21 +2124,21 @@ static s32 adpt_scsi_to_i2o(adpt_hba* pH
+ 	lenptr=mptr++;		/* Remember me - fill in when we know */
+ 	reqlen = 14;		// SINGLE SGE
+ 	/* Now fill in the SGList and command */
++	if(cmd->use_sg) {
++		struct scatterlist *sg = (struct scatterlist *)cmd->request_buffer;
++		int sg_count = pci_map_sg(pHba->pDev, sg, cmd->use_sg,
++				cmd->sc_data_direction);
+ 
+-	nseg = scsi_dma_map(cmd);
+-	BUG_ON(nseg < 0);
+-	if (nseg) {
+-		struct scatterlist *sg;
+ 
+ 		len = 0;
+-		scsi_for_each_sg(cmd, sg, nseg, i) {
++		for(i = 0 ; i < sg_count; i++) {
+ 			*mptr++ = direction|0x10000000|sg_dma_len(sg);
+ 			len+=sg_dma_len(sg);
+ 			*mptr++ = sg_dma_address(sg);
+-			/* Make this an end of list */
+-			if (i == nseg - 1)
+-				mptr[-2] = direction|0xD0000000|sg_dma_len(sg);
++			sg++;
+ 		}
++		/* Make this an end of list */
++		mptr[-2] = direction|0xD0000000|sg_dma_len(sg-1);
+ 		reqlen = mptr - msg;
+ 		*lenptr = len;
+ 		
+@@ -2148,8 +2147,16 @@ static s32 adpt_scsi_to_i2o(adpt_hba* pH
+ 				len, cmd->underflow);
+ 		}
+ 	} else {
+-		*lenptr = len = 0;
+-		reqlen = 12;
++		*lenptr = len = cmd->request_bufflen;
++		if(len == 0) {
++			reqlen = 12;
++		} else {
++			*mptr++ = 0xD0000000|direction|cmd->request_bufflen;
++			*mptr++ = pci_map_single(pHba->pDev,
++				cmd->request_buffer,
++				cmd->request_bufflen,
++				cmd->sc_data_direction);
++		}
+ 	}
+ 	
+ 	/* Stick the headers on */
+@@ -2178,7 +2185,7 @@ static s32 adpt_i2o_to_scsi(void __iomem
+ 	hba_status = detailed_status >> 8;
+ 
+ 	// calculate resid for sg 
+-	scsi_set_resid(cmd, scsi_bufflen(cmd) - readl(reply+5));
++	cmd->resid = cmd->request_bufflen - readl(reply+5);
+ 
+ 	pHba = (adpt_hba*) cmd->device->host->hostdata[0];
+ 
+_
 
-
-Thanks, ciao,
-
---alessandro
-
- "Damaged people are dangerous. They know they can survive."
-
-   (Anna Barton/Juliette Binoche, 'Damage')
