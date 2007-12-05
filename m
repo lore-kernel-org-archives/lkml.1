@@ -1,204 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXLERoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbXLERsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbXLERoN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 12:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXLERn6
+	id S1752839AbXLERsQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 12:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbXLERsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 12:43:58 -0500
-Received: from andromeda.dapyr.net ([206.212.254.10]:45876 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbXLERn5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 12:43:57 -0500
-Date: Wed, 5 Dec 2007 13:41:21 -0400
-From: Konrad Rzeszutek <konrad@darnok.org>
-To: Doug Maxey <dwm@enoyolf.org>
-Cc: darnok@68k.org, linux-kernel@vger.kernel.org, pjones@redhat.com,
-       konradr@redhat.com, konradr@linux.vnet.ibm.com, greg@kroah.com,
-       randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
-       mike.anderson@us.ibm.com, dwm@austin.ibm.com,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [REPOST PATCH] Add iSCSI IBFT support (v0.4)
-Message-ID: <20071205174121.GA1801@andromeda.dapyr.net>
-References: <20071128233422.GD6736@andromeda.dapyr.net> <20071205004418.GH6736@andromeda.dapyr.net> <22081.1196824331@bebe.enoyolf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <22081.1196824331@bebe.enoyolf.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 5 Dec 2007 12:48:05 -0500
+Received: from ccs17.jlab.org ([129.57.35.82]:57697 "EHLO ccs17.jlab.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751656AbXLERsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 12:48:04 -0500
+Message-ID: <4756E44E.8080607@jlab.org>
+Date: Wed, 05 Dec 2007 12:47:58 -0500
+From: Jie Chen <chen@jlab.org>
+Organization: Jefferson Lab
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com> <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu> <4756C3D9.9030107@jlab.org> <20071205154014.GA6491@elte.hu> <4756D058.1070500@jlab.org> <20071205164723.GA25641@elte.hu>
+In-Reply-To: <20071205164723.GA25641@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 09:12:11PM -0600, Doug Maxey wrote:
-> Overall, looks nice.  Good work.
-
-Thank you.
+Ingo Molnar wrote:
+> * Jie Chen <chen@jlab.org> wrote:
 > 
-> comments inline below...
+>>> the moment you saturate the system a bit more, the numbers should 
+>>> improve even with such a ping-pong test.
+>> You are right. If I manually do load balance (bind unrelated processes 
+>> on the other cores), my test code perform as well as it did in the 
+>> kernel 2.6.21.
 > 
-.. snip ..
-> > +#include <linux/iscsi_ibft.h>
+> so right now the results dont seem to be too bad to me - the higher 
+> overhead comes from two threads running on two different cores and 
+> incurring the overhead of cross-core communications. In a true 
+> spread-out workloads that synchronize occasionally you'd get the same 
+> kind of overhead so in fact this behavior is more informative of the 
+> real overhead i guess. In 2.6.21 the two threads would stick on the same 
+> core and produce artificially low latency - which would only be true in 
+> a real spread-out workload if all tasks ran on the same core. (which is 
+> hardly the thing you want on openmp)
 > 
-> Is the current include from open-iscsi being duplicated?  If not, why
-> not consolidate in one file?
 
-The include files that come from open-iscsi that are in the kernel do
-not have the iBFT data structures in them - therefore no duplication.
+I use pthread_setaffinity_np call to bind one thread to one core. Unless 
+  the kernel 2.6.21 does not honor the affinity, I do not see the 
+difference running two threads on two cores between the new kernel and 
+the old kernel. My test code does not do any numerical calculation, but 
+it does spin waiting on shared/non-shared flags. The reason I am using 
+the affinity is to test synchronization overheads among different cores.
+In either the new and the old kernel, I do see 200% CPU usage when I ran 
+my test code for two threads. Does this mean two threads are running on 
+two cores? Also I verify a thread is indeed bound to a core by using 
+pthread_getaffinity_np.
 
-I think that consolidating is not necessary. Adding in the iSCSI IBFT
-structs (and the module's internal structs) are not essential for
-the iSCSI module. From this module standpoint, it is not using
-anything from the iSCSI kernel module and its friends so why should it
-important a module from there?
-
-Lastly it would also mean the setup_[32|64].c file would have
-to include a header file from the iSCSI (linux/scsi/iscsi_proto.h) for the
-'find_ibft' prototype. That seems excessive for one function prototype.
-
-.. snip ..
-> > +static const char *ibft_id_names[] =
-> > +	{"reserved", "control", "initiator", "ethernet%d",
-> > +	"target%d", "extension%d"};
+> In any case, if i misinterpreted your numbers or if you just disagree, 
+> or if have a workload/test that shows worse performance that it 
+> could/should, let me know.
 > 
-> closing null arg.
-Done.
+> 	Ingo
 
-> 
-> > +
-> > +/*
-> > + * The text attributes names for each of the kobjects.
-> > +*/
-> > +enum ibft_eth_properties_enum {
-> > +	ibft_eth_index,
-> > +	ibft_eth_flags,
-> > +	ibft_eth_ip_addr,
-> > +	ibft_eth_subnet_mask,
-> > +	ibft_eth_origin,
-> > +	ibft_eth_gateway,
-> > +	ibft_eth_primary_dns,
-> > +	ibft_eth_secondary_dns,
-> > +	ibft_eth_dhcp,
-> > +	ibft_eth_vlan,
-> > +	ibft_eth_mac,
-> > +	/* ibft_eth_pci_bdf - this is replaced by link to the device itself. */
-> > +	ibft_eth_hostname};
-> 
-> I noticed ibft_eth_hostname gets used as the last marker below.
-> Wouldn't it be better to have a ibft_eth_count or some such to really
-> be the last?  That way if the elements so change, it still marks the
-> last element.
+Hi, Ingo:
 
-It definitly does. The next version of this patch is named 'ibft_eth_end_marker'.
+Since I am using affinity flag to bind each thread to a different core, 
+the synchronization overhead should increases as the number of 
+cores/threads increases. But what we observed in the new kernel is the 
+opposite. The barrier overhead of two threads is 8.93 micro seconds vs 
+1.86 microseconds for 8 threads (the old kernel is 0.49 vs 1.86). This 
+will confuse most of people who study the synchronization/communication 
+scalability. I know my test code is not real-world computation which 
+usually use up all cores. I hope I have explained myself clearly. Thank 
+you very much.
 
-> 
-> > +
-> > +static const char *ibft_eth_properties[] =
-> > +	{"index", "flags", "ip-addr", "subnet-mask", "origin", "gateway",
-> > +	"primary-dns", "secondary-dns", "dhcp", "vlan", "mac", "hostname"};
-> > +
-> 
-> null last entry?
+-- 
+###############################################
+Jie Chen
+Scientific Computing Group
+Thomas Jefferson National Accelerator Facility
+12000, Jefferson Ave.
+Newport News, VA 23606
 
-Done.
-> 
-> > +enum ibft_tgt_properties_enum {
-> > +	ibft_tgt_index,
-> > +	ibft_tgt_flags,
-> > +	ibft_tgt_ip_addr,
-> > +	ibft_tgt_port,
-> > +	ibft_tgt_lun,
-> > +	ibft_tgt_chap_type,
-> > +	ibft_tgt_nic_assoc,
-> > +	ibft_tgt_name,
-> > +	ibft_tgt_chap_name,
-> > +	ibft_tgt_chap_secret,
-> > +	ibft_tgt_rev_chap_name,
-> > +	ibft_tgt_rev_chap_secret};
+(757)269-5046 (office) (757)269-6248 (fax)
+chen@jlab.org
+###############################################
 
-Added in the 'ibft_tgt_end_marker' as well.
-
-> > +
-> > +static const char *ibft_tgt_properties[] =
-> > +	{"index", "flags", "ip-addr", "port", "lun", "chap-type", "nic-assoc",
-> > +	"target-name", "chap-name", "chap-secret", "rev-chap-name",
-> > +	"rev-chap-name-secret"};
-> 
-> ditto
-Done.
-> 
-> > +
-> > +enum ibft_initiator_properties_enum {
-> > +	ibft_init_index,
-> > +	ibft_init_flags,
-> > +	ibft_init_isns_server,
-> > +	ibft_init_slp_server,
-> > +	ibft_init_pri_radius_server,
-> > +	ibft_init_sec_radius_server,
-> > +	ibft_init_initiator_name};
-
-Added in the 'ibft_init_end_marker'
-
-> > +
-> > +static const char *ibft_initiator_properties[] =
-> > +	{"index", "flags", "isns-server", "slp-server", "pri-radius-server",
-> > +	"sec-radius-server", "initiator-name"};
-> > +
-> 
-> ditto
-
-Done.
-
-.. snip ..
-> > +static ssize_t sprintf_ipaddr(char *buf, u8 *ip)
-> > +{
-> > +	if (ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
-> > +	    ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 &&
-> > +	    ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff) {
-> > +		/*
-> > +		 * IPV4
-> > +		 */
-> > +		return sprintf(buf, "%d.%d.%d.%d\n", ip[12],
-> > +			ip[13], ip[14], ip[15]);
-> > +	} else {
-> > +		return 0;
-> > +	}
-> 
-> redundant braces on the else
-
-Done.
-
-.. snip ..
-> > +static int ibft_create_kobject(struct ibft_table_header *header,
-> > +			       struct ibft_hdr *hdr,
-> > +			       struct list_head *list)
-> > +{
-> > +	int rc = 0;
-> > +	struct ibft_kobject *ibft_kobj = NULL;
-> > +
-> > +	ibft_kobj = kzalloc(sizeof(*ibft_kobj), GFP_KERNEL);
-> 
-> Is this going to collide with the new kobject semantics?
-> Subject: [RFC] New kobject/kset/ktype documentation and example code
-> Message-ID: <20071127230252.GB10038@kroah.com>
-
-No. They do have different names. But I re-did this function a bit
-to prepare it for the new function 'kobject_init_and_add' and
-to handle error unrolling much better (and free at the right moment the
-ibft_kobj structure).
-
-.. snip ..
-> > diff --git a/include/linux/iscsi_ibft.h b/include/linux/iscsi_ibft.h
-> > new file mode 100644
-> > index 0000000..420f621
-> > --- /dev/null
-> > +++ b/include/linux/iscsi_ibft.h
-> > @@ -0,0 +1,126 @@
-> > +#ifndef ISCSI_IBFT_H
-> > +#define ISCSI_IBFT_H
-> 
-> missing copyright or left. :)
-
-Yikes! Thanks for spotting that.
-
-New version (v0.4.2) coming out shortly.
