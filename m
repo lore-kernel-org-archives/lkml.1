@@ -1,124 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXLEKWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbXLEKYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbXLEKWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXLEKWK
+	id S1754177AbXLEKYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXLEKYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:22:10 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:55573 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751964AbXLEKWJ (ORCPT
+	Wed, 5 Dec 2007 05:24:16 -0500
+Received: from barracuda.cse.unsw.EDU.AU ([129.94.172.9]:56545 "EHLO
+	barracuda.cse.unsw.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbXLEKYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:22:09 -0500
-Subject: Re: [patch 1/3] bdi patches
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Neil Brown <neilb@suse.de>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, fengguang.wu@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <18255.24276.519113.975347@notabene.brown>
-References: <E1IxhHk-00017y-Vp@dorka.pomaz.szeredi.hu>
-	 <18255.24276.519113.975347@notabene.brown>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xIiMOIa20Mjz8wjzsIaU"
-Date: Wed, 05 Dec 2007 11:22:04 +0100
-Message-Id: <1196850124.6788.22.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 5 Dec 2007 05:24:15 -0500
+X-Greylist: delayed 1041 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Dec 2007 05:24:15 EST
+X-ASG-Debug-ID: 1196849229-7b1a00130000-xx1T2L
+X-Barracuda-URL: http://129.94.172.9:8000/cgi-bin/mark.cgi
+X-CSE-Spam-Checker-Version: SpamAssassin 3.1.3 (2006-06-01) on 
+	tone.orchestra.cse.unsw.EDU.AU
+X-CSE-Spam-Level: 
+X-CSE-Spam-Status: No, score=-2.6 required=4.0 tests=BAYES_00,UNPARSEABLE_RELAY 
+	autolearn=ham version=3.1.3
+From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Wed, 05 Dec 2007 21:07:07 +1100
+Message-ID: <4756784B.40607@gelato.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+MIME-Version: 1.0
+CC: linux-kernel@vger.kernel.org, npiggin@suse.de,
+       Peter Chubb <peterc@gelato.unsw.edu.au>
+X-ASG-Orig-Subj: [PATCH] as-iosched: fix write batch start point
+Subject: [PATCH] as-iosched: fix write batch start point
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Barracuda-Connect: tone.orchestra.cse.unsw.EDU.AU[129.94.242.59]
+X-Barracuda-Start-Time: 1196849229
+X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at cse.unsw.edu.au
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+New write batches currently start from where the last one completed.
+We have no idea where the head is after switching batches, so this
+makes little sense.  Instead, start the next batch from the request
+with the earliest deadline in the hope that we avoid a deadline
+expiry later on.
 
---=-xIiMOIa20Mjz8wjzsIaU
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+---
+ block/as-iosched.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-
-On Fri, 2007-11-30 at 11:52 +1100, Neil Brown wrote:
-> On Thursday November 29, miklos@szeredi.hu wrote:
-> > > http://programming.kicks-ass.net/kernel-patches/foo/
-> > >=20
-> > > bdi-task-dirty.patch
-> > > bdi-sysfs.patch
-> > > bdi-min.patch
-> > > bdi-max.patch
-> > >=20
-> > >=20
-> > > Is my current rather experimental stack, I just wrote the max part af=
-ter
-> > > having slept on it. I'm not fond of the multiplication there, but I
-> > > dno't see a way around it.
-> > >=20
-> > > Compile tested only.
-> >=20
-> > I've done some testing on these patches and did some changes. So here
-> > they go.
-> >=20
-> > Thanks,
-> > Miklos
-> >=20
-> > ---------
-> > Subject: mm: sysfs: expose the BDI object in sysfs
-> >=20
-> > Provide a place in sysfs for the backing_dev_info object.
-> > This allows us to see and set the various BDI specific variables.
->=20
-> You don't say what the place is, and I'm not quite familiar enough
-> with sysfs internals to figure it out my self.  Help?
-
-/sys/class/bdi/<name>/
-
-> And while I was looking I noticed that bdi_register (and bdi_init_fmt)
-> takes a second argument 'parent', which is always NULL, and which is
-> undocumented as to purpose.
-> If no-one would ever add another call to bdi_register, why have the
-> second arg, and if they might, how would they know what to put there?
-
-As Kay said, that is to be used once there are proper BDI parent
-objects. (The block layer conversion from kobject to device should
-provide some).
-
-> Finally, the omission of NFS bothers me - and makes me wonder if the
-> choice of name in sysfs is appropriate.
-
-That is due to a currently silly filename limit in sysfs that is being
-worked on by Greg and Kay.
-
-> Would a program ever want to generate the name (in sysfs) for a
-> particular bdi?  If so, how would it do it.
-
-That would be a tad involved I guess, but not impossible.
-
-For block devices you'd need to get hold of the block device name, no
-idea on how you would go about doing that from user-space, but I'm sure
-its possible.
-
-For nfs, /proc/mounts seems to contain the proper string. And I'm sure
-FUSE has the right info somewhere to construct it as well.
-
-> It seems to me after a fairly quick look that a bdi is always
-> associated with a device number.  For block devices the device number
-> is obvious.  For NFS and FUSE, the device number is an anon device
-> number allocated at mount time.
-> Maybe the name of the bdi should be based on that number.  Then it
-> would be possible to map directly from e.g. a file to the bdi that the
-> file would be written to.=20
-
-Sounds like a good idea, except that I don't find these numbers to be
-very convenient to use. Currently ls /sys/class/bdi/ shows a human
-interpretable list of names, and its rather clear what device is meant.
-Using numbers would loose that.
-
---=-xIiMOIa20Mjz8wjzsIaU
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHVnvMXA2jU0ANEf4RAplCAJ0U9645pxf1bKoKmhZT02SA2wV/NgCfR871
-ozraxc7izXz6qriSi3jMEL0=
-=Ay0L
------END PGP SIGNATURE-----
-
---=-xIiMOIa20Mjz8wjzsIaU--
-
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index 4513fc5..555cd6b 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1097,7 +1097,8 @@ dispatch_writes:
+ 		ad->batch_data_dir = REQ_ASYNC;
+ 		ad->current_write_count = ad->write_batch_count;
+ 		ad->write_batch_idled = 0;
+-		rq = ad->next_rq[ad->batch_data_dir];
++		rq = rq_entry_fifo(ad->fifo_list[REQ_ASYNC].next);
++		ad->last_check_fifo[REQ_ASYNC] = jiffies;
+ 		goto dispatch_request;
+ 	}
+ 
+-- 
