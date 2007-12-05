@@ -1,60 +1,154 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbXLDWYX (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 4 Dec 2007 17:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbXLDWYM
+	id S1753810AbXLEWU0 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 5 Dec 2007 17:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXLEWUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 17:24:12 -0500
-Received: from web72315.mail.tp2.yahoo.com ([203.188.200.105]:34120 "HELO
-	web72315.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752204AbXLDWYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 17:24:11 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 17:24:11 EST
-X-YMail-OSG: 3BAbf6UVM1mTsjQKVEbfW1kG7GG1xwQSiOtNW6yOuLFj__yc3M.GBjzaqSaFEiqcGnmLV1HjJAOJtCKsaMBC8vNq9CufNnsEVThdL1yPtcQbRrthOi88NBTJh4qaiY5bMFi_FfhCJZ0p5n7P54w6g.irN.44ZJnz809VfSVrwFa7ii9HMpsLhf7xxpD3uLbI
-Date: Wed, 5 Dec 2007 06:17:28 +0800 (CST)
-From: <e123039380@yahoo.com.tw>
-To: linktoshare@hotmail.com, linkwest@goingoti.com,
-	linnette45@hotmail.com, linnurse50@hotmail.com, linny48@flash.net,
-	lino.cipo@altavista.com, linoclaudio3@hotmail.com,
-	linofer2002@hotmail.com, linosoto@hotmail.com, lino_se@hotmail.com,
-	linrit@earthlink.net, linsing@bellsouth.net, lintao00162@sina.com,
-	linuppthejo@hotmail.com, linuraj@hotmail.com,
-	linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-	linux-lvm@redhat.com, linux-precision@dell.com,
-	linux0212@hotmail.com, linuxgames@sunsite.dk, linuxkde@hotmail.com,
-	linuxmanagers@linuxmanagers.org, linuxneo411@hotmail.com,
-	linuxragu@hotmail.com, linyang@siscom.net,
-	linzeysharon@hotmail.com, liomsJessica@hotmail.com,
-	lion200380@hotmail.com, lionceau_ward@hotmail.com,
-	liondance999@hotmail.com, lionelguigui@hotmail.com,
-	lionelharvey@tiscali.co.uk, lionelle329@hotmail.com,
-	lioness620@hotmail.com
+	Wed, 5 Dec 2007 17:20:09 -0500
+Received: from bloggoo.com ([210.1.31.59]:27505 "EHLO blog.jo.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751754AbXLEWUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 17:20:08 -0500
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?QmxvZ2dvby5jb20g4Liq4Lij4LmJ4Liy4LiH4LmA4Lin4LmH4Lia4Lia4Lil?=  =?UTF-8?B?4LmH4Lit4LiB4LmB4Lia4LiaIOC5gOC4o+C5h+C4pyDguJ/guKPguLUg4LiH?=  =?UTF-8?B?4LmI4Liy4LiiIOC4l+C4seC4meC4l+C4teC4leC4reC4meC4meC4teC5ieC5?=  =?UTF-8?B?gOC4peC4og==?=
+Date: Thu, 6 Dec 2007 05:16:29 +0700
+From: "Bloggoo.com" <info@bloggoo.com>
+Message-ID: <9b1b9e5861bee1c124791a5df0e34586@info.bloggoo.com>
+X-Priority: 3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=big5
+MIME-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-ID: <23866.89025.qm@web72315.mail.tp2.yahoo.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755320AbXLDWYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753810AbXLEWU0@vger.kernel.org>
 
-Nice day to you !!!
-Now there is one honest  online shop in Beijng ,China
-. They offer very good quality products on website
-,and offer old clients very good price .=20
-There are so many nice items for you here .
-Grasp this chance to get your smart items ,you also
-can make much profit on them .=20
-website:  www.bbsimona.com
-E-mail: jie9858@hotmail.com
-MSN:   jie9858@hotmail.com=20
-Skype: tiff856@hotmail.com
+Dear  linux-kernel@vger.kernel.org,
 
+info@bloggoo.com has sent you an invite to sign up at Bloggoo.com - htt=
+p://bloggoo.com.
 
-      _________________________________________________________________=
-____________________
-=B0=A8=A4W=C5=E9=C5=E7=A5=FE=B7sYahoo!=A9_=BC=AF=B9q=A4l=ABH=BDc2.0=A1C=
- http://tw.mg0.mail.yahoo.com/dc/landing
+"BlogGoo (www.bloggoo.com) =E0=B8=88=E0=B8=B1=E0=B8=94=E0=B8=97=E0=B8=B3=
+=E0=B8=82=E0=B8=B6=E0=B9=89=E0=B8=99=E0=B9=80=E0=B8=9E=E0=B8=B7=E0=B9=88=
+=E0=B8=AD=E0=B9=83=E0=B8=AB=E0=B9=89=E0=B8=9C=E0=B8=B9=E0=B9=89=E0=B9=83=
+=E0=B8=8A=E0=B9=89=E0=B8=9A=E0=B8=A3=E0=B8=B4=E0=B8=81=E0=B8=B2=E0=B8=A3=
+=E0=B9=84=E0=B8=94=E0=B9=89=E0=B8=A1=E0=B8=B5=E0=B8=9E=E0=B8=B7=E0=B9=89=
+=E0=B8=99=E0=B8=97=E0=B8=B5=E0=B9=88=E0=B8=AA=E0=B9=88=E0=B8=A7=E0=B8=99=
+=E0=B8=95=E0=B8=B1=E0=B8=A7 =E0=B9=83=E0=B8=99=E0=B8=81=E0=B8=B2=E0=B8=A3=
+=E0=B8=AA=E0=B8=A3=E0=B9=89=E0=B8=B2=E0=B8=87=E0=B8=AA=E0=B8=A3=E0=B8=A3=
+=E0=B8=84=E0=B9=8C=E0=B8=87=E0=B8=B2=E0=B8=99=E0=B9=80=E0=B8=82=E0=B8=B5=
+=E0=B8=A2=E0=B8=99=E0=B8=95=E0=B9=88=E0=B8=B2=E0=B8=87=E0=B9=86 =E0=B8=82=
+=E0=B8=AD=E0=B8=87=E0=B8=95=E0=B8=99=E0=B9=80=E0=B8=AD=E0=B8=87=E0=B8=AD=
+=E0=B8=A2=E0=B9=88=E0=B8=B2=E0=B8=87=E0=B8=AD=E0=B8=B4=E0=B8=AA=E0=B8=A3=
+=E0=B8=B0 =E0=B8=97=E0=B8=B1=E0=B9=89=E0=B8=87=E0=B8=9A=E0=B8=AD=E0=B8=81=
+=E0=B9=80=E0=B8=A5=E0=B9=88=E0=B8=B2=E0=B9=80=E0=B8=A3=E0=B8=B7=E0=B9=88=
+=E0=B8=AD=E0=B8=87=E0=B8=A3=E0=B8=B2=E0=B8=A7=E0=B8=AA=E0=B9=88=E0=B8=A7=
+=E0=B8=99=E0=B8=95=E0=B8=B1=E0=B8=A7=20
+=E0=B9=80=E0=B8=AB=E0=B8=95=E0=B8=B8=E0=B8=81=E0=B8=B2=E0=B8=A3=E0=B8=93=
+=E0=B9=8C=E0=B8=97=E0=B8=B5=E0=B9=88=E0=B9=80=E0=B8=81=E0=B8=B4=E0=B8=94=
+=E0=B8=82=E0=B8=B6=E0=B9=89=E0=B8=99=E0=B8=9B=E0=B8=A3=E0=B8=B0=E0=B8=88=
+=E0=B8=B3=E0=B8=A7=E0=B8=B1=E0=B8=99 =E0=B9=81=E0=B8=9A=E0=B9=88=E0=B8=87=
+=E0=B8=9B=E0=B8=B1=E0=B8=99=E0=B8=82=E0=B9=89=E0=B8=AD=E0=B8=A1=E0=B8=B9=
+=E0=B8=A5 =E0=B8=9A=E0=B8=97=E0=B8=84=E0=B8=A7=E0=B8=B2=E0=B8=A1 =E0=B9=
+=83=E0=B8=AA=E0=B9=88=E0=B8=A3=E0=B8=B9=E0=B8=9B=E0=B8=A0=E0=B8=B2=E0=B8=
+=9E =E0=B8=A7=E0=B8=B5=E0=B8=94=E0=B8=B5=E0=B9=82=E0=B8=AD =E0=B9=81=E0=
+=B8=A5=E0=B8=B0=E0=B9=80=E0=B8=AA=E0=B8=B5=E0=B8=A2=E0=B8=87 =E0=B8=AB=E0=
+=B8=A3=E0=B8=B7=E0=B8=AD=E0=B9=81=E0=B8=A5=E0=B8=81=E0=B9=80=E0=B8=9B=E0=
+=B8=A5=E0=B8=B5=E0=B9=88=E0=B8=A2=E0=B8=99=E0=B8=84=E0=B8=A7=E0=B8=B2=E0=
+=B8=A1=E0=B8=84=E0=B8=B4=E0=B8=94=E0=B9=80=E0=B8=AB=E0=B9=87=E0=B8=99 =E0=
+=B8=82=E0=B9=88=E0=B8=B2=E0=B8=A7=E0=B8=AA=E0=B8=B2=E0=B8=A3=E0=B8=95=E0=
+=B9=88=E0=B8=B2=E0=B8=87=E0=B9=86 =E0=B8=95=E0=B8=B2=E0=B8=A1=E0=B9=81=E0=
+=B8=95=E0=B9=88=E0=B8=97=E0=B8=B5=E0=B9=88=E0=B8=9C=E0=B8=B9=E0=B9=89=E0=
+=B9=83=E0=B8=8A=E0=B9=89=E0=B8=9A=E0=B8=A3=E0=B8=B4=E0=B8=81=E0=B8=B2=E0=
+=B8=A3=E0=B9=81=E0=B8=95=E0=B9=88=E0=B8=A5=E0=B8=B0=E0=B8=97=E0=B9=88=E0=
+=B8=B2=E0=B8=99=E0=B8=95=E0=B9=89=E0=B8=AD=E0=B8=87=E0=B8=81=E0=B8=B2=E0=
+=B8=A3.=20
+
+=E0=B8=99=E0=B8=AD=E0=B8=81=E0=B8=88=E0=B8=B2=E0=B8=81=E0=B8=99=E0=B8=B1=
+=E0=B9=89=E0=B8=99 BlogGoo =E0=B8=A2=E0=B8=B1=E0=B8=87=E0=B8=96=E0=B8=B7=
+=E0=B8=AD=E0=B9=80=E0=B8=9B=E0=B9=87=E0=B8=99=E0=B8=8A=E0=B8=B8=E0=B8=A1=
+=E0=B8=8A=E0=B8=99=E0=B8=AD=E0=B8=AD=E0=B8=99=E0=B9=84=E0=B8=A5=E0=B8=99=
+=E0=B9=8C =E0=B8=97=E0=B8=B5=E0=B9=88=E0=B9=80=E0=B8=88=E0=B9=89=E0=B8=B2=
+=E0=B8=82=E0=B8=AD=E0=B8=87 Blog =E0=B8=AA=E0=B8=B2=E0=B8=A1=E0=B8=B2=E0=
+=B8=A3=E0=B8=96=E0=B8=95=E0=B8=B4=E0=B8=94=E0=B8=95=E0=B9=88=E0=B8=AD =E0=
+=B9=80=E0=B8=8A=E0=B8=B7=E0=B9=88=E0=B8=AD=E0=B8=A1=E0=B8=84=E0=B8=A7=E0=
+=B8=B2=E0=B8=A1=E0=B8=AA=E0=B8=B1=E0=B8=A1=E0=B8=9E=E0=B8=B1=E0=B8=99=E0=
+=B8=98=E0=B9=8C =E0=B8=81=E0=B8=B1=E0=B8=9A=E0=B9=80=E0=B8=88=E0=B9=89=E0=
+=B8=B2=E0=B8=82=E0=B8=AD=E0=B8=87 Blog =E0=B8=AD=E0=B8=B7=E0=B9=88=E0=B8=
+=99=E0=B9=86 =E0=B8=AA=E0=B8=A3=E0=B9=89=E0=B8=B2=E0=B8=87=E0=B8=A1=E0=B8=
+=B4=E0=B8=95=E0=B8=A3=E0=B8=A0=E0=B8=B2=E0=B8=9E=E0=B8=94=E0=B8=B5=E0=B9=
+=86 =E0=B8=9A=E0=B8=99=E0=B9=82=E0=B8=A5=E0=B8=81=E0=B8=AD=E0=B8=B4=E0=B8=
+=99=E0=B9=80=E0=B8=97=E0=B8=AD=E0=B8=A3=E0=B9=8C=E0=B9=80=E0=B8=99=E0=B9=
+=87=E0=B8=95=20
+=E0=B9=81=E0=B8=A5=E0=B8=B0=E0=B9=80=E0=B8=9E=E0=B8=B7=E0=B9=88=E0=B8=AD=
+=E0=B9=80=E0=B8=9B=E0=B8=B4=E0=B8=94=E0=B9=82=E0=B8=A5=E0=B8=81=E0=B8=97=
+=E0=B8=B1=E0=B8=A8=E0=B8=99=E0=B9=8C=E0=B9=83=E0=B8=AB=E0=B9=89=E0=B8=81=
+=E0=B8=A7=E0=B9=89=E0=B8=B2=E0=B8=87=E0=B8=82=E0=B8=B6=E0=B9=89=E0=B8=99=
+.=20
+
+=E0=B8=82=E0=B8=93=E0=B8=B0=E0=B8=99=E0=B8=B5=E0=B9=89=E0=B8=97=E0=B8=B2=
+=E0=B8=87 BlogGoo =E0=B9=84=E0=B8=94=E0=B9=89=E0=B8=AD=E0=B8=A2=E0=B8=B9=
+=E0=B9=88=E0=B9=83=E0=B8=99=E0=B8=8A=E0=B9=88=E0=B8=A7=E0=B8=87=E0=B8=97=
+=E0=B8=B5=E0=B9=88=E0=B8=95=E0=B9=89=E0=B8=AD=E0=B8=87=E0=B8=81=E0=B8=B2=
+=E0=B8=A3=E0=B8=81=E0=B8=B2=E0=B8=A3=E0=B8=97=E0=B8=94=E0=B8=AA=E0=B8=AD=
+=E0=B8=9A=E0=B8=A3=E0=B8=B0=E0=B8=9A=E0=B8=9A=E0=B8=81=E0=B9=88=E0=B8=AD=
+=E0=B8=99=E0=B9=83=E0=B8=8A=E0=B9=89=E0=B8=87=E0=B8=B2=E0=B8=99=E0=B8=88=
+=E0=B8=A3=E0=B8=B4=E0=B8=87 =E0=B8=8B=E0=B8=B6=E0=B9=88=E0=B8=87=E0=B8=88=
+=E0=B8=B0=E0=B9=80=E0=B8=9B=E0=B8=B4=E0=B8=94=E0=B9=83=E0=B8=AB=E0=B9=89=
+=E0=B9=83=E0=B8=8A=E0=B9=89=E0=B8=AD=E0=B8=A2=E0=B9=88=E0=B8=B2=E0=B8=87=
+=E0=B9=80=E0=B8=9B=E0=B9=87=E0=B8=99=E0=B8=97=E0=B8=B2=E0=B8=87=E0=B8=81=
+=E0=B8=B2=E0=B8=A3=E0=B9=83=E0=B8=99=E0=B9=80=E0=B8=A3=E0=B9=87=E0=B8=A7=
+=E0=B9=86 =E0=B8=99=E0=B8=B5=E0=B9=89 =E0=B9=80=E0=B8=A3=E0=B8=B2=E0=B8=
+=95=E0=B9=89=E0=B8=AD=E0=B8=87=E0=B8=81=E0=B8=B2=E0=B8=A3=E0=B8=9C=E0=B8=
+=B9=E0=B9=89=E0=B8=97=E0=B8=B5=E0=B9=88=E0=B8=AA=E0=B8=99=E0=B9=83=E0=B8=
+=88=E0=B8=97=E0=B8=B5=E0=B9=88=E0=B8=88=E0=B8=B0=E0=B8=A1=E0=B8=B5=E0=B8=
+=AA=E0=B9=88=E0=B8=A7=E0=B8=99=E0=B8=A3=E0=B9=88=E0=B8=A7=E0=B8=A1=E0=B9=
+=83=E0=B8=99=E0=B8=81=E0=B8=B2=E0=B8=A3=E0=B8=97=E0=B8=94=E0=B8=AA=E0=B8=
+=AD=E0=B8=9A=E0=B8=84=E0=B8=A3=E0=B8=B1=E0=B9=89=E0=B8=87=E0=B8=99=E0=B8=
+=B5=E0=B9=89 =E0=B8=96=E0=B9=89=E0=B8=B2=E0=B8=97=E0=B9=88=E0=B8=B2=E0=B8=
+=99=E0=B8=AA=E0=B8=99=E0=B9=83=E0=B8=88=E0=B8=81=E0=B9=87=E0=B8=AA=E0=B8=
+=B2=E0=B8=A1=E0=B8=B2=E0=B8=A3=E0=B8=96=E0=B8=AA=E0=B8=A1=E0=B8=B1=E0=B8=
+=84=E0=B8=A3=E0=B8=AA=E0=B8=A1=E0=B8=B2=E0=B8=8A=E0=B8=B4=E0=B8=81=E0=B8=
+=AA=E0=B8=A3=E0=B9=89=E0=B8=B2=E0=B8=87=E0=B8=9A=E0=B8=A5=E0=B9=87=E0=B8=
+=AD=E0=B8=81=E0=B8=82=E0=B8=AD=E0=B8=87=E0=B8=84=E0=B8=B8=E0=B8=93=E0=B8=
+=97=E0=B8=B1=E0=B8=99=E0=B8=97=E0=B8=B5=E0=B9=84=E0=B8=94=E0=B9=89=E0=B8=
+=9F=E0=B8=A3=E0=B8=B5 =E0=B8=97=E0=B8=B5=E0=B9=88=E0=B8=99=E0=B8=B5=E0=B9=
+=88 http://bloggoo.com/wp-signup.php =E0=B9=80=E0=B8=9E=E0=B8=B7=E0=B9=88=
+=E0=B8=AD=E0=B8=97=E0=B8=94=E0=B8=AA=E0=B8=AD=E0=B8=9A=E0=B8=81=E0=B8=B2=
+=E0=B8=A3=E0=B8=AA=E0=B8=A3=E0=B9=89=E0=B8=B2=E0=B8=87=E0=B8=9A=E0=B8=A5=
+=E0=B9=87=E0=B8=AD=E0=B8=81=E0=B9=84=E0=B8=94=E0=B9=89=E0=B9=80=E0=B8=A5=
+=E0=B8=A2=E0=B8=97=E0=B8=B1=E0=B8=99=E0=B8=97=E0=B8=B5.
+
+=E0=B9=81=E0=B8=A5=E0=B8=B0=E0=B8=97=E0=B9=88=E0=B8=B2=E0=B8=99=E0=B8=AA=
+=E0=B8=B2=E0=B8=A1=E0=B8=B2=E0=B8=A3=E0=B8=96=E0=B8=95=E0=B8=B4=E0=B8=8A=
+=E0=B8=A1 =E0=B8=AB=E0=B8=A3=E0=B8=B7=E0=B8=AD=E0=B9=83=E0=B8=AB=E0=B9=89=
+=E0=B8=84=E0=B8=B3=E0=B9=81=E0=B8=99=E0=B8=B0=E0=B8=99=E0=B8=B3=E0=B9=80=
+=E0=B8=A7=E0=B9=87=E0=B8=9A=E0=B9=84=E0=B8=8B=E0=B8=95=E0=B9=8C BlogGoo=
+ =E0=B9=84=E0=B8=94=E0=B9=89=E0=B8=97=E0=B8=B5=E0=B9=88 feedback@bloggo=
+o.com
+
+=E0=B8=AA=E0=B8=B8=E0=B8=94=E0=B8=97=E0=B9=89=E0=B8=B2=E0=B8=A2=E0=B8=99=
+=E0=B8=B5=E0=B9=89 =E0=B8=95=E0=B9=89=E0=B8=AD=E0=B8=87=E0=B8=82=E0=B8=AD=
+=E0=B8=82=E0=B8=AD=E0=B8=9A=E0=B8=84=E0=B8=B8=E0=B8=93=E0=B8=97=E0=B8=B8=
+=E0=B8=81=E0=B8=97=E0=B9=88=E0=B8=B2=E0=B8=99=E0=B8=97=E0=B8=B5=E0=B9=88=
+=E0=B9=83=E0=B8=AB=E0=B9=89=E0=B8=81=E0=B8=B2=E0=B8=A3=E0=B8=AA=E0=B8=99=
+=E0=B8=B1=E0=B8=9A=E0=B8=AA=E0=B8=99=E0=B8=B8=E0=B8=99 =E0=B9=81=E0=B8=A5=
+=E0=B8=B0=E0=B8=82=E0=B8=AD=E0=B9=83=E0=B8=AB=E0=B9=89=E0=B8=A1=E0=B8=B5=
+=E0=B8=84=E0=B8=A7=E0=B8=B2=E0=B8=A1=E0=B8=AA=E0=B8=B8=E0=B8=82=E0=B8=81=
+=E0=B8=B1=E0=B8=9A=E0=B8=81=E0=B8=B2=E0=B8=A3=E0=B9=83=E0=B8=8A=E0=B9=89=
+=E0=B8=9A=E0=B8=A3=E0=B8=B4=E0=B8=81=E0=B8=B2=E0=B8=A3 BlogGoo =E0=B8=82=
+=E0=B8=AD=E0=B8=87=E0=B9=80=E0=B8=A3=E0=B8=B2=E0=B8=99=E0=B8=B0=E0=B8=84=
+=E0=B8=A3=E0=B8=B1=E0=B8=9A"
+
+You can create your account here:
+http://bloggoo.com/wp-signup.php
+
+We are looking forward to seeing you on the site.
+
+Cheers,
+
+--The Team @ Bloggoo.com
+
 --
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
  in
