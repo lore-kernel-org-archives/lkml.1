@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbXLEK12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbXLEKbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbXLEK12 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbXLEK1U
+	id S1754317AbXLEKbt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXLEKbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:27:20 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:15798 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbXLEK1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:27:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:from:to:cc:subject:date:message-id:x-mailer;
-        b=oO/AsJnpXu52LKXB7sTrnGECc/XmJ3Z4mSZChpe18Q6FkxD7ZcP1BXu3VTHJLu9HY6CWBQpkR3D/4NhNTn+YhZKjP/aWYIUUMejDiIBuJSCdn9h2U9NEKlRLlGfoEu4zVggfcy1LnrC11avv5QQtc1vPZRuvHm0hNCo+Pqz1wac=
-From: chripell@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: Christian Pellegrin <chripell@fsfe.org>
-Subject: [PATCH] netmos 9855 fix
-Date: Wed,  5 Dec 2007 11:27:27 +0100
-Message-Id: <11968504473036-git-send-email-chripell@gmail.com>
-X-Mailer: git-send-email 1.4.4.4
+	Wed, 5 Dec 2007 05:31:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44121 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbXLEKbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 05:31:40 -0500
+Date: Wed, 5 Dec 2007 11:31:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Holmes - Sun Microsystems <David.Holmes@Sun.COM>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stable Team <stable@kernel.org>
+Subject: Re: [PATCH -v2] fix for futex_wait signal stack corruption
+Message-ID: <20071205103111.GD22792@elte.hu>
+References: <1196801858.1645.37.camel@localhost.localdomain> <alpine.LFD.0.9999.0712041307270.32379@woody.linux-foundation.org> <20071204213924.GA14915@goodmis.org> <alpine.LFD.0.9999.0712041436100.13796@woody.linux-foundation.org> <Pine.LNX.4.58.0712042016540.18042@gandalf.stny.rr.com> <alpine.LFD.0.9999.0712041740490.13796@woody.linux-foundation.org> <Pine.LNX.4.58.0712042135030.18314@gandalf.stny.rr.com> <alpine.LFD.0.9999.0712041935140.13796@woody.linux-foundation.org> <alpine.LFD.0.99999.0712050643440.3327@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.99999.0712050643440.3327@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes wrong netmos 9855 serial port configuration.
 
-Generated on  20071205  against v2.6.21
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Signed-off-by: Christian Pellegrin <chripell@fsfe.org>
----
- drivers/parport/parport_serial.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> Just a minor nit. Can we please use "futex" instead of "fu" ? I'm just 
+> envisioning the next union member named "ba".
+> 
+> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> Please apply with the s/fu/futex/ change. This needs to go into stable 
+> .22/.23 as well.
 
-diff --git a/drivers/parport/parport_serial.c b/drivers/parport/parport_serial.c
-index 78c0a26..5b04e78 100644
---- a/drivers/parport/parport_serial.c
-+++ b/drivers/parport/parport_serial.c
-@@ -77,7 +77,7 @@ static struct parport_pc_pci cards[] __devinitdata = {
- 	/* titan_110l */		{ 1, { { 3, -1 }, } },
- 	/* titan_210l */		{ 1, { { 3, -1 }, } },
- 	/* netmos_9xx5_combo */		{ 1, { { 2, -1 }, }, netmos_parallel_init },
--	/* netmos_9855 */		{ 1, { { 0, -1 }, }, netmos_parallel_init },
-+	/* netmos_9855 */		{ 1, { { 2, -1 }, }, netmos_parallel_init },
- 	/* avlab_1s1p     */		{ 1, { { 1, 2}, } },
- 	/* avlab_1s2p     */		{ 2, { { 1, 2}, { 3, 4 },} },
- 	/* avlab_2s1p     */		{ 1, { { 2, 3}, } },
-@@ -185,7 +185,7 @@ static struct pciserial_board pci_parport_serial_boards[] __devinitdata = {
- 		.uart_offset	= 8,
- 	},
- 	[netmos_9855] = {
--		.flags		= FL_BASE2 | FL_BASE_BARS,
-+		.flags		= FL_BASE4 | FL_BASE_BARS,
- 		.num_ports	= 1,
- 		.base_baud	= 115200,
- 		.uart_offset	= 8,
---
-1.4.4.4
+ok, i've tied it all up, collected the Acks and will push Steve's fix to 
+Linus via the scheduler git tree - is that fine with everyone? I think 
+there's enough time to get this tested - Linus's latest tree shows up in 
+Fedora rawhide in 1-2 days and tons of apps use futexes.
+
+	Ingo
