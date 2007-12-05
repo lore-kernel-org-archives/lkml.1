@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbXLEKxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbXLEK7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbXLEKxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXLEKwy
+	id S1753112AbXLEK7d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbXLEK7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:52:54 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:59418 "EHLO
-	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751372AbXLEKwx (ORCPT
+	Wed, 5 Dec 2007 05:59:24 -0500
+Received: from orion2.pixelized.ch ([195.190.190.13]:43484 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbXLEK7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:52:53 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-Date: Wed, 5 Dec 2007 11:52:36 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86_64: define all _PAGE_* in terms of
- _PAGE_BIT_*
-Message-ID: <20071205105236.GB23093@amd.com>
-References: <11966016811565-git-send-email-joerg.roedel@amd.com>
- <11966016814058-git-send-email-joerg.roedel@amd.com>
- <20071204123809.GD27286@elte.hu> <20071204150652.GJ6945@amd.com>
- <20071204210751.GH32018@elte.hu>
+	Wed, 5 Dec 2007 05:59:23 -0500
+Message-ID: <47568481.50802@cateee.net>
+Date: Wed, 05 Dec 2007 11:59:13 +0100
+From: "Giacomo A. Catenazzi" <cate@cateee.net>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-In-Reply-To: <20071204210751.GH32018@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 05 Dec 2007 10:52:37.0151 (UTC)
- FILETIME=[F2CA92F0:01C8372C]
-X-WSS-ID: 6B485D720QK3808864-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+To: Diego Calleja <diegocg@gmail.com>
+CC: "" <jamagallon@ono.com>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel Development & Objective-C
+References: <474EAD18.6040408@stellatravel.co.uk>	<20071130143445.GA2310@csclub.uwaterloo.ca>	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>	<4751BE0D.3050609@argo.co.il>	<p733aukyl8n.fsf@bingen.suse.de>	<47539030.10600@argo.co.il>	<20071203095022.GA28560@one.firstfloor.org>	<4753ECA5.2010604@argo.co.il>	<20071203211353.GA4009@1wt.eu>	<20071203223902.1194aa69@werewolf>	<20071203215727.543fc757@the-village.bc.nu>	<20071204224745.51e6c2b1@werewolf> <20071204232045.212ba1bf.diegocg@gmail.com>
+In-Reply-To: <20071204232045.212ba1bf.diegocg@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 10:07:54PM +0100, Ingo Molnar wrote:
+Diego Calleja wrote:
+> El Tue, 4 Dec 2007 22:47:45 +0100, "J.A. Magallón" <jamagallon@ono.com> escribió:
 > 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+>> That is what I like of C++, with good placement of high level features
+>> like const's and & (references) one can gain fine control over what
+>> gets copied or not.
 > 
-> > On Tue, Dec 04, 2007 at 01:38:09PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > 
-> > > > +#define _PAGE_PRESENT	(_AC(1,UL)<<_PAGE_BIT_PRESENT)
-> > > 
-> > > please run patches through scripts/checkpatch.pl, it gives:
-> > > 
-> > >   total: 10 errors, 0 warnings, 42 lines checked
-> > > 
-> > > (please send a followup cleanup patch - i picked up your series and this 
-> > > is a minor cleanliness issue)
-> > 
-> > Sorry, forgot to check the patches before submission. Will cleanup and 
-> > resubmit soon.
-> 
-> please if possible send a delta against x86.git, not a replacement 
-> patch. It's easier for the patchflow.
+> But...if there's some way Linux can get "language improvements", is with
+> new C standards/gccextensions/etc. It'd be nice if people tried to add
+> (useful) C extensions to gcc, instead of proposing some random language :)
 
-Not sure I understand you right here. Do you mean a patch on top of my
-previous patches?
+But nobody know such extensions.
+I think that the core kernel will remain in C, because
+there are no problems and no improvement possible
+(with other language)
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+But the drivers side has more problems. There is a lot
+of copy-paste, quality is often not high, not all developers
+know well linux kernel, and not well maintained with new
+or better internal API. So if we found a good template
+or a good language to help *some* drivers without
+causing a lot of problem to the rest of community, it would
+be nice.
 
+I don't think that we have written in stone that kernel
+drivers should be written only in C, but actually there is
+no good alternative.
 
+But I think it is a huge task to find a language, a
+prototype of API and convert some testing drivers.
+And there is no guarantee of good result.
+
+ciao
+	cate
