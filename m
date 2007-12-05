@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbXLEUYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbXLEUYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbXLEUYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 15:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXLEUYG
+	id S1754803AbXLEUYs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 15:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbXLEUYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 15:24:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36442 "EHLO mx3.mail.elte.hu"
+	Wed, 5 Dec 2007 15:24:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35756 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbXLEUYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 15:24:05 -0500
-Date: Wed, 5 Dec 2007 21:22:57 +0100
+	id S1752105AbXLEUYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 15:24:39 -0500
+Date: Wed, 5 Dec 2007 21:24:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
-Subject: Re: [PATCH 0/9 - v2] Integrate system.h
-Message-ID: <20071205202257.GB14570@elte.hu>
-References: <1196867313972-git-send-email-gcosta@redhat.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Andrew Morton <akpm@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] UML - change sigcontext fields to match x86
+Message-ID: <20071205202416.GC14570@elte.hu>
+References: <20071205163024.GA7241@c2.user-mode-linux.org> <20071205164816.GB25641@elte.hu> <20071205180959.GA7934@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1196867313972-git-send-email-gcosta@redhat.com>
+In-Reply-To: <20071205180959.GA7934@c2.user-mode-linux.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,12 +36,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+* Jeff Dike <jdike@addtoit.com> wrote:
 
-> At Ingo's request, here it goes a new patchset, that actually applies 
-> ontop of the x86 tree (mm branch). Besides this issue, I've also 
-> included a patch that remove the cr8 references, as Andi suggested.
+> On Wed, Dec 05, 2007 at 05:48:16PM +0100, Ingo Molnar wrote:
+> > thanks, we indeed missed those. Should we carry this in x86.git, or 
+> > would you like to carry this in your UML tree?
+> 
+> Probably better for it to go in x86.git - that way it travels with 
+> your sigcontext patch.
 
-thanks - i've picked them up.
+ok, added it.
 
 	Ingo
