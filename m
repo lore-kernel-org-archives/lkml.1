@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbXLEKrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXLEKsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbXLEKrW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbXLEKrH
+	id S1753909AbXLEKsW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbXLEKsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:47:07 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44752 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbXLEKrF (ORCPT
+	Wed, 5 Dec 2007 05:48:12 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:31816 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbXLEKsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:47:05 -0500
-Date: Wed, 5 Dec 2007 19:50:20 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Pavel Emelianov <xemul@sw.ru>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       "Martin J. Bligh" <mbligh@google.com>,
-       Andy Whitcroft <andyw@uk.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: What can we do to get ready for memory controller merge in
- 2.6.25
-Message-Id: <20071205195020.c44b7a5e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20071130191114.866b5ce0.kamezawa.hiroyu@jp.fujitsu.com>
-References: <474ED005.7060300@linux.vnet.ibm.com>
-	<200711301311.48291.nickpiggin@yahoo.com.au>
-	<474F7FDF.3000506@linux.vnet.ibm.com>
-	<20071130191114.866b5ce0.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Dec 2007 05:48:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kRHbtWSAjcC+N/LnEe7v15nVQ8Z26v02wy6lDhAy+AAu8c3UTlLCZxhIxYRBTJ2feFhFqBrpnz8swp6Ca1ROA36S4iBg9Zu+N/ocPkPKO8ML5ik3uDY92aVTOAdJnnX+hWm04jbYl9Wru9raMUpV3ioIJjrSkDIgfYXccnscmNQ=
+Message-ID: <de8d50360712050248u70229b8cib6a28903ef830ad1@mail.gmail.com>
+Date: Wed, 5 Dec 2007 02:48:07 -0800
+From: "Andrew Pinski" <pinskia@gmail.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [RFC] [PATCH] 32-bit pointers in x86-64
+Cc: Luca <luca.b633@gmail.com>, gcc@gcc.gnu.org, binutils@sourceware.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47567DF8.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1ba5638c0711250829o416e3ccasba572d3c205ea7f4@mail.gmail.com>
+	 <de8d50360711251045l4566f894m92fbb32d00fa362@mail.gmail.com>
+	 <47567DF8.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Nov 2007 19:11:14 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> I'd like to post some patches below in the next week.
->   - throttling the number of callers of try_to_free_mem_cgroup_pages()
->   - background reclaim and high/low watermark.
->   - some cleanups.
-> 
-I'd like to hold off "big changes" until the end of 2.6.25 merge window
-and to make current memory controller be tested by many people.
+On 12/5/07, Jan Beulich <jbeulich@novell.com> wrote:
+> >>> "Andrew Pinski" <pinskia@gmail.com> 25.11.07 19:45 >>>
+> >On 11/25/07, Luca <luca.b633@gmail.com> wrote:
+> >> 7.1. Add __attribute__((pointer_size(XXX))) and #pragma pointer_size
+> >> to allow 64-bit pointers in 32-bit mode and viceversa
+> >
+> >This is already there, try using __attribute__((mode(DI) )).
+>
+> Hmm, unless this is a new feature in 4.3, I can't seem to get this to work on
+> either i386 (using mode DI) or x86-64 (using mode SI). Could you clarify?
 
-I'll maintain new feature patches in countainer mailing list for a while.
+This only works when you add support for the different pointer modes.
+I was saying the middle support for this feature was already there,
+just the target support was not.
 
-Thanks,
--Kame
+Also there are issues with mode on pointers for C++, I don't know what
+they are though.
 
+Note this feature is used on the s390 target and also the ia64-hpux targets.
+--Pinski
