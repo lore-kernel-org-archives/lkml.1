@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbXLEWuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbXLEW7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbXLEWuK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 17:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXLEWt6
+	id S1753849AbXLEW7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 17:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXLEW7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 17:49:58 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:45264
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751943AbXLEWt6 (ORCPT
+	Wed, 5 Dec 2007 17:59:10 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2773 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752146AbXLEW7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 17:49:58 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH] sched: update root-domain spans upon departure
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, ghaskins@novell.com
-Date: Wed, 05 Dec 2007 17:27:41 -0500
-Message-ID: <20071205222619.4463.63899.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 5 Dec 2007 17:59:09 -0500
+Date: Wed, 5 Dec 2007 23:59:05 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Wagner Ferenc <wferi@niif.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: bonding sysfs output
+Message-ID: <20071205235905.7e8ac1b1@hyperion.delvare>
+In-Reply-To: <87lk8lflzf.fsf@szonett.ki.iif.hu>
+References: <87tznafjeu.fsf@szonett.ki.iif.hu>
+	<20071125205150.4e49915f.akpm@linux-foundation.org>
+	<87lk8lflzf.fsf@szonett.ki.iif.hu>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-  This patch should have been rolled into the series I dropped on you
-  yesterday, but was an oversight.  Please apply to sched-devel at your
-  earliest convenience.
+Hi Wagner,
 
--Greg
+On Mon, 26 Nov 2007 09:29:40 +0100, Wagner Ferenc wrote:
+> On the policy side: some files are not applicable to some types of
+> bonds, and return a single linefeed in that case.  Except for one
+> single case, which returns 'NA\n'.  The patch changes these cases into
+> emtpy files.
 
------------------------
+IMHO a better approach would be to not create the files at all when
+they make no sense for a given type of bond.
 
-sched: update root-domain spans upon departure
-
-We shouldnt leave cpus enabled in the spans if that RQ has left the domain.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- kernel/sched.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 05a9a81..33f8b0c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5845,6 +5845,10 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
- 
- 		if (atomic_dec_and_test(&old_rd->refcount))
- 			kfree(old_rd);
-+		else {
-+			cpu_clear(rq->cpu, old_rd->span);
-+			cpu_clear(rq->cpu, old_rd->online);
-+		}
- 	}
- 
- 	atomic_inc(&rd->refcount);
-
+-- 
+Jean Delvare
