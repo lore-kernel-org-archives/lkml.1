@@ -1,100 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbXLEIAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbXLEIAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbXLEIAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 03:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbXLEHzk
+	id S1756033AbXLEIAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 03:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbXLEHzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 02:55:40 -0500
-Received: from mail.suse.de ([195.135.220.2]:38668 "EHLO mx1.suse.de"
+	Wed, 5 Dec 2007 02:55:41 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38672 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbXLEHzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751008AbXLEHzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Dec 2007 02:55:12 -0500
-Message-Id: <20071205071628.223376000@nick.local0.net>
+Message-Id: <20071205071627.900265000@nick.local0.net>
 References: <20071205071547.701344000@nick.local0.net>
 User-Agent: quilt/0.46-14
-Date: Wed, 05 Dec 2007 18:16:01 +1100
+Date: Wed, 05 Dec 2007 18:15:58 +1100
 From: npiggin@suse.de
 To: akpm@linux-foundation.org
-Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Subject: [patch 14/18] oss: via nopage
-Content-Disposition: inline; filename=oss-via-nopage.patch
+Cc: rolandd@cisco.com, mshefty@ichips.intel.com, hal.rosenstock@gmail.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [patch 11/18] ib: nopage
+Content-Disposition: inline; filename=ib-nopage.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert OSS via driver from nopage to fault.
-Remove redundant vma range checks.
+Convert IB from nopage to fault.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: jgarzik@pobox.com
+Cc: rolandd@cisco.com
+Cc: mshefty@ichips.intel.com
+Cc: hal.rosenstock@gmail.com
+Cc: general@lists.openfabrics.org
 Cc: linux-kernel@vger.kernel.org
 ---
- sound/oss/via82cxxx_audio.c |   28 +++++++++-------------------
- 1 file changed, 9 insertions(+), 19 deletions(-)
+ drivers/infiniband/hw/ipath/ipath_debug.h    |    4 +--
+ drivers/infiniband/hw/ipath/ipath_file_ops.c |   29 +++++++++------------------
+ 2 files changed, 12 insertions(+), 21 deletions(-)
 
-Index: linux-2.6/sound/oss/via82cxxx_audio.c
+Index: linux-2.6/drivers/infiniband/hw/ipath/ipath_file_ops.c
 ===================================================================
---- linux-2.6.orig/sound/oss/via82cxxx_audio.c
-+++ linux-2.6/sound/oss/via82cxxx_audio.c
-@@ -2099,8 +2099,7 @@ static void via_dsp_cleanup (struct via_
+--- linux-2.6.orig/drivers/infiniband/hw/ipath/ipath_file_ops.c
++++ linux-2.6/drivers/infiniband/hw/ipath/ipath_file_ops.c
+@@ -1120,33 +1120,24 @@ bail:
  }
  
- 
--static struct page * via_mm_nopage (struct vm_area_struct * vma,
--				    unsigned long address, int *type)
-+static int via_mm_fault (struct vm_area_struct *vma, struct vm_fault *vmf)
+ /*
+- * ipath_file_vma_nopage - handle a VMA page fault.
++ * ipath_file_vma_fault - handle a VMA page fault.
+  */
+-static struct page *ipath_file_vma_nopage(struct vm_area_struct *vma,
+-					  unsigned long address, int *type)
++static int ipath_file_vma_fault(struct vm_area_struct *vma,
++					struct vm_fault *vmf)
  {
- 	struct via_info *card = vma->vm_private_data;
- 	struct via_channel *chan = &card->ch_out;
-@@ -2108,22 +2107,14 @@ static struct page * via_mm_nopage (stru
- 	unsigned long pgoff;
- 	int rd, wr;
+-	unsigned long offset = address - vma->vm_start;
+-	struct page *page = NOPAGE_SIGBUS;
+-	void *pageptr;
++	struct page *page;
  
--	DPRINTK ("ENTER, start %lXh, ofs %lXh, pgoff %ld, addr %lXh\n",
--		 vma->vm_start,
--		 address - vma->vm_start,
--		 (address - vma->vm_start) >> PAGE_SHIFT,
--		 address);
+-	/*
+-	 * Convert the vmalloc address into a struct page.
+-	 */
+-	pageptr = (void *)(offset + (vma->vm_pgoff << PAGE_SHIFT));
+-	page = vmalloc_to_page(pageptr);
++	page = vmalloc_to_page((void *)(vmf->pgoff << PAGE_SHIFT));
+ 	if (!page)
+-		goto out;
 -
--        if (address > vma->vm_end) {
--		DPRINTK ("EXIT, returning NOPAGE_SIGBUS\n");
--		return NOPAGE_SIGBUS; /* Disallow mremap */
--	}
-+	DPRINTK ("ENTER, pgoff %ld\n", vmf->pgoff);
-+
-         if (!card) {
--		DPRINTK ("EXIT, returning NOPAGE_SIGBUS\n");
--		return NOPAGE_SIGBUS;	/* Nothing allocated */
-+		DPRINTK ("EXIT, returning VM_FAULT_SIGBUS\n");
-+		return VM_FAULT_SIGBUS;	/* Nothing allocated */
- 	}
- 
--	pgoff = vma->vm_pgoff + ((address - vma->vm_start) >> PAGE_SHIFT);
-+	pgoff = vmf->pgoff;
- 	rd = card->ch_in.is_mapped;
- 	wr = card->ch_out.is_mapped;
- 
-@@ -2150,9 +2141,8 @@ static struct page * via_mm_nopage (stru
- 	DPRINTK ("EXIT, returning page %p for cpuaddr %lXh\n",
- 		 dmapage, (unsigned long) chan->pgtbl[pgoff].cpuaddr);
- 	get_page (dmapage);
+-	/* Increment the reference count. */
++		return VM_FAULT_SIGBUS;
+ 	get_page(page);
 -	if (type)
 -		*type = VM_FAULT_MINOR;
--	return dmapage;
-+	vmf->page = dmapage;
+-out:
+-	return page;
++	vmf->page = page;
++
 +	return 0;
  }
  
+ static struct vm_operations_struct ipath_file_vm_ops = {
+-	.nopage = ipath_file_vma_nopage,
++	.fault = ipath_file_vma_fault,
+ };
  
-@@ -2165,7 +2155,7 @@ static int via_mm_swapout (struct page *
- 
- 
- static struct vm_operations_struct via_mm_ops = {
--	.nopage		= via_mm_nopage,
-+	.fault		= via_mm_fault,
- 
- #ifndef VM_RESERVED
- 	.swapout	= via_mm_swapout,
+ static int mmap_kvaddr(struct vm_area_struct *vma, u64 pgaddr,
+Index: linux-2.6/drivers/infiniband/hw/ipath/ipath_debug.h
+===================================================================
+--- linux-2.6.orig/drivers/infiniband/hw/ipath/ipath_debug.h
++++ linux-2.6/drivers/infiniband/hw/ipath/ipath_debug.h
+@@ -55,7 +55,7 @@
+ #define __IPATH_PKTDBG      0x80	/* print packet data */
+ /* print process startup (init)/exit messages */
+ #define __IPATH_PROCDBG     0x100
+-/* print mmap/nopage stuff, not using VDBG any more */
++/* print mmap/fault stuff, not using VDBG any more */
+ #define __IPATH_MMDBG       0x200
+ #define __IPATH_ERRPKTDBG   0x400
+ #define __IPATH_USER_SEND   0x1000	/* use user mode send */
+@@ -81,7 +81,7 @@
+ #define __IPATH_VERBDBG   0x0	/* very verbose debug */
+ #define __IPATH_PKTDBG    0x0	/* print packet data */
+ #define __IPATH_PROCDBG   0x0	/* process startup (init)/exit messages */
+-/* print mmap/nopage stuff, not using VDBG any more */
++/* print mmap/fault stuff, not using VDBG any more */
+ #define __IPATH_MMDBG     0x0
+ #define __IPATH_EPKTDBG   0x0	/* print ethernet packet data */
+ #define __IPATH_IPATHDBG  0x0	/* Ethernet (IPATH) table dump on */
 
 -- 
 
