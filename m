@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbXLETTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbXLETWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbXLETTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 14:19:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXLETTk
+	id S1753210AbXLETWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 14:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXLETWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 14:19:40 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:10406 "EHLO
+	Wed, 5 Dec 2007 14:22:16 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:15250 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbXLETTj (ORCPT
+	with ESMTP id S1751391AbXLETWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 14:19:39 -0500
+	Wed, 5 Dec 2007 14:22:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=received:from:to:cc:subject:date:message-id:x-mailer;
-        b=Yo6ooc4l3p+0ynZmaJvZ76cVC7gNbykgj4ajDVr00kaZ2J0+D1mDoIDmWMX1joqOjouUq2zx3iA60hYKjkXUomO42+95De1qGLn4rm6ocHR/MoHZJbqje+FcQqWlHr0ZTY/xg6JWJO18a58UK5xUpuahZouwPknNumkicALDg5k=
+        b=EbnJMfzslQFXdwG8BHII7dXQSZdrLRlB5og5xExbSW6+GB3qWAjQZslxpjjDHeyN8VFJUFL9pDxn/DpB457gBXc3pxddB7lvAbTz+4QQEhKXpYm7HTgLmOHHCfbn41qEg1RfwxfaylyfB8R4qJ3IHrrn6rutBABuZygs+y+FcN4=
 From: Denis Cheng <crquan@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
+To: Doug Thompson <dougthompson@xmission.com>
 Cc: linux-kernel@vger.kernel.org
 Subject: [PATCH 07/20] drivers/edac/: use LIST_HEAD instead of LIST_HEAD_INIT
-Date: Thu,  6 Dec 2007 03:19:13 +0800
-Message-Id: <1196882353-18827-1-git-send-email-crquan@gmail.com>
+Date: Thu,  6 Dec 2007 03:20:32 +0800
+Message-Id: <1196882432-18857-1-git-send-email-crquan@gmail.com>
 X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
