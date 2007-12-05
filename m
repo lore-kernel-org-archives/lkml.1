@@ -1,87 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbXLEGHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751519AbXLEGH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbXLEGHM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 01:07:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXLEGG6
+	id S1751519AbXLEGH4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 01:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbXLEGHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 01:06:58 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52065 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753636AbXLEGG5 (ORCPT
+	Wed, 5 Dec 2007 01:07:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49259
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750993AbXLEGHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 01:06:57 -0500
-Date: Tue, 4 Dec 2007 22:06:24 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Holmes - Sun Microsystems <David.Holmes@Sun.COM>
-cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -v2] fix for futex_wait signal stack corruption
-In-Reply-To: <4756382D.4040904@sun.com>
-Message-ID: <alpine.LFD.0.9999.0712042151250.13796@woody.linux-foundation.org>
-References: <1196801858.1645.37.camel@localhost.localdomain> <alpine.LFD.0.9999.0712041307270.32379@woody.linux-foundation.org> <20071204213924.GA14915@goodmis.org> <alpine.LFD.0.9999.0712041436100.13796@woody.linux-foundation.org>
- <Pine.LNX.4.58.0712042016540.18042@gandalf.stny.rr.com> <alpine.LFD.0.9999.0712041740490.13796@woody.linux-foundation.org> <Pine.LNX.4.58.0712042135030.18314@gandalf.stny.rr.com> <alpine.LFD.0.9999.0712041935140.13796@woody.linux-foundation.org>
- <4756382D.4040904@sun.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 5 Dec 2007 01:07:45 -0500
+Date: Tue, 04 Dec 2007 22:07:44 -0800 (PST)
+Message-Id: <20071204.220744.166144729.davem@davemloft.net>
+To: greearb@candelatech.com
+Cc: ebiederm@xmission.com, kaber@trash.net, shemminger@linux-foundation.org,
+       lkml@rtr.ca, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: namespace support requires network modules to say "GPL"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4755A2FD.9020608@candelatech.com>
+References: <47544896.7070101@candelatech.com>
+	<m18x4axrx2.fsf@ebiederm.dsl.xmission.com>
+	<4755A2FD.9020608@candelatech.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ben Greear <greearb@candelatech.com>
+Date: Tue, 04 Dec 2007 10:57:01 -0800
 
+> echo add_my_bridge my_br1 eth0 namespaceX eth1 namespaceY > 
+> /proc/net/foo/config
 
-On Wed, 5 Dec 2007, David Holmes - Sun Microsystems wrote:
-> 
-> While this was observed with process control signals, my concern was that
-> other signals might cause pthread_cond_timedwait to return immediately in the
-> same way. The test program allows for SIGUSR1 and SIGRTMIN testing as well,
-> but these other signals did not cause the immediate return. But it would seem
-> from Steven's analysis that this is just a fortuitous result. If I understand
-> things correctly, any interruption of pthread_cond_timedwait by a signal,
-> could result in waiting until an arbitrary time - depending on how the stack
-> value was corrupted. Is that correct?
+Each process executes in a namespace, so specifying the namespace
+is redundant, just fetch the current process's namespace to pass
+into the dev_get_by_*() routines.
 
-No, very few things can actually cause the restart_block path to be taken. 
-An actual signal execution would turn that into an EINTR, the only case 
-that should ever trigger this is a signal that causes some kernel action 
-(ie the system call *is* interrupted), but does not actually result in any 
-user-visible state changes.
-
-The classic case is ^Z + bg, but iirc you can trigger it with ptrace too. 
-And I think two threads racing to pick up the same signal can cause it 
-too, for that matter (ie one thread takes the signal, the other one got 
-interrupted but there's nothing there, so it just causes a system call 
-restart).
-
-There's basically two different system call restart mechanisms in the 
-kernel:
-
- - returning -ERESTARTNOHAND will cause the system call to be restarted 
-   with the *original* arguments if no signal handler was actually 
-   invoked. This has been around for a long time, and is used by a lot of 
-   system calls. It's fine for things that are idempotent, ie the argument 
-   meaning doesn't change over time (things like a "read()" system call, 
-   for example)
-
- - the "restart_block" model that returns -ERESTARTBLOCK, which will cause 
-   the system call to be restarted with the arguments specified in the 
-   system call restart block. This is for system calls that are *not* 
-   idempotent, ie the argument might be a relative timeout or something 
-   like that, where we need to actually behave *differently* when 
-   restarting.
-
-The latter case is "new" (it's been around for a while, but relative to 
-the ERESTARTNOHAND one), and it relies on the system call itself setting 
-up its restart point and the argument save area. And each such system call 
-can obviously screw it up by saving/restoring the arguments with the 
-incorrect semantics.
-
-So this bug was really (a) specific to that particular futex restart 
-mechanism, and (b) only triggers for the (rather unusual) case where the 
-system call gets interrupted by a signal, but no signal handler actually 
-happens. In practice, ^Z is the most common case by far (other signals are 
-either ignored and don't even cause an interrupt event in the first place, 
-or they are "real" signals, and cause a signal handler to be invoked).
-
-			Linus
+Anyone interested in using a different namespace's devices
+can change the namespace the process is executing in before
+the procfs echo.
