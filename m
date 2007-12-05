@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbXLEKYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbXLEKYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbXLEKYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXLEKYQ
+	id S1754636AbXLEKYf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbXLEKYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:24:16 -0500
-Received: from barracuda.cse.unsw.EDU.AU ([129.94.172.9]:56545 "EHLO
+	Wed, 5 Dec 2007 05:24:17 -0500
+Received: from barracuda.cse.unsw.EDU.AU ([129.94.172.9]:56546 "EHLO
 	barracuda.cse.unsw.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbXLEKYP (ORCPT
+	with ESMTP id S1751833AbXLEKYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Dec 2007 05:24:15 -0500
-X-Greylist: delayed 1041 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Dec 2007 05:24:15 EST
-X-ASG-Debug-ID: 1196849229-7b1a00130000-xx1T2L
+X-ASG-Debug-ID: 1196849212-7b1400130000-xx1T2L
 X-Barracuda-URL: http://129.94.172.9:8000/cgi-bin/mark.cgi
 X-CSE-Spam-Checker-Version: SpamAssassin 3.1.3 (2006-06-01) on 
 	tone.orchestra.cse.unsw.EDU.AU
@@ -20,46 +19,51 @@ X-CSE-Spam-Status: No, score=-2.6 required=4.0 tests=BAYES_00,UNPARSEABLE_RELAY
 	autolearn=ham version=3.1.3
 From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
 To: Jens Axboe <jens.axboe@oracle.com>
-Date: Wed, 05 Dec 2007 21:07:07 +1100
-Message-ID: <4756784B.40607@gelato.unsw.edu.au>
+Date: Wed, 05 Dec 2007 21:06:50 +1100
+Message-ID: <4756783A.5020204@gelato.unsw.edu.au>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
 CC: linux-kernel@vger.kernel.org, npiggin@suse.de,
        Peter Chubb <peterc@gelato.unsw.edu.au>
-X-ASG-Orig-Subj: [PATCH] as-iosched: fix write batch start point
-Subject: [PATCH] as-iosched: fix write batch start point
+X-ASG-Orig-Subj: [PATCH] as-iosched: fix incorrect comments
+Subject: [PATCH] as-iosched: fix incorrect comments
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Barracuda-Connect: tone.orchestra.cse.unsw.EDU.AU[129.94.242.59]
-X-Barracuda-Start-Time: 1196849229
+X-Barracuda-Start-Time: 1196849212
 X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at cse.unsw.edu.au
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New write batches currently start from where the last one completed.
-We have no idea where the head is after switching batches, so this
-makes little sense.  Instead, start the next batch from the request
-with the earliest deadline in the hope that we avoid a deadline
-expiry later on.
+Two comments refer to deadlines applying to reads only.  This is
+not the case.
 
 Signed-off-by: Aaron Carroll <aaronc@gelato.unsw.edu.au>
 ---
- block/as-iosched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ block/as-iosched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 4513fc5..555cd6b 100644
+index dc715a5..4513fc5 100644
 --- a/block/as-iosched.c
 +++ b/block/as-iosched.c
-@@ -1097,7 +1097,8 @@ dispatch_writes:
- 		ad->batch_data_dir = REQ_ASYNC;
- 		ad->current_write_count = ad->write_batch_count;
- 		ad->write_batch_idled = 0;
--		rq = ad->next_rq[ad->batch_data_dir];
-+		rq = rq_entry_fifo(ad->fifo_list[REQ_ASYNC].next);
-+		ad->last_check_fifo[REQ_ASYNC] = jiffies;
- 		goto dispatch_request;
- 	}
+@@ -880,7 +880,7 @@ static void as_remove_queued_request(struct request_queue *q,
+ }
  
+ /*
+- * as_fifo_expired returns 0 if there are no expired reads on the fifo,
++ * as_fifo_expired returns 0 if there are no expired requests on the fifo,
+  * 1 otherwise.  It is ratelimited so that we only perform the check once per
+  * `fifo_expire' interval.  Otherwise a large number of expired requests
+  * would create a hopeless seekstorm.
+@@ -1159,7 +1159,7 @@ static void as_add_request(struct request_queue *q, struct request *rq)
+ 	as_add_rq_rb(ad, rq);
+ 
+ 	/*
+-	 * set expire time (only used for reads) and add to fifo list
++	 * set expire time and add to fifo list
+ 	 */
+ 	rq_set_fifo_time(rq, jiffies + ad->fifo_expire[data_dir]);
+ 	list_add_tail(&rq->queuelist, &ad->fifo_list[data_dir]);
 -- 
