@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbXLEOMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbXLEOOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753098AbXLEOMS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 09:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXLEOMK
+	id S1753338AbXLEOOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 09:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXLEOOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 09:12:10 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:41725 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbXLEOMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 09:12:08 -0500
-Date: Wed, 5 Dec 2007 19:42:02 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com, rsa@us.ibm.com,
-       apw@shadowen.org, balbir@in.ibm.com
-Subject: Re: 2.6.24-rc4-mm1 kobject changes broken with hvcs driver on powerpc
-Message-ID: <20071205141202.GB13189@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	Wed, 5 Dec 2007 09:14:41 -0500
+Received: from z2.cat.iki.fi ([212.16.98.133]:36707 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752179AbXLEOOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 09:14:40 -0500
+Date: Wed, 5 Dec 2007 16:14:39 +0200
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: matti.aarnio@zmailer.org, linux-kernel@vger.kernel.org
+Subject: Re: Does vger.kernel.org automatically drop spams?
+Message-ID: <20071205141439.GX6372@mea-ext.zmailer.org>
+References: <200712052225.IHJ09818.MQLtJOFOSFHVOF@I-love.SAKURA.ne.jp> <20071205133545.GV6372@mea-ext.zmailer.org> <200712052245.AIH87554.JSOFFLFtVOOQMH@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200712052245.AIH87554.JSOFFLFtVOOQMH@I-love.SAKURA.ne.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Wed, Dec 05, 2007 at 10:45:15PM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> Matti Aarnio wrote:
+> > > Does vger.kernel.org have spam filter and automatically drop spams?
+> > 
+> > Yes.  Yes.  And even worse: SILENTLY drop it.  The reason was:
+> > 
+> >      global taboo header: m!OJFS!
+> > 
+> > I don't recall why that was declared taboo, but it apparently bites
+> > on References: headers..  Entirely unintentional, I assure you.
+> 
+> I see. Thank you.
+> 
+> Well, may be my address was registered as a spammer.
 
-The 2.6.24-rc4-mm1 kernel build fails with build failure,
+No.
 
-  CC      drivers/char/hvcs.o
-drivers/char/hvcs.c: In function ‘hvcs_open’:
-drivers/char/hvcs.c:1180: error: wrong type argument to unary exclamation mark
-make[2]: *** [drivers/char/hvcs.o] Error 1
-make[1]: *** [drivers/char] Error 2
-make: *** [drivers] Error 2
+> What should I do to post my message?
 
-The kref_get begin void return type, check for the kobject return type
-as in the previous kobject_get()
- 
-        if (!kref_get(&hvcsd->kref)) {
-                spin_unlock_irqrestore(&hvcsd->lock, flags); 
-                printk(KERN_ERR "HVCS: Kobject of open"
-                        " hvcs doesn't exist.\n");
-                return -EFAULT; /* Is this the right return value? */
-        }
+Wait a bit.
 
-I have tested for the build failure only.
+> Should I use different From: address?
+> Should I stop sending to multiple lists?
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux-2.6.24-rc4/drivers/char/hvcs.c	2007-12-05 12:17:37.000000000 +0530
-+++ linux-2.6.24-rc4/drivers/char/~hvcs.c	2007-12-05 19:17:12.000000000 +0530
-@@ -1177,12 +1177,8 @@ fast_open:
- 	hvcsd = tty->driver_data;
- 
- 	spin_lock_irqsave(&hvcsd->lock, flags);
--	if (!kref_get(&hvcsd->kref)) {
--		spin_unlock_irqrestore(&hvcsd->lock, flags);
--		printk(KERN_ERR "HVCS: Kobject of open"
--			" hvcs doesn't exist.\n");
--		return -EFAULT; /* Is this the right return value? */
--	}
-+	kref_get(&hvcsd->kref);
-+	spin_unlock_irqrestore(&hvcsd->lock, flags);
- 
- 	hvcsd->open_count++;
- 
+No, no.
+
+
+> > We (the postmasters) can approve your messages for posting, but it
+> > will take a few hours that I get off work, and have time to do it.
+> > (I need to do some additional setups, all those lists are not
+> > in my existing majordomo password database..)
+> 
+> Should I wait for your approval?
+
+Please do, unless DaveM can do it quicker than me..
+
+> Regards.
+
+/Matti Aarnio
