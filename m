@@ -1,81 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbXLEFYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbXLEFbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbXLEFYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 00:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXLEFYE
+	id S1752918AbXLEFbK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 00:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXLEFay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 00:24:04 -0500
-Received: from [222.73.24.84] ([222.73.24.84]:54847 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbXLEFYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 00:24:03 -0500
-Message-ID: <4756359F.5000008@cn.fujitsu.com>
-Date: Wed, 05 Dec 2007 13:22:39 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 5 Dec 2007 00:30:54 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:5035 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXLEFax (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 00:30:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:references:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:in-reply-to:x-mimeole:thread-index;
+        b=c1yH0xT+9Yfw/a+bEyDXKMAban64d6qsLXjQXVSQBjgDIaUVKsRHeuCxN2O1GiZ8GGRaeSb4YP97CAIYeEiRlxY4sDNdp94iaFFf3Q2FZD8OKCe2DzswTrtRFJqvubQEkqFlBlO3WzG2CVHFrzwJPXpTeEFZ9nVJ/HYSzJQ7XT8=
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: "'Herbert Xu'" <herbert@gondor.apana.org.au>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "'David Miller'" <davem@davemloft.net>
+References: <000001c8365a$e0e500c0$9c94fea9@jason> <E1IzgPL-0006HB-00@gondolin.me.apana.org.au>
+Subject: RE: [PATCH] NET: ASSERT_RTNL in __dev_set_promiscuity makes debug warning
+Date: Wed, 5 Dec 2007 14:30:10 +0900
+Message-ID: <006001c836ff$f0d59a30$9c94fea9@jason>
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/3] signal(i386): alternative signal stack wraparound
- occurs
-References: <474CF7D5.6010702@cn.fujitsu.com>	<474D05AE.60905@cn.fujitsu.com>	<20071204130218.GE31590@elte.hu> <20071204215251.60C6326F8D9@magilla.localdomain>
-In-Reply-To: <20071204215251.60C6326F8D9@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <E1IzgPL-0006HB-00@gondolin.me.apana.org.au>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+thread-index: Acg2xmvL8zedp1fjS9CSr98Vbboe9AAOBSUg
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Roland McGrath wrote::
->>> Thank you for your detailed explanation and patch. I tested your 
->>> patch, unfortunately it can not stop all kinds of overflow.
->> [...]
->>> So, the patch I posted is still needed 
->> thanks, i've picked up your fix for x86.git, for 2.6.25 merging.
+2007/12/5, Herbert Xu <herbert@gondor.apana.org.au>:
+> Joonwoo Park <joonwpark81@gmail.com> wrote:
+> > Hi,
+> > dev_set_rx_mode calls __dev_set_rx_mode with softirq disabled (by netif_tx_lock_bh)
+> > therefore __dev_set_promiscuity can be called with softirq disabled.
+> > It will cause in_interrupt() to return true and ASSERT_RTNL warning.
+> > Is there a good solution to fix it besides blowing ASSERT_RTNL up?
 > 
-> I just explained that not all overflows would be caught and that doing so
-> would violate the semantics of e.g. longjmp.  I don't see how the patch
-> you've included now doesn't still have all those problems.  I think it's wrong.
+> We've talked this one before on netdev.  It's on my todo list to fix.
+> The correct solution is to untangle this so that __dev_set_promiscuity
+> does not get called in the first place on BH paths.
+> 
+> Unfortunately I've been busy so I haven't completed the patches yet.
+> But as this problem is not urgent let's not just put on a bandaid.
 > 
 
-I am sorry, i don't understand how this is related to the semantics of e.g. longjmp.
-But, i am sure my patch solves all overflows. Ingo's patch can't catch the overflow 
-which is caught by "int i[1000];" in the handler function.
+Thanks Herbert,
+According to your opinion I tried a patch against davem/net-2.6.git
 
-Do you have more idea for me? Thanks.
+Thanks.
+Joonwoo
 
-Regards
-Shi Weihua
 
-By the way, I think Ingo's patch can be improved. 
+[NET]: Fix to __dev_set_promiscuity does not get called with softirq is disabled
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com>
-
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
 ---
---- linux-2.6.24-rc4-git1.orig/arch/x86/kernel/signal_32.c	2007-12-04 12:26:10.000000000 +0800
-+++ linux-2.6.24-rc4-git1/arch/x86/kernel/signal_32.c	2007-12-05 11:13:56.000000000 +0800
-@@ -297,8 +297,17 @@ get_sigframe(struct k_sigaction *ka, str
- 
- 	/* This is the X/Open sanctioned signal stack switching.  */
- 	if (ka->sa.sa_flags & SA_ONSTACK) {
--		if (sas_ss_flags(esp) == 0)
-+		int onstack = sas_ss_flags(esp);
-+		if (onstack == 0)
- 			esp = current->sas_ss_sp + current->sas_ss_size;
-+		else if(onstack == SS_ONSTACK){
-+			/*
-+			 * If we are on the alternate signal stack and would overflow it, don't.
-+			 * Return an always-bogus address instead so we will die with SIGSEGV.
-+			 */
-+			if (!likely(on_sig_stack(esp - frame_size)))
-+				return (void __user *) -1L;
-+		}
- 	}
- 
- 	/* This is the legacy signal stack switching. */
+ include/linux/netdevice.h |    3 +-
+ net/core/dev.c            |   57 +++++++++++++++++++++++++++++---------------
+ net/core/dev_mcast.c      |   21 +++++++++++++---
+ 3 files changed, 56 insertions(+), 25 deletions(-)
 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 1e6af4f..6532405 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1403,7 +1403,8 @@ extern int		register_netdev(struct net_device *dev);
+ extern void		unregister_netdev(struct net_device *dev);
+ /* Functions used for secondary unicast and multicast support */
+ extern void		dev_set_rx_mode(struct net_device *dev);
+-extern void		__dev_set_rx_mode(struct net_device *dev);
++extern int		__dev_set_rx_mode(struct net_device *dev);
++extern void		__dev_set_rx_mode_fini(struct net_device *dev);
+ extern int		dev_unicast_delete(struct net_device *dev, void *addr, int alen);
+ extern int		dev_unicast_add(struct net_device *dev, void *addr, int alen);
+ extern int 		dev_mc_delete(struct net_device *dev, void *addr, int alen, int all);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 86d6261..eb1a11f 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2822,39 +2822,50 @@ void dev_set_allmulti(struct net_device *dev, int inc)
+  *	filtering it is put in promiscous mode while unicast addresses
+  *	are present.
+  */
+-void __dev_set_rx_mode(struct net_device *dev)
++int __dev_set_rx_mode(struct net_device *dev)
+ {
+ 	/* dev_open will call this function so the list will stay sane. */
+ 	if (!(dev->flags&IFF_UP))
+-		return;
++		return 0;
+ 
+ 	if (!netif_device_present(dev))
+-		return;
++		return 0;
+ 
+-	if (dev->set_rx_mode)
++	if (dev->set_rx_mode) {
+ 		dev->set_rx_mode(dev);
+-	else {
+-		/* Unicast addresses changes may only happen under the rtnl,
+-		 * therefore calling __dev_set_promiscuity here is safe.
+-		 */
+-		if (dev->uc_count > 0 && !dev->uc_promisc) {
+-			__dev_set_promiscuity(dev, 1);
+-			dev->uc_promisc = 1;
+-		} else if (dev->uc_count == 0 && dev->uc_promisc) {
+-			__dev_set_promiscuity(dev, -1);
+-			dev->uc_promisc = 0;
+-		}
++		return 0;
++	}
++	return 1;
++}
+ 
+-		if (dev->set_multicast_list)
+-			dev->set_multicast_list(dev);
++void __dev_set_rx_mode_fini(struct net_device *dev)
++{
++	BUG_TRAP(dev->flags&IFF_UP);
++	BUG_TRAP(netif_device_present(dev));
++
++	/* Unicast addresses changes may only happen under the rtnl,
++	 * therefore calling __dev_set_promiscuity here is safe.
++	 */
++	if (dev->uc_count > 0 && !dev->uc_promisc) {
++		__dev_set_promiscuity(dev, 1);
++		dev->uc_promisc = 1;
++	} else if (dev->uc_count == 0 && dev->uc_promisc) {
++		__dev_set_promiscuity(dev, -1);
++		dev->uc_promisc = 0;
+ 	}
++
++	if (dev->set_multicast_list)
++		dev->set_multicast_list(dev);
+ }
+ 
+ void dev_set_rx_mode(struct net_device *dev)
+ {
++	int pending;
+ 	netif_tx_lock_bh(dev);
+-	__dev_set_rx_mode(dev);
++	pending = __dev_set_rx_mode(dev);
+ 	netif_tx_unlock_bh(dev);
++	if (pending)
++		__dev_set_rx_mode_fini(dev);
+ }
+ 
+ int __dev_addr_delete(struct dev_addr_list **list, int *count,
+@@ -2929,14 +2940,17 @@ int __dev_addr_add(struct dev_addr_list **list, int *count,
+ int dev_unicast_delete(struct net_device *dev, void *addr, int alen)
+ {
+ 	int err;
++	int pending = 0;
+ 
+ 	ASSERT_RTNL();
+ 
+ 	netif_tx_lock_bh(dev);
+ 	err = __dev_addr_delete(&dev->uc_list, &dev->uc_count, addr, alen, 0);
+ 	if (!err)
+-		__dev_set_rx_mode(dev);
++		pending = __dev_set_rx_mode(dev);
+ 	netif_tx_unlock_bh(dev);
++	if (pending)
++		__dev_set_rx_mode_fini(dev);
+ 	return err;
+ }
+ EXPORT_SYMBOL(dev_unicast_delete);
+@@ -2955,14 +2969,17 @@ EXPORT_SYMBOL(dev_unicast_delete);
+ int dev_unicast_add(struct net_device *dev, void *addr, int alen)
+ {
+ 	int err;
++	int pending = 0;
+ 
+ 	ASSERT_RTNL();
+ 
+ 	netif_tx_lock_bh(dev);
+ 	err = __dev_addr_add(&dev->uc_list, &dev->uc_count, addr, alen, 0);
+ 	if (!err)
+-		__dev_set_rx_mode(dev);
++		pending = __dev_set_rx_mode(dev);
+ 	netif_tx_unlock_bh(dev);
++	if (pending)
++		__dev_set_rx_mode_fini(dev);
+ 	return err;
+ }
+ EXPORT_SYMBOL(dev_unicast_add);
+diff --git a/net/core/dev_mcast.c b/net/core/dev_mcast.c
+index 69fff16..0170359 100644
+--- a/net/core/dev_mcast.c
++++ b/net/core/dev_mcast.c
+@@ -71,6 +71,7 @@
+ int dev_mc_delete(struct net_device *dev, void *addr, int alen, int glbl)
+ {
+ 	int err;
++	int pending = 0;
+ 
+ 	netif_tx_lock_bh(dev);
+ 	err = __dev_addr_delete(&dev->mc_list, &dev->mc_count,
+@@ -81,9 +82,11 @@ int dev_mc_delete(struct net_device *dev, void *addr, int alen, int glbl)
+ 		 *	loaded filter is now wrong. Fix it
+ 		 */
+ 
+-		__dev_set_rx_mode(dev);
++		pending = __dev_set_rx_mode(dev);
+ 	}
+ 	netif_tx_unlock_bh(dev);
++	if (pending)
++		__dev_set_rx_mode_fini(dev);
+ 	return err;
+ }
+ 
+@@ -94,12 +97,15 @@ int dev_mc_delete(struct net_device *dev, void *addr, int alen, int glbl)
+ int dev_mc_add(struct net_device *dev, void *addr, int alen, int glbl)
+ {
+ 	int err;
++	int pending = 0;
+ 
+ 	netif_tx_lock_bh(dev);
+ 	err = __dev_addr_add(&dev->mc_list, &dev->mc_count, addr, alen, glbl);
+ 	if (!err)
+-		__dev_set_rx_mode(dev);
++		pending = __dev_set_rx_mode(dev);
+ 	netif_tx_unlock_bh(dev);
++	if (pending)
++		__dev_set_rx_mode_fini(dev);
+ 	return err;
+ }
+ 
+@@ -119,6 +125,7 @@ int dev_mc_sync(struct net_device *to, struct net_device *from)
+ {
+ 	struct dev_addr_list *da, *next;
+ 	int err = 0;
++	int pending = 0;
+ 
+ 	netif_tx_lock_bh(to);
+ 	da = from->mc_list;
+@@ -140,9 +147,11 @@ int dev_mc_sync(struct net_device *to, struct net_device *from)
+ 		da = next;
+ 	}
+ 	if (!err)
+-		__dev_set_rx_mode(to);
++		pending = __dev_set_rx_mode(to);
+ 	netif_tx_unlock_bh(to);
+ 
++	if (pending)
++		__dev_set_rx_mode_fini(to);
+ 	return err;
+ }
+ EXPORT_SYMBOL(dev_mc_sync);
+@@ -161,6 +170,7 @@ EXPORT_SYMBOL(dev_mc_sync);
+ void dev_mc_unsync(struct net_device *to, struct net_device *from)
+ {
+ 	struct dev_addr_list *da, *next;
++	int pending;
+ 
+ 	netif_tx_lock_bh(from);
+ 	netif_tx_lock_bh(to);
+@@ -177,10 +187,13 @@ void dev_mc_unsync(struct net_device *to, struct net_device *from)
+ 		}
+ 		da = next;
+ 	}
+-	__dev_set_rx_mode(to);
++	pending = __dev_set_rx_mode(to);
+ 
+ 	netif_tx_unlock_bh(to);
+ 	netif_tx_unlock_bh(from);
++
++	if (pending)
++		__dev_set_rx_mode_fini(to);
+ }
+ EXPORT_SYMBOL(dev_mc_unsync);
+ 
+---
 
