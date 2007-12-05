@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbXLEKbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbXLEKcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbXLEKbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXLEKbl
+	id S1754914AbXLEKcB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXLEKbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 5 Dec 2007 05:31:43 -0500
+Received: from hs-out-0708.google.com ([64.233.178.247]:37888 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751472AbXLEKbl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Dec 2007 05:31:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44121 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbXLEKbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:31:40 -0500
-Date: Wed, 5 Dec 2007 11:31:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Holmes - Sun Microsystems <David.Holmes@Sun.COM>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [PATCH -v2] fix for futex_wait signal stack corruption
-Message-ID: <20071205103111.GD22792@elte.hu>
-References: <1196801858.1645.37.camel@localhost.localdomain> <alpine.LFD.0.9999.0712041307270.32379@woody.linux-foundation.org> <20071204213924.GA14915@goodmis.org> <alpine.LFD.0.9999.0712041436100.13796@woody.linux-foundation.org> <Pine.LNX.4.58.0712042016540.18042@gandalf.stny.rr.com> <alpine.LFD.0.9999.0712041740490.13796@woody.linux-foundation.org> <Pine.LNX.4.58.0712042135030.18314@gandalf.stny.rr.com> <alpine.LFD.0.9999.0712041935140.13796@woody.linux-foundation.org> <alpine.LFD.0.99999.0712050643440.3327@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.99999.0712050643440.3327@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=WFPNTy7gSzMN9ykh7Dst8bYTrIGV8D5KCNv6efnwmqss+ObSDvA78MmYOTlkanDDmI+Iib8Qhc+tF9LTVTvblpdIZ7QnPyFadtyGoUBcsYXxIoFOG1/KsdVOENETZeshRTf7zdCQ/pbuL+pbyEV1CPP9nnI5L+KfgrY22CRHVZQ=
+Subject: Re: Kernel Development & Objective-C
+From: Gilboa Davara <gilboad@gmail.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: LKML Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071204175046.GC2310@csclub.uwaterloo.ca>
+References: <474EAD18.6040408@stellatravel.co.uk>
+	 <20071130143445.GA2310@csclub.uwaterloo.ca>
+	 <53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>
+	 <4751BE0D.3050609@argo.co.il> <p733aukyl8n.fsf@bingen.suse.de>
+	 <47539030.10600@argo.co.il>
+	 <1196685331.3969.20.camel@gilboa-work-dev.localdomain>
+	 <20071204175046.GC2310@csclub.uwaterloo.ca>
+Content-Type: text/plain
+Date: Wed, 05 Dec 2007 12:31:34 +0200
+Message-Id: <1196850694.23475.8.camel@gilboa-work-dev.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> Just a minor nit. Can we please use "futex" instead of "fu" ? I'm just 
-> envisioning the next union member named "ba".
+On Tue, 2007-12-04 at 12:50 -0500, Lennart Sorensen wrote:
+> On Mon, Dec 03, 2007 at 02:35:31PM +0200, Gilboa Davara wrote:
+> > Intel's newest dual 10GbE NIC can easily (?) throw ~14M packets per
+> > second. (theoretical peak at 1514bytes/frame)
+> > Granted, installing such a device on a single CPU/single core machine is
+> > absurd - but even on an 8 core machine (2 x Xeon 53xx/54xx / AMD
+> > Barcelona) it can still generate ~1M packets/s per core.
 > 
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> 10GbE can't do 14M packets per second if the packets are 1514 bytes.  At
+> 10M packets per second you have less than 1000 bits per packet, which is
+> far from 1514bytes.
 > 
-> Please apply with the s/fu/futex/ change. This needs to go into stable 
-> .22/.23 as well.
+> 10Gbps gives you at most 1.25GBps, which at 1514 bytes per packet works
+> out to 825627 packets per second.  You could reach ~14M packets per
+> second with only the smallest packet size, which is rather unusual for
+> high throughput traffic, since you waste almost all the bytes on
+> overhead in that case.  But you do want to be able to handle at least a
+> million or two packets per second to do 10GbE.
 
-ok, i've tied it all up, collected the Acks and will push Steve's fix to 
-Linus via the scheduler git tree - is that fine with everyone? I think 
-there's enough time to get this tested - Linus's latest tree shows up in 
-Fedora rawhide in 1-2 days and tons of apps use futexes.
+... I corrected my math in the second email. [1] 
 
-	Ingo
+Never the less, a VOIP network (E.g. G729 and friends) can generate the
+maximum number of frames allowed on 10GbE Ethernet which is, AFAIR just
+below 15M -per- port. (~29M on a dual port card)
+
+While I doubt that any non-NPU based NIC can handle such a load, on
+mixed networks we're already seeing well-above 1M frames per port.
+
+- Gilboa
+[1] http://lkml.org/lkml/2007/12/3/69
+
+
