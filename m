@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbXLEAkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbXLEAk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751922AbXLEAkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 19:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbXLEAk3
+	id S1753056AbXLEAk5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 19:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbXLEAks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 19:40:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45682 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750813AbXLEAk2 (ORCPT
+	Tue, 4 Dec 2007 19:40:48 -0500
+Received: from andromeda.dapyr.net ([206.212.254.10]:52422 "EHLO
+	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbXLEAkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 19:40:28 -0500
-Date: Tue, 4 Dec 2007 16:39:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lenb@kernel.org, ebiederm@xmission.com, protasnb@gmail.com, ak@suse.de,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
-Message-Id: <20071204163946.63ac73ce.akpm@linux-foundation.org>
-In-Reply-To: <20071204122649.GB27286@elte.hu>
-References: <200711280121.18376.lenb@kernel.org>
-	<20071204122649.GB27286@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 4 Dec 2007 19:40:47 -0500
+Date: Tue, 4 Dec 2007 20:39:25 -0400
+From: Konrad Rzeszutek <konrad@darnok.org>
+To: darnok@68k.org
+Cc: Arjan van de Ven <arjan@infradead.org>, Doug Maxey <dwm@enoyolf.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       pjones@redhat.com, konradr@redhat.com, konradr@linux.vnet.ibm.com,
+       randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
+       mike.anderson@us.ibm.com, dwm@austin.ibm.com
+Subject: Re: [PATCH] Add iSCSI IBFT Support (v0.3)
+Message-ID: <20071205003925.GG6736@andromeda.dapyr.net>
+References: <20071126225642.GA7973@andromeda.dapyr.net> <20071127033138.GB30770@kroah.com> <11870.1196136773@bebe.enoyolf.org> <200711262350.13100.konrad@darnok.org> <20071127150611.26a9575f@laptopd505.fenrus.org> <20071129153621.GA4669@andromeda.dapyr.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071129153621.GA4669@andromeda.dapyr.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 13:26:49 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Len Brown <lenb@kernel.org> wrote:
+On Thu, Nov 29, 2007 at 11:36:21AM -0400, darnok@68k.org wrote:
+> > > 
+> > > /sys/firmware/ibft/ethernet0/pci-bdf
+> > > 5:1:0
+> > 
+> > shouldn't this somehow also have a symlink to the kernels ethX view of
+> > ethernet devices?
+> > (and if so.. how much of the info is duplicated..)
 > 
-> >     So while the irq compression code on i386 should really
-> >     be deleted -- even before merging the x86_64 irq-overhaul,
-> >     this patch simply disables it on all high volume systems
-> >     to avoid problems #1 and #2 on most all i386 systems.
-> >     
-> >     A large system with pin numbers >=64 will still have compression
-> >     to conserve limited IRQ numbers for sparse IOAPICS.  However,
-> >     the vast majority of the planet, those with only pin numbers < 64
-> >     will use an identity GSI -> IRQ mapping.
-> >     
-> >     Signed-off-by: Len Brown <len.brown@intel.com>
+> That NIC is used by the NIC firmware (or the BIOS) to negotiate
+> the iSCSI target. The information that is in this directory is what
+> the BIOS used (note past tense) which might very well be completly
+> different from what Linux uses.
 > 
-> thanks for the patch and the extensive description. I've applied this to 
-> x86.git.
+> My rationale behind _not_ linking to ethX view was that it could
+> be confusing and not entirely useful for users: "It says that _this_
+> NIC, with this IP, uses this iSCSI target. But Linux is using a
+> completly different NIC (and IP) to setup a iSCSI connection to the
+> same iSCSI target!?"
 
-Len applied it to his tree too.
+On the other hand having a link to the device and being able to
+extra data sounds good too. I've made a modification and posted
+a new version, under the 'REPORT [PATCH] Add iSCSI iBFT v0.4'.
+
+Review would be much appreciated.
