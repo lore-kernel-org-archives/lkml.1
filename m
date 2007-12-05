@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXLERWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbXLER2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbXLERWY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 12:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXLERWO
+	id S1752546AbXLER2a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 12:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbXLER2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 12:22:14 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40526 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751625AbXLERWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 12:22:13 -0500
-Subject: Re: [RFC PATCH 0/5] Union Mount: A Directory listing approach with
-	lseek support
-From: Dave Hansen <haveblue@us.ibm.com>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
-       viro@zeniv.linux.org.uk, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20071205143718.GC2471@in.ibm.com>
-References: <20071205143718.GC2471@in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 05 Dec 2007 09:21:58 -0800
-Message-Id: <1196875318.18685.24.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 5 Dec 2007 12:28:22 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:64047 "EHLO
+	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750964AbXLER2V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 12:28:21 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+Date: Wed, 5 Dec 2007 18:24:53 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Heiko Carstens" <heiko.carstens@de.ibm.com>
+cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH] x86_64: some whitespace cleanups in paging code
+Message-ID: <20071205172453.GF23093@amd.com>
+References: <20071205123033.GA15394@elte.hu>
+ <1196865612128-git-send-email-joerg.roedel@amd.com>
+ <20071205163724.GA1024@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+In-Reply-To: <20071205163724.GA1024@osiris.boeblingen.de.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 05 Dec 2007 17:24:53.0451 (UTC)
+ FILETIME=[BF84F1B0:01C83763]
+X-WSS-ID: 6B4801620QK3850139-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-12-05 at 20:07 +0530, Bharata B Rao wrote:
-> In this approach, the cached dirents are given offsets in the form of
-> linearly increasing indices/cookies (like 0, 1, 2,...). This helps us to
-> uniformly define offsets across all the directories of the union
-> irrespective of the type of filesystem involved. Also this is needed to
-> define a seek behaviour on the union mounted directory. This cache is stored
-> as part of the struct file of the topmost directory of the union and will
-> remain as long as the directory is kept open. 
+On Wed, Dec 05, 2007 at 05:37:24PM +0100, Heiko Carstens wrote:
+> On Wed, Dec 05, 2007 at 03:40:12PM +0100, Joerg Roedel wrote:
+> > This patch does some whitespace cleanups in the paging code to fix some
+> > checkpatch.pl warnings of my formerly merged cleanup patches.
+> >...
+> > -			set_pmd(pmd + i,__pmd(addr | __PAGE_KERNEL_LARGE_EXEC));
+> > +			set_pmd(pmd+i, __pmd(addr | __PAGE_KERNEL_LARGE_EXEC));
+> 
+> Did checkpatch enforce you to remove the spaces around '+'? I thought
+> there was/is a common consensus that having spaces around operators is a good
+> thing to have. IMHO it's much more readable...
+> But anyway, it's not that I want to start a new thread about coding style :)
 
-That's a little brute force, don't you think?  Especially the memory
-exhaustion seems to really make this an undesirable approach.
+Checkpatch complained about a missing space after the comma. After I
+added one it complained about a line longer than 80 characters. But
+luckily it didn't complain about missing spaces around the plus sign ;)
 
-I think the key here is what kind of consistency we're trying to
-provide.  If a directory is being changed underneath a reader, what
-kinds of guarantees do they get about the contents of their directory
-read?  When do those guarantees start?  Are there any at open() time?
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-Rather than give each _dirent_ an offset, could we give each sub-mount
-an offset?  Let's say we have three members comprising a union mount
-directory.  The first has 100 dirents, the second 200, and the third
-10,000.  When the first readdir is done, we populate the table like
-this:
-
-	mount_offset[0] = 0;
-	mount_offset[1] = 100;
-	mount_offset[2] = 300;
-
-If someone seeks back to 150, then we subtrack the mount[1]'s offset
-(100), and realize that we want the 50th dirent from mount[1].
-
-I don't know whether we're bound to this:
-
-http://www.opengroup.org/onlinepubs/007908775/xsh/readdir.html
-        
-        "If a file is removed from or added to the directory after the
-        most recent call to opendir() or rewinddir(), whether a
-        subsequent call to readdir() returns an entry for that file is
-        unspecified."
-
-But that would seem to tell me that once you populate a table such as
-the one I've described and create it at open(dir) time, you don't
-actually ever need to update it.
-
-The storage for this is only comparable to the number of mounts that you
-have.  One issue comes if we manage to overflow our data types with too
-many entries in too many submounts.  But, I guess we can just truncate
-the directory in that case.  
-
--- Dave
 
