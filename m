@@ -1,44 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbXLEN3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbXLENan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752786AbXLEN3Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 08:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbXLEN3E
+	id S1752990AbXLENan (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 08:30:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXLENac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 08:29:04 -0500
-Received: from smtp-out3.libero.it ([212.52.84.43]:40032 "EHLO
-	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbXLEN3D convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 08:29:03 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAOw2VkdTJBlg/2dsb2JhbAAIkDExPw
-Date: Wed,  5 Dec 2007 14:28:52 +0100
-Message-Id: <JSKW44$699E517721ECE2FD332E363167413A83@libero.it>
-Subject: MRS GREGGE VAN DER HOOFD
+	Wed, 5 Dec 2007 08:30:32 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:36317 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751095AbXLENac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 08:30:32 -0500
+Date: Wed, 5 Dec 2007 14:30:21 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Does vger.kernel.org automatically drop spams?
+In-Reply-To: <200712052225.IHJ09818.MQLtJOFOSFHVOF@I-love.SAKURA.ne.jp>
+Message-ID: <Pine.LNX.4.64.0712051429530.2935@twin.jikos.cz>
+References: <200712052225.IHJ09818.MQLtJOFOSFHVOF@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-From: "winerlotospain" <winerlotospain@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 83.36.25.96
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Important Information, Please your urgent response is needed.
+On Wed, 5 Dec 2007, Tetsuo Handa wrote:
 
-It is a pleasure to inform you through this medium thatYour
- emailaddress won a prizeof €950,000.00 in category 'A'micronet
-emaillotterywith Reference number: LSLUK/2031/8161/07.
+> Does vger.kernel.org have spam filter and automatically drop spams?
 
-Please contact our FOREIGN TRANSFER MANAGER.
-Dr. Paul Anderson
-TEL: +34-652-063-073.
-Email:remittanceseguros5058@yahoo.es
+It definitely does, otherwise the lists would be flooded with spam (as for 
+example sourceforge mailinglist are).
 
-
-Yours Sincerely,
-MRS GREGGE VAN DER HOOFD.
-
+-- 
+Jiri Kosina
