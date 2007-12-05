@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbXLEXMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbXLEXPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbXLEXMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 18:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXLEXMa
+	id S1754348AbXLEXPB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 18:15:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXLEXOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 18:12:30 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42283 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752838AbXLEXM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 18:12:29 -0500
-Date: Wed, 5 Dec 2007 15:11:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: miltonm@bga.com, geoffrey.levand@am.sony.com, clameter@sgi.com,
-       apw@shadowen.org, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com
-Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
-Message-Id: <20071205151147.9db4640b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.62.0712051013040.28855@pademelon.sonytel.be>
-References: <47537F2E.2070204@am.sony.com>
-	<b91f94dd5b35247fecf52090c0b3890f@bga.com>
-	<Pine.LNX.4.62.0712051013040.28855@pademelon.sonytel.be>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Dec 2007 18:14:54 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48878 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752376AbXLEXOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 18:14:53 -0500
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Thu, 6 Dec 2007 10:14:47 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18263.12519.894142.682323@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is BIO_RW_FAILFAST really usable?
+In-Reply-To: message from Jens Axboe on Tuesday December 4
+References: <18260.49019.684445.303719@notabene.brown>
+	<20071204091334.GG23294@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Dec 2007 10:52:48 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-
-> --------------------------------------------------------------------------------
-> Subject: sparsemem: sparse_add_one_section() may fail to allocate memory
+On Tuesday December 4, jens.axboe@oracle.com wrote:
 > 
-> sparsemem: sparse_add_one_section() may fail to allocate memory, and must check
-> whether the allocation succeeded before proceeding to touch the allocated
-> memory.
-> 
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
-> FIXME There are still some possible memory leaks in sparse_add_one_section():
->   - usemap is never deallocated
->   - __kfree_section_memmap() is a not yet implemented dummy
+> Hrmpf. It looks like the SCSI layer is a little too trigger happy. Any
+> chance you could try and trace where this happens?
 
-I already had
+in scsi_lib.c, in scsi_request_fn, near the top of the main
+   while (!blk_queue_plugged(q)) {
+loop:
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-improve-the-error-handling-for-sparse_add_one_section.patch
-and
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-check-the-return-value-of-sparse_index_alloc.patch
+		if (!scsi_dev_queue_ready(q, sdev)) {
+			if ((req->cmd_flags & REQ_FAILFAST) &&
+			    !(req->cmd_flags & REQ_PREEMPT)) {
+				scsi_kill_request(req, q);
+				continue;
+			}
+			break;
+		}
 
-queued.  Do they fix the problem, and should they be merged in 2.6.24?
+If I remove the "if failfast and not preempt then kill" logic, my
+problem goes away.
+
+NeilBrown
