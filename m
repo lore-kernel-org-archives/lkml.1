@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYAAEsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753357AbXLEAVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbYAAEsq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 23:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYAAEsf
+	id S1753357AbXLEAVu (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 4 Dec 2007 19:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXLEAVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 23:48:35 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:61428 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbYAAEse (ORCPT
+	Tue, 4 Dec 2007 19:21:41 -0500
+Received: from pool-71-245-101-243.ptldor.fios.verizon.net ([71.245.101.243]:57241
+	"EHLO scooby.int.st.wgz.org" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750806AbXLEAVk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 23:48:34 -0500
-Date: Tue, 1 Jan 2008 05:48:06 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: David Miller <davem@davemloft.net>
-cc: 7eggert@gmx.de, viro@ZenIV.linux.org.uk, jengelh@computergmbh.de,
-       devzero@web.de, linux-kernel@vger.kernel.org, bunk@kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-In-Reply-To: <20071231.194843.136619677.davem@davemloft.net>
-Message-ID: <alpine.LSU.0.999.0801010459500.12978@be1.lrz>
-References: <alpine.LSU.0.999.0712311426520.3761@be1.lrz>
- <20071231193848.GQ27894@ZenIV.linux.org.uk> <alpine.LSU.0.999.0801010418260.2337@be1.lrz>
- <20071231.194843.136619677.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX198cK8/QQWxb4/ohbnWuQcr0OkL1GyirEay5LW
- dP41N34A3tEDNdGoJVdqkIjTDAqgFNaRlpThFt/slBEWzGFUih
- qIKX2RkS9bkkv4Uxu99AQ==
+	Tue, 4 Dec 2007 19:21:40 -0500
+X-Greylist: delayed 444 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 19:21:40 EST
+From: "Brett T. Warden" <brett.warden@gmail.com>
+To: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH] bw-qcam: adds parameter aggressive to skip passive detection and directly attempt initialization
+Date: Tue,  4 Dec 2007 16:14:13 -0800
+Message-Id: <11968136532167-git-send-email->
+X-Mailer: git-send-email 1.5.2.5
+Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Dec 2007, David Miller wrote:
-> From: Bodo Eggert <7eggert@gmx.de>
+---
 
-> > The big question is: Is there any non-embedded system where you have
-> > to aim for a small kernel image?
-> 
-> One some platforms, due to bootloader restrictions or whatever,
-> there are hard limits on how large the main kernel image can be.
-> 
-> On sparc64 for example the limit is around 6.5MB
-
-That would be about the size of a complete rescue system. I don't think we 
-need to worry about unix sockets there, do we?
-
-> But this "big question" isn't the important issue, in fact it's
-> tangental and has no bearing on the final decision we make
-> here.
-> 
-> Rather, choice is, and taking choice away is bad.  I may have a reason
-> to make AF_UNIX modular, I might not, but either way taking that
-> option away from me is not the right thing to do.
-
-_You_'ll still have the option, because you have selected EMBEDDED=y 
-(otherwise, you'd miss all other valuable options to cripple your kernel), 
-while the folks that just care for a working systems will have what they'd 
-select anyway without being bothered with useless questions.
--- 
-Top 100 things you don't want the sysadmin to say:
-5. Just add yourself to the password file and make a directory...
+diff --git a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
+index 5842352..b74a9cb 100644
+--- a/drivers/media/video/bw-qcam.c
++++ b/drivers/media/video/bw-qcam.c
+@@ -82,11 +82,16 @@ OTHER DEALINGS IN THE SOFTWARE.
+ static unsigned int maxpoll=250;   /* Maximum busy-loop count for qcam I/O */
+ static unsigned int yieldlines=4;  /* Yield after this many during capture */
+ static int video_nr = -1;
++static unsigned int aggressive;		/* Whether to probe aggressively */
+ 
+ module_param(maxpoll, int, 0);
+ module_param(yieldlines, int, 0);
+ module_param(video_nr, int, 0);
+ 
++/* Set aggressive=1 to avoid detection by polling status register and
++ * immediately attempt to initialize qcam */
++module_param(aggressive, int, 0);
++
+ static inline int read_lpstatus(struct qcam_device *q)
+ {
+ 	return parport_read_status(q->pport);
+@@ -331,6 +336,9 @@ static int qc_detect(struct qcam_device *q)
+ 	int count = 0;
+ 	int i;
+ 
++	if (aggressive)
++		return 1;
++
+ 	lastreg = reg = read_lpstatus(q) & 0xf0;
+ 
+ 	for (i = 0; i < 500; i++)
+@@ -354,12 +362,12 @@ static int qc_detect(struct qcam_device *q)
+ 
+ 	/* Be (even more) liberal in what you accept...  */
+ 
+-/*	if (count > 30 && count < 200) */
+ 	if (count > 20 && count < 400) {
+ 		return 1;	/* found */
+ 	} else {
+ 		printk(KERN_ERR "No Quickcam found on port %s\n",
+ 			q->pport->name);
++		printk(KERN_DEBUG "Quickcam detection counter: %u\n", count);
+ 		return 0;	/* not found */
+ 	}
+ }
