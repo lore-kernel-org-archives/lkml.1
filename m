@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbXLELuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751689AbXLELuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbXLELuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 06:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXLELu0
+	id S1751689AbXLELuu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 06:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXLELuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 06:50:26 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:32018 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbXLELuZ (ORCPT
+	Wed, 5 Dec 2007 06:50:32 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:33819 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751947AbXLELua (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 06:50:25 -0500
-Date: Wed, 5 Dec 2007 12:50:23 +0100
+	Wed, 5 Dec 2007 06:50:30 -0500
+Date: Wed, 5 Dec 2007 12:50:28 +0100
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [patch 1/3] driver core: Introduce default attribute groups.
-Message-ID: <20071205125023.50f4c478@gondolin.boeblingen.de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ursula Braun <ubraun@linux.vnet.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: [patch 2/3] netiucv: Use device_driver default attribute groups.
+Message-ID: <20071205125028.026a617d@gondolin.boeblingen.de.ibm.com>
 In-Reply-To: <20071205114119.905238262@de.ibm.com>
 References: <20071205114119.905238262@de.ibm.com>
 Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
@@ -30,101 +31,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is lot like default attributes for devices (and indeed,
-a lot of the code is lifted from there).
-
+CC: Ursula Braun <ubraun@linux.vnet.ibm.com>
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
 ---
- drivers/base/driver.c  |   44 +++++++++++++++++++++++++++++++++++++++++++-
- include/linux/device.h |    2 ++
- 2 files changed, 45 insertions(+), 1 deletion(-)
+ drivers/s390/net/netiucv.c |   16 ++++++----------
+ 1 files changed, 6 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/drivers/base/driver.c
-===================================================================
---- linux-2.6.orig/drivers/base/driver.c	2007-12-05 09:53:15.000000000 +0100
-+++ linux-2.6/drivers/base/driver.c	2007-12-05 12:41:02.000000000 +0100
-@@ -151,6 +151,39 @@ void put_driver(struct device_driver * d
- 	kobject_put(&drv->p->kobj);
- }
- 
-+static int driver_add_groups(struct device_driver *drv,
-+			     struct attribute_group **groups)
-+{
-+	int error = 0;
-+	int i;
-+	struct driver_private *priv = drv->p;
-+
-+	if (groups) {
-+		for (i = 0; groups[i]; i++) {
-+			error = sysfs_create_group(&priv->kobj, groups[i]);
-+			if (error) {
-+				while (--i >= 0)
-+					sysfs_remove_group(&priv->kobj,
-+							   groups[i]);
-+				break;
-+			}
-+		}
-+	}
-+	return error;
-+}
-+
-+static void driver_remove_groups(struct device_driver *drv,
-+				 struct attribute_group **groups)
-+{
-+	int i;
-+	struct driver_private *priv = drv->p;
-+
-+	if (groups)
-+		for (i = 0; groups[i]; i++)
-+			sysfs_remove_group(&priv->kobj, groups[i]);
-+}
-+
-+
- /**
-  *	driver_register - register driver with bus
-  *	@drv:	driver to register
-@@ -161,12 +194,20 @@ void put_driver(struct device_driver * d
-  */
- int driver_register(struct device_driver * drv)
- {
-+	int ret;
-+
- 	if ((drv->bus->probe && drv->probe) ||
- 	    (drv->bus->remove && drv->remove) ||
- 	    (drv->bus->shutdown && drv->shutdown)) {
- 		printk(KERN_WARNING "Driver '%s' needs updating - please use bus_type methods\n", drv->name);
- 	}
--	return bus_add_driver(drv);
-+	ret = bus_add_driver(drv);
-+	if (ret)
-+		return ret;
-+	ret = driver_add_groups(drv, drv->groups);
-+	if (ret)
-+		bus_remove_driver(drv);
-+	return ret;
- }
- 
- /**
-@@ -178,6 +219,7 @@ int driver_register(struct device_driver
- 
- void driver_unregister(struct device_driver * drv)
- {
-+	driver_remove_groups(drv, drv->groups);
- 	bus_remove_driver(drv);
- }
- 
-Index: linux-2.6/include/linux/device.h
-===================================================================
---- linux-2.6.orig/include/linux/device.h	2007-12-05 09:53:15.000000000 +0100
-+++ linux-2.6/include/linux/device.h	2007-12-05 12:25:36.000000000 +0100
-@@ -126,6 +126,8 @@ struct device_driver {
- 	int	(*suspend)	(struct device * dev, pm_message_t state);
- 	int	(*resume)	(struct device * dev);
- 
-+	struct attribute_group **groups;
-+
- 	struct driver_private *p;
+--- linux-2.6.orig/drivers/s390/net/netiucv.c
++++ linux-2.6/drivers/s390/net/netiucv.c
+@@ -2089,6 +2089,11 @@ static struct attribute_group netiucv_dr
+ 	.attrs = netiucv_drv_attrs,
  };
  
++static struct attribute_group *netiucv_drv_attr_groups[] = {
++	&netiucv_drv_attr_group,
++	NULL,
++};
++
+ static void netiucv_banner(void)
+ {
+ 	PRINT_INFO("NETIUCV driver initialized\n");
+@@ -2113,7 +2118,6 @@ static void __exit netiucv_exit(void)
+ 		netiucv_unregister_device(dev);
+ 	}
+ 
+-	sysfs_remove_group(&netiucv_driver.kobj, &netiucv_drv_attr_group);
+ 	driver_unregister(&netiucv_driver);
+ 	iucv_unregister(&netiucv_handler, 1);
+ 	iucv_unregister_dbf_views();
+@@ -2133,6 +2137,7 @@ static int __init netiucv_init(void)
+ 	if (rc)
+ 		goto out_dbf;
+ 	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
++	netiucv_driver.groups = netiucv_drv_attr_groups;
+ 	rc = driver_register(&netiucv_driver);
+ 	if (rc) {
+ 		PRINT_ERR("NETIUCV: failed to register driver.\n");
+@@ -2140,18 +2145,9 @@ static int __init netiucv_init(void)
+ 		goto out_iucv;
+ 	}
+ 
+-	rc = sysfs_create_group(&netiucv_driver.kobj, &netiucv_drv_attr_group);
+-	if (rc) {
+-		PRINT_ERR("NETIUCV: failed to add driver attributes.\n");
+-		IUCV_DBF_TEXT_(setup, 2,
+-			       "ret %d - netiucv_drv_attr_group\n", rc);
+-		goto out_driver;
+-	}
+ 	netiucv_banner();
+ 	return rc;
+ 
+-out_driver:
+-	driver_unregister(&netiucv_driver);
+ out_iucv:
+ 	iucv_unregister(&netiucv_handler, 1);
+ out_dbf:
 
