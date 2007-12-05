@@ -1,215 +1,368 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbXLERKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbXLERL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbXLERKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 12:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLERKq
+	id S1754470AbXLERL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 12:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXLERLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 12:10:46 -0500
-Received: from lec.cs.unibo.it ([130.136.1.103]:53584 "EHLO lec.cs.unibo.it"
+	Wed, 5 Dec 2007 12:11:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39293 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbXLERKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 12:10:45 -0500
-X-Greylist: delayed 1788 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Dec 2007 12:10:44 EST
-Date: Wed, 5 Dec 2007 17:40:55 +0100
-To: linux-kernel@vger.kernel.org
-Subject: New Address Family: Inter Process Networking (IPN)
-Message-ID: <20071205164055.GA2082@cs.unibo.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: renzo@cs.unibo.it (Renzo Davoli)
+	id S1752113AbXLERLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 12:11:17 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+To: Peter Staubach <staubach@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+cc: dhowells@redhat.com, Steve Dickson <SteveD@redhat.com>,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+Subject: How to manage shared persistent local caching (FS-Cache) with NFS?
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 05 Dec 2007 17:11:00 +0000
+Message-ID: <6306.1196874660@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Inter Process Networking: 
-a kernel module (and some simple kernel patches) to provide 
-AF_IPN: a new address family for process networking, i.e. multipoint,
-multicast/broadcast communication among processes (and networks).
 
-WHAT IS IT?
------------
-Berkeley socket have been designed for client server or point to point
-communication. All existing Address Families implement this idea.
-IPN is a new address family designed for one-to-many, many-to-many and 
-peer-to-peer communication among processes.
-IPN is an Inter Process Communication paradigm where all the processes
-appear as they were connected by a networking bus.
-On IPN, processes can interoperate using real networking protocols 
-(e.g. ethernet) but also using application defined protocols (maybe 
-just sending ascii strings, video or audio frames, etc).
-IPN provides networking (in the broaden definition you can imagine) to
-the processes. Processes can be ethernet nodes, run their own TCP-IP stacks
-if they like (e.g. virtual machines), mount ATAonEthernet disks, etc.etc.
-IPN networks can be interconnected with real networks or IPN networks
-running on different computers can interoperate (can be connected by
-virtual cables).
-IPN is part of the Virtual Square Project (vde, lwipv6, view-os, 
-umview/kmview, see wiki.virtualsquare.org).
+Okay...  I'm getting to the point where I want to release my local caching
+patches again and have NFS work with them.  This means making NFS mounts share
+or not share appropriately - something that's engendered a fair bit of
+argument.
 
-WHY?
-----
-Many applications can benefit from IPN.
-First of all VDE (Virtual Distributed Ethernet): one service of IPN is a
-kernel implementation of VDE.
-IPN can be useful for applications where one or some processes feed their 
-data to several consuming processes (maybe joining the stream at run time).
-IPN sockets can be also connected to tap (tuntap) like interfaces or
-to real interfaces (like "brctl addif").
-There are specific ioctls to define a tap interface or grab an existing
-one.
-Several existing services could be implemented (and often could have extended
-features) on the top of IPN:
-- kernel bridge
-- tuntap
-- macvlan
-IPN could be used (IMHO) to provide multicast services to processes.
-Audio frames or video frames could be multiplexed such that multiple
-applications can use them. I think that something like Jack can be
-implemented on the top of IPN. Something like a VideoJack can
-provide video frames to several applications: e.g. the same image from a
-camera can be viewed by xawtv, recorded and sent to a streaming service.
-IPN sockets can be used wherever there is the idea of broadcasting channel 
-i.e. where processes can "join (and leave) the information flow" at
-runtime. 
-Different delivery policies can be defined as IPN protocols (loaded 
-as submodules of ipn.ko).
-e.g. ethernet switch is a policy (kvde_switch.ko: packets are unicast 
-delivered if the MAC address is already in the switching hash table), 
-we are designing an extendended switch, full of interesting features like
-our userland vde_switch (with vlan/fst/manamement etc..), and a layer3
-switch, but other policies can be defined to implement the specific
-requirements of other services. I feel that there is no limits to creativity 
-about multicast services for processes.
-Userspace services (like vde or jack) do exist, but IPN provides
-a faster and unified support.
+So I'd like to solicit advice on how best to deal with this problem.
 
-HOW?
-----
-The complete specifications for IPN can be found here:
-http://wiki.virtualsquare.org/index.php/IPN
+Let me explain the problem in more detail.
 
-bind() creates the socket (if it does not already exist). When bind() succeeds, 
-the process has the right to manage the "network". 
-No data is received or can be send if the socket is not connected 
-(only get/setsockopt and ioctl work on bound unconnected sockets).
 
-connect() is used to join the network. When the socket is connected it 
-is possible to send/receive data. If the socket is already bound it is
-useless to specify the socket again (you can use NULL, or specify the same
-address).
-connect() can be also used without bind(). In this case the process sends and
-receives data but it cannot manage the network (in this case the socket
-address specification is required).
+================
+CURRENT PRACTICE
+================
 
-listen() and accept() are for servers, thus they does not exist for IPN.
+As the kernel currently stands, coherency is ignored for mounts that have
+slightly different combinations of parameters, even if these parameters just
+affect the properties of network "connection" used or just mark a superblock
+as being read-only.
 
-Examples:
-1- Peer-to-Peer Communication:
-Several processes run the same code:
+Consider the case of a file remotely available by NFS.  Imagine the client sees
+three different views of this file (they could be by three overlapping mounts,
+or by three hardlinks or some combination thereof).
 
-  struct sockaddr_un sun={.sun_family=AF_IPN,.sun_path="/tmp/sockipn"};
-  int s=socket(AF_IPN,SOCK_RAW,IPN_BROADCAST); 
-  err=bind(s,(struct sockaddr *)&sun,sizeof(sun));
-  err=connect(s,NULL,0);
+This is how NFS currently operates without any superblock sharing:
 
-In this case all the messages sent by each process get received by all the
-other processes (IPN_BROADCAST). 
-The processes need to be able to receive data when there are pending packets, 
-e.g. by using poll/select and event driven programming or multithreading.
+				+---------+
+    Object on server --->	|	  |
+				|  inode  |
+				|	  |
+				+---------+
+				    /|\
+				   / | \
+				  /  |	\
+				 /   |	 \
+				/    |	  \
+			       /     |	   \
+			      /	     |	    \
+			     /	     |	     \
+			    /	     |	      \
+			   /	     |	       \
+			  /	     |		\
+			 |	     |		 |
+			 |	     |		 |
+ :::::::::::::NFS::::::::|:::::::::::|:::::::::::|:::::::::::::::::::::::::::::
+			 |	     |		 |
+			 |	     |		 |
+			 |	     |		 |
+   +---------+	    +---------+	     |		 |
+   |	     |	    |	      |	     |		 |
+   | mount 1 |----->| super 1 |	     |		 |
+   |	     |	    |	      |	     |		 |
+   +---------+	    +---------+	     |		 |
+				     |		 |
+				     |		 |
+   +---------+			+---------+	 |
+   |	     |			|	  |	 |
+   | mount 2 |----------------->| super 2 |	 |
+   |	     |			|	  |	 |
+   +---------+			+---------+	 |
+						 |
+						 |
+   +---------+				    +---------+
+   |	     |				    |	      |
+   | mount 3 |----------------------------->| super 3 |
+   |	     |				    |	      |
+   +---------+				    +---------+
 
-2- (One or) Some senders/many receivers
-The sender runs the following code:
+Each view of the file on the client winds up with a separate inode in a
+separate superblock and with a separate pagecache.  As far as the client kernel
+is concerned, they *are* three different files.  Any incoherency effects are
+ignored by the kernel and if they cause a userspace application a problem,
+that's just too bad.
 
-  struct sockaddr_un sun={.sun_family=AF_IPN,.sun_path="/tmp/sockipn"};
-  int s=socket(AF_IPN,SOCK_RAW,IPN_BROADCAST);
-  err=shutdown(s,SHUT_RD);
-  err=bind(s,(struct sockaddr *)&sun,sizeof(sun));
-  err=connect(s,NULL,0);
+Generally, however, this is not a problem because:
 
-The receivers do not need to define the network, thus they skip the bind():
+  (a) an application is unlikely to be attempting to manipulate multiple views
+      of a file simultaneously and
 
-  struct sockaddr_un sun={.sun_family=AF_IPN,.sun_path="/tmp/sockipn"};
-  int s=socket(AF_IPN,SOCK_RAW,IPN_BROADCAST); 
-  err=shutdown(s,SHUT_WR);
-  err=connect(s,(struct sockaddr *)&sun,sizeof(sun));
+  (b) cross-view hard links haven't been and aren't used that much.
 
-In the previous examples processes can send and receive every kind of
-data. 
 
-When messages are ethernet packets (maybe from virtual machines), IPN 
-works like a Hub by using the IPN_BROADCAST protocol.
-Different protocols (delivery policies) can be specified by changing 
-IPN_BROADCAST with a different tag. 
-A IPN protocol specific submodule must have been registered 
-the protocol tag in advance. (e.g. when kvde_switch.ko is loaded 
-IPN_VDESWITCH can be used too).
-The basic broadcasting protocol IPN_BROADCAST is built-in (all the 
-messages get delivered to all the connected processes but the sender). 
+=============================
+POSSIBLE FS-CACHE SCENARIO #1
+=============================
 
-IPN sockets use the filesystem for naming and access control.
-srwxr-xr-x 1 renzo renzo 0 2007-12-04 22:28 /tmp/sockipn
-An IPN socket appear in the file like a UNIX socket.
-r/w permissions represent the right to receive from/send data to the
-socket. The 'x' permission represent the right to manage the socket.
-connect() automatically shuts down SHUT_WR or SHUT_RD if the user has not
-the correspondent right.
+However, now we're introducing persistent local caching into the mix.  That
+means we can no longer ignore such remote possibilities - they are possible,
+therefore we have to deal with them, whether we like it or not.
 
-WHAT WE NEED FROM THE LINUX KERNEL COMMUNITY
---------------------------------------------
-0- (Constructive) comments.
+The seemingly simplest way to support this is to give each copy of the remote
+file its own cache:
 
-1- The "official" assignment of an Address Family.
-(It is enough for everything but interface grabbing, see 2)
+				+---------+
+    Object on server --->	|	  |
+				|  inode  |
+				|	  |
+				+---------+
+				    /|\
+				   / | \
+				  /  |	\
+				 /   |	 \
+				/    |	  \
+			       /     |	   \
+			      /	     |	    \
+			     /	     |	     \
+			    /	     |	      \
+			   /	     |	       \
+			  /	     |		\
+			 |	     |		 |
+			 |	     |		 |
+ :::::::::::::NFS::::::::|:::::::::::|:::::::::::|:::::::::::::::::::::::::::::
+			 |	     |		 |	       :
+			 |	     |		 |	       : FS-Cache
+			 |	     |		 |	       :
+   +---------+	    +---------+	     |		 |	       :    +---------+
+   |	     |	    |	      |	     |		 |	       :    |	      |
+   | mount 1 |----->| super 1 |------|-----------|----------------->| cache 1 |
+   |	     |	    |	      |	     |		 |	       :    |	      |
+   +---------+	    +---------+	     |		 |	       :    +---------+
+				     |		 |	       :
+				     |		 |	       :
+   +---------+			+---------+	 |	       :    +---------+
+   |	     |			|	  |	 |	       :    |	      |
+   | mount 2 |----------------->| super 2 |------|----------------->| cache 2 |
+   |	     |			|	  |	 |	       :    |	      |
+   +---------+			+---------+	 |	       :    +---------+
+						 |	       :
+						 |	       :
+   +---------+				    +---------+	       :    +---------+
+   |	     |				    |	      |	       :    |	      |
+   | mount 3 |----------------------------->| super 3 |------------>| cache 3 |
+   |	     |				    |	      |	       :    |	      |
+   +---------+				    +---------+	       :    +---------+
 
-in include/linux/net.h:
-- #define NPROTO          34              /* should be enough for now..  */
-+ #define NPROTO          35              /* should be enough for now..  */
+This has one immediately obvious problem: it stores redundant data in the
+cache.  We end up with three copies of the same data stored in the cache,
+reducing the cache efficiency.
 
-in include/linux/socket.h
-+ #define AF_IPN 34
-+ #define PF_IPN AF_IPN
-- #define AF_MAX          34      /* For now.. */
-+ #define AF_MAX          35      /* For now.. */
+There's a further problem that is less obvious: the cache is persistent - and
+so the links from the client inodes into the cache must be reformed for
+subsequent mounts.  This is not possible purely from the NFS attributes of the
+server file, since each client file corresponds to the same server file.
 
-This seems to be quite simple.
+To get around that, we'd have to add some of the purely client knowledge into
+the key, such as root filehandle of a mount or local mount point.  However,
+neither of these is sufficient:
 
-2- Another "grabbing hook" for interfaces (like the ones already
-existing for the kernel bridge and for the macvlan).
+ (*) The root filehandle may be mounted multiple times with different NFS
+     connection parameters, so all of these must be included too.
 
-In include/linux/netdevice.h:
-among the fields of struct net_device:
+ (*) The local mount point depends on the namespace in which it is made, and
+     that is anonymous and can't contribute to the key.
 
-        /* bridge stuff */
-	struct net_bridge_port  *br_port;
-	/* macvlan */
-	struct macvlan_port     *macvlan_port;
-+        /* ipn */
-+        struct ipn_node        *ipn_port;
-		 
-	/* class/net/name entry */
-	struct device           dev;
+Alternatively, we could require user intervention to map the files to their
+respective caches (probably at the mount level), but that is in itself a
+problem.
 
-In net/core/dev.c, we need another section for grabbing packets....
-like the ones defined for CONFIG_BRIDGE and CONFIG_MACVLAN.
-I can write the patch (it needs just tens of minutes of cut&paste).
-We are studying some way to register/deregister grabbing services,
-I feel this would be the cleanest way. 
+Furthermore, should disconnected operation be implemented, we then have the
+problems of (a) how to synchronise changes made to the same file through
+separate views, and (b) how to propagate changes between views without being
+able to use the server as an intermediary.
 
-WHERE?
-------
-There is an experimental version in the VDE svn tree.
-http://sourceforge.net/projects/vde
 
-The current implementation can be compiled as a module on linux >= 2.6.22.
-We have currently "stolen" the AF_RXRPC and the kernel bridge hook, thus
-this experimental implementation is incompatible with RXRPC and the kernel
-bridge (sharing the same data structure). This is just to show the
-effectiveness of this idea, in this way it can be compiled as a module
-without patching the kernel. 
-We'll migrate IPN to its specific AF and grabbing hook as soon as they
-have been defined. 
+=============================
+POSSIBLE FS-CACHE SCENARIO #2
+=============================
 
-renzo
-(V^2 project)
+So, ideally, what we want to do is to share the local cache.  We could do this
+by mapping each of the multiple client views to a single local cache object:
+
+				+---------+
+    Object on server --->	|	  |
+				|  inode  |
+				|	  |
+				+---------+
+				    /|\
+				   / | \
+				  /  |	\
+				 /   |	 \
+				/    |	  \
+			       /     |	   \
+			      /	     |	    \
+			     /	     |	     \
+			    /	     |	      \
+			   /	     |	       \
+			  /	     |		\
+			 |	     |		 |
+			 |	     |		 |
+ :::::::::::::NFS::::::::|:::::::::::|:::::::::::|:::::::::::::::::::::::::::::
+			 |	     |		 |	       :
+			 |	     |		 |	       : FS-Cache
+			 |	     |		 |	       :
+   +---------+	    +---------+	     |		 |	       :
+   |	     |	    |	      |	     |		 |	       :
+   | mount 1 |----->| super 1 |------|-----------|------       :
+   |	     |	    |	      |	     |		 |	\      :
+   +---------+	    +---------+	     |		 |	 \     :
+				     |		 |	  \    :
+				     |		 |	   \   :
+   +---------+			+---------+	 |	    \  :    +---------+
+   |	     |			|	  |	 |	     \ :    |	      |
+   | mount 2 |----------------->| super 2 |------|----------------->|  cache  |
+   |	     |			|	  |	 |	     / :    |	      |
+   +---------+			+---------+	 |	    /  :    +---------+
+						 |	   /   :
+						 |	  /    :
+   +---------+				    +---------+	 /     :
+   |	     |				    |	      | /      :
+   | mount 3 |----------------------------->| super 3 |-       :
+   |	     |				    |	      |	       :
+   +---------+				    +---------+	       :
+
+However, this means the kernel now has to deal with coherency maintenance
+because it no longer treats the three views of the server file as being
+completely separate, but on the other hand, the persistent-store matching
+problem is no longer present.
+
+The coherency problems arise from a number of facets:
+
+ (1) Even if all three mounts are read-only, the client views may be updated at
+     different times when the server file changes.  However, when one view sees
+     a change, the on-disk cache must be flushed, but all the other views must
+     notified that the mappings between extant pages and the cache are now
+     broken.  This could, perhaps, be rendered down to a change perceived by
+     one view causing all the pagecache on the other views being zapped.
+
+ (2) How do we update the cache when writes are made to two or more client
+     views?  We could require the changes to a view to be written back to the
+     server before any other views are changed, but what about disconnected
+     operation?
+
+Basically, we end up treating the inodes that back multiple views of a single
+server file as being the same inode - and maintain coherency manually.
+
+Furthermore, we also require the infrastructure to support all of this, and
+that requires more memory and processing time to maintain, not to mention the
+introduction of cross-inode deadlock potential.
+
+
+=============================
+POSSIBLE FS-CACHE SCENARIO #3
+=============================
+
+In fact, the ideal solution is to share client superblocks, inodes and
+pagecache content too:
+
+				+---------+
+    Object on server --->	|	  |
+				|  inode  |
+				|	  |
+				+---------+
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+				     |
+ :::::::::::::NFS::::::::::::::::::::|:::::::::::::::::::::::::::::::::::::::::
+				     |			       :
+				     |			       : FS-Cache
+				     |			       :
+   +---------+			     |			       :
+   |	     |			     |			       :
+   | mount 1 |----------	     |			       :
+   |	     |		\	     |			       :
+   +---------+		 \	     |			       :
+			  \	     |			       :
+			   \	     |			       :
+   +---------+		    \	+---------+		       :    +---------+
+   |	     |		     \	|	  |		       :    |	      |
+   | mount 2 |----------------->|  super  |------------------------>|  cache  |
+   |	     |		     /	|	  |		       :    |	      |
+   +---------+		    /	+---------+		       :    +---------+
+			   /				       :
+			  /				       :
+   +---------+		 /				       :
+   |	     |		/				       :
+   | mount 3 |----------				       :
+   |	     |						       :
+   +---------+						       :
+
+This renders both the intraclient coherency problem and the cache object
+reconnection problem nonexistent within the client simply by virtue of only
+having one client inode represent *all* the views requested of the server file.
+
+There are other coherency problems, but largely we can't deal with those within
+NFS because they involve multiple clients and the NFS protocol doesn't provide
+us with the tools.
+
+The downside of this is that each shared superblock only has one NFS connection
+to the server, and so only one set of connection parameters can be used.
+However, since persistent local caching is novel to Linux, I think that it is
+entirely reasonable to overrule the attempts to make mounts with different
+parameters if they are to be shared and cached.
+
+
+
+====
+
+Okay...  So that's the problem.  Anyone got any suggestions?
+
+My preferred solution is to take any NFS superblock which has fscaching enabled
+and forcibly share it with any potentially overlapping superblock that also has
+fscaching enabled.  That means the parameters of subsequent mounts are
+discarded in favour of retaining the parameters of the first mount in an
+fscached set.
+
+The R/O mount flag can be dealt with by moving readonlyness into the vfsmount
+rather than having it a property of the superblock.  The superblock would then
+be read-only only if all its vfsmounts are also read-only.
+
+
+There's one other thing to consider:
+
+I've been asked to make the granularity of caching controllable at a directory
+or file level.  However, this goes against passing the parameter in the mount
+command.  There is an advantage, though: if your NFS mounts are dictated by
+automounter, then enabling fscache in the mount options is not necessarily what
+you want to do.
+
+Would it be reasonable to have an outside way of setting directory options?
+For instance, if there was a table like this:
+
+	FS	SERVER	VOLUME	DIR		OPTIONS
+	=======	=======	=======	===============	=========================
+	nfs	home0	-	/home/*		fscache
+	afs	redhat	data	/data/*		fscache
+
+This could then be loaded into the kernel as a set of rules which directory
+lookup by the filesystem involved could attempt to match and apply.
+
+Davod
