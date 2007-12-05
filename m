@@ -1,217 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbXLEH6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbXLEH7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755629AbXLEH6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 02:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbXLEHze
+	id S1755104AbXLEH7H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 02:59:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbXLEHzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 02:55:34 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42678 "EHLO mx2.suse.de"
+	Wed, 5 Dec 2007 02:55:36 -0500
+Received: from ns1.suse.de ([195.135.220.2]:38669 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752226AbXLEHzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752253AbXLEHzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Dec 2007 02:55:12 -0500
-Message-Id: <20071205071628.547577000@nick.local0.net>
+Message-Id: <20071205071628.332985000@nick.local0.net>
 References: <20071205071547.701344000@nick.local0.net>
 User-Agent: quilt/0.46-14
-Date: Wed, 05 Dec 2007 18:16:04 +1100
+Date: Wed, 05 Dec 2007 18:16:02 +1100
 From: npiggin@suse.de
 To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [patch 17/18] mm: remove nopage
-Content-Disposition: inline; filename=mm-remove-nopage.patch
+Cc: tiwai@suse.de, annabellesgarden@yahoo.de, linux-kernel@vger.kernel.org
+Subject: [patch 15/18] alsa: usx2y nopage
+Content-Disposition: inline; filename=alsa-usx2y-nopage.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing in the tree uses nopage any more. Remove support for it in the
-core mm code and documentation (and a few stray references to it in comments).
+Convert alsa usx2y driver from nopage to fault.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: linux-mm@kvack.org
+Cc: tiwai@suse.de
+Cc: annabellesgarden@yahoo.de
 Cc: linux-kernel@vger.kernel.org
 ---
- Documentation/feature-removal-schedule.txt |    9 --------
- Documentation/filesystems/Locking          |    3 --
- drivers/media/video/vino.c                 |    2 -
- drivers/video/vermilion/vermilion.c        |    5 ++--
- include/linux/mm.h                         |    8 -------
- mm/memory.c                                |   32 ++++++++++-------------------
- mm/mincore.c                               |    2 -
- mm/mmap.c                                  |   20 +++++++++---------
- mm/rmap.c                                  |    1 
- 9 files changed, 27 insertions(+), 55 deletions(-)
+ sound/usb/usx2y/usX2Yhwdep.c    |   21 ++++++++-------------
+ sound/usb/usx2y/usx2yhwdeppcm.c |   19 ++++++-------------
+ 2 files changed, 14 insertions(+), 26 deletions(-)
 
-Index: linux-2.6/include/linux/mm.h
+Index: linux-2.6/sound/usb/usx2y/usX2Yhwdep.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -162,8 +162,6 @@ struct vm_operations_struct {
- 	void (*open)(struct vm_area_struct * area);
- 	void (*close)(struct vm_area_struct * area);
- 	int (*fault)(struct vm_area_struct *vma, struct vm_fault *vmf);
--	struct page *(*nopage)(struct vm_area_struct *area,
--			unsigned long address, int *type);
- 	unsigned long (*nopfn)(struct vm_area_struct *area,
- 			unsigned long address);
+--- linux-2.6.orig/sound/usb/usx2y/usX2Yhwdep.c
++++ linux-2.6/sound/usb/usx2y/usX2Yhwdep.c
+@@ -34,34 +34,29 @@
+ int usX2Y_hwdep_pcm_new(struct snd_card *card);
  
-@@ -611,12 +609,6 @@ static inline int page_mapped(struct pag
+ 
+-static struct page * snd_us428ctls_vm_nopage(struct vm_area_struct *area, unsigned long address, int *type)
++static int snd_us428ctls_vm_fault(struct vm_area_struct *area, struct vm_fault *vmf)
+ {
+ 	unsigned long offset;
+ 	struct page * page;
+ 	void *vaddr;
+ 
+-	snd_printdd("ENTER, start %lXh, ofs %lXh, pgoff %ld, addr %lXh\n",
++	snd_printdd("ENTER, start %lXh, pgoff %ld\n",
+ 		   area->vm_start,
+-		   address - area->vm_start,
+-		   (address - area->vm_start) >> PAGE_SHIFT,
+-		   address);
++		   vmf->pgoff);
+ 	
+-	offset = area->vm_pgoff << PAGE_SHIFT;
+-	offset += address - area->vm_start;
+-	snd_assert((offset % PAGE_SIZE) == 0, return NOPAGE_SIGBUS);
++	offset = vmf->pgoff << PAGE_SHIFT;
+ 	vaddr = (char*)((struct usX2Ydev *)area->vm_private_data)->us428ctls_sharedmem + offset;
+ 	page = virt_to_page(vaddr);
+ 	get_page(page);
+-	snd_printdd( "vaddr=%p made us428ctls_vm_nopage() return %p; offset=%lX\n", vaddr, page, offset);
++	vmf->page = page;
+ 
+-	if (type)
+-		*type = VM_FAULT_MINOR;
++	snd_printdd( "vaddr=%p made us428ctls_vm_fault() page %p\n", vaddr, page);
+ 
+-	return page;
++	return 0;
  }
  
- /*
-- * Error return values for the *_nopage functions
-- */
--#define NOPAGE_SIGBUS	(NULL)
--#define NOPAGE_OOM	((struct page *) (-1))
+ static struct vm_operations_struct us428ctls_vm_ops = {
+-	.nopage = snd_us428ctls_vm_nopage,
++	.fault = snd_us428ctls_vm_fault,
+ };
+ 
+ static int snd_us428ctls_mmap(struct snd_hwdep * hw, struct file *filp, struct vm_area_struct *area)
+Index: linux-2.6/sound/usb/usx2y/usx2yhwdeppcm.c
+===================================================================
+--- linux-2.6.orig/sound/usb/usx2y/usx2yhwdeppcm.c
++++ linux-2.6/sound/usb/usx2y/usx2yhwdeppcm.c
+@@ -683,30 +683,23 @@ static void snd_usX2Y_hwdep_pcm_vm_close
+ }
+ 
+ 
+-static struct page * snd_usX2Y_hwdep_pcm_vm_nopage(struct vm_area_struct *area, unsigned long address, int *type)
++static int snd_usX2Y_hwdep_pcm_vm_fault(struct vm_area_struct *area, struct vm_fault *vmf)
+ {
+ 	unsigned long offset;
+-	struct page *page;
+ 	void *vaddr;
+ 
+-	offset = area->vm_pgoff << PAGE_SHIFT;
+-	offset += address - area->vm_start;
+-	snd_assert((offset % PAGE_SIZE) == 0, return NOPAGE_OOM);
++	offset = vmf->pgoff << PAGE_SHIFT;
+ 	vaddr = (char*)((struct usX2Ydev *)area->vm_private_data)->hwdep_pcm_shm + offset;
+-	page = virt_to_page(vaddr);
+-	get_page(page);
 -
--/*
-  * Error return values for the *_nopfn functions
-  */
- #define NOPFN_SIGBUS	((unsigned long) -1)
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -1044,8 +1044,7 @@ int get_user_pages(struct task_struct *t
- 		if (pages)
- 			foll_flags |= FOLL_GET;
- 		if (!write && !(vma->vm_flags & VM_LOCKED) &&
--		    (!vma->vm_ops || (!vma->vm_ops->nopage &&
--					!vma->vm_ops->fault)))
-+		    (!vma->vm_ops || !vma->vm_ops->fault))
- 			foll_flags |= FOLL_ANON;
- 
- 		do {
-@@ -2218,20 +2217,9 @@ static int __do_fault(struct mm_struct *
- 
- 	BUG_ON(vma->vm_flags & VM_PFNMAP);
- 
--	if (likely(vma->vm_ops->fault)) {
--		ret = vma->vm_ops->fault(vma, &vmf);
--		if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
--			return ret;
--	} else {
--		/* Legacy ->nopage path */
--		ret = 0;
--		vmf.page = vma->vm_ops->nopage(vma, address & PAGE_MASK, &ret);
--		/* no page was available -- either SIGBUS or OOM */
--		if (unlikely(vmf.page == NOPAGE_SIGBUS))
--			return VM_FAULT_SIGBUS;
--		else if (unlikely(vmf.page == NOPAGE_OOM))
--			return VM_FAULT_OOM;
--	}
-+	ret = vma->vm_ops->fault(vma, &vmf);
-+	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
-+		return ret;
- 
- 	/*
- 	 * For consistency in subsequent calls, make the faulted page always
-@@ -2471,7 +2459,7 @@ static inline int handle_pte_fault(struc
- 	if (!pte_present(entry)) {
- 		if (pte_none(entry)) {
- 			if (vma->vm_ops) {
--				if (vma->vm_ops->fault || vma->vm_ops->nopage)
-+				if (likely(vma->vm_ops->fault))
- 					return do_linear_fault(mm, vma, address,
- 						pte, pmd, write_access, entry);
- 				if (unlikely(vma->vm_ops->nopfn))
-Index: linux-2.6/mm/mincore.c
-===================================================================
---- linux-2.6.orig/mm/mincore.c
-+++ linux-2.6/mm/mincore.c
-@@ -33,7 +33,7 @@ static unsigned char mincore_page(struct
- 	 * When tmpfs swaps out a page from a file, any process mapping that
- 	 * file will not get a swp_entry_t in its pte, but rather it is like
- 	 * any other file mapping (ie. marked !present and faulted in with
--	 * tmpfs's .nopage). So swapped out tmpfs mappings are tested here.
-+	 * tmpfs's .fault). So swapped out tmpfs mappings are tested here.
- 	 *
- 	 * However when tmpfs moves the page from pagecache and into swapcache,
- 	 * it is still in core, but the find_get_page below won't find it.
-Index: linux-2.6/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.orig/Documentation/feature-removal-schedule.txt
-+++ linux-2.6/Documentation/feature-removal-schedule.txt
-@@ -172,15 +172,6 @@ Who:	Greg Kroah-Hartman <gregkh@suse.de>
- 
- ---------------------------
- 
--What:	vm_ops.nopage
--When:	Soon, provided in-kernel callers have been converted
--Why:	This interface is replaced by vm_ops.fault, but it has been around
--	forever, is used by a lot of drivers, and doesn't cost much to
--	maintain.
--Who:	Nick Piggin <npiggin@suse.de>
+-	if (type)
+-		*type = VM_FAULT_MINOR;
 -
-----------------------------
--
- What:	PHYSDEVPATH, PHYSDEVBUS, PHYSDEVDRIVER in the uevent environment
- When:	October 2008
- Why:	The stacking of class devices makes these values misleading and
-Index: linux-2.6/Documentation/filesystems/Locking
-===================================================================
---- linux-2.6.orig/Documentation/filesystems/Locking
-+++ linux-2.6/Documentation/filesystems/Locking
-@@ -514,7 +514,6 @@ prototypes:
- 	void (*open)(struct vm_area_struct*);
- 	void (*close)(struct vm_area_struct*);
- 	int (*fault)(struct vm_area_struct*, struct vm_fault *);
--	struct page *(*nopage)(struct vm_area_struct*, unsigned long, int *);
- 	int (*page_mkwrite)(struct vm_area_struct *, struct page *);
+-	return page;
++	vmf->page = virt_to_page(vaddr);
++	get_page(vmf->page);
++	return 0;
+ }
  
- locking rules:
-@@ -522,7 +521,6 @@ locking rules:
- open:		no	yes
- close:		no	yes
- fault:		no	yes
--nopage:		no	yes
- page_mkwrite:	no	yes		no
  
- 	->page_mkwrite() is called when a previously read-only page is
-@@ -540,4 +538,3 @@ NULL.
+ static struct vm_operations_struct snd_usX2Y_hwdep_pcm_vm_ops = {
+ 	.open = snd_usX2Y_hwdep_pcm_vm_open,
+ 	.close = snd_usX2Y_hwdep_pcm_vm_close,
+-	.nopage = snd_usX2Y_hwdep_pcm_vm_nopage,
++	.fault = snd_usX2Y_hwdep_pcm_vm_fault,
+ };
  
- ipc/shm.c::shm_delete() - may need BKL.
- ->read() and ->write() in many drivers are (probably) missing BKL.
--drivers/sgi/char/graphics.c::sgi_graphics_nopage() - may need BKL.
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c
-+++ linux-2.6/mm/rmap.c
-@@ -623,7 +623,6 @@ void page_remove_rmap(struct page *page,
- 			printk (KERN_EMERG "  page->mapping = %p\n", page->mapping);
- 			print_symbol (KERN_EMERG "  vma->vm_ops = %s\n", (unsigned long)vma->vm_ops);
- 			if (vma->vm_ops) {
--				print_symbol (KERN_EMERG "  vma->vm_ops->nopage = %s\n", (unsigned long)vma->vm_ops->nopage);
- 				print_symbol (KERN_EMERG "  vma->vm_ops->fault = %s\n", (unsigned long)vma->vm_ops->fault);
- 			}
- 			if (vma->vm_file && vma->vm_file->f_op)
-Index: linux-2.6/drivers/media/video/vino.c
-===================================================================
---- linux-2.6.orig/drivers/media/video/vino.c
-+++ linux-2.6/drivers/media/video/vino.c
-@@ -13,7 +13,7 @@
- /*
-  * TODO:
-  * - remove "mark pages reserved-hacks" from memory allocation code
-- *   and implement nopage()
-+ *   and implement fault()
-  * - check decimation, calculating and reporting image size when
-  *   using decimation
-  * - implement read(), user mode buffers and overlay (?)
-Index: linux-2.6/drivers/video/vermilion/vermilion.c
-===================================================================
---- linux-2.6.orig/drivers/video/vermilion/vermilion.c
-+++ linux-2.6/drivers/video/vermilion/vermilion.c
-@@ -114,8 +114,9 @@ static int vmlfb_alloc_vram_area(struct 
  
- 	/*
- 	 * It seems like __get_free_pages only ups the usage count
--	 * of the first page. This doesn't work with nopage mapping, so
--	 * up the usage count once more.
-+	 * of the first page. This doesn't work with fault mapping, so
-+	 * up the usage count once more (XXX: should use split_page or
-+	 * compound page).
- 	 */
- 
- 	memset((void *)va->logical, 0x00, va->size);
 
 -- 
 
