@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbXLETu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXLETus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbXLETu0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 14:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbXLETlR
+	id S1756922AbXLETus (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 14:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXLETlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 14:41:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34895 "EHLO mx1.redhat.com"
+	Wed, 5 Dec 2007 14:41:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34898 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754745AbXLETku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 14:40:50 -0500
+	id S1754576AbXLETkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 14:40:52 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 26/28] AF_RXRPC: Save the operation ID for debugging [try #2]
+Subject: [PATCH 25/28] AFS: Improve handling of a rejected writeback [try #2]
 To: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
        sds@tycho.nsa.gov, casey@schaufler-ca.com
 Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 05 Dec 2007 19:40:31 +0000
-Message-ID: <20071205194030.24617.91122.stgit@warthog.procyon.org.uk>
+Date: Wed, 05 Dec 2007 19:40:25 +0000
+Message-ID: <20071205194025.24617.9994.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
 References: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -31,317 +31,412 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Save the operation ID to be used with a call that we're making for display
-through /proc/net/rxrpc_calls.  This helps debugging stuck operations as we
-then know what they are.
+Improve the handling of the case of a server rejecting an attempt to write back
+a cached write.  AFS operates a write-back cache, so the following sequence of
+events can theoretically occur:
+
+	CLIENT 1		CLIENT 2
+	=======================	=======================
+	cat data >/the/file
+	 (sits in pagecache)
+				fs setacl -dir /the/dir/of/the/file \
+					-acl system:administrators rlidka
+				 (write permission removed for client 1)
+	sync
+	 (writeback attempt fails)
+
+The way AFS attempts to handle this is:
+
+ (1) The affected region will be excised and discarded on the basis that it
+     can't be written back, yet we don't want it lurking in the page cache
+     either.  The contents of the affected region will be reread from the
+     server when called for again.
+
+ (2) The EOF size will be set to the current server-based file size - usually
+     that which it was before the affected write was made - assuming no
+     conflicting write has been appended, and assuming the affected write
+     extended the file.
+
+
+This patch makes the following changes:
+
+ (1) Zero-length short reads don't produce EBADMSG now just because the OpenAFS
+     server puts a silly value as the size of the returned data.  This prevents
+     excised pages beyond the revised EOF being reinstantiated with a surprise
+     PG_error.
+
+ (2) Writebacks can now be put into a 'rejected' state in which all further
+     attempts to write them back will result in excision of the affected pages
+     instead.
+
+ (3) Preparing a page for overwriting now reads the whole page instead of just
+     those parts of it that aren't to be covered by the copy to be made.  This
+     handles the possibility that the copy might fail on EFAULT.  Corollary to
+     this, PG_update can now be set by afs_prepare_page() on behalf of
+     afs_prepare_write() rather than setting it in afs_commit_write().
+
+ (4) In the case of a conflicting write, afs_prepare_write() will attempt to
+     flush the write to the server, and will then wait for PG_writeback to go
+     away - after unlocking the page.  This helps prevent deadlock against the
+     writeback-rejection handler.  AOP_TRUNCATED_PAGE is then returned to the
+     caller to signify that the page has been unlocked, and that it should be
+     revalidated.
+
+ (5) The writeback-rejection handler now calls cancel_rejected_write() added by
+     the previous patch to excise the affected pages rather than clearing the
+     PG_uptodate flag on all the pages.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/afs/fsclient.c       |   32 +++++++++++++++++++++++---------
- fs/afs/rxrpc.c          |    1 +
- fs/afs/vlclient.c       |    2 ++
- include/net/af_rxrpc.h  |    1 +
- net/rxrpc/af_rxrpc.c    |    3 +++
- net/rxrpc/ar-internal.h |    1 +
- net/rxrpc/ar-proc.c     |    7 ++++---
- 7 files changed, 35 insertions(+), 12 deletions(-)
+ fs/afs/fsclient.c |    4 +
+ fs/afs/internal.h |    1 
+ fs/afs/write.c    |  154 ++++++++++++++++++++++++++++-------------------------
+ 3 files changed, 85 insertions(+), 74 deletions(-)
 
 diff --git a/fs/afs/fsclient.c b/fs/afs/fsclient.c
-index 04584c0..a468f2d 100644
+index 023b95b..04584c0 100644
 --- a/fs/afs/fsclient.c
 +++ b/fs/afs/fsclient.c
-@@ -287,6 +287,7 @@ int afs_fs_fetch_file_status(struct afs_server *server,
- 	call->reply2 = volsync;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSFETCHSTATUS);
+@@ -353,7 +353,9 @@ static int afs_deliver_fs_fetch_data(struct afs_call *call,
  
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -316,7 +317,7 @@ static int afs_deliver_fs_fetch_data(struct afs_call *call,
- 	case 0:
+ 		call->count = ntohl(call->tmp);
+ 		_debug("DATA length: %u", call->count);
+-		if (call->count > PAGE_SIZE)
++		if ((s32) call->count < 0)
++			call->count = 0; /* access completely beyond EOF */
++		else if (call->count > PAGE_SIZE)
+ 			return -EBADMSG;
  		call->offset = 0;
  		call->unmarshall++;
--		if (call->operation_ID != FSFETCHDATA64) {
-+		if (call->operation_ID != htonl(FSFETCHDATA64)) {
- 			call->unmarshall++;
- 			goto no_msw;
- 		}
-@@ -464,7 +465,7 @@ static int afs_fs_fetch_data64(struct afs_server *server,
- 	call->reply3 = buffer;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
--	call->operation_ID = FSFETCHDATA64;
-+	call->operation_ID = htonl(FSFETCHDATA64);
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index 5ca3625..84b90b0 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -156,6 +156,7 @@ struct afs_writeback {
+ 		AFS_WBACK_PENDING,		/* write pending */
+ 		AFS_WBACK_CONFLICTING,		/* conflicting writes posted */
+ 		AFS_WBACK_WRITING,		/* writing back */
++		AFS_WBACK_REJECTED,		/* the writeback was rejected */
+ 		AFS_WBACK_COMPLETE		/* the writeback record has been unlinked */
+ 	} state __attribute__((packed));
+ };
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index 9a849ad..add5892 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -81,18 +81,16 @@ void afs_put_writeback(struct afs_writeback *wb)
+ }
  
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -509,7 +510,7 @@ int afs_fs_fetch_data(struct afs_server *server,
- 	call->reply3 = buffer;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
--	call->operation_ID = FSFETCHDATA;
-+	call->operation_ID = htonl(FSFETCHDATA);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -577,6 +578,7 @@ int afs_fs_give_up_callbacks(struct afs_server *server,
- 
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSGIVEUPCALLBACKS);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -683,10 +685,11 @@ int afs_fs_create(struct afs_server *server,
- 	call->reply4 = newcb;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(S_ISDIR(mode) ? FSMAKEDIR : FSCREATEFILE);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
--	*bp++ = htonl(S_ISDIR(mode) ? FSMAKEDIR : FSCREATEFILE);
-+	*bp++ = call->operation_ID;
- 	*bp++ = htonl(vnode->fid.vid);
- 	*bp++ = htonl(vnode->fid.vnode);
- 	*bp++ = htonl(vnode->fid.unique);
-@@ -772,10 +775,11 @@ int afs_fs_remove(struct afs_server *server,
- 	call->reply = vnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(isdir ? FSREMOVEDIR : FSREMOVEFILE);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
--	*bp++ = htonl(isdir ? FSREMOVEDIR : FSREMOVEFILE);
-+	*bp++ = call->operation_ID;
- 	*bp++ = htonl(vnode->fid.vid);
- 	*bp++ = htonl(vnode->fid.vnode);
- 	*bp++ = htonl(vnode->fid.unique);
-@@ -857,6 +861,7 @@ int afs_fs_link(struct afs_server *server,
- 	call->reply2 = vnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSLINK);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -954,6 +959,7 @@ int afs_fs_symlink(struct afs_server *server,
- 	call->reply3 = newstatus;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSSYMLINK);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1062,6 +1068,7 @@ int afs_fs_rename(struct afs_server *server,
- 	call->reply2 = new_dvnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSRENAME);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1178,6 +1185,7 @@ static int afs_fs_store_data64(struct afs_server *server,
- 	call->last_to = to;
- 	call->send_pages = true;
- 	call->store_version = vnode->status.data_version + 1;
-+	call->operation_ID = htonl(FSSTOREDATA64);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1255,6 +1263,7 @@ int afs_fs_store_data(struct afs_server *server, struct afs_writeback *wb,
- 	call->last_to = to;
- 	call->send_pages = true;
- 	call->store_version = vnode->status.data_version + 1;
-+	call->operation_ID = htonl(FSSTOREDATA);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1303,7 +1312,8 @@ static int afs_deliver_fs_store_status(struct afs_call *call,
- 
- 	/* unmarshall the reply once we've received all of it */
- 	store_version = NULL;
--	if (call->operation_ID == FSSTOREDATA)
-+	if (call->operation_ID == htonl(FSSTOREDATA) ||
-+	    call->operation_ID == htonl(FSSTOREDATA64))
- 		store_version = &call->store_version;
- 
- 	bp = call->buffer;
-@@ -1365,7 +1375,7 @@ static int afs_fs_setattr_size64(struct afs_server *server, struct key *key,
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
- 	call->store_version = vnode->status.data_version + 1;
--	call->operation_ID = FSSTOREDATA;
-+	call->operation_ID = htonl(FSSTOREDATA64);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1416,7 +1426,7 @@ static int afs_fs_setattr_size(struct afs_server *server, struct key *key,
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
- 	call->store_version = vnode->status.data_version + 1;
--	call->operation_ID = FSSTOREDATA;
-+	call->operation_ID = htonl(FSSTOREDATA);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1462,7 +1472,7 @@ int afs_fs_setattr(struct afs_server *server, struct key *key,
- 	call->reply = vnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
--	call->operation_ID = FSSTORESTATUS;
-+	call->operation_ID = htonl(FSSTORESTATUS);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1742,6 +1752,7 @@ int afs_fs_get_volume_status(struct afs_server *server,
- 	call->reply3 = tmpbuf;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSGETVOLUMESTATUS);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1828,6 +1839,7 @@ int afs_fs_set_lock(struct afs_server *server,
- 	call->reply = vnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSSETLOCK);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1861,6 +1873,7 @@ int afs_fs_extend_lock(struct afs_server *server,
- 	call->reply = vnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSEXTENDLOCK);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -1893,6 +1906,7 @@ int afs_fs_release_lock(struct afs_server *server,
- 	call->reply = vnode;
- 	call->service_id = FS_SERVICE;
- 	call->port = htons(AFS_FS_PORT);
-+	call->operation_ID = htonl(FSRELEASELOCK);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
-index bde3f19..348caf4 100644
---- a/fs/afs/rxrpc.c
-+++ b/fs/afs/rxrpc.c
-@@ -336,6 +336,7 @@ int afs_make_call(struct in_addr *addr, struct afs_call *call, gfp_t gfp,
- 
- 	/* create a call */
- 	rxcall = rxrpc_kernel_begin_call(afs_socket, &srx, call->key,
-+					 ntohl(call->operation_ID),
- 					 (unsigned long) call, gfp);
- 	call->key = NULL;
- 	if (IS_ERR(rxcall)) {
-diff --git a/fs/afs/vlclient.c b/fs/afs/vlclient.c
-index 36c1306..60ddd4f 100644
---- a/fs/afs/vlclient.c
-+++ b/fs/afs/vlclient.c
-@@ -170,6 +170,7 @@ int afs_vl_get_entry_by_name(struct in_addr *addr,
- 	call->reply = entry;
- 	call->service_id = VL_SERVICE;
- 	call->port = htons(AFS_VL_PORT);
-+	call->operation_ID = htonl(VLGETENTRYBYNAME);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-@@ -206,6 +207,7 @@ int afs_vl_get_entry_by_id(struct in_addr *addr,
- 	call->reply = entry;
- 	call->service_id = VL_SERVICE;
- 	call->port = htons(AFS_VL_PORT);
-+	call->operation_ID = htonl(VLGETENTRYBYID);
- 
- 	/* marshall the parameters */
- 	bp = call->request;
-diff --git a/include/net/af_rxrpc.h b/include/net/af_rxrpc.h
-index 00c2eaa..7e99733 100644
---- a/include/net/af_rxrpc.h
-+++ b/include/net/af_rxrpc.h
-@@ -38,6 +38,7 @@ extern void rxrpc_kernel_intercept_rx_messages(struct socket *,
- extern struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *,
- 						  struct sockaddr_rxrpc *,
- 						  struct key *,
-+						  u32,
- 						  unsigned long,
- 						  gfp_t);
- extern int rxrpc_kernel_send_data(struct rxrpc_call *, struct msghdr *,
-diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
-index d638945..bd59665 100644
---- a/net/rxrpc/af_rxrpc.c
-+++ b/net/rxrpc/af_rxrpc.c
-@@ -253,6 +253,7 @@ static struct rxrpc_transport *rxrpc_name_to_transport(struct socket *sock,
-  * @sock: The socket on which to make the call
-  * @srx: The address of the peer to contact (defaults to socket setting)
-  * @key: The security context to use (defaults to socket setting)
-+ * @operation_ID: The operation ID for this call (debugging only)
-  * @user_call_ID: The ID to use
-  *
-  * Allow a kernel service to begin a call on the nominated socket.  This just
-@@ -265,6 +266,7 @@ static struct rxrpc_transport *rxrpc_name_to_transport(struct socket *sock,
- struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
- 					   struct sockaddr_rxrpc *srx,
- 					   struct key *key,
-+					   u32 operation_ID,
- 					   unsigned long user_call_ID,
- 					   gfp_t gfp)
+ /*
+- * partly or wholly fill a page that's under preparation for writing
++ * fill a page that's under preparation for writing
+  */
+ static int afs_fill_page(struct afs_vnode *vnode, struct key *key,
+-			 unsigned start, unsigned len, struct page *page)
++			 unsigned len, struct page *page)
  {
-@@ -313,6 +315,7 @@ struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
- 	call = rxrpc_get_client_call(rx, trans, bundle, user_call_ID, true,
- 				     gfp);
- 	rxrpc_put_bundle(trans, bundle);
-+	call->op_id = operation_ID;
- out:
- 	rxrpc_put_transport(trans);
- 	release_sock(&rx->sk);
-diff --git a/net/rxrpc/ar-internal.h b/net/rxrpc/ar-internal.h
-index 58aaf89..f362e7e 100644
---- a/net/rxrpc/ar-internal.h
-+++ b/net/rxrpc/ar-internal.h
-@@ -367,6 +367,7 @@ struct rxrpc_call {
- 		RXRPC_CALL_DEAD,		/* - call is dead */
- 	} state;
- 	int			debug_id;	/* debug ID for printks */
-+	u32			op_id;		/* operation ID (for debugging only) */
- 	u8			channel;	/* connection channel occupied by this call */
+ 	int ret;
  
- 	/* transmission-phase ACK management */
-diff --git a/net/rxrpc/ar-proc.c b/net/rxrpc/ar-proc.c
-index 2e83ce3..521b826 100644
---- a/net/rxrpc/ar-proc.c
-+++ b/net/rxrpc/ar-proc.c
-@@ -53,8 +53,8 @@ static int rxrpc_call_seq_show(struct seq_file *seq, void *v)
- 	if (v == &rxrpc_calls) {
- 		seq_puts(seq,
- 			 "Proto Local                  Remote                "
--			 " SvID ConnID   CallID   End Use State    Abort   "
--			 " UserID\n");
-+			 " SvID ConnID   CallID   OpID     End Use State   "
-+			 " Abort    UserID\n");
+-	_enter(",,%u,%u", start, len);
++	_enter(",,%u,", len);
+ 
+-	ASSERTCMP(start + len, <=, PAGE_SIZE);
+-
+-	ret = afs_vnode_fetch_data(vnode, key, start, len, page);
++	ret = afs_vnode_fetch_data(vnode, key, 0, len, page);
+ 	if (ret < 0) {
+ 		if (ret == -ENOENT) {
+ 			_debug("got NOENT from server"
+@@ -110,18 +108,15 @@ static int afs_fill_page(struct afs_vnode *vnode, struct key *key,
+  * prepare a page for being written to
+  */
+ static int afs_prepare_page(struct afs_vnode *vnode, struct page *page,
+-			    struct key *key, unsigned offset, unsigned to)
++			    struct key *key)
+ {
+-	unsigned eof, tail, start, stop, len;
++	unsigned len;
+ 	loff_t i_size, pos;
+ 	void *p;
+ 	int ret;
+ 
+ 	_enter("");
+ 
+-	if (offset == 0 && to == PAGE_SIZE)
+-		return 0;
+-
+ 	p = kmap_atomic(page, KM_USER0);
+ 
+ 	i_size = i_size_read(&vnode->vfs_inode);
+@@ -129,10 +124,7 @@ static int afs_prepare_page(struct afs_vnode *vnode, struct page *page,
+ 	if (pos >= i_size) {
+ 		/* partial write, page beyond EOF */
+ 		_debug("beyond");
+-		if (offset > 0)
+-			memset(p, 0, offset);
+-		if (to < PAGE_SIZE)
+-			memset(p + to, 0, PAGE_SIZE - to);
++		memset(p, 0, PAGE_SIZE);
+ 		kunmap_atomic(p, KM_USER0);
  		return 0;
  	}
+@@ -140,31 +132,20 @@ static int afs_prepare_page(struct afs_vnode *vnode, struct page *page,
+ 	if (i_size - pos >= PAGE_SIZE) {
+ 		/* partial write, page entirely before EOF */
+ 		_debug("before");
+-		tail = eof = PAGE_SIZE;
++		len = PAGE_SIZE;
+ 	} else {
+ 		/* partial write, page overlaps EOF */
+-		eof = i_size - pos;
+-		_debug("overlap %u", eof);
+-		tail = max(eof, to);
+-		if (tail < PAGE_SIZE)
+-			memset(p + tail, 0, PAGE_SIZE - tail);
+-		if (offset > eof)
+-			memset(p + eof, 0, PAGE_SIZE - eof);
++		len = i_size - pos;
++		_debug("overlap %u", len);
++		ASSERTRANGE(0, <, len, <, PAGE_SIZE);
++		memset(p + len, 0, PAGE_SIZE - len);
+ 	}
  
-@@ -70,13 +70,14 @@ static int rxrpc_call_seq_show(struct seq_file *seq, void *v)
- 		ntohs(trans->peer->srx.transport.sin.sin_port));
+ 	kunmap_atomic(p, KM_USER0);
  
- 	seq_printf(seq,
--		   "UDP   %-22.22s %-22.22s %4x %08x %08x %s %3u"
-+		   "UDP   %-22.22s %-22.22s %4x %08x %08x %08x %s %3u"
- 		   " %-8.8s %08x %lx\n",
- 		   lbuff,
- 		   rbuff,
- 		   ntohs(call->conn->service_id),
- 		   ntohl(call->conn->cid),
- 		   ntohl(call->call_id),
-+		   call->op_id,
- 		   call->conn->in_clientflag ? "Svc" : "Clt",
- 		   atomic_read(&call->usage),
- 		   rxrpc_call_states[call->state],
+-	ret = 0;
+-	if (offset > 0 || eof > to) {
+-		/* need to fill one or two bits that aren't going to be written
+-		 * (cover both fillers in one read if there are two) */
+-		start = (offset > 0) ? 0 : to;
+-		stop = (eof > to) ? eof : offset;
+-		len = stop - start;
+-		_debug("wr=%u-%u av=0-%u rd=%u@%u",
+-		       offset, to, eof, start, len);
+-		ret = afs_fill_page(vnode, key, start, len, page);
+-	}
++	ret = afs_fill_page(vnode, key, len, page);
++	if (ret == 0)
++		SetPageUptodate(page);
+ 
+ 	_leave(" = %d", ret);
+ 	return ret;
+@@ -187,6 +168,8 @@ int afs_prepare_write(struct file *file, struct page *page,
+ 	_enter("{%x:%u},{%lx},%u,%u",
+ 	       vnode->fid.vid, vnode->fid.vnode, page->index, offset, to);
+ 
++	BUG_ON(PageError(page));
++
+ 	candidate = kzalloc(sizeof(*candidate), GFP_KERNEL);
+ 	if (!candidate)
+ 		return -ENOMEM;
+@@ -200,7 +183,7 @@ int afs_prepare_write(struct file *file, struct page *page,
+ 
+ 	if (!PageUptodate(page)) {
+ 		_debug("not up to date");
+-		ret = afs_prepare_page(vnode, page, key, offset, to);
++		ret = afs_prepare_page(vnode, page, key);
+ 		if (ret < 0) {
+ 			kfree(candidate);
+ 			_leave(" = %d [prep]", ret);
+@@ -269,21 +252,41 @@ flush_conflicting_wb:
+ 	_debug("flush conflict");
+ 	if (wb->state == AFS_WBACK_PENDING)
+ 		wb->state = AFS_WBACK_CONFLICTING;
++	wb->usage++;
+ 	spin_unlock(&vnode->writeback_lock);
+-	if (PageDirty(page)) {
++	if (!PageDirty(page) && !PageWriteback(page)) {
++		/* no change outstanding - just reuse the page */
++		_debug("reuse");
++		afs_put_writeback(wb);
++		set_page_private(page, 0);
++		ClearPagePrivate(page);
++		goto try_again;
++	}
++
++	kfree(candidate);
++
++	/* if we're busy writing back a conflicting write, then unlock the page
++	 * and wait for the writeback to complete - this lets the process doing
++	 * the write-out handle rejection without deadlock */
++	if (PageWriteback(page)) {
++		_debug("wait wb");
++		unlock_page(page);
++	} else {
++		/* there's a conflicting modification we have to write back and
++		 * wait for before letting the next one proceed */
++		_debug("dirty");
+ 		ret = afs_write_back_from_locked_page(wb, page);
+ 		if (ret < 0) {
+-			afs_put_writeback(candidate);
++			afs_put_writeback(wb);
+ 			_leave(" = %d", ret);
+ 			return ret;
+ 		}
+ 	}
+ 
+-	/* the page holds a ref on the writeback record */
+ 	afs_put_writeback(wb);
+-	set_page_private(page, 0);
+-	ClearPagePrivate(page);
+-	goto try_again;
++	wait_on_page_writeback(page);
++	_leave(" = A_T_P");
++	return AOP_TRUNCATED_PAGE;
+ }
+ 
+ /*
+@@ -310,7 +313,6 @@ int afs_commit_write(struct file *file, struct page *page,
+ 		spin_unlock(&vnode->writeback_lock);
+ 	}
+ 
+-	SetPageUptodate(page);
+ 	set_page_dirty(page);
+ 	if (PageDirty(page))
+ 		_debug("dirtied");
+@@ -319,38 +321,35 @@ int afs_commit_write(struct file *file, struct page *page,
+ }
+ 
+ /*
+- * kill all the pages in the given range
++ * note the failure of a write, either due to an error or to a permission
++ * failure
++ * - all the pages in the affected range must have PG_writeback set
++ * - the caller must be responsible for the pages: no-one else should be trying
++ *   to note rejection
+  */
+-static void afs_kill_pages(struct afs_vnode *vnode, bool error,
+-			   pgoff_t first, pgoff_t last)
++static void afs_write_rejected(struct afs_writeback *wb, bool error,
++			       pgoff_t first, pgoff_t last)
+ {
+-	struct pagevec pv;
+-	unsigned count, loop;
++	struct afs_vnode *vnode = wb->vnode;
++	loff_t i_size;
+ 
+ 	_enter("{%x:%u},%lx-%lx",
+ 	       vnode->fid.vid, vnode->fid.vnode, first, last);
+ 
+-	pagevec_init(&pv, 0);
+-
+-	do {
+-		_debug("kill %lx-%lx", first, last);
+-
+-		count = last - first + 1;
+-		if (count > PAGEVEC_SIZE)
+-			count = PAGEVEC_SIZE;
+-		pv.nr = find_get_pages_contig(vnode->vfs_inode.i_mapping,
+-					      first, count, pv.pages);
+-		ASSERTCMP(pv.nr, ==, count);
+-
+-		for (loop = 0; loop < count; loop++) {
+-			ClearPageUptodate(pv.pages[loop]);
+-			if (error)
+-				SetPageError(pv.pages[loop]);
+-			end_page_writeback(pv.pages[loop]);
+-		}
++	spin_lock(&vnode->writeback_lock);
++	wb->state = AFS_WBACK_REJECTED;
++
++	/* wind back the file size if this write extended the file, and wasn't
++	 * followed by a conflicting write */
++	i_size = ((loff_t) wb->last) << PAGE_SHIFT;
++	i_size += wb->to_last;
++	if (i_size_read(&vnode->vfs_inode) == i_size) {
++		_debug("shorten");
++		i_size_write(&vnode->vfs_inode, vnode->status.size);
++	}
+ 
+-		__pagevec_release(&pv);
+-	} while (first < last);
++	spin_unlock(&vnode->writeback_lock);
++	cancel_rejected_write(vnode->vfs_inode.i_mapping, first, last);
+ 
+ 	_leave("");
+ }
+@@ -358,6 +357,7 @@ static void afs_kill_pages(struct afs_vnode *vnode, bool error,
+ /*
+  * synchronously write back the locked page and any subsequent non-locked dirty
+  * pages also covered by the same writeback record
++ * - all pages written will be unlocked prior to returning
+  */
+ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
+ 					   struct page *primary_page)
+@@ -407,6 +407,7 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
+ 			if (TestSetPageLocked(page))
+ 				break;
+ 			if (!PageDirty(page) ||
++			    PageWriteback(page) ||
+ 			    page_private(page) != (unsigned long) wb) {
+ 				unlock_page(page);
+ 				break;
+@@ -430,14 +431,22 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
+ 
+ no_more:
+ 	/* we now have a contiguous set of dirty pages, each with writeback set
+-	 * and the dirty mark cleared; the first page is locked and must remain
+-	 * so, all the rest are unlocked */
++	 * and the dirty mark cleared; all the pages barring the first are now
++	 * unlocked */
+ 	first = primary_page->index;
+ 	last = first + count - 1;
++	unlock_page(primary_page);
+ 
+ 	offset = (first == wb->first) ? wb->offset_first : 0;
+ 	to = (last == wb->last) ? wb->to_last : PAGE_SIZE;
+ 
++	if (wb->state == AFS_WBACK_REJECTED) {
++		cancel_rejected_write(wb->vnode->vfs_inode.i_mapping,
++				      first, last);
++		ret = 0;
++		goto out;
++	}
++
+ 	_debug("write back %lx[%u..] to %lx[..%u]", first, offset, last, to);
+ 
+ 	ret = afs_vnode_store_data(wb, first, last, offset, to);
+@@ -455,7 +464,7 @@ no_more:
+ 		case -ENOENT:
+ 		case -ENOMEDIUM:
+ 		case -ENXIO:
+-			afs_kill_pages(wb->vnode, true, first, last);
++			afs_write_rejected(wb, true, first, last);
+ 			set_bit(AS_EIO, &wb->vnode->vfs_inode.i_mapping->flags);
+ 			break;
+ 		case -EACCES:
+@@ -464,7 +473,7 @@ no_more:
+ 		case -EKEYEXPIRED:
+ 		case -EKEYREJECTED:
+ 		case -EKEYREVOKED:
+-			afs_kill_pages(wb->vnode, false, first, last);
++			afs_write_rejected(wb, false, first, last);
+ 			break;
+ 		default:
+ 			break;
+@@ -473,6 +482,7 @@ no_more:
+ 		ret = count;
+ 	}
+ 
++out:
+ 	_leave(" = %d", ret);
+ 	return ret;
+ }
+@@ -493,7 +503,6 @@ int afs_writepage(struct page *page, struct writeback_control *wbc)
+ 	ASSERT(wb != NULL);
+ 
+ 	ret = afs_write_back_from_locked_page(wb, page);
+-	unlock_page(page);
+ 	if (ret < 0) {
+ 		_leave(" = %d", ret);
+ 		return 0;
+@@ -565,7 +574,6 @@ static int afs_writepages_region(struct address_space *mapping,
+ 		spin_unlock(&wb->vnode->writeback_lock);
+ 
+ 		ret = afs_write_back_from_locked_page(wb, page);
+-		unlock_page(page);
+ 		page_cache_release(page);
+ 		if (ret < 0) {
+ 			_leave(" = %d", ret);
 
