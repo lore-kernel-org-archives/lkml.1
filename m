@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751689AbXLELuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXLELvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751689AbXLELuu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 06:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXLELuc
+	id S1754785AbXLELvG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 06:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXLELue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 06:50:32 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:33819 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751947AbXLELua (ORCPT
+	Wed, 5 Dec 2007 06:50:34 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:52754 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbXLELud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 06:50:30 -0500
-Date: Wed, 5 Dec 2007 12:50:28 +0100
+	Wed, 5 Dec 2007 06:50:33 -0500
+Date: Wed, 5 Dec 2007 12:50:31 +0100
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, Ursula Braun <ubraun@linux.vnet.ibm.com>,
+Cc: linux-kernel@vger.kernel.org, Swen Schillig <swen@vnet.ibm.com>,
        Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [patch 2/3] netiucv: Use device_driver default attribute groups.
-Message-ID: <20071205125028.026a617d@gondolin.boeblingen.de.ibm.com>
+Subject: [patch 3/3] zfcp: Use device_driver default attribute groups.
+Message-ID: <20071205125031.738e0627@gondolin.boeblingen.de.ibm.com>
 In-Reply-To: <20071205114119.905238262@de.ibm.com>
 References: <20071205114119.905238262@de.ibm.com>
 Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
@@ -31,60 +31,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Ursula Braun <ubraun@linux.vnet.ibm.com>
+CC: Swen Schillig <swen@vnet.ibm.com>
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
 ---
- drivers/s390/net/netiucv.c |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
+ drivers/s390/scsi/zfcp_ccw.c          |   14 ++++----------
+ drivers/s390/scsi/zfcp_ext.h          |    3 +--
+ drivers/s390/scsi/zfcp_sysfs_driver.c |   27 ++++-----------------------
+ 3 files changed, 9 insertions(+), 35 deletions(-)
 
---- linux-2.6.orig/drivers/s390/net/netiucv.c
-+++ linux-2.6/drivers/s390/net/netiucv.c
-@@ -2089,6 +2089,11 @@ static struct attribute_group netiucv_dr
- 	.attrs = netiucv_drv_attrs,
+--- linux-2.6.orig/drivers/s390/scsi/zfcp_ccw.c
++++ linux-2.6/drivers/s390/scsi/zfcp_ccw.c
+@@ -52,6 +52,9 @@ static struct ccw_driver zfcp_ccw_driver
+ 	.set_offline = zfcp_ccw_set_offline,
+ 	.notify      = zfcp_ccw_notify,
+ 	.shutdown    = zfcp_ccw_shutdown,
++	.driver = {
++		.groups = zfcp_driver_attr_groups,
++	},
  };
  
-+static struct attribute_group *netiucv_drv_attr_groups[] = {
-+	&netiucv_drv_attr_group,
+ MODULE_DEVICE_TABLE(ccw, zfcp_ccw_device_id);
+@@ -251,16 +254,7 @@ zfcp_ccw_notify(struct ccw_device *ccw_d
+ int __init
+ zfcp_ccw_register(void)
+ {
+-	int retval;
+-
+-	retval = ccw_driver_register(&zfcp_ccw_driver);
+-	if (retval)
+-		goto out;
+-	retval = zfcp_sysfs_driver_create_files(&zfcp_ccw_driver.driver);
+-	if (retval)
+-		ccw_driver_unregister(&zfcp_ccw_driver);
+- out:
+-	return retval;
++	return ccw_driver_register(&zfcp_ccw_driver);
+ }
+ 
+ /**
+--- linux-2.6.orig/drivers/s390/scsi/zfcp_ext.h
++++ linux-2.6/drivers/s390/scsi/zfcp_ext.h
+@@ -27,8 +27,7 @@
+ extern struct zfcp_data zfcp_data;
+ 
+ /******************************** SYSFS  *************************************/
+-extern int  zfcp_sysfs_driver_create_files(struct device_driver *);
+-extern void zfcp_sysfs_driver_remove_files(struct device_driver *);
++extern struct attribute_group *zfcp_driver_attr_groups[];
+ extern int  zfcp_sysfs_adapter_create_files(struct device *);
+ extern void zfcp_sysfs_adapter_remove_files(struct device *);
+ extern int  zfcp_sysfs_port_create_files(struct device *, u32);
+--- linux-2.6.orig/drivers/s390/scsi/zfcp_sysfs_driver.c
++++ linux-2.6/drivers/s390/scsi/zfcp_sysfs_driver.c
+@@ -98,28 +98,9 @@ static struct attribute_group zfcp_drive
+ 	.attrs = zfcp_driver_attrs,
+ };
+ 
+-/**
+- * zfcp_sysfs_create_driver_files - create sysfs driver files
+- * @dev: pointer to belonging device
+- *
+- * Create all sysfs attributes of the zfcp device driver
+- */
+-int
+-zfcp_sysfs_driver_create_files(struct device_driver *drv)
+-{
+-	return sysfs_create_group(&drv->kobj, &zfcp_driver_attr_group);
+-}
+-
+-/**
+- * zfcp_sysfs_remove_driver_files - remove sysfs driver files
+- * @dev: pointer to belonging device
+- *
+- * Remove all sysfs attributes of the zfcp device driver
+- */
+-void
+-zfcp_sysfs_driver_remove_files(struct device_driver *drv)
+-{
+-	sysfs_remove_group(&drv->kobj, &zfcp_driver_attr_group);
+-}
++struct attribute_group *zfcp_driver_attr_groups[] = {
++	&zfcp_driver_attr_group,
 +	NULL,
 +};
-+
- static void netiucv_banner(void)
- {
- 	PRINT_INFO("NETIUCV driver initialized\n");
-@@ -2113,7 +2118,6 @@ static void __exit netiucv_exit(void)
- 		netiucv_unregister_device(dev);
- 	}
  
--	sysfs_remove_group(&netiucv_driver.kobj, &netiucv_drv_attr_group);
- 	driver_unregister(&netiucv_driver);
- 	iucv_unregister(&netiucv_handler, 1);
- 	iucv_unregister_dbf_views();
-@@ -2133,6 +2137,7 @@ static int __init netiucv_init(void)
- 	if (rc)
- 		goto out_dbf;
- 	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	netiucv_driver.groups = netiucv_drv_attr_groups;
- 	rc = driver_register(&netiucv_driver);
- 	if (rc) {
- 		PRINT_ERR("NETIUCV: failed to register driver.\n");
-@@ -2140,18 +2145,9 @@ static int __init netiucv_init(void)
- 		goto out_iucv;
- 	}
- 
--	rc = sysfs_create_group(&netiucv_driver.kobj, &netiucv_drv_attr_group);
--	if (rc) {
--		PRINT_ERR("NETIUCV: failed to add driver attributes.\n");
--		IUCV_DBF_TEXT_(setup, 2,
--			       "ret %d - netiucv_drv_attr_group\n", rc);
--		goto out_driver;
--	}
- 	netiucv_banner();
- 	return rc;
- 
--out_driver:
--	driver_unregister(&netiucv_driver);
- out_iucv:
- 	iucv_unregister(&netiucv_handler, 1);
- out_dbf:
+ #undef ZFCP_LOG_AREA
 
