@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbXLEI1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbXLEIdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbXLEI1x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 03:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXLEI1p
+	id S1752177AbXLEIdK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 03:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbXLEIc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 03:27:45 -0500
-Received: from osl1smout1.broadpark.no ([80.202.4.58]:56908 "EHLO
-	osl1smout1.broadpark.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbXLEI1o (ORCPT
+	Wed, 5 Dec 2007 03:32:58 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48691 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXLEIc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 03:27:44 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain
-Subject: Re: laptop reboots right after hibernation
-From: Kjartan Maraas <kmaraas@broadpark.no>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Tomas Carnecky <tom@dbservice.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-reply-to: <47565738.1050003@gmail.com>
-References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz>
- <4740692E.7010801@dbservice.com> <47409DA3.7070909@dbservice.com>
- <1195551141.2792.3.camel@localhost.localdomain> <474CBFB6.4020105@gmail.com>
- <1196253340.2884.1.camel@localhost.localdomain> <474FE862.4040700@gmail.com>
- <1196458627.4106.1.camel@localhost.localdomain> <47565738.1050003@gmail.com>
-Date: Wed, 05 Dec 2007 09:27:18 +0100
-Message-id: <1196843238.3289.0.camel@localhost.localdomain>
-X-Mailer: Evolution 2.21.2 (2.21.2-4.fc9)
+	Wed, 5 Dec 2007 03:32:57 -0500
+Date: Wed, 5 Dec 2007 08:32:52 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
+       Tigran Aivazian <tigran@veritas.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] regression: bfs endianness bug
+Message-ID: <20071205083252.GE8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+BFS_FILEBLOCKS() expects struct bfs_inode * (on-disk data, with little-endian
+fields), not struct bfs_inode_info * (in-core stuff, with host-endian ones).
+It's a macro and fields with the right names are present in bfs_inode_info,
+so it compiles, but on big-endian host it gives bogus results.
 
-on., 05.12.2007 kl. 16.46 +0900, skrev Tejun Heo:
-> Kjartan Maraas wrote:
-> > fr., 30.11.2007 kl. 19.39 +0900, skrev Tejun Heo:
-> >> Kjartan Maraas wrote:
-> >>> on., 28.11.2007 kl. 10.09 +0900, skrev Tejun Heo:
-> >>>> Kjartan Maraas wrote:
-> >>>>> I get this exact error message on a normal first time boot here. I'm
-> >>>>> using the latest fedora development kernel which is 2.6.24-rc2-git6
-> >>>>> based. And I have the latest BIOS from HP IIRC.
-> >>>>>
-> >>>>> This is an HP nc6400 intel based laptop:
-> >>>> Care to post boot dmesg?  Or does harddisk detection fail because of this?
-> >>>>
-> >>> Here you go. It shows the error two times and then it gets it right and
-> >>> continues to boot. No other problems arise from this that I can see.
-> >> I'm attaching two patches.  Please apply each on top of clean 2.6.24-rc3
-> >> and report kernel boot logs for both.
-> >>
-> > I tried to do that but recent kernels hang on boot here after TSC:
-> > clocksource installed.
-> > 
-> > Filed a bug here:
-> > https://bugzilla.redhat.com/show_bug.cgi?id=405721
-> > 
-> > but it also happens on the plain rc3 kernel...
-> 
-> Can you please give a shot at -rc4 kernel?
-> 
-Sure. It seems the bug above was caused by the compiler and has been
-fixed in rawhide now so I'll give it a try.
+Introduced in commit f433dc56344cb72cc3de5ba0819021cec3aef807 (Fixes to the
+BFS filesystem driver).
 
-Cheers
-Kjartan
-
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
+index 294c41b..a64a71d 100644
+--- a/fs/bfs/inode.c
++++ b/fs/bfs/inode.c
+@@ -178,7 +178,8 @@ static void bfs_delete_inode(struct inode *inode)
+ 	brelse(bh);
+ 
+         if (bi->i_dsk_ino) {
+-		info->si_freeb += BFS_FILEBLOCKS(bi);
++		if (bi->i_sblock)
++			info->si_freeb += bi->i_eblock + 1 - bi->i_sblock;
+ 		info->si_freei++;
+ 		clear_bit(ino, info->si_imap);
+ 		dump_imap("delete_inode", s);
