@@ -1,63 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbXLETaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbXLEThk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbXLETaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 14:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXLETaG
+	id S1753166AbXLEThk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 14:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXLETha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 14:30:06 -0500
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:47309 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbXLETaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 14:30:04 -0500
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, apiszcz@solarrain.com
-Subject: Re: Kernel 2.6.23.9 + mdadm 2.6.2-2 + Auto rebuild RAID1?
-References: <Pine.LNX.4.64.0712010614070.25643@p34.internal.lan>
-	<Pine.LNX.4.64.0712011305250.30316@fbirervta.pbzchgretzou.qr>
-From: Nix <nix@esperi.org.uk>
-Emacs: featuring the world's first municipal garbage collector!
-Date: Wed, 05 Dec 2007 19:29:36 +0000
-In-Reply-To: <Pine.LNX.4.64.0712011305250.30316@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "1 Dec 2007 12:10:25 -0000")
-Message-ID: <87tzmxym73.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Wed, 5 Dec 2007 14:37:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34597 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752052AbXLETh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 14:37:29 -0500
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 0/7] Permit filesystem local caching
+To: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 05 Dec 2007 19:37:02 +0000
+Message-ID: <20071205193702.24437.76418.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=5 Fuz1=5 Fuz2=5
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1 Dec 2007, Jan Engelhardt uttered the following:
 
->
-> On Dec 1 2007 06:19, Justin Piszcz wrote:
->
->> RAID1, 0.90.03 superblocks (in order to be compatible with LILO, if
->> you use 1.x superblocks with LILO you can't boot)
->
-> Says who? (Don't use LILO ;-)
 
-Well, your kernels must be on a 0.90-superblocked RAID-0 or RAID-1
-device. It can't handle booting off 1.x superblocks nor RAID-[56]
-(not that I could really hope for the latter).
+These patches add local caching for network filesystems such as NFS and AFS.
 
-But that's just /boot, not everything else.
+The patches can roughly be broken down into a number of sets:
 
->>
->> Not using ANY initramfs/initrd images, everything is compiled into 1 
->> kernel image (makes things MUCH simpler and the expected device layout 
->> etc is always the same, unlike initrd/etc).
->>
-> My expected device layout is also always the same, _with_ initrd. Why? 
-> Simply because mdadm.conf is copied to the initrd, and mdadm will 
-> use your defined order.
+  (*) 01-keys-inc-payload.diff
+  (*) 02-keys-search-keyring.diff
+  (*) 03-keys-callout-blob.diff
 
-Of course the same is true of initramfs, which can give you the 1 kernel
-image back, too. (It's also nicer in that you can autoassemble
-e.g. LVM-on-RAID, or even LVM-on-RAID-over-nbd if you so desire.)
+      Three patches to the keyring code made to help the CIFS people.
+      Included because of patches 05-08.
 
--- 
-`The rest is a tale of post and counter-post.' --- Ian Rawlings
-                                                   describes USENET
+  (*) 04-keys-get-label.diff
+
+      A patch to allow the security label of a key to be retrieved.
+      Included because of patches 05-08.
+
+  (*) 05-security-current-fsugid.diff
+  (*) 06-security-separate-task-bits.diff
+  (*) 07-security-subjective.diff
+  (*) 08-security-kernel-service.diff
+
+      Patches to permit the subjective security of a task to be overridden.
+      All the security details in task_struct are decanted into a new struct
+      that task_struct then has two pointers two: one that defines the
+      objective security of that task (how other tasks may affect it) and one
+      that defines the subjective security (how it may affect other objects).
+
+      Note that I have dropped the idea of struct cred for the moment.  With
+      the amount of stuff that was excluded from it, it wasn't actually any
+      use to me.  However, it can be added later.
+
+      Required for cachefiles.
+
+  (*) 09-release-page.diff
+  (*) 10-fscache-page-flags.diff
+  (*) 11-add_wait_queue_tail.diff
+  (*) 12-fscache.diff
+
+      Patches to provide a local caching facility for network filesystems.
+
+  (*) 13-cachefiles-ia64.diff
+  (*) 14-cachefiles-ext3-f_mapping.diff
+  (*) 15-cachefiles-write.diff
+  (*) 16-cachefiles-monitor.diff
+  (*) 17-cachefiles-export.diff
+  (*) 18-cachefiles.diff
+
+      Patches to provide a local cache in a directory of an already mounted
+      filesystem.
+
+  (*) 19-fscache-nfs.diff
+  (*) 20-fscache-nfs-mount.diff
+  (*) 21-fscache-nfs-display.diff
+
+      Patches to provide NFS with local caching.
+
+  (*) 22-fcrypt-bit-annotate.diff
+
+      A fix for AFS.
+
+  (*) 23-afs-testsetpageerror.diff
+  (*) 24-afs-cancel_rejected_write.diff
+  (*) 25-afs-rejected-writeback.diff
+  (*) 26-afs-opID.diff
+  (*) 27-afs-shared-writable-mmap.diff
+
+      Patches to provide AFS with improved write support.
+
+  (*) 28-fscache-afs.diff
+
+      Patches to provide AFS with local caching.
+
+There are some issues with these patches that I'd like advice on:
+
+ (1) Is the security override stuff acceptable?
+
+ (2) Should the audit context be placed in the task_security struct?
+
+ (3) Should the task security context actually be shared by CLONE_THREAD?
+     (should it be placed in struct thread_group_security).
+
+ (4) How to handle superblock sharing in NFS?  (I've sent a separate email on
+     this)
+
+Andrew, Linus, can you please hold off on taking these patches for the moment.
+
+
+--
+A tarball of the patches is available at:
+
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-25.tar.bz2
+
+
+To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
+is available as an SRPM:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
+
+Or as individual bits:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
+
+The .fc, .if and .te files are for manipulating SELinux.
+
+David
