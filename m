@@ -1,214 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbXLEGl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbXLEGrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbXLEGl1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 01:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbXLEGlT
+	id S1753816AbXLEGrm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 01:47:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXLEGrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 01:41:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:48507 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbXLEGlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 01:41:18 -0500
-To: Greg Kroah-Hartman <greg@kroah.com>
-CC: linux-pci@atrey.karlin.mff.cuni.cz, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 05 Dec 2007 17:40:06 +1100
-Subject: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b resources
-Message-Id: <20071205064116.D849BDE10A@ozlabs.org>
+	Wed, 5 Dec 2007 01:47:35 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42031 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751288AbXLEGre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 01:47:34 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/5fVUHflX52UoeUdIaIDv36HtsMjEn3qHcv+v0NN
+	RIsPdvxEuPcJZ0
+Date: Wed, 5 Dec 2007 07:47:40 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Robert Hancock <hancockr@shaw.ca>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [Timers SMP] can this machine be helped?
+In-Reply-To: <47560A98.9080700@shaw.ca>
+Message-ID: <Pine.LNX.4.64.0712050746500.29290@axis700.grange>
+References: <fa./nzsMVb44+6c2x42WGfe04SPDrY@ifi.uio.no> <47560A98.9080700@shaw.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current pci_assign_unassigned_resources() code doesn't work properly
-on 32 bits platforms with 64 bits resources. The main reason is the use
-of unsigned long in various places instead of resource_size_t.
+On Tue, 4 Dec 2007, Robert Hancock wrote:
 
-This fixes it, along with some tricks to avoid casting to 64 bits on
-platforms that don't need it in every printk around.
+> Guennadi Liakhovetski wrote:
+> > 
+> > I've got an old 2xP-II @ 400MHz Compaq AP400 system, which I'm still using.
+> > It has many peculiarities, so, I wouldn't be surprised if the answer to my
+> > questions would be "sorry, the patient is rather dead than alive".
+> 
+> How about disabling ACPI entirely, acpi=off on kernel command line? I wouldn't
+> be surprised to see a lot of ACPI stuff broken on an older machine like that..
 
-This is a pre-requisite for making powerpc use the generic code instead of
-its own half-useful implementation.
+See above - it's an SMP.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Thanks
+Guennadi
 ---
-
-This version fixes some stupid warnings when using 32 bits resources
-
- drivers/pci/pci.h       |   11 +++++++++++
- drivers/pci/setup-bus.c |   32 +++++++++++++++++---------------
- drivers/pci/setup-res.c |    5 ++---
- include/linux/pci.h     |    4 ++--
- 4 files changed, 32 insertions(+), 20 deletions(-)
-
-Index: linux-work/drivers/pci/pci.h
-===================================================================
---- linux-work.orig/drivers/pci/pci.h	2007-12-05 11:55:49.000000000 +1100
-+++ linux-work/drivers/pci/pci.h	2007-12-05 13:37:45.000000000 +1100
-@@ -91,3 +91,14 @@ pci_match_one_device(const struct pci_de
- }
- 
- struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
-+
-+#ifdef CONFIG_RESOURCES_64BIT
-+#define RESOURCE_ORDER(order)	(1ULL << (order))
-+#define RES_PR			"%016llx"
-+#else
-+#define RESOURCE_ORDER(order)	(1UL << (order))
-+#define RES_PR			"%08x"
-+#endif
-+
-+#define RANGE_PR		RES_PR "-" RES_PR
-+
-Index: linux-work/drivers/pci/setup-bus.c
-===================================================================
---- linux-work.orig/drivers/pci/setup-bus.c	2007-12-05 11:55:49.000000000 +1100
-+++ linux-work/drivers/pci/setup-bus.c	2007-12-05 12:04:35.000000000 +1100
-@@ -26,6 +26,7 @@
- #include <linux/cache.h>
- #include <linux/slab.h>
- 
-+#include "pci.h"
- 
- #define DEBUG_CONFIG 1
- #if DEBUG_CONFIG
-@@ -89,8 +90,9 @@ void pci_setup_cardbus(struct pci_bus *b
- 		 * The IO resource is allocated a range twice as large as it
- 		 * would normally need.  This allows us to set both IO regs.
- 		 */
--		printk("  IO window: %08lx-%08lx\n",
--			region.start, region.end);
-+		printk(KERN_INFO "  IO window: 0x%08lx-0x%08lx\n",
-+		       (unsigned long)region.start,
-+		       (unsigned long)region.end);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_0,
- 					region.start);
- 		pci_write_config_dword(bridge, PCI_CB_IO_LIMIT_0,
-@@ -99,7 +101,7 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[1]);
- 	if (bus->resource[1]->flags & IORESOURCE_IO) {
--		printk("  IO window: %08lx-%08lx\n",
-+		printk(KERN_INFO "  IO window: "RANGE_PR"\n",
- 			region.start, region.end);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_1,
- 					region.start);
-@@ -109,7 +111,7 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
- 	if (bus->resource[2]->flags & IORESOURCE_MEM) {
--		printk("  PREFETCH window: %08lx-%08lx\n",
-+		printk(KERN_INFO "  PREFETCH window: "RANGE_PR"\n",
- 			region.start, region.end);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_0,
- 					region.start);
-@@ -119,7 +121,7 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[3]);
- 	if (bus->resource[3]->flags & IORESOURCE_MEM) {
--		printk("  MEM window: %08lx-%08lx\n",
-+		printk(KERN_INFO "  MEM window: "RANGE_PR"\n",
- 			region.start, region.end);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_1,
- 					region.start);
-@@ -159,7 +161,8 @@ pci_setup_bridge(struct pci_bus *bus)
- 		/* Set up upper 16 bits of I/O base/limit. */
- 		io_upper16 = (region.end & 0xffff0000) | (region.start >> 16);
- 		DBG(KERN_INFO "  IO window: %04lx-%04lx\n",
--				region.start, region.end);
-+		    (unsigned long)region.start,
-+		    (unsigned long)region.end);
- 	}
- 	else {
- 		/* Clear upper 16 bits of I/O base/limit. */
-@@ -180,7 +183,7 @@ pci_setup_bridge(struct pci_bus *bus)
- 	if (bus->resource[1]->flags & IORESOURCE_MEM) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--		DBG(KERN_INFO "  MEM window: %08lx-%08lx\n",
-+		DBG(KERN_INFO "  MEM window: "RANGE_PR"\n",
- 				region.start, region.end);
- 	}
- 	else {
-@@ -199,7 +202,7 @@ pci_setup_bridge(struct pci_bus *bus)
- 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--		DBG(KERN_INFO "  PREFETCH window: %08lx-%08lx\n",
-+		DBG(KERN_INFO "  PREFETCH window: "RANGE_PR"\n",
- 				region.start, region.end);
- 	}
- 	else {
-@@ -323,8 +326,8 @@ static void pbus_size_io(struct pci_bus 
- static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long type)
- {
- 	struct pci_dev *dev;
--	unsigned long min_align, align, size;
--	unsigned long aligns[12];	/* Alignments from 1Mb to 2Gb */
-+	resource_size_t min_align, align, size;
-+	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
- 	int order, max_order;
- 	struct resource *b_res = find_free_bus_resource(bus, type);
- 
-@@ -340,7 +343,7 @@ static int pbus_size_mem(struct pci_bus 
- 		
- 		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
- 			struct resource *r = &dev->resource[i];
--			unsigned long r_size;
-+			resource_size_t r_size;
- 
- 			if (r->parent || (r->flags & mask) != type)
- 				continue;
-@@ -350,10 +353,9 @@ static int pbus_size_mem(struct pci_bus 
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				printk(KERN_WARNING "PCI: region %s/%d "
--				       "too large: %llx-%llx\n",
-+				       "too large: " RANGE_PR "\n",
- 					pci_name(dev), i,
--					(unsigned long long)r->start,
--					(unsigned long long)r->end);
-+					r->start, r->end);
- 				r->flags = 0;
- 				continue;
- 			}
-@@ -372,7 +374,7 @@ static int pbus_size_mem(struct pci_bus 
- 	align = 0;
- 	min_align = 0;
- 	for (order = 0; order <= max_order; order++) {
--		unsigned long align1 = 1UL << (order + 20);
-+		resource_size_t align1 = RESOURCE_ORDER(order + 20);
- 
- 		if (!align)
- 			min_align = align1;
-Index: linux-work/drivers/pci/setup-res.c
-===================================================================
---- linux-work.orig/drivers/pci/setup-res.c	2007-12-05 11:55:49.000000000 +1100
-+++ linux-work/drivers/pci/setup-res.c	2007-12-05 12:04:35.000000000 +1100
-@@ -51,9 +51,8 @@ pci_update_resource(struct pci_dev *dev,
- 
- 	pcibios_resource_to_bus(dev, &region, res);
- 
--	pr_debug("  got res [%llx:%llx] bus [%lx:%lx] flags %lx for "
--		 "BAR %d of %s\n", (unsigned long long)res->start,
--		 (unsigned long long)res->end,
-+	pr_debug("  got res ["RANGE_PR"] bus ["RANGE_PR"] flags %lx for "
-+		 "BAR %d of %s\n", res->start, res->end,
- 		 region.start, region.end, res->flags, resno, pci_name(dev));
- 
- 	new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
-Index: linux-work/include/linux/pci.h
-===================================================================
---- linux-work.orig/include/linux/pci.h	2007-12-05 11:55:49.000000000 +1100
-+++ linux-work/include/linux/pci.h	2007-12-05 12:04:35.000000000 +1100
-@@ -314,8 +314,8 @@ struct pci_raw_ops {
- extern struct pci_raw_ops *raw_pci_ops;
- 
- struct pci_bus_region {
--	unsigned long start;
--	unsigned long end;
-+	resource_size_t start;
-+	resource_size_t end;
- };
- 
- struct pci_dynids {
+Guennadi Liakhovetski
