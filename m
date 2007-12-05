@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXLEVU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbXLEVWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753892AbXLEVU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 16:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXLEVUR
+	id S1754252AbXLEVWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 16:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXLEVWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 16:20:17 -0500
-Received: from andromeda.dapyr.net ([206.212.254.10]:56959 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbXLEVUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 16:20:15 -0500
-Date: Wed, 5 Dec 2007 17:18:59 -0400
-From: Konrad Rzeszutek <konrad@darnok.org>
-To: Doug Maxey <dwm@enoyolf.org>
-Cc: Mike Christie <michaelc@cs.wisc.edu>, darnok@68k.org,
-       linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com, greg@kroah.com, randy.dunlap@oracle.com,
-       hpa@zytor.com, lenb@kernel.org, mike.anderson@us.ibm.com,
-       dwm@austin.ibm.com, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [REPOST PATCH] Add iSCSI IBFT support (v0.4)
-Message-ID: <20071205211859.GB2898@andromeda.dapyr.net>
-References: <20071128233422.GD6736@andromeda.dapyr.net> <20071205004418.GH6736@andromeda.dapyr.net> <22081.1196824331@bebe.enoyolf.org> <20071205174121.GA1801@andromeda.dapyr.net> <1797.1196886400@bebe.enoyolf.org> <20071205204046.GA2898@andromeda.dapyr.net> <9524.1196888576@bebe.enoyolf.org>
-Mime-Version: 1.0
+	Wed, 5 Dec 2007 16:22:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54411 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbXLEVWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 16:22:14 -0500
+Date: Wed, 5 Dec 2007 22:21:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Holger.Wolf@de.ibm.com, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scheduler behaviour
+Message-ID: <20071205212155.GA4764@elte.hu>
+References: <475706E2.50805@linux.vnet.ibm.com> <1196889302.6353.29.camel@lappy>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9524.1196888576@bebe.enoyolf.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1196889302.6353.29.camel@lappy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 03:02:56PM -0600, Doug Maxey wrote:
-> [added cc: to mikec]
-> 
-> On Wed, 05 Dec 2007 16:40:46 -0400, Konrad Rzeszutek wrote:
-> > On Wed, Dec 05, 2007 at 02:26:40PM -0600, Doug Maxey wrote:
-> > > 
-> > > On Wed, 05 Dec 2007 13:41:21 -0400, Konrad Rzeszutek wrote:
-> > > > > Is the current include from open-iscsi being duplicated?  If not, why
-> > > > > not consolidate in one file?
-> > > > 
-> > > > The include files that come from open-iscsi that are in the kernel do
-> > > > not have the iBFT data structures in them - therefore no duplication.
-> > > 
-> > > That is strictly true, at least the "in the kernel" part.  There is a 
-> > > file with the definitions, open-iscsi utils/fwparam_ibft/fwparam_ibft.h 
-> > > does have the previous definitons.  So what to do?  Drop that one?  Or 
-> > > keep duplicating?
-> > 
-> > I would say that utils/fwparam_ibft/fwparam_ibft.h and
-> > utils/fwparam_ibft/fwparam_ibft.c would be dropped once this kernel
-> > patch and the patch to open-iscsi to add fwparam_ibft_subsys.c are
-> > reviewed and hopefully accepted.
-> > 
-> 
-> Ok.  If indeed the userspace tool is going completely away, then there 
-> would be just the single instance.  Is that the plan?
 
-Correct.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> > We discovered performance degradation with dbench when using kernel 
+> > 2.6.23 compared to kernel 2.6.22.
+> 
+> We've fixed a lot of regressions and made a lot of other changes to 
+> the scheduler since .23. Could you please try the backport of the 
+> latest scheduler on top of .23 to see if any of our recent work solved 
+> your problem? (using a backport against .23 or even .22 allows you to 
+> test just the scheduler changes in isolation)
+
+actually, i'd suggest to use the CFS backport against .22 right away:
+
+> http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22.13-v24.patch
+
+that would exclude all other changes that happened in 2.6.23.
+
+	Ingo
