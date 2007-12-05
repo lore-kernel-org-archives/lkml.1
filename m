@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXLEPav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXLEPbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbXLEPav (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 10:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXLEPao
+	id S1754130AbXLEPbV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 10:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbXLEPbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 10:30:44 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:50767 "EHLO smtp.mba.ocn.ne.jp"
+	Wed, 5 Dec 2007 10:31:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38157 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbXLEPan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 10:30:43 -0500
-Date: Thu, 06 Dec 2007 00:32:58 +0900 (JST)
-Message-Id: <20071206.003258.115905122.anemo@mba.ocn.ne.jp>
-To: andy.sharp@onstor.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       p_gortmaker@yahoo.com, a.zummo@towertech.it
-Subject: Re: [PATCH] Platform real time clock driver for Dallas 1511 chip.
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20071205004643.GA15429@onstor.com>
-References: <20071205004643.GA15429@onstor.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1751865AbXLEPbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 10:31:06 -0500
+Message-ID: <4756C590.9080301@redhat.com>
+Date: Wed, 05 Dec 2007 10:36:48 -0500
+From: Dave Anderson <anderson@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4) Gecko/20030611
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: anderson@redhat.com
+Subject: [PATCH] exec: allow > 2GB executables to run on 64-bit systems
+Content-Type: multipart/mixed;
+ boundary="------------010501080904040604060204"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 16:46:51 -0800, Andrew Sharp <andy.sharp@onstor.com> wrote:
-> +struct rtc_plat_data {
-> +	struct rtc_device *rtc;
-> +	void __iomem *ioaddr;		/* virtual base address */
-> +	unsigned long baseaddr;		/* physical base address */
-> +	int size;				/* amount of memory mapped */
-> +	int irq;
-> +	unsigned int irqen;
-> +	int alrm_sec;
-> +	int alrm_min;
-> +	int alrm_hour;
-> +	int alrm_mday;
-> +};
-> +
-> +static DEFINE_SPINLOCK(ds1511_lock);
-> +
-> +static __iomem char *ds1511_base;
+This is a multi-part message in MIME format.
+--------------010501080904040604060204
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-If you used ds1511_base, ioaddr in rtc_plat_data is not needed.
+When a executable that is greater than 2GB in size is attempted on a 64-bit
+system on a file system that calls, or uses generic_file_open() as its
+open handler, it fails with an EOVERFLOW erro.  This patch adds a call
+to force_o_largefile() call in open_exec(), as done in sys_open() and
+sys_openat().
 
-> + static noinline void
-> +rtc_write(uint8_t val, uint32_t reg)
-> +{
-> +	writeb(val, ds1511_base + (reg * reg_spacing));
-> +}
-
-Still "noinline" here and there.
-
-> +static struct bin_attribute ds1511_nvram_attr = {
-> +	.attr = {
-> +		.name = "nvram",
-> +		.mode = S_IRUGO | S_IWUGO,
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.size = DS1511_RAM_MAX,
-> +	.read = ds1511_nvram_read,
-> +	.write = ds1511_nvram_write,
-> +};
-
-It would be better to use S_IWUSR instead of S_IWUGO.  Please check
-rtc-ds1553 changes in current git tree.
-
-> +static struct platform_driver ds1511_rtc_driver = {
-> +	.probe		= ds1511_rtc_probe,
-> +	.remove		= __devexit_p(ds1511_rtc_remove),
-> +	.driver		= {
-> +		.name	= "ds1511",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +};
-
-Use "rtc-ds1511" for driver name for hotplugging.  Please check
-rtc-ds1553 changes in current git tree.
-
-> + static void __exit
-> +ds1511_rtc_exit(void)
-> +{
-> +	return platform_driver_unregister(&ds1511_rtc_driver);
-> +}
-
-Do not return void value.  Please check rtc-ds1553 changes in current
-git tree.
-
+Signed-off-by: anderson@redhat.com
 ---
-Atsushi Nemoto
+
+--------------010501080904040604060204
+Content-Type: text/plain;
+ name="LKML_open_exec.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="LKML_open_exec.patch"
+
+--- linux-2.6.24-rc3/fs/exec.c.orig
++++ linux-2.6.24-rc3/fs/exec.c
+@@ -658,7 +658,8 @@ struct file *open_exec(const char *name)
+ 			int err = vfs_permission(&nd, MAY_EXEC);
+ 			file = ERR_PTR(err);
+ 			if (!err) {
+-				file = nameidata_to_filp(&nd, O_RDONLY);
++				file = nameidata_to_filp(&nd, force_o_largefile() ?
++					O_RDONLY|O_LARGEFILE : O_RDONLY);
+ 				if (!IS_ERR(file)) {
+ 					err = deny_write_access(file);
+ 					if (err) {
+
+--------------010501080904040604060204--
+
