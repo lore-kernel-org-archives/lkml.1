@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbXLEHMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbXLEHMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbXLEHMO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 02:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbXLEHL6
+	id S1752084AbXLEHMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 02:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXLEHME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 02:11:58 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:40145 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbXLEHL6 (ORCPT
+	Wed, 5 Dec 2007 02:12:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44771
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751745AbXLEHMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 02:11:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Rv+Ey7w+Fe8Q/Ibm6QZDX+kI9e6RcX23+4NsbXLLH2UTwWvdYpYKaGqcdPJbm3ehXJ5h07niF74TA+Zx3h2B6cRlCd7JJat81PACVGR09sUsWPJoX1ayH/FDLQh/L76qLUpiT1Sh8mlcK+kRAOnTmcTAf/vOJVT5tYam3U0NLjw=
-Message-ID: <47564F35.30706@gmail.com>
-Date: Wed, 05 Dec 2007 16:11:49 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: WANG Cong <xiyou.wangcong@gmail.com>
-CC: sam@ravnborg.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       notting@redhat.com, rusty@rustcorp.com.au, kay.sievers@vrfy.org,
-       greg@kroah.com
-Subject: Re: [PATCH] kbuild: implement modules.order
-References: <47555AF1.8090304@gmail.com> <20071204150734.GE6113@hacking> <47557076.8080508@gmail.com> <20071205070127.GG2460@hacking>
-In-Reply-To: <20071205070127.GG2460@hacking>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Dec 2007 02:12:01 -0500
+Date: Tue, 04 Dec 2007 23:12:00 -0800 (PST)
+Message-Id: <20071204.231200.117152338.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: simon@fire.lp0.eu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071205065132.GA11476@gondor.apana.org.au>
+References: <20071205001230.GA11391@gondor.apana.org.au>
+	<20071204.223023.262159049.davem@davemloft.net>
+	<20071205065132.GA11476@gondor.apana.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WANG Cong wrote:
->>> I think, you forgot to free(3) the memory you calloc(3)'ed and
->>> malloc(3)'ed above.
->> It's a simple program where whole body is in main().  Why bother?
->> What's the benefit of adding hash-table iterating free logic?
->>
-> 
-> Personally, I think memory leaks are bugs. And we hate bugs. ;)
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Wed, 5 Dec 2007 17:51:32 +1100
 
-Trust me.  As a person buried alive in bug reports, I hate bugs too.  I
-just don't agree that this type of programs should free all its
-resources before exiting.  How about adding a comment saying /* we're
-going out anyway, don't bother freeing hashtable */?
+> Does anybody actually need the 0 setting? What would we break if
+> the default became 1?
 
--- 
-tejun
+I bet there are UDP apps out there that would break if we
+didn't do this.
+
+Actually, consider even a case like DNS.  Let's say the timeout
+is set to 2 seconds or something and you have 3 DNS servers
+listed, on different IPSEC destinations, in your resolv.conf
+
+Each IPSEC route that isn't currently resolved will cause packet loss
+of the DNS lookup request with xfrm_larval_drop set to '1'.
+
+If all 3 need to be resolved, the DNS lookup will fully fail
+which defeats the purpose of listing 3 servers for redundancy
+don't you think? :-)
+
+As much as I even personally prefer the xfrm_larval_drop=1
+behavior, it cases like above that keep me from jumping at
+making it the default.
+
+Arguably, potentially blocking forever (which is what can easily
+happen with xfrm_larval_drop=0 if your IPSEC daemon cannot resolve the
+IPSEC path for whatever reason) is worse than the above, but the
+other cases are still something to consider as well.
