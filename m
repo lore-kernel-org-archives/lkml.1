@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbXLEQoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbXLEQry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751988AbXLEQoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 11:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbXLEQoI
+	id S1753487AbXLEQry (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 11:47:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXLEQrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 11:44:08 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:8554 "EHLO
-	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751432AbXLEQoH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 11:44:07 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-From: "Robert Richter" <robert.richter@amd.com>
-Subject: [PATCH] x86: apic: Export symbols for extended interrupt LVT
- functions
-To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
-Message-ID: <20071205164014.E55DC8098@erda.amd.com>
-Date: Wed,  5 Dec 2007 17:40:14 +0100 (CET)
-X-OriginalArrivalTime: 05 Dec 2007 16:40:14.0966 (UTC)
- FILETIME=[83049160:01C8375D]
+	Wed, 5 Dec 2007 11:47:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40200 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751615AbXLEQrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 11:47:45 -0500
+Date: Wed, 5 Dec 2007 17:47:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jie Chen <chen@jlab.org>
+Cc: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+Message-ID: <20071205164723.GA25641@elte.hu>
+References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com> <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu> <4756C3D9.9030107@jlab.org> <20071205154014.GA6491@elte.hu> <4756D058.1070500@jlab.org>
 MIME-Version: 1.0
-X-WSS-ID: 6B480B0E24S4488765-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4756D058.1070500@jlab.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- arch/x86/kernel/apic_64.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 5a31a8c..a678e8f 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -209,12 +209,14 @@ u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask)
- 	setup_APIC_eilvt(APIC_EILVT_LVTOFF_MCE, vector, msg_type, mask);
- 	return APIC_EILVT_LVTOFF_MCE;
- }
-+EXPORT_SYMBOL(setup_APIC_eilvt_mce);
- 
- u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask)
- {
- 	setup_APIC_eilvt(APIC_EILVT_LVTOFF_IBS, vector, msg_type, mask);
- 	return APIC_EILVT_LVTOFF_IBS;
- }
-+EXPORT_SYMBOL(setup_APIC_eilvt_ibs);
- 
- /*
-  * Program the next event, relative to now
--- 
-1.5.1.6
+* Jie Chen <chen@jlab.org> wrote:
 
+>> the moment you saturate the system a bit more, the numbers should 
+>> improve even with such a ping-pong test.
+>
+> You are right. If I manually do load balance (bind unrelated processes 
+> on the other cores), my test code perform as well as it did in the 
+> kernel 2.6.21.
 
+so right now the results dont seem to be too bad to me - the higher 
+overhead comes from two threads running on two different cores and 
+incurring the overhead of cross-core communications. In a true 
+spread-out workloads that synchronize occasionally you'd get the same 
+kind of overhead so in fact this behavior is more informative of the 
+real overhead i guess. In 2.6.21 the two threads would stick on the same 
+core and produce artificially low latency - which would only be true in 
+a real spread-out workload if all tasks ran on the same core. (which is 
+hardly the thing you want on openmp)
 
+In any case, if i misinterpreted your numbers or if you just disagree, 
+or if have a workload/test that shows worse performance that it 
+could/should, let me know.
+
+	Ingo
