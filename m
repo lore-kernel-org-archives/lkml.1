@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbXLEVip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbXLEVp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbXLEVip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 16:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbXLEVii
+	id S1753560AbXLEVp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 16:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXLEVpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 16:38:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47345 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbXLEVii (ORCPT
+	Wed, 5 Dec 2007 16:45:14 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:35473 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbXLEVpM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 16:38:38 -0500
-Date: Wed, 5 Dec 2007 13:41:03 -0800
-From: Greg KH <greg@kroah.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: "Kyle A. Lucke" <klucke@us.ibm.com>, David Gibson <dwg@au1.ibm.com>,
-       linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
-Message-ID: <20071205214103.GA7074@kroah.com>
-References: <20071205093054.GA23229@kroah.com> <1196853031.6759.7.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1196853031.6759.7.camel@concordia>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 5 Dec 2007 16:45:12 -0500
+Subject: Re: Possible bug from kernel 2.6.22 and above
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jie Chen <chen@jlab.org>
+Cc: linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Simon Holm Th??gersen <odie@cs.aau.dk>
+In-Reply-To: <4744966C.900@jlab.org>
+References: <4744966C.900@jlab.org>
+Content-Type: text/plain
+Date: Wed, 05 Dec 2007 21:36:42 +0100
+Message-Id: <1196887002.6353.19.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 10:10:31PM +1100, Michael Ellerman wrote:
-> On Wed, 2007-12-05 at 01:30 -0800, Greg KH wrote:
-> > In doing a massive kobject cleanup of the kernel tree, I ran across the
-> > iseries_veth.c driver.
-> > 
-> > It looks like the driver is creating a number of subdirectories under
-> > the driver sysfs directory.  This is odd and probably wrong.  You want
-> > these virtual connections to show up in the main sysfs device tree, not
-> > under the driver directory.
-> > 
-> > I'll be glad to totally guess and try to move it around in the sysfs
-> > tree, but odds are I'll get it all wrong as I can't really test this
-> > out :)
-> > 
-> > Any hints on what this driver is trying to do in this sysfs directories?
+
+On Wed, 2007-11-21 at 15:34 -0500, Jie Chen wrote:
+
+> It is clearly that the synchronization overhead increases as the number 
+> of threads increases in the kernel 2.6.21. But the synchronization 
+> overhead actually decreases as the number of threads increases in the 
+> kernel 2.6.23.8 (We observed the same behavior on kernel 2.6.22 as 
+> well). This certainly is not a correct behavior. The kernels are 
+> configured with CONFIG_SMP, CONFIG_NUMA, CONFIG_SCHED_MC, 
+> CONFIG_PREEMPT_NONE, CONFIG_DISCONTIGMEM set. The complete kernel 
+> configuration file is in the attachment of this e-mail.
 > 
-> I wrote the code, I think, but it's been a while - I'll have a look at
-> it tomorrow.
+>  From what we have read, there was a new scheduler (CFS) appeared from 
+> 2.6.22. We are not sure whether the above behavior is caused by the new 
+> scheduler.
 
-Yes, can you send me the sysfs tree output of the driver directory, and
-what exactly the different files in there are supposed to be used for?
+If I read this correctly, you say that: .22 is the first bad one right?
 
-> Why is it "odd and probably wrong" to create subdirectories under the
-> driver in sysfs?
+The new scheduler (CFS) was introduced in .23, so it seems another
+change would be responsible for this.
 
-Because a driver does not have "devices" under it in the sysfs tree.
-All devices liven in the /sys/devices/ tree so we can properly manage
-them that way.  A driver will then bind to a device, and the driver core
-will set up the linkages in sysfs properly so that everthing looks
-uniform.
 
-By creating subdirectories associated with a driver, this breaks the
-model that the entire rest of the kernel is using, which is something
-that you really don't want to be doing :)
 
-How about describing what you were trying to achieve with these
-directories and files?
-
-thanks,
-
-greg k-h
