@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbXLEJbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbXLEJbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891AbXLEJbB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 04:31:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXLEJax
+	id S1753216AbXLEJbx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 04:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXLEJbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 04:30:53 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:33571
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751270AbXLEJaw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 04:30:52 -0500
-Message-Id: <47567DF8.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 05 Dec 2007 09:31:20 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Luca" <luca.b633@gmail.com>, "Andrew Pinski" <pinskia@gmail.com>
-Cc: <gcc@gcc.gnu.org>, <binutils@sourceware.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH] 32-bit pointers in x86-64
-References: <1ba5638c0711250829o416e3ccasba572d3c205ea7f4@mail.gmail.com>
- <de8d50360711251045l4566f894m92fbb32d00fa362@mail.gmail.com>
-In-Reply-To: <de8d50360711251045l4566f894m92fbb32d00fa362@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 5 Dec 2007 04:31:46 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:48631 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750849AbXLEJbp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 04:31:45 -0500
+Date: Wed, 5 Dec 2007 10:31:40 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Harvey Harrison <harvey.harrison@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
+Message-ID: <20071205093139.GJ15974@stusta.de>
+References: <1196801629.10408.26.camel@brick> <20071204213247.GA11216@elte.hu> <1196806868.10408.33.camel@brick> <20071204222717.GA25974@elte.hu> <20071204224543.GH15974@stusta.de> <1196809075.10408.42.camel@brick> <20071204231519.GI15974@stusta.de> <20071205001945.GB10763@c2.user-mode-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20071205001945.GB10763@c2.user-mode-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> "Andrew Pinski" <pinskia@gmail.com> 25.11.07 19:45 >>>
->On 11/25/07, Luca <luca.b633@gmail.com> wrote:
->> 7.1. Add __attribute__((pointer_size(XXX))) and #pragma pointer_size
->> to allow 64-bit pointers in 32-bit mode and viceversa
->
->This is already there, try using __attribute__((mode(DI) )).
+On Tue, Dec 04, 2007 at 07:19:45PM -0500, Jeff Dike wrote:
+> On Wed, Dec 05, 2007 at 12:15:19AM +0100, Adrian Bunk wrote:
+> > UML can't switch to the regparm(3) convention on i386 since it links 
+> > with userspace code, so if assembler code uses this calling convention 
+> > we need the C prototype of it annotated accordingly.
+> 
+> We're not talking about a global calling convention switch, right?
+> We're talking about selected functions only, in which case, the fact
+> that UML links against libc is irrelevant.
 
-Hmm, unless this is a new feature in 4.3, I can't seem to get this to work on
-either i386 (using mode DI) or x86-64 (using mode SI). Could you clarify? If
-this worked consistently on at least all 64-bit architectures, I would have a
-use for it in the kernel (cutting down the kernel size by perhaps several
-pages). Btw., I continue to think that the error message 'initializer element
-is not computable at load time' on 64-bit code like this
+The non-UML i386 switched to globally using the regparm(3) calling 
+convention in 2.6.20.
 
-extern char array[];
-unsigned int p = (unsigned long)array;
+> 				Jeff
 
-or 32-bit code like this
+cu
+Adrian
 
-extern char array[];
-unsigned long long p = (unsigned long)array;
+-- 
 
-is incorrect - the compiler generally has no knowledge what 'array' is (it may
-know whether the architecture is generally capable of expressing the
-necessary relocation, but if 'array' is really a placeholder for an assembly
-level constant, possibly even defined through __asm__() in the same
-translation unit, this diagnostic should at best be a warning). I'm pretty
-sure I have an open bug for this, but the sad thing is that bugs like this
-never appear to really get looked at.
-
-Thanks, Jan
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
