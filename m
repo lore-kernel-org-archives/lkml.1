@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565AbXLEKZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbXLEKZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751565AbXLEKZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbXLEKZG
+	id S1754775AbXLEKZm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbXLEKZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:25:06 -0500
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:41393 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752355AbXLEKZD convert rfc822-to-8bit (ORCPT
+	Wed, 5 Dec 2007 05:25:19 -0500
+Received: from www.tglx.de ([62.245.132.106]:44395 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753301AbXLEKZR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:25:03 -0500
-Message-Id: <475634F8.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 05 Dec 2007 05:19:52 -0500
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <rostedt@goodmis.org>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Subject: SCHED - Use a 2-d bitmap for
-	searching lowest-pri CPU
-References: <20071205025137.4494.18683.stgit@novell1.haskins.net>
- <20071205025538.4494.52380.stgit@novell1.haskins.net>
- <20071205093412.GA17911@elte.hu>
-In-Reply-To: <20071205093412.GA17911@elte.hu>
+	Wed, 5 Dec 2007 05:25:17 -0500
+Date: Wed, 5 Dec 2007 11:25:00 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: Nick Piggin <npiggin@suse.de>
+Cc: akpm@linux-foundation.org, greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 04/18] uio: nopage
+Message-ID: <20071205112500.2c97035f@dilbert.local>
+In-Reply-To: <20071205101042.GC1114@wotan.suse.de>
+References: <20071205071547.701344000@nick.local0.net>
+	<20071205071627.143603000@nick.local0.net>
+	<20071205110408.3eab9340@dilbert.local>
+	<20071205101042.GC1114@wotan.suse.de>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Wed, Dec 5, 2007 at  4:34 AM, in message <20071205093412.GA17911@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
+Am Wed, 5 Dec 2007 11:10:42 +0100
+schrieb Nick Piggin <npiggin@suse.de>:
 
-> * Gregory Haskins <ghaskins@novell.com> wrote:
+> On Wed, Dec 05, 2007 at 11:04:08AM +0100, Hans-Jürgen Koch wrote:
+> > Am Wed, 05 Dec 2007 18:15:51 +1100
+> > schrieb npiggin@suse.de:
+> > 
+> > > Convert uio from nopage to fault.
+> > > 
+> > > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > > Cc: greg@kroah.com
+> > 
+> > Hi Nick,
+> > could you please add me to Cc: for UIO stuff:
+> > 
+> > Cc: hjk@linutronix.de
 > 
->> The current code use a linear algorithm which causes scaling issues on 
->> larger SMP machines.  This patch replaces that algorithm with a 
->> 2-dimensional bitmap to reduce latencies in the wake-up path.
+> Sure, I'll try to remember in future. It would be helpful if you could
+> add an entry to MAINTAINERS?
+
+Well, although I wrote a lot of UIO code and feel a bit responsible for
+it, I don't know if I can call myself an UIO maintainer. ATM, I think
+it's considered "driver core" and is therefore in Greg's domain.
+
+Thanks,
+Hans
+
 > 
-> hm, what kind of scaling issues
-
-well, the linear algorithm scales with the number of online-cpus, so as you add more cpus the latencies increase, thus decreasing determinism.
-
-> - do you have any numbers?  What workload did you measure and on what hardware?
+> > 
+> > The patch itself looks alright to me, but I didn't test with a real
+> > driver.
+> > 
+> > Acked-by: Hans J Koch <hjk@linutronix.de>
 > 
-
-The vast majority of my own work was on 4-way and 8-way systems with -rt which I can dig up and share with you if you like.  Generally speaking, I would present various loads (make -j 128 being the defacto standard) and simultaneously measure RT latency performance with tools such as cyclictest and/or preempt-test.  Typically, I would let these loads/measurements run overnight to really seek out the worst-case maximums.
-
-As a synopsis, the 2-d alg helps even on the 4-way, but even more so on the 8-way.  I expect that trend to continue as we add more cpus.  The general numbers I recall from memory are that the 2-d alg reduces max latencies by about 25-40% on the 8-way.
-
-However, that said, Steven's testing work on the mainline port of our series sums it up very nicely, so I will present that in lieu of digging up my -rt numbers unless you specifically want them too.  Here they are:
-
-
-http://people.redhat.com/srostedt/rt-benchmarks/
-
-As I believe you are aware, these numbers were generated on a 64-way SMP beast.  To break down what we are looking at, lets start with the first row of graphs (under Kernel and System Information).  What we see here are scatterplots of wake-latencies generated from Steven's "rt-migrate" test.  We start with the vanilla "rc3" kernel, and make our way through "sdr" (the first 7-8 patches from v7), "gh" (patches 8-20), and finally "cpupri" (patches 21-23).  (Ignore the "noavoid" runs, that was an experiment that Steven and I agree was a flop so its dropped from the series). 
-
-The test has a default run-interval of 20ms, which is employed here in this test.  What we expect to see is that the red points (high-priority) should be allowed to start immediately (close to 0 latency), whereas green points (low-priority) may sometimes happen to start first, or may start after the 20ms interval depending on luck of the draw.
-
-You can see that "rc3" has issues keeping the red-points near zero, which is part of the problem we were addressing in this series.
-
-http://people.redhat.com/srostedt/rt-benchmarks/imgs/results-rt-migrate-test-2.6.24-rc3.out.png
-
-Rolling in "sdr" we fix the wandering/20ms red-points, but you still see a degree of jitter in the red-points staying close to zero.
-
-http://people.redhat.com/srostedt/rt-benchmarks/imgs/results-rt-migrate-test-2.6.24-rc3-sdr.out-sm.png
-
-This is "ok".  The code technically passes the test and does the right thing from a balancing perspective.  The remainder of the series is performance related.
-
-We then apply "gh" which adds support for considering things like NUMA/MC distance and we can see a higher degree of determinism, particularly on the red-points.  
-
-http://people.redhat.com/srostedt/rt-benchmarks/imgs/results-rt-migrate-test-2.6.24-rc3-gh.out-sm.png
-
-Rolling in "cpupri" we substitute the linear search for the 2-d bitmap optimization, are we observe a further increase in determinism:
-
-http://people.redhat.com/srostedt/rt-benchmarks/imgs/results-rt-migrate-test-2.6.24-rc3-gh-cpupri.out-sm.png
-
-The numbers presented in these scatterplots can be summarized in the following bar-graph for easier comparison:
-
-http://people.redhat.com/srostedt/rt-benchmarks/imgs/results-rt-migrate-hist-sm.png
-
-You can clearly see the latencies dropping as we move through the 23 patches.  This is similar to my findings under -rt with the 4/8 ways that I mentioned earlier, but I can find those numbers for you next if you feel it is necessary.
-
-I hope this helps to show the difference.  Thanks for hanging in there on this long mail!
-
-Regards,
--Greg
-
-
-
-
-
-
+> Thanks,
+> Nick
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
