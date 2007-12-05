@@ -1,162 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbXLETvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbXLETva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbXLETvP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 14:51:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbXLETlU
+	id S1757103AbXLETva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 14:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXLETlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 14:41:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34899 "EHLO mx1.redhat.com"
+	Wed, 5 Dec 2007 14:41:22 -0500
+Received: from mx2.suse.de ([195.135.220.15]:52856 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754564AbXLETkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 14:40:55 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 27/28] AFS: Implement shared-writable mmap [try #2]
-To: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 05 Dec 2007 19:40:36 +0000
-Message-ID: <20071205194036.24617.6220.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
-References: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.13
+	id S1754769AbXLETlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 14:41:01 -0500
+To: Dave Anderson <anderson@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] exec: allow > 2GB executables to run on 64-bit systems
+From: Andi Kleen <andi@firstfloor.org>
+References: <4756C590.9080301@redhat.com>
+Date: Wed, 05 Dec 2007 20:41:00 +0100
+In-Reply-To: <4756C590.9080301@redhat.com> (Dave Anderson's message of "Wed\, 05 Dec 2007 10\:36\:48 -0500")
+Message-ID: <p73fxyhj5f7.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement shared-writable mmap for AFS.
+Dave Anderson <anderson@redhat.com> writes:
 
-The key with which to access the file is obtained from the VMA at the point
-where the PTE is made writable by the page_mkwrite() VMA op and cached in the
-affected page.
+> When a executable that is greater than 2GB in size is attempted on a 64-bit
+> system on a file system that calls, or uses generic_file_open() as its
+> open handler, it fails with an EOVERFLOW erro.  This patch adds a call
+> to force_o_largefile() call in open_exec(), as done in sys_open() and
+> sys_openat().
 
-If there's an outstanding write on the page made with a different key, then
-page_mkwrite() will flush it before attaching a record of the new key.
+Wouldn't it be better to just always pass O_LARGEFILE unconditionally
+there? e.g. in theory a 2.5GB executable should work on i386 and binfmt_*
+shouldn't have any problems with a large file.
+That would simplify your patch.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/afs/file.c     |   20 +++++++++++++++++++-
- fs/afs/internal.h |    1 +
- fs/afs/write.c    |   35 +++++++++++++++++++++++++++++++++++
- 3 files changed, 55 insertions(+), 1 deletions(-)
-
-diff --git a/fs/afs/file.c b/fs/afs/file.c
-index 525f7c5..1323df4 100644
---- a/fs/afs/file.c
-+++ b/fs/afs/file.c
-@@ -22,6 +22,7 @@ static int afs_readpage(struct file *file, struct page *page);
- static void afs_invalidatepage(struct page *page, unsigned long offset);
- static int afs_releasepage(struct page *page, gfp_t gfp_flags);
- static int afs_launder_page(struct page *page);
-+static int afs_mmap(struct file *file, struct vm_area_struct *vma);
- 
- const struct file_operations afs_file_operations = {
- 	.open		= afs_open,
-@@ -31,7 +32,7 @@ const struct file_operations afs_file_operations = {
- 	.write		= do_sync_write,
- 	.aio_read	= generic_file_aio_read,
- 	.aio_write	= afs_file_write,
--	.mmap		= generic_file_readonly_mmap,
-+	.mmap		= afs_mmap,
- 	.splice_read	= generic_file_splice_read,
- 	.fsync		= afs_fsync,
- 	.lock		= afs_lock,
-@@ -56,6 +57,11 @@ const struct address_space_operations afs_fs_aops = {
- 	.writepages	= afs_writepages,
- };
- 
-+static struct vm_operations_struct afs_file_vm_ops = {
-+	.fault		= filemap_fault,
-+	.page_mkwrite	= afs_page_mkwrite,
-+};
-+
- /*
-  * open an AFS file or directory and attach a key to it
-  */
-@@ -295,3 +301,15 @@ static int afs_releasepage(struct page *page, gfp_t gfp_flags)
- 	_leave(" = 0");
- 	return 0;
- }
-+
-+/*
-+ * memory map part of an AFS file
-+ */
-+static int afs_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	_enter("");
-+
-+	file_accessed(file);
-+	vma->vm_ops = &afs_file_vm_ops;
-+	return 0;
-+}
-diff --git a/fs/afs/internal.h b/fs/afs/internal.h
-index 84b90b0..b3da9ab 100644
---- a/fs/afs/internal.h
-+++ b/fs/afs/internal.h
-@@ -742,6 +742,7 @@ extern ssize_t afs_file_write(struct kiocb *, const struct iovec *,
- 			      unsigned long, loff_t);
- extern int afs_writeback_all(struct afs_vnode *);
- extern int afs_fsync(struct file *, struct dentry *, int);
-+extern int afs_page_mkwrite(struct vm_area_struct *, struct page *);
- 
- 
- /*****************************************************************************/
-diff --git a/fs/afs/write.c b/fs/afs/write.c
-index add5892..8a3e9e2 100644
---- a/fs/afs/write.c
-+++ b/fs/afs/write.c
-@@ -155,6 +155,8 @@ static int afs_prepare_page(struct afs_vnode *vnode, struct page *page,
-  * prepare to perform part of a write to a page
-  * - the caller holds the page locked, preventing it from being written out or
-  *   modified by anyone else
-+ * - may be called from afs_page_mkwrite() to set up a page for modification
-+ *   through shared-writable mmap
-  */
- int afs_prepare_write(struct file *file, struct page *page,
- 		      unsigned offset, unsigned to)
-@@ -833,3 +835,36 @@ int afs_fsync(struct file *file, struct dentry *dentry, int datasync)
- 	_leave(" = %d", ret);
- 	return ret;
- }
-+
-+/*
-+ * notification that a previously read-only page is about to become writable
-+ * - if it returns an error, the caller will deliver a bus error signal
-+ *
-+ * we use this to make a record of the key with which the writeback should be
-+ * performed and to flush any outstanding writes made with a different key
-+ *
-+ * the key to be used is attached to the struct file pinned by the VMA
-+ */
-+int afs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-+{
-+	struct afs_vnode *vnode = AFS_FS_I(vma->vm_file->f_mapping->host);
-+	struct key *key = vma->vm_file->private_data;
-+	int ret;
-+
-+	_enter("{{%x:%u},%x},{%lx}",
-+	       vnode->fid.vid, vnode->fid.vnode, key_serial(key), page->index);
-+
-+	do {
-+		lock_page(page);
-+		if (page->mapping == vma->vm_file->f_mapping)
-+			ret = afs_prepare_write(vma->vm_file, page, 0,
-+						PAGE_SIZE);
-+		else
-+			ret = 0; /* seems there was interference - let the
-+				  * caller deal with it */
-+		unlock_page(page);
-+	} while (ret == AOP_TRUNCATED_PAGE);
-+
-+	_leave(" = %d", ret);
-+	return ret;
-+}
+-Andi
 
