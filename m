@@ -1,382 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXLEUMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXLEUQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753892AbXLEUMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 15:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXLEUM1
+	id S1753239AbXLEUQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 15:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbXLEUQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 15:12:27 -0500
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:25331 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752161AbXLEUM0 (ORCPT
+	Wed, 5 Dec 2007 15:16:05 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:59086 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbXLEUQC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 15:12:26 -0500
-X-YMail-OSG: XO70_18VM1nL9X8evsSqBSRdAA8dt.16r1Sjv.3CVOrzDoQx.pb7LLdWP3srGQkK7tFQ3smynQ--
-X-RocketYMMF: rancidfat
-Date: Wed, 5 Dec 2007 12:12:25 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 4/7] KEYS: Add keyctl function to get a security label
-To: David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com, sds@tycho.nsa.gov,
-       casey@schaufler-ca.com
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, dhowells@redhat.com
-In-Reply-To: <20071205193722.24437.4283.stgit@warthog.procyon.org.uk>
+	Wed, 5 Dec 2007 15:16:02 -0500
+Message-ID: <475706E2.50805@linux.vnet.ibm.com>
+Date: Wed, 05 Dec 2007 21:15:30 +0100
+From: Holger Wolf <wolf@linux.vnet.ibm.com>
+Reply-To: Holger.Wolf@de.ibm.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <138670.64371.qm@web36609.mail.mud.yahoo.com>
+To: mingo@elte.hu
+CC: schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
+Subject: Scheduler behaviour
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We discovered performance degradation with dbench when using kernel 2.6.23 compared to kernel 2.6.22.
 
---- David Howells <dhowells@redhat.com> wrote:
+In our case we booted a Linux in a IBM System z9 LPAR with 256MB of ram with
+4 CPU's. This system uses a striped LV with 16 disks on a Storage Server
+connected via 8 4GBit links.
+A dbench was started on that system performing I/O operations on the
+striped LV. dbench runs were performed with 1 to 62 processes. Measurements
+with a 2.6.22 kernel were compared to measurements with a 2.6.23 kernel.
+We saw a throughput degradation from 7.2 to 23.4 percent and a cost
+increase from 9.5 to 29.5 percent. Costs are calculated by consumed CPU
+microseconds divided by transferred bytes written/read.
+The cost increase is caused by fewer transferred bytes at an almost
+constant level of spent CPU microseconds (except for 50 processes).
 
-> Add a keyctl() function to get the security label of a key.
-> 
-> The following is added to Documentation/keys.txt:
-> 
->  (*) Get the LSM security context attached to a key.
-> 
-> 	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
-> 		    size_t buflen)
-> 
->      This function returns a string that represents the LSM security context
->      attached to a key in the buffer provided.
-> 
->      Unless there's an error, it always returns the amount of data it could
->      produce, even if that's too big for the buffer, but it won't copy more
->      than requested to userspace. If the buffer pointer is NULL then no copy
->      will take place.
-> 
->      A NUL character is included at the end of the string if the buffer is
->      sufficiently big.  This is included in the returned count.  If no LSM is
->      in force then an empty string will be returned.
-> 
->      A process must have view permission on the key for this function to be
->      successful.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  Documentation/keys.txt   |   21 +++++++++++++++
->  include/linux/keyctl.h   |    1 +
->  include/linux/security.h |   20 +++++++++++++-
->  security/dummy.c         |    8 ++++++
->  security/keys/compat.c   |    3 ++
->  security/keys/keyctl.c   |   66
-> ++++++++++++++++++++++++++++++++++++++++++++++
->  security/security.c      |    5 +++
->  security/selinux/hooks.c |   21 +++++++++++++--
->  8 files changed, 141 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/keys.txt b/Documentation/keys.txt
-> index b82d38d..be424b0 100644
-> --- a/Documentation/keys.txt
-> +++ b/Documentation/keys.txt
-> @@ -711,6 +711,27 @@ The keyctl syscall functions are:
->       The assumed authoritative key is inherited across fork and exec.
->  
->  
-> + (*) Get the LSM security context attached to a key.
-> +
-> +	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
-> +		    size_t buflen)
-> +
-> +     This function returns a string that represents the LSM security context
-> +     attached to a key in the buffer provided.
-> +
-> +     Unless there's an error, it always returns the amount of data it could
-> +     produce, even if that's too big for the buffer, but it won't copy more
-> +     than requested to userspace. If the buffer pointer is NULL then no copy
-> +     will take place.
-> +
-> +     A NUL character is included at the end of the string if the buffer is
-> +     sufficiently big.  This is included in the returned count.  If no LSM
-> is
-> +     in force then an empty string will be returned.
-> +
-> +     A process must have view permission on the key for this function to be
-> +     successful.
-> +
-> +
->  ===============
->  KERNEL SERVICES
->  ===============
-> diff --git a/include/linux/keyctl.h b/include/linux/keyctl.h
-> index 3365945..656ee6b 100644
-> --- a/include/linux/keyctl.h
-> +++ b/include/linux/keyctl.h
-> @@ -49,5 +49,6 @@
->  #define KEYCTL_SET_REQKEY_KEYRING	14	/* set default request-key keyring */
->  #define KEYCTL_SET_TIMEOUT		15	/* set key timeout */
->  #define KEYCTL_ASSUME_AUTHORITY		16	/* assume request_key() authorisation */
-> +#define KEYCTL_GET_SECURITY		17	/* get key security label */
->  
->  #endif /*  _LINUX_KEYCTL_H */
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index ac05083..8d9e946 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -959,6 +959,17 @@ struct request_sock;
->   *	@perm describes the combination of permissions required of this key.
->   *	Return 1 if permission granted, 0 if permission denied and -ve it the
->   *      normal permissions model should be effected.
-> + * @key_getsecurity:
-
-If I contradict what I said last time around, well, I've seen
-more of what's going on since then. (insert smiley here)
-
-I think that this should be key_getsecctx(). That would get you
-what you need from SELinux and Smack. Unfortunately, there is no
-precedent for interfaces that return the secctx, while the are
-places in networking and audit (audit needs to be converted off
-of SELinux calls to LSM calls) that call getsecid() interfaces
-and later use security_secid_to_secctx() to get the "printable"
-version. So, key_getsecid() is the interface to introduce if you
-want to be consistant, and pass the result to
-security_secid_to_secctx() to get the data you're looking for.
-
-> + *	Get a textual representation of the security context attached to a key
-> + *	for the purposes of honouring KEYCTL_GETSECURITY.  This function
-> + *	allocates the storage for the NUL-terminated string and the caller
-> + *	should free it.
-> + *	@key points to the key to be queried.
-> + *	@_buffer points to a pointer that should be set to point to the
-> + *	 resulting string (if no label or an error occurs).
-> + *	Return the length of the string (including terminating NUL) or -ve if
-> + *      an error.
-> + *	May also return 0 (and a NULL buffer pointer) if there is no label.
->   *
->   * Security hooks affecting all System V IPC operations.
->   *
-> @@ -1437,7 +1448,7 @@ struct security_operations {
->  	int (*key_permission)(key_ref_t key_ref,
->  			      struct task_struct *context,
->  			      key_perm_t perm);
-> -
-> +	int (*key_getsecurity)(struct key *key, char **_buffer);
->  #endif	/* CONFIG_KEYS */
->  
->  };
-> @@ -2567,6 +2578,7 @@ int security_key_alloc(struct key *key, struct
-> task_struct *tsk, unsigned long f
->  void security_key_free(struct key *key);
->  int security_key_permission(key_ref_t key_ref,
->  			    struct task_struct *context, key_perm_t perm);
-> +int security_key_getsecurity(struct key *key, char **_buffer);
->  
->  #else
->  
-> @@ -2588,6 +2600,12 @@ static inline int security_key_permission(key_ref_t
-> key_ref,
->  	return 0;
->  }
->  
-> +static inline int security_key_getsecurity(struct key *key, char **_buffer)
-> +{
-> +	*_buffer = NULL;
-> +	return 0;
-> +}
-> +
->  #endif
->  #endif /* CONFIG_KEYS */
->  
-> diff --git a/security/dummy.c b/security/dummy.c
-> index 6d895ad..7993b30 100644
-> --- a/security/dummy.c
-> +++ b/security/dummy.c
-> @@ -949,6 +949,13 @@ static inline int dummy_key_permission(key_ref_t
-> key_ref,
->  {
->  	return 0;
->  }
-> +
-> +static int dummy_key_getsecurity(struct key *key, char **_buffer)
-> +{
-> +	*_buffer = NULL;
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_KEYS */
->  
->  struct security_operations dummy_security_ops;
-> @@ -1133,6 +1140,7 @@ void security_fixup_ops (struct security_operations
-> *ops)
->  	set_to_dummy_if_null(ops, key_alloc);
->  	set_to_dummy_if_null(ops, key_free);
->  	set_to_dummy_if_null(ops, key_permission);
-> +	set_to_dummy_if_null(ops, key_getsecurity);
->  #endif	/* CONFIG_KEYS */
->  
->  }
-> diff --git a/security/keys/compat.c b/security/keys/compat.c
-> index e10ec99..c766c68 100644
-> --- a/security/keys/compat.c
-> +++ b/security/keys/compat.c
-> @@ -79,6 +79,9 @@ asmlinkage long compat_sys_keyctl(u32 option,
->  	case KEYCTL_ASSUME_AUTHORITY:
->  		return keyctl_assume_authority(arg2);
->  
-> +	case KEYCTL_GET_SECURITY:
-> +		return keyctl_get_security(arg2, compat_ptr(arg3), arg4);
-> +
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-> diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-> index 1698bf9..56e963b 100644
-> --- a/security/keys/keyctl.c
-> +++ b/security/keys/keyctl.c
-> @@ -20,6 +20,7 @@
->  #include <linux/string.h>
->  #include <linux/err.h>
->  #include <linux/vmalloc.h>
-> +#include <linux/security.h>
->  #include <asm/uaccess.h>
->  #include "internal.h"
->  
-> @@ -1080,6 +1081,66 @@ error:
->  
->  } /* end keyctl_assume_authority() */
->  
-> +/*
-> + * get the security label of a key
-> + * - the key must grant us view permission
-> + * - if there's a buffer, we place up to buflen bytes of data into it
-> + * - unless there's an error, we return the amount of information available,
-> + *   irrespective of how much we may have copied (including the terminal
-> NUL)
-> + * - implements keyctl(KEYCTL_GET_SECURITY)
-> + */
-> +long keyctl_get_security(key_serial_t keyid,
-> +			 char __user *buffer,
-> +			 size_t buflen)
-> +{
-> +	struct key *key, *instkey;
-> +	key_ref_t key_ref;
-> +	char *context;
-> +	long ret;
-> +
-> +	key_ref = lookup_user_key(NULL, keyid, 0, 1, KEY_VIEW);
-> +	if (IS_ERR(key_ref)) {
-> +		if (PTR_ERR(key_ref) != -EACCES)
-> +			return PTR_ERR(key_ref);
-> +
-> +		/* viewing a key under construction is also permitted if we
-> +		 * have the authorisation token handy */
-> +		instkey = key_get_instantiation_authkey(keyid);
-> +		if (IS_ERR(instkey))
-> +			return PTR_ERR(key_ref);
-> +		key_put(instkey);
-> +
-> +		key_ref = lookup_user_key(NULL, keyid, 0, 1, 0);
-> +		if (IS_ERR(key_ref))
-> +			return PTR_ERR(key_ref);
-> +	}
-> +
-> +	key = key_ref_to_ptr(key_ref);
-> +	ret = security_key_getsecurity(key, &context);
-> +	if (ret == 0) {
-> +		/* if no information was returned, give userspace an empty
-> +		 * string */
-> +		ret = 1;
-> +		if (buffer && buflen > 0 &&
-> +		    copy_to_user(buffer, "", 1) != 0)
-> +			ret = -EFAULT;
-> +	} else if (ret > 0) {
-> +		/* return as much data as there's room for */
-> +		if (buffer && buflen > 0) {
-> +			if (buflen > ret)
-> +				buflen = ret;
-> +
-> +			if (copy_to_user(buffer, context, buflen) != 0)
-> +				ret = -EFAULT;
-> +		}
-> +
-> +		kfree(context);
-> +	}
-> +
-> +	key_ref_put(key_ref);
-> +	return ret;
-> +}
-> +
-> 
->
-/*****************************************************************************/
->  /*
->   * the key control system call
-> @@ -1160,6 +1221,11 @@ asmlinkage long sys_keyctl(int option, unsigned long
-> arg2, unsigned long arg3,
->  	case KEYCTL_ASSUME_AUTHORITY:
->  		return keyctl_assume_authority((key_serial_t) arg2);
->  
-> +	case KEYCTL_GET_SECURITY:
-> +		return keyctl_get_security((key_serial_t) arg2,
-> +					   (char *) arg3,
-> +					   (size_t) arg4);
-> +
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-> diff --git a/security/security.c b/security/security.c
-> index 0e1f1f1..16213e3 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -1079,4 +1079,9 @@ int security_key_permission(key_ref_t key_ref,
->  	return security_ops->key_permission(key_ref, context, perm);
->  }
->  
-> +int security_key_getsecurity(struct key *key, char **_buffer)
-> +{
-> +	return security_ops->key_getsecurity(key, _buffer);
-> +}
-> +
->  #endif	/* CONFIG_KEYS */
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 9f3124b..bd4cfab 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -4768,6 +4768,20 @@ static int selinux_key_permission(key_ref_t key_ref,
->  			    SECCLASS_KEY, perm, NULL);
->  }
->  
-> +static int selinux_key_getsecurity(struct key *key, char **_buffer)
-> +{
-> +	struct key_security_struct *ksec = key->security;
-> +	char *context = NULL;
-> +	unsigned len;
-> +	int rc;
-> +
-> +	rc = security_sid_to_context(ksec->sid, &context, &len);
-> +	if (!rc)
-> +		rc = len;
-> +	*_buffer = context;
-> +	return rc;
-> +}
-> +
->  #endif
->  
->  static struct security_operations selinux_ops = {
-> @@ -4943,9 +4957,10 @@ static struct security_operations selinux_ops = {
->  #endif
->  
->  #ifdef CONFIG_KEYS
-> -	.key_alloc =                    selinux_key_alloc,
-> -	.key_free =                     selinux_key_free,
-> -	.key_permission =               selinux_key_permission,
-> +	.key_alloc =			selinux_key_alloc,
-> +	.key_free =			selinux_key_free,
-> +	.key_permission =		selinux_key_permission,
-> +	.key_getsecurity =		selinux_key_getsecurity,
->  #endif
->  };
->  
-> 
-> 
-> 
+The throughput can be increased by generating an imbalance in scheduling of
+the dbench processes with different nice value for the processes. The more
+imbalance is created the higher is the throughput. By monitoring the
+throughput of disk I/O it can be observed that the iostat read throughput
+is significantly lower with this imbalance while the iostat write
+throughput stays the same.
+|-----------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+----------->
+|                 |    Device:|     rrqm/s|     wrqm/s|        r/s|        w/s|     rsec/s|     wsec/s|   avgrq-sz|   avgqu-sz|      await|
+|-----------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+----------->
+  >-----------+-----------|
+  |      svctm|      %util|
+  >-----------+-----------|
+|-----------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+----------->
+|Balanced         |       dm-0|          0|          0|   10592.54|    8067.16|  694885.57|   510479.6|       64.6|      16.96|       0.91|
+|scheduling       |           |           |           |           |           |           |           |           |           |           |
+|-----------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+----------->
+  >-----------+-----------|
+  |       0.05|      97.51|
+  >-----------+-----------|
+|-----------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+----------->
+|Imbalanced       |       dm-0|          0|          0|    3401.00|    7993.03|  175693.53|  526833.83|      61.66|      14.88|        1.3|
+|scheduling       |           |           |           |           |           |           |           |           |           |           |
+|-----------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+----------->
+  >-----------+-----------|
+  |       0.07|      83.58|
+  >-----------+-----------|
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+
+
+With profiling we saw that the mpage_end_io_read function consumes much
+more CPU with a 2.6.23 kernel than with a 2.6.22 kernel.
+
+To me it looks like the page cache is under stronger pressure when all
+processes are scheduled fairly.
+
+Normalized Throughput of dbench
+                                                 
+   Number of      2.6.22      2.6.23  Difference 
+   Processes                          in Percent 
+                                                 
+           1           1         0.9     -10.24% 
+                                                 
+           4        3.64        3.74       2.68% 
+                                                 
+           8        3.57        3.71       3.83% 
+                                                 
+          12        3.51         3.6       2.55% 
+                                                 
+          16         3.4        3.53       3.96% 
+                                                 
+          20        3.32        3.43       3.33% 
+                                                 
+          26        3.29         3.4       3.29% 
+                                                 
+          32        3.14        2.92      -7.25% 
+                                                 
+          40        2.99        2.61     -12.92% 
+                                                 
+          46           3        2.47     -17.69% 
+                                                 
+          50        2.84         2.4     -15.55% 
+                                                 
+          54         3.1        2.37     -23.42% 
+                                                 
+          62        2.55        2.32      -8.99% 
+                                                 
+
+
+
+
+Normalized Costs of dbench
+                                                 
+   Number of      2.6.22      2.6.23  Difference 
+   Processes                          in Percent 
+                                                 
+           1           1        0.96       3.84% 
+                                                 
+           4        1.08        1.05       2.97% 
+                                                 
+           8        1.08        1.07       1.10% 
+                                                 
+          12        1.09         1.1      -1.30% 
+                                                 
+          16         1.1        1.12      -1.90% 
+                                                 
+          20        1.12        1.15      -2.61% 
+                                                 
+          26        1.18        1.17       0.86% 
+                                                 
+          32        1.24        1.36      -9.50% 
+                                                 
+          40         1.3        1.52     -16.97% 
+                                                 
+          46        1.29         1.6     -23.92% 
+                                                 
+          50        1.37        1.64     -20.12% 
+                                                 
+          54        1.28        1.66     -29.60% 
+                                                 
+          62         1.5        1.69     -12.84% 
+
+regards
+
+Holger Wolf
+
