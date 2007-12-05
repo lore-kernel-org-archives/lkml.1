@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbXLESCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbXLESE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbXLESCX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 13:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXLESCP
+	id S1754136AbXLESE5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 13:04:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXLESEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 13:02:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53206 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbXLESCO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 13:02:14 -0500
-Subject: Re: [build bug] undefined reference to
-	`dib3000mc_get_tuner_i2c_master'
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Patrick Boettcher <pb@linuxtv.org>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <Pine.LNX.4.64.0712051132340.2935@twin.jikos.cz>
-References: <20071204083904.GA15694@elte.hu>
-	 <Pine.LNX.4.64.0712041130310.16564@twin.jikos.cz>
-	 <20071204105439.GA20175@elte.hu>
-	 <Pine.LNX.4.64.0712051132340.2935@twin.jikos.cz>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 05 Dec 2007 16:01:53 -0200
-Message-Id: <1196877713.4646.10.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 5 Dec 2007 13:04:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59834 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751791AbXLESEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 13:04:49 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1196876999.3325.5.camel@jcmlaptop>
+References: <1196876999.3325.5.camel@jcmlaptop> <6306.1196874660@redhat.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: dhowells@redhat.com, Peter Staubach <staubach@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Steve Dickson <SteveD@redhat.com>, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: How to manage shared persistent local caching (FS-Cache) with NFS?
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 05 Dec 2007 18:03:58 +0000
+Message-ID: <6513.1196877838@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jon Masters <jonathan@jonmasters.org> wrote:
 
-Em Qua, 2007-12-05 às 11:33 +0100, Jiri Kosina escreveu:
-> On Tue, 4 Dec 2007, Ingo Molnar wrote:
+> I think the shared superblock approach is the right one, but I'm a
+> little concerned that there would now be different behavior for fscache
+> and non-cached setups. Not sure of any better idea though.
+
+The behaviour varies a bit anyway because there's a cache...
+
+> > The R/O mount flag can be dealt with by moving readonlyness into the
+> > vfsmount rather than having it a property of the superblock.  The
+> > superblock would then be read-only only if all its vfsmounts are also
+> > read-only.
 > 
-> > > Hmm, seems like -common part contains also code that is not completely 
-> > > common to all the modules.
-> > > How about this?
-> > that does the trick and 2.6.24-rc4 now builds & boots fine with that 
-> > config. Thanks,
-> > Tested-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Mauro, Patrick, are you going to take it through your trees, or should I 
-> push it through akpm?
+> Given that, how many connection parameters are there that are likely to
+> actually differ on the same client, talking to the same server? Really?
 
-Jiri/Ingo,
+I don't have figures on that, but I do know people have complained about it
+for non-cached conditions.
 
-I'll take care of this patch.
+> You could store the table in a NIS map, for example, and a udev rule or
+> similar could trigger to load it later.
 
--- 
-Cheers,
-Mauro
+My point was meant to be that the presence and coverage of a cache is more
+likely to reflect the client machine than would the NIS map for the NFS
+automounts.  You wouldn't necessarily want to store this table in NIS.
 
+David
