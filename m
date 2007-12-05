@@ -1,132 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbXLESYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbXLESZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbXLESYd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 13:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXLESYZ
+	id S1753598AbXLESZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 13:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXLESZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 13:24:25 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:39581 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbXLESYY (ORCPT
+	Wed, 5 Dec 2007 13:25:51 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:21623 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbXLESZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 13:24:24 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: RFC: PNP: do not stop/start devices in suspend/resume path
-Date: Wed, 5 Dec 2007 11:24:18 -0700
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, matthew@wil.cx,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, drzeus@drzeus.cx,
-       linux-acpi@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Li Shaohua <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>
-References: <4745F77C.7040402@gmail.com> <47511751.2010707@gmail.com> <47514CE2.3000600@gmail.com>
-In-Reply-To: <47514CE2.3000600@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712051124.18852.bjorn.helgaas@hp.com>
+	Wed, 5 Dec 2007 13:25:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=lVex04zXYDcoG008ErfRevbdsSZPWksKlsqa3lnwa5GixQJAd9Ssb9XspnwEw3Au+cGfs0G6xeCfrL5FP7LLPwJZ1NFZeRYJb4xH0td2OsGQtd1Pb2gZv58wgAZWr9x7+4aBxbmqM6Q35ZDBmHX6TIPAXnFNSV92D8jBeqhqa/I=
+From: Denis Cheng <crquan@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers/base: use LIST_HEAD instead of call to INIT_LIST_HEAD in __init
+Date: Thu,  6 Dec 2007 02:24:40 +0800
+Message-Id: <1196879080-13408-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Re: warning on suspend-to-RAM caused by
-pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch,
-thread here: http://lkml.org/lkml/2007/11/22/110
+LIST_HEAD has been widely used, so switch to this simpler method.
 
-On Saturday 01 December 2007 05:00:34 am Jiri Slaby wrote:
-> I didn't get it. Maybe some trolls poking around or something (maybe the
-> ext3 breakage which fsck fixed). It works after recompilation of the
-> whole tree. And the important part -- the warning has gone.
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ drivers/base/attribute_container.c |    9 +--------
+ drivers/base/base.h                |    1 -
+ drivers/base/init.c                |    1 -
+ 3 files changed, 1 insertions(+), 10 deletions(-)
 
-Good.  It's not clear to me whether it is safe to leave devices
-enabled while we sleep.  I don't see an actual problem, but there
-might be something related to hotplug while we're asleep or something.
-So I'll cc: some additional people who might have some insight.
-
-
-
-RFC: PNP: do not stop/start devices in suspend/resume path
-
-Do not disable PNP devices in the suspend path.  We still call
-the driver's suspend method, which should prevent further use of
-the device, and the protocol suspend method, which may put the
-device in a low-power state.
-
-This means we will not disable the device and release its
-resources.  The driver suspend method typically does not release
-its resources in the suspend path.  For example, if we have:
-
-  03f8-03ff : 00:06
-    03f8-03ff : serial
-
-pnp_stop_dev() would release the 00:06 region, which still
-has a child.  This causes a warning from __release_resource
-and corrupts /proc/ioports.
-
-However, we should do this the same way Windows does, so if
-Windows disables devices before going to sleep, we should, too.
-It doesn't *look* necessary to me because
-
-  - In the ACPI 3.0b spec, I can't find any mention of _DIS in
-    connection with sleep.  And Device Object Notifications,
-    Section 5.6.3, Table 5-43, says we should get a bus check
-    after awakening if hardware was removed while we slept.
-
-    This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
-    makes a similar point about how the OS re-enumerates devices
-    as a result of a power state change (3rd last paragraph of
-    text).
-
-  - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
-    suggests that Windows only stops a device to rebalance hardware
-    resources.
-
-[This should go before
-pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch
-for best bisect-ability.]
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: linux-mm/drivers/pnp/driver.c
-===================================================================
---- linux-mm.orig/drivers/pnp/driver.c	2007-11-30 13:58:25.000000000 -0700
-+++ linux-mm/drivers/pnp/driver.c	2007-12-03 09:58:35.000000000 -0700
-@@ -161,13 +161,6 @@
- 			return error;
- 	}
+diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
+index 7370d7c..d4dfb97 100644
+--- a/drivers/base/attribute_container.c
++++ b/drivers/base/attribute_container.c
+@@ -61,7 +61,7 @@ attribute_container_classdev_to_container(struct class_device *classdev)
+ }
+ EXPORT_SYMBOL_GPL(attribute_container_classdev_to_container);
  
--	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
--	    pnp_can_disable(pnp_dev)) {
--		error = pnp_stop_dev(pnp_dev);
--		if (error)
--			return error;
--	}
+-static struct list_head attribute_container_list;
++static LIST_HEAD(attribute_container_list);
+ 
+ static DEFINE_MUTEX(attribute_container_mutex);
+ 
+@@ -429,10 +429,3 @@ attribute_container_find_class_device(struct attribute_container *cont,
+ 	return cdev;
+ }
+ EXPORT_SYMBOL_GPL(attribute_container_find_class_device);
 -
- 	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
- 		pnp_dev->protocol->suspend(pnp_dev, state);
- 	return 0;
-@@ -177,7 +170,6 @@
- {
- 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
- 	struct pnp_driver *pnp_drv = pnp_dev->driver;
--	int error;
+-int __init
+-attribute_container_init(void)
+-{
+-	INIT_LIST_HEAD(&attribute_container_list);
+-	return 0;
+-}
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 10b2fb6..8bddd74 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -13,7 +13,6 @@ static inline int hypervisor_init(void) { return 0; }
+ extern int platform_bus_init(void);
+ extern int system_bus_init(void);
+ extern int cpu_dev_init(void);
+-extern int attribute_container_init(void);
  
- 	if (!pnp_drv)
- 		return 0;
-@@ -185,12 +177,6 @@
- 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
- 		pnp_dev->protocol->resume(pnp_dev);
- 
--	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
--		error = pnp_start_dev(pnp_dev);
--		if (error)
--			return error;
--	}
--
- 	if (pnp_drv->resume)
- 		return pnp_drv->resume(pnp_dev);
- 
+ extern int bus_add_device(struct device * dev);
+ extern void bus_attach_device(struct device * dev);
+diff --git a/drivers/base/init.c b/drivers/base/init.c
+index 3713815..1da88a1 100644
+--- a/drivers/base/init.c
++++ b/drivers/base/init.c
+@@ -36,5 +36,4 @@ void __init driver_init(void)
+ 	system_bus_init();
+ 	cpu_dev_init();
+ 	memory_dev_init();
+-	attribute_container_init();
+ }
+-- 
+1.5.3.4
+
