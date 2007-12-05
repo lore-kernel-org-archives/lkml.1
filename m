@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbXLEUwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbXLEUyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbXLEUwb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 15:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXLEUwY
+	id S1753609AbXLEUyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 15:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbXLEUyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 15:52:24 -0500
-Received: from ccs17.jlab.org ([129.57.35.82]:46273 "EHLO ccs17.jlab.org"
+	Wed, 5 Dec 2007 15:54:03 -0500
+Received: from ccs17.jlab.org ([129.57.35.82]:46374 "EHLO ccs17.jlab.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbXLEUwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 15:52:23 -0500
-Message-ID: <47570F83.6040601@jlab.org>
-Date: Wed, 05 Dec 2007 15:52:19 -0500
+	id S1751499AbXLEUyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 15:54:03 -0500
+Message-ID: <47570FE7.6030407@jlab.org>
+Date: Wed, 05 Dec 2007 15:53:59 -0500
 From: Jie Chen <chen@jlab.org>
 Organization: Jefferson Lab
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
-References: <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu> <4756C3D9.9030107@jlab.org> <20071205154014.GA6491@elte.hu> <4756D058.1070500@jlab.org> <20071205164723.GA25641@elte.hu> <4756E44E.8080607@jlab.org> <20071205200343.GA14570@elte.hu> <475708A7.4030708@jlab.org> <20071205204645.GC25694@elte.hu>
-In-Reply-To: <20071205204645.GC25694@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Simon Holm Th??gersen <odie@cs.aau.dk>
+Subject: Re: Possible bug from kernel 2.6.22 and above
+References: <4744966C.900@jlab.org> <1196887002.6353.19.camel@lappy>
+In-Reply-To: <1196887002.6353.19.camel@lappy>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jie Chen <chen@jlab.org> wrote:
+Peter Zijlstra wrote:
+> On Wed, 2007-11-21 at 15:34 -0500, Jie Chen wrote:
 > 
->> I just disabled the affinity mask and reran the test. There were no 
->> significant changes for two threads (barrier overhead is around 9 
->> microseconds). As for 8 threads, the barrier overhead actually drops a 
->> little, which is good. Let me know whether I can be any help. Thank 
->> you very much.
+>> It is clearly that the synchronization overhead increases as the number 
+>> of threads increases in the kernel 2.6.21. But the synchronization 
+>> overhead actually decreases as the number of threads increases in the 
+>> kernel 2.6.23.8 (We observed the same behavior on kernel 2.6.22 as 
+>> well). This certainly is not a correct behavior. The kernels are 
+>> configured with CONFIG_SMP, CONFIG_NUMA, CONFIG_SCHED_MC, 
+>> CONFIG_PREEMPT_NONE, CONFIG_DISCONTIGMEM set. The complete kernel 
+>> configuration file is in the attachment of this e-mail.
+>>
+>>  From what we have read, there was a new scheduler (CFS) appeared from 
+>> 2.6.22. We are not sure whether the above behavior is caused by the new 
+>> scheduler.
 > 
-> sorry to be dense, but could you give me instructions how i could remove 
-> the affinity mask and test the "barrier overhead" myself? I have built 
-> "pthread_sync" and it outputs numbers for me - which one would be the 
-> barrier overhead: Reference_time_1 ?
+> If I read this correctly, you say that: .22 is the first bad one right?
 > 
-> 	Ingo
-Hi, Ingo:
+> The new scheduler (CFS) was introduced in .23, so it seems another
+> change would be responsible for this.
+> 
+> 
+> 
+Hi, Peter:
 
-To disable affinity, do configure --enable-public-release 
---disable-thread_affinity. You should see barrier overhead like the 
-following:
-Computing BARRIER time
-
-Sample_size  Average     Min    Max          S.D.        Outliers
-  20      19.486162   19.482250   19.491400    0.002740      0
-
-BARRIER time =        19.486162 microseconds +/- 0.005371
-BARRIER overhead =    8.996257 microseconds +/- 0.006575
-
-The Reference_time_1 is the elapsed time for single thread doing simple 
-loop without any synchronization. Thank you.
+Yes. We did observe this in 2.6.22. Thank you.
 
 -- 
 ###############################################
