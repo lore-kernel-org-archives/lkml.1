@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXLENpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbXLENpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbXLENpP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 08:45:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbXLENpE
+	id S1753386AbXLENpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 08:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXLENpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 08:45:04 -0500
-Received: from smtp-out3.libero.it ([212.52.84.43]:56719 "EHLO
-	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566AbXLENpC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 08:45:02 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAHc5VkdTJBlg/2dsb2JhbAAIkDExPw
-Date: Wed,  5 Dec 2007 14:44:53 +0100
-Message-Id: <JSKWUT$49C754387872ADF91616F75D0CDC1F87@libero.it>
-Subject: MRS GREGGE VAN DER HOOFD
-MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-From: "winerdecloto" <winerdecloto@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 83.36.25.96
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 5 Dec 2007 08:45:23 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:59016 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbXLENpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 08:45:20 -0500
+To: matti.aarnio@zmailer.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Does vger.kernel.org automatically drop spams?
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200712052225.IHJ09818.MQLtJOFOSFHVOF@I-love.SAKURA.ne.jp>
+	<20071205133545.GV6372@mea-ext.zmailer.org>
+In-Reply-To: <20071205133545.GV6372@mea-ext.zmailer.org>
+Message-Id: <200712052245.AIH87554.JSOFFLFtVOOQMH@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Wed, 5 Dec 2007 22:45:15 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Important Information, Please your urgent response is needed.
+Hello.
 
-It is a pleasure to inform you through this medium thatYour
- emailaddress won a prizeof €950,000.00 in category 'A'micronet
-emaillotterywith Reference number: LSLUK/2031/8161/07.
+Matti Aarnio wrote:
+> > Does vger.kernel.org have spam filter and automatically drop spams?
+> 
+> Yes.  Yes.  And even worse: SILENTLY drop it.  The reason was:
+> 
+>      global taboo header: m!OJFS!
+> 
+> I don't recall why that was declared taboo, but it apparently bites
+> on References: headers..  Entirely unintentional, I assure you.
 
-Please contact our FOREIGN TRANSFER MANAGER.
-Dr. Paul Anderson
-TEL: +34-652-063-073.
-Email:remittanceseguros5058@yahoo.es
+I see. Thank you.
 
+Well, may be my address was registered as a spammer.
 
-Yours Sincerely,
-MRS GREGGE VAN DER HOOFD.
+What should I do to post my message?
 
+Should I use different From: address?
+Should I stop sending to multiple lists?
+
+> We (the postmasters) can approve your messages for posting, but it
+> will take a few hours that I get off work, and have time to do it.
+> (I need to do some additional setups, all those lists are not
+> in my existing majordomo password database..)
+
+Should I wait for your approval?
+
+Regards.
