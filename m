@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751444AbXLEE4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbXLEE7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751444AbXLEE4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 23:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXLEE4W
+	id S1753379AbXLEE7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 23:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXLEE7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 23:56:22 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:32607 "EHLO
-	mail127-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbXLEE4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 23:56:20 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <47562F69.7010508@am.sony.com>
-Date: Tue, 04 Dec 2007 20:56:09 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 4 Dec 2007 23:59:36 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60853 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbXLEE7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 23:59:36 -0500
+Date: Tue, 4 Dec 2007 23:59:32 -0500
+From: Amos Waterland <apw@us.ibm.com>
+To: akpm@osdl.org
+Cc: horms@verge.net.au, linux-kernel@vger.kernel.org
+Subject: [PATCH] Updates to nfsroot documentation (take 2)
+Message-ID: <20071205045932.GA7160@us.ibm.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Milton Miller <miltonm@bga.com>, Christoph Lameter <clameter@sgi.com>,
-       Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
-References: <47537F2E.2070204@am.sony.com> <b91f94dd5b35247fecf52090c0b3890f@bga.com> <Pine.LNX.4.62.0712040925470.16793@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0712040925470.16793@pademelon.sonytel.be>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Dec 2007 04:56:11.0988 (UTC) FILETIME=[283DA940:01C836FB]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Mon, 3 Dec 2007, Milton Miller wrote:
->> Chris, as you can see, PS3 needs to allocate 1/8th of total initial memory to
->> add any more memory.  Geoff, can you predict what linear address the
->> additional memory will occupy?  Judging from the attempted address toa add,
->> maybe not.   If not, my only thought is to pre-reserve an additional page and
->> consume it on the first add.   Additional adds will likely draw from the first
->> added region, pinning.
-> 
-> To me it sounds a bit strange that hotplug memory relies on having huge
-> contiguous blocks of memory available. If this isn't done very early in the
-> boot process, changes are high it will fail.
-> 
-> Would it be possible to allocate the memory from the newly added block, which
-> is guaranteed to be unfragmented?
+The difference between ip=off and ip=::::::off has been a cause of much
+confusion.  Document how each behaves, and do not contradict ourselves
+by saying that "off" is the default when in fact "any" is the default
+and is descibed as being so lower in the file.
 
+Signed-off-by: Amos Waterland <apw@us.ibm.com>
 
-Yes, this sounds like a cleaner solution than pre-allocating, as the memory is
-there and its properties are known.
+ Documentation/nfsroot.txt |    9 ++++++---
+ net/ipv4/ipconfig.c       |   20 +-------------------
+ 2 files changed, 7 insertions(+), 22 deletions(-)
 
--Geoff
-
-
+diff --git a/Documentation/nfsroot.txt b/Documentation/nfsroot.txt
+index 16a7cae..ac04a1d 100644
+--- a/Documentation/nfsroot.txt
++++ b/Documentation/nfsroot.txt
+@@ -92,8 +92,11 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
+   autoconfiguration.
+ 
+   The <autoconf> parameter can appear alone as the value to the `ip'
+-  parameter (without all the ':' characters before) in which case auto-
+-  configuration is used.
++  parameter (without all the ':' characters before).  If the value is
++  "ip=off" or "ip=none", no autoconfiguration will take place, otherwise
++  autoconfiguration will take place.  Note that "ip=off" is not the same
++  thing as "ip=::::::off", because in the latter autoconfiguration will take
++  place if any of DHCP, BOOTP or RARP are compiled in the kernel.
+ 
+   <client-ip>	IP address of the client.
+ 
+@@ -142,7 +145,7 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
+ 		into the kernel will be used, regardless of the value of
+ 		this option.
+ 
+-                  off or none: don't use autoconfiguration (default)
++                  off or none: don't use autoconfiguration
+ 		  on or any:   use any protocol available in the kernel
+ 		  dhcp:        use DHCP
+ 		  bootp:       use BOOTP
+diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
+index c5c107a..96400b0 100644
+--- a/net/ipv4/ipconfig.c
++++ b/net/ipv4/ipconfig.c
+@@ -1396,25 +1396,7 @@ late_initcall(ip_auto_config);
+ 
+ /*
+  *  Decode any IP configuration options in the "ip=" or "nfsaddrs=" kernel
+- *  command line parameter. It consists of option fields separated by colons in
+- *  the following order:
+- *
+- *  <client-ip>:<server-ip>:<gw-ip>:<netmask>:<host name>:<device>:<PROTO>
+- *
+- *  Any of the fields can be empty which means to use a default value:
+- *	<client-ip>	- address given by BOOTP or RARP
+- *	<server-ip>	- address of host returning BOOTP or RARP packet
+- *	<gw-ip>		- none, or the address returned by BOOTP
+- *	<netmask>	- automatically determined from <client-ip>, or the
+- *			  one returned by BOOTP
+- *	<host name>	- <client-ip> in ASCII notation, or the name returned
+- *			  by BOOTP
+- *	<device>	- use all available devices
+- *	<PROTO>:
+- *	   off|none	    - don't do autoconfig at all (DEFAULT)
+- *	   on|any           - use any configured protocol
+- *	   dhcp|bootp|rarp  - use only the specified protocol
+- *	   both             - use both BOOTP and RARP (not DHCP)
++ *  command line parameter.  See Documentation/nfsroot.txt.
+  */
+ static int __init ic_proto_name(char *name)
+ {
