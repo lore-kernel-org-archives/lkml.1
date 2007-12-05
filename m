@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXLEV2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbXLEV25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbXLEV2g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 16:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXLEV22
+	id S1752574AbXLEV25 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 16:28:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbXLEV2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 16:28:28 -0500
-Received: from waste.org ([66.93.16.53]:42518 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbXLEV21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 16:28:27 -0500
-Date: Wed, 5 Dec 2007 15:26:47 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071205212646.GP17536@waste.org>
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475599D6.4030008@cosmosbay.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 5 Dec 2007 16:28:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57194 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbXLEV2r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 16:28:47 -0500
+Date: Wed, 5 Dec 2007 13:26:31 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Holger.Wolf@de.ibm.com
+Cc: wolf@linux.vnet.ibm.com, mingo@elte.hu, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scheduler behaviour
+Message-ID: <20071205132631.79940bd5@laptopd505.fenrus.org>
+In-Reply-To: <475706E2.50805@linux.vnet.ibm.com>
+References: <475706E2.50805@linux.vnet.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 07:17:58PM +0100, Eric Dumazet wrote:
-> Alan Cox a ?crit :
-> >>No matter what you consider as being better, changing a 12 years old and 
-> >>widely used userspace interface like /dev/urandom is simply not an 
-> >>option.
-> >>    
-> >
-> >Fixing it to be more efficient in its use of entropy and also fixing the
-> >fact its not actually a good random number source would be worth looking
-> >at however.
-> >  
-> Yes, since current behavior on network irq is very pessimistic.
+On Wed, 05 Dec 2007 21:15:30 +0100
+Holger Wolf <wolf@linux.vnet.ibm.com> wrote:
 
-No, it's very optimistic. The network should not be trusted.
-
-The distinction between /dev/random and /dev/urandom boils down to one
-word: paranoia. If you are not paranoid enough to mistrust your
-network, then /dev/random IS NOT FOR YOU. Use /dev/urandom. Do not
-send patches to make /dev/random less paranoid, kthxbye.
-
-> If you have some trafic, (ie more than HZ/2  interrupts per second), 
-> then add_timer_randomness() feeds
-> some entropy but gives no credit (calling credit_entropy_store() with 
-> nbits=0)
+> We discovered performance degradation with dbench when using kernel
+> 2.6.23 compared to kernel 2.6.22.
 > 
-> This is because we take into account only the jiffies difference, and 
-> not the get_cycles() that should give
-> us more entropy on most plaforms.
+> In our case we booted a Linux in a IBM System z9 LPAR with 256MB of
+> ram with 4 CPU's. This system uses a striped LV with 16 disks on a
+> Storage Server connected via 8 4GBit links.
+> A dbench was started on that system performing I/O operations on the
+> striped LV. dbench runs were performed with 1 to 62 processes.
+> Measurements with a 2.6.22 kernel were compared to measurements with
+> a 2.6.23 kernel. We saw a throughput degradation from 7.2 to 23.4
 
-If we cannot measure a difference, we should nonetheless assume there
-is one?
- 
-> In this patch, I suggest that we feed only one u32 word of entropy, 
-> combination of the previous distinct
-> words (with some of them being constant or so), so that the nbits 
-> estimation is less pessimistic, but also to
-> avoid injecting false entropy.
+this is good news!
+dbench rewards unfair behavior... so higher dbench usually means a
+worse kernel ;)
 
-Umm.. no, that's not how it works at all.
-
-Also, for future reference, patches for /dev/random go through me, not
-through Dave.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
