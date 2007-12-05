@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbXLESgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbXLESlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977AbXLESgo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 13:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbXLESgh
+	id S1753316AbXLESlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 13:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbXLESlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 13:36:37 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:46464 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbXLESgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 13:36:36 -0500
-Date: Wed, 5 Dec 2007 21:37:22 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] sys_setsid: remove now unneeded session != 1 check
-Message-ID: <20071205183722.GA6139@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 5 Dec 2007 13:41:06 -0500
+Received: from mo-p07-ob.rzone.de ([81.169.146.188]:19459 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXLESlF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 13:41:05 -0500
+X-RZG-CLASS-ID: mo07
+X-RZG-AUTH: kR2YrGeU3i5IZ7e/KoXXySNh16uouyfpvuAE9NRyohxnu02NkfMqoFqI5zXqM8wH
+From: Stefan Rompf <stefan@loplof.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+Date: Wed, 5 Dec 2007 19:42:31 +0100
+User-Agent: KMail/1.9.5
+Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20071205001230.GA11391@gondor.apana.org.au> <20071205065132.GA11476@gondor.apana.org.au> <20071204.231200.117152338.davem@davemloft.net>
+In-Reply-To: <20071204.231200.117152338.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200712051942.32264.stefan@loplof.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric's "fix clone(CLONE_NEWPID)" eliminated the last reason for this hack.
+Am Mittwoch, 5. Dezember 2007 08:12 schrieb David Miller:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Actually, consider even a case like DNS.  Let's say the timeout
+> is set to 2 seconds or something and you have 3 DNS servers
+> listed, on different IPSEC destinations, in your resolv.conf
+>
+> Each IPSEC route that isn't currently resolved will cause packet loss
+> of the DNS lookup request with xfrm_larval_drop set to '1'.
+>
+> If all 3 need to be resolved, the DNS lookup will fully fail
+> which defeats the purpose of listing 3 servers for redundancy
+> don't you think? :-)
 
---- PT/kernel/sys.c~	2007-11-27 16:58:38.000000000 +0300
-+++ PT/kernel/sys.c	2007-12-05 21:31:53.000000000 +0300
-@@ -1056,11 +1056,8 @@ asmlinkage long sys_setsid(void)
- 
- 	/* Fail if a process group id already exists that equals the
- 	 * proposed session id.
--	 *
--	 * Don't check if session == 1, clone(CLONE_NEWPID) creates
--	 * this group/session beforehand.
- 	 */
--	if (session != 1 && pid_task(sid, PIDTYPE_PGID))
-+	if (pid_task(sid, PIDTYPE_PGID))
- 		goto out;
- 
- 	group_leader->signal->leader = 1;
+In your example, the DNS server might actually stop responding to other 
+clients while waiting for the (expected to be non-blocking) connect() to 
+return. This is much much worse.
 
+Stefan
