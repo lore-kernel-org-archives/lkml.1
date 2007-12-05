@@ -1,122 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbXLEQLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbXLEQRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbXLEQLT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 11:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbXLEQLJ
+	id S1752179AbXLEQRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 11:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXLEQRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 11:11:09 -0500
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:52267 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbXLEQLH (ORCPT
+	Wed, 5 Dec 2007 11:17:16 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:59443 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbXLEQRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 11:11:07 -0500
-Date: Wed, 5 Dec 2007 16:10:54 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: James.Bottomley@SteelEye.com, "David S. Miller" <davem@davemloft.net>
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] esp_scsi: Fix reset cleanup spinlock recursion
-Message-ID: <Pine.LNX.4.64N.0712051529470.5943@blysk.ds.pg.gda.pl>
+	Wed, 5 Dec 2007 11:17:15 -0500
+Message-ID: <4756CEEE.9050908@cosmosbay.com>
+Date: Wed, 05 Dec 2007 17:16:46 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jie Chen <chen@jlab.org>, Simon Holm Th??gersen <odie@cs.aau.dk>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com> <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu> <4756C3D9.9030107@jlab.org> <20071205154014.GA6491@elte.hu>
+In-Reply-To: <20071205154014.GA6491@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------060101060503040905040604"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 05 Dec 2007 17:16:54 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The esp_reset_cleanup() function is called with the host lock held and 
-invokes starget_for_each_device() which wants to take it too.  Here is a 
-fix along the lines of shost_for_each_device()/__shost_for_each_device() 
-adding a __starget_for_each_device() counterpart which assumes the lock 
-has already been taken.
+This is a multi-part message in MIME format.
+--------------060101060503040905040604
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
- Eventually, I think the driver should get modified so that more work is 
-done as a softirq rather than in the interrupt context, but for now it 
-fixes a bug that causes the spinlock debugger to fire.
+Ingo Molnar a écrit :
+> * Jie Chen <chen@jlab.org> wrote:
+> 
+>> I just ran the same test on two 2.6.24-rc4 kernels: one with 
+>> CONFIG_FAIR_GROUP_SCHED on and the other with CONFIG_FAIR_GROUP_SCHED 
+>> off. The odd behavior I described in my previous e-mails were still 
+>> there for both kernels. Let me know If I can be any more help. Thank 
+>> you.
+> 
+> ok, i had a look at your data, and i think this is the result of the 
+> scheduler balancing out to idle CPUs more agressively than before. Doing 
+> that is almost always a good idea though - but indeed it can result in 
+> "bad" numbers if all you do is to measure the ping-pong "performance" 
+> between two threads. (with no real work done by any of them).
+> 
+> the moment you saturate the system a bit more, the numbers should 
+> improve even with such a ping-pong test.
+> 
+> do you have testcode (or a modification of your testcase sourcecode) 
+> that simulates a real-life situation where 2.6.24-rc4 performs not as 
+> well as you'd like it to see? (or if qmt.tar.gz already contains that 
+> then please point me towards that portion of the test and how i should 
+> run it - thanks!)
+> 
+> 	Ingo
 
- While at it, it fixes a small number of cosmetic problems with 
-starget_for_each_device() too.
+I cooked a program shorter than Jie one, to try to understand what was going 
+on. Its a pure cpu burner program, with no thread synchronisation (but the 
+pthread_join at the very end)
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Checked with checkpatch.pl and at the run time.  Please apply.
+As each thread is bound to a given cpu, I am not sure the scheduler is allowed 
+to balance to an idle cpu.
 
-  Maciej
+Unfortunatly I dont have a 4 way SMP idle machine available to
+test it.
 
-patch-mips-2.6.23-rc5-20070904-esp_scsi-reset-3
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/scsi/esp_scsi.c linux-mips-2.6.23-rc5-20070904/drivers/scsi/esp_scsi.c
---- linux-mips-2.6.23-rc5-20070904.macro/drivers/scsi/esp_scsi.c	2007-10-23 14:07:38.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/drivers/scsi/esp_scsi.c	2007-11-26 01:01:10.000000000 +0000
-@@ -2028,8 +2028,8 @@ static void esp_reset_cleanup(struct esp
- 		tp->flags |= ESP_TGT_CHECK_NEGO;
- 
- 		if (tp->starget)
--			starget_for_each_device(tp->starget, NULL,
--						esp_clear_hold);
-+			__starget_for_each_device(tp->starget, NULL,
-+						  esp_clear_hold);
- 	}
- 	esp->flags &= ~ESP_FLAG_RESETTING;
- }
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/scsi/scsi.c linux-mips-2.6.23-rc5-20070904/drivers/scsi/scsi.c
---- linux-mips-2.6.23-rc5-20070904.macro/drivers/scsi/scsi.c	2007-09-04 04:55:44.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/drivers/scsi/scsi.c	2007-12-05 16:00:40.000000000 +0000
-@@ -886,11 +886,11 @@ EXPORT_SYMBOL(__scsi_iterate_devices);
-  * starget_for_each_device  -  helper to walk all devices of a target
-  * @starget:	target whose devices we want to iterate over.
-  *
-- * This traverses over each devices of @shost.  The devices have
-+ * This traverses over each device of @starget.  The devices have
-  * a reference that must be released by scsi_host_put when breaking
-  * out of the loop.
-  */
--void starget_for_each_device(struct scsi_target *starget, void * data,
-+void starget_for_each_device(struct scsi_target *starget, void *data,
- 		     void (*fn)(struct scsi_device *, void *))
- {
- 	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
-@@ -905,6 +905,33 @@ void starget_for_each_device(struct scsi
- EXPORT_SYMBOL(starget_for_each_device);
- 
- /**
-+ * __starget_for_each_device  -  helper to walk all devices of a target
-+ *				 (UNLOCKED)
-+ * @starget:	target whose devices we want to iterate over.
-+ *
-+ * This traverses over each device of @starget.  It does _not_
-+ * take a reference on the scsi_device, so the whole loop must be
-+ * protected by shost->host_lock.
-+ *
-+ * Note:  The only reason why drivers would want to use this is because
-+ * they need to access the device list in irq context.  Otherwise you
-+ * really want to use starget_for_each_device instead.
-+ **/
-+void __starget_for_each_device(struct scsi_target *starget, void *data,
-+			       void (*fn)(struct scsi_device *, void *))
-+{
-+	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
-+	struct scsi_device *sdev;
-+
-+	__shost_for_each_device(sdev, shost) {
-+		if ((sdev->channel == starget->channel) &&
-+		    (sdev->id == starget->id))
-+			fn(sdev, data);
-+	}
-+}
-+EXPORT_SYMBOL(__starget_for_each_device);
-+
-+/**
-  * __scsi_device_lookup_by_target - find a device given the target (UNLOCKED)
-  * @starget:	SCSI target pointer
-  * @lun:	SCSI Logical Unit Number
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/include/scsi/scsi_device.h linux-mips-2.6.23-rc5-20070904/include/scsi/scsi_device.h
---- linux-mips-2.6.23-rc5-20070904.macro/include/scsi/scsi_device.h	2007-09-04 04:56:21.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/include/scsi/scsi_device.h	2007-11-26 01:00:57.000000000 +0000
-@@ -222,6 +222,9 @@ extern struct scsi_device *__scsi_device
- 							  uint);
- extern void starget_for_each_device(struct scsi_target *, void *,
- 		     void (*fn)(struct scsi_device *, void *));
-+extern void __starget_for_each_device(struct scsi_target *, void *,
-+				      void (*fn)(struct scsi_device *,
-+						 void *));
- 
- /* only exposed to implement shost_for_each_device */
- extern struct scsi_device *__scsi_iterate_devices(struct Scsi_Host *,
+$ gcc -O2 -o burner burner.c
+$ ./burner
+Time to perform the unit of work on one thread is 0.040328 s
+Time to perform the unit of work on 2 threads is 0.040221 s
+
+I tried it on a 64 way machine (Thanks David :) ) and noticed some strange
+results that may be related to the Niagara hardware (time for 64 threads was 
+nearly the double for one thread)
+
+
+--------------060101060503040905040604
+Content-Type: text/plain;
+ name="burner.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="burner.c"
+
+#include <pthread.h>
+#include <sched.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int blockthemall=1;
+static void inline cpupause()
+{
+#if defined(i386)
+ asm volatile("rep;nop":::"memory");
+#else
+ asm volatile("":::"memory");
+#endif
+}
+/*
+ * Determines number of cpus
+ * Can be overiden by the NR_CPUS environment variable
+ */
+int number_of_cpus()
+{
+	char line[1024], *p;
+	int cnt = 0;
+	FILE *F;
+
+	p = getenv("NR_CPUS");
+	if (p)
+		return atoi(p);
+	F = fopen("/proc/cpuinfo", "r");
+	if (F == NULL) {
+		perror("/proc/cpuinfo");
+		return 1;
+	}
+	while (fgets(line, sizeof(line), F) != NULL) {
+		if (memcmp(line, "processor", 9) == 0)
+			cnt++;
+	}
+	fclose(F);
+	return cnt;
+}
+
+void compute_elapsed(struct timeval *delta, const struct timeval *t0)
+{
+	struct timeval t1;
+
+	gettimeofday(&t1, NULL);
+	delta->tv_sec = t1.tv_sec - t0->tv_sec;
+	delta->tv_usec = t1.tv_usec - t0->tv_usec;
+	if (delta->tv_usec < 0) {
+		delta->tv_usec += 1000000;
+		delta->tv_sec--;
+	}
+}
+
+int nr_loops = 20*1000000;
+double incr=0.3456;
+void perform_work()
+{
+	int i;
+	double t = 0.0;
+	for (i = 0; i < nr_loops; i++) {
+		t += incr;
+		}
+	if (t < 0.0) printf("well... should not happen\n");
+}
+
+void set_affinity(int cpu)
+{
+	long cpu_mask;
+	int res;
+
+	cpu_mask = 1L << cpu;
+	res = sched_setaffinity(0, sizeof(cpu_mask), &cpu_mask);
+	if (res)
+		perror("sched_setaffinity");
+}
+
+void *thread_work(void *arg)
+{
+	int cpu = (int)arg;
+	set_affinity(cpu);
+	while (blockthemall)
+		cpupause();
+	perform_work();
+	return (void *)0;
+}
+
+main(int argc, char *argv[])
+{
+	struct timeval t0, delta;
+	int nr_cpus, i;
+	pthread_t *tids;
+
+	gettimeofday(&t0, NULL);
+	perform_work();
+	compute_elapsed(&delta, &t0);
+	printf("Time to perform the unit of work on one thread is %d.%06d s\n", delta.tv_sec, delta.tv_usec);
+
+	nr_cpus = number_of_cpus();
+	if (nr_cpus <= 1)
+		return 0;
+	tids = malloc(nr_cpus * sizeof(pthread_t));
+	for (i = 1; i < nr_cpus; i++) {
+		pthread_create(tids + i, NULL, thread_work, (void *)i);
+	}
+
+	set_affinity(0);
+	gettimeofday(&t0, NULL);
+	blockthemall=0;
+	perform_work();
+	for (i = 1; i < nr_cpus; i++)
+		pthread_join(tids[i], NULL);
+	compute_elapsed(&delta, &t0);
+	printf("Time to perform the unit of work on %d threads is %d.%06d s\n", nr_cpus, delta.tv_sec, delta.tv_usec);
+	
+}
+
+--------------060101060503040905040604--
