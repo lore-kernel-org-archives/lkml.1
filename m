@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbXLER4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbXLESCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbXLER4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 12:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbXLERzk
+	id S1754286AbXLESCX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 13:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXLESCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 12:55:40 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:57085 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754971AbXLERzi (ORCPT
+	Wed, 5 Dec 2007 13:02:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53206 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751901AbXLESCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 12:55:38 -0500
-Date: Wed, 5 Dec 2007 09:55:16 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove nonsense force-casts from ocfs2
-Message-ID: <20071205175516.GM28607@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <20071205084647.GH8181@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071205084647.GH8181@ftp.linux.org.uk>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 5 Dec 2007 13:02:14 -0500
+Subject: Re: [build bug] undefined reference to
+	`dib3000mc_get_tuner_i2c_master'
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Patrick Boettcher <pb@linuxtv.org>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0712051132340.2935@twin.jikos.cz>
+References: <20071204083904.GA15694@elte.hu>
+	 <Pine.LNX.4.64.0712041130310.16564@twin.jikos.cz>
+	 <20071204105439.GA20175@elte.hu>
+	 <Pine.LNX.4.64.0712051132340.2935@twin.jikos.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 05 Dec 2007 16:01:53 -0200
+Message-Id: <1196877713.4646.10.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 08:46:47AM +0000, Al Viro wrote:
-> 	endianness annotations in networking code had been in place for
-> quite a while; in particular, sin_port and s_addr are annotated as
-> big-endian.  Code in ocfs2 had __force casts added apparently to shut the
-> sparse warnings up; of course, these days they only serve to *produce*
-> warnings for no reason whatsoever...
+
+Em Qua, 2007-12-05 às 11:33 +0100, Jiri Kosina escreveu:
+> On Tue, 4 Dec 2007, Ingo Molnar wrote:
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Acked-by: Mark Fasheh <mark.fasheh@oracle.com>
+> > > Hmm, seems like -common part contains also code that is not completely 
+> > > common to all the modules.
+> > > How about this?
+> > that does the trick and 2.6.24-rc4 now builds & boots fine with that 
+> > config. Thanks,
+> > Tested-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Mauro, Patrick, are you going to take it through your trees, or should I 
+> push it through akpm?
 
-Thanks a lot Al.
-	--Mark
+Jiri/Ingo,
 
---
-Mark Fasheh
-Senior Software Developer, Oracle
-mark.fasheh@oracle.com
+I'll take care of this patch.
+
+-- 
+Cheers,
+Mauro
+
