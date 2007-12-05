@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbXLEGrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbXLEGvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbXLEGrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 01:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXLEGrf
+	id S1754000AbXLEGvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 01:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbXLEGvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 01:47:35 -0500
-Received: from mail.gmx.net ([213.165.64.20]:42031 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751288AbXLEGre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 01:47:34 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/5fVUHflX52UoeUdIaIDv36HtsMjEn3qHcv+v0NN
-	RIsPdvxEuPcJZ0
-Date: Wed, 5 Dec 2007 07:47:40 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [Timers SMP] can this machine be helped?
-In-Reply-To: <47560A98.9080700@shaw.ca>
-Message-ID: <Pine.LNX.4.64.0712050746500.29290@axis700.grange>
-References: <fa./nzsMVb44+6c2x42WGfe04SPDrY@ifi.uio.no> <47560A98.9080700@shaw.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Wed, 5 Dec 2007 01:51:40 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3839 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750954AbXLEGvj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 01:51:39 -0500
+Date: Wed, 5 Dec 2007 17:51:32 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: simon@fire.lp0.eu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+Message-ID: <20071205065132.GA11476@gondor.apana.org.au>
+References: <4755A21F.2020407@simon.arlott.org.uk> <20071205001230.GA11391@gondor.apana.org.au> <20071204.223023.262159049.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071204.223023.262159049.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007, Robert Hancock wrote:
-
-> Guennadi Liakhovetski wrote:
-> > 
-> > I've got an old 2xP-II @ 400MHz Compaq AP400 system, which I'm still using.
-> > It has many peculiarities, so, I wouldn't be surprised if the answer to my
-> > questions would be "sorry, the patient is rather dead than alive".
+On Tue, Dec 04, 2007 at 10:30:23PM -0800, David Miller wrote:
 > 
-> How about disabling ACPI entirely, acpi=off on kernel command line? I wouldn't
-> be surprised to see a lot of ACPI stuff broken on an older machine like that..
+> We made an explicit decision not to do things this way.
 
-See above - it's an SMP.
+Thanks for pointing this out.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> Non-blocking has a meaning dependant upon the xfrm_larval_drop sysctl
+> setting, and this is across the board.  If xfrm_larval_drop is zero,
+> non-blocking semantics do not extend to IPSEC route resolution,
+> otherwise it does.
+> 
+> If he sets this sysctl to "1" as I detailed in my reply, he'll
+> get the behavior he wants.
+
+Does anybody actually need the 0 setting? What would we break if
+the default became 1?
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
