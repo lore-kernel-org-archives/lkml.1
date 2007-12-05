@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXLEWBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXLEWQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbXLEWBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 17:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXLEWBh
+	id S1753239AbXLEWQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 17:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXLEWQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 17:01:37 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:29829 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbXLEWBf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 17:01:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=blF8+qXyOiXkWP/82OOBgufwn5a7YO1drPfiVnoH7FGqzolVesRp3k1D/NIdI8WQW2qWJTSmThWRzNRM6IZRd7TxnQo3wpSL78kFqcO4udTHWI80xWFFRHvCvY9SyAUalU+av7vj8ViJ+/2OlNIQeRoFka8rJMriaX63RfSlKCA=
-Message-ID: <6934efce0712051401x2b137420hb04f971e1ca2cbf6@mail.gmail.com>
-Date: Wed, 5 Dec 2007 14:01:33 -0800
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: solid state drive access and context switching
-Cc: "Chris Friesen" <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071205002454.52ea755c@the-village.bc.nu>
+	Wed, 5 Dec 2007 17:16:46 -0500
+Received: from ccs17.jlab.org ([129.57.35.82]:59062 "EHLO ccs17.jlab.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751794AbXLEWQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 17:16:45 -0500
+Message-ID: <47572353.4040606@jlab.org>
+Date: Wed, 05 Dec 2007 17:16:51 -0500
+From: Jie Chen <chen@jlab.org>
+Organization: Jefferson Lab
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+References: <20071204131707.GA4232@elte.hu> <4756C3D9.9030107@jlab.org> <20071205154014.GA6491@elte.hu> <4756D058.1070500@jlab.org> <20071205164723.GA25641@elte.hu> <4756E44E.8080607@jlab.org> <20071205200343.GA14570@elte.hu> <475708A7.4030708@jlab.org> <20071205204645.GC25694@elte.hu> <47570F83.6040601@jlab.org> <20071205210222.GA30089@elte.hu>
+In-Reply-To: <20071205210222.GA30089@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47548BF4.3010907@nortel.com>
-	 <20071203230629.725f4c7a@the-village.bc.nu>
-	 <6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com>
-	 <20071204203536.2bf6d025@the-village.bc.nu>
-	 <6934efce0712041354n47c11d6ckbc7f4aa1e7c85f@mail.gmail.com>
-	 <20071204232449.6148e152@the-village.bc.nu>
-	 <6934efce0712041608w2e25587n6b2d738fa0265d9d@mail.gmail.com>
-	 <20071205002454.52ea755c@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Probably about 1000 clocks but its always going to depend upon the
-> workload and whether any other work can be done usefully.
+Ingo Molnar wrote:
+> * Jie Chen <chen@jlab.org> wrote:
+> 
+>>> sorry to be dense, but could you give me instructions how i could 
+>>> remove the affinity mask and test the "barrier overhead" myself? I 
+>>> have built "pthread_sync" and it outputs numbers for me - which one 
+>>> would be the barrier overhead: Reference_time_1 ?
+>> To disable affinity, do configure --enable-public-release 
+>> --disable-thread_affinity. You should see barrier overhead like the 
+>> following: Computing BARRIER time
+>>
+>> Sample_size  Average     Min    Max          S.D.        Outliers
+>>  20      19.486162   19.482250   19.491400    0.002740      0
+>>
+>> BARRIER time =        19.486162 microseconds +/- 0.005371
+>> BARRIER overhead =    8.996257 microseconds +/- 0.006575
+> 
+> ok, i did that and rebuilt. I also did "make check" and got 
+> src/pthread_sync which i can run. The only thing i'm missing, if i run 
+> src/pthread_sync, it outputs "PARALLEL time":
+> 
+>  PARALLEL time =                           22.486103 microseconds +/- 3.944821
+>  PARALLEL overhead =                       10.638658 microseconds +/- 10.854154
+> 
+> not "BARRIER time". I've re-read the discussion and found no hint about 
+> how to build and run a barrier test. Either i missed it or it's so 
+> obvious to you that you didnt mention it :-)
+> 
+> 	Ingo
 
-Yeah.  Sounds right, in the microsecond range.  Be interesting to see data.
+Hi, Ingo:
 
-Anybody have ideas on what kind of experiments could confirm this
-estimate is right?
+Did you do configure --enable-public-release? My qmt is for qcd 
+calculation (one type of physics code). Without the above flag one can 
+only test PARALLEL overhead. Actually the PARALLEL benchmark has the 
+same behavior as the BARRIER. Thanks.
+
+
+###############################################
+Jie Chen
+Scientific Computing Group
+Thomas Jefferson National Accelerator Facility
+12000, Jefferson Ave.
+Newport News, VA 23606
+
+(757)269-5046 (office) (757)269-6248 (fax)
+chen@jlab.org
+###############################################
