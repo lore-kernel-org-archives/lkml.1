@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbXLEUYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXLEU1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbXLEUYs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 15:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbXLEUYk
+	id S1754030AbXLEU1N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 15:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXLEU06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 15:24:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35756 "EHLO mx2.mail.elte.hu"
+	Wed, 5 Dec 2007 15:26:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36227 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbXLEUYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 15:24:39 -0500
-Date: Wed, 5 Dec 2007 21:24:16 +0100
+	id S1750896AbXLEU05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 15:26:57 -0500
+Date: Wed, 5 Dec 2007 21:26:33 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andrew Morton <akpm@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] UML - change sigcontext fields to match x86
-Message-ID: <20071205202416.GC14570@elte.hu>
-References: <20071205163024.GA7241@c2.user-mode-linux.org> <20071205164816.GB25641@elte.hu> <20071205180959.GA7934@c2.user-mode-linux.org>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: Re: [patch 1/2] x86, ptrace: support for branch trace store(BTS)
+Message-ID: <20071205202633.GD14570@elte.hu>
+References: <20071205195920.A19413@sedona.ch.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071205180959.GA7934@c2.user-mode-linux.org>
+In-Reply-To: <20071205195920.A19413@sedona.ch.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,15 +37,10 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeff Dike <jdike@addtoit.com> wrote:
+* Markus Metzger <markus.t.metzger@intel.com> wrote:
 
-> On Wed, Dec 05, 2007 at 05:48:16PM +0100, Ingo Molnar wrote:
-> > thanks, we indeed missed those. Should we carry this in x86.git, or 
-> > would you like to carry this in your UML tree?
-> 
-> Probably better for it to go in x86.git - that way it travels with 
-> your sigcontext patch.
+> Resend using different mail client
 
-ok, added it.
+thanks, this one applied fine to x86.git.
 
 	Ingo
