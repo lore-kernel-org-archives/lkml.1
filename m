@@ -1,33 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbXLEA3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbXLEAkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbXLEA3f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 19:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXLEA30
+	id S1751922AbXLEAkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 19:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbXLEAk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 19:29:26 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53675 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750885AbXLEA30 (ORCPT
+	Tue, 4 Dec 2007 19:40:29 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45682 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750813AbXLEAk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 19:29:26 -0500
-Date: Wed, 5 Dec 2007 00:24:54 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Cc: "Chris Friesen" <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
-Subject: Re: solid state drive access and context switching
-Message-ID: <20071205002454.52ea755c@the-village.bc.nu>
-In-Reply-To: <6934efce0712041608w2e25587n6b2d738fa0265d9d@mail.gmail.com>
-References: <47548BF4.3010907@nortel.com>
-	<20071203230629.725f4c7a@the-village.bc.nu>
-	<6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com>
-	<20071204203536.2bf6d025@the-village.bc.nu>
-	<6934efce0712041354n47c11d6ckbc7f4aa1e7c85f@mail.gmail.com>
-	<20071204232449.6148e152@the-village.bc.nu>
-	<6934efce0712041608w2e25587n6b2d738fa0265d9d@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 4 Dec 2007 19:40:28 -0500
+Date: Tue, 4 Dec 2007 16:39:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lenb@kernel.org, ebiederm@xmission.com, protasnb@gmail.com, ak@suse.de,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
+Message-Id: <20071204163946.63ac73ce.akpm@linux-foundation.org>
+In-Reply-To: <20071204122649.GB27286@elte.hu>
+References: <200711280121.18376.lenb@kernel.org>
+	<20071204122649.GB27286@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,22 +28,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 16:08:07 -0800
-"Jared Hulbert" <jaredeh@gmail.com> wrote:
+On Tue, 4 Dec 2007 13:26:49 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Dec 4, 2007 3:24 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > Right.  The trend is to hide the nastiness of NAND technology changes
-> > > behind controllers.  In general I think this is a good thing.
-> >
-> > You miss the point - any controller you hide it behind almost inevitably
-> > adds enough latency you don't want to use it synchronously.
+> * Len Brown <lenb@kernel.org> wrote:
 > 
-> I think I get it.  We keep saying that it's the latency is too high.
-> I agree that most technologies out there have latencies that are too
-> high.  Again I ask the question, what latencies do we have to hit
-> before the sync options become worth it?
+> >     So while the irq compression code on i386 should really
+> >     be deleted -- even before merging the x86_64 irq-overhaul,
+> >     this patch simply disables it on all high volume systems
+> >     to avoid problems #1 and #2 on most all i386 systems.
+> >     
+> >     A large system with pin numbers >=64 will still have compression
+> >     to conserve limited IRQ numbers for sparse IOAPICS.  However,
+> >     the vast majority of the planet, those with only pin numbers < 64
+> >     will use an identity GSI -> IRQ mapping.
+> >     
+> >     Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> thanks for the patch and the extensive description. I've applied this to 
+> x86.git.
 
-Probably about 1000 clocks but its always going to depend upon the
-workload and whether any other work can be done usefully.
-
-Alan
+Len applied it to his tree too.
