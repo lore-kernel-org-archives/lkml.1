@@ -1,124 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbXLEXmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbXLEXp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbXLEXmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 18:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbXLEXmF
+	id S1753855AbXLEXp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 18:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXLEXpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 18:42:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:20521 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbXLEXmB (ORCPT
+	Wed, 5 Dec 2007 18:45:18 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:54047 "EHLO
+	mail67-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751439AbXLEXpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 18:42:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=bM6hNlN0O4ldJynqQ5XnxlXI0wLhUtmYGWtU4AJus/KAj+NofChPjRgdiiMho16e5H9WccvDA9A7cmhx1bG8ABIyCp8FdcWLqTG7ny9GC3syTW17bZktXetWJDnhI6kBO7NWPhRYE1OMAuO8JvUi4ywdiGa27v/QkKpThRb8U+M=
-Date: Thu, 6 Dec 2007 02:41:54 +0300
-To: Andrew Morton <akpm@linux-foundation.org>, hare@suse.de
-Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org
-Subject: 2.6.24-rc4-mm1: hostbyte=0x01 driverbyte=0x00 (now bisected)
-Message-ID: <20071205234154.GA4041@martell.zuzino.mipt.ru>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	Wed, 5 Dec 2007 18:45:16 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <47573806.8000808@am.sony.com>
+Date: Wed, 05 Dec 2007 15:45:10 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, miltonm@bga.com,
+       clameter@sgi.com, apw@shadowen.org, linux-kernel@vger.kernel.org,
+       y-goto@jp.fujitsu.com
+Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
+References: <47537F2E.2070204@am.sony.com>	<b91f94dd5b35247fecf52090c0b3890f@bga.com>	<Pine.LNX.4.62.0712051013040.28855@pademelon.sonytel.be> <20071205151147.9db4640b.akpm@linux-foundation.org>
+In-Reply-To: <20071205151147.9db4640b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Dec 2007 23:45:10.0744 (UTC) FILETIME=[DFAF8D80:01C83798]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  git-scsi-misc.patch
+Andrew Morton wrote:
+> On Wed, 5 Dec 2007 10:52:48 +0100 (CET)
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> 
+>> --------------------------------------------------------------------------------
+>> Subject: sparsemem: sparse_add_one_section() may fail to allocate memory
+>> 
+>> sparsemem: sparse_add_one_section() may fail to allocate memory, and must check
+>> whether the allocation succeeded before proceeding to touch the allocated
+>> memory.
+>> 
+>> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>> 
+>> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>> ---
+>> FIXME There are still some possible memory leaks in sparse_add_one_section():
+>>   - usemap is never deallocated
+>>   - __kfree_section_memmap() is a not yet implemented dummy
+> 
+> I already had
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-improve-the-error-handling-for-sparse_add_one_section.patch
+> and
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-check-the-return-value-of-sparse_index_alloc.patch
+> 
+> queued.  Do they fix the problem, and should they be merged in 2.6.24?
 
-Apologies for not looking into the problem earlier. See
-http://marc.info/?t=119628022300005&r=1&w=2
-"2.6.24-rc3-mm2: Result: hostbyte=0x01 driverbyte=0x00\nend_request: I/O error"
-for previous installment.
+No, a quick test shows it just panics in a different place.  Geert's
+patch does also.
 
-I've bisected it to the following patch in git-scsi-misc branch.
-Revert on top of 2.6.24-rc4-mm1 also helps.
+I'll try Milton's suggestion to pre-allocate the memory early.  It seems
+that should work as long as nothing else before the hot-plug mem is added
+needs a large chunk.
 
-commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
-Author: Hannes Reinecke <hare@suse.de>
-Date:   Tue Nov 6 09:23:40 2007 +0100
+-Geoff
 
-    [SCSI] Do not requeue requests if REQ_FAILFAST is set
-    
-    Any requests with the REQ_FAILFAST flag set should not be requeued
-    to the requeust queue, but rather terminated directly.
-    Otherwise the multipath failover will stall until the command
-    timeout triggers.
-    
-    Signed-off-by: Hannes Reinecke <hare@suse.de>
-    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 0f44bdb..0da0dd0 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1286,6 +1286,11 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
- 			 */
- 			if (!(req->cmd_flags & REQ_PREEMPT))
- 				ret = BLKPREP_DEFER;
-+			/*
-+			 * Return failfast requests immediately
-+			 */
-+			if (req->cmd_flags & REQ_FAILFAST)
-+				ret = BLKPREP_KILL;
- 			break;
- 		default:
- 			/*
-@@ -1414,6 +1419,17 @@ static inline int scsi_host_queue_ready(struct request_queue *q,
- 	return 1;
- }
- 
-+static void __scsi_kill_request(struct request *req)
-+{
-+	struct scsi_cmnd *cmd = req->special;
-+	struct scsi_device *sdev = cmd->device;
-+
-+	cmd->result = DID_NO_CONNECT << 16;
-+	atomic_inc(&cmd->device->iorequest_cnt);
-+	sdev->device_busy--;
-+	__scsi_done(cmd);
-+}
-+
- /*
-  * Kill a request for a dead device
-  */
-@@ -1527,8 +1543,16 @@ static void scsi_request_fn(struct request_queue *q)
- 		 * accept it.
- 		 */
- 		req = elv_next_request(q);
--		if (!req || !scsi_dev_queue_ready(q, sdev))
-+		if (!req)
-+			break;
-+
-+		if (!scsi_dev_queue_ready(q, sdev)) {
-+			if (req->cmd_flags & REQ_FAILFAST) {
-+				scsi_kill_request(req, q);
-+				continue;
-+			}
- 			break;
-+		}
- 
- 		if (unlikely(!scsi_device_online(sdev))) {
- 			sdev_printk(KERN_ERR, sdev,
-@@ -1609,8 +1633,12 @@ static void scsi_request_fn(struct request_queue *q)
- 	 * later time.
- 	 */
- 	spin_lock_irq(q->queue_lock);
--	blk_requeue_request(q, req);
--	sdev->device_busy--;
-+	if (unlikely(req->cmd_flags & REQ_FAILFAST))
-+		__scsi_kill_request(req);
-+	else {
-+		blk_requeue_request(q, req);
-+		sdev->device_busy--;
-+	}
- 	if(sdev->device_busy == 0)
- 		blk_plug_device(q);
-  out:
