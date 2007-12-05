@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbXLELjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbXLELl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752298AbXLELjt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 06:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXLELjl
+	id S1752753AbXLELl7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 06:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbXLELlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 06:39:41 -0500
-Received: from main.gmane.org ([80.91.229.2]:52176 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbXLELjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 06:39:40 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frederik Himpe <fhimpe@telenet.be>
-Subject: Re: [PATCH v2] Fix hardware IRQ time accounting problem.
-Date: Wed, 5 Dec 2007 11:39:25 +0000 (UTC)
-Message-ID: <fj62ld$6eo$1@ger.gmane.org>
-References: <20071204055144.GR24243@bakeyournoodle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: artipc9.vub.ac.be
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+	Wed, 5 Dec 2007 06:41:52 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:38753 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbXLELlv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 06:41:51 -0500
+Date: Wed, 5 Dec 2007 12:41:50 +0100
+From: Jan Kara <jack@suse.cz>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, avuton@gmail.com, hancockr@shaw.ca,
+       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org, mrmacman_g4@mac.com,
+       dean@arctic.org, argggh@dolphinics.no, jengelh@computergmbh.de,
+       shdl@zakalwe.fi, vlobanov@speakeasy.net, drzeus-list@drzeus.cx,
+       strange@nsk.no-ip.org, dm.n9107@gmail.com, johannes@sipsolutions.net
+Subject: Re: [RFC v2] Documentation about unaligned memory access
+Message-ID: <20071205114150.GA13654@atrey.karlin.mff.cuni.cz>
+References: <20071129161523.E0C349D4B52@zog.reactivated.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071129161523.E0C349D4B52@zog.reactivated.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Dec 2007 16:51:44 +1100, Tony Breeds wrote:
+  A minor typo:
 
-> The commit fa13a5a1f25f671d084d8884be96fc48d9b68275 (sched: restore
-> deterministic CPU accounting on powerpc), unconditionally calls
-> update_process_tick() in system context.  In the deterministic
-> accounting case this is the correct thing to do.  However, in the
-> non-deterministic accounting case we need to not do this, and results in
-> the time accounted as hardware irq time being artificially elevated.
+... 
+> Avoiding unaligned accesses
+> ===========================
 > 
-> Also this patch collapses 2 consecutive '#ifdef
-> CONFIG_VIRT_CPU_ACCOUNTING' checks in time.h into one for neatness.
+> The easiest way to avoid unaligned access is to use the get_unaligned() and
+> put_unaligned() macros provided by the <asm/unaligned.h> header file.
+> 
+> Going back to an earlier example of code that potentially causes unaligned
+> access:
+> 
+> 	void myfunc(u8 *data, u32 value)
+> 	{
+> 		[...]
+> 		*((u32 *) data) = cpu_to_le32(value);
+> 		[...]
+> 	}
+> 
+> To avoid the unaligned memory access, you would rewrite it as follows:
+> 
+> 	void myfunc(u8 *data, u32 value)
+> 	{
+> 		[...]
+> 		value = cpu_to_le32(value);
+> 		put_unaligned(value, data);
+> 		[...]
+> 	}
+> 
+> The get_unaligned() macro works similarly. Assuming 'data' is a pointer to
+> memory and you wish to avoid unaligned access, its usage is as follows:
+> 
+> 	u32 value = get_unaligned(data);
+> 
+> These macros work work for memory accesses of any length (not just 32 bits as
+               ^^^^^^^^^
+remove one of them :)
 
-I can confirm this patch fixed the problem for me. Thank you!
-
+									Honza
 -- 
-Frederik Himpe
-
-
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
