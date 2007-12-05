@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbXLEOed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbXLEOeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753068AbXLEOed (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 09:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXLEOe0
+	id S1753704AbXLEOeq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 09:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbXLEOeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 09:34:26 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:46879 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbXLEOeZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 09:34:25 -0500
-Date: Wed, 05 Dec 2007 08:34:20 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [Timers SMP] can this machine be helped?
-In-reply-to: <Pine.LNX.4.64.0712050746500.29290@axis700.grange>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4756B6EC.1000103@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa./nzsMVb44+6c2x42WGfe04SPDrY@ifi.uio.no>
- <47560A98.9080700@shaw.ca> <Pine.LNX.4.64.0712050746500.29290@axis700.grange>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 5 Dec 2007 09:34:31 -0500
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:62876 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752267AbXLEOea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 09:34:30 -0500
+Date: Wed, 5 Dec 2007 17:35:18 +0300
+From: "Denis V. Lunev" <den@openvz.org>
+To: akpm@linux-foundation.org
+Cc: ebiederm@xmission.com, marcus@better.se, containers@lists.osdl.org,
+       devel@openvz.org, linux-kernel@vger.kernel.org, den@openvz.org
+Subject: [PATCH] lost content of /proc/sys/fs/binfmt_misc
+Message-ID: <20071205143518.GA24886@iris.sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
-> On Tue, 4 Dec 2007, Robert Hancock wrote:
-> 
->> Guennadi Liakhovetski wrote:
->>> I've got an old 2xP-II @ 400MHz Compaq AP400 system, which I'm still using.
->>> It has many peculiarities, so, I wouldn't be surprised if the answer to my
->>> questions would be "sorry, the patient is rather dead than alive".
->> How about disabling ACPI entirely, acpi=off on kernel command line? I wouldn't
->> be surprised to see a lot of ACPI stuff broken on an older machine like that..
-> 
-> See above - it's an SMP.
-> 
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski
-> 
+/proc/sys/fs/binfmt_misc dentry disappeared during d_revalidate.
+d_revalidate only dentries from shadowed one and below.
+http://bugzilla.kernel.org/show_bug.cgi?id=9504
 
-On a machine that old, you shouldn't need ACPI to detect both CPUs, it 
-should be able to use MPS..
+CC: Eric W. Biederman <ebiederm@xmission.com>
+CC: Marcus Better <marcus@better.se>
+Signed-off-by: Denis V. Lunev <den@openvz.org>
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index 5fccfe2..1497ac4 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -380,12 +380,17 @@ static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata *nd)
+ 	return 0;
+ }
+ 
+-static struct dentry_operations proc_dentry_operations =
++static struct dentry_operations proc_dentry_shadow_operations =
+ {
+ 	.d_delete	= proc_delete_dentry,
+ 	.d_revalidate	= proc_revalidate_dentry,
+ };
+ 
++static struct dentry_operations proc_dentry_operations =
++{
++	.d_delete	= proc_delete_dentry,
++};
++
+ /*
+  * Don't create negative dentries here, return -ENOENT by hand
+  * instead.
+@@ -394,6 +399,7 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+ {
+ 	struct inode *inode = NULL;
+ 	struct proc_dir_entry * de;
++	int use_shadow = 0;
+ 	int error = -ENOENT;
+ 
+ 	lock_kernel();
+@@ -406,8 +412,10 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+ 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
+ 				unsigned int ino;
+ 
+-				if (de->shadow_proc)
++				if (de->shadow_proc) {
+ 					de = de->shadow_proc(current, de);
++					use_shadow = 1;
++				}
+ 				ino = de->low_ino;
+ 				de_get(de);
+ 				spin_unlock(&proc_subdir_lock);
+@@ -423,6 +431,8 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+ 
+ 	if (inode) {
+ 		dentry->d_op = &proc_dentry_operations;
++		dentry->d_op = use_shadow ?
++			&proc_dentry_shadow_operations : dentry->d_parent->d_op;
+ 		d_add(dentry, inode);
+ 		return NULL;
+ 	}
