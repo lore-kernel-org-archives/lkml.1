@@ -1,57 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbXLELpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbXLELuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754324AbXLELpE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 06:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXLELoy
+	id S1752181AbXLELuf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 06:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXLELu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 06:44:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49748 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbXLELox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 06:44:53 -0500
-Date: Wed, 5 Dec 2007 12:44:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH 3/3] Subject: SCHED - Use a 2-d bitmap for searching
-	lowest-pri CPU
-Message-ID: <20071205114438.GC6143@elte.hu>
-References: <20071205025137.4494.18683.stgit@novell1.haskins.net> <20071205025538.4494.52380.stgit@novell1.haskins.net> <20071205093412.GA17911@elte.hu> <475634F8.BA47.005A.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475634F8.BA47.005A.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 5 Dec 2007 06:50:26 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:32018 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbXLELuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 06:50:25 -0500
+Date: Wed, 5 Dec 2007 12:50:23 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: [patch 1/3] driver core: Introduce default attribute groups.
+Message-ID: <20071205125023.50f4c478@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20071205114119.905238262@de.ibm.com>
+References: <20071205114119.905238262@de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is lot like default attributes for devices (and indeed,
+a lot of the code is lifted from there).
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-> However, that said, Steven's testing work on the mainline port of our 
-> series sums it up very nicely, so I will present that in lieu of 
-> digging up my -rt numbers unless you specifically want them too.  Here 
-> they are:
+---
+ drivers/base/driver.c  |   44 +++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/device.h |    2 ++
+ 2 files changed, 45 insertions(+), 1 deletion(-)
 
-i'm well aware of Steve's benchmarking efforts, but i dont think he's 
-finished with it and i'll let him present the results once he wants to 
-announce them. I asked about the effects of the "2-d" patch in isolation 
-and i'm not sure the numbers show that individual patch in action.
+Index: linux-2.6/drivers/base/driver.c
+===================================================================
+--- linux-2.6.orig/drivers/base/driver.c	2007-12-05 09:53:15.000000000 +0100
++++ linux-2.6/drivers/base/driver.c	2007-12-05 12:41:02.000000000 +0100
+@@ -151,6 +151,39 @@ void put_driver(struct device_driver * d
+ 	kobject_put(&drv->p->kobj);
+ }
+ 
++static int driver_add_groups(struct device_driver *drv,
++			     struct attribute_group **groups)
++{
++	int error = 0;
++	int i;
++	struct driver_private *priv = drv->p;
++
++	if (groups) {
++		for (i = 0; groups[i]; i++) {
++			error = sysfs_create_group(&priv->kobj, groups[i]);
++			if (error) {
++				while (--i >= 0)
++					sysfs_remove_group(&priv->kobj,
++							   groups[i]);
++				break;
++			}
++		}
++	}
++	return error;
++}
++
++static void driver_remove_groups(struct device_driver *drv,
++				 struct attribute_group **groups)
++{
++	int i;
++	struct driver_private *priv = drv->p;
++
++	if (groups)
++		for (i = 0; groups[i]; i++)
++			sysfs_remove_group(&priv->kobj, groups[i]);
++}
++
++
+ /**
+  *	driver_register - register driver with bus
+  *	@drv:	driver to register
+@@ -161,12 +194,20 @@ void put_driver(struct device_driver * d
+  */
+ int driver_register(struct device_driver * drv)
+ {
++	int ret;
++
+ 	if ((drv->bus->probe && drv->probe) ||
+ 	    (drv->bus->remove && drv->remove) ||
+ 	    (drv->bus->shutdown && drv->shutdown)) {
+ 		printk(KERN_WARNING "Driver '%s' needs updating - please use bus_type methods\n", drv->name);
+ 	}
+-	return bus_add_driver(drv);
++	ret = bus_add_driver(drv);
++	if (ret)
++		return ret;
++	ret = driver_add_groups(drv, drv->groups);
++	if (ret)
++		bus_remove_driver(drv);
++	return ret;
+ }
+ 
+ /**
+@@ -178,6 +219,7 @@ int driver_register(struct device_driver
+ 
+ void driver_unregister(struct device_driver * drv)
+ {
++	driver_remove_groups(drv, drv->groups);
+ 	bus_remove_driver(drv);
+ }
+ 
+Index: linux-2.6/include/linux/device.h
+===================================================================
+--- linux-2.6.orig/include/linux/device.h	2007-12-05 09:53:15.000000000 +0100
++++ linux-2.6/include/linux/device.h	2007-12-05 12:25:36.000000000 +0100
+@@ -126,6 +126,8 @@ struct device_driver {
+ 	int	(*suspend)	(struct device * dev, pm_message_t state);
+ 	int	(*resume)	(struct device * dev);
+ 
++	struct attribute_group **groups;
++
+ 	struct driver_private *p;
+ };
+ 
 
-in any case, you are preaching to the choir, i wrote the first 
-rt-overload code and it's been in -rt forever so it's not like you need 
-to sell me the concept ;-) But upstream quality requirements are 
-different from -rt and we need to examine all aspects of scheduling, not 
-just latency. In any case, i'll wait for the rest of Steve's numbers.
-
-	Ingo
