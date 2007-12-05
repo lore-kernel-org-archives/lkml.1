@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXLEOby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbXLEOed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbXLEOby (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 09:31:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXLEObr
+	id S1753068AbXLEOed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 09:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXLEOe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 09:31:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40075 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbXLEObq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 09:31:46 -0500
-Message-ID: <4756B50B.3060100@redhat.com>
-Date: Wed, 05 Dec 2007 08:26:19 -0600
-From: Mike McGrath <mmcgrath@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-References: <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204165502.0a8f695e@the-village.bc.nu> <20071204180237.GU19691@waste.org> <20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu> <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com> <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org>
-In-Reply-To: <20071204223345.GJ19691@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Dec 2007 09:34:26 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:46879 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815AbXLEOeZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 09:34:25 -0500
+Date: Wed, 05 Dec 2007 08:34:20 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [Timers SMP] can this machine be helped?
+In-reply-to: <Pine.LNX.4.64.0712050746500.29290@axis700.grange>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <4756B6EC.1000103@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa./nzsMVb44+6c2x42WGfe04SPDrY@ifi.uio.no>
+ <47560A98.9080700@shaw.ca> <Pine.LNX.4.64.0712050746500.29290@axis700.grange>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Dec 04, 2007 at 04:23:12PM -0600, Mike McGrath wrote:
->   
->> Matt Mackall wrote:
->>     
->>> On Tue, Dec 04, 2007 at 03:18:27PM -0600, Mike McGrath wrote:
->>>  
->>>       
->>>> Matt Mackall wrote:
->>>>    
->>>>         
->>>>> which would have been in v2.6.22-rc4 through the normal CVE process.
->>>>> The only other bits in there are wall time and utsname, so systems
->>>>> with no CMOS clock would behave repeatably. Can we find out what
->>>>> kernels are affected?
->>>>>
->>>>>
->>>>>      
->>>>>           
->>>> We can but it will likely take a few weeks to get a good sampling. UUID 
->>>> is unique in the db so when someone checks in with the same UUID, the 
->>>> old one gets overwritten.
->>>>    
->>>>         
->>> We can probably assume that for whatever reason the two things with
->>> duplicate UUID had the same seed. If not, we've got -much- bigger
->>> problems.
->>>  
->>>       
->> Ok, I think I see whats going on here. I have some further investigation 
->> to do but it seems that the way our Live CD installer works is causing 
->> these issues. I'm going to try to grab some live CD's and hardware to 
->> confirm but at this point it seems thats whats going on.
->>     
->
-> Alright, keep me posted. We probably need a scheme to make the initial
-> seed more robust regardless of what you find out
+Guennadi Liakhovetski wrote:
+> On Tue, 4 Dec 2007, Robert Hancock wrote:
+> 
+>> Guennadi Liakhovetski wrote:
+>>> I've got an old 2xP-II @ 400MHz Compaq AP400 system, which I'm still using.
+>>> It has many peculiarities, so, I wouldn't be surprised if the answer to my
+>>> questions would be "sorry, the patient is rather dead than alive".
+>> How about disabling ACPI entirely, acpi=off on kernel command line? I wouldn't
+>> be surprised to see a lot of ACPI stuff broken on an older machine like that..
+> 
+> See above - it's an SMP.
+> 
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> 
 
-Ok, whats going on here is an issue with how the smolt RPM installs the 
-UUID and how Fedora's Live CD does an install.  It's a complete false 
-alarm on the kernel side, sorry for the confusion.
+On a machine that old, you shouldn't need ACPI to detect both CPUs, it 
+should be able to use MPS..
 
-    -Mike
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
