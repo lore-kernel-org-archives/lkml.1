@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXLEKhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbXLEKk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbXLEKhk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:37:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXLEKhd
+	id S1754223AbXLEKk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 05:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXLEKkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:37:33 -0500
-Received: from ns.suse.de ([195.135.220.2]:38483 "EHLO mx1.suse.de"
+	Wed, 5 Dec 2007 05:40:21 -0500
+Received: from il.qumranet.com ([82.166.9.18]:58517 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbXLEKhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:37:32 -0500
-Date: Wed, 5 Dec 2007 11:37:28 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
-Cc: akpm@linux-foundation.org, greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 04/18] uio: nopage
-Message-ID: <20071205103728.GF1114@wotan.suse.de>
-References: <20071205071547.701344000@nick.local0.net> <20071205071627.143603000@nick.local0.net> <20071205110408.3eab9340@dilbert.local> <20071205101042.GC1114@wotan.suse.de> <20071205112500.2c97035f@dilbert.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071205112500.2c97035f@dilbert.local>
-User-Agent: Mutt/1.5.9i
+	id S1751071AbXLEKkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 05:40:20 -0500
+Message-ID: <47568011.1080409@qumranet.com>
+Date: Wed, 05 Dec 2007 12:40:17 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: npiggin@suse.de
+CC: akpm@linux-foundation.org, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/18] kvm: nopage
+References: <20071205071547.701344000@nick.local0.net> <20071205071627.251516000@nick.local0.net>
+In-Reply-To: <20071205071627.251516000@nick.local0.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 11:25:00AM +0100, Hans-Jürgen Koch wrote:
-> Am Wed, 5 Dec 2007 11:10:42 +0100
-> schrieb Nick Piggin <npiggin@suse.de>:
-> 
-> > On Wed, Dec 05, 2007 at 11:04:08AM +0100, Hans-Jürgen Koch wrote:
-> > > Am Wed, 05 Dec 2007 18:15:51 +1100
-> > > schrieb npiggin@suse.de:
-> > > 
-> > > > Convert uio from nopage to fault.
-> > > > 
-> > > > Signed-off-by: Nick Piggin <npiggin@suse.de>
-> > > > Cc: greg@kroah.com
-> > > 
-> > > Hi Nick,
-> > > could you please add me to Cc: for UIO stuff:
-> > > 
-> > > Cc: hjk@linutronix.de
-> > 
-> > Sure, I'll try to remember in future. It would be helpful if you could
-> > add an entry to MAINTAINERS?
-> 
-> Well, although I wrote a lot of UIO code and feel a bit responsible for
-> it, I don't know if I can call myself an UIO maintainer. ATM, I think
-> it's considered "driver core" and is therefore in Greg's domain.
+npiggin@suse.de wrote:
+> Convert KVM from nopage to fault.
+>
+>   
 
-If you're interested in reviewing patches for it, I think that's
-valuable enough that we don't have to worry about formal titles ;)
+> @@ -3111,27 +3105,21 @@ out:
+>  	return r;
+>  }
+>  
+> -static struct page *kvm_vm_nopage(struct vm_area_struct *vma,
+> -				  unsigned long address,
+> -				  int *type)
+> +static int kvm_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+>  	struct kvm *kvm = vma->vm_file->private_data;
+> -	unsigned long pgoff;
+>  	struct page *page;
+>  
+> -	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+> -	page = gfn_to_page(kvm, pgoff);
+> +	page = gfn_to_page(kvm, vmf->pgoff);
+>  	if (!page)
+> -		return NOPAGE_SIGBUS;
+> +		return VM_FAULT_SIGBUS;
+>  	get_page(page);
+> -	if (type != NULL)
+> -		*type = VM_FAULT_MINOR;
+> -
+> -	return page;
+> +	vmf->page = page;
+> +	return 0;
+>  }
+>  
+>   
 
-Also, you can have more than one email address for a given MAINTAINERS
-entry. So I'm sure Greg wouldn't mind if you were there too.
+This part has changed in kvm.git, so this won't apply to -mm.  I ported 
+it and applied to my tree, so it should arrive in -mm when Andrew 
+re-fetches.
 
-Thanks,
-Nick
+-- 
+error compiling committee.c: too many arguments to function
 
