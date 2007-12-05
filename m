@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXLEWQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbXLEWbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbXLEWQx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 17:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXLEWQq
+	id S1753548AbXLEWbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 17:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbXLEWbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 17:16:46 -0500
-Received: from ccs17.jlab.org ([129.57.35.82]:59062 "EHLO ccs17.jlab.org"
+	Wed, 5 Dec 2007 17:31:31 -0500
+Received: from rtr.ca ([76.10.145.34]:3682 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751794AbXLEWQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 17:16:45 -0500
-Message-ID: <47572353.4040606@jlab.org>
-Date: Wed, 05 Dec 2007 17:16:51 -0500
-From: Jie Chen <chen@jlab.org>
-Organization: Jefferson Lab
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	id S1752161AbXLEWba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 17:31:30 -0500
+Message-ID: <475726C0.9060803@rtr.ca>
+Date: Wed, 05 Dec 2007 17:31:28 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
-References: <20071204131707.GA4232@elte.hu> <4756C3D9.9030107@jlab.org> <20071205154014.GA6491@elte.hu> <4756D058.1070500@jlab.org> <20071205164723.GA25641@elte.hu> <4756E44E.8080607@jlab.org> <20071205200343.GA14570@elte.hu> <475708A7.4030708@jlab.org> <20071205204645.GC25694@elte.hu> <47570F83.6040601@jlab.org> <20071205210222.GA30089@elte.hu>
-In-Reply-To: <20071205210222.GA30089@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Radoslaw Szkodzinski <lkml@astralstorm.puszkin.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [feature] automatically detect hung TASK_UNINTERRUPTIBLE tasks
+References: <20071202185945.GA25990@elte.hu>	<20071202114152.3bf4332d@laptopd505.fenrus.org>	<20071202200953.GA23994@one.firstfloor.org>	<20071202202602.GA16480@elte.hu>	<20071202204725.GA25891@one.firstfloor.org>	<20071202144331.6abf1289@laptopd505.fenrus.org>	<20071203000741.GB26636@one.firstfloor.org>	<20071202165913.3eaebee6@laptopd505.fenrus.org>	<20071203095501.GB28560@one.firstfloor.org>	<20071203111520.33ed2139@astralstorm.puszkin.org>	<20071203102715.GC28560@one.firstfloor.org> <20071203072328.371d0b00@laptopd505.fenrus.org>
+In-Reply-To: <20071203072328.371d0b00@laptopd505.fenrus.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jie Chen <chen@jlab.org> wrote:
+Arjan van de Ven wrote:
+> On Mon, 3 Dec 2007 11:27:15 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
->>> sorry to be dense, but could you give me instructions how i could 
->>> remove the affinity mask and test the "barrier overhead" myself? I 
->>> have built "pthread_sync" and it outputs numbers for me - which one 
->>> would be the barrier overhead: Reference_time_1 ?
->> To disable affinity, do configure --enable-public-release 
->> --disable-thread_affinity. You should see barrier overhead like the 
->> following: Computing BARRIER time
+>>> Kernel waiting 2 minutes on TASK_UNINTERRUPTIBLE is certainly
+>>> broken.
+>> What should it do when the NFS server doesn't answer anymore or 
+>> when the network to the SAN RAID array located a few hundred KM away
+>> develops some hickup?  Or just the SCSI driver decides to do lengthy
+>> error recovery  -- you could argue that is broken if it takes longer 
+>> than 2 minutes, but in practice these things are hard to test
+>> and to fix.
 >>
->> Sample_size  Average     Min    Max          S.D.        Outliers
->>  20      19.486162   19.482250   19.491400    0.002740      0
->>
->> BARRIER time =        19.486162 microseconds +/- 0.005371
->> BARRIER overhead =    8.996257 microseconds +/- 0.006575
 > 
-> ok, i did that and rebuilt. I also did "make check" and got 
-> src/pthread_sync which i can run. The only thing i'm missing, if i run 
-> src/pthread_sync, it outputs "PARALLEL time":
-> 
->  PARALLEL time =                           22.486103 microseconds +/- 3.944821
->  PARALLEL overhead =                       10.638658 microseconds +/- 10.854154
-> 
-> not "BARRIER time". I've re-read the discussion and found no hint about 
-> how to build and run a barrier test. Either i missed it or it's so 
-> obvious to you that you didnt mention it :-)
-> 
-> 	Ingo
+> the scsi layer will have the IO totally aborted within that time anyway;
+> the retry timeout for disks is 30 seconds after all.
+..
 
-Hi, Ingo:
-
-Did you do configure --enable-public-release? My qmt is for qcd 
-calculation (one type of physics code). Without the above flag one can 
-only test PARALLEL overhead. Actually the PARALLEL benchmark has the 
-same behavior as the BARRIER. Thanks.
-
-
-###############################################
-Jie Chen
-Scientific Computing Group
-Thomas Jefferson National Accelerator Facility
-12000, Jefferson Ave.
-Newport News, VA 23606
-
-(757)269-5046 (office) (757)269-6248 (fax)
-chen@jlab.org
-###############################################
+Mmm.. but the SCSI layer may do many retries, each with 30sec timeouts..
