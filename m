@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbXLEJbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbXLEJcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753216AbXLEJbx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 04:31:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXLEJbq
+	id S1753542AbXLEJcP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 04:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbXLEJb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 04:31:46 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:48631 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750849AbXLEJbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 04:31:45 -0500
-Date: Wed, 5 Dec 2007 10:31:40 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] x86: Unify include/asm-x86/linkage_[32|64].h
-Message-ID: <20071205093139.GJ15974@stusta.de>
-References: <1196801629.10408.26.camel@brick> <20071204213247.GA11216@elte.hu> <1196806868.10408.33.camel@brick> <20071204222717.GA25974@elte.hu> <20071204224543.GH15974@stusta.de> <1196809075.10408.42.camel@brick> <20071204231519.GI15974@stusta.de> <20071205001945.GB10763@c2.user-mode-linux.org>
+	Wed, 5 Dec 2007 04:31:58 -0500
+Received: from elvis.franken.de ([193.175.24.41]:38907 "EHLO elvis.franken.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751391AbXLEJb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 04:31:57 -0500
+Date: Wed, 5 Dec 2007 10:25:06 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Andy Whitcroft <apw@shadowen.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] SC26XX: New serial driver for SC2681 uarts
+Message-ID: <20071205092506.GA6691@alpha.franken.de>
+References: <20071202194346.36E3FDE4C4@solo.franken.de> <20071203155317.772231f9.akpm@linux-foundation.org> <20071204234112.GA12352@alpha.franken.de> <20071204192738.54e79a97.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071205001945.GB10763@c2.user-mode-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071204192738.54e79a97.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 07:19:45PM -0500, Jeff Dike wrote:
-> On Wed, Dec 05, 2007 at 12:15:19AM +0100, Adrian Bunk wrote:
-> > UML can't switch to the regparm(3) convention on i386 since it links 
-> > with userspace code, so if assembler code uses this calling convention 
-> > we need the C prototype of it annotated accordingly.
+On Tue, Dec 04, 2007 at 07:27:38PM -0800, Andrew Morton wrote:
+> grumble.
 > 
-> We're not talking about a global calling convention switch, right?
-> We're talking about selected functions only, in which case, the fact
-> that UML links against libc is irrelevant.
+> These:
+> 
+> > +#define READ_SC(p, r)        readb((p)->membase + RD_##r)
+> > +#define WRITE_SC(p, r, v)    writeb((v), (p)->membase + WR_##r)
+> 
+> and these:
+> 
+> > +#define READ_SC_PORT(p, r)     read_sc_port(p, RD_PORT_##r)
+> > +#define WRITE_SC_PORT(p, r, v) write_sc_port(p, WR_PORT_##r, v)
+> 
+> really don't need to exist.  All they do is make the code harder to read.
 
-The non-UML i386 switched to globally using the regparm(3) calling 
-convention in 2.6.20.
+but they make the code safer. The chip has common register and port
+registers, which are randomly splattered over the address range. And
+some of them are read only, some write only. Read only and Write
+only register live at the same register offset and their function
+usually doesn't have anything in common. By using these macros I'll
+get compile errors when doing a READ_SC from a write only register
+and vice versa. I will also get compile errors, if I try to access a
+common register via READ_SC_PORT/WRITE_SC_PORT. 
 
-> 				Jeff
+If there is a better way to get more readable code for you and
+the safety I'd like, just tell me.
 
-cu
-Adrian
+> Think of the poor reader who sees this:
+> 
+> 		status = READ_SC_PORT(port, SR);
+> 
+> and then goes madly searching for "SR".
+
+which he then finds by this name in the data sheet. All the register
+names are named as close to the datasheet as possible. And I consider
+consulting datasheets when looking at drivers a pretty good idea.
+
+> Code is written once and is read a thousand times.  Please optimise for
+> reading.
+
+it's no big deal to change that, but is getting bitten by stupid chips
+worth it ? I'd prefer to get a compile error than debugging a runtime
+error.
+
+Thomas.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Crap can work. Given enough thrust pigs will fly, but it's not necessary a
+good idea.                                                [ RFC1925, 2.3 ]
