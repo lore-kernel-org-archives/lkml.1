@@ -1,194 +1,1272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbXLET4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbXLETwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbXLET4X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 14:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXLET4O
+	id S1756822AbXLETwJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 14:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbXLETts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 14:56:14 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:60073 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbXLET4M (ORCPT
+	Wed, 5 Dec 2007 14:49:48 -0500
+Received: from andromeda.dapyr.net ([206.212.254.10]:52476 "EHLO
+	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756497AbXLETtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 14:56:12 -0500
-In-Reply-To: <6306.1196874660@redhat.com>
-References: <6306.1196874660@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A0BB0F8C-9628-4B6C-A2F7-F3870B487D4E@oracle.com>
-Cc: Peter Staubach <staubach@redhat.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: How to manage shared persistent local caching (FS-Cache) with NFS?
-Date: Wed, 5 Dec 2007 14:54:25 -0500
-To: David Howells <dhowells@redhat.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 5 Dec 2007 14:49:45 -0500
+Date: Wed, 5 Dec 2007 15:47:08 -0400
+From: Konrad Rzeszutek <konrad@darnok.org>
+To: Doug Maxey <dwm@enoyolf.org>
+Cc: darnok@68k.org, linux-kernel@vger.kernel.org, pjones@redhat.com,
+       konradr@redhat.com, konradr@linux.vnet.ibm.com, greg@kroah.com,
+       randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
+       mike.anderson@us.ibm.com, dwm@austin.ibm.com,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH] Add iSCSI IBFT support (v0.4.2)
+Message-ID: <20071205194708.GB1801@andromeda.dapyr.net>
+References: <20071128233422.GD6736@andromeda.dapyr.net> <20071205004418.GH6736@andromeda.dapyr.net> <22081.1196824331@bebe.enoyolf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <22081.1196824331@bebe.enoyolf.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 5, 2007, at 12:11 PM, David Howells wrote:
-> Okay...  I'm getting to the point where I want to release my local  
-> caching
-> patches again and have NFS work with them.  This means making NFS  
-> mounts share
-> or not share appropriately - something that's engendered a fair bit of
-> argument.
->
-> So I'd like to solicit advice on how best to deal with this problem.
->
-> Let me explain the problem in more detail.
->
->
-> ================
-> CURRENT PRACTICE
-> ================
->
-> As the kernel currently stands, coherency is ignored for mounts  
-> that have
-> slightly different combinations of parameters, even if these  
-> parameters just
-> affect the properties of network "connection" used or just mark a  
-> superblock
-> as being read-only.
->
-> Consider the case of a file remotely available by NFS.  Imagine the  
-> client sees
-> three different views of this file (they could be by three  
-> overlapping mounts,
-> or by three hardlinks or some combination thereof).
->
-> This is how NFS currently operates without any superblock sharing:
->
-> 				+---------+
->     Object on server --->	|	  |
-> 				|  inode  |
-> 				|	  |
-> 				+---------+
-> 				    /|\
-> 				   / | \
-> 				  /  |	\
-> 				 /   |	 \
-> 				/    |	  \
-> 			       /     |	   \
-> 			      /	     |	    \
-> 			     /	     |	     \
-> 			    /	     |	      \
-> 			   /	     |	       \
-> 			  /	     |		\
-> 			 |	     |		 |
-> 			 |	     |		 |
->  :::::::::::::NFS::::::::|:::::::::::|:::::::::::|:::::::::::::::::::: 
-> :::::::::
-> 			 |	     |		 |
-> 			 |	     |		 |
-> 			 |	     |		 |
->    +---------+	    +---------+	     |		 |
->    |	     |	    |	      |	     |		 |
->    | mount 1 |----->| super 1 |	     |		 |
->    |	     |	    |	      |	     |		 |
->    +---------+	    +---------+	     |		 |
-> 				     |		 |
-> 				     |		 |
->    +---------+			+---------+	 |
->    |	     |			|	  |	 |
->    | mount 2 |----------------->| super 2 |	 |
->    |	     |			|	  |	 |
->    +---------+			+---------+	 |
-> 						 |
-> 						 |
->    +---------+				    +---------+
->    |	     |				    |	      |
->    | mount 3 |----------------------------->| super 3 |
->    |	     |				    |	      |
->    +---------+				    +---------+
->
-> Each view of the file on the client winds up with a separate inode  
-> in a
-> separate superblock and with a separate pagecache.  As far as the  
-> client kernel
-> is concerned, they *are* three different files.  Any incoherency  
-> effects are
-> ignored by the kernel and if they cause a userspace application a  
-> problem,
-> that's just too bad.
->
-> Generally, however, this is not a problem because:
->
->   (a) an application is unlikely to be attempting to manipulate  
-> multiple views
->       of a file simultaneously and
->
->   (b) cross-view hard links haven't been and aren't used that much.
->
->
-> =============================
-> POSSIBLE FS-CACHE SCENARIO #1
-> =============================
->
-> However, now we're introducing persistent local caching into the  
-> mix.  That means we can no longer ignore such remote possibilities  
-> - they are possible, therefore we have to deal with them, whether  
-> we like it or not.
+On Tue, Dec 04, 2007 at 09:12:11PM -0600, Doug Maxey wrote:
+> Overall, looks nice.  Good work.
 
+Thank you.
 
-I don't see how persistent local caching means we can no longer  
-ignore (a) and (b) above.  Can you amplify this a bit?  Nothing you  
-say in the rest of your proposal convinces me that having multiple  
-caches for the same export is really more than a theoretical issue.
+> 
+> comments inline below...
+> 
+> On Tue, 04 Dec 2007 20:44:19 -0400, darnok@68k.org wrote:
+> > On Wed, Nov 28, 2007 at 07:34:22PM -0400, Konrad Rzeszutek wrote:
+> > >
+> > > This patch adds /sysfs/firmware/ibft/[initiator|targetX|ethernetX]
+> > > directories along with text properties which export the the iSCSI Boot
+> > > Firmware Table (iBFT) structure.
+> > >
+> > > What is iSCSI Boot Firmware Table? It is a mechanism for the iSCSI
+> > > tools to extract from the machine NICs the iSCSI connection information
+> > > so that they can automagically mount the iSCSI share/target. Currently
+> > > the iSCSI information is hard-coded in the initrd.
+> > >
+> > > For full details of the IBFT structure please take a look at:
+> > > ftp://ftp.software.ibm.com/systems/support/system_x_pdf/ibm_iscsi_boot_firmware_table_v1.02.pdf
+> >
+> > Here is an updated version which provides an attribute symlink (in the
+> > ethernetX directory) called 'device' to the NIC device, instead of
+> > exporting a 'pci_bdf' file which had the "bus:slot:func" values.
+> >
+> > Review would be much appreciated.
 
-Frankly, the reason why admins mount exports multiple times is  
-precisely because they want different applications to access the  
-files in different ways.  Admins *want* one mount point to be  
-available ro, and another rw.  They *want* one mount point to use  
-'noac' and another not to.  They *want* multiple sockets, more RPC  
-slots, and unique caches for different applications.  No one would go  
-to the trouble of mounting an export again, using different options,  
-unless that's precisely the behavior that they wanted.
+This next version (0.4.2) includes: much better error unrolling
+when kobject registration fails, fixes from Doug's review, and uses the
+'kset_create_and_add' API that Greg KH posted. It has been tested on
+todays 2.6.24-rc4-gkh tree.
 
-This is actually a feature of NFS.  It's used as a standard part of  
-production environments, for example, when running Oracle databases  
-on NFS.  One mount point is rw and is used by the database engine.   
-Another mount point is ro and is used for back-up utilities, like RMAN.
+Signed-off-by: Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
 
-Another example is local software distribution.  One mount point is  
-ro, and is accessed by normal users.  Another mount point accesses  
-the same export rw, and is used by administrators who provide updates  
-for the software.
-
-As useful as the feature is, one can also argue that mounting the  
-same export multiple times is infrequent in most normal use cases.   
-Practically speaking, why do we really need to worry about it?
-
-The real problem here is that the NFS protocol itself does not  
-support strong cache coherence.  I don't see why the Linux kernel  
-must fix that problem.
-
-The only real problem with the first scenario is that you may have  
-more than one copy of a file in the persistent cache.  How often will  
-that be the case?  Since the local persistence cache is probably disk- 
-based and thus large relative to memory, what's the problem with  
-using a little extra space?
-
-The problems you ascribe to your second and third caching scenarios  
-(deadlocking and reconnection) are, however, real and substantial.   
-You don't have these issues when caching each mount point separately,  
-right?
-
-It seems to me that implementing the first scenario is (a)  
-straightforward, (b) has fewer runtime risks (ie deadlocks), (c)  
-doesn't take away features that some people still use, and (d) solves  
-more than 80% of the issues here (80/20 rule of thumb).
-
-Lastly, there's already a mount option that allows admins to control  
-whether the page and attribute caches are shared -- "sharecache".  Is  
-this mount option not adequate for persistent caching?
-
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+diff --git a/Documentation/ABI/testing/sysfs-ibft b/Documentation/ABI/testing/sysfs-ibft
+new file mode 100644
+index 0000000..4898740
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-ibft
+@@ -0,0 +1,31 @@
++What:		/sys/firmware/ibft/initiator
++Date:		November 2007
++Contact:	Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++Description:	The /sys/firmware/ibft/initiator directory will contain
++		files that expose the iSCSI Boot Firmware Table initiator data.
++		Usually this contains the Initiator name.
++
++What:		/sys/firmware/ibft/targetX
++Date:		November 2007
++Contact:	Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++Description:	The /sys/firmware/ibft/targetX directory will contain
++		files that expose the iSCSI Boot Firmware Table target data.
++		Usually this contains the target's IP address, boot LUN,
++		target name, and what NIC it is associated with. It can also
++		contain the CHAP name (and password), the reverse CHAP
++		name (and password)
++
++What:		/sys/firmware/ibft/ethernetX
++Date:		November 2007
++Contact:	Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++Description:	The /sys/firmware/ibft/ethernetX directory will contain
++		files that expose the iSCSI Boot Firmware Table NIC data.
++		This can this can the IP address, MAC, and gateway of the NIC.
++
++What:		/sys/firmware/ibft/extensionX
++Date:		November 2007
++Contact:	Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++Description:	The /sys/firmware/ibft/extensionX directory will contain
++		files that expose the iSCSI Boot Firmware Table extension data.
++		The extended data structure is not supported so there would be
++		no files in this directory.
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index e1e18c3..7c36a28 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -39,6 +39,7 @@
+ #include <linux/efi.h>
+ #include <linux/init.h>
+ #include <linux/edd.h>
++#include <linux/iscsi_ibft.h>
+ #include <linux/nodemask.h>
+ #include <linux/kexec.h>
+ #include <linux/crash_dump.h>
+@@ -148,6 +149,20 @@ static inline void copy_edd(void)
+ }
+ #endif
+ 
++#if defined(CONFIG_ISCSI_IBFT_FIND)
++static void __init reserve_ibft_region(void)
++{
++	unsigned int ibft_len;
++
++	ibft_len = find_ibft();
++	if (ibft_len)
++		reserve_bootmem((unsigned int)ibft_phys,
++			PAGE_ALIGN(ibft_len));
++}
++#else
++static void __init reserve_ibft_region(void) { }
++#endif
++
+ int __initdata user_defined_memmap = 0;
+ 
+ /*
+@@ -496,6 +511,7 @@ void __init setup_bootmem_allocator(void)
+ 	}
+ #endif
+ 	reserve_crashkernel();
++	reserve_ibft_region();
+ }
+ 
+ /*
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 30d94d1..d5b73c6 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -33,6 +33,7 @@
+ #include <linux/acpi.h>
+ #include <linux/kallsyms.h>
+ #include <linux/edd.h>
++#include <linux/iscsi_ibft.h>
+ #include <linux/mmzone.h>
+ #include <linux/kexec.h>
+ #include <linux/cpufreq.h>
+@@ -198,6 +199,20 @@ static inline void copy_edd(void)
+ }
+ #endif
+ 
++#if defined(CONFIG_ISCSI_IBFT_FIND)
++static void __init reserve_ibft_region(void)
++{
++	unsigned int ibft_len;
++
++	ibft_len = find_ibft();
++	if (ibft_len)
++		reserve_bootmem_generic((unsigned long)ibft_phys,
++			PAGE_ALIGN(ibft_len));
++}
++#else
++static void __init reserve_ibft_region(void) { }
++#endif
++
+ #ifdef CONFIG_KEXEC
+ static void __init reserve_crashkernel(void)
+ {
+@@ -403,6 +418,7 @@ void __init setup_arch(char **cmdline_p)
+ 	}
+ #endif
+ 	reserve_crashkernel();
++	reserve_ibft_region();
+ 	paging_init();
+ 
+ #ifdef CONFIG_PCI
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index 05f02a3..e2f7208 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -93,4 +93,23 @@ config DMIID
+ 	  information from userspace through /sys/class/dmi/id/ or if you want
+ 	  DMI-based module auto-loading.
+ 
++config ISCSI_IBFT_FIND
++	bool "iSCSI Boot Firmware Table Attributes"
++	default n
++	help
++	  This option enables the kernel to find the region of memory
++	  in which the ISCSI Boot Firmware Table (iBFT) resides. This
++	  is necessary for iSCSI Boot Firmware Table Attributes module to work
++	  properly.
++
++config ISCSI_IBFT
++	tristate "iSCSI Boot Firmware Table Attributes module"
++	depends on ISCSI_IBFT_FIND
++	default	n
++	help
++	  This option enables support for detection and exposing of iSCSI
++	  Boot Firmware Table (iBFT) via sysfs to userspace. If you wish to
++	  detect iSCSI boot parameters dynamically during system boot, say Y.
++	  Otherwise, say N.
++
+ endmenu
+diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
+index 8d4ebc8..4c91471 100644
+--- a/drivers/firmware/Makefile
++++ b/drivers/firmware/Makefile
+@@ -8,3 +8,5 @@ obj-$(CONFIG_EFI_PCDP)		+= pcdp.o
+ obj-$(CONFIG_DELL_RBU)          += dell_rbu.o
+ obj-$(CONFIG_DCDBAS)		+= dcdbas.o
+ obj-$(CONFIG_DMIID)		+= dmi-id.o
++obj-$(CONFIG_ISCSI_IBFT_FIND)	+= iscsi_ibft_find.o
++obj-$(CONFIG_ISCSI_IBFT)	+= iscsi_ibft.o
+diff --git a/drivers/firmware/iscsi_ibft.c b/drivers/firmware/iscsi_ibft.c
+new file mode 100644
+index 0000000..cf69092
+--- /dev/null
++++ b/drivers/firmware/iscsi_ibft.c
+@@ -0,0 +1,807 @@
++/*
++ *  Copyright 2007 Red Hat, Inc.
++ *  by Peter Jones <pjones@redhat.com>
++ *  Copyright 2007 IBM, Inc.
++ *  by Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++ *
++ * This code exposes the iSCSI Boot Format Table to userland via sysfs.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License v2.0 as published by
++ * the Free Software Foundation
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/init.h>
++#include <linux/stat.h>
++#include <linux/err.h>
++#include <linux/ctype.h>
++#include <linux/slab.h>
++#include <linux/limits.h>
++#include <linux/device.h>
++#include <linux/pci.h>
++#include <linux/blkdev.h>
++#include <linux/iscsi_ibft.h>
++
++#define IBFT_ISCSI_VERSION  "0.4.2"
++#define IBFT_ISCSI_DATE	 "2007-Dec-05"
++
++MODULE_AUTHOR("Peter Jones <pjones@redhat.com> and \
++Konrad Rzeszutek <konradr@us.ibm.com>");
++MODULE_DESCRIPTION("sysfs interface to BIOS iBFT information");
++MODULE_LICENSE("GPL");
++MODULE_VERSION(IBFT_ISCSI_VERSION);
++
++/*
++ * The kobject different types and its names.
++ *
++*/
++enum ibft_id {
++    id_reserved = 0, /* Should never show up */
++    id_control = 1, /* Ditto */
++    id_initiator = 2,
++    id_nic = 3,
++    id_target = 4,
++    id_extensions, /* We don't support. */
++};
++
++static const char *ibft_id_names[] =
++	{"reserved", "control", "initiator", "ethernet%d",
++	"target%d", "extension%d", NULL};
++
++/*
++ * The text attributes names for each of the kobjects.
++*/
++enum ibft_eth_properties_enum {
++	ibft_eth_index,
++	ibft_eth_flags,
++	ibft_eth_ip_addr,
++	ibft_eth_subnet_mask,
++	ibft_eth_origin,
++	ibft_eth_gateway,
++	ibft_eth_primary_dns,
++	ibft_eth_secondary_dns,
++	ibft_eth_dhcp,
++	ibft_eth_vlan,
++	ibft_eth_mac,
++	/* ibft_eth_pci_bdf - this is replaced by link to the device itself. */
++	ibft_eth_hostname,
++	ibft_eth_end_marker};
++
++static const char *ibft_eth_properties[] =
++	{"index", "flags", "ip-addr", "subnet-mask", "origin", "gateway",
++	"primary-dns", "secondary-dns", "dhcp", "vlan", "mac", "hostname",
++	NULL};
++
++enum ibft_tgt_properties_enum {
++	ibft_tgt_index,
++	ibft_tgt_flags,
++	ibft_tgt_ip_addr,
++	ibft_tgt_port,
++	ibft_tgt_lun,
++	ibft_tgt_chap_type,
++	ibft_tgt_nic_assoc,
++	ibft_tgt_name,
++	ibft_tgt_chap_name,
++	ibft_tgt_chap_secret,
++	ibft_tgt_rev_chap_name,
++	ibft_tgt_rev_chap_secret,
++	ibft_tgt_end_marker};
++
++static const char *ibft_tgt_properties[] =
++	{"index", "flags", "ip-addr", "port", "lun", "chap-type", "nic-assoc",
++	"target-name", "chap-name", "chap-secret", "rev-chap-name",
++	"rev-chap-name-secret", NULL};
++
++enum ibft_initiator_properties_enum {
++	ibft_init_index,
++	ibft_init_flags,
++	ibft_init_isns_server,
++	ibft_init_slp_server,
++	ibft_init_pri_radius_server,
++	ibft_init_sec_radius_server,
++	ibft_init_initiator_name,
++	ibft_init_end_marker};
++
++static const char *ibft_initiator_properties[] =
++	{"index", "flags", "isns-server", "slp-server", "pri-radius-server",
++	"sec-radius-server", "initiator-name", NULL};
++
++static LIST_HEAD(ibft_attr_list);
++static LIST_HEAD(ibft_kobject_list);
++
++static const char nulls[16];
++static struct ibft_table_header *ibft_device;
++
++/*
++ * Helper functions to parse data properly.
++ */
++static ssize_t sprintf_ipaddr(char *buf, u8 *ip)
++{
++	if (ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
++	    ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 &&
++	    ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff) {
++		/*
++		 * IPV4
++		 */
++		return sprintf(buf, "%d.%d.%d.%d\n", ip[12],
++			ip[13], ip[14], ip[15]);
++	} else
++		return 0;
++}
++
++static ssize_t sprintf_string(char *str, int len, char *buf)
++{
++	return sprintf(str, "%.*s\n", len, buf);
++}
++
++/*
++ * Helper function to verify the IBFT header.
++ */
++static int ibft_verify_hdr(struct ibft_hdr *hdr, int id, int length)
++{
++#define IBFT_VERIFY_HDR_FIELD(val, name) \
++	if (hdr->val != val) { \
++		printk(KERN_ERR \
++			"error, in IBFT structure (%s) expected %d but" \
++			" found %d\n", \
++			name, val, hdr->val); \
++		return -ENODEV; \
++	}
++	IBFT_VERIFY_HDR_FIELD(id, "ID");
++	IBFT_VERIFY_HDR_FIELD(length, "Length");
++#undef IBFT_VERIFY_HDR_FIELD
++	return 0;
++}
++
++static void ibft_release(struct kobject *kobj)
++{
++	struct ibft_kobject *ibft =
++		container_of(kobj, struct ibft_kobject, kobj);
++	kfree(ibft);
++}
++
++/*
++ *  Routines for reading of the iBFT data in a human readable fashion.
++ */
++ssize_t ibft_attr_show_initiator(struct ibft_kobject *entry,
++				 struct ibft_attribute *attr,
++				 char *buf)
++{
++	struct ibft_initiator *initiator = entry->initiator;
++	void *ibft_loc = entry->header;
++	char *str = buf;
++
++	if (!initiator)
++		return 0;
++
++	switch (attr->type) {
++	case ibft_init_index:
++		str += sprintf(str, "%d\n", initiator->hdr.index);
++		break;
++	case ibft_init_flags:
++		str += sprintf(str, "%d\n", initiator->hdr.flags);
++		break;
++	case ibft_init_isns_server:
++		str += sprintf_ipaddr(str, initiator->isns_server);
++		break;
++	case ibft_init_slp_server:
++		str += sprintf_ipaddr(str, initiator->slp_server);
++		break;
++	case ibft_init_pri_radius_server:
++		str += sprintf_ipaddr(str, initiator->pri_radius_server);
++		break;
++	case ibft_init_sec_radius_server:
++		str += sprintf_ipaddr(str, initiator->sec_radius_server);
++		break;
++	case ibft_init_initiator_name:
++		str += sprintf_string(str, initiator->initiator_name_len,
++		(char *)ibft_loc + initiator->initiator_name_off);
++		break;
++	default:
++		break;
++	}
++
++	return str - buf;
++}
++
++ssize_t ibft_attr_show_nic(struct ibft_kobject *entry,
++			   struct ibft_attribute *attr,
++			   char *buf)
++{
++	struct ibft_nic *nic = entry->nic;
++	void *ibft_loc = entry->header;
++	char *str = buf;
++	char *mac;
++
++	if (!nic)
++		return 0;
++
++	switch (attr->type) {
++	case ibft_eth_index:
++		str += sprintf(str, "%d\n", nic->hdr.index);
++		break;
++	case ibft_eth_flags:
++		str += sprintf(str, "%d\n", nic->hdr.flags);
++		break;
++	case ibft_eth_ip_addr:
++		str += sprintf_ipaddr(str, nic->ip_addr);
++		break;
++	case ibft_eth_subnet_mask:
++		str += sprintf(str, "%d\n", nic->subnet_mask_prefix);
++		break;
++	case ibft_eth_origin:
++		str += sprintf(str, "%d\n", nic->origin);
++		break;
++	case ibft_eth_gateway:
++		str += sprintf_ipaddr(str, nic->gateway);
++		break;
++	case ibft_eth_primary_dns:
++		str += sprintf_ipaddr(str, nic->primary_dns);
++		break;
++	case ibft_eth_secondary_dns:
++		str += sprintf_ipaddr(str, nic->secondary_dns);
++		break;
++	case ibft_eth_dhcp:
++		str += sprintf_ipaddr(str, nic->dhcp);
++		break;
++	case ibft_eth_vlan:
++		str += sprintf(str, "%d\n", nic->vlan);
++		break;
++	case ibft_eth_mac:
++		mac = nic->mac;
++		str += sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x\n",
++			(u8)mac[0], (u8)mac[1], (u8)mac[2],
++			(u8)mac[3], (u8)mac[4], (u8)mac[5]);
++		break;
++	case ibft_eth_hostname:
++		str += sprintf_string(str, nic->hostname_len,
++				(char *)ibft_loc + nic->hostname_off);
++		break;
++	default:
++		break;
++	}
++
++	return str - buf;
++};
++
++ssize_t ibft_attr_show_target(struct ibft_kobject *entry,
++			      struct ibft_attribute *attr,
++			      char *buf)
++{
++	struct ibft_tgt *tgt = entry->tgt;
++	void *ibft_loc = entry->header;
++	char *str = buf;
++	int i;
++
++	if (!tgt)
++		return 0;
++
++	switch (attr->type) {
++	case ibft_tgt_index:
++		str += sprintf(str, "%d\n", tgt->hdr.index);
++		break;
++	case ibft_tgt_flags:
++		str += sprintf(str, "%d\n", tgt->hdr.flags);
++		break;
++	case ibft_tgt_ip_addr:
++		str += sprintf_ipaddr(str, tgt->ip_addr);
++		break;
++	case ibft_tgt_port:
++		str += sprintf(str, "%d\n", tgt->port);
++		break;
++	case ibft_tgt_lun:
++		for (i = 0; i < 8; i++)
++			str += sprintf(str, "%x", (u8)tgt->lun[i]);
++		str += sprintf(str, "\n");
++		break;
++	case ibft_tgt_nic_assoc:
++		str += sprintf(str, "%d\n", tgt->nic_assoc);
++		break;
++	case ibft_tgt_chap_type:
++		str += sprintf(str, "%d\n", tgt->chap_type);
++		break;
++	case ibft_tgt_name:
++		str += sprintf_string(str, tgt->tgt_name_len,
++		(void *)ibft_loc + tgt->tgt_name_off);
++		break;
++	case ibft_tgt_chap_name:
++		str += sprintf_string(str, tgt->chap_name_len,
++			(char *)ibft_loc + tgt->chap_name_off);
++		break;
++	case ibft_tgt_chap_secret:
++		str += sprintf_string(str, tgt->chap_secret_len,
++			(char *)ibft_loc + tgt->chap_secret_off);
++		break;
++	case ibft_tgt_rev_chap_name:
++		str += sprintf_string(str, tgt->rev_chap_name_len,
++			(char *)ibft_loc + tgt->rev_chap_name_off);
++		break;
++	case ibft_tgt_rev_chap_secret:
++		str += sprintf_string(str, tgt->rev_chap_secret_len,
++			(char *)ibft_loc + tgt->rev_chap_secret_off);
++		break;
++	default:
++		break;
++	}
++
++	return str - buf;
++}
++
++/*
++ * The main routine which allows the user to read the IBFT data.
++ */
++static ssize_t ibft_show_attribute(struct kobject *kobj,
++				   struct attribute *attr,
++				   char *buf)
++{
++	struct ibft_kobject *dev =
++		container_of(kobj, struct ibft_kobject, kobj);
++	struct ibft_attribute *ibft_attr =
++		container_of(attr, struct ibft_attribute, attr);
++	ssize_t ret = -EIO;
++	char *str = buf;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EACCES;
++
++	if (ibft_attr->show)
++		ret = ibft_attr->show(dev, ibft_attr, str);
++
++	return ret;
++}
++
++static struct sysfs_ops ibft_attr_ops = {
++	.show = ibft_show_attribute,
++};
++
++static struct kobj_type ibft_ktype = {
++	.release = ibft_release,
++	.sysfs_ops = &ibft_attr_ops,
++};
++
++static struct kset *ibft_kset;
++
++static int ibft_alloc_device(void *idev)
++{
++	int len;
++	struct ibft_table_header *hdr;
++
++	if (!idev)
++		return -ENOENT;
++
++	hdr = (struct ibft_table_header *)phys_to_virt(
++			(unsigned long)ibft_phys);
++	len = hdr->length;
++
++	ibft_device = kzalloc(len, GFP_KERNEL);
++	if (!ibft_device)
++		return -ENOMEM;
++
++	memcpy(ibft_device, hdr, len);
++
++	return 0;
++}
++
++static void ibft_free_device(struct ibft_table_header *hdr)
++{
++	kfree(hdr);
++}
++
++/*
++ * Helper function for ibft_register_kobjects.
++ */
++static int ibft_create_kobject(struct ibft_table_header *header,
++			       struct ibft_hdr *hdr,
++			       struct list_head *list)
++{
++	int rc = 0;
++	struct ibft_kobject *ibft_kobj = NULL;
++
++	ibft_kobj = kzalloc(sizeof(*ibft_kobj), GFP_KERNEL);
++	if (!ibft_kobj)
++		return -ENOMEM;
++
++	ibft_kobj->header = header;
++	ibft_kobj->hdr = hdr;
++
++	switch (hdr->id) {
++	case id_initiator:
++		rc = ibft_verify_hdr(hdr, id_initiator,
++			sizeof(*ibft_kobj->initiator));
++		break;
++	case id_nic:
++		rc = ibft_verify_hdr(hdr, id_nic,
++			sizeof(*ibft_kobj->nic));
++		break;
++	case id_target:
++		rc = ibft_verify_hdr(hdr, id_target,
++			sizeof(*ibft_kobj->tgt));
++		break;
++	default:
++		/* Extension field which we don't support. Ignore it */
++		break;
++	}
++
++	if (rc) {
++		kfree(ibft_kobj);
++		goto out;
++	}
++
++	/* kobject fief. We will let the reference counter do the job
++	 of deleting the structure (and its name) if we fail here. */
++	ibft_kobj->kobj.kset = ibft_kset;
++	ibft_kobj->kobj.ktype = &ibft_ktype;
++
++	rc = kobject_set_name(&ibft_kobj->kobj,
++		ibft_id_names[hdr->id],
++		hdr->index);
++
++	if (rc)
++		goto kobject_do_put;
++
++	kobject_init(&ibft_kobj->kobj);
++
++	rc = kobject_add(&ibft_kobj->kobj);
++	if (rc)
++		goto kobject_do_put;
++
++	rc = kobject_uevent(&ibft_kobj->kobj, KOBJ_ADD);
++	if (rc)
++		goto kobject_do_del;
++
++	if (hdr->id == id_nic) {
++		struct ibft_nic *nic = (struct ibft_nic *)hdr;
++		struct pci_dev *pci_dev = pci_get_bus_and_slot(
++					(nic->pci_bdf & 0xff00) >> 8,
++					(nic->pci_bdf & 0xff));
++		if (pci_dev) {
++			rc = sysfs_create_link(&ibft_kobj->kobj,
++					&pci_dev->dev.kobj, "device");
++			pci_dev_put(pci_dev);
++		}
++	}
++
++	if (!rc) {
++		/* Nothing broke so lets add it to the list. */
++		list_add_tail(&ibft_kobj->node, list);
++		goto out;
++	}
++
++	kobject_uevent(&ibft_kobj->kobj, KOBJ_REMOVE);
++kobject_do_del:
++	kobject_del(&ibft_kobj->kobj);
++kobject_do_put:
++	kobject_put(&ibft_kobj->kobj);
++out:
++	return rc;
++}
++
++/*
++ * Scan the IBFT table structure for the NIC and Target fields. When
++ * found add them on the passed-in list.
++ */
++static int ibft_register_kobjects(struct ibft_table_header *header,
++				  struct list_head *list)
++{
++	struct ibft_control *control = NULL;
++	void *ptr, *end;
++	int rc = 0;
++	u16 offset;
++
++	control = (void *)header + sizeof(*header);
++	end = (void *)control + control->hdr.length;
++
++	for (ptr = &control->initiator_off; ptr < end; ptr += sizeof(u16)) {
++		offset = *(u16 *)ptr;
++		if (offset && offset < header->length) {
++			rc = ibft_create_kobject(header,
++					(void *)header + offset,
++					list);
++			if (rc)
++				break;
++		}
++	}
++
++	return rc;
++}
++
++static void ibft_unregister_kobjects(struct list_head *list)
++{
++	struct ibft_kobject *data = NULL, *n;
++	list_for_each_entry_safe(data, n, list, node) {
++		list_del(&data->node);
++		if (data->hdr->id == id_nic)
++			sysfs_remove_link(&data->kobj, "device");
++		kobject_uevent(&data->kobj, KOBJ_REMOVE);
++		kobject_del(&data->kobj);
++		kobject_put(&data->kobj);
++	};
++	list_del_init(list);
++}
++
++static int ibft_create_attribute(struct ibft_kobject *kobj_data,
++				 int type,
++				 const char *name,
++				 ssize_t (*show) (struct  ibft_kobject *entry,
++						  struct ibft_attribute *attr,
++						  char *buf),
++				 struct list_head *list)
++{
++	struct ibft_attribute *attr = NULL;
++	struct ibft_hdr *hdr = kobj_data->hdr;
++
++	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
++	if (!attr)
++		return -ENOMEM;
++
++	attr->attr.name = name;
++	attr->attr.mode = S_IRUSR;
++	attr->attr.owner = THIS_MODULE;
++
++	attr->hdr = hdr;
++	attr->show = show;
++	attr->kobj = &kobj_data->kobj;
++	attr->type = type;
++
++	list_add_tail(&attr->node, list);
++
++	return 0;
++}
++
++static int ibft_check_nic_for(struct ibft_nic *nic, int entry)
++{
++	int rc = 0;
++
++	switch (entry) {
++	case ibft_eth_index:
++	case ibft_eth_flags:
++		rc = 1;
++		break;
++	case ibft_eth_ip_addr:
++		if (!memcmp(nic->dhcp, nulls, sizeof(nic->dhcp)))
++			rc = 1;
++		break;
++	case ibft_eth_subnet_mask:
++		if (!memcmp(nic->dhcp, nulls, sizeof(nic->dhcp)))
++			rc = 1;
++		break;
++	case ibft_eth_origin:
++		rc = 1;
++		break;
++	case ibft_eth_gateway:
++		if (memcmp(nic->gateway, nulls, sizeof(nic->gateway)))
++			rc = 1;
++		break;
++	case ibft_eth_primary_dns:
++		if (memcmp(nic->primary_dns, nulls,
++			sizeof(nic->primary_dns)))
++			rc = 1;
++		break;
++	case ibft_eth_secondary_dns:
++		if (memcmp(nic->secondary_dns, nulls,
++			sizeof(nic->secondary_dns)))
++			rc = 1;
++		break;
++	case ibft_eth_dhcp:
++		if (memcmp(nic->dhcp, nulls, sizeof(nic->dhcp)))
++			rc = 1;
++		break;
++	case ibft_eth_vlan:
++	case ibft_eth_mac:
++		rc = 1;
++		break;
++	case ibft_eth_hostname:
++		if (nic->hostname_off)
++			rc = 1;
++		break;
++	default:
++		break;
++	}
++
++	return rc;
++}
++
++static int ibft_check_tgt_for(struct ibft_tgt *tgt, int entry)
++{
++	int rc = 0;
++
++	switch (entry) {
++	case ibft_tgt_index:
++	case ibft_tgt_flags:
++	case ibft_tgt_ip_addr:
++	case ibft_tgt_port:
++	case ibft_tgt_lun:
++	case ibft_tgt_nic_assoc:
++	case ibft_tgt_chap_type:
++		rc = 1;
++	case ibft_tgt_name:
++		if (tgt->tgt_name_len)
++			rc = 1;
++		break;
++	case ibft_tgt_chap_name:
++	case ibft_tgt_chap_secret:
++		if (tgt->chap_name_len)
++			rc = 1;
++		break;
++	case ibft_tgt_rev_chap_name:
++	case ibft_tgt_rev_chap_secret:
++		if (tgt->rev_chap_name_len)
++			rc = 1;
++		break;
++	default:
++		break;
++	}
++
++	return rc;
++}
++
++static int ibft_check_initiator_for(struct ibft_initiator *init, int entry)
++{
++	int rc = 0;
++
++	switch (entry) {
++	case ibft_init_index:
++	case ibft_init_flags:
++		rc = 1;
++		break;
++	case ibft_init_isns_server:
++		if (memcmp(init->isns_server, nulls,
++			sizeof(init->isns_server)))
++			rc = 1;
++		break;
++	case ibft_init_slp_server:
++		if (memcmp(init->slp_server, nulls,
++			sizeof(init->slp_server)))
++			rc = 1;
++		break;
++	case ibft_init_pri_radius_server:
++		if (memcmp(init->pri_radius_server, nulls,
++			sizeof(init->pri_radius_server)))
++			rc = 1;
++		break;
++	case ibft_init_sec_radius_server:
++		if (memcmp(init->sec_radius_server, nulls,
++			sizeof(init->sec_radius_server)))
++			rc = 1;
++		break;
++	case ibft_init_initiator_name:
++		if (init->initiator_name_len)
++			rc = 1;
++		break;
++	default:
++		break;
++	}
++
++	return rc;
++}
++
++/*
++ *  Register the attributes for all of the kobjects.
++ */
++static int ibft_register_attributes(struct list_head *kobject_list,
++				    struct list_head *attr_list)
++{
++	int rc = 0, i = 0;
++	struct ibft_kobject *data = NULL;
++	struct ibft_attribute *attr = NULL, *m;
++
++	list_for_each_entry(data, kobject_list, node) {
++		switch (data->hdr->id) {
++		case id_nic:
++			for (i = 0; i < ibft_eth_end_marker && !rc; i++)
++				if (ibft_check_nic_for(data->nic, i))
++					rc = ibft_create_attribute(data, i,
++						ibft_eth_properties[i],
++						ibft_attr_show_nic, attr_list);
++			break;
++		case id_target:
++			for (i = 0; i < ibft_tgt_end_marker && !rc; i++)
++				if (ibft_check_tgt_for(data->tgt, i))
++					rc = ibft_create_attribute(data, i,
++						ibft_tgt_properties[i],
++						ibft_attr_show_target,
++						attr_list);
++			break;
++		case id_initiator:
++			for (i = 0; i < ibft_init_end_marker && !rc; i++)
++				if (ibft_check_initiator_for(
++					data->initiator, i))
++					rc = ibft_create_attribute(data, i,
++						ibft_initiator_properties[i],
++						ibft_attr_show_initiator,
++						attr_list);
++			break;
++		default:
++			break;
++		}
++		if (rc)
++			break;
++	}
++	list_for_each_entry_safe(attr, m, attr_list, node) {
++		rc = sysfs_create_file(attr->kobj, &attr->attr);
++		if (rc) {
++			list_del(&attr->node);
++			kfree(attr);
++			break;
++		}
++	}
++
++	return rc;
++}
++
++static void ibft_unregister_attributes(struct list_head *list)
++{
++	struct ibft_attribute *attr = NULL, *m;
++
++	list_for_each_entry_safe(attr, m, list, node) {
++		sysfs_remove_file(attr->kobj, &attr->attr);
++		list_del(&attr->node);
++		kfree(attr);
++	}
++	list_del_init(list);
++}
++
++/*
++ * ibft_init() - creates sysfs tree entries for iBFT data.
++ */
++static int __init ibft_init(void)
++{
++	int rc = 0;
++
++	if (!ibft_phys)
++		find_ibft();
++
++	ibft_kset = kset_create_and_add("ibft", NULL, firmware_kobj);
++	if (!ibft_kset)
++		return -ENOMEM;
++
++	if (ibft_phys) {
++		printk(KERN_INFO "iBFT detected at 0x%lx.\n",
++		       (unsigned long)ibft_phys);
++
++		rc = ibft_alloc_device(ibft_phys);
++		if (rc)
++			goto out_firmware_unregister;
++
++		/* Scan the IBFT for data and register kobjects. */
++		rc = ibft_register_kobjects(ibft_device, &ibft_kobject_list);
++		if (rc)
++			goto out_free;
++
++		/* Register the attributes */
++		rc = ibft_register_attributes(&ibft_kobject_list,
++				&ibft_attr_list);
++		if (rc)
++			goto out_free;
++	} else
++		printk(KERN_INFO "No iBFT detected.\n");
++
++	return 0;
++
++out_free:
++	ibft_unregister_attributes(&ibft_attr_list);
++	ibft_unregister_kobjects(&ibft_kobject_list);
++	ibft_free_device(ibft_device);
++out_firmware_unregister:
++	kset_unregister(ibft_kset);
++	return rc;
++}
++
++static void __exit ibft_exit(void)
++{
++	ibft_unregister_attributes(&ibft_attr_list);
++	ibft_unregister_kobjects(&ibft_kobject_list);
++	ibft_free_device(ibft_device);
++	kset_unregister(ibft_kset);
++}
++
++module_init(ibft_init);
++module_exit(ibft_exit);
+diff --git a/drivers/firmware/iscsi_ibft_find.c b/drivers/firmware/iscsi_ibft_find.c
+new file mode 100644
+index 0000000..e026e5f
+--- /dev/null
++++ b/drivers/firmware/iscsi_ibft_find.c
+@@ -0,0 +1,78 @@
++/*
++ *  Copyright 2007 Red Hat, Inc.
++ *  by Peter Jones <pjones@redhat.com>
++ *  Copyright 2007 IBM, Inc.
++ *  by Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++ *
++ * This code finds the iSCSI Boot Format Table.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License v2.0 as published by
++ * the Free Software Foundation
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/ctype.h>
++#include <linux/init.h>
++#include <linux/stat.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/limits.h>
++#include <linux/device.h>
++#include <linux/pci.h>
++#include <linux/blkdev.h>
++#include <linux/iscsi_ibft.h>
++
++
++/*
++ * Physical location of iSCSI Boot Format Table.
++ */
++void *ibft_phys;
++EXPORT_SYMBOL(ibft_phys);
++
++#define IBFT_SIGN "iBFT"
++#define IBFT_SIGN_LEN 4
++#define IBFT_START 0x80000 /* 512kB */
++#define IBFT_END 0x100000 /* 1MB */
++#define VGA_MEM 0xA0000 /* VGA buffer */
++#define VGA_SIZE 0x20000 /* 128kB */
++
++
++/*
++ * Routine used to find the iSCSI Boot Format Table. the physical
++ * location is set in the ibft_phys variable. The return value is
++ * the size of IBFT.
++ */
++ssize_t find_ibft(void)
++{
++	unsigned long pos;
++
++	for (pos = IBFT_START; pos < IBFT_END; pos += 16) {
++		void *virt;
++		/* The table can't be inside the VGA BIOS reserved space,
++		 * so skip that area */
++		if (pos == VGA_MEM)
++			pos += VGA_SIZE;
++		virt = phys_to_virt(pos);
++		if (memcmp(virt, IBFT_SIGN, IBFT_SIGN_LEN) == 0) {
++			unsigned long *addr =
++			    (unsigned long *)phys_to_virt(pos + 4);
++			unsigned int len = *addr;
++			/* if the length of the table extends past 1M,
++			 * the table cannot be valid. */
++			if (pos + len <= (IBFT_END-1)) {
++				ibft_phys = (void *)pos;
++				return len;
++			}
++		}
++	}
++	return 0;
++}
++EXPORT_SYMBOL(find_ibft);
+diff --git a/include/linux/iscsi_ibft.h b/include/linux/iscsi_ibft.h
+new file mode 100644
+index 0000000..cc71c40
+--- /dev/null
++++ b/include/linux/iscsi_ibft.h
+@@ -0,0 +1,144 @@
++/*
++ *  Copyright 2007 Red Hat, Inc.
++ *  by Peter Jones <pjones@redhat.com>
++ *  Copyright 2007 IBM, Inc.
++ *  by Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
++ *
++ * This code exposes the iSCSI Boot Format Table to userland via sysfs.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License v2.0 as published by
++ * the Free Software Foundation
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef ISCSI_IBFT_H
++#define ISCSI_IBFT_H
++
++/*
++ * Physical location of iSCSI Boot Format Table.
++ */
++extern void *ibft_phys;
++
++/*
++ * Routine used to find the iSCSI Boot Format Table. The physical
++ * location is set in the ibft_phys variable. The return value is the
++ * size of IBFT.
++ */
++extern ssize_t find_ibft(void);
++
++#if defined(CONFIG_ISCSI_IBFT) || defined(CONFIG_ISCSI_IBFT_MODULE)
++
++struct ibft_table_header {
++	char signature[4];
++	u32 length;
++	u8 revision;
++	u8 checksum;
++	char oem_id[6];
++	char oem_table_id[8];
++	char reserved[24];
++} __attribute__((__packed__));
++
++struct ibft_hdr {
++	u8 id;
++	u8 version;
++	u16 length;
++	u8 index;
++	u8 flags;
++} __attribute__((__packed__));
++
++struct ibft_control {
++	struct ibft_hdr hdr;
++	u16 extensions;
++	u16 initiator_off;
++	u16 nic0_off;
++	u16 tgt0_off;
++	u16 nic1_off;
++	u16 tgt1_off;
++} __attribute__((__packed__));
++
++struct ibft_initiator {
++	struct ibft_hdr hdr;
++	char isns_server[16];
++	char slp_server[16];
++	char pri_radius_server[16];
++	char sec_radius_server[16];
++	u16 initiator_name_len;
++	u16 initiator_name_off;
++} __attribute__((__packed__));
++
++struct ibft_nic {
++	struct ibft_hdr hdr;
++	char ip_addr[16];
++	u8 subnet_mask_prefix;
++	u8 origin;
++	char gateway[16];
++	char primary_dns[16];
++	char secondary_dns[16];
++	char dhcp[16];
++	u16 vlan;
++	char mac[6];
++	u16 pci_bdf;
++	u16 hostname_len;
++	u16 hostname_off;
++} __attribute__((__packed__));
++
++struct ibft_tgt {
++	struct ibft_hdr hdr;
++	char ip_addr[16];
++	u16 port;
++	char lun[8];
++	u8 chap_type;
++	u8 nic_assoc;
++	u16 tgt_name_len;
++	u16 tgt_name_off;
++	u16 chap_name_len;
++	u16 chap_name_off;
++	u16 chap_secret_len;
++	u16 chap_secret_off;
++	u16 rev_chap_name_len;
++	u16 rev_chap_name_off;
++	u16 rev_chap_secret_len;
++	u16 rev_chap_secret_off;
++} __attribute__((__packed__));
++
++/*
++ * The kobject and attribute structures.
++ */
++
++struct ibft_kobject {
++	struct ibft_table_header *header;
++	union {
++		struct ibft_initiator *initiator;
++		struct ibft_nic *nic;
++		struct ibft_tgt *tgt;
++		struct ibft_hdr *hdr;
++	};
++	struct kobject kobj;
++	struct list_head node;
++};
++
++struct ibft_attribute {
++	struct attribute attr;
++	ssize_t (*show) (struct  ibft_kobject *entry,
++			 struct ibft_attribute *attr, char *buf);
++	union {
++		struct ibft_initiator *initiator;
++		struct ibft_nic *nic;
++		struct ibft_tgt *tgt;
++		struct ibft_hdr *hdr;
++	};
++	struct kobject *kobj;
++	int type; /* The enum of the type. This can be any value off:
++		ibft_eth_properties_enum, ibft_tgt_properties_enum,
++		or ibft_initiator_properties_enum. */
++	struct list_head node;
++};
++
++#endif
++
++#endif /* ISCSI_IBFT_H */
