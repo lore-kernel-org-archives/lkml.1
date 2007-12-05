@@ -1,130 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbXLEO1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXLEOby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752494AbXLEO1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 09:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXLEO1Q
+	id S1752776AbXLEOby (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 09:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXLEObr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 09:27:16 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:27363 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751270AbXLEO1P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 09:27:15 -0500
-Subject: Re: +
-	aoe-properly-initialise-the-request_queues-backing_dev_info.patch added to
-	-mm tree
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ecashin@coraid.com, stable@kernel.org
-In-Reply-To: <200712032314.lB3NE6lS022508@imap1.linux-foundation.org>
-References: <200712032314.lB3NE6lS022508@imap1.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ap3JWaMdPMatrsD53v9f"
-Date: Wed, 05 Dec 2007 15:27:10 +0100
-Message-Id: <1196864830.6788.39.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 5 Dec 2007 09:31:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40075 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502AbXLEObq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 09:31:46 -0500
+Message-ID: <4756B50B.3060100@redhat.com>
+Date: Wed, 05 Dec 2007 08:26:19 -0600
+From: Mike McGrath <mmcgrath@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+References: <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204165502.0a8f695e@the-village.bc.nu> <20071204180237.GU19691@waste.org> <20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu> <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com> <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org>
+In-Reply-To: <20071204223345.GJ19691@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matt Mackall wrote:
+> On Tue, Dec 04, 2007 at 04:23:12PM -0600, Mike McGrath wrote:
+>   
+>> Matt Mackall wrote:
+>>     
+>>> On Tue, Dec 04, 2007 at 03:18:27PM -0600, Mike McGrath wrote:
+>>>  
+>>>       
+>>>> Matt Mackall wrote:
+>>>>    
+>>>>         
+>>>>> which would have been in v2.6.22-rc4 through the normal CVE process.
+>>>>> The only other bits in there are wall time and utsname, so systems
+>>>>> with no CMOS clock would behave repeatably. Can we find out what
+>>>>> kernels are affected?
+>>>>>
+>>>>>
+>>>>>      
+>>>>>           
+>>>> We can but it will likely take a few weeks to get a good sampling. UUID 
+>>>> is unique in the db so when someone checks in with the same UUID, the 
+>>>> old one gets overwritten.
+>>>>    
+>>>>         
+>>> We can probably assume that for whatever reason the two things with
+>>> duplicate UUID had the same seed. If not, we've got -much- bigger
+>>> problems.
+>>>  
+>>>       
+>> Ok, I think I see whats going on here. I have some further investigation 
+>> to do but it seems that the way our Live CD installer works is causing 
+>> these issues. I'm going to try to grab some live CD's and hardware to 
+>> confirm but at this point it seems thats whats going on.
+>>     
+>
+> Alright, keep me posted. We probably need a scheme to make the initial
+> seed more robust regardless of what you find out
 
---=-ap3JWaMdPMatrsD53v9f
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ok, whats going on here is an issue with how the smolt RPM installs the 
+UUID and how Fedora's Live CD does an install.  It's a complete false 
+alarm on the kernel side, sorry for the confusion.
 
-
-On Mon, 2007-12-03 at 15:14 -0800, akpm@linux-foundation.org wrote:
-
-> ------------------------------------------------------
-> Subject: aoe: properly initialise the request_queue's backing_dev_info
-> From: Andrew Morton <akpm@linux-foundation.org>
->=20
-> Cc: "Ed L. Cashin" <ecashin@coraid.com>
-> Cc: <stable@kernel.org>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->=20
->  drivers/block/aoe/aoeblk.c |   26 ++++++++++++++++----------
->  1 file changed, 16 insertions(+), 10 deletions(-)
->=20
-> diff -puN drivers/block/aoe/aoeblk.c~aoe-properly-initialise-the-request_=
-queues-backing_dev_info drivers/block/aoe/aoeblk.c
-> --- a/drivers/block/aoe/aoeblk.c~aoe-properly-initialise-the-request_queu=
-es-backing_dev_info
-> +++ a/drivers/block/aoe/aoeblk.c
-> @@ -6,6 +6,7 @@
-> =20
->  #include <linux/hdreg.h>
->  #include <linux/blkdev.h>
-> +#include <linux/backing-dev.h>
->  #include <linux/fs.h>
->  #include <linux/ioctl.h>
->  #include <linux/genhd.h>
-> @@ -210,25 +211,20 @@ aoeblk_gdalloc(void *vp)
->  	if (gd =3D=3D NULL) {
->  		printk(KERN_ERR "aoe: cannot allocate disk structure for %ld.%ld\n",
->  			d->aoemajor, d->aoeminor);
-> -		spin_lock_irqsave(&d->lock, flags);
-> -		d->flags &=3D ~DEVFL_GDALLOC;
-> -		spin_unlock_irqrestore(&d->lock, flags);
-> -		return;
-> +		goto err;
->  	}
-> =20
->  	d->bufpool =3D mempool_create_slab_pool(MIN_BUFS, buf_pool_cache);
->  	if (d->bufpool =3D=3D NULL) {
->  		printk(KERN_ERR "aoe: cannot allocate bufpool for %ld.%ld\n",
->  			d->aoemajor, d->aoeminor);
-> -		put_disk(gd);
-> -		spin_lock_irqsave(&d->lock, flags);
-> -		d->flags &=3D ~DEVFL_GDALLOC;
-> -		spin_unlock_irqrestore(&d->lock, flags);
-> -		return;
-> +		goto err_disk;
->  	}
-> =20
-> -	spin_lock_irqsave(&d->lock, flags);
->  	blk_queue_make_request(&d->blkq, aoeblk_make_request);
-> +	if (bdi_init(&d->blkq.backing_dev_info))
-> +		goto err_mempool;
-> +	spin_lock_irqsave(&d->lock, flags);
->  	gd->major =3D AOE_MAJOR;
->  	gd->first_minor =3D d->sysminor * AOE_PARTITIONS;
->  	gd->fops =3D &aoe_bdops;
-> @@ -246,6 +242,16 @@ aoeblk_gdalloc(void *vp)
-> =20
->  	add_disk(gd);
->  	aoedisk_add_sysfs(d);
-> +	return;
-> +
-> +err_mempool:
-> +	mempool_destroy(d->bufpool);
-> +err_disk:
-> +	put_disk(gd);
-> +err:
-> +	spin_lock_irqsave(&d->lock, flags);
-> +	d->flags &=3D ~DEVFL_GDALLOC;
-> +	spin_unlock_irqrestore(&d->lock, flags);
->  }
-> =20
->  void
-
-
---=-ap3JWaMdPMatrsD53v9f
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHVrU+XA2jU0ANEf4RAqnTAKCSOG42ge0F/bgfhQW2GGW3N7P7vACeO6at
-ZDokFs3jXYVTbjMGZY7Zt+c=
-=YNcK
------END PGP SIGNATURE-----
-
---=-ap3JWaMdPMatrsD53v9f--
+    -Mike
 
