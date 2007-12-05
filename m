@@ -1,103 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbXLEIrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbXLEIw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752499AbXLEIrH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 03:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbXLEIq4
+	id S1752560AbXLEIw1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 03:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXLEIwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 03:46:56 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51564 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbXLEIqz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 03:46:55 -0500
-Date: Wed, 5 Dec 2007 08:46:47 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: mark.fasheh@oracle.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] remove nonsense force-casts from ocfs2
-Message-ID: <20071205084647.GH8181@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Wed, 5 Dec 2007 03:52:16 -0500
+Received: from styx.suse.cz ([82.119.242.94]:43298 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750892AbXLEIwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 03:52:15 -0500
+From: David Sterba <dsterba@suse.cz>
+Subject: [PATCH] bonding: Fix time comparison
+To: linux-kernel@vger.kernel.org
+Cc: dsterba@suse.cz, bonding-devel@lists.sourceforge.net, fubar@us.ibm.com,
+       ctindel@users.sourceforge.net, netdev@vger.kernel.org
+Date: Wed, 05 Dec 2007 09:52:05 +0100
+Message-ID: <20071205085205.7220.98225.stgit@ds.suse.cz>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	endianness annotations in networking code had been in place for
-quite a while; in particular, sin_port and s_addr are annotated as
-big-endian.  Code in ocfs2 had __force casts added apparently to shut the
-sparse warnings up; of course, these days they only serve to *produce*
-warnings for no reason whatsoever...
+bonding: Fix time comparison
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Use macros for comparing jiffies. Jiffies' wrap caused missed events and hangs.
+Module reinsert was needed to make bonding work again.
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
 ---
-diff --git a/fs/ocfs2/cluster/tcp.c b/fs/ocfs2/cluster/tcp.c
-index d84bd15..ee50c96 100644
---- a/fs/ocfs2/cluster/tcp.c
-+++ b/fs/ocfs2/cluster/tcp.c
-@@ -72,14 +72,6 @@
+
+ drivers/net/bonding/bond_main.c |   25 +++++++++++++------------
+ 1 files changed, 13 insertions(+), 12 deletions(-)
+
+
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 423298c..e4a4714 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -74,6 +74,7 @@
+ #include <linux/ethtool.h>
+ #include <linux/if_vlan.h>
+ #include <linux/if_bonding.h>
++#include <linux/jiffies.h>
+ #include <net/route.h>
+ #include <net/net_namespace.h>
+ #include "bonding.h"
+@@ -2722,8 +2723,8 @@ void bond_loadbalance_arp_mon(struct work_struct *work)
+ 	 */
+ 	bond_for_each_slave(bond, slave, i) {
+ 		if (slave->link != BOND_LINK_UP) {
+-			if (((jiffies - slave->dev->trans_start) <= delta_in_ticks) &&
+-			    ((jiffies - slave->dev->last_rx) <= delta_in_ticks)) {
++			if (time_before_eq(jiffies, slave->dev->trans_start + delta_in_ticks) &&
++			    time_before_eq(jiffies, slave->dev->last_rx + delta_in_ticks)) {
  
- #include "tcp_internal.h"
+ 				slave->link  = BOND_LINK_UP;
+ 				slave->state = BOND_STATE_ACTIVE;
+@@ -2754,8 +2755,8 @@ void bond_loadbalance_arp_mon(struct work_struct *work)
+ 			 * when the source ip is 0, so don't take the link down
+ 			 * if we don't know our ip yet
+ 			 */
+-			if (((jiffies - slave->dev->trans_start) >= (2*delta_in_ticks)) ||
+-			    (((jiffies - slave->dev->last_rx) >= (2*delta_in_ticks)) &&
++			if (time_after_eq(jiffies, slave->dev->trans_start + 2*delta_in_ticks) ||
++			    (time_after_eq(jiffies, slave->dev->last_rx + 2*delta_in_ticks) &&
+ 			     bond_has_ip(bond))) {
  
--/* 
-- * The linux network stack isn't sparse endian clean.. It has macros like
-- * ntohs() which perform the endian checks and structs like sockaddr_in
-- * which aren't annotated.  So __force is found here to get the build
-- * clean.  When they emerge from the dark ages and annotate the code
-- * we can remove these.
-- */
--
- #define SC_NODEF_FMT "node %s (num %u) at %u.%u.%u.%u:%u"
- #define SC_NODEF_ARGS(sc) sc->sc_node->nd_name, sc->sc_node->nd_num,	\
- 			  NIPQUAD(sc->sc_node->nd_ipv4_address),	\
-@@ -1500,7 +1492,7 @@ static void o2net_start_connect(struct work_struct *work)
+ 				slave->link  = BOND_LINK_DOWN;
+@@ -2848,8 +2849,8 @@ void bond_activebackup_arp_mon(struct work_struct *work)
+ 	 */
+ 	bond_for_each_slave(bond, slave, i) {
+ 		if (slave->link != BOND_LINK_UP) {
+-			if ((jiffies - slave_last_rx(bond, slave)) <=
+-			     delta_in_ticks) {
++			if (time_before_eq(jiffies,
++			    slave_last_rx(bond, slave) + delta_in_ticks)) {
  
- 	myaddr.sin_family = AF_INET;
- 	myaddr.sin_addr.s_addr = mynode->nd_ipv4_address;
--	myaddr.sin_port = (__force u16)htons(0); /* any port */
-+	myaddr.sin_port = htons(0); /* any port */
+ 				slave->link = BOND_LINK_UP;
  
- 	ret = sock->ops->bind(sock, (struct sockaddr *)&myaddr,
- 			      sizeof(myaddr));
-@@ -1701,11 +1693,11 @@ static int o2net_accept_one(struct socket *sock)
- 	if (ret < 0)
- 		goto out;
+@@ -2858,7 +2859,7 @@ void bond_activebackup_arp_mon(struct work_struct *work)
+ 				write_lock_bh(&bond->curr_slave_lock);
  
--	node = o2nm_get_node_by_ip((__force __be32)sin.sin_addr.s_addr);
-+	node = o2nm_get_node_by_ip(sin.sin_addr.s_addr);
- 	if (node == NULL) {
- 		mlog(ML_NOTICE, "attempt to connect from unknown node at "
- 		     "%u.%u.%u.%u:%d\n", NIPQUAD(sin.sin_addr.s_addr),
--		     ntohs((__force __be16)sin.sin_port));
-+		     ntohs(sin.sin_port));
- 		ret = -EINVAL;
- 		goto out;
- 	}
-@@ -1714,7 +1706,7 @@ static int o2net_accept_one(struct socket *sock)
- 		mlog(ML_NOTICE, "unexpected connect attempted from a lower "
- 		     "numbered node '%s' at " "%u.%u.%u.%u:%d with num %u\n",
- 		     node->nd_name, NIPQUAD(sin.sin_addr.s_addr),
--		     ntohs((__force __be16)sin.sin_port), node->nd_num);
-+		     ntohs(sin.sin_port), node->nd_num);
- 		ret = -EINVAL;
- 		goto out;
- 	}
-@@ -1725,7 +1717,7 @@ static int o2net_accept_one(struct socket *sock)
- 		mlog(ML_CONN, "attempt to connect from node '%s' at "
- 		     "%u.%u.%u.%u:%d but it isn't heartbeating\n",
- 		     node->nd_name, NIPQUAD(sin.sin_addr.s_addr),
--		     ntohs((__force __be16)sin.sin_port));
-+		     ntohs(sin.sin_port));
- 		ret = -EINVAL;
- 		goto out;
- 	}
-@@ -1742,7 +1734,7 @@ static int o2net_accept_one(struct socket *sock)
- 		mlog(ML_NOTICE, "attempt to connect from node '%s' at "
- 		     "%u.%u.%u.%u:%d but it already has an open connection\n",
- 		     node->nd_name, NIPQUAD(sin.sin_addr.s_addr),
--		     ntohs((__force __be16)sin.sin_port));
-+		     ntohs(sin.sin_port));
- 		goto out;
- 	}
+ 				if ((!bond->curr_active_slave) &&
+-				    ((jiffies - slave->dev->trans_start) <= delta_in_ticks)) {
++				    time_before_eq(jiffies, slave->dev->trans_start + delta_in_ticks)) {
+ 					bond_change_active_slave(bond, slave);
+ 					bond->current_arp_slave = NULL;
+ 				} else if (bond->curr_active_slave != slave) {
+@@ -2897,7 +2898,7 @@ void bond_activebackup_arp_mon(struct work_struct *work)
  
+ 			if ((slave != bond->curr_active_slave) &&
+ 			    (!bond->current_arp_slave) &&
+-			    (((jiffies - slave_last_rx(bond, slave)) >= 3*delta_in_ticks) &&
++			    (time_after_eq(jiffies, slave_last_rx(bond, slave) + 3*delta_in_ticks) &&
+ 			     bond_has_ip(bond))) {
+ 				/* a backup slave has gone down; three times
+ 				 * the delta allows the current slave to be
+@@ -2943,10 +2944,10 @@ void bond_activebackup_arp_mon(struct work_struct *work)
+ 		 * before being taken out. if a primary is being used, check
+ 		 * if it is up and needs to take over as the curr_active_slave
+ 		 */
+-		if ((((jiffies - slave->dev->trans_start) >= (2*delta_in_ticks)) ||
+-	    (((jiffies - slave_last_rx(bond, slave)) >= (2*delta_in_ticks)) &&
+-	     bond_has_ip(bond))) &&
+-		    ((jiffies - slave->jiffies) >= 2*delta_in_ticks)) {
++		if ((time_after_eq(jiffies, slave->dev->trans_start + 2*delta_in_ticks) ||
++			(time_after_eq(jiffies, slave_last_rx(bond, slave) + 2*delta_in_ticks) &&
++			 bond_has_ip(bond))) &&
++			time_after_eq(jiffies, slave->jiffies + 2*delta_in_ticks)) {
+ 
+ 			slave->link  = BOND_LINK_DOWN;
+ 
+
