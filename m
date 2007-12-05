@@ -1,141 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbXLEExB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbXLEE4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbXLEExB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 23:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXLEEww
+	id S1753120AbXLEE4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 23:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXLEE4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 23:52:52 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:63493 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbXLEEww (ORCPT
+	Tue, 4 Dec 2007 23:56:01 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:27802 "EHLO
+	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751216AbXLEE4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 23:52:52 -0500
-Date: Tue, 4 Dec 2007 20:51:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: jochen@scram.de, akpm <akpm@linux-foundation.org>
-Subject: [PATCH] dio: fix kernel-doc notation
-Message-Id: <20071204205110.4c660a2f.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Dec 2007 23:56:00 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <47562F5A.8050403@am.sony.com>
+Date: Tue, 04 Dec 2007 20:55:54 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Milton Miller <miltonm@bga.com>
+CC: Christoph Lameter <clameter@sgi.com>, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
+References: <47537F2E.2070204@am.sony.com> <b91f94dd5b35247fecf52090c0b3890f@bga.com>
+In-Reply-To: <b91f94dd5b35247fecf52090c0b3890f@bga.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 05 Dec 2007 04:55:56.0972 (UTC) FILETIME=[1F4A66C0:01C836FB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Milton Miller wrote:
+> On Dec 2, 2007, at 9:59 PM, Geoff Levand wrote:
+> 
+>> Hi.
+>>
+>> I'm finding that recently kexec'ed kernels on PS3 will
+>> panic on startup.  It seems the trouble was introduced
+>> with the ppc64 SPARSEMEM_VMEMMAP support.  The problem
+>> is the same when starting either new or old kernels:
+>>
+>> 2.6.24 -> 2.6.23 ok
+>> 2.6.24 -> 2.6.23 panic
+>> 2.6.24 -> 2.6.24 panic
+> 
+> I'm not sure I completely follow this.  What is the difference between 
+> 1 and 2 ?   
 
-Fix kernel-doc in drivers/dio/ so that it is formatted correctly
-and the parameter names match the function parameters.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/dio/dio-driver.c |   70 +++++++++++++++++--------------------
- 1 file changed, 34 insertions(+), 36 deletions(-)
+Sorry, '2.6.23 -> 2.6.24 ok', but it really doesn't have much meaning,
+considering what the actual problem is.
 
---- linux-2.6.24-rc4.orig/drivers/dio/dio-driver.c
-+++ linux-2.6.24-rc4/drivers/dio/dio-driver.c
-@@ -15,16 +15,15 @@
- #include <linux/dio.h>
- 
- 
--	/**
--	 *  dio_match_device - Tell if a DIO device structure has a matching
--	 *                     DIO device id structure
--	 *  @ids: array of DIO device id structures to search in
--	 *  @dev: the DIO device structure to match against
--	 *
--	 *  Used by a driver to check whether a DIO device present in the
--	 *  system is in its list of supported devices. Returns the matching
--	 *  dio_device_id structure or %NULL if there is no match.
--	 */
-+/**
-+ *  dio_match_device - Tell if a DIO device structure has a matching DIO device id structure
-+ *  @ids: array of DIO device id structures to search in
-+ *  @d: the DIO device structure to match against
-+ *
-+ *  Used by a driver to check whether a DIO device present in the
-+ *  system is in its list of supported devices. Returns the matching
-+ *  dio_device_id structure or %NULL if there is no match.
-+ */
- 
- const struct dio_device_id *
- dio_match_device(const struct dio_device_id *ids,
-@@ -66,13 +65,13 @@ static int dio_device_probe(struct devic
- }
- 
- 
--	/**
--	 *  dio_register_driver - register a new DIO driver
--	 *  @drv: the driver structure to register
--	 *
--	 *  Adds the driver structure to the list of registered drivers
--	 *  Returns zero or a negative error value.
--	 */
-+/**
-+ *  dio_register_driver - register a new DIO driver
-+ *  @drv: the driver structure to register
-+ *
-+ *  Adds the driver structure to the list of registered drivers
-+ *  Returns zero or a negative error value.
-+ */
- 
- int dio_register_driver(struct dio_driver *drv)
- {
-@@ -85,15 +84,15 @@ int dio_register_driver(struct dio_drive
- }
- 
- 
--	/**
--	 *  dio_unregister_driver - unregister a DIO driver
--	 *  @drv: the driver structure to unregister
--	 *
--	 *  Deletes the driver structure from the list of registered DIO drivers,
--	 *  gives it a chance to clean up by calling its remove() function for
--	 *  each device it was responsible for, and marks those devices as
--	 *  driverless.
--	 */
-+/**
-+ *  dio_unregister_driver - unregister a DIO driver
-+ *  @drv: the driver structure to unregister
-+ *
-+ *  Deletes the driver structure from the list of registered DIO drivers,
-+ *  gives it a chance to clean up by calling its remove() function for
-+ *  each device it was responsible for, and marks those devices as
-+ *  driverless.
-+ */
- 
- void dio_unregister_driver(struct dio_driver *drv)
- {
-@@ -101,16 +100,15 @@ void dio_unregister_driver(struct dio_dr
- }
- 
- 
--	/**
--	 *  dio_bus_match - Tell if a DIO device structure has a matching DIO
--	 *                  device id structure
--	 *  @ids: array of DIO device id structures to search in
--	 *  @dev: the DIO device structure to match against
--	 *
--	 *  Used by a driver to check whether a DIO device present in the
--	 *  system is in its list of supported devices. Returns the matching
--	 *  dio_device_id structure or %NULL if there is no match.
--	 */
-+/**
-+ *  dio_bus_match - Tell if a DIO device structure has a matching DIO device id structure
-+ *  @dev: the DIO device structure to match against
-+ *  @drv: the &device_driver that points to the array of DIO device id structures to search
-+ *
-+ *  Used by a driver to check whether a DIO device present in the
-+ *  system is in its list of supported devices. Returns the matching
-+ *  dio_device_id structure or %NULL if there is no match.
-+ */
- 
- static int dio_bus_match(struct device *dev, struct device_driver *drv)
- {
+
+> Also, you are talking about starting with kexec, but I 
+> don't see how that fits in the failure you have below.
+
+
+I think just buy chance the kexec'ed kernel hits because
+the 2.6.24 kernel is just at the point of hitting the condition,
+and the memory usage of the kexe'ed kernel hits.
+
+If I just reduce the size of the kernel a small amount kexec
+works ok, and as Geert pointed out, if you increase the size
+of the first stage kernel it will hit it.
+
+
+>> DMA free:72376kB min:0kB low:0kB high:0kB active:0kB inactive:0kB 
+>> present:129280kB pages_scanned:0 all_unreclaimable? no
+>> lowmem_reserve[]: 0 0 0
+>> DMA: 8*4kB 5*8kB 5*16kB 7*32kB 3*64kB 5*128kB 4*256kB 3*512kB 5*1024kB 
+>> 3*2048kB 4*4096kB 5*8192kB 0*16384kB = 72376kB
+>> Swap cache: add 0, delete 0, find 0/0, race 0+0
+>> Free swap  = 0kB
+>> Total swap = 0kB
+>> Free swap:            0kB
+>> 32768 pages of RAM
+>> 10403 reserved pages
+>> 0 pages shared
+>> 0 pages swap cached
+> 
+> The kernel is using 16MB pages for the linear mapping and, since its in 
+> the same region, the sparse virtural memmap.  PS3 uses hotplug for all 
+> most all of its memory.   In this case, its trying to allocate an 
+> additional page to cover a new region of the memory map.   However, the 
+> initial 128 MB is fragmented, we have 8 8M chunks but no 16MB ones.
+
+
+Yes, I see this is the problem.
+
+-Geoff
+
+
