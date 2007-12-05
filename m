@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbXLEIZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbXLEI1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752499AbXLEIZK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 03:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXLEIY7
+	id S1752453AbXLEI1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 03:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXLEI1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 03:24:59 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60610 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbXLEIY6 (ORCPT
+	Wed, 5 Dec 2007 03:27:45 -0500
+Received: from osl1smout1.broadpark.no ([80.202.4.58]:56908 "EHLO
+	osl1smout1.broadpark.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbXLEI1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 03:24:58 -0500
-Date: Wed, 5 Dec 2007 08:24:38 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Shirish Pargaonkar <shirishp@us.ibm.com>, sfrench@samba.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] regression: cifs endianness bug
-Message-ID: <20071205082438.GD8181@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Wed, 5 Dec 2007 03:27:44 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain
+Subject: Re: laptop reboots right after hibernation
+From: Kjartan Maraas <kmaraas@broadpark.no>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Tomas Carnecky <tom@dbservice.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+In-reply-to: <47565738.1050003@gmail.com>
+References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz>
+ <4740692E.7010801@dbservice.com> <47409DA3.7070909@dbservice.com>
+ <1195551141.2792.3.camel@localhost.localdomain> <474CBFB6.4020105@gmail.com>
+ <1196253340.2884.1.camel@localhost.localdomain> <474FE862.4040700@gmail.com>
+ <1196458627.4106.1.camel@localhost.localdomain> <47565738.1050003@gmail.com>
+Date: Wed, 05 Dec 2007 09:27:18 +0100
+Message-id: <1196843238.3289.0.camel@localhost.localdomain>
+X-Mailer: Evolution 2.21.2 (2.21.2-4.fc9)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	access_flags_to_mode() gets on-the-wire data (little-endian)
-and treats it as host-endian.
 
-Introduced in commit e01b64001359034d04c695388870936ed3d1b56b
-([CIFS] enable get mode from ACL when cifsacl mount option specified)
+on., 05.12.2007 kl. 16.46 +0900, skrev Tejun Heo:
+> Kjartan Maraas wrote:
+> > fr., 30.11.2007 kl. 19.39 +0900, skrev Tejun Heo:
+> >> Kjartan Maraas wrote:
+> >>> on., 28.11.2007 kl. 10.09 +0900, skrev Tejun Heo:
+> >>>> Kjartan Maraas wrote:
+> >>>>> I get this exact error message on a normal first time boot here. I'm
+> >>>>> using the latest fedora development kernel which is 2.6.24-rc2-git6
+> >>>>> based. And I have the latest BIOS from HP IIRC.
+> >>>>>
+> >>>>> This is an HP nc6400 intel based laptop:
+> >>>> Care to post boot dmesg?  Or does harddisk detection fail because of this?
+> >>>>
+> >>> Here you go. It shows the error two times and then it gets it right and
+> >>> continues to boot. No other problems arise from this that I can see.
+> >> I'm attaching two patches.  Please apply each on top of clean 2.6.24-rc3
+> >> and report kernel boot logs for both.
+> >>
+> > I tried to do that but recent kernels hang on boot here after TSC:
+> > clocksource installed.
+> > 
+> > Filed a bug here:
+> > https://bugzilla.redhat.com/show_bug.cgi?id=405721
+> > 
+> > but it also happens on the plain rc3 kernel...
+> 
+> Can you please give a shot at -rc4 kernel?
+> 
+Sure. It seems the bug above was caused by the compiler and has been
+fixed in rawhide now so I'll give it a try.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
-index f02fdef..c312adc 100644
---- a/fs/cifs/cifsacl.c
-+++ b/fs/cifs/cifsacl.c
-@@ -134,9 +134,10 @@ int compare_sids(const struct cifs_sid *ctsid, const struct cifs_sid *cwsid)
-    pmode is the existing mode (we only want to overwrite part of this
-    bits to set can be: S_IRWXU, S_IRWXG or S_IRWXO ie 00700 or 00070 or 00007
- */
--static void access_flags_to_mode(__u32 ace_flags, int type, umode_t *pmode,
-+static void access_flags_to_mode(__le32 ace_flags, int type, umode_t *pmode,
- 				 umode_t *pbits_to_set)
- {
-+	__u32 flags = le32_to_cpu(ace_flags);
- 	/* the order of ACEs is important.  The canonical order is to begin with
- 	   DENY entries followed by ALLOW, otherwise an allow entry could be
- 	   encountered first, making the subsequent deny entry like "dead code"
-@@ -146,17 +147,17 @@ static void access_flags_to_mode(__u32 ace_flags, int type, umode_t *pmode,
- 	/* For deny ACEs we change the mask so that subsequent allow access
- 	   control entries do not turn on the bits we are denying */
- 	if (type == ACCESS_DENIED) {
--		if (ace_flags & GENERIC_ALL) {
-+		if (flags & GENERIC_ALL) {
- 			*pbits_to_set &= ~S_IRWXUGO;
- 		}
--		if ((ace_flags & GENERIC_WRITE) ||
--			((ace_flags & FILE_WRITE_RIGHTS) == FILE_WRITE_RIGHTS))
-+		if ((flags & GENERIC_WRITE) ||
-+			((flags & FILE_WRITE_RIGHTS) == FILE_WRITE_RIGHTS))
- 			*pbits_to_set &= ~S_IWUGO;
--		if ((ace_flags & GENERIC_READ) ||
--			((ace_flags & FILE_READ_RIGHTS) == FILE_READ_RIGHTS))
-+		if ((flags & GENERIC_READ) ||
-+			((flags & FILE_READ_RIGHTS) == FILE_READ_RIGHTS))
- 			*pbits_to_set &= ~S_IRUGO;
--		if ((ace_flags & GENERIC_EXECUTE) ||
--			((ace_flags & FILE_EXEC_RIGHTS) == FILE_EXEC_RIGHTS))
-+		if ((flags & GENERIC_EXECUTE) ||
-+			((flags & FILE_EXEC_RIGHTS) == FILE_EXEC_RIGHTS))
- 			*pbits_to_set &= ~S_IXUGO;
- 		return;
- 	} else if (type != ACCESS_ALLOWED) {
-@@ -165,25 +166,25 @@ static void access_flags_to_mode(__u32 ace_flags, int type, umode_t *pmode,
- 	}
- 	/* else ACCESS_ALLOWED type */
- 
--	if (ace_flags & GENERIC_ALL) {
-+	if (flags & GENERIC_ALL) {
- 		*pmode |= (S_IRWXUGO & (*pbits_to_set));
- #ifdef CONFIG_CIFS_DEBUG2
- 		cFYI(1, ("all perms"));
- #endif
- 		return;
- 	}
--	if ((ace_flags & GENERIC_WRITE) ||
--			((ace_flags & FILE_WRITE_RIGHTS) == FILE_WRITE_RIGHTS))
-+	if ((flags & GENERIC_WRITE) ||
-+			((flags & FILE_WRITE_RIGHTS) == FILE_WRITE_RIGHTS))
- 		*pmode |= (S_IWUGO & (*pbits_to_set));
--	if ((ace_flags & GENERIC_READ) ||
--			((ace_flags & FILE_READ_RIGHTS) == FILE_READ_RIGHTS))
-+	if ((flags & GENERIC_READ) ||
-+			((flags & FILE_READ_RIGHTS) == FILE_READ_RIGHTS))
- 		*pmode |= (S_IRUGO & (*pbits_to_set));
--	if ((ace_flags & GENERIC_EXECUTE) ||
--			((ace_flags & FILE_EXEC_RIGHTS) == FILE_EXEC_RIGHTS))
-+	if ((flags & GENERIC_EXECUTE) ||
-+			((flags & FILE_EXEC_RIGHTS) == FILE_EXEC_RIGHTS))
- 		*pmode |= (S_IXUGO & (*pbits_to_set));
- 
- #ifdef CONFIG_CIFS_DEBUG2
--	cFYI(1, ("access flags 0x%x mode now 0x%x", ace_flags, *pmode));
-+	cFYI(1, ("access flags 0x%x mode now 0x%x", flags, *pmode));
- #endif
- 	return;
- }
+Cheers
+Kjartan
+
+
