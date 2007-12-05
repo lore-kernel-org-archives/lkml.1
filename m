@@ -1,86 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbXLEV5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXLEWBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbXLEV5B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 16:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbXLEV4x
+	id S1753761AbXLEWBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 17:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXLEWBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 16:56:53 -0500
-Received: from main.gmane.org ([80.91.229.2]:38294 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751850AbXLEV4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 16:56:53 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-Date: Wed, 5 Dec 2007 16:55:52 -0500
-Organization: Linux Foundation
-Message-ID: <20071205165552.3fc96dae@shemminger-laptop>
-References: <20071205164055.GA2082@cs.unibo.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Dec 2007 17:01:37 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:29829 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbXLEWBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 17:01:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=blF8+qXyOiXkWP/82OOBgufwn5a7YO1drPfiVnoH7FGqzolVesRp3k1D/NIdI8WQW2qWJTSmThWRzNRM6IZRd7TxnQo3wpSL78kFqcO4udTHWI80xWFFRHvCvY9SyAUalU+av7vj8ViJ+/2OlNIQeRoFka8rJMriaX63RfSlKCA=
+Message-ID: <6934efce0712051401x2b137420hb04f971e1ca2cbf6@mail.gmail.com>
+Date: Wed, 5 Dec 2007 14:01:33 -0800
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: solid state drive access and context switching
+Cc: "Chris Friesen" <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071205002454.52ea755c@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 63.118.136.215
-In-Reply-To: <20071205164055.GA2082@cs.unibo.it>
-X-Newsreader: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Content-Disposition: inline
+References: <47548BF4.3010907@nortel.com>
+	 <20071203230629.725f4c7a@the-village.bc.nu>
+	 <6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com>
+	 <20071204203536.2bf6d025@the-village.bc.nu>
+	 <6934efce0712041354n47c11d6ckbc7f4aa1e7c85f@mail.gmail.com>
+	 <20071204232449.6148e152@the-village.bc.nu>
+	 <6934efce0712041608w2e25587n6b2d738fa0265d9d@mail.gmail.com>
+	 <20071205002454.52ea755c@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Dec 2007 17:40:55 +0100
-renzo@cs.unibo.it (Renzo Davoli) wrote:
+> Probably about 1000 clocks but its always going to depend upon the
+> workload and whether any other work can be done usefully.
 
-> 
-> WHAT WE NEED FROM THE LINUX KERNEL COMMUNITY
-> --------------------------------------------
-> 0- (Constructive) comments.
-> 
-> 1- The "official" assignment of an Address Family.
-> (It is enough for everything but interface grabbing, see 2)
-> 
-> in include/linux/net.h:
-> - #define NPROTO          34              /* should be enough for now..  */
-> + #define NPROTO          35              /* should be enough for now..  */
-> 
-> in include/linux/socket.h
-> + #define AF_IPN 34
-> + #define PF_IPN AF_IPN
-> - #define AF_MAX          34      /* For now.. */
-> + #define AF_MAX          35      /* For now.. */
-> 
-> This seems to be quite simple.
-> 
-> 2- Another "grabbing hook" for interfaces (like the ones already
-> existing for the kernel bridge and for the macvlan).
-> 
-> In include/linux/netdevice.h:
-> among the fields of struct net_device:
-> 
->         /* bridge stuff */
-> 	struct net_bridge_port  *br_port;
-> 	/* macvlan */
-> 	struct macvlan_port     *macvlan_port;
-> +        /* ipn */
-> +        struct ipn_node        *ipn_port;
-> 		 
-> 	/* class/net/name entry */
-> 	struct device           dev;
-> 
-> In net/core/dev.c, we need another section for grabbing packets....
-> like the ones defined for CONFIG_BRIDGE and CONFIG_MACVLAN.
-> I can write the patch (it needs just tens of minutes of cut&paste).
-> We are studying some way to register/deregister grabbing services,
-> I feel this would be the cleanest way. 
-> 
-> WHERE?
-> ------
-> There is an experimental version in the VDE svn tree.
-> http://sourceforge.net/projects/vde
->
+Yeah.  Sounds right, in the microsecond range.  Be interesting to see data.
 
-Post complete source code for kernel part to netdev@vger.kernel.org.
-If you want the hooks, you need to include the full source code for inclusion
-in mainline. All the Documentation/SubmittingPatches rules apply;
-you can't just ask for "facilitators" and expect to keep your stuff out of tree.
-
+Anybody have ideas on what kind of experiments could confirm this
+estimate is right?
