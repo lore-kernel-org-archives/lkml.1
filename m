@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbXLERzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbXLERz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755001AbXLERzl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 12:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXLERxk
+	id S1755156AbXLERz4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 12:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXLERxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 12:53:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54352 "EHLO mx1.redhat.com"
+	Wed, 5 Dec 2007 12:53:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54353 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754127AbXLERxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754135AbXLERxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Dec 2007 12:53:39 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
@@ -17,287 +17,103 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 7/9] unify smp parts of system.h
-Date: Wed,  5 Dec 2007 13:08:31 -0200
-Message-Id: <11968673473254-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 9/9] unify system.h
+Date: Wed,  5 Dec 2007 13:08:33 -0200
+Message-Id: <11968673573299-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1196867342420-git-send-email-gcosta@redhat.com>
-References: 20071204204931.GC32018@elte.hu <1196867313972-git-send-email-gcosta@redhat.com> <1196867319253-git-send-email-gcosta@redhat.com> <11968673241599-git-send-email-gcosta@redhat.com> <11968673291072-git-send-email-gcosta@redhat.com> <1196867333728-git-send-email-gcosta@redhat.com> <11968673383347-git-send-email-gcosta@redhat.com> <1196867342420-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11968673522098-git-send-email-gcosta@redhat.com>
+References: 20071204204931.GC32018@elte.hu <1196867313972-git-send-email-gcosta@redhat.com> <1196867319253-git-send-email-gcosta@redhat.com> <11968673241599-git-send-email-gcosta@redhat.com> <11968673291072-git-send-email-gcosta@redhat.com> <1196867333728-git-send-email-gcosta@redhat.com> <11968673383347-git-send-email-gcosta@redhat.com> <1196867342420-git-send-email-gcosta@redhat.com> <11968673473254-git-send-email-gcosta@redhat.com> <11968673522098-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The memory barrier parts of system.h are not very different between
-i386 and x86_64, the main difference being the availability of
-instructions, which we handle with the use of ifdefs.
+This patch finishes the unification of system.h file.
+i386 needs a constant to be defined, and it is defined inside an ifdef
 
-They are consolidated in system.h file, and then removed from
-the arch-specific headers.
+Other than that, pretty much nothing but includes are left in the arch
+specific headers, and they are deleted.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- include/asm-x86/system.h    |  105 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/system_32.h |   99 ----------------------------------------
- include/asm-x86/system_64.h |   25 ----------
- 3 files changed, 105 insertions(+), 124 deletions(-)
+ include/asm-x86/system.h    |   10 ++++++++--
+ include/asm-x86/system_32.h |   15 ---------------
+ include/asm-x86/system_64.h |   10 ----------
+ 3 files changed, 8 insertions(+), 27 deletions(-)
 
-Index: linux-2.6-x86/include/asm-x86/system.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/system.h
-+++ linux-2.6-x86/include/asm-x86/system.h
-@@ -202,4 +202,109 @@ extern void free_init_pages(char *what, 
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index fd2abfd..9460db4 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -2,8 +2,12 @@
+ #define _ASM_X86_SYSTEM_H_
  
- void default_idle(void);
+ #include <asm/asm.h>
++#include <asm/segment.h>
++#include <asm/cpufeature.h>
++#include <asm/cmpxchg.h>
  
+ #include <linux/kernel.h>
++#include <linux/irqflags.h>
+ 
+ #ifdef CONFIG_X86_32
+ #define AT_VECTOR_SIZE_ARCH 2 /* entries in ARCH_DLINFO */
+@@ -34,7 +38,10 @@ extern struct task_struct *FASTCALL(__switch_to(struct task_struct *prev,
+ 		      "2" (prev), "d" (next));				\
+ } while (0)
+ 
+-# include "system_32.h"
 +/*
-+ * Force strict CPU ordering.
-+ * And yes, this is required on UP too when we're talking
-+ * to devices.
++ * disable hlt during certain critical i/o operations
 + */
-+#ifdef CONFIG_X86_32
-+/*
-+ * For now, "wmb()" doesn't actually do anything, as all
-+ * Intel CPU's follow what Intel calls a *Processor Order*,
-+ * in which all writes are seen in the program order even
-+ * outside the CPU.
-+ *
-+ * I expect future Intel CPU's to have a weaker ordering,
-+ * but I'd also expect them to finally get their act together
-+ * and add some real memory barriers if so.
-+ *
-+ * Some non intel clones support out of order store. wmb() ceases to be a
-+ * nop for these.
-+ */
-+#define mb() alternative("lock; addl $0,0(%%esp)", "mfence", X86_FEATURE_XMM2)
-+#define rmb() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
-+#define wmb() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
-+#else
-+#define mb() 	asm volatile("mfence":::"memory")
-+#define rmb()	asm volatile("lfence":::"memory")
-+#define wmb()	asm volatile("sfence" ::: "memory")
-+#endif
-+
-+/**
-+ * read_barrier_depends - Flush all pending reads that subsequents reads
-+ * depend on.
-+ *
-+ * No data-dependent reads from memory-like regions are ever reordered
-+ * over this barrier.  All reads preceding this primitive are guaranteed
-+ * to access memory (but not necessarily other CPUs' caches) before any
-+ * reads following this primitive that depend on the data return by
-+ * any of the preceding reads.  This primitive is much lighter weight than
-+ * rmb() on most CPUs, and is never heavier weight than is
-+ * rmb().
-+ *
-+ * These ordering constraints are respected by both the local CPU
-+ * and the compiler.
-+ *
-+ * Ordering is not guaranteed by anything other than these primitives,
-+ * not even by data dependencies.  See the documentation for
-+ * memory_barrier() for examples and URLs to more information.
-+ *
-+ * For example, the following code would force ordering (the initial
-+ * value of "a" is zero, "b" is one, and "p" is "&a"):
-+ *
-+ * <programlisting>
-+ *	CPU 0				CPU 1
-+ *
-+ *	b = 2;
-+ *	memory_barrier();
-+ *	p = &b;				q = p;
-+ *					read_barrier_depends();
-+ *					d = *q;
-+ * </programlisting>
-+ *
-+ * because the read of "*q" depends on the read of "p" and these
-+ * two reads are separated by a read_barrier_depends().  However,
-+ * the following code, with the same initial values for "a" and "b":
-+ *
-+ * <programlisting>
-+ *	CPU 0				CPU 1
-+ *
-+ *	a = 2;
-+ *	memory_barrier();
-+ *	b = 3;				y = b;
-+ *					read_barrier_depends();
-+ *					x = a;
-+ * </programlisting>
-+ *
-+ * does not enforce ordering, since there is no data dependency between
-+ * the read of "a" and the read of "b".  Therefore, on some CPUs, such
-+ * as Alpha, "y" could be set to 3 and "x" to 0.  Use rmb()
-+ * in cases like this where there are no data dependencies.
-+ **/
-+
-+#define read_barrier_depends()	do { } while (0)
-+
-+#ifdef CONFIG_SMP
-+#define smp_mb()	mb()
-+#ifdef CONFIG_X86_PPRO_FENCE
-+# define smp_rmb()	rmb()
-+#else
-+# define smp_rmb()	barrier()
-+#endif
-+#ifdef CONFIG_X86_OOSTORE
-+# define smp_wmb() 	wmb()
-+#else
-+# define smp_wmb()	barrier()
-+#endif
-+#define smp_read_barrier_depends()	read_barrier_depends()
-+#define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
-+#else
-+#define smp_mb()	barrier()
-+#define smp_rmb()	barrier()
-+#define smp_wmb()	barrier()
-+#define smp_read_barrier_depends()	do { } while (0)
-+#define set_mb(var, value) do { var = value; barrier(); } while (0)
-+#endif
-+
-+
++#define HAVE_DISABLE_HLT
+ #else
+ #define __SAVE(reg, offset) "movq %%" #reg ",(14-" #offset ")*8(%%rsp)\n\t"
+ #define __RESTORE(reg, offset) "movq (14-" #offset ")*8(%%rsp),%%" #reg "\n\t"
+@@ -69,7 +76,6 @@ extern struct task_struct *FASTCALL(__switch_to(struct task_struct *prev,
+ 	       [thread_info] "i" (offsetof(struct task_struct, stack)),   \
+ 	       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))  \
+ 	     : "memory", "cc" __EXTRA_CLOBBER)
+-# include "system_64.h"
  #endif
-Index: linux-2.6-x86/include/asm-x86/system_32.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/system_32.h
-+++ linux-2.6-x86/include/asm-x86/system_32.h
-@@ -36,105 +36,6 @@ extern struct task_struct * FASTCALL(__s
- #endif	/* __KERNEL__ */
  
- 
+ #ifdef __KERNEL__
+diff --git a/include/asm-x86/system_32.h b/include/asm-x86/system_32.h
+deleted file mode 100644
+index 83af464..0000000
+--- a/include/asm-x86/system_32.h
++++ /dev/null
+@@ -1,15 +0,0 @@
+-#ifndef __ASM_SYSTEM_H
+-#define __ASM_SYSTEM_H
+-
+-#include <asm/segment.h>
+-#include <asm/cpufeature.h>
+-#include <asm/cmpxchg.h>
+-
+-#include <linux/irqflags.h>
+-
 -/*
-- * Force strict CPU ordering.
-- * And yes, this is required on UP too when we're talking
-- * to devices.
-- *
-- * For now, "wmb()" doesn't actually do anything, as all
-- * Intel CPU's follow what Intel calls a *Processor Order*,
-- * in which all writes are seen in the program order even
-- * outside the CPU.
-- *
-- * I expect future Intel CPU's to have a weaker ordering,
-- * but I'd also expect them to finally get their act together
-- * and add some real memory barriers if so.
-- *
-- * Some non intel clones support out of order store. wmb() ceases to be a
-- * nop for these.
+- * disable hlt during certain critical i/o operations
 - */
-- 
+-#define HAVE_DISABLE_HLT
 -
--#define mb() alternative("lock; addl $0,0(%%esp)", "mfence", X86_FEATURE_XMM2)
--#define rmb() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
--#define wmb() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
--
--/**
-- * read_barrier_depends - Flush all pending reads that subsequents reads
-- * depend on.
-- *
-- * No data-dependent reads from memory-like regions are ever reordered
-- * over this barrier.  All reads preceding this primitive are guaranteed
-- * to access memory (but not necessarily other CPUs' caches) before any
-- * reads following this primitive that depend on the data return by
-- * any of the preceding reads.  This primitive is much lighter weight than
-- * rmb() on most CPUs, and is never heavier weight than is
-- * rmb().
-- *
-- * These ordering constraints are respected by both the local CPU
-- * and the compiler.
-- *
-- * Ordering is not guaranteed by anything other than these primitives,
-- * not even by data dependencies.  See the documentation for
-- * memory_barrier() for examples and URLs to more information.
-- *
-- * For example, the following code would force ordering (the initial
-- * value of "a" is zero, "b" is one, and "p" is "&a"):
-- *
-- * <programlisting>
-- *	CPU 0				CPU 1
-- *
-- *	b = 2;
-- *	memory_barrier();
-- *	p = &b;				q = p;
-- *					read_barrier_depends();
-- *					d = *q;
-- * </programlisting>
-- *
-- * because the read of "*q" depends on the read of "p" and these
-- * two reads are separated by a read_barrier_depends().  However,
-- * the following code, with the same initial values for "a" and "b":
-- *
-- * <programlisting>
-- *	CPU 0				CPU 1
-- *
-- *	a = 2;
-- *	memory_barrier();
-- *	b = 3;				y = b;
-- *					read_barrier_depends();
-- *					x = a;
-- * </programlisting>
-- *
-- * does not enforce ordering, since there is no data dependency between
-- * the read of "a" and the read of "b".  Therefore, on some CPUs, such
-- * as Alpha, "y" could be set to 3 and "x" to 0.  Use rmb()
-- * in cases like this where there are no data dependencies.
-- **/
--
--#define read_barrier_depends()	do { } while(0)
--
--#ifdef CONFIG_SMP
--#define smp_mb()	mb()
--#ifdef CONFIG_X86_PPRO_FENCE
--# define smp_rmb()	rmb()
--#else
--# define smp_rmb()	barrier()
 -#endif
--#ifdef CONFIG_X86_OOSTORE
--# define smp_wmb() 	wmb()
--#else
--# define smp_wmb()	barrier()
+diff --git a/include/asm-x86/system_64.h b/include/asm-x86/system_64.h
+deleted file mode 100644
+index 8d2059f..0000000
+--- a/include/asm-x86/system_64.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef __ASM_SYSTEM_H
+-#define __ASM_SYSTEM_H
+-
+-#include <asm/segment.h>
+-#include <asm/cmpxchg.h>
+-
+-
+-#include <linux/irqflags.h>
+-
 -#endif
--#define smp_read_barrier_depends()	read_barrier_depends()
--#define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
--#else
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#define smp_read_barrier_depends()	do { } while(0)
--#define set_mb(var, value) do { var = value; barrier(); } while (0)
--#endif
--
- #include <linux/irqflags.h>
- 
- /*
-Index: linux-2.6-x86/include/asm-x86/system_64.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/system_64.h
-+++ linux-2.6-x86/include/asm-x86/system_64.h
-@@ -41,31 +41,6 @@
-     
- #endif	/* __KERNEL__ */
- 
--#ifdef CONFIG_SMP
--#define smp_mb()	mb()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#define smp_read_barrier_depends()	do {} while(0)
--#else
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#define smp_read_barrier_depends()	do {} while(0)
--#endif
--
--    
--/*
-- * Force strict CPU ordering.
-- * And yes, this is required on UP too when we're talking
-- * to devices.
-- */
--#define mb() 	asm volatile("mfence":::"memory")
--#define rmb()	asm volatile("lfence":::"memory")
--#define wmb()	asm volatile("sfence" ::: "memory")
--
--#define read_barrier_depends()	do {} while(0)
--#define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
--
- #include <linux/irqflags.h>
- 
- #endif
+-- 
+1.4.4.2
+
