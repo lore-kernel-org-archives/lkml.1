@@ -1,42 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbXLEXjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbXLEXmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854AbXLEXjb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 18:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXLEXjX
+	id S1753696AbXLEXmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 18:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbXLEXmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 18:39:23 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52400 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbXLEXjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 18:39:23 -0500
-To: renzo@cs.unibo.it (Renzo Davoli)
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-From: Andi Kleen <andi@firstfloor.org>
-References: <20071205164055.GA2082@cs.unibo.it>
-Date: Thu, 06 Dec 2007 00:39:22 +0100
-In-Reply-To: <20071205164055.GA2082@cs.unibo.it> (Renzo Davoli's message of "Wed\, 5 Dec 2007 17\:40\:55 +0100")
-Message-ID: <p73bq94k8yd.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 5 Dec 2007 18:42:05 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:20521 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751531AbXLEXmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 18:42:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=bM6hNlN0O4ldJynqQ5XnxlXI0wLhUtmYGWtU4AJus/KAj+NofChPjRgdiiMho16e5H9WccvDA9A7cmhx1bG8ABIyCp8FdcWLqTG7ny9GC3syTW17bZktXetWJDnhI6kBO7NWPhRYE1OMAuO8JvUi4ywdiGa27v/QkKpThRb8U+M=
+Date: Thu, 6 Dec 2007 02:41:54 +0300
+To: Andrew Morton <akpm@linux-foundation.org>, hare@suse.de
+Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org
+Subject: 2.6.24-rc4-mm1: hostbyte=0x01 driverbyte=0x00 (now bisected)
+Message-ID: <20071205234154.GA4041@martell.zuzino.mipt.ru>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-renzo@cs.unibo.it (Renzo Davoli) writes:
+>  git-scsi-misc.patch
 
-> Berkeley socket have been designed for client server or point to point
-> communication. All existing Address Families implement this idea.
+Apologies for not looking into the problem earlier. See
+http://marc.info/?t=119628022300005&r=1&w=2
+"2.6.24-rc3-mm2: Result: hostbyte=0x01 driverbyte=0x00\nend_request: I/O error"
+for previous installment.
 
-Netlink is multicast/broadcast by default for once. And BC/MC certainly
-works for IPv[46] and a couple of other protocols too.
+I've bisected it to the following patch in git-scsi-misc branch.
+Revert on top of 2.6.24-rc4-mm1 also helps.
 
-> IPN is an Inter Process Communication paradigm where all the processes
-> appear as they were connected by a networking bus.
+commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
+Author: Hannes Reinecke <hare@suse.de>
+Date:   Tue Nov 6 09:23:40 2007 +0100
 
-Sounds like netlink. See also RFC 3549
+    [SCSI] Do not requeue requests if REQ_FAILFAST is set
+    
+    Any requests with the REQ_FAILFAST flag set should not be requeued
+    to the requeust queue, but rather terminated directly.
+    Otherwise the multipath failover will stall until the command
+    timeout triggers.
+    
+    Signed-off-by: Hannes Reinecke <hare@suse.de>
+    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-Haven't read further I admit.
-
--Andi
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 0f44bdb..0da0dd0 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1286,6 +1286,11 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
+ 			 */
+ 			if (!(req->cmd_flags & REQ_PREEMPT))
+ 				ret = BLKPREP_DEFER;
++			/*
++			 * Return failfast requests immediately
++			 */
++			if (req->cmd_flags & REQ_FAILFAST)
++				ret = BLKPREP_KILL;
+ 			break;
+ 		default:
+ 			/*
+@@ -1414,6 +1419,17 @@ static inline int scsi_host_queue_ready(struct request_queue *q,
+ 	return 1;
+ }
+ 
++static void __scsi_kill_request(struct request *req)
++{
++	struct scsi_cmnd *cmd = req->special;
++	struct scsi_device *sdev = cmd->device;
++
++	cmd->result = DID_NO_CONNECT << 16;
++	atomic_inc(&cmd->device->iorequest_cnt);
++	sdev->device_busy--;
++	__scsi_done(cmd);
++}
++
+ /*
+  * Kill a request for a dead device
+  */
+@@ -1527,8 +1543,16 @@ static void scsi_request_fn(struct request_queue *q)
+ 		 * accept it.
+ 		 */
+ 		req = elv_next_request(q);
+-		if (!req || !scsi_dev_queue_ready(q, sdev))
++		if (!req)
++			break;
++
++		if (!scsi_dev_queue_ready(q, sdev)) {
++			if (req->cmd_flags & REQ_FAILFAST) {
++				scsi_kill_request(req, q);
++				continue;
++			}
+ 			break;
++		}
+ 
+ 		if (unlikely(!scsi_device_online(sdev))) {
+ 			sdev_printk(KERN_ERR, sdev,
+@@ -1609,8 +1633,12 @@ static void scsi_request_fn(struct request_queue *q)
+ 	 * later time.
+ 	 */
+ 	spin_lock_irq(q->queue_lock);
+-	blk_requeue_request(q, req);
+-	sdev->device_busy--;
++	if (unlikely(req->cmd_flags & REQ_FAILFAST))
++		__scsi_kill_request(req);
++	else {
++		blk_requeue_request(q, req);
++		sdev->device_busy--;
++	}
+ 	if(sdev->device_busy == 0)
+ 		blk_plug_device(q);
+  out:
