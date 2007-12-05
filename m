@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXLEQvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbXLEQxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXLEQvp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 11:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXLEQvi
+	id S1754255AbXLEQxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 11:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXLEQxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 11:51:38 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:7720 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbXLEQvh (ORCPT
+	Wed, 5 Dec 2007 11:53:38 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36758 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbXLEQxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 11:51:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hPb4/mrZ32OLbtRy8k+qjj9EQAd6eNNVXMelmv8z1Ryqk1fDsiyUBrEBZ1hnXi5UhRKGikmsQ4+ytYxCmH6W0ncCaJBwQNASY38ZEpRzwJnrFnaQMNSpNUvjxRHOB3KiYdY0d0Sn3VSY8n2jdHpMXlwEHzn+Wzt/E/SH3Ac5k6c=
-Message-ID: <a372714f0712050851t4f20ac06nd86fa0ac747c427f@mail.gmail.com>
-Date: Wed, 5 Dec 2007 08:51:36 -0800
-From: "Brett Warden" <brett.warden@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH] bw-qcam: Adds module parameter 'aggressive' to skip polite auto-detection prior to direct initialization.
-In-Reply-To: <a372714f0712050849x6247f464p86be8598cbf5990b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Dec 2007 11:53:38 -0500
+Date: Wed, 5 Dec 2007 08:51:02 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Robert Richter" <robert.richter@amd.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: apic: Export symbols for extended interrupt LVT
+ functions
+Message-ID: <20071205085102.2a6f9803@laptopd505.fenrus.org>
+In-Reply-To: <20071205164014.E55DC8098@erda.amd.com>
+References: <20071205164014.E55DC8098@erda.amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071205004639.3a5cc948@the-village.bc.nu>
-	 <a372714f0712050849x6247f464p86be8598cbf5990b@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, forgot to copy back to the lists.
+On Wed,  5 Dec 2007 17:40:14 +0100 (CET)
+"Robert Richter" <robert.richter@amd.com> wrote:
 
-On Dec 5, 2007 8:49 AM, Brett Warden <brett.warden@gmail.com> wrote:
-> On Dec 4, 2007 4:46 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >
-> > Someone still has a bw-qcam device ?
->
-> Yes. I haven't found a better option for very-low-light, although I
-> admit I haven't looked in a long while. The last one I tried was an
-> OV518+, but of course that driver seems to have been abandoned.
->
-> > The status polling ought to be rock solid - what values do you see ?
->
-> It has been as high as 94-96, but after being connected, powered, and
-> used for a while, it drops sometimes into the 40s, but has even been
-> as low as 8-14. When it's that low, it never comes back up until
-> either I disconnect/reconnect the power, or I force the driver to
-> initialize it through this hack. Even after trying that again just
-> now, it's ranging from 24-33.
->
-> --
-> Brett Warden
->
 
+which kernel code is using or going to use these export?
+
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  arch/x86/kernel/apic_64.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+> index 5a31a8c..a678e8f 100644
+> --- a/arch/x86/kernel/apic_64.c
+> +++ b/arch/x86/kernel/apic_64.c
+> @@ -209,12 +209,14 @@ u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type,
+> u8 mask) setup_APIC_eilvt(APIC_EILVT_LVTOFF_MCE, vector, msg_type,
+> mask); return APIC_EILVT_LVTOFF_MCE;
+>  }
+> +EXPORT_SYMBOL(setup_APIC_eilvt_mce);
+>  
+>  u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask)
+>  {
+>  	setup_APIC_eilvt(APIC_EILVT_LVTOFF_IBS, vector, msg_type,
+> mask); return APIC_EILVT_LVTOFF_IBS;
+>  }
+> +EXPORT_SYMBOL(setup_APIC_eilvt_ibs);
+>  
+>  /*
+>   * Program the next event, relative to now
 
 
 -- 
-Brett Warden
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
