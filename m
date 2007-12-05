@@ -1,36 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbXLEMYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbXLEM3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbXLEMYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 07:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXLEMYM
+	id S1754156AbXLEM3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 07:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXLEM3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 07:24:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36332 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751897AbXLEMYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 07:24:10 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20071205083856.GG8181@ftp.linux.org.uk>
-References: <20071205083856.GG8181@ftp.linux.org.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fcrypt endianness misannotations
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 05 Dec 2007 12:23:58 +0000
-Message-ID: <18847.1196857438@redhat.com>
+	Wed, 5 Dec 2007 07:29:14 -0500
+Received: from torres.zugschlus.de ([85.214.68.41]:39905 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbXLEM3N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 07:29:13 -0500
+Date: Wed, 5 Dec 2007 13:29:12 +0100
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071205122912.GC24685@torres.zugschlus.de>
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071204161811.GB15974@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ftp.linux.org.uk> wrote:
+On Tue, Dec 04, 2007 at 05:18:11PM +0100, Adrian Bunk wrote:
+> On Tue, Dec 04, 2007 at 12:41:25PM +0100, Marc Haber wrote:
+> > While debugging Exim4's GnuTLS interface, I recently found out that
+> > reading from /dev/urandom depletes entropy as much as reading from
+> > /dev/random would. This has somehow surprised me since I have always
+> > believed that /dev/urandom has lower quality entropy than /dev/random,
+> > but lots of it.
+> 
+> man 4 random
 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Thanks for this pointer, I was not aware of the documentation. After
+reading this thread and the docs, I am now convinced that GnuTLS
+should seed a PRNG from /dev/(u)random instead of using the entropy
+directly. I will go filing a bug against GnuTLS.
 
-I've checked it and it still works with this patch.
+Greetings
+Marc
 
-Acked-by: David Howells <dhowells@redhat.com>
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
