@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXLESKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbXLESP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbXLESKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 13:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXLESK3
+	id S1753527AbXLESP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 13:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXLESPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 13:10:29 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:54651 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbXLESK2 (ORCPT
+	Wed, 5 Dec 2007 13:15:09 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:27223 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbXLESPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 13:10:28 -0500
-Date: Wed, 5 Dec 2007 13:09:59 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] UML - change sigcontext fields to match x86
-Message-ID: <20071205180959.GA7934@c2.user-mode-linux.org>
-References: <20071205163024.GA7241@c2.user-mode-linux.org> <20071205164816.GB25641@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment
-In-Reply-To: <20071205164816.GB25641@elte.hu>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 5 Dec 2007 13:15:07 -0500
+Message-ID: <4756EA9D.1070204@chelsio.com>
+Date: Wed, 05 Dec 2007 10:14:53 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>,
+       Wen Xiong <wenxiong@us.ibm.com>
+Subject: [PATCH 0/2] cxgb3 - driver update
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Dec 2007 18:13:35.0453 (UTC) FILETIME=[8D2B10D0:01C8376A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 05:48:16PM +0100, Ingo Molnar wrote:
-> thanks, we indeed missed those. Should we carry this in x86.git, or 
-> would you like to carry this in your UML tree?
+Jeff,
 
-Probably better for it to go in x86.git - that way it travels with
-your sigcontext patch.
+I'm submitting a patch series for inclusion in 2.6.25.
+The patches are built against netdev#upstream.
 
-				Jeff
+Here is a brief description:
+- Update GPIO pinning and MAC support for T3C adapters
+- Enable parity error detection.
 
--- 
-Work email - jdike at linux dot intel dot com
+Cheers,
+Divy
+
