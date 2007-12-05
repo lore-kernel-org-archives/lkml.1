@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbXLEGNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbXLEGO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbXLEGNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 01:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXLEGNJ
+	id S1754010AbXLEGO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 01:14:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXLEGOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 01:13:09 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:43871 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbXLEGNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 01:13:08 -0500
-Date: Wed, 5 Dec 2007 15:13:04 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Amos Waterland <apw@us.ibm.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Updates to nfsroot documentation (take 2)
-Message-ID: <20071205061302.GA2292@verge.net.au>
-References: <20071205045932.GA7160@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071205045932.GA7160@us.ibm.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	Wed, 5 Dec 2007 01:14:48 -0500
+Received: from sineb-mail-2.sun.com ([192.18.19.7]:40056 "EHLO
+	sineb-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbXLEGOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 01:14:47 -0500
+Date: Wed, 05 Dec 2007 16:14:46 +1000
+From: David Holmes - Sun Microsystems <David.Holmes@Sun.COM>
+Subject: Re: [PATCH -v2] fix for futex_wait signal stack corruption
+In-reply-to: <alpine.LFD.0.9999.0712042151250.13796@woody.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <475641D6.1060409@sun.com>
+Organization: Sun Microsystems
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+References: <1196801858.1645.37.camel@localhost.localdomain>
+ <alpine.LFD.0.9999.0712041307270.32379@woody.linux-foundation.org>
+ <20071204213924.GA14915@goodmis.org>
+ <alpine.LFD.0.9999.0712041436100.13796@woody.linux-foundation.org>
+ <Pine.LNX.4.58.0712042016540.18042@gandalf.stny.rr.com>
+ <alpine.LFD.0.9999.0712041740490.13796@woody.linux-foundation.org>
+ <Pine.LNX.4.58.0712042135030.18314@gandalf.stny.rr.com>
+ <alpine.LFD.0.9999.0712041935140.13796@woody.linux-foundation.org>
+ <4756382D.4040904@sun.com>
+ <alpine.LFD.0.9999.0712042151250.13796@woody.linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ CCed netdev ]
+Thanks for clarifying that Linus.
 
-On Tue, Dec 04, 2007 at 11:59:32PM -0500, Amos Waterland wrote:
-> The difference between ip=off and ip=::::::off has been a cause of much
-> confusion.  Document how each behaves, and do not contradict ourselves
-> by saying that "off" is the default when in fact "any" is the default
-> and is descibed as being so lower in the file.
+Regards,
+David Holmes
 
-This seems fine to me in so far as it is correct.  And I do like the
-removal of the duplicat documentation from ipconfig.c.  However, as I
-mentioned yesterday, it really seems to me that the code in ipconfig.c
-should be updated so that ip=off and ip=::::::off do the same thing.
-
+Linus Torvalds said the following on  5/12/07 04:06 PM:
 > 
-> Signed-off-by: Amos Waterland <apw@us.ibm.com>
+> On Wed, 5 Dec 2007, David Holmes - Sun Microsystems wrote:
+>> While this was observed with process control signals, my concern was that
+>> other signals might cause pthread_cond_timedwait to return immediately in the
+>> same way. The test program allows for SIGUSR1 and SIGRTMIN testing as well,
+>> but these other signals did not cause the immediate return. But it would seem
+>> from Steven's analysis that this is just a fortuitous result. If I understand
+>> things correctly, any interruption of pthread_cond_timedwait by a signal,
+>> could result in waiting until an arbitrary time - depending on how the stack
+>> value was corrupted. Is that correct?
 > 
->  Documentation/nfsroot.txt |    9 ++++++---
->  net/ipv4/ipconfig.c       |   20 +-------------------
->  2 files changed, 7 insertions(+), 22 deletions(-)
+> No, very few things can actually cause the restart_block path to be taken. 
+> An actual signal execution would turn that into an EINTR, the only case 
+> that should ever trigger this is a signal that causes some kernel action 
+> (ie the system call *is* interrupted), but does not actually result in any 
+> user-visible state changes.
 > 
-> diff --git a/Documentation/nfsroot.txt b/Documentation/nfsroot.txt
-> index 16a7cae..ac04a1d 100644
-> --- a/Documentation/nfsroot.txt
-> +++ b/Documentation/nfsroot.txt
-> @@ -92,8 +92,11 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
->    autoconfiguration.
->  
->    The <autoconf> parameter can appear alone as the value to the `ip'
-> -  parameter (without all the ':' characters before) in which case auto-
-> -  configuration is used.
-> +  parameter (without all the ':' characters before).  If the value is
-> +  "ip=off" or "ip=none", no autoconfiguration will take place, otherwise
-> +  autoconfiguration will take place.  Note that "ip=off" is not the same
-> +  thing as "ip=::::::off", because in the latter autoconfiguration will take
-> +  place if any of DHCP, BOOTP or RARP are compiled in the kernel.
->  
->    <client-ip>	IP address of the client.
->  
-> @@ -142,7 +145,7 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
->  		into the kernel will be used, regardless of the value of
->  		this option.
->  
-> -                  off or none: don't use autoconfiguration (default)
-> +                  off or none: don't use autoconfiguration
->  		  on or any:   use any protocol available in the kernel
->  		  dhcp:        use DHCP
->  		  bootp:       use BOOTP
-> diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-> index c5c107a..96400b0 100644
-> --- a/net/ipv4/ipconfig.c
-> +++ b/net/ipv4/ipconfig.c
-> @@ -1396,25 +1396,7 @@ late_initcall(ip_auto_config);
->  
->  /*
->   *  Decode any IP configuration options in the "ip=" or "nfsaddrs=" kernel
-> - *  command line parameter. It consists of option fields separated by colons in
-> - *  the following order:
-> - *
-> - *  <client-ip>:<server-ip>:<gw-ip>:<netmask>:<host name>:<device>:<PROTO>
-> - *
-> - *  Any of the fields can be empty which means to use a default value:
-> - *	<client-ip>	- address given by BOOTP or RARP
-> - *	<server-ip>	- address of host returning BOOTP or RARP packet
-> - *	<gw-ip>		- none, or the address returned by BOOTP
-> - *	<netmask>	- automatically determined from <client-ip>, or the
-> - *			  one returned by BOOTP
-> - *	<host name>	- <client-ip> in ASCII notation, or the name returned
-> - *			  by BOOTP
-> - *	<device>	- use all available devices
-> - *	<PROTO>:
-> - *	   off|none	    - don't do autoconfig at all (DEFAULT)
-> - *	   on|any           - use any configured protocol
-> - *	   dhcp|bootp|rarp  - use only the specified protocol
-> - *	   both             - use both BOOTP and RARP (not DHCP)
-> + *  command line parameter.  See Documentation/nfsroot.txt.
->   */
->  static int __init ic_proto_name(char *name)
->  {
-
--- 
-Horms
-
+> The classic case is ^Z + bg, but iirc you can trigger it with ptrace too. 
+> And I think two threads racing to pick up the same signal can cause it 
+> too, for that matter (ie one thread takes the signal, the other one got 
+> interrupted but there's nothing there, so it just causes a system call 
+> restart).
+> 
+> There's basically two different system call restart mechanisms in the 
+> kernel:
+> 
+>  - returning -ERESTARTNOHAND will cause the system call to be restarted 
+>    with the *original* arguments if no signal handler was actually 
+>    invoked. This has been around for a long time, and is used by a lot of 
+>    system calls. It's fine for things that are idempotent, ie the argument 
+>    meaning doesn't change over time (things like a "read()" system call, 
+>    for example)
+> 
+>  - the "restart_block" model that returns -ERESTARTBLOCK, which will cause 
+>    the system call to be restarted with the arguments specified in the 
+>    system call restart block. This is for system calls that are *not* 
+>    idempotent, ie the argument might be a relative timeout or something 
+>    like that, where we need to actually behave *differently* when 
+>    restarting.
+> 
+> The latter case is "new" (it's been around for a while, but relative to 
+> the ERESTARTNOHAND one), and it relies on the system call itself setting 
+> up its restart point and the argument save area. And each such system call 
+> can obviously screw it up by saving/restoring the arguments with the 
+> incorrect semantics.
+> 
+> So this bug was really (a) specific to that particular futex restart 
+> mechanism, and (b) only triggers for the (rather unusual) case where the 
+> system call gets interrupted by a signal, but no signal handler actually 
+> happens. In practice, ^Z is the most common case by far (other signals are 
+> either ignored and don't even cause an interrupt event in the first place, 
+> or they are "real" signals, and cause a signal handler to be invoked).
+> 
+> 			Linus
