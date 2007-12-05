@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXLEU1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbXLEU1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbXLEU1N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 15:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXLEU06
+	id S1754827AbXLEU1n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 15:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXLEU1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 15:26:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36227 "EHLO mx2.mail.elte.hu"
+	Wed, 5 Dec 2007 15:27:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45407 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbXLEU05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 15:26:57 -0500
-Date: Wed, 5 Dec 2007 21:26:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, markus.t.metzger@gmail.com,
-       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [patch 1/2] x86, ptrace: support for branch trace store(BTS)
-Message-ID: <20071205202633.GD14570@elte.hu>
-References: <20071205195920.A19413@sedona.ch.intel.com>
+	id S1751617AbXLEU1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 15:27:33 -0500
+Message-ID: <47570B0A.6040404@redhat.com>
+Date: Wed, 05 Dec 2007 15:33:14 -0500
+From: Dave Anderson <anderson@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4) Gecko/20030611
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071205195920.A19413@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] exec: allow > 2GB executables to run on 64-bit systems
+References: <4756C590.9080301@redhat.com> <p73fxyhj5f7.fsf@bingen.suse.de> <475702E7.1000607@redhat.com> <20071205195637.GA20595@one.firstfloor.org>
+In-Reply-To: <20071205195637.GA20595@one.firstfloor.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+>>I agree in theory.  We've only seen instances on 64-bitters...
+> 
+> 
+> I think that's because gcc does not support the medium/large code models
+> for i386. Although in theory someone could create an executable with
+> a large enough .data.
+> 
+> -Andi
 
-* Markus Metzger <markus.t.metzger@intel.com> wrote:
+Or perhaps huge debuginfo section(s)?  The x86_64 instance
+had 2.5GB .debug_macinfo DWARF section.
 
-> Resend using different mail client
+Dave
 
-thanks, this one applied fine to x86.git.
 
-	Ingo
