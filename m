@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbXLEK7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXLELKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbXLEK7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 05:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbXLEK7Y
+	id S1753245AbXLELKm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 06:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbXLELKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 05:59:24 -0500
-Received: from orion2.pixelized.ch ([195.190.190.13]:43484 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbXLEK7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 05:59:23 -0500
-Message-ID: <47568481.50802@cateee.net>
-Date: Wed, 05 Dec 2007 11:59:13 +0100
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Diego Calleja <diegocg@gmail.com>
-CC: "" <jamagallon@ono.com>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Development & Objective-C
-References: <474EAD18.6040408@stellatravel.co.uk>	<20071130143445.GA2310@csclub.uwaterloo.ca>	<53ADBDBF-9B65-441E-B867-D68DE48ABD64@mac.com>	<4751BE0D.3050609@argo.co.il>	<p733aukyl8n.fsf@bingen.suse.de>	<47539030.10600@argo.co.il>	<20071203095022.GA28560@one.firstfloor.org>	<4753ECA5.2010604@argo.co.il>	<20071203211353.GA4009@1wt.eu>	<20071203223902.1194aa69@werewolf>	<20071203215727.543fc757@the-village.bc.nu>	<20071204224745.51e6c2b1@werewolf> <20071204232045.212ba1bf.diegocg@gmail.com>
-In-Reply-To: <20071204232045.212ba1bf.diegocg@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 5 Dec 2007 06:10:34 -0500
+Received: from ozlabs.org ([203.10.76.45]:57918 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751442AbXLELKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 06:10:33 -0500
+Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Greg KH <greg@kroah.com>
+Cc: "Kyle A. Lucke" <klucke@us.ibm.com>, David Gibson <dwg@au1.ibm.com>,
+       linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071205093054.GA23229@kroah.com>
+References: <20071205093054.GA23229@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-CRFWAJjNy6+pDpjK21d4"
+Date: Wed, 05 Dec 2007 22:10:31 +1100
+Message-Id: <1196853031.6759.7.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diego Calleja wrote:
-> El Tue, 4 Dec 2007 22:47:45 +0100, "J.A. Magallón" <jamagallon@ono.com> escribió:
-> 
->> That is what I like of C++, with good placement of high level features
->> like const's and & (references) one can gain fine control over what
->> gets copied or not.
-> 
-> But...if there's some way Linux can get "language improvements", is with
-> new C standards/gccextensions/etc. It'd be nice if people tried to add
-> (useful) C extensions to gcc, instead of proposing some random language :)
 
-But nobody know such extensions.
-I think that the core kernel will remain in C, because
-there are no problems and no improvement possible
-(with other language)
+--=-CRFWAJjNy6+pDpjK21d4
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-But the drivers side has more problems. There is a lot
-of copy-paste, quality is often not high, not all developers
-know well linux kernel, and not well maintained with new
-or better internal API. So if we found a good template
-or a good language to help *some* drivers without
-causing a lot of problem to the rest of community, it would
-be nice.
+On Wed, 2007-12-05 at 01:30 -0800, Greg KH wrote:
+> In doing a massive kobject cleanup of the kernel tree, I ran across the
+> iseries_veth.c driver.
+>=20
+> It looks like the driver is creating a number of subdirectories under
+> the driver sysfs directory.  This is odd and probably wrong.  You want
+> these virtual connections to show up in the main sysfs device tree, not
+> under the driver directory.
+>=20
+> I'll be glad to totally guess and try to move it around in the sysfs
+> tree, but odds are I'll get it all wrong as I can't really test this
+> out :)
+>=20
+> Any hints on what this driver is trying to do in this sysfs directories?
 
-I don't think that we have written in stone that kernel
-drivers should be written only in C, but actually there is
-no good alternative.
+I wrote the code, I think, but it's been a while - I'll have a look at
+it tomorrow.
 
-But I think it is a huge task to find a language, a
-prototype of API and convert some testing drivers.
-And there is no guarantee of good result.
+Why is it "odd and probably wrong" to create subdirectories under the
+driver in sysfs?
 
-ciao
-	cate
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-CRFWAJjNy6+pDpjK21d4
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHVocndSjSd0sB4dIRAjaYAJ9OZhuAhxI2vbdF1hIiRajoCY/rjgCfTS/s
+vJPPnnU8o3gnnvUnEBpmyCU=
+=3mbJ
+-----END PGP SIGNATURE-----
+
+--=-CRFWAJjNy6+pDpjK21d4--
+
