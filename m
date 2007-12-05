@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbXLEP3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXLEPav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbXLEP3o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 10:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbXLEP3f
+	id S1753761AbXLEPav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 10:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXLEPao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 10:29:35 -0500
-Received: from ccs17.jlab.org ([129.57.35.82]:41313 "EHLO ccs17.jlab.org"
+	Wed, 5 Dec 2007 10:30:44 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:50767 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbXLEP3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 10:29:35 -0500
-Message-ID: <4756C3D9.9030107@jlab.org>
-Date: Wed, 05 Dec 2007 10:29:29 -0500
-From: Jie Chen <chen@jlab.org>
-Organization: Jefferson Lab
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
-References: <4744966C.900@jlab.org> <4744ADA9.7040905@cosmosbay.com> <4744E0DC.7050808@jlab.org> <1195698770.11808.4.camel@odie.local> <4744F042.4070002@jlab.org> <20071204131707.GA4232@elte.hu>
-In-Reply-To: <20071204131707.GA4232@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750898AbXLEPan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 10:30:43 -0500
+Date: Thu, 06 Dec 2007 00:32:58 +0900 (JST)
+Message-Id: <20071206.003258.115905122.anemo@mba.ocn.ne.jp>
+To: andy.sharp@onstor.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       p_gortmaker@yahoo.com, a.zummo@towertech.it
+Subject: Re: [PATCH] Platform real time clock driver for Dallas 1511 chip.
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20071205004643.GA15429@onstor.com>
+References: <20071205004643.GA15429@onstor.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jie Chen <chen@jlab.org> wrote:
-> 
->> Simon Holm Th??gersen wrote:
->>> ons, 21 11 2007 kl. 20:52 -0500, skrev Jie Chen:
->>> There is a backport of the CFS scheduler to 2.6.21, see
->>> http://lkml.org/lkml/2007/11/19/127
->>>
->> Hi, Simon:
->>
->> I will try that after the thanksgiving holiday to find out whether the 
->> odd behavior will show up using 2.6.21 with back ported CFS.
-> 
-> would be also nice to test this with 2.6.24-rc4.
-> 
-> 	Ingo
-Hi, Ingo:
+On Tue, 4 Dec 2007 16:46:51 -0800, Andrew Sharp <andy.sharp@onstor.com> wrote:
+> +struct rtc_plat_data {
+> +	struct rtc_device *rtc;
+> +	void __iomem *ioaddr;		/* virtual base address */
+> +	unsigned long baseaddr;		/* physical base address */
+> +	int size;				/* amount of memory mapped */
+> +	int irq;
+> +	unsigned int irqen;
+> +	int alrm_sec;
+> +	int alrm_min;
+> +	int alrm_hour;
+> +	int alrm_mday;
+> +};
+> +
+> +static DEFINE_SPINLOCK(ds1511_lock);
+> +
+> +static __iomem char *ds1511_base;
 
-I just ran the same test on two 2.6.24-rc4 kernels: one with 
-CONFIG_FAIR_GROUP_SCHED on and the other with CONFIG_FAIR_GROUP_SCHED 
-off. The odd behavior I described in my previous e-mails were still 
-there for both kernels. Let me know If I can be any more help. Thank you.
+If you used ds1511_base, ioaddr in rtc_plat_data is not needed.
 
--- 
-###############################################
-Jie Chen
-Scientific Computing Group
-Thomas Jefferson National Accelerator Facility
-12000, Jefferson Ave.
-Newport News, VA 23606
+> + static noinline void
+> +rtc_write(uint8_t val, uint32_t reg)
+> +{
+> +	writeb(val, ds1511_base + (reg * reg_spacing));
+> +}
 
-(757)269-5046 (office) (757)269-6248 (fax)
-chen@jlab.org
-###############################################
+Still "noinline" here and there.
 
+> +static struct bin_attribute ds1511_nvram_attr = {
+> +	.attr = {
+> +		.name = "nvram",
+> +		.mode = S_IRUGO | S_IWUGO,
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.size = DS1511_RAM_MAX,
+> +	.read = ds1511_nvram_read,
+> +	.write = ds1511_nvram_write,
+> +};
+
+It would be better to use S_IWUSR instead of S_IWUGO.  Please check
+rtc-ds1553 changes in current git tree.
+
+> +static struct platform_driver ds1511_rtc_driver = {
+> +	.probe		= ds1511_rtc_probe,
+> +	.remove		= __devexit_p(ds1511_rtc_remove),
+> +	.driver		= {
+> +		.name	= "ds1511",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +};
+
+Use "rtc-ds1511" for driver name for hotplugging.  Please check
+rtc-ds1553 changes in current git tree.
+
+> + static void __exit
+> +ds1511_rtc_exit(void)
+> +{
+> +	return platform_driver_unregister(&ds1511_rtc_driver);
+> +}
+
+Do not return void value.  Please check rtc-ds1553 changes in current
+git tree.
+
+---
+Atsushi Nemoto
