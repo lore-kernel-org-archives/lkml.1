@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbXLEDBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbXLEDJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751897AbXLEDBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 22:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXLEDBL
+	id S1752969AbXLEDJp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 22:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXLEDJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 22:01:11 -0500
-Received: from toq2-srv.bellnexxia.net ([209.226.175.121]:37782 "EHLO
-	toq2-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbXLEDBL (ORCPT
+	Tue, 4 Dec 2007 22:09:36 -0500
+Received: from fmailhost02.isp.att.net ([207.115.11.52]:34546 "EHLO
+	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbXLEDJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 22:01:11 -0500
-X-Greylist: delayed 555 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 22:01:10 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAKegVUdFn+Sr/2dsb2JhbACpBQ
-Date: Tue, 4 Dec 2007 21:51:54 -0500
-From: Mike Houston <mikeserv@bmts.com>
-To: linux-kernel@vger.kernel.org
-Cc: mhoffman@lightlink.com
-Subject: 2.6.24-rc4 hwmon it87 probe fails
-Message-Id: <20071204215154.7f26285e.mikeserv@bmts.com>
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.10.14; x86_64-unknown-linux-gnu)
+	Tue, 4 Dec 2007 22:09:36 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Dec 2007 22:09:36 EST
+X-Originating-IP: [74.227.55.164]
+Date: Tue, 4 Dec 2007 21:04:33 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Allow (O=...) from file
+Message-ID: <20071204210433.4d7ee66c@osprey.hogchain.net>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,37 +26,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I finally got around to testing Linux 2.6.24 (2.6.24-rc4) and found
-that the it87 driver fails to probe and consequently, my sensors no
-longer work. This was fine with Linux 2.6.23.8 (the last kernel I was
-using)
+Sam,
 
-The necessary modules load, but:
+This piece of the top-level Makefile in current git causes an
+out-of-tree driver Makefile to fail.
 
-it87: Found IT8718F chip at 0x290, revision 2
-it87: in3 is VCC (+5V)
-it87 it87.656: Failed to request region 0x290-0x297
-it87: probe of it87.656 failed with error -16
+101 ifdef O
+102   ifeq ("$(origin O)", "command line")
+103     KBUILD_OUTPUT := $(O)
+104   endif
+105 endif
 
-Coretemp still works.
+The out-of-tree driver Makefile contains an O=... directive that
+(correctly) does _not_ specify the kernel source dir, and apparently
+isn't overridden by the command line either. If in the above Makefile
+snippet I change "command line" to "file", my out-of-tree make
+succeeds. What do you think about allowing O= to come from a file in
+addition to the command line?
 
-It appears it has something to do with the ioport range being
-reserved for some reason:
+Here are my attempts:
 
-system 00:01: ioport range 0x290-0x29f has been reserved
+[jcliburn@osprey atl1-2.0.7-20071202]$ make
+make -C /lib/modules/2.6.24-rc3/source O=/lib/modules/2.6.24-rc3/build SUBDIRS=/home/jcliburn/atl1/atl1-2.0.7-20071202 modules
+make[1]: Entering directory `/home/jcliburn/kernel-work/netdev/netdev-2.6.git'
+Makefile:119: *** Output directory (O=...) specifies kernel src dir.  Stop.
+make[1]: Leaving directory `/home/jcliburn/kernel-work/netdev/netdev-2.6.git'
+make: *** [default] Error 2
 
-At least I don't see that happening on previous kernels.
+[jcliburn@osprey atl1-2.0.7-20071202]$ make O=/lib/modules/2.6.24-rc3/build
+make -C /lib/modules/2.6.24-rc3/source O=/lib/modules/2.6.24-rc3/build SUBDIRS=/home/jcliburn/atl1/atl1-2.0.7-20071202 modules
+make[1]: Entering directory `/home/jcliburn/kernel-work/netdev/netdev-2.6.git'
+Makefile:119: *** Output directory (O=...) specifies kernel src dir.  Stop.
+make[1]: Leaving directory `/home/jcliburn/kernel-work/netdev/netdev-2.6.git'
+make: *** [default] Error 2
 
-In any case, the changes to it87.c itself don't appear to have caused
-this. (CC'd hwmon maintainer anyways, my apologies if that was
-inappropriate)
+Thanks for your help.
 
-dmesg:
-http://www.mikeserv.com/temp/dmesg-2.6.24-rc4.txt
-
-config:
-http://www.mikeserv.com/temp/config-2.6.24-rc4.txt
-
-Thanks for any help or suggestions,
-
-Mike Houston
+Jay
