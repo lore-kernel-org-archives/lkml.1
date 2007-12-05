@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbXLEHfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbXLEHjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbXLEHfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 02:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbXLEHey
+	id S1753903AbXLEHjo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 02:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXLEHje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 02:34:54 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:8448 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751754AbXLEHex (ORCPT
+	Wed, 5 Dec 2007 02:39:34 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4098 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751564AbXLEHjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 02:34:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=q+gZvE/Q0Ijm9yFZAdGDj8LtxWoPbhUL7/gxPKFcCQZQJqsQkOEzw74HIstYlQPcQMifCunGs5rO1MJSPNESCpJ9ETzy6IpeAUmauyGmUpddIL/o0PYwg7FYsLAdQdnZAG9dPkj4Cdsyx1oLMqlXOCfcE/GmBrWSxNgxqobRO7U=
-Message-ID: <47565486.8050701@gmail.com>
-Date: Wed, 05 Dec 2007 16:34:30 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, notting@redhat.com,
-       rusty@rustcorp.com.au, kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [PATCH] depmod: sort output according to modules.order
-References: <47555AF1.8090304@gmail.com> <47555C64.8070607@gmail.com> <20071205072529.GA5681@uranus.ravnborg.org> <47565452.3010800@gmail.com>
-In-Reply-To: <47565452.3010800@gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Dec 2007 02:39:33 -0500
+Date: Wed, 5 Dec 2007 18:39:27 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: simon@fire.lp0.eu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+Message-ID: <20071205073927.GA12413@gondor.apana.org.au>
+References: <20071205065132.GA11476@gondor.apana.org.au> <20071204.231200.117152338.davem@davemloft.net> <20071205071607.GA11852@gondor.apana.org.au> <20071204.233432.136250076.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071204.233432.136250076.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->> It would also simplify the kbuild integration if depmod
->> could read the modules as a space separated list where
->> duplicates are allowed.
->> If we do so then the is no reason to escape to the shell
->> in Makeilfe.build and we do not have to remove duplicates either.
+On Tue, Dec 04, 2007 at 11:34:32PM -0800, David Miller wrote:
 > 
-> I'm no Makefile expert so no doubt my modifications are ugly.  But I
-> think producing a file w/ duplicates in it is just ugly.
+> TCP has some built-in assumptions about characteristics of
+> interent links and what constitutes a timeout which is "too long"
+> and should thus result in a full connection failure.
+> 
+> IPSEC changes this because of IPSEC route resolution via
+> ISAKMP.
+> 
+> With this in mind I can definitely see people preferring
+> the "block until IPSEC resolves" behavior, especially for
+> something like, say, periodic remote backups and stuff like
+> that where you really want the thing to just sit and wait
+> for the connect() to succeed instead of failing.
 
-Oh, and, depmod should do just fine with duplicate entries as it is.
+Hmm, but connect(2) should succeed in that case thanks to the
+blackhole route, no? The subsequent SYNs will then be dropped
+until the IPsec SAs are in place.
 
+Cheers,
 -- 
-tejun
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
