@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbXLEMki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbXLEM4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbXLEMki (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 07:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbXLEMka
+	id S1753147AbXLEM4y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 07:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXLEM4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 07:40:30 -0500
-Received: from ro-out-1112.google.com ([72.14.202.178]:35159 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751361AbXLEMk3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 07:40:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=aDRECQkYQEcBDwnSe1hlS1ZXlLzWKYl2Ngr1uB2VNe99ekVix1KZRMg7NyQ1tggVOfmKWsDZxAL99gbs0DO+zkxn72lL+RWm8wMBgMuWCq+qoOYZlgd7wwe5DB5Pnc+eJXkjDAxcAmttA1r7E27Z6wYEA4b50vOVDsQMHUMAfXw=
-Date: Wed, 5 Dec 2007 20:36:34 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Gabriele Gorla <gorlik@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Patch submission question [not in the FAQ]
-Message-ID: <20071205123634.GO2460@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <602863.12913.qm@web53712.mail.re2.yahoo.com>
+	Wed, 5 Dec 2007 07:56:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35831 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751625AbXLEM4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 07:56:45 -0500
+Date: Wed, 5 Dec 2007 13:56:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 2/5] Use macros instead of TASK_ flags
+Message-ID: <20071205125622.GA21531@elte.hu>
+References: <11932286982175-git-send-email-matthew@wil.cx> <1193228698799-git-send-email-matthew@wil.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <602863.12913.qm@web53712.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <1193228698799-git-send-email-matthew@wil.cx>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 03:36:54AM -0800, Gabriele Gorla wrote:
->Hello,
->I have submitted a patch for the 3x-xxxx driver on
->alpha several months ago to both the driver maintainer
->and the linux-scsi mailing list.
->I have read all the FAQ and I tried to stick to the
->instructions to the letter.
->However the patch has been completely ignored. No
->reply, no comment, no flames, absolutely nothing...
->
->the original email submission is at the end of the
->email.
->
->could anyone please explain what I am doing wrong?
->
->thanks,
->GG
->
->
->[PATCH 2.6.22] 3w-xxxx: Fix bad unaligned accesses on
->alpha SMP
->
->disable packing of the TAG_TW_Device_Extension
->structure to prevent kernel unaligned accesses when
->accessing ioctl_wqueue.
->Fixes smartmontools kernel panic on alpha SMP
->
->Signed-off-by: Gabriele Gorla <gorlik@yahoo.com>
->---
->
->
->--- linux-2.6.22/drivers/scsi/3w-xxxx.h.orig
->2007-09-01 17:49:22.000000000 -0700
->+++ linux-2.6.22/drivers/scsi/3w-xxxx.h 2007-09-01
->17:49:45.000000000 -0700
 
-It seems that your email client wraps lines.
-Please don't do this when you submit patches.
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
+> +#define is_task_stopped(task)	((task->state & TASK_STOPPED) != 0)
+> +#define is_task_stopped_or_traced(task)	\
+> +			((task->state & (TASK_STOPPED | TASK_TRACED)) != 0)
+> +#define is_task_loadavg(task)	((task->state & TASK_UNINTERRUPTIBLE) != 0)
 
->@@ -392,6 +392,8 @@ typedef struct TAG_TW_Passthru
->        unsigned char padding[12];
-> } TW_Passthru;
+1) please change 'is' and 'task' around so that it reads nicer:
 
-And also your email clients eats tabs.
+   if (task_is_stopped(t))
 
-Read Documentation/SubmittingPatches, please.
-And read Documentation/email-clients.txt to learn more.
+instead of the tongue-twister:
 
-Regards.
+   if (is_task_stopped(t))
 
+2) please change task_is_loadavg() to something more sensible - i didnt 
+know what it meant when i first saw it in -mm's sched.c. 
+task_is_uninterruptible() would be the logical choice ...
 
- Cong
+	Ingo
 
