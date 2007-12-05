@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbXLEJtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbXLEJue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbXLEJtS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 04:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXLEJtI
+	id S1753034AbXLEJue (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 04:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbXLEJuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 04:49:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54696 "EHLO mx3.mail.elte.hu"
+	Wed, 5 Dec 2007 04:50:23 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:9756 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbXLEJtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 04:49:05 -0500
-Date: Wed, 5 Dec 2007 10:48:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lenb@kernel.org, ebiederm@xmission.com, protasnb@gmail.com, ak@suse.de,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
-Message-ID: <20071205094837.GB17911@elte.hu>
-References: <200711280121.18376.lenb@kernel.org> <20071204122649.GB27286@elte.hu> <20071204163946.63ac73ce.akpm@linux-foundation.org>
+	id S1751309AbXLEJuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 04:50:21 -0500
+Date: Wed, 5 Dec 2007 10:48:03 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 01/28] blk_end_request: add new request completion
+	interface (take 3)
+Message-ID: <20071205094802.GA4969@kernel.dk>
+References: <20071130.182422.18574732.k-ueda@ct.jp.nec.com> <47555C90.2080609@panasas.com> <20071204.163749.39152828.k-ueda@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071204163946.63ac73ce.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071204.163749.39152828.k-ueda@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 4 Dec 2007 13:26:49 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Tue, Dec 04 2007, Kiyoshi Ueda wrote:
+> Hi Boaz and Jens,
 > 
-> > * Len Brown <lenb@kernel.org> wrote:
+> On Tue, 04 Dec 2007 15:56:32 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> > > +/**
+> > > + * blk_end_request - Helper function for drivers to complete the request.
+> > > + * @rq:       the request being processed
+> > > + * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+> > > + * @nr_bytes: number of bytes to complete
+> > > + *
+> > > + * Description:
+> > > + *     Ends I/O on a number of bytes attached to @rq.
+> > > + *     If @rq has leftover, sets it up for the next range of segments.
+> > > + *
+> > > + * Return:
+> > > + *     0 - we are done with this request
+> > > + *     1 - still buffers pending for this request
+> > > + **/
+> > > +int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
 > > 
-> > >     So while the irq compression code on i386 should really
-> > >     be deleted -- even before merging the x86_64 irq-overhaul,
-> > >     this patch simply disables it on all high volume systems
-> > >     to avoid problems #1 and #2 on most all i386 systems.
-> > >     
-> > >     A large system with pin numbers >=64 will still have compression
-> > >     to conserve limited IRQ numbers for sparse IOAPICS.  However,
-> > >     the vast majority of the planet, those with only pin numbers < 64
-> > >     will use an identity GSI -> IRQ mapping.
-> > >     
-> > >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > 
-> > thanks for the patch and the extensive description. I've applied this to 
-> > x86.git.
+> > I always hated that uptodate boolean with possible negative error value.
+> > I guess it was done for backward compatibility of then users of 
+> > end_that_request_first(). But since you are introducing a new API then
+> > this is not the case. Just have regular status int where 0 means ALL_OK
+> > and negative value means error code. 
+> > Just my $0.02.
 > 
-> Len applied it to his tree too.
+> Thank you for the comment.
+> I think it's quite reasonable.
+> By doing that, we don't need end_io_error() anymore.
+> 
+> 
+> Jens,
+> What do you think?
 
-Len, i think this belongs into x86.git a bit more (especially with the 
-unification activities going on all around the tree) - do you agree? 
-Andrew, i'd suggest to apply a reverted patch to between git.acpi and 
-git.x86 until this gets sorted out.
+I agree, the uptodate usage right now is horrible.
 
-	Ingo
+> If you agree with the interface change above, I would prefer to
+> separate the patch-set from blk_end_request patch-set like below:
+>     o blk_end_request: remove end_that_request_*
+>     o change interface of 'uptodate' in blk_end_request to 'error'
+> It makes the purpose of blk_end_request patch-set clear
+> (and also, each patch of device drivers could be smaller).
+> But, it doubles your merging work.  So if you would like to get
+> the changes at once, I'll merge them into blk_end_request patch-set.
+
+Twice the merging is not an issue for me.
+
+> As for the patch inclusion, do you push the driver changes to Linus
+> all at once?  Or should I ask each maintainer to take the patch?
+
+Lets just try to get as many maintainer acks as possible, since the
+patches need to go in together.
+
+-- 
+Jens Axboe
+
