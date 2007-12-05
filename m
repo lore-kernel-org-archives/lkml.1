@@ -1,1216 +1,738 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbXLEAqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbXLEArF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbXLEAqR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 19:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbXLEAqC
+	id S1752503AbXLEArF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 19:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXLEAqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 19:46:02 -0500
-Received: from andromeda.dapyr.net ([206.212.254.10]:52636 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbXLEAqA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 19:46:00 -0500
-From: darnok@68k.org
-Date: Tue, 4 Dec 2007 20:44:19 -0400
+	Tue, 4 Dec 2007 19:46:55 -0500
+Received: from [66.201.51.66] ([66.201.51.66]:20718 "EHLO ripper.onstor.net"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750896AbXLEAqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 19:46:54 -0500
+Date: Tue, 4 Dec 2007 16:46:51 -0800
+From: Andrew Sharp <andy.sharp@onstor.com>
 To: linux-kernel@vger.kernel.org
-Cc: pjones@redhat.com, konradr@redhat.com, konradr@linux.vnet.ibm.com,
-       greg@kroah.com, randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
-       mike.anderson@us.ibm.com, dwm@austin.ibm.com,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [REPOST PATCH] Add iSCSI IBFT support (v0.4)
-Message-ID: <20071205004418.GH6736@andromeda.dapyr.net>
-References: <20071128233422.GD6736@andromeda.dapyr.net>
-Mime-Version: 1.0
+Cc: akpm@linux-foundation.org, p_gortmaker@yahoo.com,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: [PATCH] Platform real time clock driver for Dallas 1511 chip.
+Message-ID: <20071205004643.GA15429@onstor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071128233422.GD6736@andromeda.dapyr.net>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 28, 2007 at 07:34:22PM -0400, Konrad Rzeszutek wrote:
-> 
-> This patch adds /sysfs/firmware/ibft/[initiator|targetX|ethernetX]
-> directories along with text properties which export the the iSCSI Boot
-> Firmware Table (iBFT) structure.
-> 
-> What is iSCSI Boot Firmware Table? It is a mechanism for the iSCSI
-> tools to extract from the machine NICs the iSCSI connection information
-> so that they can automagically mount the iSCSI share/target. Currently
-> the iSCSI information is hard-coded in the initrd.
-> 
-> For full details of the IBFT structure please take a look at:
-> ftp://ftp.software.ibm.com/systems/support/system_x_pdf/ibm_iscsi_boot_firmware_table_v1.02.pdf
-> 
-> 
-> Signed-off-by: Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
 
-Here is an updated version which provides an attribute symlink (in the
-ethernetX directory) called 'device' to the NIC device, instead of
-exporting a 'pci_bdf' file which had the "bus:slot:func" values.
+Add RTC support for DS1511 RTC/WDT chip.
 
-Review would be much appreciated.
+Incorprate changes from feedback:
+	Remove noinline;
+	Remove code checking/setting jiffies since last read;
+	Remove enum typedef.
 
-Signed-off-by: Konrad Rzeszutek <konradr@linux.vnet.ibm.com>
 
-diff --git a/Documentation/ABI/testing/sysfs-ibft b/Documentation/ABI/testing/sysfs-ibft
-new file mode 100644
-index 0000000..941ad9f
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-ibft
-@@ -0,0 +1,31 @@
-+What:		/sys/firmware/ibft/initiator
-+Date:		November 2007
-+Contact:	Konrad Rzeszutek <konradr@us.ibm.com>
-+Description:	The /sys/firmware/ibft/initiator directory will contain
-+		files that expose the iSCSI Boot Firmware Table initiator data.
-+		Usually this contains the Initiator name.
-+
-+What:		/sys/firmware/ibft/targetX
-+Date:		November 2007
-+Contact:	Konrad Rzeszutek <konradr@us.ibm.com>
-+Description:	The /sys/firmware/ibft/targetX directory will contain
-+		files that expose the iSCSI Boot Firmware Table target data.
-+		Usually this contains the target's IP address, boot LUN,
-+		target name, and what NIC it is associated with. It can also
-+		contain the CHAP name (and password), the reverse CHAP
-+		name (and password)
-+
-+What:		/sys/firmware/ibft/ethernetX
-+Date:		November 2007
-+Contact:	Konrad Rzeszutek <konradr@us.ibm.com>
-+Description:	The /sys/firmware/ibft/ethernetX directory will contain
-+		files that expose the iSCSI Boot Firmware Table NIC data.
-+		This can this can the IP address, MAC, and gateway of the NIC.
-+
-+What:		/sys/firmware/ibft/extensionX
-+Date:		November 2007
-+Contact:	Konrad Rzeszutek <konradr@us.ibm.com>
-+Description:	The /sys/firmware/ibft/extensionX directory will contain
-+		files that expose the iSCSI Boot Firmware Table extension data.
-+		The extended data structure is not supported so there would be
-+		no files in this directory.
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index e1e18c3..7c36a28 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -39,6 +39,7 @@
- #include <linux/efi.h>
- #include <linux/init.h>
- #include <linux/edd.h>
-+#include <linux/iscsi_ibft.h>
- #include <linux/nodemask.h>
- #include <linux/kexec.h>
- #include <linux/crash_dump.h>
-@@ -148,6 +149,20 @@ static inline void copy_edd(void)
- }
- #endif
+Signed-off-by: Andy Sharp <andy.sharp@onstor.com>
+---
+ drivers/rtc/Kconfig      |   10 +
+ drivers/rtc/Makefile     |    1 +
+ drivers/rtc/rtc-ds1511.c |  656 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 667 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 1e6715e..0e59fcf 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -302,6 +302,16 @@ config RTC_DRV_DS1216
+ 	help
+ 	  If you say yes here you get support for the Dallas DS1216 RTC chips.
  
-+#if defined(CONFIG_ISCSI_IBFT_FIND)
-+static void __init reserve_ibft_region(void)
-+{
-+	unsigned int ibft_len;
-+
-+	ibft_len = find_ibft();
-+	if (ibft_len)
-+		reserve_bootmem((unsigned int)ibft_phys,
-+			PAGE_ALIGN(ibft_len));
-+}
-+#else
-+static void __init reserve_ibft_region(void) { }
-+#endif
-+
- int __initdata user_defined_memmap = 0;
- 
- /*
-@@ -496,6 +511,7 @@ void __init setup_bootmem_allocator(void)
- 	}
- #endif
- 	reserve_crashkernel();
-+	reserve_ibft_region();
- }
- 
- /*
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 30d94d1..d5b73c6 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -33,6 +33,7 @@
- #include <linux/acpi.h>
- #include <linux/kallsyms.h>
- #include <linux/edd.h>
-+#include <linux/iscsi_ibft.h>
- #include <linux/mmzone.h>
- #include <linux/kexec.h>
- #include <linux/cpufreq.h>
-@@ -198,6 +199,20 @@ static inline void copy_edd(void)
- }
- #endif
- 
-+#if defined(CONFIG_ISCSI_IBFT_FIND)
-+static void __init reserve_ibft_region(void)
-+{
-+	unsigned int ibft_len;
-+
-+	ibft_len = find_ibft();
-+	if (ibft_len)
-+		reserve_bootmem_generic((unsigned long)ibft_phys,
-+			PAGE_ALIGN(ibft_len));
-+}
-+#else
-+static void __init reserve_ibft_region(void) { }
-+#endif
-+
- #ifdef CONFIG_KEXEC
- static void __init reserve_crashkernel(void)
- {
-@@ -403,6 +418,7 @@ void __init setup_arch(char **cmdline_p)
- 	}
- #endif
- 	reserve_crashkernel();
-+	reserve_ibft_region();
- 	paging_init();
- 
- #ifdef CONFIG_PCI
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index 05f02a3..e2f7208 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -93,4 +93,23 @@ config DMIID
- 	  information from userspace through /sys/class/dmi/id/ or if you want
- 	  DMI-based module auto-loading.
- 
-+config ISCSI_IBFT_FIND
-+	bool "iSCSI Boot Firmware Table Attributes"
-+	default n
++config RTC_DRV_DS1511
++	tristate "Dallas DS1511"
++	depends on RTC_CLASS
 +	help
-+	  This option enables the kernel to find the region of memory
-+	  in which the ISCSI Boot Firmware Table (iBFT) resides. This
-+	  is necessary for iSCSI Boot Firmware Table Attributes module to work
-+	  properly.
++	  If you say yes here you get support for the
++	  Dallas DS1511 timekeeping/watchdog chip.
 +
-+config ISCSI_IBFT
-+	tristate "iSCSI Boot Firmware Table Attributes module"
-+	depends on ISCSI_IBFT_FIND
-+	default	n
-+	help
-+	  This option enables support for detection and exposing of iSCSI
-+	  Boot Firmware Table (iBFT) via sysfs to userspace. If you wish to
-+	  detect iSCSI boot parameters dynamically during system boot, say Y.
-+	  Otherwise, say N.
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-ds1511.
 +
- endmenu
-diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
-index 8d4ebc8..4c91471 100644
---- a/drivers/firmware/Makefile
-+++ b/drivers/firmware/Makefile
-@@ -8,3 +8,5 @@ obj-$(CONFIG_EFI_PCDP)		+= pcdp.o
- obj-$(CONFIG_DELL_RBU)          += dell_rbu.o
- obj-$(CONFIG_DCDBAS)		+= dcdbas.o
- obj-$(CONFIG_DMIID)		+= dmi-id.o
-+obj-$(CONFIG_ISCSI_IBFT_FIND)	+= iscsi_ibft_find.o
-+obj-$(CONFIG_ISCSI_IBFT)	+= iscsi_ibft.o
-diff --git a/drivers/firmware/iscsi_ibft.c b/drivers/firmware/iscsi_ibft.c
+ config RTC_DRV_DS1553
+ 	tristate "Dallas DS1553"
+ 	help
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 465db4d..52239bf 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -24,6 +24,7 @@ obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc-cmos.o
+ obj-$(CONFIG_RTC_DRV_DS1216)	+= rtc-ds1216.o
+ obj-$(CONFIG_RTC_DRV_DS1307)	+= rtc-ds1307.o
+ obj-$(CONFIG_RTC_DRV_DS1374)	+= rtc-ds1374.o
++obj-$(CONFIG_RTC_DRV_DS1511)	+= rtc-ds1511.o
+ obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
+ obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
+ obj-$(CONFIG_RTC_DRV_DS1742)	+= rtc-ds1742.o
+diff --git a/drivers/rtc/rtc-ds1511.c b/drivers/rtc/rtc-ds1511.c
 new file mode 100644
-index 0000000..d668abc
+index 0000000..604192f
 --- /dev/null
-+++ b/drivers/firmware/iscsi_ibft.c
-@@ -0,0 +1,781 @@
++++ b/drivers/rtc/rtc-ds1511.c
+@@ -0,0 +1,656 @@
 +/*
-+ *  Copyright 2007 Red Hat, Inc.
-+ *  by Peter Jones <pjones@redhat.com>
-+ *  Copyright 2007 IBM, Inc.
-+ *  by Konrad Rzeszutek <konradr@us.ibm.com>
++ * An rtc driver for the Dallas DS1511
 + *
-+ * This code exposes the iSCSI Boot Format Table to userland via sysfs.
++ * Copyright (C) 2006 Atsushi Nemoto <anemo@mba.ocn.ne.jp>
++ * Copyright (C) 2007 Andrew Sharp <andy.sharp@onstor.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License v2.0 as published by
-+ * the Free Software Foundation
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * Real time clock driver for the Dallas 1511 chip, which also
++ * contains a watchdog timer.  There is a tiny amount of code that
++ * platform code could use to mess with the watchdog device a little
++ * bit, but not a full watchdog driver.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
++#include <linux/bcd.h>
 +#include <linux/init.h>
-+#include <linux/stat.h>
-+#include <linux/err.h>
-+#include <linux/ctype.h>
-+#include <linux/slab.h>
-+#include <linux/limits.h>
-+#include <linux/device.h>
-+#include <linux/pci.h>
-+#include <linux/blkdev.h>
-+#include <linux/iscsi_ibft.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/rtc.h>
++#include <linux/platform_device.h>
++#include <linux/io.h>
 +
-+#define IBFT_ISCSI_VERSION  "0.4.1"
-+#define IBFT_ISCSI_DATE	 "2007-Dec-04"
++#define DRV_VERSION "0.6"
 +
-+MODULE_AUTHOR("Peter Jones <pjones@redhat.com> and \
-+Konrad Rzeszutek <konradr@us.ibm.com>");
-+MODULE_DESCRIPTION("sysfs interface to BIOS iBFT information");
-+MODULE_LICENSE("GPL");
-+MODULE_VERSION(IBFT_ISCSI_VERSION);
-+
-+/*
-+ * The kobject different types and its names.
-+ *
-+*/
-+enum ibft_id {
-+    id_reserved = 0, /* Should never show up */
-+    id_control = 1, /* Ditto */
-+    id_initiator = 2,
-+    id_nic = 3,
-+    id_target = 4,
-+    id_extensions, /* We don't support. */
++enum ds1511reg {
++	DS1511_SEC = 0x0,
++	DS1511_MIN = 0x1,
++	DS1511_HOUR = 0x2,
++	DS1511_DOW = 0x3,
++	DS1511_DOM = 0x4,
++	DS1511_MONTH = 0x5,
++	DS1511_YEAR = 0x6,
++	DS1511_CENTURY = 0x7,
++	DS1511_AM1_SEC = 0x8,
++	DS1511_AM2_MIN = 0x9,
++	DS1511_AM3_HOUR = 0xa,
++	DS1511_AM4_DATE = 0xb,
++	DS1511_WD_MSEC = 0xc,
++	DS1511_WD_SEC = 0xd,
++	DS1511_CONTROL_A = 0xe,
++	DS1511_CONTROL_B = 0xf,
++	DS1511_RAMADDR_LSB = 0x10,
++	DS1511_RAMDATA = 0x13
 +};
 +
-+static const char *ibft_id_names[] =
-+	{"reserved", "control", "initiator", "ethernet%d",
-+	"target%d", "extension%d"};
++#define DS1511_BLF1	0x80
++#define DS1511_BLF2	0x40
++#define DS1511_PRS	0x20
++#define DS1511_PAB	0x10
++#define DS1511_TDF	0x08
++#define DS1511_KSF	0x04
++#define DS1511_WDF	0x02
++#define DS1511_IRQF	0x01
++#define DS1511_TE	0x80
++#define DS1511_CS	0x40
++#define DS1511_BME	0x20
++#define DS1511_TPE	0x10
++#define DS1511_TIE	0x08
++#define DS1511_KIE	0x04
++#define DS1511_WDE	0x02
++#define DS1511_WDS	0x01
++#define DS1511_RAM_MAX	0xff
 +
-+/*
-+ * The text attributes names for each of the kobjects.
-+*/
-+enum ibft_eth_properties_enum {
-+	ibft_eth_index,
-+	ibft_eth_flags,
-+	ibft_eth_ip_addr,
-+	ibft_eth_subnet_mask,
-+	ibft_eth_origin,
-+	ibft_eth_gateway,
-+	ibft_eth_primary_dns,
-+	ibft_eth_secondary_dns,
-+	ibft_eth_dhcp,
-+	ibft_eth_vlan,
-+	ibft_eth_mac,
-+	/* ibft_eth_pci_bdf - this is replaced by link to the device itself. */
-+	ibft_eth_hostname};
++#define RTC_CMD		DS1511_CONTROL_B
++#define RTC_CMD1	DS1511_CONTROL_A
 +
-+static const char *ibft_eth_properties[] =
-+	{"index", "flags", "ip-addr", "subnet-mask", "origin", "gateway",
-+	"primary-dns", "secondary-dns", "dhcp", "vlan", "mac", "hostname"};
++#define RTC_ALARM_SEC	DS1511_AM1_SEC
++#define RTC_ALARM_MIN	DS1511_AM2_MIN
++#define RTC_ALARM_HOUR	DS1511_AM3_HOUR
++#define RTC_ALARM_DATE	DS1511_AM4_DATE
 +
-+enum ibft_tgt_properties_enum {
-+	ibft_tgt_index,
-+	ibft_tgt_flags,
-+	ibft_tgt_ip_addr,
-+	ibft_tgt_port,
-+	ibft_tgt_lun,
-+	ibft_tgt_chap_type,
-+	ibft_tgt_nic_assoc,
-+	ibft_tgt_name,
-+	ibft_tgt_chap_name,
-+	ibft_tgt_chap_secret,
-+	ibft_tgt_rev_chap_name,
-+	ibft_tgt_rev_chap_secret};
++#define RTC_SEC		DS1511_SEC
++#define RTC_MIN		DS1511_MIN
++#define RTC_HOUR	DS1511_HOUR
++#define RTC_DOW		DS1511_DOW
++#define RTC_DOM		DS1511_DOM
++#define RTC_MON		DS1511_MONTH
++#define RTC_YEAR	DS1511_YEAR
++#define RTC_CENTURY	DS1511_CENTURY
 +
-+static const char *ibft_tgt_properties[] =
-+	{"index", "flags", "ip-addr", "port", "lun", "chap-type", "nic-assoc",
-+	"target-name", "chap-name", "chap-secret", "rev-chap-name",
-+	"rev-chap-name-secret"};
++#define RTC_TIE	DS1511_TIE
++#define RTC_TE	DS1511_TE
 +
-+enum ibft_initiator_properties_enum {
-+	ibft_init_index,
-+	ibft_init_flags,
-+	ibft_init_isns_server,
-+	ibft_init_slp_server,
-+	ibft_init_pri_radius_server,
-+	ibft_init_sec_radius_server,
-+	ibft_init_initiator_name};
++struct rtc_plat_data {
++	struct rtc_device *rtc;
++	void __iomem *ioaddr;		/* virtual base address */
++	unsigned long baseaddr;		/* physical base address */
++	int size;				/* amount of memory mapped */
++	int irq;
++	unsigned int irqen;
++	int alrm_sec;
++	int alrm_min;
++	int alrm_hour;
++	int alrm_mday;
++};
 +
-+static const char *ibft_initiator_properties[] =
-+	{"index", "flags", "isns-server", "slp-server", "pri-radius-server",
-+	"sec-radius-server", "initiator-name"};
++static DEFINE_SPINLOCK(ds1511_lock);
 +
-+static LIST_HEAD(ibft_attr_list);
-+static LIST_HEAD(ibft_kobject_list);
++static __iomem char *ds1511_base;
++static u32 reg_spacing = 1;
 +
-+static const char nulls[16];
-+static struct ibft_table_header *ibft_device;
-+
-+/*
-+ * Helper functions to parse data properly.
-+ */
-+static ssize_t sprintf_ipaddr(char *buf, u8 *ip)
++ static noinline void
++rtc_write(uint8_t val, uint32_t reg)
 +{
-+	if (ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
-+	    ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 &&
-+	    ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff) {
-+		/*
-+		 * IPV4
-+		 */
-+		return sprintf(buf, "%d.%d.%d.%d\n", ip[12],
-+			ip[13], ip[14], ip[15]);
-+	} else {
-+		return 0;
-+	}
++	writeb(val, ds1511_base + (reg * reg_spacing));
 +}
 +
-+static ssize_t sprintf_string(char *str, int len, char *buf)
++ static inline void
++rtc_write_alarm(uint8_t val, enum ds1511reg reg)
 +{
-+	return sprintf(str, "%.*s\n", len, buf);
++	rtc_write((val | 0x80), reg);
++}
++
++ static noinline uint8_t
++rtc_read(enum ds1511reg reg)
++{
++	return readb(ds1511_base + (reg * reg_spacing));
++}
++
++ static inline void
++rtc_disable_update(void)
++{
++	rtc_write((rtc_read(RTC_CMD) & ~RTC_TE), RTC_CMD);
++}
++
++ static void
++rtc_enable_update(void)
++{
++	rtc_write((rtc_read(RTC_CMD) | RTC_TE), RTC_CMD);
 +}
 +
 +/*
-+ * Helper function to verify the IBFT header.
++ * #define DS1511_WDOG_RESET_SUPPORT
++ *
++ * Uncomment this if you want to use these routines in
++ * some platform code.
 + */
-+static int ibft_verify_hdr(struct ibft_hdr *hdr, int id, int length)
++#ifdef DS1511_WDOG_RESET_SUPPORT
++/*
++ * just enough code to set the watchdog timer so that it
++ * will reboot the system
++ */
++ void
++ds1511_wdog_set(unsigned long deciseconds)
 +{
-+#define IBFT_VERIFY_HDR_FIELD(val, name) \
-+	if (hdr->val != val) { \
-+		printk(KERN_ERR \
-+			"error, in IBFT structure (%s) expected %d but" \
-+			" found %d\n", \
-+			name, val, hdr->val); \
-+		return -ENODEV; \
++	/*
++	 * the wdog timer can take 99.99 seconds
++	 */
++	deciseconds %= 10000;
++	/*
++	 * set the wdog values in the wdog registers
++	 */
++	rtc_write(BIN2BCD(deciseconds % 100), DS1511_WD_MSEC);
++	rtc_write(BIN2BCD(deciseconds / 100), DS1511_WD_SEC);
++	/*
++	 * set wdog enable and wdog 'steering' bit to issue a reset
++	 */
++	rtc_write(DS1511_WDE | DS1511_WDS, RTC_CMD);
++}
++
++ void
++ds1511_wdog_disable(void)
++{
++	/*
++	 * clear wdog enable and wdog 'steering' bits
++	 */
++	rtc_write(rtc_read(RTC_CMD) & ~(DS1511_WDE | DS1511_WDS), RTC_CMD);
++	/*
++	 * clear the wdog counter
++	 */
++	rtc_write(0, DS1511_WD_MSEC);
++	rtc_write(0, DS1511_WD_SEC);
++}
++#endif
++
++/*
++ * set the rtc chip's idea of the time.
++ * stupidly, some callers call with year unmolested;
++ * and some call with  year = year - 1900.  thanks.
++ */
++ int
++ds1511_rtc_set_time(struct device *dev, struct rtc_time *rtc_tm)
++{
++	u8 mon, day, dow, hrs, min, sec, yrs, cen;
++	unsigned int flags;
++
++	/*
++	 * won't have to change this for a while
++	 */
++	if (rtc_tm->tm_year < 1900) {
++		rtc_tm->tm_year += 1900;
 +	}
-+	IBFT_VERIFY_HDR_FIELD(id, "ID");
-+	IBFT_VERIFY_HDR_FIELD(length, "Length");
-+#undef IBFT_VERIFY_HDR_FIELD
++
++	if (rtc_tm->tm_year < 1970) {
++		return -EINVAL;
++	}
++	yrs = rtc_tm->tm_year % 100;
++	cen = rtc_tm->tm_year / 100;
++	mon = rtc_tm->tm_mon + 1;   /* tm_mon starts at zero */
++	day = rtc_tm->tm_mday;
++	dow = rtc_tm->tm_wday & 0x7; /* automatic BCD */
++	hrs = rtc_tm->tm_hour;
++	min = rtc_tm->tm_min;
++	sec = rtc_tm->tm_sec;
++
++	if ((mon > 12) || (day == 0)) {
++		return -EINVAL;
++	}
++
++	if (day > rtc_month_days(rtc_tm->tm_mon, rtc_tm->tm_year)) {
++		return -EINVAL;
++	}
++
++	if ((hrs >= 24) || (min >= 60) || (sec >= 60)) {
++		return -EINVAL;
++	}
++
++	/*
++	 * each register is a different number of valid bits
++	 */
++	sec = BIN2BCD(sec) & 0x7f;
++	min = BIN2BCD(min) & 0x7f;
++	hrs = BIN2BCD(hrs) & 0x3f;
++	day = BIN2BCD(day) & 0x3f;
++	mon = BIN2BCD(mon) & 0x1f;
++	yrs = BIN2BCD(yrs) & 0xff;
++	cen = BIN2BCD(cen) & 0xff;
++
++	spin_lock_irqsave(&ds1511_lock, flags);
++	rtc_disable_update();
++	rtc_write(cen, RTC_CENTURY);
++	rtc_write(yrs, RTC_YEAR);
++	rtc_write((rtc_read(RTC_MON) & 0xe0) | mon, RTC_MON);
++	rtc_write(day, RTC_DOM);
++	rtc_write(hrs, RTC_HOUR);
++	rtc_write(min, RTC_MIN);
++	rtc_write(sec, RTC_SEC);
++	rtc_write(dow, RTC_DOW);
++	rtc_enable_update();
++	spin_unlock_irqrestore(&ds1511_lock, flags);
++
 +	return 0;
 +}
 +
-+static void ibft_release(struct kobject *kobj)
++ int
++ds1511_rtc_read_time(struct device *dev, struct rtc_time *rtc_tm)
 +{
-+	struct ibft_kobject *ibft =
-+		container_of(kobj, struct ibft_kobject, kobj);
-+	kfree(ibft);
++	unsigned int century;
++	unsigned int flags;
++
++	spin_lock_irqsave(&ds1511_lock, flags);
++	rtc_disable_update();
++
++	rtc_tm->tm_sec = rtc_read(RTC_SEC) & 0x7f;
++	rtc_tm->tm_min = rtc_read(RTC_MIN) & 0x7f;
++	rtc_tm->tm_hour = rtc_read(RTC_HOUR) & 0x3f;
++	rtc_tm->tm_mday = rtc_read(RTC_DOM) & 0x3f;
++	rtc_tm->tm_wday = rtc_read(RTC_DOW) & 0x7;
++	rtc_tm->tm_mon = rtc_read(RTC_MON) & 0x1f;
++	rtc_tm->tm_year = rtc_read(RTC_YEAR) & 0x7f;
++	century = rtc_read(RTC_CENTURY);
++
++	rtc_enable_update();
++	spin_unlock_irqrestore(&ds1511_lock, flags);
++
++	rtc_tm->tm_sec = BCD2BIN(rtc_tm->tm_sec);
++	rtc_tm->tm_min = BCD2BIN(rtc_tm->tm_min);
++	rtc_tm->tm_hour = BCD2BIN(rtc_tm->tm_hour);
++	rtc_tm->tm_mday = BCD2BIN(rtc_tm->tm_mday);
++	rtc_tm->tm_wday = BCD2BIN(rtc_tm->tm_wday);
++	rtc_tm->tm_mon = BCD2BIN(rtc_tm->tm_mon);
++	rtc_tm->tm_year = BCD2BIN(rtc_tm->tm_year);
++	century = BCD2BIN(century) * 100;
++
++	/*
++	 * Account for differences between how the RTC uses the values
++	 * and how they are defined in a struct rtc_time;
++	 */
++	century += rtc_tm->tm_year;
++	rtc_tm->tm_year = century - 1900;
++
++	rtc_tm->tm_mon--;
++
++	if (rtc_valid_tm(rtc_tm) < 0) {
++		dev_err(dev, "retrieved date/time is not valid.\n");
++		rtc_time_to_tm(0, rtc_tm);
++	}
++	return 0;
 +}
 +
 +/*
-+ *  Routines for reading of the iBFT data in a human readable fashion.
++ * write the alarm register settings
++ *
++ * we only have the use to interrupt every second, otherwise
++ * known as the update interrupt, or the interrupt if the whole
++ * date/hours/mins/secs matches.  the ds1511 has many more
++ * permutations, but the kernel doesn't.
 + */
-+ssize_t ibft_attr_show_initiator(struct ibft_kobject *entry,
-+				 struct ibft_attribute *attr,
-+				 char *buf)
++ static void
++ds1511_rtc_update_alarm(struct rtc_plat_data *pdata)
 +{
-+	struct ibft_initiator *initiator = entry->initiator;
-+	void *ibft_loc = entry->header;
-+	char *str = buf;
++	unsigned long flags;
 +
-+	if (!initiator)
-+		return 0;
-+
-+	switch (attr->type) {
-+	case ibft_init_index:
-+		str += sprintf(str, "%d\n", initiator->hdr.index);
-+		break;
-+	case ibft_init_flags:
-+		str += sprintf(str, "%d\n", initiator->hdr.flags);
-+		break;
-+	case ibft_init_isns_server:
-+		str += sprintf_ipaddr(str, initiator->isns_server);
-+		break;
-+	case ibft_init_slp_server:
-+		str += sprintf_ipaddr(str, initiator->slp_server);
-+		break;
-+	case ibft_init_pri_radius_server:
-+		str += sprintf_ipaddr(str, initiator->pri_radius_server);
-+		break;
-+	case ibft_init_sec_radius_server:
-+		str += sprintf_ipaddr(str, initiator->sec_radius_server);
-+		break;
-+	case ibft_init_initiator_name:
-+		str += sprintf_string(str, initiator->initiator_name_len,
-+		(char *)ibft_loc + initiator->initiator_name_off);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return str - buf;
++	spin_lock_irqsave(&pdata->rtc->irq_lock, flags);
++	rtc_write(pdata->alrm_mday < 0 || (pdata->irqen & RTC_UF) ?
++	       0x80 : BIN2BCD(pdata->alrm_mday) & 0x3f,
++	       RTC_ALARM_DATE);
++	rtc_write(pdata->alrm_hour < 0 || (pdata->irqen & RTC_UF) ?
++	       0x80 : BIN2BCD(pdata->alrm_hour) & 0x3f,
++	       RTC_ALARM_HOUR);
++	rtc_write(pdata->alrm_min < 0 || (pdata->irqen & RTC_UF) ?
++	       0x80 : BIN2BCD(pdata->alrm_min) & 0x7f,
++	       RTC_ALARM_MIN);
++	rtc_write(pdata->alrm_sec < 0 || (pdata->irqen & RTC_UF) ?
++	       0x80 : BIN2BCD(pdata->alrm_sec) & 0x7f,
++	       RTC_ALARM_SEC);
++	rtc_write(rtc_read(RTC_CMD) | (pdata->irqen ? RTC_TIE : 0), RTC_CMD);
++	rtc_read(RTC_CMD1);	/* clear interrupts */
++	spin_unlock_irqrestore(&pdata->rtc->irq_lock, flags);
 +}
 +
-+ssize_t ibft_attr_show_nic(struct ibft_kobject *entry,
-+			   struct ibft_attribute *attr,
-+			   char *buf)
++ static int
++ds1511_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
 +{
-+	struct ibft_nic *nic = entry->nic;
-+	void *ibft_loc = entry->header;
-+	char *str = buf;
-+	char *mac;
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
 +
-+	if (!nic)
-+		return 0;
++	if (pdata->irq < 0) {
++		return -EINVAL;
++	}
++	pdata->alrm_mday = alrm->time.tm_mday;
++	pdata->alrm_hour = alrm->time.tm_hour;
++	pdata->alrm_min = alrm->time.tm_min;
++	pdata->alrm_sec = alrm->time.tm_sec;
++	if (alrm->enabled) {
++		pdata->irqen |= RTC_AF;
++	}
++	ds1511_rtc_update_alarm(pdata);
++	return 0;
++}
 +
-+	switch (attr->type) {
-+	case ibft_eth_index:
-+		str += sprintf(str, "%d\n", nic->hdr.index);
++ static int
++ds1511_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++
++	if (pdata->irq < 0) {
++		return -EINVAL;
++	}
++	alrm->time.tm_mday = pdata->alrm_mday < 0 ? 0 : pdata->alrm_mday;
++	alrm->time.tm_hour = pdata->alrm_hour < 0 ? 0 : pdata->alrm_hour;
++	alrm->time.tm_min = pdata->alrm_min < 0 ? 0 : pdata->alrm_min;
++	alrm->time.tm_sec = pdata->alrm_sec < 0 ? 0 : pdata->alrm_sec;
++	alrm->enabled = (pdata->irqen & RTC_AF) ? 1 : 0;
++	return 0;
++}
++
++ static irqreturn_t
++ds1511_interrupt(int irq, void *dev_id)
++{
++	struct platform_device *pdev = dev_id;
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++	unsigned long events = RTC_IRQF;
++
++	/*
++	 * read and clear interrupt
++	 */
++	if (!(rtc_read(RTC_CMD1) & DS1511_IRQF)) {
++		return IRQ_NONE;
++	}
++	if (rtc_read(RTC_ALARM_SEC) & 0x80) {
++		events |= RTC_UF;
++	} else {
++		events |= RTC_AF;
++	}
++	rtc_update_irq(pdata->rtc, 1, events);
++	return IRQ_HANDLED;
++}
++
++ static void
++ds1511_rtc_release(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++
++	if (pdata->irq >= 0) {
++		pdata->irqen = 0;
++		ds1511_rtc_update_alarm(pdata);
++	}
++}
++
++ static int
++ds1511_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++
++	if (pdata->irq < 0) {
++		return -ENOIOCTLCMD; /* fall back into rtc-dev's emulation */
++	}
++	switch (cmd) {
++	case RTC_AIE_OFF:
++		pdata->irqen &= ~RTC_AF;
++		ds1511_rtc_update_alarm(pdata);
 +		break;
-+	case ibft_eth_flags:
-+		str += sprintf(str, "%d\n", nic->hdr.flags);
++	case RTC_AIE_ON:
++		pdata->irqen |= RTC_AF;
++		ds1511_rtc_update_alarm(pdata);
 +		break;
-+	case ibft_eth_ip_addr:
-+		str += sprintf_ipaddr(str, nic->ip_addr);
++	case RTC_UIE_OFF:
++		pdata->irqen &= ~RTC_UF;
++		ds1511_rtc_update_alarm(pdata);
 +		break;
-+	case ibft_eth_subnet_mask:
-+		str += sprintf(str, "%d\n", nic->subnet_mask_prefix);
-+		break;
-+	case ibft_eth_origin:
-+		str += sprintf(str, "%d\n", nic->origin);
-+		break;
-+	case ibft_eth_gateway:
-+		str += sprintf_ipaddr(str, nic->gateway);
-+		break;
-+	case ibft_eth_primary_dns:
-+		str += sprintf_ipaddr(str, nic->primary_dns);
-+		break;
-+	case ibft_eth_secondary_dns:
-+		str += sprintf_ipaddr(str, nic->secondary_dns);
-+		break;
-+	case ibft_eth_dhcp:
-+		str += sprintf_ipaddr(str, nic->dhcp);
-+		break;
-+	case ibft_eth_vlan:
-+		str += sprintf(str, "%d\n", nic->vlan);
-+		break;
-+	case ibft_eth_mac:
-+		mac = nic->mac;
-+		str += sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x\n",
-+			(u8)mac[0], (u8)mac[1], (u8)mac[2],
-+			(u8)mac[3], (u8)mac[4], (u8)mac[5]);
-+		break;
-+	case ibft_eth_hostname:
-+		str += sprintf_string(str, nic->hostname_len,
-+				(char *)ibft_loc + nic->hostname_off);
++	case RTC_UIE_ON:
++		pdata->irqen |= RTC_UF;
++		ds1511_rtc_update_alarm(pdata);
 +		break;
 +	default:
-+		break;
++		return -ENOIOCTLCMD;
 +	}
++	return 0;
++}
 +
-+	return str - buf;
++static const struct rtc_class_ops ds1511_rtc_ops = {
++	.read_time	= ds1511_rtc_read_time,
++	.set_time	= ds1511_rtc_set_time,
++	.read_alarm	= ds1511_rtc_read_alarm,
++	.set_alarm	= ds1511_rtc_set_alarm,
++	.release	= ds1511_rtc_release,
++	.ioctl		= ds1511_rtc_ioctl,
 +};
 +
-+ssize_t ibft_attr_show_target(struct ibft_kobject *entry,
-+			      struct ibft_attribute *attr,
-+			      char *buf)
++ static ssize_t
++ds1511_nvram_read(struct kobject *kobj, struct bin_attribute *ba,
++				char *buf, loff_t pos, size_t size)
 +{
-+	struct ibft_tgt *tgt = entry->tgt;
-+	void *ibft_loc = entry->header;
-+	char *str = buf;
-+	int i;
++	ssize_t count;
 +
-+	if (!tgt)
-+		return 0;
-+
-+	switch (attr->type) {
-+	case ibft_tgt_index:
-+		str += sprintf(str, "%d\n", tgt->hdr.index);
-+		break;
-+	case ibft_tgt_flags:
-+		str += sprintf(str, "%d\n", tgt->hdr.flags);
-+		break;
-+	case ibft_tgt_ip_addr:
-+		str += sprintf_ipaddr(str, tgt->ip_addr);
-+		break;
-+	case ibft_tgt_port:
-+		str += sprintf(str, "%d\n", tgt->port);
-+		break;
-+	case ibft_tgt_lun:
-+		for (i = 0; i < 8; i++)
-+			str += sprintf(str, "%x", (u8)tgt->lun[i]);
-+		str += sprintf(str, "\n");
-+		break;
-+	case ibft_tgt_nic_assoc:
-+		str += sprintf(str, "%d\n", tgt->nic_assoc);
-+		break;
-+	case ibft_tgt_chap_type:
-+		str += sprintf(str, "%d\n", tgt->chap_type);
-+		break;
-+	case ibft_tgt_name:
-+		str += sprintf_string(str, tgt->tgt_name_len,
-+		(void *)ibft_loc + tgt->tgt_name_off);
-+		break;
-+	case ibft_tgt_chap_name:
-+		str += sprintf_string(str, tgt->chap_name_len,
-+			(char *)ibft_loc + tgt->chap_name_off);
-+		break;
-+	case ibft_tgt_chap_secret:
-+		str += sprintf_string(str, tgt->chap_secret_len,
-+			(char *)ibft_loc + tgt->chap_secret_off);
-+		break;
-+	case ibft_tgt_rev_chap_name:
-+		str += sprintf_string(str, tgt->rev_chap_name_len,
-+			(char *)ibft_loc + tgt->rev_chap_name_off);
-+		break;
-+	case ibft_tgt_rev_chap_secret:
-+		str += sprintf_string(str, tgt->rev_chap_secret_len,
-+			(char *)ibft_loc + tgt->rev_chap_secret_off);
-+		break;
-+	default:
-+		break;
++	/*
++	 * if count is more than one, turn on "burst" mode
++	 * turn it off when you're done
++	 */
++	if (size > 1) {
++		rtc_write((rtc_read(RTC_CMD) | DS1511_BME), RTC_CMD);
 +	}
-+
-+	return str - buf;
++	if (pos > DS1511_RAM_MAX) {
++		pos = DS1511_RAM_MAX;
++	}
++	if (size + pos > DS1511_RAM_MAX + 1) {
++		size = DS1511_RAM_MAX - pos + 1;
++	}
++	rtc_write(pos, DS1511_RAMADDR_LSB);
++	for (count = 0; size > 0; count++, size--) {
++		*buf++ = rtc_read(DS1511_RAMDATA);
++	}
++	if (count > 1) {
++		rtc_write((rtc_read(RTC_CMD) & ~DS1511_BME), RTC_CMD);
++	}
++	return count;
 +}
 +
-+/*
-+ * The main routine which allows the user to read the IBFT data.
-+ */
-+static ssize_t ibft_show_attribute(struct kobject *kobj,
-+				   struct attribute *attr,
-+				   char *buf)
++ static ssize_t
++ds1511_nvram_write(struct kobject *kobj, struct bin_attribute *bin_attr,
++				char *buf, loff_t pos, size_t size)
 +{
-+	struct ibft_kobject *dev =
-+		container_of(kobj, struct ibft_kobject, kobj);
-+	struct ibft_attribute *ibft_attr =
-+		container_of(attr, struct ibft_attribute, attr);
-+	ssize_t ret = -EIO;
-+	char *str = buf;
++	ssize_t count;
 +
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EACCES;
++	/*
++	 * if count is more than one, turn on "burst" mode
++	 * turn it off when you're done
++	 */
++	if (size > 1) {
++		rtc_write((rtc_read(RTC_CMD) | DS1511_BME), RTC_CMD);
++	}
++	if (pos > DS1511_RAM_MAX) {
++		pos = DS1511_RAM_MAX;
++	}
++	if (size + pos > DS1511_RAM_MAX + 1) {
++		size = DS1511_RAM_MAX - pos + 1;
++	}
++	rtc_write(pos, DS1511_RAMADDR_LSB);
++	for (count = 0; size > 0; count++, size--) {
++		rtc_write(*buf++, DS1511_RAMDATA);
++	}
++	if (count > 1) {
++		rtc_write((rtc_read(RTC_CMD) & ~DS1511_BME), RTC_CMD);
++	}
++	return count;
++}
 +
-+	if (ibft_attr->show)
-+		ret = ibft_attr->show(dev, ibft_attr, str);
++static struct bin_attribute ds1511_nvram_attr = {
++	.attr = {
++		.name = "nvram",
++		.mode = S_IRUGO | S_IWUGO,
++		.owner = THIS_MODULE,
++	},
++	.size = DS1511_RAM_MAX,
++	.read = ds1511_nvram_read,
++	.write = ds1511_nvram_write,
++};
 +
++ static int __devinit
++ds1511_rtc_probe(struct platform_device *pdev)
++{
++	struct rtc_device *rtc;
++	struct resource *res;
++	struct rtc_plat_data *pdata = NULL;
++	int ret = 0;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		return -ENODEV;
++	}
++	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
++	if (!pdata) {
++		return -ENOMEM;
++	}
++	pdata->irq = -1;
++	pdata->size = res->end - res->start + 1;
++	if (!request_mem_region(res->start, pdata->size, pdev->name)) {
++		ret = -EBUSY;
++		goto out;
++	}
++	pdata->baseaddr = res->start;
++	pdata->size = pdata->size;
++	ds1511_base = ioremap(pdata->baseaddr, pdata->size);
++	if (!ds1511_base) {
++		ret = -ENOMEM;
++		goto out;
++	}
++	pdata->ioaddr = ds1511_base;
++	pdata->irq = platform_get_irq(pdev, 0);
++
++	/*
++	 * turn on the clock and the crystal, etc.
++	 */
++	rtc_write(0, RTC_CMD);
++	rtc_write(0, RTC_CMD1);
++	/*
++	 * clear the wdog counter
++	 */
++	rtc_write(0, DS1511_WD_MSEC);
++	rtc_write(0, DS1511_WD_SEC);
++	/*
++	 * start the clock
++	 */
++	rtc_enable_update();
++
++	/*
++	 * check for a dying bat-tree
++	 */
++	if (rtc_read(RTC_CMD1) & DS1511_BLF1) {
++		dev_warn(&pdev->dev, "voltage-low detected.\n");
++	}
++
++	/*
++	 * if the platform has an interrupt in mind for this device,
++	 * then by all means, set it
++	 */
++	if (pdata->irq >= 0) {
++		rtc_read(RTC_CMD1);
++		if (request_irq(pdata->irq, ds1511_interrupt,
++			IRQF_DISABLED | IRQF_SHARED, pdev->name, pdev) < 0) {
++
++			dev_warn(&pdev->dev, "interrupt not available.\n");
++			pdata->irq = -1;
++		}
++	}
++
++	rtc = rtc_device_register(pdev->name, &pdev->dev, &ds1511_rtc_ops,
++		THIS_MODULE);
++	if (IS_ERR(rtc)) {
++		ret = PTR_ERR(rtc);
++		goto out;
++	}
++	pdata->rtc = rtc;
++	platform_set_drvdata(pdev, pdata);
++	ret = sysfs_create_bin_file(&pdev->dev.kobj, &ds1511_nvram_attr);
++	if (ret) {
++		goto out;
++	}
++	return 0;
++ out:
++	if (pdata->rtc) {
++		rtc_device_unregister(pdata->rtc);
++	}
++	if (pdata->irq >= 0) {
++		free_irq(pdata->irq, pdev);
++	}
++	if (ds1511_base) {
++		iounmap(ds1511_base);
++		ds1511_base = NULL;
++	}
++	if (pdata->baseaddr) {
++		release_mem_region(pdata->baseaddr, pdata->size);
++	}
++
++	kfree(pdata);
 +	return ret;
 +}
 +
-+static struct sysfs_ops ibft_attr_ops = {
-+	.show = ibft_show_attribute,
-+};
-+
-+static struct kobj_type ktype_ibft = {
-+	.release = ibft_release,
-+	.sysfs_ops = &ibft_attr_ops,
-+};
-+
-+static decl_subsys(ibft, &ktype_ibft, NULL);
-+
-+static int ibft_alloc_device(void *idev)
++ static int __devexit
++ds1511_rtc_remove(struct platform_device *pdev)
 +{
-+	int len;
-+	struct ibft_table_header *hdr;
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
 +
-+	if (!idev)
-+		return -ENOENT;
-+
-+	hdr = (struct ibft_table_header *)phys_to_virt(
-+			(unsigned long)ibft_phys);
-+	len = hdr->length;
-+
-+	ibft_device = kzalloc(len, GFP_KERNEL);
-+	if (!ibft_device)
-+		return -ENOMEM;
-+
-+	memcpy(ibft_device, hdr, len);
-+
++	sysfs_remove_bin_file(&pdev->dev.kobj, &ds1511_nvram_attr);
++	rtc_device_unregister(pdata->rtc);
++	pdata->rtc = NULL;
++	if (pdata->irq >= 0) {
++		/*
++		 * disable the alarm interrupt
++		 */
++		rtc_write(rtc_read(RTC_CMD) & ~RTC_TIE, RTC_CMD);
++		rtc_read(RTC_CMD1);
++		free_irq(pdata->irq, pdev);
++	}
++	iounmap(pdata->ioaddr);
++	ds1511_base = NULL;
++	release_mem_region(pdata->baseaddr, pdata->size);
++	kfree(pdata);
 +	return 0;
 +}
 +
-+static void ibft_free_device(struct ibft_table_header *hdr)
-+{
-+	kfree(hdr);
-+}
-+
-+/*
-+ * Helper function for ibft_register_kobjects.
-+ */
-+static int ibft_create_kobject(struct ibft_table_header *header,
-+			       struct ibft_hdr *hdr,
-+			       struct list_head *list)
-+{
-+	int rc = 0;
-+	struct ibft_kobject *ibft_kobj = NULL;
-+
-+	ibft_kobj = kzalloc(sizeof(*ibft_kobj), GFP_KERNEL);
-+	if (!ibft_kobj)
-+		return -ENOMEM;
-+
-+	ibft_kobj->header = header;
-+	ibft_kobj->hdr = hdr;
-+
-+	switch (hdr->id) {
-+	case id_initiator:
-+		rc = ibft_verify_hdr(hdr, id_initiator,
-+			sizeof(*ibft_kobj->initiator));
-+		break;
-+	case id_nic:
-+		rc = ibft_verify_hdr(hdr, id_nic,
-+			sizeof(*ibft_kobj->nic));
-+		break;
-+	case id_target:
-+		rc = ibft_verify_hdr(hdr, id_target,
-+			sizeof(*ibft_kobj->tgt));
-+		break;
-+	default:
-+		/* Extension field which we don't support. Ignore it */
-+		break;
-+	}
-+
-+	if (!rc) {
-+		kobject_set_name(&ibft_kobj->kobj,
-+			ibft_id_names[hdr->id],
-+			hdr->index);
-+
-+		kobj_set_kset_s(ibft_kobj, ibft_subsys);
-+
-+		rc = kobject_register(&ibft_kobj->kobj);
-+		if (!rc && hdr->id == id_nic) {
-+			struct ibft_nic *nic = (struct ibft_nic *)hdr;
-+			struct pci_dev *pci_dev = pci_get_bus_and_slot(
-+						(nic->pci_bdf & 0xff00) >> 8,
-+						(nic->pci_bdf & 0xff));
-+			if (pci_dev) {
-+				rc = sysfs_create_link(&ibft_kobj->kobj,
-+						&pci_dev->dev.kobj, "device");
-+				if (rc)
-+					kobject_unregister(&ibft_kobj->kobj);
-+				pci_dev_put(pci_dev);
-+			}
-+		}
-+		if (!rc)
-+			list_add_tail(&ibft_kobj->node, list);
-+
-+	}
-+	if (rc)
-+		kfree(ibft_kobj);
-+
-+	return rc;
-+}
-+
-+/*
-+ * Scan the IBFT table structure for the NIC and Target fields. When
-+ * found add them on the passed-in list.
-+ */
-+static int ibft_register_kobjects(struct ibft_table_header *header,
-+				  struct list_head *list)
-+{
-+	struct ibft_control *control = NULL;
-+	void *ptr, *end;
-+	int rc = 0;
-+	u16 offset;
-+
-+	control = (void *)header + sizeof(*header);
-+	end = (void *)control + control->hdr.length;
-+
-+	for (ptr = &control->initiator_off; ptr < end; ptr += sizeof(u16)) {
-+		offset = *(u16 *)ptr;
-+		if (offset && offset < header->length) {
-+			rc = ibft_create_kobject(header,
-+					(void *)header + offset,
-+					list);
-+			if (rc)
-+				break;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
-+static void ibft_unregister_kobjects(struct list_head *list)
-+{
-+	struct ibft_kobject *data = NULL, *n;
-+	list_for_each_entry_safe(data, n, list, node) {
-+		list_del(&data->node);
-+		if (data->hdr->id == id_nic)
-+			sysfs_remove_link(&data->kobj, "device");
-+		kobject_unregister(&data->kobj);
-+	};
-+	list_del_init(list);
-+}
-+
-+static int ibft_create_attribute(struct ibft_kobject *kobj_data,
-+				 int type,
-+				 const char *name,
-+				 ssize_t (*show) (struct  ibft_kobject *entry,
-+						  struct ibft_attribute *attr,
-+						  char *buf),
-+				 struct list_head *list)
-+{
-+	struct ibft_attribute *attr = NULL;
-+	struct ibft_hdr *hdr = kobj_data->hdr;
-+
-+	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
-+	if (!attr)
-+		return -ENOMEM;
-+
-+	attr->attr.name = name;
-+	attr->attr.mode = S_IRUSR;
-+	attr->attr.owner = THIS_MODULE;
-+
-+	attr->hdr = hdr;
-+	attr->show = show;
-+	attr->kobj = &kobj_data->kobj;
-+	attr->type = type;
-+
-+	list_add_tail(&attr->node, list);
-+
-+	return 0;
-+}
-+
-+static int ibft_check_nic_for(struct ibft_nic *nic, int entry)
-+{
-+	int rc = 0;
-+
-+	switch (entry) {
-+	case ibft_eth_index:
-+	case ibft_eth_flags:
-+		rc = 1;
-+		break;
-+	case ibft_eth_ip_addr:
-+		if (!memcmp(nic->dhcp, nulls, sizeof(nic->dhcp)))
-+			rc = 1;
-+		break;
-+	case ibft_eth_subnet_mask:
-+		if (!memcmp(nic->dhcp, nulls, sizeof(nic->dhcp)))
-+			rc = 1;
-+		break;
-+	case ibft_eth_origin:
-+		rc = 1;
-+		break;
-+	case ibft_eth_gateway:
-+		if (memcmp(nic->gateway, nulls, sizeof(nic->gateway)))
-+			rc = 1;
-+		break;
-+	case ibft_eth_primary_dns:
-+		if (memcmp(nic->primary_dns, nulls,
-+			sizeof(nic->primary_dns)))
-+			rc = 1;
-+		break;
-+	case ibft_eth_secondary_dns:
-+		if (memcmp(nic->secondary_dns, nulls,
-+			sizeof(nic->secondary_dns)))
-+			rc = 1;
-+		break;
-+	case ibft_eth_dhcp:
-+		if (memcmp(nic->dhcp, nulls, sizeof(nic->dhcp)))
-+			rc = 1;
-+		break;
-+	case ibft_eth_vlan:
-+	case ibft_eth_mac:
-+		rc = 1;
-+		break;
-+	case ibft_eth_hostname:
-+		if (nic->hostname_off)
-+			rc = 1;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static int ibft_check_tgt_for(struct ibft_tgt *tgt, int entry)
-+{
-+	int rc = 0;
-+
-+	switch (entry) {
-+	case ibft_tgt_index:
-+	case ibft_tgt_flags:
-+	case ibft_tgt_ip_addr:
-+	case ibft_tgt_port:
-+	case ibft_tgt_lun:
-+	case ibft_tgt_nic_assoc:
-+	case ibft_tgt_chap_type:
-+		rc = 1;
-+	case ibft_tgt_name:
-+		if (tgt->tgt_name_len)
-+			rc = 1;
-+		break;
-+	case ibft_tgt_chap_name:
-+	case ibft_tgt_chap_secret:
-+		if (tgt->chap_name_len)
-+			rc = 1;
-+		break;
-+	case ibft_tgt_rev_chap_name:
-+	case ibft_tgt_rev_chap_secret:
-+		if (tgt->rev_chap_name_len)
-+			rc = 1;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static int ibft_check_initiator_for(struct ibft_initiator *init, int entry)
-+{
-+	int rc = 0;
-+
-+	switch (entry) {
-+	case ibft_init_index:
-+	case ibft_init_flags:
-+		rc = 1;
-+		break;
-+	case ibft_init_isns_server:
-+		if (memcmp(init->isns_server, nulls,
-+			sizeof(init->isns_server)))
-+			rc = 1;
-+		break;
-+	case ibft_init_slp_server:
-+		if (memcmp(init->slp_server, nulls,
-+			sizeof(init->slp_server)))
-+			rc = 1;
-+		break;
-+	case ibft_init_pri_radius_server:
-+		if (memcmp(init->pri_radius_server, nulls,
-+			sizeof(init->pri_radius_server)))
-+			rc = 1;
-+		break;
-+	case ibft_init_sec_radius_server:
-+		if (memcmp(init->sec_radius_server, nulls,
-+			sizeof(init->sec_radius_server)))
-+			rc = 1;
-+		break;
-+	case ibft_init_initiator_name:
-+		if (init->initiator_name_len)
-+			rc = 1;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+/*
-+ *  Register the attributes for all of the kobjects.
-+ */
-+static int ibft_register_attributes(struct list_head *kobject_list,
-+				    struct list_head *attr_list)
-+{
-+	int rc = 0, i = 0;
-+	struct ibft_kobject *data = NULL;
-+	struct ibft_attribute *attr = NULL, *m;
-+
-+	list_for_each_entry(data, kobject_list, node) {
-+		switch (data->hdr->id) {
-+		case id_nic:
-+			for (i = 0; i <= ibft_eth_hostname && !rc; i++)
-+				if (ibft_check_nic_for(data->nic, i))
-+					rc = ibft_create_attribute(data, i,
-+						ibft_eth_properties[i],
-+						ibft_attr_show_nic, attr_list);
-+			break;
-+		case id_target:
-+			for (i = 0; i <= ibft_tgt_rev_chap_secret && !rc; i++)
-+				if (ibft_check_tgt_for(data->tgt, i))
-+					rc = ibft_create_attribute(data, i,
-+						ibft_tgt_properties[i],
-+						ibft_attr_show_target,
-+						attr_list);
-+			break;
-+		case id_initiator:
-+			for (i = 0; i <= ibft_init_initiator_name && !rc; i++)
-+				if (ibft_check_initiator_for(
-+					data->initiator, i))
-+					rc = ibft_create_attribute(data, i,
-+						ibft_initiator_properties[i],
-+						ibft_attr_show_initiator,
-+						attr_list);
-+			break;
-+		default:
-+			break;
-+		}
-+		if (rc)
-+			break;
-+	}
-+	list_for_each_entry_safe(attr, m, attr_list, node) {
-+		rc = sysfs_create_file(attr->kobj, &attr->attr);
-+		if (rc) {
-+			list_del(&attr->node);
-+			kfree(attr);
-+			break;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
-+static void ibft_unregister_attributes(struct list_head *list)
-+{
-+	struct ibft_attribute *attr = NULL, *m;
-+
-+	list_for_each_entry_safe(attr, m, list, node) {
-+		sysfs_remove_file(attr->kobj, &attr->attr);
-+		list_del(&attr->node);
-+		kfree(attr);
-+	}
-+	list_del_init(list);
-+}
-+
-+/*
-+ * ibft_init() - creates sysfs tree entries for iBFT data.
-+ */
-+static int __init ibft_init(void)
-+{
-+	int rc = 0;
-+
-+	if (!ibft_phys)
-+		find_ibft();
-+
-+	rc = firmware_register(&ibft_subsys);
-+	if (rc)
-+		return rc;
-+
-+	if (ibft_phys) {
-+		printk(KERN_INFO "iBFT detected at 0x%lx.\n",
-+		       (unsigned long)ibft_phys);
-+
-+		rc = ibft_alloc_device(ibft_phys);
-+		if (rc)
-+			goto out_firmware_unregister;
-+
-+		/* Scan the IBFT for data and register kobjects. */
-+		rc = ibft_register_kobjects(ibft_device, &ibft_kobject_list);
-+		if (rc)
-+			goto out_free;
-+
-+		/* Register the attributes */
-+		rc = ibft_register_attributes(&ibft_kobject_list,
-+				&ibft_attr_list);
-+		if (rc)
-+			goto out_free;
-+	} else
-+		printk(KERN_INFO "No iBFT detected.\n");
-+
-+	return 0;
-+
-+out_free:
-+	ibft_unregister_attributes(&ibft_attr_list);
-+	ibft_unregister_kobjects(&ibft_kobject_list);
-+	ibft_free_device(ibft_device);
-+	ibft_device = NULL;
-+out_firmware_unregister:
-+	firmware_unregister(&ibft_subsys);
-+	return rc;
-+}
-+
-+static void __exit ibft_exit(void)
-+{
-+	ibft_unregister_attributes(&ibft_attr_list);
-+	ibft_unregister_kobjects(&ibft_kobject_list);
-+	ibft_free_device(ibft_device);
-+	ibft_device = NULL;
-+	firmware_unregister(&ibft_subsys);
-+}
-+
-+module_init(ibft_init);
-+module_exit(ibft_exit);
-diff --git a/drivers/firmware/iscsi_ibft_find.c b/drivers/firmware/iscsi_ibft_find.c
-new file mode 100644
-index 0000000..c51685a
---- /dev/null
-+++ b/drivers/firmware/iscsi_ibft_find.c
-@@ -0,0 +1,78 @@
-+/*
-+ *  Copyright 2007 Red Hat, Inc.
-+ *  by Peter Jones <pjones@redhat.com>
-+ *  Copyright 2007 IBM, Inc.
-+ *  by Konrad Rzeszutek <konradr@us.ibm.com>
-+ *
-+ * This code finds the iSCSI Boot Format Table.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License v2.0 as published by
-+ * the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/ctype.h>
-+#include <linux/init.h>
-+#include <linux/stat.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/limits.h>
-+#include <linux/device.h>
-+#include <linux/pci.h>
-+#include <linux/blkdev.h>
-+#include <linux/iscsi_ibft.h>
-+
-+
-+/*
-+ * Physical location of iSCSI Boot Format Table.
-+ */
-+void *ibft_phys;
-+EXPORT_SYMBOL(ibft_phys);
-+
-+#define IBFT_SIGN "iBFT"
-+#define IBFT_SIGN_LEN 4
-+#define IBFT_START 0x80000 /* 512kB */
-+#define IBFT_END 0x100000 /* 1MB */
-+#define VGA_MEM 0xA0000 /* VGA buffer */
-+#define VGA_SIZE 0x20000 /* 128kB */
-+
-+
-+/*
-+ * Routine used to find the iSCSI Boot Format Table. the physical
-+ * location is set in the ibft_phys variable. The return value is
-+ * the size of IBFT.
-+ */
-+ssize_t find_ibft(void)
-+{
-+	unsigned long pos;
-+
-+	for (pos = IBFT_START; pos < IBFT_END; pos += 16) {
-+		void *virt;
-+		/* The table can't be inside the VGA BIOS reserved space,
-+		 * so skip that area */
-+		if (pos == VGA_MEM)
-+			pos += VGA_SIZE;
-+		virt = phys_to_virt(pos);
-+		if (memcmp(virt, IBFT_SIGN, IBFT_SIGN_LEN) == 0) {
-+			unsigned long *addr =
-+			    (unsigned long *)phys_to_virt(pos + 4);
-+			unsigned int len = *addr;
-+			/* if the length of the table extends past 1M,
-+			 * the table cannot be valid. */
-+			if (pos + len <= (IBFT_END-1)) {
-+				ibft_phys = (void *)pos;
-+				return len;
-+			}
-+		}
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(find_ibft);
-diff --git a/include/linux/iscsi_ibft.h b/include/linux/iscsi_ibft.h
-new file mode 100644
-index 0000000..420f621
---- /dev/null
-+++ b/include/linux/iscsi_ibft.h
-@@ -0,0 +1,126 @@
-+#ifndef ISCSI_IBFT_H
-+#define ISCSI_IBFT_H
-+
-+/*
-+ * Physical location of iSCSI Boot Format Table.
-+ */
-+extern void *ibft_phys;
-+
-+/*
-+ * Routine used to find the iSCSI Boot Format Table. The physical
-+ * location is set in the ibft_phys variable. The return value is the
-+ * size of IBFT.
-+ */
-+extern ssize_t find_ibft(void);
-+
-+#if defined(CONFIG_ISCSI_IBFT) || defined(CONFIG_ISCSI_IBFT_MODULE)
-+
-+struct ibft_table_header {
-+	char signature[4];
-+	u32 length;
-+	u8 revision;
-+	u8 checksum;
-+	char oem_id[6];
-+	char oem_table_id[8];
-+	char reserved[24];
-+} __attribute__((__packed__));
-+
-+struct ibft_hdr {
-+	u8 id;
-+	u8 version;
-+	u16 length;
-+	u8 index;
-+	u8 flags;
-+} __attribute__((__packed__));
-+
-+struct ibft_control {
-+	struct ibft_hdr hdr;
-+	u16 extensions;
-+	u16 initiator_off;
-+	u16 nic0_off;
-+	u16 tgt0_off;
-+	u16 nic1_off;
-+	u16 tgt1_off;
-+} __attribute__((__packed__));
-+
-+struct ibft_initiator {
-+	struct ibft_hdr hdr;
-+	char isns_server[16];
-+	char slp_server[16];
-+	char pri_radius_server[16];
-+	char sec_radius_server[16];
-+	u16 initiator_name_len;
-+	u16 initiator_name_off;
-+} __attribute__((__packed__));
-+
-+struct ibft_nic {
-+	struct ibft_hdr hdr;
-+	char ip_addr[16];
-+	u8 subnet_mask_prefix;
-+	u8 origin;
-+	char gateway[16];
-+	char primary_dns[16];
-+	char secondary_dns[16];
-+	char dhcp[16];
-+	u16 vlan;
-+	char mac[6];
-+	u16 pci_bdf;
-+	u16 hostname_len;
-+	u16 hostname_off;
-+} __attribute__((__packed__));
-+
-+struct ibft_tgt {
-+	struct ibft_hdr hdr;
-+	char ip_addr[16];
-+	u16 port;
-+	char lun[8];
-+	u8 chap_type;
-+	u8 nic_assoc;
-+	u16 tgt_name_len;
-+	u16 tgt_name_off;
-+	u16 chap_name_len;
-+	u16 chap_name_off;
-+	u16 chap_secret_len;
-+	u16 chap_secret_off;
-+	u16 rev_chap_name_len;
-+	u16 rev_chap_name_off;
-+	u16 rev_chap_secret_len;
-+	u16 rev_chap_secret_off;
-+} __attribute__((__packed__));
-+
-+/*
-+ * The kobject and attribute structures.
-+ */
-+
-+struct ibft_kobject {
-+	struct ibft_table_header *header;
-+	union {
-+		struct ibft_initiator *initiator;
-+		struct ibft_nic *nic;
-+		struct ibft_tgt *tgt;
-+		struct ibft_hdr *hdr;
-+	};
-+	struct kobject kobj;
-+	struct list_head node;
++static struct platform_driver ds1511_rtc_driver = {
++	.probe		= ds1511_rtc_probe,
++	.remove		= __devexit_p(ds1511_rtc_remove),
++	.driver		= {
++		.name	= "ds1511",
++		.owner	= THIS_MODULE,
++	},
 +};
 +
-+struct ibft_attribute {
-+	struct attribute attr;
-+	ssize_t (*show) (struct  ibft_kobject *entry,
-+			 struct ibft_attribute *attr, char *buf);
-+	union {
-+		struct ibft_initiator *initiator;
-+		struct ibft_nic *nic;
-+		struct ibft_tgt *tgt;
-+		struct ibft_hdr *hdr;
-+	};
-+	struct kobject *kobj;
-+	int type; /* The enum of the type. This can be any value off:
-+		ibft_eth_properties_enum, ibft_tgt_properties_enum,
-+		or ibft_initiator_properties_enum. */
-+	struct list_head node;
-+};
++ static int __init
++ds1511_rtc_init(void)
++{
++	return platform_driver_register(&ds1511_rtc_driver);
++}
 +
-+#endif
++ static void __exit
++ds1511_rtc_exit(void)
++{
++	return platform_driver_unregister(&ds1511_rtc_driver);
++}
 +
-+#endif /* ISCSI_IBFT_H */
++module_init(ds1511_rtc_init);
++module_exit(ds1511_rtc_exit);
++
++MODULE_AUTHOR("Andrew Sharp <andy.sharp@onstor.com>");
++MODULE_DESCRIPTION("Dallas DS1511 RTC driver");
++MODULE_LICENSE("GPL");
++MODULE_VERSION(DRV_VERSION);
