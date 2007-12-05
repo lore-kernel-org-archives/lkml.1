@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXLEOjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbXLEOlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXLEOjo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 09:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXLEOjf
+	id S1753855AbXLEOlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 09:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbXLEOlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 09:39:35 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:39865 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbXLEOjd (ORCPT
+	Wed, 5 Dec 2007 09:41:12 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54844 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbXLEOlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 09:39:33 -0500
-Date: Wed, 5 Dec 2007 20:09:16 +0530
+	Wed, 5 Dec 2007 09:41:10 -0500
+Date: Wed, 5 Dec 2007 20:10:43 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
        viro@zeniv.linux.org.uk, Christoph Hellwig <hch@lst.de>,
        Dave Hansen <haveblue@us.ibm.com>
-Subject: [RFC PATCH 2/5] Add New directory listing approach
-Message-ID: <20071205143916.GE2471@in.ibm.com>
+Subject: [RFC PATCH 4/5] Directory seek support
+Message-ID: <20071205144043.GG2471@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20071205143718.GC2471@in.ibm.com>
 MIME-Version: 1.0
@@ -29,468 +29,312 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another readdir implementation for union uounted directories.
+Directory seek support.
 
-Reads dirents from all layers of the union into a cache, eliminates duplicates,
-before returning them into userspace. The cache is stored persistently as part
-of struct file of the topmost directory. Instead of original directory offsets,
-offsets are defined as linearly increasing indices on this cache and the same
-is returned to userspace.
+Define the seek behaviour on the stored cache of dirents.
 
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- fs/file_table.c       |    1 
- fs/readdir.c          |   10 -
- fs/union.c            |  281 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h    |   30 +++++
- include/linux/union.h |   28 ++++
- 5 files changed, 342 insertions(+), 8 deletions(-)
+ fs/read_write.c       |   11 ---
+ fs/union.c            |  171 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fs.h    |    8 ++
+ include/linux/union.h |   25 +++++++
+ 4 files changed, 205 insertions(+), 10 deletions(-)
 
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -286,6 +286,7 @@ void fastcall __fput(struct file *file)
- 		drop_file_write_access(file);
- 
- 	put_pid(file->f_owner.pid);
-+	put_rdstate(file->f_rdstate);
- 	file_kill(file);
- 	file->f_path.dentry = NULL;
- 	file->f_path.mnt = NULL;
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -16,12 +16,12 @@
- #include <linux/security.h>
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -16,6 +16,7 @@
  #include <linux/syscalls.h>
- #include <linux/unistd.h>
+ #include <linux/pagemap.h>
+ #include <linux/splice.h>
 +#include <linux/union.h>
+ #include "read_write.h"
  
  #include <asm/uaccess.h>
+@@ -116,15 +117,7 @@ EXPORT_SYMBOL(default_llseek);
  
- int vfs_readdir(struct file *file, filldir_t filler, void *buf)
+ loff_t vfs_llseek(struct file *file, loff_t offset, int origin)
  {
--	struct inode *inode = file->f_path.dentry->d_inode;
- 	int res = -ENOTDIR;
- 
- 	if (!file->f_op || !file->f_op->readdir)
-@@ -31,13 +31,7 @@ int vfs_readdir(struct file *file, filld
- 	if (res)
- 		goto out;
- 
--	mutex_lock(&inode->i_mutex);
--	res = -ENOENT;
--	if (!IS_DEADDIR(inode)) {
--		res = file->f_op->readdir(file, buf, filler);
--		file_accessed(file);
+-	loff_t (*fn)(struct file *, loff_t, int);
+-
+-	fn = no_llseek;
+-	if (file->f_mode & FMODE_LSEEK) {
+-		fn = default_llseek;
+-		if (file->f_op && file->f_op->llseek)
+-			fn = file->f_op->llseek;
 -	}
--	mutex_unlock(&inode->i_mutex);
-+	res = do_readdir(file, buf, filler);
- out:
- 	return res;
+-	return fn(file, offset, origin);
++	return do_llseek(file, offset, origin);
  }
+ EXPORT_SYMBOL(vfs_llseek);
+ 
 --- a/fs/union.c
 +++ b/fs/union.c
-@@ -46,8 +46,10 @@ static struct hlist_head *union_rhashtab
-  * - union_lock
-  */
- DEFINE_SPINLOCK(union_lock);
-+DEFINE_MUTEX(union_rdmutex);
- 
- static struct kmem_cache *union_cache __read_mostly;
-+static struct kmem_cache *readdir_cache;
- 
- static unsigned long hash(struct dentry *dentry, struct vfsmount *mnt)
- {
-@@ -101,6 +103,9 @@ static int __init init_union(void)
- 	for (loop = 0; loop < (1 << union_rhash_shift); loop++)
- 		INIT_HLIST_HEAD(&union_rhashtable[loop]);
- 
-+	readdir_cache = kmem_cache_create("readdir-cache",
-+					sizeof(struct rdcache_entry), 0,
-+					SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
+@@ -614,6 +614,7 @@ static int rdcache_add_entry(struct rdst
+ 	this->dtype = d_type;
+ 	INIT_LIST_HEAD(&this->list);
+ 	list_add_tail(&this->list, list);
++	r->cur_dirent = this;
  	return 0;
  }
  
-@@ -516,6 +521,282 @@ int last_union_is_root(struct path *path
+@@ -636,18 +637,96 @@ static int filldir_union(void *buf, cons
+ 	if (rdcache_find_entry(&r->dirent_cache, name, namlen))
+ 		return 0;
+ 
+-	err =  cb->filldir(cb->buf, name, namlen, r->cur_off,
++	/* We come here with NULL cb->filldir from lseek path */
++	if (cb->filldir)
++		err =  cb->filldir(cb->buf, name, namlen, r->cur_off,
+ 				ino, d_type);
+ 	if (err >= 0) {
+ 		rdcache_add_entry(r, &r->dirent_cache,
+ 			name, namlen, offset, ino, d_type);
+ 		r->cur_off = ++r->last_off;
+ 		r->nr_dirents++;
++		if (r->cur_off == r->fill_off) {
++			/* We filled up to the required seek offset */
++			r->fill_off = 0;
++			err = -EINVAL;
++		}
+ 	}
+ 	cb->error = err;
+ 	return err;
  }
  
- /*
-+ * readdir support for Union mounts.
-+ */
-+
-+struct rdcache_callback {
-+	void *buf;			/* original callback buffer */
-+	filldir_t filldir;		/* the filldir() we should call */
-+	int error;			/* stores filldir error */
-+	struct rdstate *rdstate;	/* readdir state */
-+};
-+
 +/*
-+ * This is called after every ->readdir() to persistently store the number of
-+ * entries in a directory in the corresponding union_mount structure.
++ * This is called when current offset in rdcache gets changed and when
++ * we need to change the current underlying directory in the rdstate
++ * to match the current offset.
 + */
-+static void update_um_dirents(struct rdstate *r)
-+{
-+	struct union_mount *um;
-+
-+	spin_lock(&union_lock);
-+	um = union_lookup(r->cur_path.dentry, r->cur_path.mnt);
-+	if (!um)
-+		goto out;
-+	um->nr_dirents = r->nr_dirents;
-+out:
-+	spin_unlock(&union_lock);
-+}
-+
-+static void rdcache_free(struct list_head *list)
-+{
-+	struct list_head *p;
-+	struct list_head *ptmp;
-+	int count = 0;
-+
-+	list_for_each_safe(p, ptmp, list) {
-+		struct rdcache_entry *this;
-+
-+		this = list_entry(p, struct rdcache_entry, list);
-+		list_del_init(&this->list);
-+		kfree(this->name.name);
-+		kmem_cache_free(readdir_cache, this);
-+		count++;
-+	}
-+	INIT_LIST_HEAD(list);
-+	return;
-+}
-+
-+static int rdcache_find_entry(struct list_head *uc_list,
-+				  const char *name, int namelen)
-+{
-+	struct rdcache_entry *p;
-+	int ret = 0;
-+
-+	list_for_each_entry(p, uc_list, list) {
-+		if (p->name.len != namelen)
-+			continue;
-+		if (strncmp(p->name.name, name, namelen) == 0) {
-+			ret = 1;
-+			break;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static int rdcache_add_entry(struct rdstate *r, struct list_head *list,
-+		const char *name, int namelen, loff_t offset, u64 ino,
-+		unsigned int d_type)
-+{
-+	struct rdcache_entry *this;
-+	char *tmp_name;
-+
-+	this = kmem_cache_alloc(readdir_cache, GFP_KERNEL);
-+	if (!this) {
-+		printk(KERN_CRIT "rdcache_add_entry(): out of kernel memory\n");
-+		return -ENOMEM;
-+	}
-+
-+	tmp_name = kmalloc(namelen + 1, GFP_KERNEL);
-+	if (!tmp_name) {
-+		printk(KERN_CRIT "rdcache_add_entry(): out of kernel memory\n");
-+		kmem_cache_free(readdir_cache, this);
-+		return -ENOMEM;
-+	}
-+
-+	this->name.name = tmp_name;
-+	this->name.len = namelen;
-+	this->name.hash = 0;
-+	memcpy(tmp_name, name, namelen);
-+	tmp_name[namelen] = 0;
-+	this->off = offset;
-+	this->ino = ino;
-+	this->dtype = d_type;
-+	INIT_LIST_HEAD(&this->list);
-+	list_add_tail(&this->list, list);
-+	return 0;
-+}
-+
-+/*
-+ * filldir routine for union mounted directories.
-+ * Handles duplicate elimination by building a readdir cache.
-+ */
-+static int filldir_union(void *buf, const char *name, int namlen,
-+			   loff_t offset, u64 ino, unsigned int d_type)
-+{
-+	struct rdcache_callback *cb = buf;
-+	struct rdstate *r = cb->rdstate;
-+	int err = 0;
-+
-+	/*
-+	 * When a dirent gets skipped like this, the offset of the
-+	 * next dirent from the previous dirent will also not point to the
-+	 * skipped dirent.
-+	 */
-+	if (rdcache_find_entry(&r->dirent_cache, name, namlen))
-+		return 0;
-+
-+	err =  cb->filldir(cb->buf, name, namlen, r->cur_off,
-+				ino, d_type);
-+	if (err >= 0) {
-+		rdcache_add_entry(r, &r->dirent_cache,
-+			name, namlen, offset, ino, d_type);
-+		r->cur_off = ++r->last_off;
-+		r->nr_dirents++;
-+	}
-+	cb->error = err;
-+	return err;
-+}
-+
-+/* Called from last fput() */
-+void put_rdstate(struct rdstate *rdstate)
-+{
-+	if (!rdstate)
-+		return;
-+
-+	mutex_lock(&union_rdmutex);
-+	path_put(&rdstate->cur_path);
-+	rdcache_free(&rdstate->dirent_cache);
-+	mutex_unlock(&union_rdmutex);
-+	kfree(rdstate);
-+}
-+
-+static struct rdstate *get_rdstate(struct file *file)
++static void update_rdstate(struct file *file)
 +{
 +	struct rdstate *r = file->f_rdstate;
++	loff_t off = r->cur_off;
++	struct union_mount *um;
 +
-+	if (r)
-+		return r;
++	if (!(r->flags & RDSTATE_NEED_UPDATE))
++		return;
 +
-+	/*
-+	 * We have read the dirents from this earlier but now don't have a
-+	 * corresponding rdstate. This shouldn't happen.
-+	 */
-+	if (file->f_pos)
-+		return ERR_PTR(-EINVAL);
-+
-+	r = kzalloc(sizeof(struct rdstate), GFP_KERNEL);
-+	if (!r)
-+		return ERR_PTR(-ENOMEM);
-+
++	spin_lock(&union_lock);
++	um = union_lookup(file->f_path.dentry, file->f_path.mnt);
++	spin_unlock(&union_lock);
++	if (!um)
++		goto out;
++	off -= um->nr_dirents;
++	path_put(&r->cur_path);
 +	r->cur_path = file->f_path;
 +	path_get(&r->cur_path);
-+	INIT_LIST_HEAD(&r->dirent_cache);
-+	file->f_rdstate = r;
-+	return r;
++
++	while (off > 0) {
++		spin_lock(&union_lock);
++		um = union_lookup(r->cur_path.dentry, r->cur_path.mnt);
++		spin_unlock(&union_lock);
++		if (!um)
++			goto out;
++		off -= um->nr_dirents;
++		path_put(&r->cur_path);
++		r->cur_path = um->u_next;
++		path_get(&r->cur_path);
++	}
++out:
++	r->file_off = r->cur_dirent->off;
 +}
 +
-+int readdir_union(struct file *file, void *buf, filldir_t filler)
++/*
++ * Returns dirents from rdcache to userspace.
++ */
++static int readdir_rdcache(struct file *file, struct rdcache_callback *cb)
 +{
-+	struct dentry *topmost = file->f_path.dentry;
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct rdstate *rdstate;
-+	struct path path;
-+	loff_t offset = 0;
-+	struct rdcache_callback cb;
++	struct rdstate *r = cb->rdstate;
++	struct rdcache_entry *tmp = r->cur_dirent;
 +	int err = 0;
 +
-+	if (IS_DEADDIR(inode))
-+		return -ENOENT;
++	BUG_ON(r->cur_off > r->last_off);
 +
-+	rdstate = get_rdstate(file);
-+	if (IS_ERR(rdstate)) {
-+		err = PTR_ERR(rdstate);
++	/* If offsets already uptodate, just return */
++	if (likely(r->cur_off == r->last_off))
++		return 0;
++
++	/*
++	 * return the entries from cur_off till last_off from rdcache to
++	 * user space.
++	 */
++	list_for_each_entry_from(tmp, &r->dirent_cache, list) {
++		err =  cb->filldir(cb->buf, tmp->name.name, tmp->name.len,
++				r->cur_off, tmp->ino, tmp->dtype);
++		r->cur_dirent = tmp;
++		if (err < 0)
++			break;
++		r->cur_off++;
++		r->flags |= RDSTATE_NEED_UPDATE;
++	}
++	update_rdstate(file);
++	return err;
++}
++
+ /* Called from last fput() */
+ void put_rdstate(struct rdstate *rdstate)
+ {
+@@ -710,6 +789,10 @@ int readdir_union(struct file *file, voi
+ 	cb.rdstate = rdstate;
+ 	cb.error = 0;
+ 
++	err = readdir_rdcache(file, &cb);
++	if (err)
 +		return err;
++
+ 	offset = rdstate->file_off;
+ 
+ 	/* Read from the topmost directory */
+@@ -796,6 +879,92 @@ out:
+ 	return err;
+ }
+ 
++static void rdcache_rewind(struct file *file, struct rdstate *r, loff_t offset)
++{
++	struct rdcache_entry *tmp = r->cur_dirent;
++
++	list_for_each_entry_reverse_from(tmp, &r->dirent_cache, list) {
++		if (r->cur_off == offset)
++			break;
++		r->cur_dirent = tmp;
++		r->cur_off--;
++		r->flags |= RDSTATE_NEED_UPDATE;
 +	}
++	update_rdstate(file);
++}
 +
-+	cb.buf = buf;
-+	cb.filldir = filler;
-+	cb.rdstate = rdstate;
-+	cb.error = 0;
++static void rdcache_forward(struct file *file, struct rdstate *r, loff_t offset)
++{
++	struct rdcache_entry *tmp = r->cur_dirent;
 +
-+	offset = rdstate->file_off;
++	list_for_each_entry_continue(tmp, &r->dirent_cache, list) {
++		if (r->cur_off == offset)
++			break;
++		r->cur_dirent = tmp;
++		r->cur_off++;
++		r->flags |= RDSTATE_NEED_UPDATE;
++	}
++	update_rdstate(file);
++}
 +
-+	/* Read from the topmost directory */
-+	if (rdstate->cur_path.dentry == topmost) {
-+		file->f_pos = offset;
-+		err = file->f_op->readdir(file, &cb, filldir_union);
-+		rdstate->file_off = file->f_pos;
-+		update_um_dirents(rdstate);
-+		if (err >= 0)
-+			err = cb.error;
-+		if (err < 0)
-+			goto out;
++loff_t llseek_union(struct file *file, loff_t offset, int origin)
++{
++	loff_t err;
++	struct rdstate *r = file->f_rdstate;
++	loff_t orig_off = file->f_rdstate->cur_off;
 +
++	if (!r)
++		return -EINVAL;
++
++	switch (origin) {
++	case SEEK_END:
 +		/*
-+		 * Reading from topmost dir complete, start reading the lower
-+		 * dir from the beginning.
++		 * To support this, we need to know the end of the directory,
++		 * which may need reading _all_ the entries from the filesystem
++		 * to readdir cache, which can be expensive.
++		 *
++		 * After we have the last entry in the cache, do
++		 * offset += r->last_off;
 +		 */
-+		offset = 0;
-+		path = file->f_path;
-+		path_get(&path);
-+		if (!follow_union_down(&path.mnt, &path.dentry))
-+			goto out_pathput;
-+		rdstate->nr_dirents = 0;
++		err = -EINVAL;
++		goto out;
++	case SEEK_CUR:
++		offset += r->cur_off;
++		break;
++	}
++	err = -EINVAL;
++	if (offset < 0)
++		goto out;
++
++	if (offset > r->cur_off) {
++		/* Seek forward into the cache */
++		rdcache_forward(file, r, offset);
++		if (offset > r->cur_off) {
++			/*
++			 * Need to seek beyond the cache, read dirents from into
++			 * underlying directories into rdcache.
++			 */
++			r->fill_off = offset;
++			err = readdir_union(file, NULL, NULL);
++			if (err < 0)
++				goto out;
++
++			/* readdir() failed, restore the original offset. */
++			if (offset != r->cur_off) {
++				rdcache_rewind(file, r, orig_off);
++				err = -EINVAL;
++				goto out;
++			}
++			err = offset;
++		}
 +	} else {
-+		path = rdstate->cur_path;
-+		path_get(&path);
++		rdcache_rewind(file, r, offset);
++		err = offset;
 +	}
-+
-+	do {
-+		struct file *ftmp;
-+
-+		/* Get a reference for ftmp */
-+		path_get(&path);
-+		ftmp = dentry_open(path.dentry, path.mnt,
-+				   ((file->f_flags & ~(O_ACCMODE)) |
-+				    O_RDONLY | O_DIRECTORY | O_NOATIME));
-+		if (IS_ERR(ftmp)) {
-+			err = PTR_ERR(ftmp);
-+			goto out_pathput;
-+		}
-+
-+		inode = path.dentry->d_inode;
-+
-+		mutex_lock(&inode->i_mutex); /* TODO: use _nested version */
-+		if (IS_DEADDIR(inode)) {
-+			mutex_unlock(&inode->i_mutex);
-+			err = -ENOENT;
-+			goto out_pathput;
-+		}
-+
-+		ftmp->f_pos = offset;
-+
-+		err = ftmp->f_op->readdir(ftmp, &cb, filldir_union);
-+		file_accessed(ftmp);
-+		rdstate->file_off = ftmp->f_pos;
-+		mutex_unlock(&inode->i_mutex);
-+		/* TODO: Better to unconditionally put and get ? */
-+		if (path.mnt != rdstate->cur_path.mnt) {
-+			mntput(rdstate->cur_path.mnt);
-+			rdstate->cur_path.mnt = mntget(path.mnt);
-+		}
-+		if (path.dentry != rdstate->cur_path.dentry) {
-+			dput(rdstate->cur_path.dentry);
-+			rdstate->cur_path.dentry = dget(path.dentry);
-+		}
-+		fput(ftmp);
-+		update_um_dirents(rdstate);
-+		if (err >= 0)
-+			err = cb.error;
-+		if (err < 0)
-+			goto out_pathput;
-+
-+		/*
-+		 * Reading from a lower dir complete, start reading the
-+		 * next lower dir from the beginning.
-+		 */
-+		offset = 0;
-+		rdstate->nr_dirents = 0;
-+	} while (follow_union_down(&path.mnt, &path.dentry));
-+
-+out_pathput:
-+	path_put(&path);
 +out:
 +	return err;
 +}
 +
-+/*
+ /*
   * Union mount copyup support
   */
- 
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -785,6 +785,33 @@ static inline int ra_has_index(struct fi
- 		index <  ra->start + ra->size);
- }
- 
-+#ifdef CONFIG_UNION_MOUNT
-+/* The readdir cache object */
-+struct rdcache_entry {
-+	struct list_head list;
-+	unsigned long ino;
-+	unsigned long off;
-+	struct qstr name;
-+	unsigned int dtype;
-+};
-+
-+struct rdstate {
-+	struct path cur_path;	/* Current directory on which readdir is
-+				   in progress */
-+	loff_t file_off;	/* File offset of underlying directory */
-+	loff_t cur_off;		/* Offset to current dirent in rdcache */
-+	loff_t last_off;	/* Offset to last dirent in rdcache */
-+	loff_t nr_dirents;	/* Number of entries from current underlying
-+				   directory in rdcache */
-+	struct list_head dirent_cache;	/* cache of directory entries */
-+};
-+
-+extern void put_rdstate(struct rdstate *rdstate);
-+
-+#else
-+#define put_rdstate(x)		do { } while (0)
-+#endif
-+
- #define FILE_MNT_WRITE_TAKEN	1
- #define FILE_MNT_WRITE_RELEASED	2
- 
-@@ -823,6 +850,9 @@ struct file {
- #endif /* #ifdef CONFIG_EPOLL */
- 	struct address_space	*f_mapping;
- 	unsigned long f_mnt_write_state;
-+#ifdef CONFIG_UNION_MOUNT
-+	struct rdstate		*f_rdstate;
-+#endif
+@@ -803,9 +803,17 @@ struct rdstate {
+ 	loff_t last_off;	/* Offset to last dirent in rdcache */
+ 	loff_t nr_dirents;	/* Number of entries from current underlying
+ 				   directory in rdcache */
++	loff_t fill_off;	/* Fill cache upto this offset. Used during
++				   seek */
+ 	struct list_head dirent_cache;	/* cache of directory entries */
++	struct rdcache_entry *cur_dirent;	/* pointer to current directory
++				entry in rdcache which corresponds to cur_off */
++	int flags;
  };
- extern spinlock_t files_lock;
- #define file_list_lock() spin_lock(&files_lock);
+ 
++#define RDSTATE_STALE		0x01
++#define RDSTATE_NEED_UPDATE	0x02
++
+ extern void put_rdstate(struct rdstate *rdstate);
+ 
+ #else
 --- a/include/linux/union.h
 +++ b/include/linux/union.h
-@@ -36,6 +36,7 @@ struct union_mount {
- 
- 	struct path u_this;		/* this is me */
- 	struct path u_next;		/* this is what I overlay */
-+	loff_t nr_dirents;		/* nr dirents in this directory */
- };
- 
- #define IS_UNION(dentry)	(!list_empty(&(dentry)->d_unions) || \
-@@ -53,6 +54,7 @@ extern void __shrink_d_unions(struct den
- extern int attach_mnt_union(struct vfsmount *, struct vfsmount *,
+@@ -55,6 +55,7 @@ extern int attach_mnt_union(struct vfsmo
  			    struct dentry *);
  extern void detach_mnt_union(struct vfsmount *);
-+extern int readdir_union(struct file *, void *, filldir_t);
+ extern int readdir_union(struct file *, void *, filldir_t);
++extern loff_t llseek_union(struct file *, loff_t, int);
  extern int last_union_is_root(struct path *);
  extern int is_dir_unioned(struct path *);
  extern int union_relookup_topmost(struct nameidata *, int);
-@@ -61,6 +63,8 @@ extern struct dentry *union_create_topmo
- extern int __union_copyup(struct path *, struct nameidata *, struct path *);
- extern int union_copyup(struct nameidata *, int);
+@@ -110,5 +111,29 @@ static inline int do_readdir(struct file
+ 	return res;
+ }
  
-+extern struct mutex union_rdmutex;
-+
- #else /* CONFIG_UNION_MOUNT */
- 
- #define IS_UNION(x)			(0)
-@@ -82,5 +86,29 @@ extern int union_copyup(struct nameidata
- 
- #endif	/* CONFIG_UNION_MOUNT */
- 
-+static inline int do_readdir(struct file *file, void *buf, filldir_t filler)
++static inline loff_t do_llseek(struct file *file, loff_t offset, int origin)
 +{
-+	int res = 0;
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+
-+	mutex_lock(&inode->i_mutex);
++	long long res;
 +#ifdef CONFIG_UNION_MOUNT
 +	if (IS_MNT_UNION(file->f_path.mnt) && is_dir_unioned(&file->f_path)) {
 +		mutex_lock(&union_rdmutex);
-+		res = readdir_union(file, buf, filler);
++		res = llseek_union(file, offset, origin);
 +		mutex_unlock(&union_rdmutex);
 +	} else
 +#endif
 +	{
-+		res = -ENOENT;
-+		if (!IS_DEADDIR(inode)) {
-+			res = file->f_op->readdir(file, buf, filler);
-+			file_accessed(file);
++		loff_t (*fn)(struct file *, loff_t, int);
++
++		fn = no_llseek;
++		if (file->f_mode & FMODE_LSEEK) {
++			fn = default_llseek;
++			if (file->f_op && file->f_op->llseek)
++				fn = file->f_op->llseek;
 +		}
++		res = fn(file, offset, origin);
 +	}
-+	mutex_unlock(&inode->i_mutex);
 +	return res;
 +}
 +
