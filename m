@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbXLDX6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbXLEADy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751938AbXLDX6Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Dec 2007 18:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbXLDX6A
+	id S1752193AbXLEADy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Dec 2007 19:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbXLEADr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Dec 2007 18:58:00 -0500
-Received: from elvis.franken.de ([193.175.24.41]:56574 "EHLO elvis.franken.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbXLDX57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Dec 2007 18:57:59 -0500
-Date: Wed, 5 Dec 2007 00:57:56 +0100
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] SC26XX: New serial driver for SC2681 uarts
-Message-ID: <20071204235756.GB17760@alpha.franken.de>
-References: <20071202194346.36E3FDE4C4@solo.franken.de> <20071203155317.772231f9.akpm@linux-foundation.org> <20071203155746.2dc4506d@laptopd505.fenrus.org> <20071204082534.GA5938@alpha.franken.de> <20071204124516.0120266a@the-village.bc.nu>
+	Tue, 4 Dec 2007 19:03:47 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:38977 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbXLEADq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Dec 2007 19:03:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oD9q6FBwcVu/sTbN1N0aTY5h7qpLeVSpFBy1hpkz1hC2cNKkPHYPZANn3jHldR2rgIs5JflHuio06rBpqoUhj8lpHVzgAi22KjGlOBTvxa3zvaQcorcyvbRg8WZhEMDX4Lvt6VSMwkkRbIat1nGne5OqYuXEEEXoBUWKjCBxS2k=
+Message-ID: <6934efce0712041603y65e704c9v6377761ef292b6a5@mail.gmail.com>
+Date: Tue, 4 Dec 2007 16:03:45 -0800
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
+Subject: Re: solid state drive access and context switching
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Chris Friesen" <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071204224525.GC26112@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071204124516.0120266a@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+References: <47548BF4.3010907@nortel.com>
+	 <20071203230629.725f4c7a@the-village.bc.nu>
+	 <6934efce0712040954v74cf0b4bk19b49988bc828233@mail.gmail.com>
+	 <20071204203536.2bf6d025@the-village.bc.nu>
+	 <6934efce0712041354n47c11d6ckbc7f4aa1e7c85f@mail.gmail.com>
+	 <20071204224525.GC26112@lazybastard.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 04, 2007 at 12:45:16PM +0000, Alan Cox wrote:
-> > I tried to numbers several months ago and didn't get any response 
-> 
-> Please raise it with the relevant people. If our LANANA administrator is
-> not doing their job then the Linuxfoundation need to find a replacement,
-> or hand control of it over to someone outside.
+> > Maybe I'm missing something but I don't see it.  We want a block
+> > interface for these devices, we just need a faster slimmer interface.
+> > Maybe a new mtdblock interface that doesn't do erase would be the
+> > place for?
+>
+> Doesn't do erase?  MTD has to learn almost all tricks from the block
+> layer, as devices are becoming high-latency high-bandwidth, compared to
+> what MTD was designed for.  In order to get any decent performance, we
+> need asynchronous operations, request queues and caching.
+>
+> The only useful advantage MTD does have over block devices is an
+> _explicit_ erase operation.  Did you mean "doesn't do _implicit_ erase".
 
-I just sent another request for registration. I'll keep you updated.
 
-Thomas.
-
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
+You're right.  That the point I was trying to make, albeit badly, MTD
+isn't the place for this.  The fact that more and more of what the MTD
+is being used for looks a lot like the block layer is a whole
+different discussion.
