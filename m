@@ -1,53 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbXLFCTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbXLFCUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbXLFCTo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXLFCTh
+	id S1754758AbXLFCUT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXLFCUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:19:37 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:11388 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbXLFCTg (ORCPT
+	Wed, 5 Dec 2007 21:20:04 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:61449 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752049AbXLFCUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:19:36 -0500
-Message-ID: <47575C07.1080001@oracle.com>
-Date: Wed, 05 Dec 2007 18:18:47 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, jengelh@computergmbh.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Reduce stack used by lib/hexdump.c
-References: <1196359724.22120.22.camel@localhost>	 <20071129102400.dac158d8.randy.dunlap@oracle.com>	 <1196361860.22120.27.camel@localhost> <474F0A68.1080809@oracle.com>	 <1196369873.22120.69.camel@localhost> <474F28EB.20608@oracle.com>	 <Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr>	 <1196378922.22120.72.camel@localhost>	 <20071205160133.0766c4f5.akpm@linux-foundation.org> <1196907017.10819.49.camel@localhost>
-In-Reply-To: <1196907017.10819.49.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 5 Dec 2007 21:20:00 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAOPqVkdMROHU/2dsb2JhbACBWg
+Date: Wed, 5 Dec 2007 21:14:52 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] Scheduler Profiling - Use Immediate Values
+Message-ID: <20071206021452.GA12256@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:13:30 up 32 days,  7:18,  7 users,  load average: 4.16, 1.82,
+	1.07
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2007-12-05 at 16:01 -0800, Andrew Morton wrote:
->> You could trim linebuf[] to 80 chars or so.  Extra points for making it
->> very clear when someone tries to exceed that - strcpy(linebuf, "stop being
->> stupid").
-> 
-> Maybe just eliminate the 16 or 32 byte width option and
-> force it to only 16 byte widths.
-> 
-> That'd keep it down to ~ 100 bytes nicely.
-> 
-> Prefix + address + dump + ascii: 20 + 18 + 48 + 10.
+Use immediate values with lower d-cache hit in optimized version as a
+condition for scheduler profiling call.
 
-Have you checked users (callers)?  I'm pretty sure that one of the
-callers wanted 32 and that's why it's there.
+Changelog :
+- Use imv_* instead of immediate_*.
 
+It applies on 2.6.24-rc4-git3. It depends on the Immediate Values
+(redux) patchset.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ drivers/kvm/kvm_main.c  |    3 ++-
+ include/linux/profile.h |    5 +++--
+ kernel/profile.c        |   22 +++++++++++-----------
+ kernel/sched_fair.c     |    6 +-----
+ 4 files changed, 17 insertions(+), 19 deletions(-)
+
+Index: linux-2.6-lttng/kernel/profile.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/profile.c	2007-12-05 20:50:34.000000000 -0500
++++ linux-2.6-lttng/kernel/profile.c	2007-12-05 20:53:43.000000000 -0500
+@@ -42,8 +42,8 @@ static int (*timer_hook)(struct pt_regs 
+ static atomic_t *prof_buffer;
+ static unsigned long prof_len, prof_shift;
+ 
+-int prof_on __read_mostly;
+-EXPORT_SYMBOL_GPL(prof_on);
++DEFINE_IMV(char, prof_on) __read_mostly;
++EXPORT_IMV_SYMBOL_GPL(prof_on);
+ 
+ static cpumask_t prof_cpu_mask = CPU_MASK_ALL;
+ #ifdef CONFIG_SMP
+@@ -61,7 +61,7 @@ static int __init profile_setup(char * s
+ 
+ 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
+ #ifdef CONFIG_SCHEDSTATS
+-		prof_on = SLEEP_PROFILING;
++		imv_set(prof_on, SLEEP_PROFILING);
+ 		if (str[strlen(sleepstr)] == ',')
+ 			str += strlen(sleepstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -74,7 +74,7 @@ static int __init profile_setup(char * s
+ 			"kernel sleep profiling requires CONFIG_SCHEDSTATS\n");
+ #endif /* CONFIG_SCHEDSTATS */
+ 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
+-		prof_on = SCHED_PROFILING;
++		imv_set(prof_on, SCHED_PROFILING);
+ 		if (str[strlen(schedstr)] == ',')
+ 			str += strlen(schedstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -83,7 +83,7 @@ static int __init profile_setup(char * s
+ 			"kernel schedule profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	} else if (!strncmp(str, kvmstr, strlen(kvmstr))) {
+-		prof_on = KVM_PROFILING;
++		imv_set(prof_on, KVM_PROFILING);
+ 		if (str[strlen(kvmstr)] == ',')
+ 			str += strlen(kvmstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -93,7 +93,7 @@ static int __init profile_setup(char * s
+ 			prof_shift);
+ 	} else if (get_option(&str, &par)) {
+ 		prof_shift = par;
+-		prof_on = CPU_PROFILING;
++		imv_set(prof_on, CPU_PROFILING);
+ 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	}
+@@ -104,7 +104,7 @@ __setup("profile=", profile_setup);
+ 
+ void __init profile_init(void)
+ {
+-	if (!prof_on) 
++	if (!_imv_read(prof_on))
+ 		return;
+  
+ 	/* only text is profiled */
+@@ -293,7 +293,7 @@ void profile_hits(int type, void *__pc, 
+ 	int i, j, cpu;
+ 	struct profile_hit *hits;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+ 	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+@@ -403,7 +403,7 @@ void profile_hits(int type, void *__pc, 
+ {
+ 	unsigned long pc;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+ 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+@@ -560,7 +560,7 @@ static int __init create_hash_tables(voi
+ 	}
+ 	return 0;
+ out_cleanup:
+-	prof_on = 0;
++	imv_set(prof_on, 0);
+ 	smp_mb();
+ 	on_each_cpu(profile_nop, NULL, 0, 1);
+ 	for_each_online_cpu(cpu) {
+@@ -587,7 +587,7 @@ static int __init create_proc_profile(vo
+ {
+ 	struct proc_dir_entry *entry;
+ 
+-	if (!prof_on)
++	if (!_imv_read(prof_on))
+ 		return 0;
+ 	if (create_hash_tables())
+ 		return -1;
+Index: linux-2.6-lttng/include/linux/profile.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/profile.h	2007-12-05 20:50:34.000000000 -0500
++++ linux-2.6-lttng/include/linux/profile.h	2007-12-05 20:53:43.000000000 -0500
+@@ -7,10 +7,11 @@
+ #include <linux/init.h>
+ #include <linux/cpumask.h>
+ #include <linux/cache.h>
++#include <linux/immediate.h>
+ 
+ #include <asm/errno.h>
+ 
+-extern int prof_on __read_mostly;
++DECLARE_IMV(char, prof_on) __read_mostly;
+ 
+ #define CPU_PROFILING	1
+ #define SCHED_PROFILING	2
+@@ -38,7 +39,7 @@ static inline void profile_hit(int type,
+ 	/*
+ 	 * Speedup for the common (no profiling enabled) case:
+ 	 */
+-	if (unlikely(prof_on == type))
++	if (unlikely(imv_read(prof_on) == type))
+ 		profile_hits(type, ip, 1);
+ }
+ 
+Index: linux-2.6-lttng/drivers/kvm/kvm_main.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/kvm/kvm_main.c	2007-12-05 20:50:34.000000000 -0500
++++ linux-2.6-lttng/drivers/kvm/kvm_main.c	2007-12-05 20:53:43.000000000 -0500
+@@ -2053,7 +2053,8 @@ again:
+ 	/*
+ 	 * Profile KVM exit RIPs:
+ 	 */
+-	if (unlikely(prof_on == KVM_PROFILING)) {
++
++	if (unlikely(imv_read(prof_on) == KVM_PROFILING)) {
+ 		kvm_x86_ops->cache_regs(vcpu);
+ 		profile_hit(KVM_PROFILING, (void *)vcpu->rip);
+ 	}
+Index: linux-2.6-lttng/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/sched_fair.c	2007-12-05 20:52:28.000000000 -0500
++++ linux-2.6-lttng/kernel/sched_fair.c	2007-12-05 20:53:43.000000000 -0500
+@@ -461,12 +461,8 @@ static void enqueue_sleeper(struct cfs_r
+ 		 * get a milliseconds-range estimation of the amount of
+ 		 * time that the task spent sleeping:
+ 		 */
+-		if (unlikely(prof_on == SLEEP_PROFILING)) {
+-			struct task_struct *tsk = task_of(se);
+-
+-			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
++		profile_hits(SLEEP_PROFILING, (void *)get_wchan(task_of(se)),
+ 				     delta >> 20);
+-		}
+ 	}
+ #endif
+ }
 -- 
-~Randy
-Features and documentation: http://lwn.net/Articles/260136/
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
