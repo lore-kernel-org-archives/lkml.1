@@ -1,94 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbXLFHlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXLFHtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbXLFHlm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 02:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXLFHle
+	id S1754818AbXLFHtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 02:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXLFHto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 02:41:34 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:41450 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753130AbXLFHld (ORCPT
+	Thu, 6 Dec 2007 02:49:44 -0500
+Received: from firewall1.addi-data.de ([62.154.208.154]:48722 "EHLO
+	firewal1.addi-data.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753200AbXLFHtm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 02:41:33 -0500
-Date: Thu, 6 Dec 2007 08:41:31 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, miltonm@bga.com,
-       clameter@sgi.com, apw@shadowen.org, linux-kernel@vger.kernel.org,
-       y-goto@jp.fujitsu.com
-Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
-In-Reply-To: <47573806.8000808@am.sony.com>
-Message-ID: <Pine.LNX.4.62.0712060839340.9929@pademelon.sonytel.be>
-References: <47537F2E.2070204@am.sony.com> <b91f94dd5b35247fecf52090c0b3890f@bga.com>
- <Pine.LNX.4.62.0712051013040.28855@pademelon.sonytel.be>
- <20071205151147.9db4640b.akpm@linux-foundation.org> <47573806.8000808@am.sony.com>
+	Thu, 6 Dec 2007 02:49:42 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1696839408-1196926891=:9929"
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: AW: [PATCH] serial: add ADDI-DATA GmbH Communication
+ cardsin8250_pci.c and pci_ids.h.
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Thu, 6 Dec 2007 08:49:44 +0100
+Message-ID: <DD0BA80209AFF04091B518EA708D0A0BA23ED5@exchange01.addi-data.intra>
+Thread-Topic: [PATCH] serial: add ADDI-DATA GmbH Communication 
+    cardsin8250_pci.c and pci_ids.h.
+Thread-Index: AcgzIQVH3gDOCzZvS5SrU4Uo1CG18AAAewQgAS3wxvA=
+References: <DD0BA80209AFF04091B518EA708D0A0B9F91BF@exchange01.addi-data.intra> 
+    <20071128104914.GA23074@pazke.donpac.ru> 
+    <DD0BA80209AFF04091B518EA708D0A0B9F9210@exchange01.addi-data.intra> 
+    <20071130071339.GB24928@pazke.donpac.ru> 
+From: "Krauth.Julien" <Krauth.Julien@addi-data.com>
+To: "Andrey Panin" <pazke@donpac.ru>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-1696839408-1196926891=:9929
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Hello,
 
-On Wed, 5 Dec 2007, Geoff Levand wrote:
-> Andrew Morton wrote:
-> > On Wed, 5 Dec 2007 10:52:48 +0100 (CET)
-> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > 
-> >> --------------------------------------------------------------------------------
-> >> Subject: sparsemem: sparse_add_one_section() may fail to allocate memory
-> >> 
-> >> sparsemem: sparse_add_one_section() may fail to allocate memory, and must check
-> >> whether the allocation succeeded before proceeding to touch the allocated
-> >> memory.
-> >> 
-> >> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> >> 
-> >> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> >> ---
-> >> FIXME There are still some possible memory leaks in sparse_add_one_section():
-> >>   - usemap is never deallocated
-> >>   - __kfree_section_memmap() is a not yet implemented dummy
-> > 
-> > I already had
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-improve-the-error-handling-for-sparse_add_one_section.patch
-> > and
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-check-the-return-value-of-sparse_index_alloc.patch
-> > 
-> > queued.  Do they fix the problem, and should they be merged in 2.6.24?
-> 
-> No, a quick test shows it just panics in a different place.  Geert's
-> patch does also.
+Here is the last version of the patch updated regarding your remarks.
 
-What do you mean, that it still paniced after my patch?
+Regards,
 
-The kernel did boot succesfully for me when passing ps3fb=48M. Userspace saw 58
-MiB (128 MiB - kernelsize - 48 MiB(ps3fb)).
+Julien Krauth
 
-I did not try kexec, though.
+Changes:
+========
 
-With kind regards,
+- Indentation.
+
+- Code optimisation: all boards except the APCI-7800 are now managed
+with the pci_default_setup() function.
+
+- Add pbn_b0_8_115200 to manage the APCI-7800-3 with the
+pci_default_setup() function.
+
+
+---
+
+From: Krauth Julien <krauth.julien@addi-data.com>
+
+Add ADDI-DATA GmbH communication cards to 8250_pci driver.
+Supported cards are:
+
+APCI-7300, APCI-7420, APCI-7500, APCI-7800 APCI-7300-2, APCI-7420-2,
+APCI-7500-2 APCI-7300-3, APCI-7420-3, APCI-7500-3, APCI-7800-3
+
+8250_pci.c.patch
+================
+Add ADDI-DATA GmbH communication cards to 8250_pci.c.
+
+pci_ids.h.patch
+===============
+Add ADDI-DATA GmbH communication cards Vendor and Device IDs to
+pci_ids.h.
+
+WARNING:
+========
+8250_pci.c.patch depend on pci_ids.h.patch.
+8250_pci.c is using Vendor and Device ID defined in pci_ids.h.
+
+
+Signed-off-by: Krauth J. <krauth.julien@addi-data.com>
+---
+
+This patch applies to kernel 2.6.23.9.
+
+--- linux-2.6.23.9-vanilla/include/linux/pci_ids.h	2007-11-26
+18:51:43.000000000 +0100
++++ linux-2.6.23.9/include/linux/pci_ids.h	2007-11-27
+10:55:12.000000000 +0100
+@@ -2019,6 +2019,23 @@
+ #define PCI_VENDOR_ID_QUICKNET		0x15e2
+ #define PCI_DEVICE_ID_QUICKNET_XJ	0x0500
  
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
++/*
++ * ADDI-DATA GmbH communication cards <info@addi-data.com>  */
++#define PCI_VENDOR_ID_ADDIDATA_OLD             0x10E8
++#define PCI_VENDOR_ID_ADDIDATA                 0x15B8
++#define PCI_DEVICE_ID_ADDIDATA_APCI7500        0x7000
++#define PCI_DEVICE_ID_ADDIDATA_APCI7420        0x7001
++#define PCI_DEVICE_ID_ADDIDATA_APCI7300        0x7002
++#define PCI_DEVICE_ID_ADDIDATA_APCI7800        0x818E
++#define PCI_DEVICE_ID_ADDIDATA_APCI7500_2      0x7009
++#define PCI_DEVICE_ID_ADDIDATA_APCI7420_2      0x700A
++#define PCI_DEVICE_ID_ADDIDATA_APCI7300_2      0x700B
++#define PCI_DEVICE_ID_ADDIDATA_APCI7500_3      0x700C
++#define PCI_DEVICE_ID_ADDIDATA_APCI7420_3      0x700D
++#define PCI_DEVICE_ID_ADDIDATA_APCI7300_3      0x700E
++#define PCI_DEVICE_ID_ADDIDATA_APCI7800_3      0x700F
++
+ #define PCI_VENDOR_ID_PDC		0x15e9
  
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1696839408-1196926891=:9929--
+ #define PCI_VENDOR_ID_FARSITE           0x1619
+
+
+--- linux-2.6.23.9-vanilla/drivers/serial/8250_pci.c	2007-11-26
+18:51:43.000000000 +0100
++++ linux-2.6.23.9/drivers/serial/8250_pci.c	2007-11-30
+08:33:50.000000000 +0100
+@@ -106,6 +106,32 @@ setup_port(struct serial_private *priv, 
+ }
+ 
+ /*
++ * ADDI-DATA GmbH communication cards <info@addi-data.com>
++ */
++static int
++addidata_apci7800_setup(struct serial_private *priv, struct
+pciserial_board *board,
++               struct uart_port *port, int idx)
++{
++	unsigned int bar = 0, offset = board->first_offset;
++	bar = FL_GET_BASE(board->flags);
++
++	if (idx < 2 ) {
++		offset += idx * board->uart_offset;
++	} else if ((idx >= 2) && (idx < 4)) {
++		bar += 1;
++		offset += ((idx - 2) * board->uart_offset);
++	} else if ((idx >= 4) && (idx < 6 )) {
++		bar += 2;
++		offset += ((idx - 4) * board->uart_offset);
++	} else if (idx >= 6) {
++		bar += 3;
++		offset += ((idx - 6) * board->uart_offset);
++	}
++
++	return setup_port(priv, port, bar, offset, board->reg_shift);
++}
++
++/*
+  * AFAVLAB uses a different mixture of BARs and offsets
+  * Not that ugly ;) -- HW
+  */
+@@ -752,6 +778,16 @@ pci_default_setup(struct serial_private 
+  */
+ static struct pci_serial_quirk pci_serial_quirks[] = {
+ 	/*
++	* ADDI-DATA GmbH communication cards <info@addi-data.com>
++	*/
++	{
++		.vendor         = PCI_VENDOR_ID_ADDIDATA_OLD,
++		.device         = PCI_DEVICE_ID_ADDIDATA_APCI7800,
++		.subvendor      = PCI_ANY_ID,
++		.subdevice      = PCI_ANY_ID,
++		.setup          = addidata_apci7800_setup,
++	},
++	/*
+ 	 * AFAVLAB cards - these may be called via parport_serial
+ 	 *  It is not clear whether this applies to all products.
+ 	 */
+@@ -1036,6 +1072,7 @@ enum pci_board_num_t {
+ 	pbn_b0_2_115200,
+ 	pbn_b0_4_115200,
+ 	pbn_b0_5_115200,
++	pbn_b0_8_115200,
+ 
+ 	pbn_b0_1_921600,
+ 	pbn_b0_2_921600,
+@@ -1172,6 +1209,12 @@ static struct pciserial_board pci_boards
+ 		.base_baud	= 115200,
+ 		.uart_offset	= 8,
+ 	},
++	[pbn_b0_8_115200] = {
++		.flags       = FL_BASE0,
++		.num_ports   = 8,
++		.base_baud   = 115200,
++		.uart_offset = 8,
++	},
+ 
+ 	[pbn_b0_1_921600] = {
+ 		.flags		= FL_BASE0,
+@@ -2574,6 +2617,97 @@ static struct pci_device_id serial_pci_t
+ 		pbn_pasemi_1682M },
+ 
+ 	/*
++	* ADDI-DATA GmbH communication cards <info@addi-data.com>
++	*/
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7500,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_4_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7420,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_2_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7300,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_1_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA_OLD,
++		PCI_DEVICE_ID_ADDIDATA_APCI7800,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b1_8_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7500_2,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_4_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7420_2,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_2_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7300_2,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_1_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7500_3,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_4_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7420_3,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_2_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7300_3,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_1_115200 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCI7800_3,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_b0_8_115200 },
++
++	/*
+ 	 * These entries match devices with class COMMUNICATION_SERIAL,
+ 	 * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
+ 	 */
+
+
+ADDI-DATA GmbH - Dieselstra�e 3 - 77833 Ottersweier (Germany)
+Amtsgericht Mannheim HRB210433
+Gesch�ftsf�hrer Antonio Agnetti, Ren� Ohlmann 
+UST-ID-Nr.: DE 143754253 WEEE-Reg.-Nr. DE 65862200
+
+This email and any files transmitted with it are confidential and intended 
+solely for the use of the individual or entity to whom they are addressed. If you have received this email in error please notify the system manager.
+This footnote confirms that this email message has been scanned for the presence of computer viruses.
+
