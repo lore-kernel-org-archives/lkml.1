@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXLFXmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbXLFXrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbXLFXmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 18:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbXLFXmX
+	id S1754505AbXLFXrw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 18:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbXLFXro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 18:42:23 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:46533 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbXLFXmW (ORCPT
+	Thu, 6 Dec 2007 18:47:44 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:4391 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbXLFXro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 18:42:22 -0500
-Message-ID: <475888D5.7010407@nortel.com>
-Date: Thu, 06 Dec 2007 17:42:13 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 6 Dec 2007 18:47:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tZThR3O0+8+jPDTiSHBLCGQhR2PPIrHf/jrlojS5QvE26EjnhthspjxmtmGCSfM06EYWOCPYQu3KB2Jkg5gRMuuWCczizTfYkqSHZ0up5TnEotv2Guu4dSm7XwUi7bA5La35VE7piecL3tlXfWZP5ZzhBpBW1TnjjGUXnVMzgx8=
+Message-ID: <a44ae5cd0712061547l73abdf0blbd0286b410bd677d@mail.gmail.com>
+Date: Thu, 6 Dec 2007 18:47:43 -0500
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc4-mm1: VDSOSYM build error
+Cc: laurent.riffard@free.fr, linux-kernel@vger.kernel.org, roland@redhat.com,
+       mingo@elte.hu, tglx@linutronix.de
+In-Reply-To: <20071206153415.353ddeea.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Renzo Davoli <renzo@cs.unibo.it>, linux-kernel@vger.kernel.org
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it> <20071206163538.GC20595@one.firstfloor.org> <47585D66.3000404@nortel.com> <20071206212644.GA26725@one.firstfloor.org> <47586E7F.1020903@nortel.com> <20071206220754.GF20595@one.firstfloor.org> <47587F90.8010400@nortel.com> <20071206230611.GK20595@one.firstfloor.org>
-In-Reply-To: <20071206230611.GK20595@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Dec 2007 23:42:16.0562 (UTC) FILETIME=[A2473D20:01C83861]
+Content-Disposition: inline
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	 <47587796.8020705@free.fr>
+	 <20071206143754.07a67819.akpm@linux-foundation.org>
+	 <a44ae5cd0712061528j4c0ea529w71bd2b96e1e73043@mail.gmail.com>
+	 <20071206153415.353ddeea.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Thu, Dec 06, 2007 at 05:02:40PM -0600, Chris Friesen wrote:
+I found:
+http://marc.info/?l=linux-kernel&m=119550978915647&w=2
+through
+http://marc.info/?l=linux-kernel&m=119551057816829&w=2
+(I was unable to locate the 6th patch in the set)
 
->>I just reran on a 3.2GHZ P4 running 2.6.11 (Fedora Core 4).  42% latency 
->>increase.
+When I tried backing out the patches, there were tons of errors.  I
+guess I'll punt on trying to build this MM tree.  Sorry.
 
-> Sounds like something that should be looked into. I know of no
-> principal reasons for that.
-
->>For stream sockets, unix gives approximately a 62% bandwidth increase 
->>over tcp.   (Although tcp could probably be tuned to do better than this.)
-
-> How long a stream did you test? You might be measuring slow start.
-
-No idea.  These are just the standard local networking tests in lmbench 
-v2.  In our case the latency was the big concern and we were using 
-datagrams anyway.
-
-Chris
+         Miles
