@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbXLFHJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXLFHLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbXLFHJk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 02:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbXLFHJ2
+	id S1754980AbXLFHLo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 02:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbXLFHLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 02:09:28 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45554
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752831AbXLFHJ1 (ORCPT
+	Thu, 6 Dec 2007 02:11:36 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57710 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753161AbXLFHLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 02:09:27 -0500
-Date: Wed, 05 Dec 2007 23:09:25 -0800 (PST)
-Message-Id: <20071205.230925.99250129.davem@davemloft.net>
-To: reuben-linuxkernel@reub.net
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, auke-jan.h.kok@intel.com,
-       ilpo.jarvinen@helsinki.fi
-Subject: Re: 2.6.24-rc4-mm1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47579DD9.9030909@reub.net>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<47579DD9.9030909@reub.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 6 Dec 2007 02:11:35 -0500
+Date: Wed, 5 Dec 2007 23:10:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Joe Perches <joe@perches.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       jengelh@computergmbh.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Reduce stack used by lib/hexdump.c
+Message-Id: <20071205231040.f6c9b40e.akpm@linux-foundation.org>
+In-Reply-To: <831AEA99-3615-4015-9415-A4572D690095@mac.com>
+References: <1196359724.22120.22.camel@localhost>
+	<20071129102400.dac158d8.randy.dunlap@oracle.com>
+	<1196361860.22120.27.camel@localhost>
+	<474F0A68.1080809@oracle.com>
+	<1196369873.22120.69.camel@localhost>
+	<474F28EB.20608@oracle.com>
+	<Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr>
+	<1196378922.22120.72.camel@localhost>
+	<20071205160133.0766c4f5.akpm@linux-foundation.org>
+	<1196907017.10819.49.camel@localhost>
+	<47575C07.1080001@oracle.com>
+	<1196908955.10819.64.camel@localhost>
+	<831AEA99-3615-4015-9415-A4572D690095@mac.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Reuben Farrelly <reuben-linuxkernel@reub.net>
-Date: Thu, 06 Dec 2007 17:59:37 +1100
+On Thu, 6 Dec 2007 00:58:38 -0500 Kyle Moffett <mrmacman_g4@mac.com> wrote:
 
-> On 5/12/2007 4:17 PM, Andrew Morton wrote:
-> > - Lots of device IDs have been removed from the e1000 driver and moved over
-> >   to e1000e.  So if your e1000 stops working, you forgot to set CONFIG_E1000E.
+> On Dec 05, 2007, at 21:42:35, Joe Perches wrote:
+> > On Wed, 2007-12-05 at 18:18 -0800, Randy Dunlap wrote:
+> >> Joe Perches wrote:
+> >>> Maybe just eliminate the 16 or 32 byte width option and force it  
+> >>> to only 16 byte widths.
+> >> Have you checked users (callers)?  I'm pretty sure that one of the  
+> >> callers wanted 32 and that's why it's there.
+> >
+> > I did.  There is only 1 subsystem.  That's easy to change.
+> >
+> > drivers/mtd/ubi/debug.c:  print_hex_dump(KERN_DEBUG, "",  
+> > DUMP_PREFIX_OFFSET, 32, 1,
+> > drivers/mtd/ubi/io.c:     print_hex_dump(KERN_DEBUG, "",  
+> > DUMP_PREFIX_OFFSET, 32, 1,
+> >
+> > Long lines in the log file are not too easy to read anyway.  Using  
+> > 16 byte dumps per line instead of 32 isn't painful.
+> >
+> > It gets rid of the allocation, reduces the argument count and makes  
+> > the kernel smaller.  I think it's all good.
+> >
+> > Every current caller would have to change though.
 > 
-> This non fatal oops which I have just noticed may be related to this change then 
-> - certainly looks networking related.
+> Alternatively, since print_hex_dump is not a performance-critical  
+> path (and usually indicates an error/debug condition), you could  
+> probably just make a static "hexdump_lock" spinlock and  
+> spin_lock_irqsave()/spin_unlock_irqrestore().  It would always nest  
+> inside any other lock (except during crash, where we break locks  
+> already for printk()), and I doubt any of the callers would notice  
+> the serialization since they're already serialized on the printk buffer.
 > 
-> WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
-> Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
-> 
-> Call Trace:
->   <IRQ>  [<ffffffff8046e038>] tcp_fastretrans_alert+0x229/0xe63
->   [<ffffffff80470975>] tcp_ack+0xa3f/0x127d
->   [<ffffffff804747b7>] tcp_rcv_established+0x55f/0x7f8
->   [<ffffffff8047b1aa>] tcp_v4_do_rcv+0xdb/0x3a7
->   [<ffffffff881148a8>] :nf_conntrack:nf_ct_deliver_cached_events+0x75/0x99
 
-No, it's from TCP assertions and changes added by Ilpo to the
-net-2.6.25 tree recently.
+Yup, that'd work.
