@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbXLFIwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbXLFIx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbXLFIwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 03:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXLFIw0
+	id S1755267AbXLFIx4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 03:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXLFIxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 03:52:26 -0500
-Received: from cantor.suse.de ([195.135.220.2]:50290 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838AbXLFIwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 03:52:25 -0500
-Date: Thu, 6 Dec 2007 09:52:23 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: carsteno@de.ibm.com
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, rob@landley.net,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: [patch] ext2: xip check fix
-Message-ID: <20071206085223.GA25202@wotan.suse.de>
-References: <20071204042628.GA26636@wotan.suse.de> <200712041054.51599.borntraeger@de.ibm.com> <20071204101009.GB9618@wotan.suse.de> <20071204112100.GA20420@wotan.suse.de> <20071204112327.GB20420@wotan.suse.de> <4756C714.2040809@de.ibm.com> <20071205233345.GB5617@wotan.suse.de> <4757B62F.2040608@de.ibm.com>
+	Thu, 6 Dec 2007 03:53:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44949
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751226AbXLFIxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 03:53:45 -0500
+Date: Thu, 06 Dec 2007 00:53:44 -0800 (PST)
+Message-Id: <20071206.005344.74817074.davem@davemloft.net>
+To: stefan@loplof.de
+Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200712060949.02524.stefan@loplof.de>
+References: <200712051939.08384.stefan@loplof.de>
+	<20071205.182500.166603251.davem@davemloft.net>
+	<200712060949.02524.stefan@loplof.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4757B62F.2040608@de.ibm.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 09:43:27AM +0100, Carsten Otte wrote:
-> Nick Piggin wrote:
-> >>Xip does only work, if both do match PAGE_SIZE because it 
-> >>does'nt support multiple calls to direct_access in the get_xip_page 
-> >>address space operation. Thus we check both here, actually this was 
-> >>changed from how it looks after your patch as a bugfix where our 
-> >>tester tried a 4k filesystem on a 2k blockdev.
-> >>Did I miss something?
-> >
-> >However, the bdev block size may be changed with sb_set_blocksize. It
-> >doesn't actually have to match the hardware sector size -- if this
-> >does matter for XIP, then I think you need some other check here.
-> Hmmmmhh. For a bdev with PAGE_SIZE hardsect size, there is no other 
-> valid value then PAGE_SIZE that one could set it to. Or can it indeed 
-> be changed to a value greater then PAGE_SIZE or smaller then hardsect 
-> size?
+From: Stefan Rompf <stefan@loplof.de>
+Date: Thu, 6 Dec 2007 09:49:01 +0100
 
-It can't be made smaller (or larger, in current kernels). But you
-already get all that checking done for you -- both by checking that
-the filesystem blocksize == PAGE_SIZE, and by the error checking in
-sb_set_blocksize.
+> "If the connection cannot be established immediately and O_NONBLOCK is set for 
+> the file descriptor for the socket, connect() shall fail and set errno to 
+> [EINPROGRESS], but the connection request shall not be aborted, and the 
+> connection shall be established asynchronously."
+> 
+> I think the words "shall fail" and "immediately" are quite clear.
 
-After my patch, we can do XIP in a hardsect size < PAGE_SIZE block
-device -- this seems to be a fine thing to do at least for the
-ramdisk code. Would this situation be problematic for existing drivers,
-and if so, in what way?
+They are, but the context in which they apply is vague.
 
-Thanks,
-Nick
+I can equally generate examples where the non-blocking behavior you
+are a proponent of would break non-blocking UDP apps during a
+sendmsg() call when we hit IPSEC resolution.  Yet similar language on
+blocking semantics exists for sendmsg() in the standards.
 
+The world is shades of gray, implying anything else is foolhardy and
+that's how I'm handling this.
+
+> Well, the only reason this doesn't break on a daily basis is because the code 
+> isn't in the kernel that long and not many people run applications on an 
+> IPSEC gateway. This will change if kernel based IPSEC is used for roadwarrior 
+> connections or dnssec based anonymous IPSEC someday. Trust me, you will 
+> revert this misbehaviour in -stable then.
+
+I use IPSEC every single day in this fashion, and I haven't.
