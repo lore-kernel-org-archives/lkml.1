@@ -1,100 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbXLFKbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbXLFKoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753733AbXLFKbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 05:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXLFKbd
+	id S1752772AbXLFKoh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 05:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXLFKo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 05:31:33 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:40037 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751270AbXLFKbc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 05:31:32 -0500
-Subject: Re: suspend-related lockdep warning
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <200712060121.24837.rjw@sisk.pl>
-References: <20071128024355.5931c6ec.akpm@linux-foundation.org>
-	 <200712032334.27088.rjw@sisk.pl>
-	 <20071203174505.c5ea84c4.akpm@linux-foundation.org>
-	 <200712060121.24837.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SQUWWE/vUtIRbf628sxj"
-Date: Thu, 06 Dec 2007 11:31:28 +0100
-Message-Id: <1196937088.6788.56.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 6 Dec 2007 05:44:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46404 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751739AbXLFKo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 05:44:28 -0500
+Date: Thu, 6 Dec 2007 11:43:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jie Chen <chen@jlab.org>
+Cc: Simon Holm Th??gersen <odie@cs.aau.dk>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+Message-ID: <20071206104318.GB30838@elte.hu>
+References: <20071205154014.GA6491@elte.hu> <4756D058.1070500@jlab.org> <20071205164723.GA25641@elte.hu> <4756E44E.8080607@jlab.org> <20071205200343.GA14570@elte.hu> <475708A7.4030708@jlab.org> <20071205204645.GC25694@elte.hu> <47570F83.6040601@jlab.org> <20071205210222.GA30089@elte.hu> <47572353.4040606@jlab.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47572353.4040606@jlab.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-SQUWWE/vUtIRbf628sxj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Jie Chen <chen@jlab.org> wrote:
 
+>> not "BARRIER time". I've re-read the discussion and found no hint 
+>> about how to build and run a barrier test. Either i missed it or it's 
+>> so obvious to you that you didnt mention it :-)
+>>
+>> 	Ingo
+>
+> Hi, Ingo:
+>
+> Did you do configure --enable-public-release? My qmt is for qcd 
+> calculation (one type of physics code) [...]
 
-On Thu, 2007-12-06 at 01:21 +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 4 of December 2007, Andrew Morton wrote:
+yes, i did exactly as instructed.
 
-> > [   34.455096] ipw2200: Failed to send WEP_KEY: Command timed out.
-> > [   34.911876] Syncing filesystems ... done.
-> > [   34.934526] Freezing user space processes ... WARNING: at kernel/loc=
-kdep.c:2662 check_flags()
-> > [   34.934917] Pid: 1922, comm: dbus-daemon Not tainted 2.6.24-rc3-mm3 =
-#2
-> > [   34.935036]  [<c0104853>] show_trace_log_lvl+0x12/0x25
-> > [   34.935142]  [<c010506c>] show_trace+0xd/0x10
-> > [   34.935231]  [<c0105850>] dump_stack+0x55/0x5d
-> > [   34.935322]  [<c0136125>] check_flags+0x7f/0x11a
-> > [   34.935417]  [<c0139210>] lock_acquire+0x3a/0x86
-> > [   34.935511]  [<c0318faf>] _spin_lock+0x1c/0x49
-> > [   34.935603]  [<c0140fc7>] refrigerator+0x13/0xc8
-> > [   34.935697]  [<c01270ac>] get_signal_to_deliver+0x34/0x2e8
-> > [   34.935807]  [<c0102edc>] do_notify_resume+0x8c/0x6fe
-> > [   34.935907]  [<c0103a2c>] work_notifysig+0x13/0x1b
-> > [   34.936004]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-> > [   34.936072] irq event stamp: 253
-> > [   34.936133] hardirqs last  enabled at (253): [<c0103a8d>] syscall_ex=
-it_work+0x11/0x26
-> > [   34.936294] hardirqs last disabled at (252): [<c0103956>] syscall_ex=
-it+0x14/0x25
-> > [   34.936446] softirqs last  enabled at (0): [<c011baf9>] copy_process=
-+0x300/0x1246
-> > [   34.936599] softirqs last disabled at (0): [<00000000>] 0x0
-> > [   34.954308] (elapsed 0.01 seconds) done.
-> > [   34.954389] Freezing remaining freezable tasks ... (elapsed 0.00 sec=
-onds) done.
->=20
-> Hmm, do I understand correctly that lockdep expects us to disable interru=
-pts
-> before acquiring the task lock in refrigerator()?  That would be strange.
->=20
-> Ingo, can you have a look at this, please?
+> [...]. Without the above flag one can only test PARALLEL overhead. 
+> Actually the PARALLEL benchmark has the same behavior as the BARRIER. 
+> Thanks.
 
-No its complaining that the IRQ state changed without anybody telling it
-about it. Usually an unannotated cli/sti.
+hm, but PARALLEL does not seem to do that much context switching. So 
+basically you create the threads and do a few short runs to establish 
+overhead? Threads do not get fork-balanced at the moment - but turning 
+it on would be easy. Could you try the patch below - how does it impact 
+your results? (and please keep affinity setting off)
 
-The particular line it warns, (lockdep.c:2662), suggests...=20
+	Ingo
 
-  /me grabs a copy of 24-rc3-mm2
+----------->
+Subject: sched: reactivate fork balancing
+From: Ingo Molnar <mingo@elte.hu>
 
- ... that hardirqs are disabled, but irq tracking thinks they are still
-enabled. So that would be an unannotated cli.
+reactivate fork balancing.
 
---=-SQUWWE/vUtIRbf628sxj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/topology.h |    3 +++
+ 1 file changed, 3 insertions(+)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQBHV8+AXA2jU0ANEf4RAtHnAJ9yBtIfVIywxhlwQkEIC9SYhcE8oACYm49T
-MBvK34FoEMwwojC5I5d05Q==
-=kBcr
------END PGP SIGNATURE-----
-
---=-SQUWWE/vUtIRbf628sxj--
-
+Index: linux/include/linux/topology.h
+===================================================================
+--- linux.orig/include/linux/topology.h
++++ linux/include/linux/topology.h
+@@ -103,6 +103,7 @@
+ 	.forkexec_idx		= 0,			\
+ 	.flags			= SD_LOAD_BALANCE	\
+ 				| SD_BALANCE_NEWIDLE	\
++				| SD_BALANCE_FORK	\
+ 				| SD_BALANCE_EXEC	\
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_IDLE		\
+@@ -134,6 +135,7 @@
+ 	.forkexec_idx		= 1,			\
+ 	.flags			= SD_LOAD_BALANCE	\
+ 				| SD_BALANCE_NEWIDLE	\
++				| SD_BALANCE_FORK	\
+ 				| SD_BALANCE_EXEC	\
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_IDLE		\
+@@ -165,6 +167,7 @@
+ 	.forkexec_idx		= 1,			\
+ 	.flags			= SD_LOAD_BALANCE	\
+ 				| SD_BALANCE_NEWIDLE	\
++				| SD_BALANCE_FORK	\
+ 				| SD_BALANCE_EXEC	\
+ 				| SD_WAKE_AFFINE	\
+ 				| BALANCE_FOR_PKG_POWER,\
