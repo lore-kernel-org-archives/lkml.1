@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbXLFUmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbXLFUos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbXLFUmP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 15:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXLFUmA
+	id S1753872AbXLFUos (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 15:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXLFUol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 15:42:00 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54327 "EHLO e4.ny.us.ibm.com"
+	Thu, 6 Dec 2007 15:44:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52230 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752054AbXLFUl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 15:41:59 -0500
-From: Adam Litke <agl@us.ibm.com>
-Subject: [PATCH] hugetlb: handle write-protection faults in follow_hugetlb_page
-Date: Thu, 06 Dec 2007 12:41:52 -0800
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adam Litke <agl@us.ibm.com>, Dave Kleikamp <shaggy@us.ibm.com>,
-       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
-Message-Id: <20071206204152.16103.44490.stgit@kernel>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+	id S1752205AbXLFUol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 15:44:41 -0500
+Date: Thu, 6 Dec 2007 21:44:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux@bohmer.net,
+       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com
+Subject: Re: [PATCH 3/3] printer port driver: semaphore to mutex
+Message-ID: <20071206204402.GC23375@elte.hu>
+References: <20071206021857.826386004@mvista.com> <20071206021909.131993721@mvista.com> <20071206102334.GE17299@elte.hu> <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The follow_hugetlb_page() fix I posted (merged as git commit
-5b23dbe8173c212d6a326e35347b038705603d39) missed one case.  If the pte is
-present, but not writable and write access is requested by the caller to
-get_user_pages(), the code will do the wrong thing.  Rather than calling
-hugetlb_fault to make the pte writable, it notes the presence of the pte
-and continues.
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-This simple one-liner makes sure we also fault on the pte for this case.
-Please apply.
+> > cool. How far away are we from being able to remove all the 
+> > semaphore code? :-)
+> 
+> I wish my 7 patches made a dent, but it's hasn't done much. ;(
 
-Signed-off-by: Adam Litke <agl@us.ibm.com>
-Acked-by: Dave Kleikamp <shaggy@us.ibm.com>
----
+it's a beginning.
 
- mm/hugetlb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> I would guess at least a week just to mop up the relatively easy 
+> ones.. I've got 12 in my queue, and there still ~50 hopefully trivial 
+> ones still to be looked at.. Then another ~30 more difficult ones 
+> (that use init_MUTEX_LOCKED, or sema_init with 0 instead of 1) ..
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 6121b57..6f97821 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -907,7 +907,7 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		 */
- 		pte = huge_pte_offset(mm, vaddr & HPAGE_MASK);
- 
--		if (!pte || pte_none(*pte)) {
-+		if (!pte || pte_none(*pte) || (write && !pte_write(*pte))) {
- 			int ret;
- 
- 			spin_unlock(&mm->page_table_lock);
+With BKL removal being projected to happen between 5 and 10 years from 
+now, i think you are moving at lightning's pace :-)
+
+	Ingo
