@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbXLFUZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbXLFU1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbXLFUZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 15:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbXLFUZP
+	id S1754655AbXLFU1a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 15:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXLFU1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 15:25:15 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:37070 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbXLFUZO (ORCPT
+	Thu, 6 Dec 2007 15:27:23 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41680 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752212AbXLFU1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 15:25:14 -0500
-Subject: Re: [PATCH 3/3] printer port driver: semaphore to mutex
-From: Daniel Walker <dwalker@mvista.com>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <3efb10970712061201l343ad865mae920c3e6d43bfd9@mail.gmail.com>
-References: <20071206021857.826386004@mvista.com>
-	 <20071206021909.131993721@mvista.com> <20071206102334.GE17299@elte.hu>
-	 <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
-	 <3efb10970712061201l343ad865mae920c3e6d43bfd9@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 06 Dec 2007 12:12:25 -0800
-Message-Id: <1196971945.1568.107.camel@jnielson-xp.ddns.mvista.com>
+	Thu, 6 Dec 2007 15:27:22 -0500
+Date: Thu, 6 Dec 2007 12:27:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Message-Id: <20071206122701.85627fb4.akpm@linux-foundation.org>
+In-Reply-To: <200712061204.14854.phillips@phunq.net>
+References: <200712051603.02183.phillips@phunq.net>
+	<200712060148.53805.phillips@phunq.net>
+	<20071206035511.83bef995.akpm@linux-foundation.org>
+	<200712061204.14854.phillips@phunq.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-06 at 21:01 +0100, Remy Bohmer wrote:
-> Daniel,
-> 
-> FYI: I am working on the conversion of the 2 sem->mutex in kernel/printk.c
+On Thu, 6 Dec 2007 12:04:14 -0800
+Daniel Phillips <phillips@phunq.net> wrote:
 
-I looked at the console_sem , but i was going to leave that as last..
+> Any idea 
+> how to extend the accounting idea to all tasks involved in a particular 
+> block device stack?
 
-The problem with the console_sem is that it can get locked from
-interrupt context, which is discouraged with mutex types.. I think it
-will be complicated to convert..
+SMOP, I'd have thought.  As long as each piece of code which handles data
+for this stack knows that it's handling data for that stack it should be
+able to account its memory allocations.
 
-Daniel
-
+The tricky part will be networking allocations because a NIC can of course
+handle data for all sorts of consumers.  But I expect this can be greatly
+simplified with a few heuristics - work out how much memory your typical
+networking stack will allocate for a frame and tack that onto the total.
+Couple of pages worst case..
