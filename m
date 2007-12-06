@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXLFLHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXLFLNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbXLFLHi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 06:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXLFLHb
+	id S1753285AbXLFLNV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 06:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXLFLNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 06:07:31 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:57936 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751885AbXLFLHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 06:07:30 -0500
-Message-ID: <4757D7F3.8040904@atmel.com>
-Date: Thu, 06 Dec 2007 12:07:31 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: Andrew Victor <linux@maxim.org.za>,
-       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] usb: at91_udc: correct hanging while disconnecting usb cable
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 6 Dec 2007 06:13:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37367
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751901AbXLFLND (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 06:13:03 -0500
+Date: Thu, 06 Dec 2007 03:13:02 -0800 (PST)
+Message-Id: <20071206.031302.201608796.davem@davemloft.net>
+To: stefan@loplof.de
+Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200712061156.48810.stefan@loplof.de>
+References: <200712060949.02524.stefan@loplof.de>
+	<20071206.005344.74817074.davem@davemloft.net>
+	<200712061156.48810.stefan@loplof.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correct hanging while disconnecting the USB device 
-cable. Prevent a race between vbus and UDP interrupts.
-This bug was tracked on at91sam9260ek boards.
+From: Stefan Rompf <stefan@loplof.de>
+Date: Thu, 6 Dec 2007 11:56:48 +0100
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com> 
----
+> Am Donnerstag, 6. Dezember 2007 09:53 schrieb David Miller:
+> 
+> > > I think the words "shall fail" and "immediately" are quite clear.
+> >
+> > They are, but the context in which they apply is vague.
+> 
+> "socket is connection-mode" => SOCK_STREAM
 
-A usb resume interrupt was firing after the vbus 
-interrupt : the IP was then already stoped and not able 
-to deal with it (no more clock). A simple interrupt disabling 
-is ok as the "end of bus reset" irq is non maskable and ok 
-to resume the USB device IP.
+I meant whether "immediately" mean in reference to socket
+state or includes auxiliary things like route lookups.
 
---- a/drivers/usb/gadget/at91_udc.c
-+++ b/drivers/usb/gadget/at91_udc.c
-@@ -908,6 +908,7 @@ static void pullup(struct at91_udc *udc,
- 
- 	if (is_on) {
- 		clk_on(udc);
-+		at91_udp_write(udc, AT91_UDP_ICR, AT91_UDP_RXRSM);
- 		at91_udp_write(udc, AT91_UDP_TXVC, 0);
- 		if (cpu_is_at91rm9200())
- 			at91_set_gpio_value(udc->board.pullup_pin, 1);
-@@ -925,6 +926,7 @@ static void pullup(struct at91_udc *udc,
- 		}
- 	} else {
- 		stop_activity(udc);
-+		at91_udp_write(udc, AT91_UDP_IDR, AT91_UDP_RXRSM);
- 		at91_udp_write(udc, AT91_UDP_TXVC, AT91_UDP_TXVC_TXVDIS);
- 		if (cpu_is_at91rm9200())
- 			at91_set_gpio_value(udc->board.pullup_pin, 0);
+When you do a non-blocking write on a socket, things like
+memory allocations can block, potentially for a long time.
+It is an example where there are definite boundaries to where
+the non-blocking'ness applies.
 
+And therefore it is not so cut and dry and you present this
+issue.
+
+> The reason why I'm pushing this issue another time is that I know quite a 
+> bit about system level application development. A very typical design pattern 
+> for non-naive single or multi threaded programs is that they set all 
+> communication sockets to be nonblocking and use a select()/epoll() based loop 
+> to dispatch IO. This often includes initiating a TCP connect() and 
+> asynchronously waiting for it to finish or fail from the main loop.
+>
+> The dangerous situation here is that in 99% of all cases things will just work 
+> because the phase 2 SA exists. In 0.8%, the SA will be established in <1 sec. 
+> However, in the rest of time the server application that you have considered 
+> to be stable will end up sleeping with all threads in a connect() call that 
+> is supposed to return immediatly.
+
+And that connect() call can hang for a long time due to any memory
+allocation done in the connect() path.
+
+You are not avoiding blocking by setting O_NONBLOCK on the socket, it
+is quite foolhardy to think that it does so unilaterally.
+
+And that's why this is a grey area.  Why is waiting for memory
+allocation on a O_NONBLOCK socket OK but waiting for IPSEC route
+resolution is not?
