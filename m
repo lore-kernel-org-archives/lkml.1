@@ -1,54 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbXLFC2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbXLFC2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbXLFC2c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXLFC16
+	id S1756532AbXLFC2s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXLFC2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:27:58 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:50012 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:28:00 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:50020 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbXLFC15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:27:57 -0500
-Message-Id: <20071206022741.001401953@polymtl.ca>
+	id S1753962AbXLFC17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:27:59 -0500
+Message-Id: <20071206022742.869671164@polymtl.ca>
 References: <20071206022555.150400591@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:25:56 -0500
+Date: Wed, 05 Dec 2007 21:26:01 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch-RFC 1/7] Include marker.h in kernel.h -- temporary, for code readability
-Content-Disposition: inline; filename=lttng-instrument-kernelh.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:43 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org
+Subject: [patch-RFC 6/7] LTTng instrumentation net
+Content-Disposition: inline; filename=lttng-instrumentation-net.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:45 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is a hack to make my life easier : it lessens the conflicts due to
-header includes that changes between the kernel versions.
-
-The proper way to do this is to include <linux/marker.h> in every file using the
-markers.
-
-NOT FOR UPSTREAM.
+Network core events.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: netdev@vger.kernel.org
 ---
- include/linux/kernel.h |    1 +
- 1 file changed, 1 insertion(+)
+ net/core/dev.c     |    5 +++++
+ net/ipv4/devinet.c |    5 +++++
+ net/socket.c       |   18 ++++++++++++++++++
+ 3 files changed, 28 insertions(+)
 
-Index: linux-2.6-lttng/include/linux/kernel.h
+Index: linux-2.6-lttng/net/core/dev.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/kernel.h	2007-06-15 16:13:48.000000000 -0400
-+++ linux-2.6-lttng/include/linux/kernel.h	2007-06-15 16:14:28.000000000 -0400
-@@ -14,6 +14,7 @@
- #include <linux/compiler.h>
- #include <linux/bitops.h>
- #include <linux/log2.h>
-+#include <linux/marker.h>
- #include <asm/byteorder.h>
- #include <asm/bug.h>
+--- linux-2.6-lttng.orig/net/core/dev.c	2007-11-19 08:07:04.000000000 -0500
++++ linux-2.6-lttng/net/core/dev.c	2007-11-19 08:07:11.000000000 -0500
+@@ -1639,6 +1639,8 @@ int dev_queue_xmit(struct sk_buff *skb)
+ 	}
  
+ gso:
++	trace_mark(net_dev_xmit, "skb %p protocol #2u%hu", skb, skb->protocol);
++
+ 	spin_lock_prefetch(&dev->queue_lock);
+ 
+ 	/* Disable soft irqs for various locks below. Also
+@@ -2039,6 +2041,9 @@ int netif_receive_skb(struct sk_buff *sk
+ 
+ 	__get_cpu_var(netdev_rx_stat).total++;
+ 
++	trace_mark(net_dev_receive, "skb %p protocol #2u%hu",
++		skb, skb->protocol);
++
+ 	skb_reset_network_header(skb);
+ 	skb_reset_transport_header(skb);
+ 	skb->mac_len = skb->network_header - skb->mac_header;
+Index: linux-2.6-lttng/net/ipv4/devinet.c
+===================================================================
+--- linux-2.6-lttng.orig/net/ipv4/devinet.c	2007-11-19 08:07:04.000000000 -0500
++++ linux-2.6-lttng/net/ipv4/devinet.c	2007-11-19 08:07:11.000000000 -0500
+@@ -262,6 +262,8 @@ static void __inet_del_ifa(struct in_dev
+ 		struct in_ifaddr **ifap1 = &ifa1->ifa_next;
+ 
+ 		while ((ifa = *ifap1) != NULL) {
++			trace_mark(net_del_ifa_ipv4, "label %s",
++				ifa->ifa_label);
+ 			if (!(ifa->ifa_flags & IFA_F_SECONDARY) &&
+ 			    ifa1->ifa_scope <= ifa->ifa_scope)
+ 				last_prim = ifa;
+@@ -368,6 +370,9 @@ static int __inet_insert_ifa(struct in_i
+ 			}
+ 			ifa->ifa_flags |= IFA_F_SECONDARY;
+ 		}
++		trace_mark(net_insert_ifa_ipv4, "label %s address #4u%lu",
++			ifa->ifa_label,
++			(unsigned long)ifa->ifa_address);
+ 	}
+ 
+ 	if (!(ifa->ifa_flags & IFA_F_SECONDARY)) {
+Index: linux-2.6-lttng/net/socket.c
+===================================================================
+--- linux-2.6-lttng.orig/net/socket.c	2007-11-19 08:07:04.000000000 -0500
++++ linux-2.6-lttng/net/socket.c	2007-11-19 08:07:11.000000000 -0500
+@@ -563,6 +563,11 @@ int sock_sendmsg(struct socket *sock, st
+ 	struct sock_iocb siocb;
+ 	int ret;
+ 
++	trace_mark(net_socket_sendmsg,
++		"sock %p family %d type %d protocol %d size %zu",
++		sock, sock->sk->sk_family, sock->sk->sk_type,
++		sock->sk->sk_protocol, size);
++
+ 	init_sync_kiocb(&iocb, NULL);
+ 	iocb.private = &siocb;
+ 	ret = __sock_sendmsg(&iocb, sock, msg, size);
+@@ -646,7 +651,13 @@ int sock_recvmsg(struct socket *sock, st
+ 	struct sock_iocb siocb;
+ 	int ret;
+ 
++	trace_mark(net_socket_recvmsg,
++		"sock %p family %d type %d protocol %d size %zu",
++		sock, sock->sk->sk_family, sock->sk->sk_type,
++		sock->sk->sk_protocol, size);
++
+ 	init_sync_kiocb(&iocb, NULL);
++
+ 	iocb.private = &siocb;
+ 	ret = __sock_recvmsg(&iocb, sock, msg, size, flags);
+ 	if (-EIOCBQUEUED == ret)
+@@ -1212,6 +1223,11 @@ asmlinkage long sys_socket(int family, i
+ 	if (retval < 0)
+ 		goto out_release;
+ 
++	trace_mark(net_socket_create,
++		"sock %p family %d type %d protocol %d fd %d",
++		sock, sock->sk->sk_family, sock->sk->sk_type,
++		sock->sk->sk_protocol, retval);
++
+ out:
+ 	/* It may be already another descriptor 8) Not kernel problem. */
+ 	return retval;
+@@ -2021,6 +2037,8 @@ asmlinkage long sys_socketcall(int call,
+ 	a0 = a[0];
+ 	a1 = a[1];
+ 
++	trace_mark(net_socket_call, "call %d a0 %lu", call, a0);
++
+ 	switch (call) {
+ 	case SYS_SOCKET:
+ 		err = sys_socket(a0, a1, a[2]);
 
 -- 
 Mathieu Desnoyers
