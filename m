@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXLFF6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbXLFF7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbXLFF6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 00:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXLFF6a
+	id S1754429AbXLFF7n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 00:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXLFF7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 00:58:30 -0500
-Received: from mo32.po.2iij.net ([210.128.50.17]:1445 "EHLO mo32.po.2iij.net"
+	Thu, 6 Dec 2007 00:59:36 -0500
+Received: from smtpoutm.mac.com ([17.148.16.73]:55060 "EHLO smtpoutm.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbXLFF6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 00:58:30 -0500
-Message-Id: <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
-Date: Thu, 6 Dec 2007 14:58:13 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: benh@kernel.crashing.org
-Cc: yoichi_yuasa@tripeaks.co.jp,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ralf Baechle <ralf@linux-mips.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-In-Reply-To: <1196917447.7033.17.camel@pasglop>
-References: <200710122305.l9CN5tFI008240@hera.kernel.org>
-	<1196899818.7033.11.camel@pasglop>
-	<200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
-	<1196917447.7033.17.camel@pasglop>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752012AbXLFF7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 00:59:35 -0500
+In-Reply-To: <1196908955.10819.64.camel@localhost>
+References: <1196359724.22120.22.camel@localhost> <20071129102400.dac158d8.randy.dunlap@oracle.com> <1196361860.22120.27.camel@localhost> <474F0A68.1080809@oracle.com> <1196369873.22120.69.camel@localhost> <474F28EB.20608@oracle.com> <Pine.LNX.4.64.0711292206450.3089@fbirervta.pbzchgretzou.qr> <1196378922.22120.72.camel@localhost> <20071205160133.0766c4f5.akpm@linux-foundation.org> <1196907017.10819.49.camel@localhost> <47575C07.1080001@oracle.com> <1196908955.10819.64.camel@localhost>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <831AEA99-3615-4015-9415-A4572D690095@mac.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, jengelh@computergmbh.de,
+       linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Reduce stack used by lib/hexdump.c
+Date: Thu, 6 Dec 2007 00:58:38 -0500
+To: Joe Perches <joe@perches.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Dec 2007 16:04:07 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Dec 05, 2007, at 21:42:35, Joe Perches wrote:
+> On Wed, 2007-12-05 at 18:18 -0800, Randy Dunlap wrote:
+>> Joe Perches wrote:
+>>> Maybe just eliminate the 16 or 32 byte width option and force it  
+>>> to only 16 byte widths.
+>> Have you checked users (callers)?  I'm pretty sure that one of the  
+>> callers wanted 32 and that's why it's there.
+>
+> I did.  There is only 1 subsystem.  That's easy to change.
+>
+> drivers/mtd/ubi/debug.c:  print_hex_dump(KERN_DEBUG, "",  
+> DUMP_PREFIX_OFFSET, 32, 1,
+> drivers/mtd/ubi/io.c:     print_hex_dump(KERN_DEBUG, "",  
+> DUMP_PREFIX_OFFSET, 32, 1,
+>
+> Long lines in the log file are not too easy to read anyway.  Using  
+> 16 byte dumps per line instead of 32 isn't painful.
+>
+> It gets rid of the allocation, reduces the argument count and makes  
+> the kernel smaller.  I think it's all good.
+>
+> Every current caller would have to change though.
 
-> 
-> On Thu, 2007-12-06 at 13:34 +0900, Yoichi Yuasa wrote:
-> > > I don't understand how his fix can work on MIPS nor why the previous
-> > > code didn't, but I don't know how MIPS does its remapping tricks,
-> > > however it will definitely -not- work on powerpc (and will break a
-> > > couple of machines out there).
-> > 
-> > MIPS pcibios_fixup_bus() converts RAW BAR values(including offset) to
-> > resource values. How does it fix up on powerpc?
-> 
-> Same thing. We expect resources to contain raw values before .
+Alternatively, since print_hex_dump is not a performance-critical  
+path (and usually indicates an error/debug condition), you could  
+probably just make a static "hexdump_lock" spinlock and  
+spin_lock_irqsave()/spin_unlock_irqrestore().  It would always nest  
+inside any other lock (except during crash, where we break locks  
+already for printk()), and I doubt any of the callers would notice  
+the serialization since they're already serialized on the printk buffer.
 
-Same.
-
-> What I don't understand is thus why you are calling resource_to_bus on 0x1f0
-> which is -not- a resource value, but is already a BAR value...
-
-0x1f0 is resource value on MIPS Cobalt.
-All RAW BAR values contain the offset(0x10000000) on it.
-
-Do the BAR values on your target contain the offset?
-
-Yoichi
-
-
+Cheers,
+Kyle Moffett
 
