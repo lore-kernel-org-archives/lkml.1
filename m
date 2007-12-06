@@ -1,44 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbXLGD1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbXLGDkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbXLGD1R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 22:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbXLGD1F
+	id S1754314AbXLGDkS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 22:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXLGDkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 22:27:05 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:13259 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbXLGD1C (ORCPT
+	Thu, 6 Dec 2007 22:40:05 -0500
+Received: from smtp121.plus.mail.mud.yahoo.com ([209.191.106.152]:27518 "HELO
+	smtp121.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752970AbXLGDkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 22:27:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=u1S5PsXSPTQYysSHkNwWGrhrpXuHHFugdc5YHLzhf+IzdyrBV57zlrvgmCUN0ddtRyyMNFmhAuH6KecxF/JHfrFJe73ZrplY4fGArXNi29yDag2J66Cb3XKQxGL1NU1jqZhpkIvre86MCYJdSXNd2yGRivXQfIt6SfvNlZMxHwQ=
-Message-ID: <a44ae5cd0712061927y117d5b74qef8acea62a84925f@mail.gmail.com>
-Date: Thu, 6 Dec 2007 22:27:02 -0500
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [PATCH x86/mm] x86 vDSO: canonicalize sysenter .eh_frame
-Cc: "Roland McGrath" <roland@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Laurent Riffard" <laurent.riffard@free.fr>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1196990853.22471.15.camel@brick>
+	Thu, 6 Dec 2007 22:40:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
+  b=H/v2o15j2FWD7PfMGkbEFxoR+raDGBs+golQ9chR2VxMWHZW2zSWXmGH5v4SwAhc5RkW2eQoxA5+N1v7qcn/ywfzOLtPV24Yq49e0fSj4uP39oiXz60DcZTFz5b2zPfIHAj7RZKlGe9Rw7rHlDOA5y7D0yf6DhbMqOGkoPFLxnQ=  ;
+X-YMail-OSG: lrB3KJUVM1lT1qqydEYO_0FnZe2r9O78MTvXpeurze2HrKgBLSCGYr1b49_7FZW5cKZYxNfpqQ--
+Message-ID: <475851DA.2020708@yahoo.fr>
+Date: Thu, 06 Dec 2007 20:47:38 +0100
+From: =?UTF-8?B?UsOpbWkgSMOpcmlsaWVy?= <rherilier@yahoo.fr>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	 <47587796.8020705@free.fr>
-	 <20071206143754.07a67819.akpm@linux-foundation.org>
-	 <20071207011429.EE2BC26F8D9@magilla.localdomain>
-	 <1196990853.22471.15.camel@brick>
+To: Dmitry Torokhov <dtor@mail.ru>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH]  adding wistron_btns support for fujitsu-siemens amilo pro
+ edition v3505
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.  That enabled me to compile as well.  Now, if I can figure out
-why the resulting kernel has a boot process that hangs...  :-)
+Hello,
 
-     Miles
+A little patch to make my laptop linux-compliant. It is based on Linux
+2.4.24-rc4.
+
+This laptop has 2 keys, so Wi-Fi and Bluetooth can be activated singly.
+I know all others laptop entries use the 0x30 "keycode" for Wi-Fi but I
+prefer having this key outside the keyboard to avoid killing it
+accidentally.
+
+So...
+
+
+Wistron button support for Fujitsu-Siemens Amilo Pro Edition V3505.
+
+Signed-off-by: Remi Herilier <rherilier@yahoo.fr>
+
+
+diff --git a/drivers/input/misc/wistron_btns.c b/drivers/input/misc/wistron_btns.c
+index b438d99..7df3328 100644
+--- a/drivers/input/misc/wistron_btns.c
++++ b/drivers/input/misc/wistron_btns.c
+@@ -277,6 +277,16 @@ static struct key_entry keymap_fs_amilo_pro_v2000[] __initdata = {
+ 	{ KE_END,  0 }
+ };
+ 
++static struct key_entry keymap_fs_amilo_pro_v3505[] __initdata = {
++	{ KE_KEY,       0x01, {KEY_HELP} },          /* Fn+F1 */
++	{ KE_KEY,       0x06, {KEY_DISPLAYTOGGLE} }, /* Fn+F4 */
++	{ KE_BLUETOOTH, 0x30 },                      /* Fn+F10 */
++	{ KE_KEY,       0x31, {KEY_MAIL} },          /* mail button */
++	{ KE_KEY,       0x36, {KEY_WWW} },           /* www button */
++	{ KE_WIFI,      0x78 },                      /* satelite dish button */
++	{ KE_END,       0 }
++};
++
+ static struct key_entry keymap_fujitsu_n3510[] __initdata = {
+ 	{ KE_KEY, 0x11, {KEY_PROG1} },
+ 	{ KE_KEY, 0x12, {KEY_PROG2} },
+@@ -618,6 +628,15 @@ static struct dmi_system_id dmi_ids[] __initdata = {
+ 	},
+ 	{
+ 		.callback = dmi_matched,
++		.ident = "Fujitsu-Siemens Amilo Pro Edition V3505",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pro Edition V3505"),
++		},
++		.driver_data = keymap_fs_amilo_pro_v3505
++	},
++	{
++		.callback = dmi_matched,
+ 		.ident = "Fujitsu-Siemens Amilo M7400",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
+
+
+--
+Best regards
+
+Rémi Hérilier
+
