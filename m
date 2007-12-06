@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbXLFV2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbXLFV2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbXLFV2B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 16:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbXLFV1y
+	id S1755245AbXLFV2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 16:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbXLFV2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 16:27:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60167 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbXLFV1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 16:27:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: bbpetkov@yahoo.de
-Subject: Re: [RFC] swap image signature check upon resume
-Date: Thu, 6 Dec 2007 22:46:48 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-References: <20071206211335.GA4923@gollum.tnic>
-In-Reply-To: <20071206211335.GA4923@gollum.tnic>
+	Thu, 6 Dec 2007 16:28:08 -0500
+Received: from phunq.net ([64.81.85.152]:38090 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755049AbXLFV2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 16:28:05 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Date: Thu, 6 Dec 2007 13:27:59 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org
+References: <200712051603.02183.phillips@phunq.net> <200712061204.14854.phillips@phunq.net> <20071206122701.85627fb4.akpm@linux-foundation.org>
+In-Reply-To: <20071206122701.85627fb4.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712062246.49422.rjw@sisk.pl>
+Message-Id: <200712061328.00247.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 6 of December 2007, Borislav Petkov wrote:
-> Hi Pavel,
-> hi Rafael,
-> 
-> after a quick search i couldn't find anything dealing with the topic in the
-> subject line so here we go:
-> 
-> One sometimes can mix up (and by one i mean me) the
-> kernel images one boots after having suspended the machine previously. There can
-> be at least two reasons for that:
-> 
-> 1. too many kernels in grub and having forgotten with which i suspended.
-> 2. compile and install a new kernel and forget about it, suspend in the evening
-> and then boot with the new kernel;
-> 
-> in both cases you end up staring at fsck since they filesystems haven't been unmounted,
-> of course. Or at least see the warning message of some journal recovery whisk away.
-> 
-> In order to alleviate that, one could probably go, imho, and write in the swsusp_header
-> the kernel version which suspended the machine (UTS_RELEASE) alongside
-> SWSUSP_SIG and check that against the kernel version of the image just booting.
-> If they match then all is well, if not, one could
-> 
-> a) issue a BIG FAT WARNING and reboot telling the user to select the proper
-> image
-> b) ask the user what to do:
-> 	- proceed as if "noresume" has been entered on the kernel command line
-> 	- reboot after issuing the kernel version which suspended the machine
-> 	-
-> c)...
-> 
-> In case you guys think something like that might be of use i can come up with a
-> patch in the next coupla days...
+On Thursday 06 December 2007 12:27, Andrew Morton wrote:
+> On Thu, 6 Dec 2007 12:04:14 -0800
+>
+> Daniel Phillips <phillips@phunq.net> wrote:
+> > Any idea
+> > how to extend the accounting idea to all tasks involved in a
+> > particular block device stack?
+>
+> SMOP, I'd have thought.
 
-Well, there's a patchset in the current mainline that allows you to use
-arbitrary (sufficiently new) kernel to load the image and then restore the
-image kernel.  So, you can hibernate 2.6.24-rc3 and use 2.6.24-rc2 to restore
-it, for example.
+Agreed, which I realized as soon as the post was one minute old.  Sure, 
+each helper for the device registers as a helper which puts a pointer 
+in the task struct, which points to the accounting info so only one new 
+field in task struct.  The more I ponder, the more doable it seems.
 
-I'm going to do that for i386 too.
+> As long as each piece of code which handles 
+> data for this stack knows that it's handling data for that stack it
+> should be able to account its memory allocations.
 
-Greetings,
-Rafael
+Don't forget that we do not actually have a usable notion of "block 
+device stack" yet.  Perhaps you are just assuming that is 
+easy/imminent?
+
+> The tricky part will be networking allocations because a NIC can of
+> course handle data for all sorts of consumers.  But I expect this can
+> be greatly simplified with a few heuristics - work out how much
+> memory your typical networking stack will allocate for a frame and
+> tack that onto the total. Couple of pages worst case..
+
+Actually, the same pattern that Peter and I developed for handling 
+network deadlock extends to this accounting concept.  As you say, it's 
+a SMOP.
+
+Daniel
