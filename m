@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXLFO5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXLFPBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbXLFO5q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 09:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXLFO5j
+	id S1753285AbXLFPBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 10:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXLFPBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 09:57:39 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37154 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968AbXLFO5j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 09:57:39 -0500
-Date: Thu, 6 Dec 2007 15:57:38 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jay Cliburn <jacliburn@bellsouth.net>
-cc: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: Allow (O=...) from file
-In-Reply-To: <20071204210433.4d7ee66c@osprey.hogchain.net>
-Message-ID: <Pine.LNX.4.64.0712061556350.19266@fbirervta.pbzchgretzou.qr>
-References: <20071204210433.4d7ee66c@osprey.hogchain.net>
+	Thu, 6 Dec 2007 10:01:11 -0500
+Received: from r00tworld.com ([212.85.137.21]:56103 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750954AbXLFPBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 10:01:10 -0500
+From: pageexec@freemail.hu
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Thu, 06 Dec 2007 15:58:05 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [patch 06/11] Text Edit Lock - Alternative code for x86
+Reply-to: pageexec@freemail.hu
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Message-ID: <47581C0D.20793.3B77EE8@pageexec.freemail.hu>
+In-reply-to: <20071206144431.GA11846@Krystal>
+References: <20071206020441.851817020@polymtl.ca>, <475804F5.4781.35D49FA@pageexec.freemail.hu>, <20071206144431.GA11846@Krystal>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Thu, 06 Dec 2007 15:57:42 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 6 Dec 2007 at 9:44, Mathieu Desnoyers wrote:
 
-On Dec 4 2007 21:04, Jay Cliburn wrote:
->
->This piece of the top-level Makefile in current git causes an
->out-of-tree driver Makefile to fail.
->
->101 ifdef O
->102   ifeq ("$(origin O)", "command line")
->103     KBUILD_OUTPUT := $(O)
->104   endif
->105 endif
+> It is correct to assume that the WP bit will always be activated, in
+> every configuration, even though we don't use the DEBUG_RODATA ?
 
-Should not it just use the usual boilerplate?
-
-kdir := /lib/modules/$(shell uname -r)/build
-all:
-	make -C ${kdir} M=$$PWD
+yes, without it the kernel couldn't rely on page faults to trigger
+copy-on-write on userland pages for example (just look at what it
+has to do on the original i386...).
 
