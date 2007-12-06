@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbXLFSZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbXLFS1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbXLFSZW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 13:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbXLFSZL
+	id S1754407AbXLFS1V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 13:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbXLFS1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 13:25:11 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40376 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751913AbXLFSZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 13:25:10 -0500
-Date: Thu, 6 Dec 2007 09:50:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: [patch] old debugging hacks sneaked back
-Message-ID: <20071206085040.GA1642@elf.ucw.cz>
+	Thu, 6 Dec 2007 13:27:13 -0500
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:28765 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbXLFS1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 13:27:12 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Joachim Fenkes <fenkes@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+X-Message-Flag: Warning: May contain useful information
+References: <200712061607.20004.fenkes@de.ibm.com>
+	<200712061648.24806.arnd@arndb.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 06 Dec 2007 10:27:09 -0800
+In-Reply-To: <200712061648.24806.arnd@arndb.de> (Arnd Bergmann's message of "Thu, 6 Dec 2007 16:48:23 +0100")
+Message-ID: <ada7ijrd6gy.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 06 Dec 2007 18:27:09.0982 (UTC) FILETIME=[9D1413E0:01C83835]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > > +               ehca_lock_hcalls = !(cur_cpu_spec->cpu_user_features
+ > > +                                    & PPC_FEATURE_ARCH_2_05);
 
-Old debugging hack sneaked back during x86 merge, this removes it.
+ > We already talked about this yesterday, but I still feel that checking the
+ > instruction set of the CPU should not be used to determine whether a
+ > specific device driver implementation is used int hypervisor.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+I had the same reaction... is testing cpu_user_features really the
+best way to detect this issue?
 
-diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-index a97313b..1e931aa 100644
---- a/arch/x86/kernel/acpi/wakeup_32.S
-+++ b/arch/x86/kernel/acpi/wakeup_32.S
-@@ -35,10 +35,6 @@ wakeup_code:
- 	wakeup_code_start = .
- 	.code16
- 
-- 	movw	$0xb800, %ax
--	movw	%ax,%fs
--	movw	$0x0e00 + 'L', %fs:(0x10)
--
- 	cli
- 	cld
- 
+I'll hold off applying this for a few days so you guys can decide the
+best thing to do.  We'll definitely get some fix into 2.6.24 but we
+have time to make a good decision.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ > Regarding the performance problem, have you checked whether converting all
+ > your spin_lock_irqsave to spin_lock/spin_lock_irq improves your performance
+ > on the older machines? Maybe it's already fast enough that way.
+
+It does seem that the only places that the hcall_lock is taken also
+use msleep, so they must always be in process context.  So you can
+safely just use spin_lock(), right?
+
+ - R.
