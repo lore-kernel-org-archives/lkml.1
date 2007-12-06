@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXLFJli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbXLFJpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbXLFJli (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 04:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXLFJl2
+	id S1753601AbXLFJpE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 04:45:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbXLFJoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 04:41:28 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:61470 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbXLFJlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 04:41:25 -0500
-From: Swen Schillig <swen@vnet.ibm.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH] zfcp: add some internal zfcp adapter statistics
-Date: Thu, 6 Dec 2007 10:40:34 +0100
-User-Agent: KMail/1.9.5
-Cc: Christof Schmitt <christof.schmitt@de.ibm.com>, linux-scsi@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-References: <200710311133.52090.swen@vnet.ibm.com> <1195989419.3427.11.camel@localhost.localdomain> <200711261123.05253.swen@vnet.ibm.com>
-In-Reply-To: <200711261123.05253.swen@vnet.ibm.com>
-Organization: IBM
+	Thu, 6 Dec 2007 04:44:54 -0500
+Received: from lucidpixels.com ([75.144.35.66]:37096 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751610AbXLFJoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 04:44:54 -0500
+Date: Thu, 6 Dec 2007 04:44:53 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: apiszcz@solarrain.com
+Subject: 2.6.23.9: x86_64: floppy not working: p35 chipset
+Message-ID: <Pine.LNX.4.64.0712060435500.6948@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712061040.35297.swen@vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 November 2007 11:23, Swen Schillig wrote:
-> On Sunday 25 November 2007 12:16, James Bottomley wrote:
-> > 
-> > On Wed, 2007-10-31 at 11:33 +0100, Swen Schillig wrote:
-> > > From: Swen Schillig <swen@vnet.ibm.com>
-> > > 
-> > > add some statistics provided by the zFCP adapter to the sysfs
-> > > 
-> > > The new zFCP adapter statistics provide a variety of information
-> > > about the virtual adapter (subchannel). In order to collect this information
-> > > the zFCP driver is extended on one side to query the adapter and
-> > > on the other side summarize certain values which can then be fetched on demand.
-> > > This information is made available via files(attributes) in the sysfs filesystem.
-> > > 
-> > > The information provided by the new zFCP adapter statistics can be fetched
-> > > by reading from the following files in the sysfs filesystem
-> > > 
-> > >  /sys/class/scsi_host/host<n>/seconds_active
-> > >  /sys/class/scsi_host/host<n>/requests
-> > >  /sys/class/scsi_host/host<n>/megabytes
-> > >  /sys/class/scsi_host/host<n>/utilization
-> > 
-> > This lot all look like they belong in the FC transport class statistics
-> > (some even already exist there).
-> 
-> They might look alike but they are not the same. The values provided through the FC transport
-> class always refer to the physical port whereas the new values here refer to a virtual adapter or subchannel.
-> The attributes provided here are all new and not covered or displayed anywhere else !
-> 
-> > 
-> > > These are the statistics on a virtual adapter (subchannel) level.
-> > > In addition latency information is provided on a SCSI device level (LUN) which
-> > > can be found at the following location
-> > > 
-> > >  /sys/class/scsi_device/<H:C:T:L>/device/cmd_latency
-> > >  /sys/class/scsi_device/<H:C:T:L>/device/read_latency
-> > >  /sys/class/scsi_device/<H:C:T:L>/device/write_latency
-> > 
-> > These look to duplicate to some degree the figures
-> > in /sys/block/<dev>/stat.  Isn't the block device the best place to
-> > gather these, if they're useful?  Since user latencies should probably
-> > include elevator times.
-> 
-> Actually no, the latencies covered here are channel- and fabric-latencies grouped by scsi-devices
-> and not device-, scsi- or block-latencies. In contrast to the stats provided by the block-layer structure,
-> tape devices will be covered here as well .
-> 
-> > 
-> > James
-> > 
-> > 
-> > 
-> 
-> Cheers Swen
-> 
+Trying to format a floppy (2-3 of them) on a GA-P35-DS4 2.0 with a regular 
+Sony floppy on Debian x86_64 with kernel 2.6.23.9:
 
-James
+# fdformat /dev/fd0
+Could not determine current format type: No such device
+# mformat a:
+mformat: Could not get geometry of device (No such device)
+#
 
-were my answers, comments sufficient enough to apply my patch
-or is there still something missing required ?
+# cat /proc/interrupts |grep floppy
+   6:         38         37         39         41   IO-APIC-edge      floppy
 
-Thanks
+# dmesg|grep -A1 fd0
+[   52.689487] Floppy drive(s): fd0 is 1.44M
+[   52.704661] FDC 0 is a post-1991 82077
 
-Cheers Swen
+During the 'attempted format'
+
+[34324.175770] floppy0: probe failed...
+[34324.575342] floppy0: probe failed...
+[34324.974733] floppy0: probe failed...
+[34325.374302] floppy0: probe failed...
+[34325.773746] floppy0: probe failed...
+[34326.173312] floppy0: probe failed...
+[34326.572734] floppy0: probe failed...
+[34326.972241] floppy0: probe failed...
+[34327.371739] floppy0: probe failed...
+[34327.771344] floppy0: probe failed...
+[34328.170727] floppy0: probe failed...
+[34328.570283] floppy0: probe failed...
+[34328.969717] floppy0: probe failed...
+[34329.369275] floppy0: probe failed...
+[34329.768691] floppy0: probe failed...
+[34330.168197] floppy0: probe failed...
+[34330.168257] end_request: I/O error, dev fd0, sector 0
+
+I've tried a few different floppies, the result is the same.  The system 
+is 64-bit only, no 32-bit emulation is enabled using a strict 64-bit-only 
+userland.  Has anyone else gotten their floppy drive to work under 64-bit?
+
+Is this just a case of a DOA floppy drive or is something else wrong?
+
+Justin.
