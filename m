@@ -1,135 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbXLFGWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbXLFG0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbXLFGWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 01:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbXLFGWG
+	id S1754602AbXLFG0w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 01:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXLFG0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 01:22:06 -0500
-Received: from phunq.net ([64.81.85.152]:50899 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752012AbXLFGWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 01:22:05 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
-Date: Wed, 5 Dec 2007 22:21:44 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-References: <200712051603.02183.phillips@phunq.net> <20071205172446.ea54e4d3.akpm@linux-foundation.org>
-In-Reply-To: <20071205172446.ea54e4d3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 6 Dec 2007 01:26:44 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40665 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751262AbXLFG0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 01:26:44 -0500
+Subject: Re: Please revert: PCI: fix IDE legacy mode resources
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Ralf Baechle <ralf@linux-mips.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
+References: <200710122305.l9CN5tFI008240@hera.kernel.org>
+	 <1196899818.7033.11.camel@pasglop>
+	 <200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
+	 <1196917447.7033.17.camel@pasglop>
+	 <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
+Content-Type: text/plain
+Date: Thu, 06 Dec 2007 17:24:22 +1100
+Message-Id: <1196922262.7033.33.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712052221.45409.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 05 December 2007 17:24, Andrew Morton wrote:
-> On Wed, 5 Dec 2007 16:03:01 -0800 Daniel Phillips <phillips@phunq.net> wrote:
-> > ...a block device these days may not be just a single 
-> > device, but may be a stack of devices connected together by a generic 
-> > mechanism such as device mapper, or a hardcoded stack such as 
-> > multi-disk or network block device.  It is necessary to consider the 
-> > resource requirements of the stack as a whole _before_ letting a 
-> > transfer proceed into any layer of the stack, otherwise deadlock on 
-> > many partially completed transfers becomes a possibility.  For this 
-> > reason, the bio throttling is only implemented at the initial, highest 
-> > level submission of the bio to the block layer and not for any recursive 
-> > submission of the same bio to a lower level block device in a stack.
-> > 
-> > This in turn has rather far reaching implications: the top level device 
-> > in a stack must take care of inspecting the entire stack in order to 
-> > determine how to calculate its resource requirements, thus becoming
-> > the boss device for the entire stack.  Though this intriguing idea could 
-> > easily become the cause of endless design work and many thousands of 
-> > lines of fancy code, today I sidestep the question entirely using 
-> > the "just provide lots of reserve" strategy.  Horrifying as it may seem 
-> > to some, this is precisely the strategy that Linux has used in the 
-> > context of resource management in general, from the very beginning and 
-> > likely continuing for quite some time into the future  My strongly held 
-> > opinion in this matter is that we need to solve the real, underlying 
-> > problems definitively with nice code before declaring the opening of 
-> > fancy patch season.  So I am leaving further discussion of automatic 
-> > resource discovery algorithms and the like out of this post.
+
+On Thu, 2007-12-06 at 14:58 +0900, Yoichi Yuasa wrote:
+> > What I don't understand is thus why you are calling resource_to_bus
+> on 0x1f0
+> > which is -not- a resource value, but is already a BAR value...
 > 
-> Rather than asking the stack "how much memory will this request consume"
-> you could instead ask "how much memory are you currently using".
+> 0x1f0 is resource value on MIPS Cobalt.
+> All RAW BAR values contain the offset(0x10000000) on it.
 > 
-> ie: on entry to the stack, do 
-> 
-> 	current->account_block_allocations = 1;
-> 	make_request(...);
-> 	rq->used_memory += current->pages_used_for_block_allocations;
-> 
-> and in the page allocator do
-> 
-> 	if (!in_interrupt() && current->account_block_allocations)
-> 		current->pages_used_for_block_allocations++;
-> 
-> and then somehow handle deallocation too ;)
+> Do the BAR values on your target contain the offset?
 
-Ah, and how do you ensure that you do not deadlock while making this
-inquiry?  Perhaps send a dummy transaction down the pipe?  Even so,
-deadlock is possible, quite evidently so in the real life example I have
-at hand.
+No, and I don't understand... raw BAR values don't contain such offset.
+The physical address where the PIO is mapped might, but that's not what
+we put in struct resource for IO resources and definitely not the BAR
+value.
 
-Yours is essentially one of the strategies I had in mind, the other major
-one being simply to examine the whole stack, which presupposes some
-as-yet-nonexistant kernel wide method of representing block device
-stacks in all there glorious possible topology variations.
+The legacy IDE device will decode cycles at 0x1f0, not cycles at
+0x100001f0.
 
-> The basic idea being to know in real time how much memory a particular
-> block stack is presently using.  Then, on entry to that stack, if the
-> stack's current usage is too high, wait for it to subside.
+Take for example PowerPC. Imagine that I have a bus whose IO space is
+mapped at 0xf0000000 in the processor physical address space (this is a
+real example, my powermac does that for the x16 PCI-Express slot though
+other slots use other offsets).
 
-We do not wait for high block device resource usage to subside before
-submitting more requests.  The improvement you suggest is aimed at
-automatically determining resource requirements by sampling a
-running system, rather than requiring a programmer to determine them
-arduously by hand.  Something like automatically determining a
-workable locking strategy by analyzing running code, wouldn't that be
-a treat?  I will hope for one of those under my tree at Christmas.
+Now, the kernel on ppc64 will map that virtually at some allocated
+virtual address that we'll call we call bus_io_virt for this
+explanation. In addition, inb() and outb() will apply an offset (which
+can be different) that we call _IO_BASE to the port numbers. In general,
+bus_io_virt of the first bus == _IO_BASE on ppc32 but that's not a
+strict rule.
 
-More practically, I can see a debug mode implemented along the lines
-you describe where we automatically detect that a writeout path has
-violated its covenant as expressed by its throttle_metric.
- 
-> otoh we already have mechanisms for limiting the number of requests in
-> flight.  This is approximately proportional to the amount of memory which
-> was allocated to service those requests.  Why not just use that?
+Let's say for the sake of the example, that _IO_BASE is 0xd0000000 and
+our bus has been mapped at 0xd0010000 (bus_io_virt). So 0xd0010000 maps
+to 0xf0000000 via the MMU.
 
-Two reasons.  The minor one is that device mapper bypasses that
-mechanism (no elevator) and the major one is that number of requests
-does not map well to the amount of resources consumed.  In ddsnap for
-example, the amount of memory used by the userspace ddsnapd is
-roughly linear vs the number of pages transferred, not the number of
-requests.
+When we scan the bus, we read the BAR content. So for example, a device
+whose IOs have been assigned at 0x1000 will read that as a RAW bar value
+and pci_scan_slot() (or whoever does the reading) will put 0x1000 in the
+struct resource. In a similar vein, such a legacy controller would thus
+be expected to have 0x1f0 in the resource.
 
-> > @@ -3221,6 +3221,13 @@ static inline void __generic_make_reques
-> >  	if (bio_check_eod(bio, nr_sectors))
-> >  		goto end_io;
-> >  
-> > +	if (q && q->metric && !bio->bi_queue) {
-> > +		int need = bio->bi_throttle = q->metric(bio);
-> > +		bio->bi_queue = q;
-> > +		/* FIXME: potential race if atomic_sub is called in the middle of condition check */
-> > +		wait_event_interruptible(q->throttle_wait, atomic_read(&q->available) >= need);
-> 
-> This will fall straight through if signal_pending() and (I assume) bad
-> stuff will happen.  uninterruptible sleep, methinks.
+Later, when we fixup (in a head quirk on ppc32 and in pcibios_fixup_bus
+on ppc64, though that's changing wit 2.6.25 to use the same mechanism),
+we see an IO resource, and we fixup by adding to it basically
+(bus_io_virt - _IO_BASE).
 
-Yes, as a first order repair.  To be done properly I need to express this
-in terms of the guts of wait_event_*, and get rid of that race, maybe that
-changes the equation.
+That is, for our device that has a 0x1000 BAR value, we'll do:
 
-It would be nice if threads didn't get stuck in D state here, though
-_interruptible is probably the wrong idea, we should instead ensure that
-whatever is being waited on must respond to, e.g., SIGKILL.  This at the
-limits of my scheduler knowledge, l would appreciate a better
-suggestion.  I do detest hang in D state with SIGKILL immunity, which
-behavior unfortunately does not seem all that rare.
+	resource = 0x1000 + (0xd0010000 - 0xd0000000) = 0x11000
 
-Daniel
+And for the legacy IDE:
+
+	resource = 0x1f0 + (0xd0010000 - 0xd0000000) = 0x101f0
+
+Now, if you do an inb or outb to one of these, the inb() and oub()
+accessors will add _IO_BASE, which is 0xd0000000 in our example, so
+you'll end up doing accesses to respectively:
+
+	access = 0xd0011000 for the example device or
+	access = 0xd00101f0 for the IDE controller
+
+That translates via the MMU to
+
+	phys = 0xf0001000 for the example device or
+	phys = 0xf00001f0 for the IDE controller
+
+Which translates on to the bus into an IO cycle at the raw BAR
+address (which is what is in the BAR content or hard-decoded in the case
+of the legacy IDE):
+
+	bus = 0x1000 for the example device
+	bus = 0x01f0 for the IDE controller
+
+which ... is what we started with.
+
+Now I don't understand how MIPS does things differently, but I can't see
+how it can be legal to call pci_resource_to_bus() on 0x1f0 in
+pci_setup_device(), because at this stage, we are putting raw BAR values
+in the struct resource (that is PCI bus addresses) and 0x1f0 _is_ such a
+value.
+
+Calling pci_resource_to_bus() would somewhat mean that 0x1f0 is not, and
+instead is some kind of already fixed up resource value that we want
+converted back into a BAR value, which is not the case.
+
+So I suspect your patch works by accident more than by design, or I am
+missing something...
+
+Cheers,
+Ben.
+
+
+
+
+Ben.
+
+
