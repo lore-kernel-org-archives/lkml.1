@@ -1,62 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbXLFCOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbXLFCOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbXLFCOf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbXLFCNQ
+	id S1755998AbXLFCOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbXLFCN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:13:16 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:33972 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:13:56 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:51103 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754478AbXLFCNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:13:14 -0500
-Message-Id: <20071206021234.272969967@polymtl.ca>
+	id S1755555AbXLFCNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:13:54 -0500
+Message-Id: <20071206021233.173095247@polymtl.ca>
 References: <20071206020758.035771102@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:08:03 -0500
+Date: Wed, 05 Dec 2007 21:08:00 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [patch 5/7] Add text_poke and sync_core to powerpc
-Content-Disposition: inline; filename=add-text-poke-to-powerpc.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:12:36 +0000
+       Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
+       Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [patch 2/7] Immediate Values - Kconfig menu in EMBEDDED
+Content-Disposition: inline; filename=immediate-values-kconfig-embedded.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:12:35 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Needed on architectures where we must surround live instruction modification
-  with "WP flag disable".
-- Turns into a memcpy on powerpc since there is no WP flag activated for
-  instruction pages (yet..).
-- Add empty sync_core to powerpc so it can be used in architecture independent
-  code.
+Immediate values provide a way to use dynamic code patching to update variables
+sitting within the instruction stream. It saves caches lines normally used by
+static read mostly variables. Enable it by default, but let users disable it
+through the EMBEDDED menu with the "Disable immediate values" submenu entry.
+
+Note: Since I think that I really should let embedded systems developers using
+RO memory the option to disable the immediate values, I choose to leave this
+menu option there, in the EMBEDDED menu. Also, the "CONFIG_IMMEDIATE" makes
+sense because we want to compile out all the immediate code when we decide not
+to use optimized immediate values at all (it removes otherwise unused code).
+
+Changelog:
+- Change ARCH_SUPPORTS_IMMEDIATE for ARCH_HAS_IMMEDIATE
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>
 CC: Christoph Hellwig <hch@infradead.org>
-CC: Paul Mackerras <paulus@samba.org>
 ---
- include/asm-powerpc/cacheflush.h |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ init/Kconfig |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-powerpc/cacheflush.h
+Index: linux-2.6-lttng/init/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/cacheflush.h	2007-11-19 12:05:50.000000000 -0500
-+++ linux-2.6-lttng/include/asm-powerpc/cacheflush.h	2007-11-19 13:27:36.000000000 -0500
-@@ -63,7 +63,9 @@ extern void flush_dcache_phys_range(unsi
- #define copy_from_user_page(vma, page, vaddr, dst, src, len) \
- 	memcpy(dst, src, len)
+--- linux-2.6-lttng.orig/init/Kconfig	2007-12-05 20:53:19.000000000 -0500
++++ linux-2.6-lttng/init/Kconfig	2007-12-05 20:53:35.000000000 -0500
+@@ -435,6 +435,20 @@ config CC_OPTIMIZE_FOR_SIZE
+ config SYSCTL
+ 	bool
  
--
-+#define text_poke	memcpy
-+#define text_poke_early	text_poke
-+#define sync_core()
++config IMMEDIATE
++	default y if !DISABLE_IMMEDIATE
++	depends on HAVE_IMMEDIATE
++	bool
++	help
++	  Immediate values are used as read-mostly variables that are rarely
++	  updated. They use code patching to modify the values inscribed in the
++	  instruction stream. It provides a way to save precious cache lines
++	  that would otherwise have to be used by these variables. They can be
++	  disabled through the EMBEDDED menu.
++
++config HAVE_IMMEDIATE
++	def_bool n
++
+ menuconfig EMBEDDED
+ 	bool "Configure standard kernel features (for small systems)"
+ 	help
+@@ -670,6 +684,16 @@ config MARKERS
  
- #ifdef CONFIG_DEBUG_PAGEALLOC
- /* internal debugging function */
+ source "arch/Kconfig"
+ 
++config DISABLE_IMMEDIATE
++	default y if EMBEDDED
++	bool "Disable immediate values" if EMBEDDED
++	depends on HAVE_IMMEDIATE
++	help
++	  Disable code patching based immediate values for embedded systems. It
++	  consumes slightly more memory and requires to modify the instruction
++	  stream each time a variable is updated. Should really be disabled for
++	  embedded systems with read-only text.
++
+ endmenu		# General setup
+ 
+ config RT_MUTEXES
 
 -- 
 Mathieu Desnoyers
