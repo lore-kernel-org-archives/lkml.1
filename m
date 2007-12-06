@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbXLFCIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbXLFCI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbXLFCIo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXLFCGJ
+	id S1755757AbXLFCI7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXLFCGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:06:09 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38088 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:06:15 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38117 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754946AbXLFCGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:06:06 -0500
-Message-Id: <20071206020444.671143816@polymtl.ca>
+	id S1752224AbXLFCGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:06:14 -0500
+Message-Id: <20071206020443.802795380@polymtl.ca>
 References: <20071206020246.417605824@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:02:55 -0500
+Date: Wed, 05 Dec 2007 21:02:54 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
@@ -21,9 +21,9 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 09/11] Text Edit Lock - kprobes x86_64
-Content-Disposition: inline; filename=text-edit-lock-kprobes-x86_64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:04:49 +0000
+Subject: [patch 08/11] Text Edit Lock - kprobes x86_32
+Content-Disposition: inline; filename=text-edit-lock-kprobes-i386.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:04:48 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,14 +41,14 @@ CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Ingo Molnar <mingo@redhat.com>
 CC: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/kernel/kprobes_64.c |    5 +++--
+ arch/x86/kernel/kprobes_32.c |    5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/arch/x86/kernel/kprobes_64.c
+Index: linux-2.6-lttng/arch/x86/kernel/kprobes_32.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/kprobes_64.c	2007-11-13 09:45:35.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/kprobes_64.c	2007-11-13 09:45:46.000000000 -0500
-@@ -215,12 +215,13 @@ static void __kprobes arch_copy_kprobe(s
+--- linux-2.6-lttng.orig/arch/x86/kernel/kprobes_32.c	2007-11-13 09:45:35.000000000 -0500
++++ linux-2.6-lttng/arch/x86/kernel/kprobes_32.c	2007-11-13 09:45:44.000000000 -0500
+@@ -176,12 +176,13 @@ int __kprobes arch_prepare_kprobe(struct
  
  void __kprobes arch_arm_kprobe(struct kprobe *p)
  {
