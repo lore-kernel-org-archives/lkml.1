@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbXLFJjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXLFJli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbXLFJjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 04:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbXLFJje
+	id S1754148AbXLFJli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 04:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXLFJl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 04:39:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:50977 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbXLFJjc (ORCPT
+	Thu, 6 Dec 2007 04:41:28 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:61470 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbXLFJlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 04:39:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=n3ajYQ6IHKyXt/X5KsKdhSeSEI1slgKdPrLINrx4mFHsJqN85e+2iYJMjxTI9wJ5Dl5lbFiowGOoBL8a9WM6PZlbbBKbtW1aT9kR9SSNYxic/j9y1uuWNYWgFdWXxmOD1jm1EBitgJy4WFpjU7oQf9gDdWgfwCTAzF9kjSAwcNk=
-Date: Thu, 6 Dec 2007 12:39:23 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Thomas Tuttle <linux-kernel@ttuttle.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Wu <flamingice@sourmilk.net>,
-       LWML <linux-wireless@vger.kernel.org>
-Subject: [PATCH] iwlwifi3945/4965 - fix rate control algo reference leak
-Message-ID: <20071206093922.GA7356@cvg>
+	Thu, 6 Dec 2007 04:41:25 -0500
+From: Swen Schillig <swen@vnet.ibm.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] zfcp: add some internal zfcp adapter statistics
+Date: Thu, 6 Dec 2007 10:40:34 +0100
+User-Agent: KMail/1.9.5
+Cc: Christof Schmitt <christof.schmitt@de.ibm.com>, linux-scsi@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+References: <200710311133.52090.swen@vnet.ibm.com> <1195989419.3427.11.camel@localhost.localdomain> <200711261123.05253.swen@vnet.ibm.com>
+In-Reply-To: <200711261123.05253.swen@vnet.ibm.com>
+Organization: IBM
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712061040.35297.swen@vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+On Monday 26 November 2007 11:23, Swen Schillig wrote:
+> On Sunday 25 November 2007 12:16, James Bottomley wrote:
+> > 
+> > On Wed, 2007-10-31 at 11:33 +0100, Swen Schillig wrote:
+> > > From: Swen Schillig <swen@vnet.ibm.com>
+> > > 
+> > > add some statistics provided by the zFCP adapter to the sysfs
+> > > 
+> > > The new zFCP adapter statistics provide a variety of information
+> > > about the virtual adapter (subchannel). In order to collect this information
+> > > the zFCP driver is extended on one side to query the adapter and
+> > > on the other side summarize certain values which can then be fetched on demand.
+> > > This information is made available via files(attributes) in the sysfs filesystem.
+> > > 
+> > > The information provided by the new zFCP adapter statistics can be fetched
+> > > by reading from the following files in the sysfs filesystem
+> > > 
+> > >  /sys/class/scsi_host/host<n>/seconds_active
+> > >  /sys/class/scsi_host/host<n>/requests
+> > >  /sys/class/scsi_host/host<n>/megabytes
+> > >  /sys/class/scsi_host/host<n>/utilization
+> > 
+> > This lot all look like they belong in the FC transport class statistics
+> > (some even already exist there).
+> 
+> They might look alike but they are not the same. The values provided through the FC transport
+> class always refer to the physical port whereas the new values here refer to a virtual adapter or subchannel.
+> The attributes provided here are all new and not covered or displayed anywhere else !
+> 
+> > 
+> > > These are the statistics on a virtual adapter (subchannel) level.
+> > > In addition latency information is provided on a SCSI device level (LUN) which
+> > > can be found at the following location
+> > > 
+> > >  /sys/class/scsi_device/<H:C:T:L>/device/cmd_latency
+> > >  /sys/class/scsi_device/<H:C:T:L>/device/read_latency
+> > >  /sys/class/scsi_device/<H:C:T:L>/device/write_latency
+> > 
+> > These look to duplicate to some degree the figures
+> > in /sys/block/<dev>/stat.  Isn't the block device the best place to
+> > gather these, if they're useful?  Since user latencies should probably
+> > include elevator times.
+> 
+> Actually no, the latencies covered here are channel- and fabric-latencies grouped by scsi-devices
+> and not device-, scsi- or block-latencies. In contrast to the stats provided by the block-layer structure,
+> tape devices will be covered here as well .
+> 
+> > 
+> > James
+> > 
+> > 
+> > 
+> 
+> Cheers Swen
+> 
 
-could you test this one please.
+James
 
----
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH] iwlwifi3945/4965 - fix rate control algo reference leak
+were my answers, comments sufficient enough to apply my patch
+or is there still something missing required ?
 
-This patch does fix rate control algo reference leak in case
-if network device has been failed to register. In this case
-special flag priv->mac80211_registered is not set and the
-rate algo reference is not freeing on module unload. That leads
-to OOPs in further ieee80211 rate register/unregister procedure
-(by any callee).
+Thanks
 
-It should fix the bug #9470
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=9470
-
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    1 +
- drivers/net/wireless/iwlwifi/iwl4965-base.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 465da4f..c222bec 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -6167,6 +6167,7 @@ static void iwl_alive_start(struct iwl_priv *priv)
- 		mutex_lock(&priv->mutex);
- 
- 		if (rc) {
-+			iwl_rate_control_unregister(priv->hw);
- 			IWL_ERROR("Failed to register network "
- 				  "device (error %d)\n", rc);
- 			return;
-diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-index 9918780..9295755 100644
---- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
-@@ -6523,6 +6523,7 @@ static void iwl_alive_start(struct iwl_priv *priv)
- 		mutex_lock(&priv->mutex);
- 
- 		if (rc) {
-+			iwl_rate_control_unregister(priv->hw);
- 			IWL_ERROR("Failed to register network "
- 				  "device (error %d)\n", rc);
- 			return;
--- 
-1.5.3.5
-
+Cheers Swen
