@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbXLFXGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbXLFXNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbXLFXGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 18:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXLFXGO
+	id S1754283AbXLFXNI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 18:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXLFXM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 18:06:14 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40246 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752358AbXLFXGN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 18:06:13 -0500
-Date: Fri, 7 Dec 2007 00:06:11 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Renzo Davoli <renzo@cs.unibo.it>,
-       linux-kernel@vger.kernel.org
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-Message-ID: <20071206230611.GK20595@one.firstfloor.org>
-References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it> <20071206163538.GC20595@one.firstfloor.org> <47585D66.3000404@nortel.com> <20071206212644.GA26725@one.firstfloor.org> <47586E7F.1020903@nortel.com> <20071206220754.GF20595@one.firstfloor.org> <47587F90.8010400@nortel.com>
+	Thu, 6 Dec 2007 18:12:56 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:60818 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752925AbXLFXMz (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 18:12:55 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: 2.6.24-rc4-mm1
+In-Reply-To: Your message of "Thu, 06 Dec 2007 23:04:12 +0100."
+             <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <3941.1196941764@turing-police.cc.vt.edu> <20071206040420.6c89c675.akpm@linux-foundation.org> <4374.1196968688@turing-police.cc.vt.edu> <20071206193843.GA25125@kroah.com>
+            <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47587F90.8010400@nortel.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; boundary="==_Exmh_1196982750_2767P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Dec 2007 18:12:30 -0500
+Message-ID: <2955.1196982750@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 05:02:40PM -0600, Chris Friesen wrote:
-> Andi Kleen wrote:
-> 
-> >>On a 1.4GHz P4 I measured a 44% increase in latency between a unix 
-> >>datagram and a UDP datagram.
-> 
-> >That's weird.
-> 
-> I just reran on a 3.2GHZ P4 running 2.6.11 (Fedora Core 4).  42% latency 
-> increase.
+--==_Exmh_1196982750_2767P
+Content-Type: text/plain; charset=us-ascii
 
-Sounds like something that should be looked into. I know of no
-principal reasons for that.
+On Thu, 06 Dec 2007 23:04:12 +0100, Kay Sievers said:
 
-> For stream sockets, unix gives approximately a 62% bandwidth increase 
-> over tcp.   (Although tcp could probably be tuned to do better than this.)
+> What's the value of SYSFS_DEPRECATED? Care to set it to yes, if it isn't,
+> and try again?
 
-How long a stream did you test? You might be measuring slow start.
+I *knew* there was a D'Oh! error in here. ;)
 
--Andi
+Bisection is fast closing in on gregkh-driver-block-device.patch, which broke
+my LVM almost the exact same way the *last* time it showed up in -mm ;)
+
+> A fix for LVM to handle symlinks instead of directories is in the LVM
+> CVS tree, but there wasn't a release since August.
+
+I seem to recall it was 'nash' rather than LVM that had the indigestion the
+last time around.
+
+
+
+
+
+
+
+
+--==_Exmh_1196982750_2767P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD4DBQFHWIHecC3lWbTT17ARAsxnAJwKiCFyNJqF1edByoMhZ6iLGxrziACUCI8o
+STbDgOfily2LZErBZtepNw==
+=cxO4
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196982750_2767P--
