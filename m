@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbXLFTP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbXLFTSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbXLFTP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXLFTPQ
+	id S1755406AbXLFTSv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 14:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbXLFTSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:15:16 -0500
-Received: from mail.tmr.com ([64.65.253.246]:43839 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752242AbXLFTPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:15:15 -0500
-Message-ID: <47584E35.7030409@tmr.com>
-Date: Thu, 06 Dec 2007 14:32:05 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de>
-In-Reply-To: <20071204161811.GB15974@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 6 Dec 2007 14:18:43 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35340 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751947AbXLFTSm (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 14:18:42 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: 2.6.24-rc4-mm1
+In-Reply-To: Your message of "Thu, 06 Dec 2007 04:04:20 PST."
+             <20071206040420.6c89c675.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <3941.1196941764@turing-police.cc.vt.edu>
+            <20071206040420.6c89c675.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1196968688_2829P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Dec 2007 14:18:08 -0500
+Message-ID: <4374.1196968688@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Dec 04, 2007 at 12:41:25PM +0100, Marc Haber wrote:
-> 
->> While debugging Exim4's GnuTLS interface, I recently found out that
->> reading from /dev/urandom depletes entropy as much as reading from
->> /dev/random would. This has somehow surprised me since I have always
->> believed that /dev/urandom has lower quality entropy than /dev/random,
->> but lots of it.
-> 
-> man 4 random
-> 
->> This also means that I can "sabotage" applications reading from
->> /dev/random just by continuously reading from /dev/urandom, even not
->> meaning to do any harm.
->>
->> Before I file a bug on bugzilla,
->> ...
-> 
-> The bug would be closed as invalid.
-> 
-> No matter what you consider as being better, changing a 12 years old and 
-> widely used userspace interface like /dev/urandom is simply not an 
-> option.
+--==_Exmh_1196968688_2829P
+Content-Type: text/plain; charset="us-ascii"
+Content-Id: <4359.1196968680.1@turing-police.cc.vt.edu>
 
-I don't see that he is proposing to change the interface, just how it 
-gets the data it provides. Any program which depends on the actual data 
-values it gets from urandom is pretty broken, anyway. I think that 
-getting some entropy from network is a good thing, even if it's used 
-only in urandom, and I would like a rational discussion of checking the 
-random pool available when urandom is about to get random data, and 
-perhaps having a lower and upper bound for pool size.
+On Thu, 06 Dec 2007 04:04:20 PST, Andrew Morton said:
 
-That is, if there is more than Nmax random data urandom would take some, 
-if there was less than Nmin it wouldn't, and between them it would take 
-data, but less often. This would improve the urandom quality in the best 
-case, and protect against depleting the /dev/random entropy in low 
-entropy systems. Where's the downside?
+> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
+> > 
+> > Something in here broke LVM support - an initrd that has worked fine for
+> > quite some time suddenly couldn't mount /dev/VolGroup00/root so we get the
+> > infamous "Kernel panic - not syncing: Attempted to kill init!" when we
+> > fall off the end of the initrd and haven't pivoted to the real disk.
+> > 
+> > It finds the disk OK:
+> > 
+> > [   81.202310] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> > [   81.214466] sd 0:0:0:0: [sda] Write Protect is off
+> > [   81.226467] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> > [   81.238436] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> > [   81.250780]  sda: sda1 sda2
+> > [   75.396119] sd 0:0:0:0: [sda] Attached SCSI disk
+> > 
+> > but then the lvm command says it can't find the volume group VolGroup00 (which
+> > is actually sda2 - sda1 is a small /boot partition, rest of disk is LVM).
+> > 
+> > A quick look at the rc4-mm1 announcement doesn't have any obviously tempting
+> > patch names to start at, so it looks like it's time to play mm-bisect.  It may
+> > take me a day or two, as I have some time management issues this week...
+> > 
+> 
+> OK, thanks.
+> 
+> First step would be to eliminate rewrite-rd.patch: maybe the ramdisk driver
+> in which that initrd resides is bust.
+> 
+> After that, agk-dm-dm-*.patch are of course the ones to look at.
 
-There has also been a lot of discussion over the years about improving 
-the quality of urandom data, I don't personally think making the quality 
-higher constitutes "changing a 12 years old and widely used userspace 
-interface like /dev/urandom" either.
+How did I not notice them? Yeah, those guys would be on the suspicious list...
 
-Sounds like a local DoS attack point to me...
+> Please keep dm-devel@redhat.com cc'ed.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+I've gotten it down to about 128 patches, but it's interesting what ended
+up bracketed by GOOD/BAD:
+
+powerpc-invalid-size-for-swapper_pg_dir-with-config_pte_64bit=y.patch   GOOD
+#GREGKH-DRIVER-START
+gregkh-driver-nozomi.patch
+    gregkh-moby-patch-tree....
+unbork-gregkh-driver-kset-convert-sys-devices-to-use-kset_create-vioc.patch BAD
+
+Would I be remiss in hypothesising that something in gregkh-driver-kobject-*
+changed something, and now we need a agk-dm-dm-kobject-fixupage.patch?
+
+The actual bug is probably elsewhere, but it *manifests* due to gregkh-driver
+tree.  Will probably be tomorrow before I get it down further...
+
+
+--==_Exmh_1196968688_2829P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHWErwcC3lWbTT17ARAsngAJwLlTr9tXk1Zkr+aQHNE8LugdDNcQCg9P3D
+t0sh0PbMYAA20nTc/mO2/0g=
+=FDNe
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1196968688_2829P--
