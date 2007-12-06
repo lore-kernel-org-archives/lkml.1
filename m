@@ -1,91 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbXLFTgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbXLFTgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754273AbXLFTgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:36:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXLFTfw
+	id S1754682AbXLFTgd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 14:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXLFTgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:35:52 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51245 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbXLFTfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:35:52 -0500
-X-Greylist: delayed 2911 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Dec 2007 14:35:51 EST
-Date: Thu, 6 Dec 2007 11:38:43 -0800
-From: Greg KH <greg@kroah.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: 2.6.24-rc4-mm1
-Message-ID: <20071206193843.GA25125@kroah.com>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <3941.1196941764@turing-police.cc.vt.edu> <20071206040420.6c89c675.akpm@linux-foundation.org> <4374.1196968688@turing-police.cc.vt.edu>
-MIME-Version: 1.0
+	Thu, 6 Dec 2007 14:36:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48784 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752564AbXLFTgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 14:36:24 -0500
+Date: Thu, 6 Dec 2007 14:36:21 -0500
+From: Alan Cox <alan@redhat.com>
+To: Joe Peterson <joe@skyrush.com>
+Cc: linux-kernel@vger.kernel.org, alan@redhat.com
+Subject: Re: [PATCH] Enabling the echo of ctrl-C (and the like)
+Message-ID: <20071206193621.GA21382@devserv.devel.redhat.com>
+References: <47584BD3.8080306@skyrush.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4374.1196968688@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <47584BD3.8080306@skyrush.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 02:18:08PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 06 Dec 2007 04:04:20 PST, Andrew Morton said:
+On Thu, Dec 06, 2007 at 12:21:55PM -0700, Joe Peterson wrote:
+> I've used over the years as well.  Bringing this to Linux also seems
+> like a good way to make it yet more compliant with standard unix-like
+> behavior.
 > 
-> > > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
-> > > 
-> > > Something in here broke LVM support - an initrd that has worked fine for
-> > > quite some time suddenly couldn't mount /dev/VolGroup00/root so we get the
-> > > infamous "Kernel panic - not syncing: Attempted to kill init!" when we
-> > > fall off the end of the initrd and haven't pivoted to the real disk.
-> > > 
-> > > It finds the disk OK:
-> > > 
-> > > [   81.202310] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-> > > [   81.214466] sd 0:0:0:0: [sda] Write Protect is off
-> > > [   81.226467] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> > > [   81.238436] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > > [   81.250780]  sda: sda1 sda2
-> > > [   75.396119] sd 0:0:0:0: [sda] Attached SCSI disk
-> > > 
-> > > but then the lvm command says it can't find the volume group VolGroup00 (which
-> > > is actually sda2 - sda1 is a small /boot partition, rest of disk is LVM).
-> > > 
-> > > A quick look at the rc4-mm1 announcement doesn't have any obviously tempting
-> > > patch names to start at, so it looks like it's time to play mm-bisect.  It may
-> > > take me a day or two, as I have some time management issues this week...
-> > > 
-> > 
-> > OK, thanks.
-> > 
-> > First step would be to eliminate rewrite-rd.patch: maybe the ramdisk driver
-> > in which that initrd resides is bust.
-> > 
-> > After that, agk-dm-dm-*.patch are of course the ones to look at.
-> 
-> How did I not notice them? Yeah, those guys would be on the suspicious list...
-> 
-> > Please keep dm-devel@redhat.com cc'ed.
-> 
-> I've gotten it down to about 128 patches, but it's interesting what ended
-> up bracketed by GOOD/BAD:
-> 
-> powerpc-invalid-size-for-swapper_pg_dir-with-config_pte_64bit=y.patch   GOOD
-> #GREGKH-DRIVER-START
-> gregkh-driver-nozomi.patch
->     gregkh-moby-patch-tree....
-> unbork-gregkh-driver-kset-convert-sys-devices-to-use-kset_create-vioc.patch BAD
-> 
-> Would I be remiss in hypothesising that something in gregkh-driver-kobject-*
-> changed something, and now we need a agk-dm-dm-kobject-fixupage.patch?
+> The fix is pretty trivial.  Let me know if you think this is a candidate
+> for inclusion in the kernel.
 
-I don't know, it all depends on what is in the dm patches.  Hopefully
-everything that I have changed will manifest with a build breakage to
-obviously detect that something needs to be fixed up.
+If it matches other platforms and doesn't seem to break anything then I
+don't see a problem. 
 
-But I've been known to mess things up that I didn't intend to :)
-
-If there's anything that I can do to test this, please let me know.
-
-thanks,
-
-greg k-h
