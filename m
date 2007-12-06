@@ -1,104 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXLFGTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbXLFGWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbXLFGTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 01:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXLFGTY
+	id S1754643AbXLFGWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 01:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbXLFGWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 01:19:24 -0500
-Received: from smtpoutm.mac.com ([17.148.16.67]:61376 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752539AbXLFGTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 01:19:23 -0500
-In-Reply-To: <20071206053016.GA1464@cs.unibo.it>
-References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2BD0AF2A-959D-4744-9D2A-3AE84CF96CBB@mac.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+	Thu, 6 Dec 2007 01:22:06 -0500
+Received: from phunq.net ([64.81.85.152]:50899 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752012AbXLFGWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 01:22:05 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Date: Wed, 5 Dec 2007 22:21:44 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <20071205172446.ea54e4d3.akpm@linux-foundation.org>
+In-Reply-To: <20071205172446.ea54e4d3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-Date: Thu, 6 Dec 2007 01:19:13 -0500
-To: renzo@cs.unibo.it (Renzo Davoli)
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
+Message-Id: <200712052221.45409.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 06, 2007, at 00:30:16, Renzo Davoli wrote:
-> AF_IPN is different.  AF_IPN is the broadcast and peer-to-peer  
-> extension of AF_UNIX. It supports communication among *user*  
-> processes.
+On Wednesday 05 December 2007 17:24, Andrew Morton wrote:
+> On Wed, 5 Dec 2007 16:03:01 -0800 Daniel Phillips <phillips@phunq.net> wrote:
+> > ...a block device these days may not be just a single 
+> > device, but may be a stack of devices connected together by a generic 
+> > mechanism such as device mapper, or a hardcoded stack such as 
+> > multi-disk or network block device.  It is necessary to consider the 
+> > resource requirements of the stack as a whole _before_ letting a 
+> > transfer proceed into any layer of the stack, otherwise deadlock on 
+> > many partially completed transfers becomes a possibility.  For this 
+> > reason, the bio throttling is only implemented at the initial, highest 
+> > level submission of the bio to the block layer and not for any recursive 
+> > submission of the same bio to a lower level block device in a stack.
+> > 
+> > This in turn has rather far reaching implications: the top level device 
+> > in a stack must take care of inspecting the entire stack in order to 
+> > determine how to calculate its resource requirements, thus becoming
+> > the boss device for the entire stack.  Though this intriguing idea could 
+> > easily become the cause of endless design work and many thousands of 
+> > lines of fancy code, today I sidestep the question entirely using 
+> > the "just provide lots of reserve" strategy.  Horrifying as it may seem 
+> > to some, this is precisely the strategy that Linux has used in the 
+> > context of resource management in general, from the very beginning and 
+> > likely continuing for quite some time into the future  My strongly held 
+> > opinion in this matter is that we need to solve the real, underlying 
+> > problems definitively with nice code before declaring the opening of 
+> > fancy patch season.  So I am leaving further discussion of automatic 
+> > resource discovery algorithms and the like out of this post.
+> 
+> Rather than asking the stack "how much memory will this request consume"
+> you could instead ask "how much memory are you currently using".
+> 
+> ie: on entry to the stack, do 
+> 
+> 	current->account_block_allocations = 1;
+> 	make_request(...);
+> 	rq->used_memory += current->pages_used_for_block_allocations;
+> 
+> and in the page allocator do
+> 
+> 	if (!in_interrupt() && current->account_block_allocations)
+> 		current->pages_used_for_block_allocations++;
+> 
+> and then somehow handle deallocation too ;)
 
-Ok, you say it's different, but then you describe how IP unicast and  
-broadcast work.  Both are frequently used for communication among  
-"*user* processes".  Please provide significantly more details about  
-exactly *how* it's different.
+Ah, and how do you ensure that you do not deadlock while making this
+inquiry?  Perhaps send a dummy transaction down the pipe?  Even so,
+deadlock is possible, quite evidently so in the real life example I have
+at hand.
 
+Yours is essentially one of the strategies I had in mind, the other major
+one being simply to examine the whole stack, which presupposes some
+as-yet-nonexistant kernel wide method of representing block device
+stacks in all there glorious possible topology variations.
 
-> Example:
->
-> Qemu, User-Mode Linux, Kvm, our umview machines can use IPN as an  
-> Ethernet Hub and communicate among themselves with the hosting  
-> computer and the world by a tap like interface.
+> The basic idea being to know in real time how much memory a particular
+> block stack is presently using.  Then, on entry to that stack, if the
+> stack's current usage is too high, wait for it to subside.
 
-You say "tap like" interface, but people do this already with  
-existing infrastructure.  You can connect Qemu, UML, and KVM to a  
-standard linus "tap" interface, and then use the standard Linux  
-bridging code to connect the "tap" interface to your existing network  
-interfaces.  Alternatively you could use the standard and well-tested  
-IP routing/firewalling/NAT code to move your packets around.  None of  
-this requires new network infrastructure in the slightest.  If you  
-have problems with the existing code, please improve it instead of  
-creating a slightly incompatible replacement which has different bugs  
-and workarounds.
+We do not wait for high block device resource usage to subside before
+submitting more requests.  The improvement you suggest is aimed at
+automatically determining resource requirements by sampling a
+running system, rather than requiring a programmer to determine them
+arduously by hand.  Something like automatically determining a
+workable locking strategy by analyzing running code, wouldn't that be
+a treat?  I will hope for one of those under my tree at Christmas.
 
+More practically, I can see a debug mode implemented along the lines
+you describe where we automatically detect that a writeout path has
+violated its covenant as expressed by its throttle_metric.
+ 
+> otoh we already have mechanisms for limiting the number of requests in
+> flight.  This is approximately proportional to the amount of memory which
+> was allocated to service those requests.  Why not just use that?
 
-> You can also grab an interface (say eth1) and use eth0 for your  
-> hosting computer and eth1 for the IPN network of virtual machines.
+Two reasons.  The minor one is that device mapper bypasses that
+mechanism (no elevator) and the major one is that number of requests
+does not map well to the amount of resources consumed.  In ddsnap for
+example, the amount of memory used by the userspace ddsnapd is
+roughly linear vs the number of pages transferred, not the number of
+requests.
 
-You can do that already with the bridging code.
+> > @@ -3221,6 +3221,13 @@ static inline void __generic_make_reques
+> >  	if (bio_check_eod(bio, nr_sectors))
+> >  		goto end_io;
+> >  
+> > +	if (q && q->metric && !bio->bi_queue) {
+> > +		int need = bio->bi_throttle = q->metric(bio);
+> > +		bio->bi_queue = q;
+> > +		/* FIXME: potential race if atomic_sub is called in the middle of condition check */
+> > +		wait_event_interruptible(q->throttle_wait, atomic_read(&q->available) >= need);
+> 
+> This will fall straight through if signal_pending() and (I assume) bad
+> stuff will happen.  uninterruptible sleep, methinks.
 
+Yes, as a first order repair.  To be done properly I need to express this
+in terms of the guts of wait_event_*, and get rid of that race, maybe that
+changes the equation.
 
-> If you load the kvde_switch submodule IPN can be a virtual Ethernet  
-> switch.
+It would be nice if threads didn't get stuck in D state here, though
+_interruptible is probably the wrong idea, we should instead ensure that
+whatever is being waited on must respond to, e.g., SIGKILL.  This at the
+limits of my scheduler knowledge, l would appreciate a better
+suggestion.  I do detest hang in D state with SIGKILL immunity, which
+behavior unfortunately does not seem all that rare.
 
-As I described above, this can be done with the existing bridging and  
-tun/tap code.
-
-
-> Another Example:
->
-> You have a continuous stream of data packets generated by a  
-> process, and you want to send this data to many processes.  Maybe  
-> the set of processes is not known in advance, you want to send the  
-> data to any interested process. Some kind of publish&subscribe  
-> communication service (among unix processes not on TCP-IP). Without  
-> IPN you need a server. With IPN the sender creates the socket  
-> connects to it and feed it with data packets. All the interested  
-> receivers connects to it and start reading. That's all.
-
-This is already done frequently in userspace.  Just register a port  
-number with IANA on which to implement a "registration" server and  
-write a little daemon to listen on 127.0.0.1:${YOUR_PORT}.  Your  
-interconnecting programs then use either unicast or multicast sockets  
-to bind, then report to the registration server what service you are  
-offering and what port it's on.  Your "receivers" then connect to the  
-registration server, ask what port a given service is on, and then  
-multicast-listen or unicast-connect to access that service.  The best  
-part is that all of the performance implications are already  
-thoroughly understood.  Furthermore, if you want to extend your  
-communication protocol to other hosts as well, you just have to  
-replace the 127.0.0.1 bind with a global bind.  This is exactly how  
-the standard-specified multiple-participant "SIP" protocol works, for  
-example.
-
-
-So if you really think this is something that belongs in the kernel  
-you need to provide much more detailed descriptions and use-cases for  
-why it cannot be implemented in user-space or with small  
-modifications to existing UDP/TCP networking.
-
-Cheers,
-Kyle Moffett
-
+Daniel
