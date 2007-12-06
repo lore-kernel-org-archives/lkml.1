@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbXLFCHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbXLFCIC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbXLFCHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbXLFCF5
+	id S1755093AbXLFCIC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:08:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbXLFCGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:05:57 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:38075 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:06:05 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:38083 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754869AbXLFCF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:05:56 -0500
-Message-Id: <20071206020446.606237556@polymtl.ca>
+	id S1754932AbXLFCGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:06:03 -0500
+Message-Id: <20071206020445.732521334@polymtl.ca>
 References: <20071206020246.417605824@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:02:57 -0500
+Date: Wed, 05 Dec 2007 21:02:56 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
@@ -20,9 +20,9 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 11/11] Text Edit Lock - x86_64 standardize debug rodata
-Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:04:51 +0000
+Subject: [patch 10/11] Text Edit Lock - x86_32 standardize debug rodata
+Content-Disposition: inline; filename=text-edit-lock-i386-standardize-debug-rodata.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:04:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,51 +36,56 @@ CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Ingo Molnar <mingo@redhat.com>
 CC: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86_64/mm/init.c |   23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+ arch/x86/mm/init_32.c |   20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-Index: linux-2.6-lttng/arch/x86/mm/init_64.c
+Index: linux-2.6-lttng/arch/x86/mm/init_32.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/mm/init_64.c	2007-09-24 11:00:01.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/mm/init_64.c	2007-09-24 11:00:02.000000000 -0400
-@@ -592,25 +592,11 @@ void free_initmem(void)
+--- linux-2.6-lttng.orig/arch/x86/mm/init_32.c	2007-11-13 09:25:29.000000000 -0500
++++ linux-2.6-lttng/arch/x86/mm/init_32.c	2007-11-13 09:45:48.000000000 -0500
+@@ -784,28 +784,21 @@ static int noinline do_test_wp_bit(void)
+ }
  
+ #ifdef CONFIG_DEBUG_RODATA
+-
  void mark_rodata_ro(void)
  {
--	unsigned long start = (unsigned long)_stext, end;
-+	unsigned long start = PFN_ALIGN(_stext);
-+	unsigned long end = PFN_ALIGN(__end_rodata);
+ 	unsigned long start = PFN_ALIGN(_text);
+ 	unsigned long size = PFN_ALIGN(_etext) - start;
  
+-#ifndef CONFIG_KPROBES
 -#ifdef CONFIG_HOTPLUG_CPU
 -	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() > 1)
--		start = (unsigned long)_etext;
+-	if (num_possible_cpus() <= 1)
 -#endif
--
--#ifdef CONFIG_KPROBES
--	start = (unsigned long)__start_rodata;
+-	{
+-		change_page_attr(virt_to_page(start),
+-		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
+-		printk("Write protecting the kernel text: %luk\n", size >> 10);
+-	}
 -#endif
--	
--	end = (unsigned long)__end_rodata;
--	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
--	end &= PAGE_MASK;
--	if (end <= start)
--		return;
--
--	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
-+				PAGE_KERNEL_RO);
++	change_page_attr(virt_to_page(start),
++		size >> PAGE_SHIFT, PAGE_KERNEL_RX);
++	printk(KERN_INFO "Write protecting the kernel text: %luk\n",
++		size >> 10);
++
+ 	start += size;
+ 	size = (unsigned long)__end_rodata - start;
+ 	change_page_attr(virt_to_page(start),
+ 	                 size >> PAGE_SHIFT, PAGE_KERNEL_RO);
+-	printk("Write protecting the kernel read-only data: %luk\n",
++	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ 	       size >> 10);
  
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -623,6 +609,7 @@ void mark_rodata_ro(void)
+ 	/*
+@@ -816,6 +809,7 @@ void mark_rodata_ro(void)
  	 */
  	global_flush_tlb();
  }
 +
  #endif
  
- #ifdef CONFIG_BLK_DEV_INITRD
+ void free_init_pages(char *what, unsigned long begin, unsigned long end)
 
 -- 
 Mathieu Desnoyers
