@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbXLFUU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbXLFUWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbXLFUU1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 15:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXLFUUO
+	id S1753940AbXLFUWe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 15:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXLFUWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 15:20:14 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:34014 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbXLFUUN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 15:20:13 -0500
-Date: Thu, 6 Dec 2007 15:19:29 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 1/6] UML - Customize tlb.h
-Message-ID: <20071206201929.GA9366@c2.user-mode-linux.org>
-References: <20071206170640.GA7420@c2.user-mode-linux.org> <20071206114642.555a0749.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071206114642.555a0749.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+	Thu, 6 Dec 2007 15:22:23 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36183 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751983AbXLFUWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 15:22:22 -0500
+X-Authenticated: #1490710
+X-Provags-ID: V01U2FsdGVkX1+cyhoPC9ec6nuRUbjMWVClQSSTI5NHK27IfebMnJ
+	X9itHd8JzOmRnt
+Date: Thu, 6 Dec 2007 21:22:18 +0100 (CET)
+From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+X-X-Sender: gene099@wbgn129.biozentrum.uni-wuerzburg.de
+To: Al Boldi <a1426z@gawab.com>
+cc: Andreas Ericsson <ae@op5.se>, Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: git guidance
+In-Reply-To: <200712072155.04643.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.64.0712062119090.21625@wbgn129.biozentrum.uni-wuerzburg.de>
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com>
+ <200712072035.47359.a1426z@gawab.com> <47583E57.9050208@op5.se>
+ <200712072155.04643.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 11:46:42AM -0800, Andrew Morton wrote:
-> > +void flush_tlb_mm(struct mm_struct *mm)
-> > +{
-> > +	struct vm_area_struct *vma = mm->mmap;
-> > +
-> > +	if (atomic_read(&mm->mm_users) == 0)
-> > +		return;
+Hi,
+
+On Fri, 7 Dec 2007, Al Boldi wrote:
+
+> Andreas Ericsson wrote:
+> > Al Boldi wrote:
+> >
+> > > By pulling the sources into a git-client manager mounted on some 
+> > > dir, it should be possible to let the developer work 
+> > > naturally/transparently in a readable/writeable manner, and only 
+> > > require his input when reverting locally or committing to the 
+> > > server/repository.
+> >
+> > How is that different from what every SCM, including git, is doing 
+> > today? The user needs to tell the scm when it's time to take a 
+> > snapshot of the current state. Git is distributed though, so 
+> > committing is usually not the same as publishing. Is that lack of a 
+> > single command to commit and publish what's nagging you? If it's not, 
+> > I completely fail to see what you're getting at, unless you've only 
+> > ever looked at repositories without a worktree attached, or you think 
+> > that git should work like an editor's "undo" functionality, which 
+> > would be quite insane.
 > 
-> Under which circumstances does this test succeed?
+> You need to re-read the thread.
 
-Sigh, none.  The other copy obviously succeeds during exit - this one
-isn't needed.
+I don't know why you write that, and then say thanks.  Clearly, what you 
+wrote originally, and what Andreas pointed out, were quite obvious 
+indicators that git already does what you suggest.
 
-> This file rather needs an inclusion of percpu.h.  I guess you got
-> lucky.
+You _do_ work "transparently" (whatever you understand by that overused 
+term) in the working directory, unimpeded by git.
 
-Yup, drop this, and I'll send a fixed version.
+And whenever it is time to revert or commit, you cry for help, invoking 
+git.
 
-				Jeff
+So either you succeeded in making yourself misunderstood, or Andreas had 
+quite the obvious and correct comment for you.
 
--- 
-Work email - jdike at linux dot intel dot com
+Not that diffcult,
+Dscho
+
