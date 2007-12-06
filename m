@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbXLFQOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXLFQOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbXLFQOh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 11:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbXLFQOV
+	id S1755528AbXLFQOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 11:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbXLFQOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 11:14:21 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:24508
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755136AbXLFQOU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 11:14:20 -0500
-Message-Id: <47582E0F.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 06 Dec 2007 16:14:55 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <eranian@hpl.hp.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: hidden patch conflict in
-	arch/x86/kernel/cpu/perfctr-watchdog.c
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 6 Dec 2007 11:14:24 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:16805 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755195AbXLFQOX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 11:14:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=rT0bpSNi25DYwuOpfmPCoqnjJhMKkpJDe6Rc3u7OOI4hVpWyH4BKcMeNq6HoIVAn6xVNGRGno5kbXkKMvwLNLdxBKvzJgXl3pDbO2XnrvXmt6FxHvlT+B3RdcCSI5+1zhke6VRS3WSfa67e4LpPJ/5gQEOa2fovN8ZydWMEqPgA=
+From: Denis Cheng <crquan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 20/20] net/iucv/iucv.c: use LIST_HEAD instead of LIST_HEAD_INIT
+Date: Fri,  7 Dec 2007 00:13:25 +0800
+Message-Id: <1196957605-5797-3-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <1196957605-5797-2-git-send-email-crquan@gmail.com>
+References: <
+ <1196957605-5797-1-git-send-email-crquan@gmail.com>
+ <1196957605-5797-2-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There apparently was an unnoticed conflict between your patch (committed
-as 23d5ea5d3edcfe899cd91fca87a4af799bcc5794 2.6.23) and mine
-(d1e084746b0e5806e6345ab31c5b370f8dee2b23), which I noticed only now.
-I suppose a change like the one below (untested) is needed; before officially
-submitting I'd like to confirm this with you.
+these three list_head are all local variables, but can also use LIST_HEAD.
 
-The issue is the writing of the 'checkbit' member at the end of
-setup_intel_arch_watchdog(), which my patch made go to intel_arch_wd_ops
-rather than wd_ops.
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ net/iucv/iucv.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Jan
-
---- a/arch/x86/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
-@@ -615,16 +615,6 @@ static struct wd_ops intel_arch_wd_ops _
- 	.evntsel = MSR_ARCH_PERFMON_EVENTSEL1,
- };
+diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
+index 7698f6c..f13fe88 100644
+--- a/net/iucv/iucv.c
++++ b/net/iucv/iucv.c
+@@ -1492,7 +1492,7 @@ static void iucv_tasklet_fn(unsigned long ignored)
+ 		[0x08] = iucv_message_pending,
+ 		[0x09] = iucv_message_pending,
+ 	};
+-	struct list_head task_queue = LIST_HEAD_INIT(task_queue);
++	LIST_HEAD(task_queue);
+ 	struct iucv_irq_list *p, *n;
  
--static struct wd_ops coreduo_wd_ops = {
--	.reserve = single_msr_reserve,
--	.unreserve = single_msr_unreserve,
--	.setup = setup_intel_arch_watchdog,
--	.rearm = p6_rearm,
--	.stop = single_msr_stop_watchdog,
--	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
--	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0,
--};
--
- static void probe_nmi_watchdog(void)
+ 	/* Serialize tasklet, iucv_path_sever and iucv_path_connect. */
+@@ -1526,7 +1526,7 @@ static void iucv_tasklet_fn(unsigned long ignored)
+ static void iucv_work_fn(struct work_struct *work)
  {
- 	switch (boot_cpu_data.x86_vendor) {
-@@ -638,8 +628,8 @@ static void probe_nmi_watchdog(void)
- 		/* Work around Core Duo (Yonah) errata AE49 where perfctr1
- 		   doesn't have a working enable bit. */
- 		if (boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model == 14) {
--			wd_ops = &coreduo_wd_ops;
--			break;
-+			intel_arch_wd_ops.perfctr = MSR_ARCH_PERFMON_PERFCTR0;
-+			intel_arch_wd_ops.evntsel = MSR_ARCH_PERFMON_EVENTSEL0;
- 		}
- 		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
- 			wd_ops = &intel_arch_wd_ops;
-
+ 	typedef void iucv_irq_fn(struct iucv_irq_data *);
+-	struct list_head work_queue = LIST_HEAD_INIT(work_queue);
++	LIST_HEAD(work_queue);
+ 	struct iucv_irq_list *p, *n;
+ 
+ 	/* Serialize tasklet, iucv_path_sever and iucv_path_connect. */
+-- 
+1.5.3.4
 
