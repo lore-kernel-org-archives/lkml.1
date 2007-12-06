@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbXLFWik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbXLFWiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbXLFWik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 17:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXLFWiP
+	id S1756143AbXLFWiz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 17:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbXLFWi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 17:38:15 -0500
-Received: from lucidpixels.com ([75.144.35.66]:39170 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752511AbXLFWiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 17:38:10 -0500
-Date: Thu, 6 Dec 2007 17:38:08 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, apiszcz@solarrain.com
-Subject: Re: Kernel 2.6.23.9 / P35 Chipset + WD 750GB Drives (reset port)
-In-Reply-To: <20071206140038.f06e18ad.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0712061737500.8523@p34.internal.lan>
-References: <Pine.LNX.4.64.0712010619150.25643@p34.internal.lan>
- <20071206140038.f06e18ad.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 6 Dec 2007 17:38:28 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44055 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755923AbXLFWi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 17:38:26 -0500
+Date: Thu, 6 Dec 2007 23:38:23 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Renzo Davoli <renzo@cs.unibo.it>
+Cc: Andi Kleen <andi@firstfloor.org>, Chris Friesen <cfriesen@nortel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: New Address Family: Inter Process Networking (IPN)
+Message-ID: <20071206223823.GH20595@one.firstfloor.org>
+References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it> <20071206163538.GC20595@one.firstfloor.org> <47585D66.3000404@nortel.com> <20071206212644.GA26725@one.firstfloor.org> <47586E7F.1020903@nortel.com> <20071206220754.GF20595@one.firstfloor.org> <20071206221837.GE30293@cs.unibo.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071206221837.GE30293@cs.unibo.it>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 06, 2007 at 11:18:37PM +0100, Renzo Davoli wrote:
+> * IPN is for inter-process communication. It is *not* directly related 
+> to TCP-IP or Ethernet.
+> 
+> If you want you can call it Inter Process Bus Communication.  It is an
+> extension of AF_UNIX.  Comments saying that some services can be
+> implemented by using TCP-IP multicast protocols are unrelated to IPN.
+> All AF_UNIX services could be implemented as TCP-IP services on
+> 127.0.0.1. Do we abolish AF_UNIX, then?  The problem is that to use
+> TCP-IP, you'd need to wrap the packets with TCP or UDP, IP and Ethernet
 
+No ethernet headers on localhost. Just to give you a perspective:
+IP+TCP headers are 50 bytes (with timestamps) and IP+UDP is 28 bytes.
+On the other hand the sk_buff+skb_shared_info header which are used for 
+all socket communication in Linux and have to be mostly set up always
+are 192+312bytes on 64bit [parts of the 312 bytes is an array that is 
+typically only partly used] or 156+236 bytes on 32bit. So the network
+headers dwarf the internal data structures.
 
-On Thu, 6 Dec 2007, Andrew Morton wrote:
+There might be other reasons why TCP/IP is slower, but arguing 
+with the size of the headers is just bogus.
 
-> On Sat, 1 Dec 2007 06:26:08 -0500 (EST)
-> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->
->> I am putting a new machine together and I have dual raptor raid 1 for the
->> root, which works just fine under all stress tests.
->>
->> Then I have the WD 750 GiB drive (not RE2, desktop ones for ~150-160 on
->> sale now adays):
->>
->> I ran the following:
->>
->> dd if=/dev/zero of=/dev/sdc
->> dd if=/dev/zero of=/dev/sdd
->> dd if=/dev/zero of=/dev/sde
->>
->> (as it is always a very good idea to do this with any new disk)
->>
->> And sometime along the way(?) (i had gone to sleep and let it run), this
->> occurred:
->>
->> [42880.680144] ata3.00: exception Emask 0x10 SAct 0x0 SErr 0x4010000
->> action 0x2 frozen
->
-> Gee we're seeing a lot of these lately.
->
->> [42880.680231] ata3.00: irq_stat 0x00400040, connection status changed
->> [42880.680290] ata3.00: cmd ec/00:00:00:00:00/00:00:00:00:00/00 tag 0 cdb
->> 0x0 data 512 in
->> [42880.680292]          res 40/00:ac:d8:64:54/00:00:57:00:00/40 Emask 0x10
->> (ATA bus error)
->> [42881.841899] ata3: soft resetting port
->> [42885.966320] ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->> [42915.919042] ata3.00: qc timeout (cmd 0xec)
->> [42915.919094] ata3.00: failed to IDENTIFY (I/O error, err_mask=0x5)
->> [42915.919149] ata3.00: revalidation failed (errno=-5)
->> [42915.919206] ata3: failed to recover some devices, retrying in 5 secs
->> [42920.912458] ata3: hard resetting port
->> [42926.411363] ata3: port is slow to respond, please be patient (Status
->> 0x80)
->> [42930.943080] ata3: COMRESET failed (errno=-16)
->> [42930.943130] ata3: hard resetting port
->> [42931.399628] ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->> [42931.413523] ata3.00: configured for UDMA/133
->> [42931.413586] ata3: EH pending after completion, repeating EH (cnt=4)
->> [42931.413655] ata3: EH complete
->> [42931.413719] sd 2:0:0:0: [sdc] 1465149168 512-byte hardware sectors
->> (750156 MB)
->> [42931.413809] sd 2:0:0:0: [sdc] Write Protect is off
->> [42931.413856] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
->> [42931.413867] sd 2:0:0:0: [sdc] Write cache: enabled, read cache:
->> enabled, doesn't support DPO or FUA
->>
->> Usually when I see this sort of thing with another box I have full of
->> raptors, it was due to a bad raptor and I never saw it again after I
->> replaced the disk that it happened on, but that was using the Intel P965
->> chipset.
->>
->> For this board, it is a Gigabyte GSP-P35-DS4 (Rev 2.0) and I have all of
->> the drives (2 raptors, 3 750s connected to the Intel ICH9 Southbridge).
->>
->> I am going to do some further testing but does this indicate a bad drive?
->> Bad cable?  Bad connector?
->>
->> As you can see above, /dev/sdc stopped responding for a little bit and
->> then the kernel reset the port.
->>
->> Why is this though?  What is the likely root cause?  Should I replace the
->> drive?  Obviously this is not normal and cannot be good at all, the idea
->> is to put these drives in a RAID5 and if one is going to timeout that is
->> going to cause the array to go degraded and thus be worthless in a raid5
->> configuration.
->>
->> Can anyone offer any insight here?
->
-> It would be interesting to try 2.6.21 or 2.6.22.
->
+My personal feeling would be that if TCP/IP is too slow for something
+it is better to just improve the stack than to add a completely
+new socket family. That will benefit much more applications without
+requiring to change them.
 
-This was due to NCQ issues (disabling it fixed the problem).
+About the only good reason to use UNIX sockets is when you need to use
+file system permissions. 
 
-Justin.
+> * IPN services (like AF_UNIX) do not require root privileges.
+> 
+> There are many communication services where the user need broadcast or
+> p2p among user processes.  If a user (not root) wants to run several
+
+IP Multicast when properly set up also doesn't need root.
+
+Broadcast is kind of obsolete anyways.
+
+> User-Mode Linux, Qemu, Kvm VM the only way to have them connected
+> together is our Virtual Distributed Ethernet.  (For this reason VDE
+
+They could easily just tunnel over a local multicast group for example.
+
+-Andi
+
