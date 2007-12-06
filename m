@@ -1,70 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbXLFRzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbXLFSBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbXLFRzO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 12:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbXLFRzB
+	id S1753033AbXLFSBk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 13:01:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbXLFSBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 12:55:01 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53644 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbXLFRzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 12:55:00 -0500
-Subject: Re: [RFC PATCH 0/5] Union Mount: A Directory listing approach with
-	lseek support
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan Blunck <jblunck@suse.de>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Erez Zadok <ezk@cs.sunysb.edu>,
-       viro@zeniv.linux.org.uk, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20071206100118.GA19903@hasse.suse.de>
-References: <20071205143718.GC2471@in.ibm.com>
-	 <1196875318.18685.24.camel@localhost>
-	 <20071206100118.GA19903@hasse.suse.de>
-Content-Type: text/plain
-Date: Thu, 06 Dec 2007 09:54:43 -0800
-Message-Id: <1196963684.18685.82.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 6 Dec 2007 13:01:32 -0500
+Received: from orion2.pixelized.ch ([195.190.190.13]:40975 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbXLFSBb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 13:01:31 -0500
+Message-ID: <475838E9.8020507@cateee.net>
+Date: Thu, 06 Dec 2007 19:01:13 +0100
+From: Giacomo Catenazzi <cate@cateee.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: proc/bus.usb regression in : [NETNS]: Fix /proc/net breakage
+References: <200712031900.lB3J0PR9025742@hera.kernel.org>	<20071205040236.ff102b9e.akpm@linux-foundation.org>	<4757B121.6000308@cateee.net> <20071206003134.80a7ad57.akpm@linux-foundation.org>
+In-Reply-To: <20071206003134.80a7ad57.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-06 at 11:01 +0100, Jan Blunck wrote:
-> > Rather than give each _dirent_ an offset, could we give each sub-mount
-> > an offset?  Let's say we have three members comprising a union mount
-> > directory.  The first has 100 dirents, the second 200, and the third
-> > 10,000.  When the first readdir is done, we populate the table like
-> > this:
-> > 
-> >       mount_offset[0] = 0;
-> >       mount_offset[1] = 100;
-> >       mount_offset[2] = 300;
-> > 
-> > If someone seeks back to 150, then we subtrack the mount[1]'s offset
-> > (100), and realize that we want the 50th dirent from mount[1].
+Andrew Morton wrote:
+> On Thu, 06 Dec 2007 09:21:53 +0100 Giacomo Catenazzi <cate@cateee.net> wrote:
 > 
-> Yes, that is a nice idea and it is exactly what I have implemented in my patch
-> series. But you forgot one thing: directories are not flat files. The dentry
-> offset in a directory is a random cookie. Therefore it is not possible to have
-> a linear mapping without allocating memory.
+>> Andrew Morton wrote:
+>>> On Mon, 3 Dec 2007 19:00:25 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+>>>
+>>>> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
+>>>> Commit:     2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
+>>>> Parent:     e03ba84adb62fbc6049325a5bc00ef6932fa5e39
+>>>> Author:     Eric W. Biederman <ebiederm@xmission.com>
+>>>> AuthorDate: Sun Dec 2 00:33:17 2007 +1100
+>>>> Committer:  Herbert Xu <herbert@gondor.apana.org.au>
+>>>> CommitDate: Sun Dec 2 00:33:17 2007 +1100
+>>>>
+>>>>     [NETNS]: Fix /proc/net breakage
+>>>>     
+>>>>     Well I clearly goofed when I added the initial network namespace support
+>>>>     for /proc/net.  Currently things work but there are odd details visible to
+>>>>     user space, even when we have a single network namespace.
+>>>>     
+>>>>     Since we do not cache proc_dir_entry dentries at the moment we can just
+>>>>     modify ->lookup to return a different directory inode depending on the
+>>>>     network namespace of the process looking at /proc/net, replacing the
+>>>>     current technique of using a magic and fragile follow_link method.
+>>>>     
+>>>>     To accomplish that this patch:
+>>>>     - introduces a shadow_proc method to allow different dentries to
+>>>>       be returned from proc_lookup.
+>>>>     - Removes the old /proc/net follow_link magic
+>>>>     - Fixes a weakness in our not caching of proc generic dentries.
+>>>>     
+>>>>     As shadow_proc uses a task struct to decided which dentry to return we can
+>>>>     go back later and fix the proc generic caching without modifying any code
+>>>>     that uses the shadow_proc method.
+>>> This patch caused the binfmt_misc regression reported in
+>>> http://bugzilla.kernel.org/show_bug.cgi?id=9504
+>> This patch also doesn't allow to mount /proc/bus/usb
+>>
+> 
+> Does Denis's patch fix it?
 
-Is is truly a random cookie where the fs gets to put anything in there
-that it can fit in a long?  Isn't that an advantage?  Being a random
-cookie, we can encode anything we want in there.  We could encode the
-"mount index" (or whatever you want to call it) in high or low bits and
-have the rest store the fs-specific offset.  The only problem there
-would be running out of storage space in long.
+Yes, this patch solve the problem.
+Tested-by: Giacomo Catenazzi <cate@debian.org>
 
-But, what do people expect when they have huge directories (or huge
-directory offsets)?  Surely, if their fs is already pressing the fs's
-directory data types to the limits, they can't simply union mount a
-couple of those directories together and expect magic.  Union mounts
-also can't be expected to compress these directory positions to fit.
+ciao
+	cate
 
-So, I think it's reasonable behavior to readdir() until the sum of the
-highest position seen on each mount would overflow the off_t that we
-have to store it in.  
-
--- Dave
+> 
+> Thanks.
+> 
+> 
+> From: "Denis V. Lunev" <den@openvz.org>
+> 
+> /proc/sys/fs/binfmt_misc dentry disappeared during d_revalidate. 
+> d_revalidate only dentries from shadowed one and below. 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9504
+> 
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Marcus Better <marcus@better.se>
+> Signed-off-by: Denis V. Lunev <den@openvz.org>
+> Cc: Marcus Better <marcus@better.se>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  fs/proc/generic.c |   14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> diff -puN fs/proc/generic.c~lost-content-of-proc-sys-fs-binfmt_misc fs/proc/generic.c
+> --- a/fs/proc/generic.c~lost-content-of-proc-sys-fs-binfmt_misc
+> +++ a/fs/proc/generic.c
+> @@ -380,12 +380,17 @@ static int proc_revalidate_dentry(struct
+>  	return 0;
+>  }
+>  
+> -static struct dentry_operations proc_dentry_operations =
+> +static struct dentry_operations proc_dentry_shadow_operations =
+>  {
+>  	.d_delete	= proc_delete_dentry,
+>  	.d_revalidate	= proc_revalidate_dentry,
+>  };
+>  
+> +static struct dentry_operations proc_dentry_operations =
+> +{
+> +	.d_delete	= proc_delete_dentry,
+> +};
+> +
+>  /*
+>   * Don't create negative dentries here, return -ENOENT by hand
+>   * instead.
+> @@ -394,6 +399,7 @@ struct dentry *proc_lookup(struct inode 
+>  {
+>  	struct inode *inode = NULL;
+>  	struct proc_dir_entry * de;
+> +	int use_shadow = 0;
+>  	int error = -ENOENT;
+>  
+>  	lock_kernel();
+> @@ -406,8 +412,10 @@ struct dentry *proc_lookup(struct inode 
+>  			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
+>  				unsigned int ino;
+>  
+> -				if (de->shadow_proc)
+> +				if (de->shadow_proc) {
+>  					de = de->shadow_proc(current, de);
+> +					use_shadow = 1;
+> +				}
+>  				ino = de->low_ino;
+>  				de_get(de);
+>  				spin_unlock(&proc_subdir_lock);
+> @@ -423,6 +431,8 @@ struct dentry *proc_lookup(struct inode 
+>  
+>  	if (inode) {
+>  		dentry->d_op = &proc_dentry_operations;
+> +		dentry->d_op = use_shadow ?
+> +			&proc_dentry_shadow_operations : dentry->d_parent->d_op;
+>  		d_add(dentry, inode);
+>  		return NULL;
+>  	}
+> _
+> 
 
