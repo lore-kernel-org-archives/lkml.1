@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbXLFVuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbXLFVvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbXLFVuR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 16:50:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbXLFVuG
+	id S1755324AbXLFVvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 16:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbXLFVvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 16:50:06 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:60544 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbXLFVuF (ORCPT
+	Thu, 6 Dec 2007 16:51:32 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:18598 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbXLFVva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 16:50:05 -0500
-Message-ID: <47586E7F.1020903@nortel.com>
-Date: Thu, 06 Dec 2007 15:49:51 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 6 Dec 2007 16:51:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=pWEAuHlkcu3FDLZ5PpLLBMLJBvS5IUwhbsEzwBXW5xqWKjTxXvuxlUcIE9hvAE5/a2aTFyZtiRgjMR/9OJ2zqBEKO9381wYoH4EZywDaYs0H0y5gR5CVsrzff/BLU3eo9a43NrRO4C90Py/r5QmB4mm1hWRCk0JRRZbvzP/Frmw=
+Message-ID: <47586F67.8020101@gmail.com>
+Date: Thu, 06 Dec 2007 22:53:43 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Renzo Davoli <renzo@cs.unibo.it>, linux-kernel@vger.kernel.org
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it> <20071206163538.GC20595@one.firstfloor.org> <47585D66.3000404@nortel.com> <20071206212644.GA26725@one.firstfloor.org>
-In-Reply-To: <20071206212644.GA26725@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Holger.Wolf@de.ibm.com, wolf@linux.vnet.ibm.com, mingo@elte.hu,
+       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: Scheduler behaviour
+References: <475706E2.50805@linux.vnet.ibm.com> <20071205132631.79940bd5@laptopd505.fenrus.org>
+In-Reply-To: <20071205132631.79940bd5@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Dec 2007 21:49:55.0039 (UTC) FILETIME=[F00476F0:01C83851]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>Latency was very 
->>important, so we ended up doing essentially a multicast unix socket 
->>rather than taking the extra penalty for UDP multicast.
+Arjan van de Ven wrote, On 12/05/2007 10:26 PM:
+
+> On Wed, 05 Dec 2007 21:15:30 +0100
+> Holger Wolf <wolf@linux.vnet.ibm.com> wrote:
+
+...
+
+>> a 2.6.23 kernel. We saw a throughput degradation from 7.2 to 23.4
 > 
-> 
-> What extra penalty? Local UDP shouldn't be much more expensive than Unix.
+> this is good news!
+> dbench rewards unfair behavior... so higher dbench usually means a
+> worse kernel ;)
 
-On a 1.4GHz P4 I measured a 44% increase in latency between a unix 
-datagram and a UDP datagram.
 
-For UDP it has to go down the udp stack, then the ip stack, then through 
-the routing tables and back up the receive side.
+Yes!!!
 
-The unix socket just hashes to get the destination and delivers the message.
+(But, with those new patches, I guess, our kernel will be worse enough?!)
 
-Chris
+Jarek P.
