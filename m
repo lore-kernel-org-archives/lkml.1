@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbXLFInr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbXLFItN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbXLFInr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 03:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbXLFInh
+	id S1754723AbXLFItN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 03:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXLFIs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 03:43:37 -0500
-Received: from mout2.freenet.de ([195.4.92.92]:39859 "EHLO mout2.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbXLFIng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 03:43:36 -0500
-Message-ID: <4757B62F.2040608@de.ibm.com>
-Date: Thu, 06 Dec 2007 09:43:27 +0100
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Thu, 6 Dec 2007 03:48:57 -0500
+Received: from mo-p07-ob.rzone.de ([81.169.146.190]:12487 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751701AbXLFIs4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 03:48:56 -0500
+X-Greylist: delayed 50871 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Dec 2007 03:48:55 EST
+X-RZG-CLASS-ID: mo07
+X-RZG-AUTH: kR2YrGeU3i5IZ7e/KoXXySNh16uouyfpvuAE9NRyohxnu02NkfMqoFqI5zTcLRvR/w==
+From: Stefan Rompf <stefan@loplof.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+Date: Thu, 6 Dec 2007 09:49:01 +0100
+User-Agent: KMail/1.9.5
+Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20071204.223023.262159049.davem@davemloft.net> <200712051939.08384.stefan@loplof.de> <20071205.182500.166603251.davem@davemloft.net>
+In-Reply-To: <20071205.182500.166603251.davem@davemloft.net>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: carsteno@de.ibm.com, Christian Borntraeger <borntraeger@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, rob@landley.net,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: [patch] ext2: xip check fix
-References: <20071204042628.GA26636@wotan.suse.de> <200712041054.51599.borntraeger@de.ibm.com> <20071204101009.GB9618@wotan.suse.de> <20071204112100.GA20420@wotan.suse.de> <20071204112327.GB20420@wotan.suse.de> <4756C714.2040809@de.ibm.com> <20071205233345.GB5617@wotan.suse.de>
-In-Reply-To: <20071205233345.GB5617@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Warning: de.ibm.com is listed at abuse.rfc-ignorant.org
+Content-Disposition: inline
+Message-Id: <200712060949.02524.stefan@loplof.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
->> Xip does only work, if both do match PAGE_SIZE because it 
->> does'nt support multiple calls to direct_access in the get_xip_page 
->> address space operation. Thus we check both here, actually this was 
->> changed from how it looks after your patch as a bugfix where our 
->> tester tried a 4k filesystem on a 2k blockdev.
->> Did I miss something?
-> 
-> However, the bdev block size may be changed with sb_set_blocksize. It
-> doesn't actually have to match the hardware sector size -- if this
-> does matter for XIP, then I think you need some other check here.
-Hmmmmhh. For a bdev with PAGE_SIZE hardsect size, there is no other 
-valid value then PAGE_SIZE that one could set it to. Or can it indeed 
-be changed to a value greater then PAGE_SIZE or smaller then hardsect 
-size?
+Am Donnerstag, 6. Dezember 2007 03:25 schrieb David Miller:
 
+> POSIX says nothing about the semantics of route resolution.
+
+Of course not. Applications must not care about what happens at the transport 
+layer.
+
+> Non-blocking doesn't mean "cannot sleep no matter what".
+
+... and as O_CREAT on open() isn't specifically documented to apply to 
+filenames starting with 'a', it is perfectly normal that "echo x >ash" always 
+fails since 2.6.22. To revert to the old behaviour, please do "echo 1 
+>/proc/sys/fs/allow_a_file_creation".
+
+Ok, irony aside. Just have a look at
+http://www.opengroup.org/onlinepubs/009695399/functions/connect.html (I hope 
+009695399 is not a personalition cookie ;-)
+
+"If the connection cannot be established immediately and O_NONBLOCK is set for 
+the file descriptor for the socket, connect() shall fail and set errno to 
+[EINPROGRESS], but the connection request shall not be aborted, and the 
+connection shall be established asynchronously."
+
+I think the words "shall fail" and "immediately" are quite clear.
+
+> > If this is changed for some IP sockets, event-driven applications
+> > will randomly and subtly break.
+>
+> If this was such a clear cut case we'd have changed things
+> a long time ago, but it isn't so don't pretend this is the
+> case.
+
+Well, the only reason this doesn't break on a daily basis is because the code 
+isn't in the kernel that long and not many people run applications on an 
+IPSEC gateway. This will change if kernel based IPSEC is used for roadwarrior 
+connections or dnssec based anonymous IPSEC someday. Trust me, you will 
+revert this misbehaviour in -stable then.
+
+For some real life applications that break when nonblocking connect() blocks, 
+please look f.e. at squid or mozilla firefox.
+
+Stefan
