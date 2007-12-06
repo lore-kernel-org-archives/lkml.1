@@ -1,139 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXLFLFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXLFLHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753050AbXLFLFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 06:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXLFLFf
+	id S1753518AbXLFLHi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 06:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXLFLHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 06:05:35 -0500
-Received: from ro-out-1112.google.com ([72.14.202.176]:9121 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751461AbXLFLFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 06:05:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=FMl1l5kwvNAYeYzJaLihTQ2mx5luH2hFA7SnxpbxWbsPRb2rzFtMnITFcKXFEt9Rj/6dawYHlPGNQe0XB0+NKQ91dbRxAKb3Uhl7k0Z+QnAdBVl2L5ibhqcYKiODSbSF/uMmhEI9lDQmHxgRJo0logf6WOc++I7eMwUbP7wANRo=
-Date: Thu, 6 Dec 2007 19:01:23 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: David Miller <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, Andrew Morton <akpm@osdl.org>,
-       netdev@vger.kernel.org
-Subject: [Patch] net/xfrm/xfrm_policy.c: Some small improvements
-Message-ID: <20071206110123.GB2469@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+	Thu, 6 Dec 2007 06:07:31 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:57936 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751885AbXLFLHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 06:07:30 -0500
+Message-ID: <4757D7F3.8040904@atmel.com>
+Date: Thu, 06 Dec 2007 12:07:31 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: David Brownell <david-b@pacbell.net>
+CC: Andrew Victor <linux@maxim.org.za>,
+       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] usb: at91_udc: correct hanging while disconnecting usb cable
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Correct hanging while disconnecting the USB device 
+cable. Prevent a race between vbus and UDP interrupts.
+This bug was tracked on at91sam9260ek boards.
 
-This patch contains the following changes.
-
-	- Use 'bool' instead of 'int' for booleans.
-	- Use 'size_t' instead of 'int' for 'sizeof' return value.
-	- Some style fixes.
-
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com> 
 ---
- net/xfrm/xfrm_policy.c |   23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/net/xfrm/xfrm_policy.c b/net/xfrm/xfrm_policy.c
-index 5d6a81d..311b08f 100644
---- a/net/xfrm/xfrm_policy.c
-+++ b/net/xfrm/xfrm_policy.c
-@@ -476,17 +476,17 @@ static u32 xfrm_gen_index(u8 type, int dir)
- 		struct hlist_head *list;
- 		struct xfrm_policy *p;
- 		u32 idx;
--		int found;
-+		bool found;
+A usb resume interrupt was firing after the vbus 
+interrupt : the IP was then already stoped and not able 
+to deal with it (no more clock). A simple interrupt disabling 
+is ok as the "end of bus reset" irq is non maskable and ok 
+to resume the USB device IP.
+
+--- a/drivers/usb/gadget/at91_udc.c
++++ b/drivers/usb/gadget/at91_udc.c
+@@ -908,6 +908,7 @@ static void pullup(struct at91_udc *udc,
  
- 		idx = (idx_generator | dir);
- 		idx_generator += 8;
- 		if (idx == 0)
- 			idx = 8;
- 		list = xfrm_policy_byidx + idx_hash(idx);
--		found = 0;
-+		found = false;
- 		hlist_for_each_entry(p, entry, list, byidx) {
- 			if (p->index == idx) {
--				found = 1;
-+				found = true;
- 				break;
- 			}
+ 	if (is_on) {
+ 		clk_on(udc);
++		at91_udp_write(udc, AT91_UDP_ICR, AT91_UDP_RXRSM);
+ 		at91_udp_write(udc, AT91_UDP_TXVC, 0);
+ 		if (cpu_is_at91rm9200())
+ 			at91_set_gpio_value(udc->board.pullup_pin, 1);
+@@ -925,6 +926,7 @@ static void pullup(struct at91_udc *udc,
  		}
-@@ -499,8 +499,8 @@ static inline int selector_cmp(struct xfrm_selector *s1, struct xfrm_selector *s
- {
- 	u32 *p1 = (u32 *) s1;
- 	u32 *p2 = (u32 *) s2;
--	int len = sizeof(struct xfrm_selector) / sizeof(u32);
--	int i;
-+	size_t len = sizeof(struct xfrm_selector) / sizeof(u32);
-+	size_t i;
- 
- 	for (i = 0; i < len; i++) {
- 		if (p1[i] != p2[i])
-@@ -953,7 +953,7 @@ static int xfrm_policy_lookup(struct flowi *fl, u16 family, u8 dir,
- #ifdef CONFIG_XFRM_SUB_POLICY
- end:
- #endif
--	if ((*objp = (void *) pol) != NULL)
-+	if ((*objp = pol) != NULL)
- 		*obj_refp = &pol->refcnt;
- 	return err;
- }
-@@ -1137,7 +1137,7 @@ xfrm_tmpl_resolve_one(struct xfrm_policy *policy, struct flowi *fl,
- 	xfrm_address_t *saddr = xfrm_flowi_saddr(fl, family);
- 	xfrm_address_t tmp;
- 
--	for (nx=0, i = 0; i < policy->xfrm_nr; i++) {
-+	for (nx = 0, i = 0; i < policy->xfrm_nr; i++) {
- 		struct xfrm_state *x;
- 		xfrm_address_t *remote = daddr;
- 		xfrm_address_t *local  = saddr;
-@@ -1395,7 +1395,7 @@ free_dst:
- }
- 
- static int inline
--xfrm_dst_alloc_copy(void **target, void *src, int size)
-+xfrm_dst_alloc_copy(void **target, void *src, size_t size)
- {
- 	if (!*target) {
- 		*target = kmalloc(size, GFP_ATOMIC);
-@@ -1554,7 +1554,7 @@ restart:
- #endif
- 		nx = xfrm_tmpl_resolve(pols, npols, fl, xfrm, family);
- 
--		if (unlikely(nx<0)) {
-+		if (unlikely(nx < 0)) {
- 			err = nx;
- 			if (err == -EAGAIN && sysctl_xfrm_larval_drop) {
- 				/* EREMOTE tells the caller to generate
-@@ -1688,7 +1688,8 @@ xfrm_state_ok(struct xfrm_tmpl *tmpl, struct xfrm_state *x,
- 	      unsigned short family)
- {
- 	if (xfrm_state_kern(x))
--		return tmpl->optional && !xfrm_state_addr_cmp(tmpl, x, tmpl->encap_family);
-+		return tmpl->optional &&
-+			!xfrm_state_addr_cmp(tmpl, x, tmpl->encap_family);
- 	return	x->id.proto == tmpl->id.proto &&
- 		(x->id.spi == tmpl->id.spi || !tmpl->id.spi) &&
- 		(x->props.reqid == tmpl->reqid || !tmpl->reqid) &&
-@@ -1777,7 +1778,7 @@ int __xfrm_policy_check(struct sock *sk, int dir, struct sk_buff *skb,
- 	if (skb->sp) {
- 		int i;
- 
--		for (i=skb->sp->len-1; i>=0; i--) {
-+		for (i = skb->sp->len-1; i >= 0; i--) {
- 			struct xfrm_state *x = skb->sp->xvec[i];
- 			if (!xfrm_selector_match(&x->sel, &fl, family))
- 				return 0;
+ 	} else {
+ 		stop_activity(udc);
++		at91_udp_write(udc, AT91_UDP_IDR, AT91_UDP_RXRSM);
+ 		at91_udp_write(udc, AT91_UDP_TXVC, AT91_UDP_TXVC_TXVDIS);
+ 		if (cpu_is_at91rm9200())
+ 			at91_set_gpio_value(udc->board.pullup_pin, 0);
+
