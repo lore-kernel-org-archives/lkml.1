@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbXLFXUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbXLFXU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbXLFXUp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 18:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbXLFXUW
+	id S1756010AbXLFXU7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 18:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbXLFXUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 18:20:22 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:50715 "EHLO tetsuo.zabbo.net"
+	Thu, 6 Dec 2007 18:20:23 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:50735 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbXLFXUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 18:20:20 -0500
+	id S1752882AbXLFXUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 18:20:21 -0500
 From: Zach Brown <zach.brown@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,78 +23,97 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
        Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
-Subject: syslets v7: back to basics
-Date: Thu,  6 Dec 2007 15:20:13 -0800
-Message-Id: <1196983219534-git-send-email-zach.brown@oracle.com>
+Subject: [PATCH 2/6] syslet: asm-generic support to disable syslets
+Date: Thu,  6 Dec 2007 15:20:15 -0800
+Message-Id: <1196983219225-git-send-email-zach.brown@oracle.com>
 X-Mailer: git-send-email 1.5.2.2
+In-Reply-To: <11969832193635-git-send-email-zach.brown@oracle.com>
+References: <1196983219534-git-send-email-zach.brown@oracle.com>
+ <11969832193635-git-send-email-zach.brown@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This provides an implementation of the architecture dependent portion of
+syslets which disables syslet operations.
 
-The following patches are a substantial refactoring of the syslet code.  I'm
-branding them as the v7 release of the syslet infrastructure, though they
-represent a signifiant change in focus.
+This patch is an incomplete demonstration.  All asm-*/syslet*.h files would
+include these files until their architectures provide implementations which
+enable syslet support.
 
-My current focus is to see the most fundamental functionality brought to
-maturity.  To me, this means getting a ABI that is used by applications through
-glibc on x86 and PPC64.   Only once that is ready should we distract ourselves
-with advanced complexity.
+Signed-off-by: Zach Brown <zach.brown@oracle.com>
 
-To that end, this patch series differs from v6 in significant ways:
+diff --git a/include/asm-generic/syslet-abi.h b/include/asm-generic/syslet-abi.h
+new file mode 100644
+index 0000000..5d19971
+--- /dev/null
++++ b/include/asm-generic/syslet-abi.h
+@@ -0,0 +1,11 @@
++#ifndef _ASM_GENERIC_SYSLET_ABI_H
++#define _ASM_GENERIC_SYSLET_ABI_H
++
++/*
++ * I'm assuming that a u64 ip and u64 esp won't be enough for all
++ * archs, so I just let each arch define its own.
++ */
++struct syslet_frame {
++};
++
++#endif
+diff --git a/include/asm-generic/syslet.h b/include/asm-generic/syslet.h
+new file mode 100644
+index 0000000..de9a750
+--- /dev/null
++++ b/include/asm-generic/syslet.h
+@@ -0,0 +1,34 @@
++#ifndef _ASM_GENERIC_SYSLET_H
++#define _ASM_GENERIC_SYSLET_H
++
++/*
++ * This provider of the arch-specific syslet APIs is used when an architecture
++ * doesn't support syslets.
++ */
++
++/* this stops the other functions from ever being called */
++static inline int syslet_frame_valid(struct syslet_frame *frame)
++{
++	return 0;
++}
++
++static inline void set_user_frame(struct task_struct *task,
++				  struct syslet_frame *frame)
++{
++	BUG();
++}
++
++static inline void move_user_context(struct task_struct *dest,
++					struct task_struct *src)
++{
++	BUG();
++}
++
++static inline int create_syslet_thread(long (*fn)(void *),
++				       void *arg, unsigned long flags)
++{
++	BUG();
++	return 0;
++}
++
++#endif
+diff --git a/include/asm-x86/syslet-abi.h b/include/asm-x86/syslet-abi.h
+new file mode 100644
+index 0000000..14a7182
+--- /dev/null
++++ b/include/asm-x86/syslet-abi.h
+@@ -0,0 +1 @@
++#include <asm-generic/syslet-abi.h>
+diff --git a/include/asm-x86/syslet.h b/include/asm-x86/syslet.h
+new file mode 100644
+index 0000000..583d810
+--- /dev/null
++++ b/include/asm-x86/syslet.h
+@@ -0,0 +1 @@
++#include <asm-generic/syslet.h>
+-- 
+1.5.2.2
 
- * syslets are initiated by providing syslet arguments to sys_indirect().
-
- * uatoms, threadlets, and the kaio changes are postponed until they can be
-   justified and rebuilt on more complete infrastructure.  (I'm not saying
-   these shouldn't or won't be persued.  I'm saying that we should get the
-   simplest piece working first.)
-
- * the code is clarified and commented, the patches are bisectable and pass
-   checkpatch.
-
-The use of sys_indirect() and the move from 'atom's simplified the ABI
-considerably.  I've put a trivial example in a syslet-userspace git tree:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/zab/syslets-userspace.git
-
-This git repository will grow more tests and documentation over time.
-
-The patches sent with this mail are based on the v6 indirect patches but they
-aren't included.  The full syslets patch series, including the indirect
-patches, are available in a few forms:
-
-broken out patch series:
-    http://www.kernel.org/pub/linux/kernel/people/zab/broken-out/syslets/
-
-in a 'syslets' git branch off of current linux-2.6.git:
-    git://git.kernel.org/pub/scm/linux/kernel/git/zab/linux-2.6.git syslets
-
-git tree of the guilt .git/patches directory:
-    git://git.kernel.org/pub/scm/linux/kernel/git/zab/guilt-series.git
-
-The patches were barely tested on i386 and x86_64.
-
-There are both implementation details and design problems left.  My hope is
-that we can address these in the coming weeks.
-
- - Do we stop the user from initiating more syslets than fit in the ring? 
- - Do we worry now about the hashed ring mutexes scaling poorly?  (They will.)
- - What are the semantics of ptrace()ing a syslet submission which blocks?
- - How should applications deal with waiting syslet tasks with stale data
-   in their task_struct?  (syslet, setuid, syslet..)
- - Issuing a syslet is an implicit sys_clone(), will apps pass in clone flags?
- - Are the u32 ring index reads and writes atomic for supported architectures?
-
-Any feedback on these questions would be greatly appreciated.
-
-I'm particularly interested in hearing from people who are trying to use
-syslets in their applications.  This will involve awkward wrappers instead of
-glibc calls for now, and your machine may explode, but hopefully the chance to
-influence the design of syslets would make it worth the effort.
-
-Finally, I carried the enormous cc: list for this mail over from previous
-syslet releases.  If you want to be removed or added to the list for future
-syslet releases, please do let me know.
-
-- z
