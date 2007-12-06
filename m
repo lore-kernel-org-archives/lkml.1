@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbXLFJ2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbXLFJgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbXLFJ2p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 04:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbXLFJ2h
+	id S1754904AbXLFJgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 04:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbXLFJgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 04:28:37 -0500
-Received: from main.gmane.org ([80.91.229.2]:44591 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbXLFJ2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 04:28:36 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Holger Hoffstaette" <holger@wizards.de>
-Subject: Re: Reproducible data corruption with sendfile+vsftp - splice regression?
-Date: Thu, 06 Dec 2007 10:28:09 +0100
-Organization: The Fists of the White Lotus
-Message-ID: <pan.2007.12.06.09.28.08.913625@wizards.de>
-References: <pan.2007.11.29.23.42.52.661624@wizards.de> <474FC4D9.3020506@cosmosbay.com> <pan.2007.11.30.09.20.24.737500@wizards.de> <475055EE.9060105@hp.com> <pan.2007.12.02.16.00.03.568000@wizards.de> <pan.2007.12.02.20.49.42.675000@wizards.de> <20071205225429.GA10186@electric-eye.fr.zoreil.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: port-87-234-135-174.dynamic.qsc.de
-User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
-Cc: netdev@vger.kernel.org
+	Thu, 6 Dec 2007 04:36:13 -0500
+Received: from [222.73.24.84] ([222.73.24.84]:52714 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751566AbXLFJgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 04:36:12 -0500
+Message-ID: <4757C1DA.6060603@cn.fujitsu.com>
+Date: Thu, 06 Dec 2007 17:33:14 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: paulus@samba.org
+CC: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/3] POWERPC: don't cast a pointer to pointer of list_head
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 05 Dec 2007 23:54:29 +0100, Francois Romieu wrote:
+The casting is safe only when the list_head member is the
+first member of the structure.
 
-> Holger Hoffstaette <holger@wizards.de> : [...]
->> Should I file this in bugzilla?
-> 
-> Yes.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Thanks for responding - will do. I verified with 2.6.24-rc4 (same bug) and
-have some new information about this.
-Despite my previous posting the corruption is NOT triggered by NAPI. It
-may be related, but even without NAPI but tso on again I got corruption,
-now also on the gbit client (Thinkpad T60). When ftp'ing to ramdisk with
-full speed (at a reasonable ~77 MB/sec) it "often" works, but intermediate
-writes that cause the ftp to temporarily slow down reliably cause
-corrupted files, so I guess tso gets confused when some kind of throttling
-sets in during transfer. That is probably why I first noticed it on the
-slow 100mbit client.
-Maybe turning off sendfile or NAPI just lead to random success - so far it
-really looks like tso on the r8169 is the common cause.
+---
+ arch/ppc/syslib/ocp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-thank you
-Holger
-
+diff --git a/arch/ppc/syslib/ocp.c b/arch/ppc/syslib/ocp.c
+index 3f5be2c..d42d408 100644
+--- a/arch/ppc/syslib/ocp.c
++++ b/arch/ppc/syslib/ocp.c
+@@ -376,7 +376,7 @@ ocp_remove_one_device(unsigned int vendor, unsigned int function, int index)
+ 
+ 	down_write(&ocp_devices_sem);
+ 	dev = __ocp_find_device(vendor, function, index);
+-	list_del((struct list_head *)dev);
++	list_del(&dev->link);
+ 	up_write(&ocp_devices_sem);
+ 
+ 	DBG(("ocp: ocp_remove_one_device(vendor: %x, function: %x, index: %d)... done.\n", vendor, function, index));
+-- 
+1.5.3.rc7
 
