@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbXLFWb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbXLFWgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbXLFWb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 17:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXLFWbp
+	id S1755334AbXLFWgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 17:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXLFWgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 17:31:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48954 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755516AbXLFWbo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 17:31:44 -0500
-Date: Thu, 6 Dec 2007 14:31:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nix <nix@esperi.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: sym53c8xx2: incredible sloth after parity error / SCSI bus
- reset
-Message-Id: <20071206143130.08ad8915.akpm@linux-foundation.org>
-In-Reply-To: <878x4egdgi.fsf@hades.wkstn.nix>
-References: <878x4egdgi.fsf@hades.wkstn.nix>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 6 Dec 2007 17:36:08 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37366 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751641AbXLFWgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 17:36:06 -0500
+Date: Thu, 6 Dec 2007 23:37:54 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, notting@redhat.com,
+       rusty@rustcorp.com.au, kay.sievers@vrfy.org, greg@kroah.com
+Subject: Re: [PATCH] depmod: sort output according to modules.order
+Message-ID: <20071206223754.GB25209@uranus.ravnborg.org>
+References: <47555AF1.8090304@gmail.com> <47555C64.8070607@gmail.com> <20071205072529.GA5681@uranus.ravnborg.org> <47565452.3010800@gmail.com> <47565486.8050701@gmail.com> <20071205190609.GA14997@uranus.ravnborg.org> <47573403.1060203@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47573403.1060203@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Dec 2007 00:14:21 +0000
-Nix <nix@esperi.org.uk> wrote:
+On Thu, Dec 06, 2007 at 08:28:03AM +0900, Tejun Heo wrote:
+> Sam Ravnborg wrote:
+> > On Wed, Dec 05, 2007 at 04:34:30PM +0900, Tejun Heo wrote:
+> >> Tejun Heo wrote:
+> >>>> It would also simplify the kbuild integration if depmod
+> >>>> could read the modules as a space separated list where
+> >>>> duplicates are allowed.
+> >>>> If we do so then the is no reason to escape to the shell
+> >>>> in Makeilfe.build and we do not have to remove duplicates either.
+> >>> I'm no Makefile expert so no doubt my modifications are ugly.  But I
+> >>> think producing a file w/ duplicates in it is just ugly.
+> >> Oh, and, depmod should do just fine with duplicate entries as it is.
+> > What is the purpose of REMOVE-DUP then?
+> > If depmod handle duplicate entries there is no need to remove them.
+> 
+> As I said, I don't think leaving duplicate lines in a file which will be
+> installed, distributed and used widely is the RTTD.  There can be other
+> uses of the file.  For example, the file can be parsed and modified by
+> distro specific module selector.  Sure, all of them can be made to deal
+> with dup entries but that's just not the right place to solve the problem.
 
-> About once a year I get a SCSI parity error on one of my systems (the
-> only one with SCSI). I presume the cabling is substandard, but given my
-> coordination deficits and the rarity of the errors I'd do far more
-> damage replacing it than leaving it be.
-> 
-> I had one of these today.
-> 
-> The system (2.6.23.9) spotted the error, and seemingly recovered:
-> 
-> Dec  1 12:53:40 loki warning: kernel: sym0: SCSI parity error detected: SCR1=132 DBC=50000000 SBCL=0
-> Dec  1 12:53:40 loki warning: kernel: sym0:0: ERROR (81:0) (8-0-0) (10/9d/0) @ (mem c2800048:ffffffff).
-> Dec  1 12:53:40 loki warning: kernel: sym0: regdump: da 00 00 9d 47 10 00 0e 00 08 80 00 80 00 0f 0a d0 58 3c 01 02 ff ff ff.
-> Dec  1 12:53:40 loki warning: kernel: sym0: SCSI BUS reset detected.
-> Dec  1 12:53:40 loki notice: kernel: sym0: SCSI BUS has been reset.
-> 
-> However, after that reset I/O to any device on that controller is
-> *incredibly* slow.
-> 
-> A monthly RAID check kicked off shortly afterwards and provided my first
-> clue. Load average >15, and:
-> 
-> md1 : active raid5 sda6[0] hdc5[3] sdb6[1]
->       76807296 blocks super 1.2 level 5, 64k chunk, algorithm 2 [3/3] [UUU]
->       [========>............]  check = 42.8% (16450780/38403648) finish=253.3min speed=1442K/sec
-> 
-> 1442Kb/s is a bit less than I'd expect from a three-drive array with
-> disks capable of 40Mb/s easily.
-> 
-> /dev/sda:
->  Timing buffered disk reads:    8 MB in  3.50 seconds =   2.29 MB/sec
-> 
-> A somewhat slower ATAPI disk on the same machine:
-> 
-> /dev/hdc:
->  Timing buffered disk reads:  110 MB in  3.05 seconds =  36.08 MB/sec
-> 
-> So, um, what could cause this? Can I speed it up again other than by
-> rebooting (which I'm just about to do, but it is annoying).
-> 
+googled a bit.
+It looks like:
+awk '!x[$0]++'
+does the trick.
 
-cc linux-scsi.
+So we can skip the C file (good thing).
+> 
+> > And this change in Makefile.lib seems bogus:
+> > +# make sure '/' follows subdirs
+> > +subdir-y       := $(patsubst %//,%/, $(addsuffix, /,$subdir-y))
+> > +subdir-m       := $(patsubst %//,%/, $(addsuffix, /,$subdir-m))
+> 
+> Some subdir-y|m entries have following / while others don't.  subdir-y|m
+> are lax about because either way it points to subdirectory.  The above
+> two lines are to normalize them so that there's no surprises when
+> concatenating file name to it.  I think it's a good idea to have the
+> above with or without other changes.
+With this change building modpost no longer worked so kbuild
+does not like the preceeding slashes. It could be fixed but thats
+another patch.
+> 
+> > I commented it out and with my config everything seems to still
+> > work as expected.
+> 
+> Yeah, it depends on config.  If you don't have subdir-y|m entries which
+> don't have following '/', it will work just fine.  If you do, it will break.
+> 
+> > And I get scripts/mod/modpost built in a mrproper tree again (bug!).
+> 
+> This I dunno much about.
+> 
+> > subdir-y and subdir-m does not point to directories that
+> > contains modules (built-in or not) so they can be ignored for modorder.
+> 
+> I didn't know that.  Is it forced that modules can't be put in
+> subdir-y|m directories?  What happens if I do that?
 
-Nothing is likely to happen.  Please raise a report at bugzilla.kernel.org.
+I guess modules can be built as modules - but they can never be built-in.
+And if someone uses subdir-y to point to a dir with modules
+I would anyway cosider that a bug.
+
+	Sam
