@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbXLFT7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbXLFUCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbXLFT7A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbXLFT6x
+	id S1754084AbXLFUCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 15:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXLFUB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:58:53 -0500
-Received: from mail.tmr.com ([64.65.253.246]:43871 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751789AbXLFT6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:58:52 -0500
-Message-ID: <47585879.7010305@tmr.com>
-Date: Thu, 06 Dec 2007 15:15:53 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 6 Dec 2007 15:01:58 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:30081 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbXLFUB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 15:01:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Zg/h3ZiUelRfh0G2G0jMxoXVdO+fsNhTTlXHKA+V3ICVxMd94wGMc8wGX1aJczjclpccr6zCffo+o4gcD1rT/rwqS2SXs7UbIHypM0bWc+wGECqMcTWsdj+fNGgukEXKbCbzYEOWKLWh/x8YqBUqfHEFkrPs+PdaOs92H9hVVik=
+Message-ID: <3efb10970712061201l343ad865mae920c3e6d43bfd9@mail.gmail.com>
+Date: Thu, 6 Dec 2007 21:01:54 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: [PATCH 3/3] printer port driver: semaphore to mutex
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
 MIME-Version: 1.0
-To: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ICH9 & Core2 Duo - kernel crash
-References: <200712041331.24678.pavol.cvengros@primeinteractive.net>
-In-Reply-To: <200712041331.24678.pavol.cvengros@primeinteractive.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071206021857.826386004@mvista.com>
+	 <20071206021909.131993721@mvista.com> <20071206102334.GE17299@elte.hu>
+	 <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
+X-Google-Sender-Auth: a85730edb2a74c1f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavol Cvengros wrote:
-> Hello,
-> 
-> I am trying LKML to get some help on one linux kernel related problem.
-> Lately we got a machine with new HW from Intel. CPU is Intel Core2 Duo E6850 
-> 3GHz with 2GB of RAM. Motherboard is Intel DG33BU with G33 chipset.
-> 
-> After long fight with kernel crashes on different things, we figured out that 
-> if the multicore is disabled in bios, everything is ok and machine is running 
-> good. No kernel crashes no problems, but with one core only.
-> 
-> This small table will maybe explain:
-> 
-> Cores   -     kernel   -   state
->    2  -   nonsmp or smp  - crash
->    1  -  smp or nonsmp  - ok
-> 
-> All crashes have been different (swaper, rcu, irq, init.....) or we just got 
-> internal gcc compiler error while compiling kernel/glibc/.... and the machine 
-> was frozen.
-> 
-> Please can somebody advise what to do to identify that problem more precisely.
-> (debug kernel options?)
-> 
-> Our immpresion - ICH9 & ICH9R support in kernel is bad... sorry to say..
-> 
-I have seen unusual memory behavior under heavy load, in the cases I saw 
-it was heavy DMA load from multiple SCSI controllers, and one case with 
-FFT on the CPU and heavy network load with gigE. Have you run memtest on 
-this hardware? Just a thought, but I see people running Linux on that 
-chipset, if not that particular board.
+Daniel,
 
-A cheap test even if it shows nothing. Of course it could be a CPU cache 
-issue in that one CPU, although that's unlikely.
+FYI: I am working on the conversion of the 2 sem->mutex in kernel/printk.c
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Remy
+
+2007/12/6, Daniel Walker <dwalker@mvista.com>:
+> On Thu, 2007-12-06 at 11:23 +0100, Ingo Molnar wrote:
+> > * Daniel Walker <dwalker@mvista.com> wrote:
+> >
+> > > The port_mutex is actually a semaphore, so easily converted to a
+> > > struct mutex.
+> > >
+> > > Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> >
+> > Acked-by: Ingo Molnar <mingo@elte.hu>
+> >
+> > cool. How far away are we from being able to remove all the semaphore
+> > code? :-)
+>
+> I wish my 7 patches made a dent, but it's hasn't done much. ;(
+>
+> I would guess at least a week just to mop up the relatively easy ones..
+> I've got 12 in my queue, and there still ~50 hopefully trivial ones
+> still to be looked at.. Then another ~30 more difficult ones (that use
+> init_MUTEX_LOCKED, or sema_init with 0 instead of 1) ..
+>
+> Daniel
+>
+>
