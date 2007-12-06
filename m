@@ -1,97 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXLFHfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbXLFHlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbXLFHfc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 02:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbXLFHfU
+	id S1754861AbXLFHlm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 02:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXLFHle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 02:35:20 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54977 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753161AbXLFHfS (ORCPT
+	Thu, 6 Dec 2007 02:41:34 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41450 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753130AbXLFHld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 02:35:18 -0500
-Date: Wed, 5 Dec 2007 23:35:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Reuben Farrelly <reuben-linuxkernel@reub.net>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
-       Auke Kok <auke-jan.h.kok@intel.com>,
-       Ilpo =?ISO-8859-1?B?SuRydmluZW4=?= <ilpo.jarvinen@helsinki.fi>
-Subject: Re: 2.6.24-rc4-mm1
-Message-Id: <20071205233504.67366c5b.akpm@linux-foundation.org>
-In-Reply-To: <47579DD9.9030909@reub.net>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<47579DD9.9030909@reub.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Dec 2007 02:41:33 -0500
+Date: Thu, 6 Dec 2007 08:41:31 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, miltonm@bga.com,
+       clameter@sgi.com, apw@shadowen.org, linux-kernel@vger.kernel.org,
+       y-goto@jp.fujitsu.com
+Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
+In-Reply-To: <47573806.8000808@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0712060839340.9929@pademelon.sonytel.be>
+References: <47537F2E.2070204@am.sony.com> <b91f94dd5b35247fecf52090c0b3890f@bga.com>
+ <Pine.LNX.4.62.0712051013040.28855@pademelon.sonytel.be>
+ <20071205151147.9db4640b.akpm@linux-foundation.org> <47573806.8000808@am.sony.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1696839408-1196926891=:9929"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Dec 2007 17:59:37 +1100 Reuben Farrelly <reuben-linuxkernel@reub.net> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On 5/12/2007 4:17 PM, Andrew Morton wrote:
-> > Temporarily at
-> > 
-> >   http://userweb.kernel.org/~akpm/2.6.24-rc4-mm1/
-> > 
-> > Will appear later at
-> > 
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
-> > 
-> > 
-> > - Lots of device IDs have been removed from the e1000 driver and moved over
-> >   to e1000e.  So if your e1000 stops working, you forgot to set CONFIG_E1000E.
-> 
-> This non fatal oops which I have just noticed may be related to this change then 
-> - certainly looks networking related.
+---584337861-1696839408-1196926891=:9929
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-yep, but it isn't e1000.  It's core TCP.
+On Wed, 5 Dec 2007, Geoff Levand wrote:
+> Andrew Morton wrote:
+> > On Wed, 5 Dec 2007 10:52:48 +0100 (CET)
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > 
+> >> --------------------------------------------------------------------------------
+> >> Subject: sparsemem: sparse_add_one_section() may fail to allocate memory
+> >> 
+> >> sparsemem: sparse_add_one_section() may fail to allocate memory, and must check
+> >> whether the allocation succeeded before proceeding to touch the allocated
+> >> memory.
+> >> 
+> >> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> >> 
+> >> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> >> ---
+> >> FIXME There are still some possible memory leaks in sparse_add_one_section():
+> >>   - usemap is never deallocated
+> >>   - __kfree_section_memmap() is a not yet implemented dummy
+> > 
+> > I already had
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-improve-the-error-handling-for-sparse_add_one_section.patch
+> > and
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/mm-sparsec-check-the-return-value-of-sparse_index_alloc.patch
+> > 
+> > queued.  Do they fix the problem, and should they be merged in 2.6.24?
+> 
+> No, a quick test shows it just panics in a different place.  Geert's
+> patch does also.
 
-> WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
-> Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
-> 
-> Call Trace:
->   <IRQ>  [<ffffffff8046e038>] tcp_fastretrans_alert+0x229/0xe63
->   [<ffffffff80470975>] tcp_ack+0xa3f/0x127d
->   [<ffffffff804747b7>] tcp_rcv_established+0x55f/0x7f8
->   [<ffffffff8047b1aa>] tcp_v4_do_rcv+0xdb/0x3a7
->   [<ffffffff881148a8>] :nf_conntrack:nf_ct_deliver_cached_events+0x75/0x99
->   [<ffffffff88120179>] :nf_conntrack_ipv4:ipv4_confirm+0x29/0x51
->   [<ffffffff8047db71>] tcp_v4_rcv+0x9be/0xaed
->   [<ffffffff80455eaa>] nf_hook_slow+0x60/0xdf
->   [<ffffffff8045db6b>] ip_local_deliver_finish+0xd3/0x253
->   [<ffffffff8045e146>] ip_local_deliver+0x3b/0x85
->   [<ffffffff8045d7f9>] ip_rcv_finish+0x119/0x3b8
->   [<ffffffff8045e030>] ip_rcv+0x231/0x30c
->   [<ffffffff8043ef39>] netif_receive_skb+0x215/0x299
->   [<ffffffff880b82b9>] :e1000e:e1000_receive_skb+0x4d/0x1db
->   [<ffffffff880bc200>] :e1000e:e1000_clean_rx_irq+0x12c/0x341
->   [<ffffffff880ba31a>] :e1000e:e1000_clean+0x306/0x58f
->   [<ffffffff8022a16a>] rebalance_domains+0xec/0x423
->   [<ffffffff80261332>] handle_edge_irq+0x97/0x13b
->   [<ffffffff804412d3>] net_rx_action+0xb8/0x11d
->   [<ffffffff802344f8>] __do_softirq+0x71/0xdd
->   [<ffffffff8020c8fc>] call_softirq+0x1c/0x30
->   [<ffffffff8020e7a5>] do_softirq+0x3d/0x8d
->   [<ffffffff80234485>] irq_exit+0x84/0x86
->   [<ffffffff8020e89e>] do_IRQ+0x7e/0xe4
->   [<ffffffff8020a908>] mwait_idle+0x0/0x58
->   [<ffffffff8020a7f1>] default_idle+0x0/0x43
->   [<ffffffff8020bc81>] ret_from_intr+0x0/0xa
->   <EOI>  [<ffffffff8020a950>] mwait_idle+0x48/0x58
->   [<ffffffff80209f23>] enter_idle+0x22/0x24
->   [<ffffffff8020a897>] cpu_idle+0x63/0x88
->   [<ffffffff804ada75>] rest_init+0x55/0x60
->   [<ffffffff80627b9a>] start_kernel+0x2a4/0x32a
->   [<ffffffff8062710b>] _sinittext+0x10b/0x120
-> 
-> tornado home #
-> 
-> I have posted a full dmesg up as well as my .config and an lcpci at 
-> http://www.reub.net/files/kernel/2.6.24-rc4-mm1/ .
-> 
+What do you mean, that it still paniced after my patch?
 
-Ilpo, Reuben's kernel is talking to you ;)
+The kernel did boot succesfully for me when passing ps3fb=48M. Userspace saw 58
+MiB (128 MiB - kernelsize - 48 MiB(ps3fb)).
 
+I did not try kexec, though.
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1696839408-1196926891=:9929--
