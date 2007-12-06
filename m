@@ -1,52 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXLFNfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbXLFNqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXLFNfh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 08:35:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXLFNf2
+	id S1753838AbXLFNqS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 08:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXLFNqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 08:35:28 -0500
-Received: from mail.suse.de ([195.135.220.2]:37878 "EHLO mx1.suse.de"
+	Thu, 6 Dec 2007 08:46:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58053 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751964AbXLFNf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 08:35:27 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, linuxppc-dev@ozlabs.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b resources
-References: <20071205064116.D849BDE10A@ozlabs.org>
-	<1196911347.7033.15.camel@pasglop> <20071206063940.GA16474@kroah.com>
-	<1196927934.7033.39.camel@pasglop>
-	<20071206081628.GA15868@parisc-linux.org>
-	<C608AAD4-29F7-4D5D-AA85-3B28CCCAADE5@kernel.crashing.org>
-X-Yow: Feel th' WHIRLING BUFFERS buffing away all that stress...
- Years of ROAD TAR gently washing away...
-Date: Thu, 06 Dec 2007 14:35:25 +0100
-In-Reply-To: <C608AAD4-29F7-4D5D-AA85-3B28CCCAADE5@kernel.crashing.org> (Kumar
-	Gala's message of "Thu\, 6 Dec 2007 07\:24\:12 -0600")
-Message-ID: <jetzmwosiq.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1752646AbXLFNqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 08:46:03 -0500
+To: linux-kernel@vger.kernel.org
+Cc: virtualization@lists.linux-foundation.org,
+       Gerd Hoffmann <kraxel@redhat.com>
+Subject: [PATCH] xen: Make xen-blkfront write its protocol ABI to xenstore
+From: Markus Armbruster <armbru@redhat.com>
+Date: Thu, 06 Dec 2007 14:45:53 +0100
+Message-ID: <87hciwlywe.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala <galak@kernel.crashing.org> writes:
+Frontends are expected to write their protocol ABI to xenstore.  Since
+the protocol ABI defaults to the backend's native ABI, things work
+fine without that as long as the frontend's native ABI is identical to
+the backend's native ABI.  This is not the case for xen-blkfront
+running 32-on-64, because its ABI differs between 32 and 64 bit, and
+thus needs this fix.
 
-> How does gcc deal with glibc extension to allow people to add their  
-> own specifiers?
+Based on http://xenbits.xensource.com/xen-unstable.hg?rev/c545932a18f3
+and http://xenbits.xensource.com/xen-unstable.hg?rev/ffe52263b430 by
+Gerd Hoffmann <kraxel@suse.de>
 
-It doesn't, gcc only knows about the standard specifiers.  But it also
-defines attributes that check other formats, like its own asm_fprintf
-format specs.
+Signed-off-by: Markus Armbruster <armbru@redhat.com>
+---
+ drivers/block/xen-blkfront.c         |    7 +++++++
+ include/xen/interface/io/protocols.h |   21 +++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 0 deletions(-)
+ create mode 100644 include/xen/interface/io/protocols.h
 
-Andreas.
-
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index 2bdebcb..70ddb8c 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -46,6 +46,7 @@
+ 
+ #include <xen/interface/grant_table.h>
+ #include <xen/interface/io/blkif.h>
++#include <xen/interface/io/protocols.h>
+ 
+ #include <asm/xen/hypervisor.h>
+ 
+@@ -599,6 +600,12 @@ again:
+ 		message = "writing event-channel";
+ 		goto abort_transaction;
+ 	}
++	err = xenbus_printf(xbt, dev->nodename, "protocol", "%s",
++			    XEN_IO_PROTO_ABI_NATIVE);
++	if (err) {
++		message = "writing protocol";
++		goto abort_transaction;
++	}
+ 
+ 	err = xenbus_transaction_end(xbt, 0);
+ 	if (err) {
+diff --git a/include/xen/interface/io/protocols.h b/include/xen/interface/io/protocols.h
+new file mode 100644
+index 0000000..01fc8ae
+--- /dev/null
++++ b/include/xen/interface/io/protocols.h
+@@ -0,0 +1,21 @@
++#ifndef __XEN_PROTOCOLS_H__
++#define __XEN_PROTOCOLS_H__
++
++#define XEN_IO_PROTO_ABI_X86_32     "x86_32-abi"
++#define XEN_IO_PROTO_ABI_X86_64     "x86_64-abi"
++#define XEN_IO_PROTO_ABI_IA64       "ia64-abi"
++#define XEN_IO_PROTO_ABI_POWERPC64  "powerpc64-abi"
++
++#if defined(__i386__)
++# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_X86_32
++#elif defined(__x86_64__)
++# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_X86_64
++#elif defined(__ia64__)
++# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_IA64
++#elif defined(__powerpc64__)
++# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_POWERPC64
++#else
++# error arch fixup needed here
++#endif
++
++#endif
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.5.3.3
+
