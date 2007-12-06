@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbXLFQyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbXLFRBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbXLFQyD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 11:54:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXLFQxy
+	id S1753541AbXLFRBL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 12:01:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbXLFRA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 11:53:54 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:55614 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbXLFQxy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 11:53:54 -0500
-Date: Thu, 6 Dec 2007 16:53:19 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: [PATCH] Fix oprofile configuration breakage
-Message-ID: <20071206165319.GA21553@linux-mips.org>
-MIME-Version: 1.0
+	Thu, 6 Dec 2007 12:00:58 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:44707 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751399AbXLFRA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 12:00:57 -0500
+Date: Thu, 6 Dec 2007 20:01:45 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Pavel Emelyanov <xemul@openvz.org>, sukadev@us.ibm.com
+Subject: Re: [PATCH] pid: sys_wait... fixes
+Message-ID: <20071206170145.GA10674@tv-sign.ru>
+References: <m17ijsv7iu.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <m17ijsv7iu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cleanup 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9 broke the oprofile
-configuration for MIPS by allowing oprofile support to be built for
-kernel models where oprofile doesn't have a chance in hell to work.
+On 12/05, Eric W. Biederman wrote:
+> 
+> This modifies do_wait and eligible_child to take a pair of
+> enum pid_type and struct pid *pid to precisely specify what
+> set of processes are eligible to be waited for,  instead of the
+> raw pid_t value from sys_wait4.
 
-Just a dependecy list on a number of architectures is - surprise - broken
-and should as per past discussions probably in most considered to be
-broken in most cases.  So I introduce a dependency for the oprofile
-configuration on ARCH_SUPPORTS_OPROFILE.
+Personally, I like this patch very much. Not only it fixes the bug,
+in my opinion it also makes the code more clean.
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
----
+However at first glance it has a minor fixable problem,
 
-Since we're already in -rc4 I try to keep things minimally intrusive and
-use ARCH_SUPPORTS_OPROFILE only for MIPS for now instead of touching a
-dozen architectures.
+> +	if (type < PIDTYPE_MAX) {
+> +		if (p->pids[type].pid != pid)
+>  			return 0;
+>  	}
 
- arch/mips/Kconfig              |    4 ++++
- kernel/Kconfig.instrumentation |    2 +-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+If type != PIDTYPE_PID we can't trust p->pids[type].pid unless p is a
+group leader. This .pid could be just a "random value".
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 455bd1f..c6fc405 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -714,6 +714,10 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default n
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	bool
-+	default y if !MIPS_MT_SMTC
-+
- config GENERIC_FIND_NEXT_BIT
- 	bool
- 	default y
-diff --git a/kernel/Kconfig.instrumentation b/kernel/Kconfig.instrumentation
-index 2ea1e34..12a9f74 100644
---- a/kernel/Kconfig.instrumentation
-+++ b/kernel/Kconfig.instrumentation
-@@ -21,7 +21,7 @@ config PROFILING
- config OPROFILE
- 	tristate "OProfile system profiling (EXPERIMENTAL)"
- 	depends on PROFILING
--	depends on (ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64) && !UML
-+	depends on (ARCH_SUPPORTS_OPROFILE || ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || PARISC || PPC || S390 || SUPERH || SPARC || X86_64) && !UML
- 	help
- 	  OProfile is a profiling system capable of profiling the
- 	  whole system, include the kernel, kernel modules, libraries,
+Oleg.
+
