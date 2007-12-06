@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbXLFQDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXLFQDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525AbXLFQDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 11:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXLFQDH
+	id S1754802AbXLFQDa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 11:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbXLFQDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 11:03:07 -0500
-Received: from ns.suse.de ([195.135.220.2]:53379 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752090AbXLFQDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 11:03:06 -0500
-Date: Thu, 6 Dec 2007 17:02:14 +0100 (CET)
-From: Bernhard Kaindl <bk@suse.de>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: remote debugging via FireWire * __fast__ firedump!
-In-Reply-To: <200712040839.39984.ak@suse.de>
-Message-ID: <alpine.LNX.0.9999-openSUSE-1.0712061649000.21849@jbgna.fhfr.qr>
-References: <200702101242.48467.ak@suse.de> <45CDCDCD.5000609@s5r6.in-berlin.de> <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org> <200712040839.39984.ak@suse.de>
+	Thu, 6 Dec 2007 11:03:12 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:61735 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbXLFQDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 11:03:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QF3C7VSiLZ5DqPkFrlfZ4xy7qRVh/5vHcq866PV0ge039NpCxXV9/FxsmQcGLF/jXFLsq5hFn22MOMmYLjnBYVV8blRBLpLUYO2BnyH4Z3d9S7Si/M4qVPNNS5XcQI0cw+YzjViwjuLBBh8JJUndJMQWEIDQ4ZHIePGD2qQ07ZU=
+Message-ID: <8499950a0712060803j59aaf750kbbb4a249e181559d@mail.gmail.com>
+Date: Thu, 6 Dec 2007 16:03:05 +0000
+From: "Oleg Verych" <olecom@gmail.com>
+To: "Hollis Blanchard" <hollisb@us.ibm.com>
+Subject: Re: mkasm-offsets.sh ?
+Cc: "Sam Ravnborg" <sam@ravnborg.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1196878474.2088.34.camel@basalt>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1196805584.7475.33.camel@basalt>
+	 <8499950a0712042349m313455adlc71df0886eb2bba4@mail.gmail.com>
+	 <1196878474.2088.34.camel@basalt>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007, Andi Kleen wrote:
+On Dec 5, 2007 6:14 PM, Hollis Blanchard <hollisb@us.ibm.com> wrote:
 >
->> I have just had the guts to explore __fast__ memory dumping over
->> firewire for full-system dumps [...]
+> On Wed, 2007-12-05 at 07:49 +0000, Oleg Verych wrote:
+> > On Dec 4, 2007 9:59 PM, Hollis Blanchard <hollisb@us.ibm.com> wrote:
+> > > Hi, I found this thread: http://lkml.org/lkml/2007/4/1/237
+> > >
+> > > I guess the complete patch was never finished? I could sure it (for
+> > > pretty much the same reason as lguest).
+> >
+> > It was, but untested (widely). The (google) search keyword is
+> > "asm-values", because there are much more things, than just offsets.
 >
-> Unfortunately it won't work for >3GB or so AFAIK.
+> Thanks for the pointer. Could you please provide a Signed-off-by line,
+> so that other people can modify and extend your work?
 
-Yes we seem to be limited to 4GB mostly, with 3G mem hole, it's 3GB.
+Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
 
->> Afterwards, the victim was dead (I excluded the low MB of memory,
->> so something else must have caused this), at least the start of
->
-> Did you run into the PCI memory hole below 4GB?
+It was not copyrighted "art" work anyway. Also, i have no access to the original
+e-mail service now, sorry.
 
-Thanks, that was it most likely. I checked and haw that I did
-read a 32MB reserved area just below 2GB.
-
-> I suppose the best way would be to require a System.map and
-> then read e820.nr_map/e820.map[] and only dump real memory.
-
-Yes, good idea!
-Bernhard
+Hope, this helps.
+_______
