@@ -1,56 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbXLFDPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbXLFDQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbXLFDPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 22:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXLFDPo
+	id S1753659AbXLFDQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 22:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbXLFDQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 22:15:44 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:50372 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751926AbXLFDPn (ORCPT
+	Wed, 5 Dec 2007 22:16:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60450 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbXLFDQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 22:15:43 -0500
-Message-ID: <47576959.4040706@linux.vnet.ibm.com>
-Date: Thu, 06 Dec 2007 08:45:37 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
+	Wed, 5 Dec 2007 22:16:42 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux390@de.ibm.com, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc4-mm1 Kernel build fails on S390x
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelyanov <xemul@openvz.org>,
+       <sukadev@us.ibm.com>
+Subject: [PATCH] pid: sys_wait... fixes
+Date: Wed, 05 Dec 2007 20:14:49 -0700
+Message-ID: <m17ijsv7iu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-The 2.6.24-rc4-mm1 kernel build fails on s390x,
+This modifies do_wait and eligible_child to take a pair of
+enum pid_type and struct pid *pid to precisely specify what
+set of processes are eligible to be waited for,  instead of the
+raw pid_t value from sys_wait4.
 
-  CC      arch/s390/kernel/traps.o
-In file included from include/asm/thread_info.h:39,
-                 from include/linux/thread_info.h:21,
-                 from include/linux/preempt.h:9,
-                 from include/linux/spinlock.h:49,
-                 from include/linux/seqlock.h:29,
-                 from include/linux/time.h:8,
-                 from include/linux/timex.h:57,
-                 from include/linux/sched.h:53,
-                 from arch/s390/kernel/traps.c:17:
-include/asm/processor.h:191: warning: "struct seq_file" declared inside parameter list
-include/asm/processor.h:191: warning: its scope is only this definition or declaration, which is probably not what you want
-arch/s390/kernel/traps.c: In function `task_show_regs':
-arch/s390/kernel/traps.c:226: error: implicit declaration of function `seq_printf'
-make[1]: *** [arch/s390/kernel/traps.o] Error 1
-make: *** [arch/s390/kernel] Error 2
+This fixes a bug in sys_waitid where you could not wait for children
+in just process group 1.
 
+This fixes a pid namespace crossing case in eligible_child.  Allowing
+us to wait for a processes in our current process group even if
+our current process group == 0.
+
+This allows the no child with this pid case to be optimized.
+This allows us to optimize the pid membership test in eligible
+child to be optimized.
+
+This even closes a theoretical pid wraparound race where in
+a threaded parent if two threads are waiting for the same child
+and one thread picks up the child and the pid numbers wrap around
+and generate another child with that same pid before the other
+thread is scheduled (teribly insanely unlikely) we could end
+up waiting on the second child with the same pid# and not discover
+that the specific child we were waiting for has exited.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ kernel/exit.c |   72 ++++++++++++++++++++++++++++++++++++++-------------------
+ 1 files changed, 48 insertions(+), 24 deletions(-)
+
+diff --git a/kernel/exit.c b/kernel/exit.c
+index aede730..9e4e22a 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1106,20 +1106,13 @@ asmlinkage void sys_exit_group(int error_code)
+ 	do_group_exit((error_code & 0xff) << 8);
+ }
+ 
+-static int eligible_child(pid_t pid, int options, struct task_struct *p)
++static int eligible_child(enum pid_type type, struct pid *pid, int options,
++			  struct task_struct *p)
+ {
+ 	int err;
+-	struct pid_namespace *ns;
+ 
+-	ns = current->nsproxy->pid_ns;
+-	if (pid > 0) {
+-		if (task_pid_nr_ns(p, ns) != pid)
+-			return 0;
+-	} else if (!pid) {
+-		if (task_pgrp_nr_ns(p, ns) != task_pgrp_vnr(current))
+-			return 0;
+-	} else if (pid != -1) {
+-		if (task_pgrp_nr_ns(p, ns) != -pid)
++	if (type < PIDTYPE_MAX) {
++		if (p->pids[type].pid != pid)
+ 			return 0;
+ 	}
+ 
+@@ -1143,7 +1136,7 @@ static int eligible_child(pid_t pid, int options, struct task_struct *p)
+ 	if (likely(!err))
+ 		return 1;
+ 
+-	if (pid <= 0)
++	if (type != PIDTYPE_PID)
+ 		return 0;
+ 	/* This child was explicitly requested, abort */
+ 	read_unlock(&tasklist_lock);
+@@ -1463,8 +1456,9 @@ static int wait_task_continued(struct task_struct *p, int noreap,
+ 	return retval;
+ }
+ 
+-static long do_wait(pid_t pid, int options, struct siginfo __user *infop,
+-		    int __user *stat_addr, struct rusage __user *ru)
++static long do_wait(enum pid_type type, struct pid *pid, int options,
++		    struct siginfo __user *infop, int __user *stat_addr,
++		    struct rusage __user *ru)
+ {
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	struct task_struct *tsk;
+@@ -1472,6 +1466,11 @@ static long do_wait(pid_t pid, int options, struct siginfo __user *infop,
+ 
+ 	add_wait_queue(&current->signal->wait_chldexit,&wait);
+ repeat:
++	/* If there is nothing that can match our critier just get out */
++	retval = -ECHILD;
++	if ((type < PIDTYPE_MAX) && (!pid || hlist_empty(&pid->tasks[type])))
++		goto end;
++
+ 	/*
+ 	 * We will set this flag if we see any child that might later
+ 	 * match our criteria, even if we are not able to reap it yet.
+@@ -1484,7 +1483,7 @@ repeat:
+ 		struct task_struct *p;
+ 
+ 		list_for_each_entry(p, &tsk->children, sibling) {
+-			int ret = eligible_child(pid, options, p);
++			int ret = eligible_child(type, pid, options, p);
+ 			if (!ret)
+ 				continue;
+ 
+@@ -1531,7 +1530,7 @@ repeat:
+ 		if (!flag) {
+ 			list_for_each_entry(p, &tsk->ptrace_children,
+ 								ptrace_list) {
+-				flag = eligible_child(pid, options, p);
++				flag = eligible_child(type, pid, options, p);
+ 				if (!flag)
+ 					continue;
+ 				if (likely(flag > 0))
+@@ -1586,10 +1585,12 @@ end:
+ 	return retval;
+ }
+ 
+-asmlinkage long sys_waitid(int which, pid_t pid,
++asmlinkage long sys_waitid(int which, pid_t upid,
+ 			   struct siginfo __user *infop, int options,
+ 			   struct rusage __user *ru)
+ {
++	struct pid *pid = NULL;
++	enum pid_type type;
+ 	long ret;
+ 
+ 	if (options & ~(WNOHANG|WNOWAIT|WEXITED|WSTOPPED|WCONTINUED))
+@@ -1599,37 +1600,60 @@ asmlinkage long sys_waitid(int which, pid_t pid,
+ 
+ 	switch (which) {
+ 	case P_ALL:
+-		pid = -1;
++		type = PIDTYPE_MAX;
+ 		break;
+ 	case P_PID:
+-		if (pid <= 0)
++		type = PIDTYPE_PID;
++		if (upid <= 0)
+ 			return -EINVAL;
+ 		break;
+ 	case P_PGID:
+-		if (pid <= 0)
++		type = PIDTYPE_PGID;
++		if (upid <= 0)
+ 			return -EINVAL;
+-		pid = -pid;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+ 
+-	ret = do_wait(pid, options, infop, NULL, ru);
++	if (type < PIDTYPE_MAX)
++		pid = find_get_pid(upid);
++	ret = do_wait(type, pid, options, infop, NULL, ru);
++	put_pid(pid);
+ 
+ 	/* avoid REGPARM breakage on x86: */
+ 	prevent_tail_call(ret);
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_wait4(pid_t pid, int __user *stat_addr,
++asmlinkage long sys_wait4(pid_t upid, int __user *stat_addr,
+ 			  int options, struct rusage __user *ru)
+ {
++	struct pid *pid = NULL;
++	enum pid_type type;
+ 	long ret;
+ 
+ 	if (options & ~(WNOHANG|WUNTRACED|WCONTINUED|
+ 			__WNOTHREAD|__WCLONE|__WALL))
+ 		return -EINVAL;
+-	ret = do_wait(pid, options | WEXITED, NULL, stat_addr, ru);
++
++	if (upid == -1)
++		type = PIDTYPE_MAX;
++	else if (upid < 0) {
++		type = PIDTYPE_PGID;
++		pid = find_get_pid(-upid);
++	}
++	else if (upid == 0) {
++		type = PIDTYPE_PGID;
++		pid = get_pid(task_pgrp(current));
++	}
++	else /* upid > 0 */ {
++		type= PIDTYPE_PID;
++		pid = find_get_pid(upid);
++	}
++
++	ret = do_wait(type, pid, options | WEXITED, NULL, stat_addr, ru);
++	put_pid(pid);
+ 
+ 	/* avoid REGPARM breakage on x86: */
+ 	prevent_tail_call(ret);
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.5.3.rc6.17.g1911
+
