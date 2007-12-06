@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXLFRZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbXLFReh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587AbXLFRZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 12:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbXLFRZW
+	id S1752169AbXLFReh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 12:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXLFRe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 12:25:22 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54742 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbXLFRZV (ORCPT
+	Thu, 6 Dec 2007 12:34:29 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:48084 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbXLFRe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 12:25:21 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>, sukadev@us.ibm.com
-Subject: Re: [PATCH] pid: sys_wait... fixes
-References: <m17ijsv7iu.fsf@ebiederm.dsl.xmission.com>
-	<20071206170145.GA10674@tv-sign.ru>
-Date: Thu, 06 Dec 2007 10:21:39 -0700
-In-Reply-To: <20071206170145.GA10674@tv-sign.ru> (Oleg Nesterov's message of
-	"Thu, 6 Dec 2007 20:01:45 +0300")
-Message-ID: <m1y7c7spr0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 6 Dec 2007 12:34:28 -0500
+Date: Thu, 6 Dec 2007 10:34:26 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Liam Howlett <howlett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, neilb@suse.de, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org
+Subject: Re: NFS Killable tasks request comments on patch
+Message-ID: <20071206173426.GC15868@parisc-linux.org>
+References: <20071204212543.GA6907@solidsnake>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071204212543.GA6907@solidsnake>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Tue, Dec 04, 2007 at 04:25:43PM -0500, Liam Howlett wrote:
+> This patch removes the rpc sigmask code and changes the
+> out_of_line_wait_on_bit and wait_on_bit calls in the sched.c file to
+> use TASK_KILLABLE.  The result of this patch is the ability to kill
+> commands issued to a dead NFS mount by the normal ctrl+c method.  I am
 
-> On 12/05, Eric W. Biederman wrote:
->> 
->> This modifies do_wait and eligible_child to take a pair of
->> enum pid_type and struct pid *pid to precisely specify what
->> set of processes are eligible to be waited for,  instead of the
->> raw pid_t value from sys_wait4.
->
-> Personally, I like this patch very much. Not only it fixes the bug,
-> in my opinion it also makes the code more clean.
->
-> However at first glance it has a minor fixable problem,
->
->> +	if (type < PIDTYPE_MAX) {
->> +		if (p->pids[type].pid != pid)
->>  			return 0;
->>  	}
->
-> If type != PIDTYPE_PID we can't trust p->pids[type].pid unless p is a
-> group leader. This .pid could be just a "random value".
+I've done a more thorough review of Liam's work and come up with a few
+more fixes (which I'll publish later today), but more importantly, a
+list of questions for the NFS/RPC people:
 
-Ugh.  You are correct.  Thanks for the review.
-That is one annoying special case.
+1. __nfs_revalidate_inode - with an error return from nfs_wait_on_inode(),
+   shouldn't we go to out_nowait()?
 
-Eric
+2. nfs4_set_lock_task_retry - shouldn't we honour the fatal signal, and,
+   say, set the timeout to MAXTIMEOUT?
+
+3. Can we make nfs use rpc_wait_bit_killable()?  I think there's two places
+   that exact function is duplicated.
+
+4. Can we remove the 'action' parameter from
+   __rpc_wait_for_completion_task()?  It's always NULL.
+
+5. Should xprt_rdma_free be using wait_event_killable?
+   Ditto rpcrdma_ep_connect and rpcrdma_ep_disconnect
+
+I think we're going to find a lot of places where attention hasn't been
+paid to the 'intr' case.  It's always been a wart, so I'm unsurprised it
+doesn't get much testing.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
