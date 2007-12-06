@@ -1,169 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXLFMLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751160AbXLFMWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbXLFMLX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 07:11:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXLFMLO
+	id S1751160AbXLFMWE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 07:22:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXLFMVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 07:11:14 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:7718 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbXLFMLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 07:11:12 -0500
-Date: Thu, 6 Dec 2007 13:08:43 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hannes Reinecke <hare@suse.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc4-mm1: hostbyte=0x01 driverbyte=0x00 (now bisected)
-Message-ID: <20071206120843.GC5231@kernel.dk>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <20071205234154.GA4041@martell.zuzino.mipt.ru> <4757AA3D.4060003@suse.de>
+	Thu, 6 Dec 2007 07:21:53 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53917 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752576AbXLFMVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 07:21:52 -0500
+Date: Thu, 6 Dec 2007 13:21:50 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Diego Zuccato <diego@otello.alma.unibo.it>
+Cc: Jeff Garzik <jeff@garzik.org>, Mark Lord <lkml@rtr.ca>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, rubini@vision.unipv.it,
+       linux-input@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: REGRESSION: 2.6.24:  false double-clicks from USB mouse
+In-Reply-To: <4757B288.7060907@otello.alma.unibo.it>
+Message-ID: <Pine.LNX.4.64.0712061320280.20118@jikos.suse.cz>
+References: <4752DB8C.50608@rtr.ca> <4752E432.10504@rtr.ca> <4752E5AD.40905@rtr.ca>
+ <4752F226.1090003@garzik.org> <Pine.LNX.4.64.0712021907490.13260@jikos.suse.cz>
+ <4757B288.7060907@otello.alma.unibo.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4757AA3D.4060003@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06 2007, Hannes Reinecke wrote:
-> Alexey Dobriyan wrote:
-> >>  git-scsi-misc.patch
-> > 
-> > Apologies for not looking into the problem earlier. See
-> > http://marc.info/?t=119628022300005&r=1&w=2
-> > "2.6.24-rc3-mm2: Result: hostbyte=0x01 driverbyte=0x00\nend_request: I/O error"
-> > for previous installment.
-> > 
-> > I've bisected it to the following patch in git-scsi-misc branch.
-> > Revert on top of 2.6.24-rc4-mm1 also helps.
-> > 
-> > commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
-> > Author: Hannes Reinecke <hare@suse.de>
-> > Date:   Tue Nov 6 09:23:40 2007 +0100
-> > 
-> >     [SCSI] Do not requeue requests if REQ_FAILFAST is set
-> >     
-> >     Any requests with the REQ_FAILFAST flag set should not be requeued
-> >     to the requeust queue, but rather terminated directly.
-> >     Otherwise the multipath failover will stall until the command
-> >     timeout triggers.
-> >     
-> >     Signed-off-by: Hannes Reinecke <hare@suse.de>
-> >     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > 
-> > diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> > index 0f44bdb..0da0dd0 100644
-> > --- a/drivers/scsi/scsi_lib.c
-> > +++ b/drivers/scsi/scsi_lib.c
-> > @@ -1286,6 +1286,11 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
-> >  			 */
-> >  			if (!(req->cmd_flags & REQ_PREEMPT))
-> >  				ret = BLKPREP_DEFER;
-> > +			/*
-> > +			 * Return failfast requests immediately
-> > +			 */
-> > +			if (req->cmd_flags & REQ_FAILFAST)
-> > +				ret = BLKPREP_KILL;
-> >  			break;
-> >  		default:
-> >  			/*
-> > @@ -1414,6 +1419,17 @@ static inline int scsi_host_queue_ready(struct request_queue *q,
-> >  	return 1;
-> >  }
-> >  
-> > +static void __scsi_kill_request(struct request *req)
-> > +{
-> > +	struct scsi_cmnd *cmd = req->special;
-> > +	struct scsi_device *sdev = cmd->device;
-> > +
-> > +	cmd->result = DID_NO_CONNECT << 16;
-> > +	atomic_inc(&cmd->device->iorequest_cnt);
-> > +	sdev->device_busy--;
-> > +	__scsi_done(cmd);
-> > +}
-> > +
-> >  /*
-> >   * Kill a request for a dead device
-> >   */
-> > @@ -1527,8 +1543,16 @@ static void scsi_request_fn(struct request_queue *q)
-> >  		 * accept it.
-> >  		 */
-> >  		req = elv_next_request(q);
-> > -		if (!req || !scsi_dev_queue_ready(q, sdev))
-> > +		if (!req)
-> > +			break;
-> > +
-> > +		if (!scsi_dev_queue_ready(q, sdev)) {
-> > +			if (req->cmd_flags & REQ_FAILFAST) {
-> > +				scsi_kill_request(req, q);
-> > +				continue;
-> > +			}
-> >  			break;
-> > +		}
-> >  
-> >  		if (unlikely(!scsi_device_online(sdev))) {
-> >  			sdev_printk(KERN_ERR, sdev,
-> > @@ -1609,8 +1633,12 @@ static void scsi_request_fn(struct request_queue *q)
-> >  	 * later time.
-> >  	 */
-> >  	spin_lock_irq(q->queue_lock);
-> > -	blk_requeue_request(q, req);
-> > -	sdev->device_busy--;
-> > +	if (unlikely(req->cmd_flags & REQ_FAILFAST))
-> > +		__scsi_kill_request(req);
-> > +	else {
-> > +		blk_requeue_request(q, req);
-> > +		sdev->device_busy--;
-> > +	}
-> >  	if(sdev->device_busy == 0)
-> >  		blk_plug_device(q);
-> >   out:
-> Yeah, sorry. That patch was bad. Please use the attached one instead.
-> Andrew, can you replace them?
-> 
-> Cheers,
-> 
-> Hannes
-> -- 
-> Dr. Hannes Reinecke		      zSeries & Storage
-> hare@suse.de			      +49 911 74053 688
-> SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-> GF: Markus Rex, HRB 16746 (AG Nürnberg)
+On Thu, 6 Dec 2007, Diego Zuccato wrote:
 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 13e7e09..9ec1566 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -1284,13 +1284,15 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
->  			/*
->  			 * If the devices is blocked we defer normal commands.
->  			 */
-> -			if (!(req->cmd_flags & REQ_PREEMPT))
-> -				ret = BLKPREP_DEFER;
-> -			/*
-> -			 * Return failfast requests immediately
-> -			 */
-> -			if (req->cmd_flags & REQ_FAILFAST)
-> -				ret = BLKPREP_KILL;
-> +			if (!(req->cmd_flags & REQ_PREEMPT)) {
-> +				/*
-> +				 * Return failfast requests immediately
-> +				 */
-> +				if (req->cmd_flags & REQ_FAILFAST)
-> +					ret = BLKPREP_KILL;
-> +				else
-> +					ret = BLKPREP_DEFER;
-> +			}
->  			break;
->  		default:
->  			/*
+> It happens to me, too. Wireless mouse, gives some "wheel up" signals 
+> when going into powersave state. Kernel is 2.6.22-tmb-laptop-2mdv 
+> (Mandriva Cooker).
 
-can we please stick to using blk_noretry_request() consistently, instead
-of thwrowing REQ_FAILFAST tests in there?
+Is this a regression for you? Are you able to say which kernel first 
+exposed this behavior in your case?
 
+> Maybe a more-or-less undocumented sequence to tell the host it's going 
+> to sleep?
+
+usbmon and/or HID_DEBUG output would be interesting to see (how to produce 
+HID debugging output has been explained earlier in this thread, for usbmon 
+please look in Documentation/usb/usbmon.txt).
+
+Thanks,
 
 -- 
-Jens Axboe
-
+Jiri Kosina
+SUSE Labs
