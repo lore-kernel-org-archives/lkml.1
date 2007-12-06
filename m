@@ -1,87 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbXLFTo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbXLFTrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753538AbXLFTo5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXLFTou
+	id S1753332AbXLFTrZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 14:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbXLFTrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:44:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48436 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbXLFTot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:44:49 -0500
-Message-ID: <4758512E.1060306@redhat.com>
-Date: Thu, 06 Dec 2007 14:44:46 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Andi Kleen <ak@suse.de>
-Subject: 2.6.23: x86_64 oops caused by hotplug running before vdso initialized
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 6 Dec 2007 14:47:12 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46319 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751398AbXLFTrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 14:47:11 -0500
+Date: Thu, 6 Dec 2007 11:46:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 1/6] UML - Customize tlb.h
+Message-Id: <20071206114642.555a0749.akpm@linux-foundation.org>
+In-Reply-To: <20071206170640.GA7420@c2.user-mode-linux.org>
+References: <20071206170640.GA7420@c2.user-mode-linux.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pages is NULL here, implying vma->vm_private_data was NULL. This is apparently
-because init_vdso_vars() is __initcall and runs after the rootfs gets populated.
-An experimental initrd containing an /sbin/hotplug binary caused this. Normally
-we don't have that file in the initrd. Should vdso init be done earlier to prevent
-this problem?
+On Thu, 6 Dec 2007 12:06:40 -0500
+Jeff Dike <jdike@addtoit.com> wrote:
+
+> Customize the hooks in tlb.h to optimize TLB flushing some more.
+> 
+> Add start and end fields to tlb_gather_mmu, which are used to limit
+> the address space range scanned when a region is unmapped.
+> 
+> The interfaces which just free page tables, without actually changing
+> mappings, don't need to cause a TLB flush.
+> 
+> ...
+>
+> +void flush_tlb_mm(struct mm_struct *mm)
+> +{
+> +	struct vm_area_struct *vma = mm->mmap;
+> +
+> +	if (atomic_read(&mm->mm_users) == 0)
+> +		return;
+
+Under which circumstances does this test succeed?
+
+> +	while (vma != NULL) {
+> +		fix_range(mm, vma->vm_start, vma->vm_end, 0);
+> +		vma = vma->vm_next;
+> +	}
+>  }
+>  
+>  void force_flush_all(void)
+> Index: linux-2.6-git/include/asm-um/tlb.h
+> ===================================================================
+> --- linux-2.6-git.orig/include/asm-um/tlb.h	2007-12-06 10:34:31.000000000 -0500
+> +++ linux-2.6-git/include/asm-um/tlb.h	2007-12-06 10:58:34.000000000 -0500
+> @@ -1,6 +1,125 @@
+>  #ifndef __UM_TLB_H
+>  #define __UM_TLB_H
+>  
+> -#include <asm/arch/tlb.h>
+> +#include <linux/swap.h>
+> +#include <asm/pgalloc.h>
+> +#include <asm/tlbflush.h>
+> +
+> +#define tlb_start_vma(tlb, vma) do { } while (0)
+> +#define tlb_end_vma(tlb, vma) do { } while (0)
+> +#define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
+> +
+> +/* struct mmu_gather is an opaque type used by the mm code for passing around
+> + * any data needed by arch specific code for tlb_remove_page.
+> + */
+> +struct mmu_gather {
+> +	struct mm_struct	*mm;
+> +	unsigned int		need_flush; /* Really unmapped some ptes? */
+> +	unsigned long		start;
+> +	unsigned long		end;
+> +	unsigned int		fullmm; /* non-zero means full mm flush */
+> +};
+> +
+> +/* Users of the generic TLB shootdown code must declare this storage space. */
+> +DECLARE_PER_CPU(struct mmu_gather, mmu_gathers);
+> +
+> +static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
+> +					  unsigned long address)
+> +{
+> +	if (tlb->start > address)
+> +		tlb->start = address;
+> +	if (tlb->end < address + PAGE_SIZE)
+> +		tlb->end = address + PAGE_SIZE;
+> +}
+> +
+> +static inline void init_tlb_gather(struct mmu_gather *tlb)
+> +{
+> +	tlb->need_flush = 0;
+> +
+> +	tlb->start = TASK_SIZE;
+> +	tlb->end = 0;
+> +
+> +	if (tlb->fullmm) {
+> +		tlb->start = 0;
+> +		tlb->end = TASK_SIZE;
+> +	}
+> +}
+> +
+> +/* tlb_gather_mmu
+> + *	Return a pointer to an initialized struct mmu_gather.
+> + */
+> +static inline struct mmu_gather *
+> +tlb_gather_mmu(struct mm_struct *mm, unsigned int full_mm_flush)
+> +{
+> +	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
+> +
+> +	tlb->mm = mm;
+> +	tlb->fullmm = full_mm_flush;
+> +
+> +	init_tlb_gather(tlb);
+> +
+> +	return tlb;
+> +}
+
+This file rather needs an inclusion of percpu.h.  I guess you got lucky.
 
 
-static struct page *special_mapping_nopage(struct vm_area_struct *vma,
-                                           unsigned long address, int *type)
-{
-        struct page **pages;
-
-        BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-
-        address -= vma->vm_start;
-        for (pages = vma->vm_private_data; address > 0 && *pages; ++pages)
-                address -= PAGE_SIZE;
-
-===>    if (*pages) {
-                struct page *page = *pages;
-                get_page(page);
-                return page;
-        }
-
-        return NOPAGE_SIGBUS;
-}
-
-
-Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP: 
- [<ffffffff810838e9>] special_mapping_nopage+0x3c/0x63
-PGD 7f568067 PUD 7f571067 PMD 0 
-Oops: 0000 [1] SMP 
-CPU 1 
-Modules linked in:
-Pid: 219, comm: hotplug Not tainted 2.6.23.9-77.fc8 #1
-RIP: 0010:[<ffffffff810838e9>]  [<ffffffff810838e9>]
-special_mapping_nopage+0x3c/0x63
-RSP: 0000:ffff810037f41d50  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffff81007f4faff8 RCX: ffffffff8137e240
-RDX: 0000000000000000 RSI: 00007fffeebfe000 RDI: ffff81007f4d8420
-RBP: ffff81007f4d8420 R08: 00000007fffeebfe R09: 0000000000000000
-R10: 000000006ffffdff R11: 000000006ffffe34 R12: 0000000000000000
-R13: ffff81007f4da000 R14: 00007fffeebfe020 R15: ffff81007f4d8420
-FS:  0000000000000000(0000) GS:ffff810002c3f300(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 000000007f4ae000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process hotplug (pid: 219, threadinfo ffff810037f40000, task ffff81007f4bc820)
-Stack:  ffffffff8107e42c 00000010000284d0 ffff81007f569ba8 00ff81000000f2a8
- 0000000000000000 ffff810000000000 00000007fffeebfe 00007fffeebfe000
- 0000000000000000 0000000000000004 0000000000400040 ffff81007f4d80b0
-Call Trace:
- [<ffffffff8107e42c>] __do_fault+0x89/0x489
- [<ffffffff81081bd7>] handle_mm_fault+0x4ed/0x976
- [<ffffffff81084a46>] vma_link+0x70/0xfd
- [<ffffffff8125f037>] do_page_fault+0x45b/0x7e4
- [<ffffffff810115ef>] arch_get_unmapped_area+0x184/0x1f9
- [<ffffffff8108598c>] do_mmap_pgoff+0x2eb/0x350
- [<ffffffff81120cec>] __up_write+0x27/0xf3
- [<ffffffff8125d51d>] error_exit+0x0/0x84
