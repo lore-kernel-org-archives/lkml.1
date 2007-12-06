@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbXLFUFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbXLFUFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbXLFUFH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 15:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXLFUE4
+	id S1755332AbXLFUFd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 15:05:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXLFUFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 15:04:56 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45092 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754036AbXLFUEz (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 15:04:55 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: 2.6.24-rc4-mm1
-In-Reply-To: Your message of "Thu, 06 Dec 2007 11:38:43 PST."
-             <20071206193843.GA25125@kroah.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <3941.1196941764@turing-police.cc.vt.edu> <20071206040420.6c89c675.akpm@linux-foundation.org> <4374.1196968688@turing-police.cc.vt.edu>
-            <20071206193843.GA25125@kroah.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196971465_2829P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Dec 2007 15:04:25 -0500
-Message-ID: <7466.1196971465@turing-police.cc.vt.edu>
+	Thu, 6 Dec 2007 15:05:23 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:54654 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751697AbXLFUFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 15:05:21 -0500
+Date: Thu, 6 Dec 2007 21:05:42 +0100
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org
+Subject: Re: [PATCH 3/3] printer port driver: semaphore to mutex
+Message-ID: <20071206200542.GE480@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linux@bohmer.net, jonathan@jonmasters.org
+References: <20071206021857.826386004@mvista.com> <20071206021909.131993721@mvista.com> <20071206102334.GE17299@elte.hu> <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196971465_2829P
-Content-Type: text/plain; charset=us-ascii
+El Thu, Dec 06, 2007 at 08:34:06AM -0800 Daniel Walker ha dit:
 
-On Thu, 06 Dec 2007 11:38:43 PST, Greg KH said:
-> > Would I be remiss in hypothesising that something in gregkh-driver-kobject-*
-> > changed something, and now we need a agk-dm-dm-kobject-fixupage.patch?
+> On Thu, 2007-12-06 at 11:23 +0100, Ingo Molnar wrote:
+> > * Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > The port_mutex is actually a semaphore, so easily converted to a 
+> > > struct mutex.
+> > > 
+> > > Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> > 
+> > Acked-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > cool. How far away are we from being able to remove all the semaphore 
+> > code? :-)
 > 
-> I don't know, it all depends on what is in the dm patches.  Hopefully
-> everything that I have changed will manifest with a build breakage to
-> obviously detect that something needs to be fixed up.
+> I wish my 7 patches made a dent, but it's hasn't done much. ;(
 > 
-> But I've been known to mess things up that I didn't intend to :)
+> I would guess at least a week just to mop up the relatively easy ones..
+> I've got 12 in my queue, and there still ~50 hopefully trivial ones
+> still to be looked at.. Then another ~30 more difficult ones (that use
+> init_MUTEX_LOCKED, or sema_init with 0 instead of 1) ..
 
-Given that it *didn't* totally break the build, it's likely a fencepost error
-or some similar issue...
+I've also more patches of this type on my list, though i work in a
+slower pace
 
-> If there's anything that I can do to test this, please let me know.
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-I wanted to give a heads-up, in case there was a D'Oh! patch hiding. At worst,
-I just need another 6 or 7 bisects to figure out which of those 120-ish patches
-is the culprit.  With luck I'll end up stopped on a patch that in retrospect
-was obviously busticated.  If not, we'll have to apply the usual more drastic
-measures.  If you don't have a box that's already demonstrating it, and you
-don't have any obvious candidates, it's likely that the most productive
-use of everybody's time is for you to chase down any other kobject issues
-while I bisect the problem down further...
-
---==_Exmh_1196971465_2829P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHWFXJcC3lWbTT17ARApgEAJ9pJDSM7zZqycRF0neS4dgz9JOnAgCfUyh8
-MgzWo8mGixxHoRSnzFCNNh0=
-=TOhE
------END PGP SIGNATURE-----
-
---==_Exmh_1196971465_2829P--
+             You must have a plan. If you don't have a plan,
+               you'll become part of somebody else's plan
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
