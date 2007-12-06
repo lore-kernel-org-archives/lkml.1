@@ -1,71 +1,534 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbXLFXNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbXLFXRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbXLFXNI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 18:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXLFXM4
+	id S1754904AbXLFXRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 18:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXLFXRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 18:12:56 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:60818 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbXLFXMz (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 18:12:55 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: 2.6.24-rc4-mm1
-In-Reply-To: Your message of "Thu, 06 Dec 2007 23:04:12 +0100."
-             <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <3941.1196941764@turing-police.cc.vt.edu> <20071206040420.6c89c675.akpm@linux-foundation.org> <4374.1196968688@turing-police.cc.vt.edu> <20071206193843.GA25125@kroah.com>
-            <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com>
+	Thu, 6 Dec 2007 18:17:10 -0500
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:1344 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752254AbXLFXRI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 18:17:08 -0500
+Date: Fri, 7 Dec 2007 00:17:03 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipebalbi@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>, Tony Lindgren <tony@atomide.com>,
+       "eric miao" <eric.y.miao@gmail.com>, Kevin Hilman <khilman@mvista.com>,
+       Paul Mundt <lethal@linux-sh.org>, Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [patch/rfc 2/4] pcf857x I2C GPIO expander driver
+Message-ID: <20071207001703.44cbee94@hyperion.delvare>
+In-Reply-To: <200712051903.13932.david-b@pacbell.net>
+References: <200710291809.29936.david-b@pacbell.net>
+	<20071130133256.72385ea8@hyperion.delvare>
+	<200711301040.54777.david-b@pacbell.net>
+	<200712051903.13932.david-b@pacbell.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196982750_2767P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Dec 2007 18:12:30 -0500
-Message-ID: <2955.1196982750@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196982750_2767P
-Content-Type: text/plain; charset=us-ascii
+Hi David,
 
-On Thu, 06 Dec 2007 23:04:12 +0100, Kay Sievers said:
+On Wed, 5 Dec 2007 19:03:12 -0800, David Brownell wrote:
+> On Friday 30 November 2007, David Brownell wrote:
+> > Thanks for the review.  I'll snip out typos and similar trivial
+> > comments (and fix them!), using responses here for more the
+> > substantive feedback.
+> 
+> Here's the current version of this patch ... updated to put the
+> driver into drivers/gpio (separate patch setting that up) and
+> the header into <linux/i2c/pcf857x.h>
+> 
+> Note that after looking at the GPIO expanders listed at the NXP
+> website, I updated this to accept a few more of these chips.
+> Other than reset pins and addressing options, the key difference
+> between these seems to be the top I2C clock speed supported:
+> 
+>  pcf857x ...  100 KHz
+>  pca857x ...  400 KHz
+>  pca967x ... 1000 KHz
+> 
+> Otherwise they're equivalent at the level of just swapping parts.
+> 
+> - Dave
+> 
+> =============	SNIP!
+> This is a new-style I2C driver for most common 8 and 16 bit I2C based
+> "quasi-bidirectional" GPIO expanders:  pcf8574 or pcf8575, and several
+> compatible models (mostly faster, supporting I2C at up to 1 MHz).
+> 
+> Since it's a new-style driver, these devices must be configured as
+> part of board-specific init.  That eliminates the need for error-prone
+> manual configuration of module parameters, and makes compatibility
+> with legacy drivers (pcf8574.c, pc8575.c)for these chips easier.
 
-> What's the value of SYSFS_DEPRECATED? Care to set it to yes, if it isn't,
-> and try again?
+Missing space after closing parenthesis. Also, I don't quite see what
+is supposed to make compatibility with the legacy drivers easier, nor
+how, not why it matters in the first place.
 
-I *knew* there was a D'Oh! error in here. ;)
+> 
+> The driver exposes the GPIO signals using the platform-neutral GPIO
+> programming interface, so they are easily accessed by other kernel
+> code.  The lack of such a flexible kernel API is what has ensured
+> the proliferation of board-specific drivers for these chips... stuff
+> that rarely makes it upstream since it's so ugly.  This driver will
+> let them use standard calls.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  drivers/gpio/Kconfig        |   23 +++
+>  drivers/gpio/Makefile       |    2 
+>  drivers/gpio/pcf857x.c      |  331 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/i2c/pcf857x.h |   45 +++++
+>  4 files changed, 401 insertions(+)
+> 
+> --- a/drivers/gpio/Kconfig	2007-12-05 15:13:27.000000000 -0800
+> +++ b/drivers/gpio/Kconfig	2007-12-05 15:14:12.000000000 -0800
+> @@ -5,4 +5,27 @@
+>  menu "GPIO Support"
+>  	depends on GPIO_LIB
+>  
+> +config GPIO_PCF857X
+> +	tristate "PCF857x, PCA857x, and PCA967x I2C GPIO expanders"
+> +	depends on I2C
+> +	help
+> +	  Say yes here to provide access to most "quasi-bidirectional" I2C
+> +	  GPIO expanders used for additional digital outputs or inputs.
+> +	  Most of these parts are from NXP, though TI is a second source for
+> +	  some of them.  Compatible models include:
+> +
+> +	  8 bits:   pcf8574, pcf8574a, pca8574, pca8574a,
+> +	            pca9670, pca9672, pca9674, pca9674a
+> +
+> +	  16 bits:  pcf8575, pcf8575c, pca8575,
+> +	            pca9671, pca9673, pca9675
+> +
+> +	  Your board setup code will need to declare the expanders in
+> +	  use, and assign numbers to the GPIOs they expose.  Those GPIOs
+> +	  can then be used from drivers and other kernel code, just like
+> +	  other GPIOs, but only accessible from task contexts.
+> +
+> +	  This driver provides an in-kernel interface to those GPIOs using
+> +	  platform-neutral GPIO calls.
+> +
+>  endmenu
+> --- a/drivers/gpio/Makefile	2007-12-05 15:14:03.000000000 -0800
+> +++ b/drivers/gpio/Makefile	2007-12-05 15:14:12.000000000 -0800
+> @@ -1 +1,3 @@
+>  # gpio support: dedicated expander chips, etc
+> +
+> +obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/drivers/gpio/pcf857x.c	2007-12-05 15:15:18.000000000 -0800
+> @@ -0,0 +1,331 @@
+> +/*
+> + * pcf857x - driver for pcf857x, pca857x, and pca967x I2C GPIO expanders
+> + *
+> + * Copyright (C) 2007 David Brownell
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/slab.h>
+> +#include <linux/i2c.h>
+> +#include <linux/i2c/pcf857x.h>
+> +
+> +#include <asm/gpio.h>
+> +
+> +
+> +/*
+> + * The pcf857x, pca857x, and pca967x chips only expose one read and one
+> + * write register.  Writing a "one" bit (to match the reset state) lets
+> + * that pin be used as an input; it's not an open-drain model, but acts
+> + * a bit like one.  This is described as "quasi-bidirectional"; read the
+> + * chip documentation for details.
+> + *
+> + * Some other I2C GPIO expander chips (like the pca953{4,5,6,7,9}, pca9555,
+> + * pca9698, mcp23008, and mc23017) have more complex register models with
 
-Bisection is fast closing in on gregkh-driver-block-device.patch, which broke
-my LVM almost the exact same way the *last* time it showed up in -mm ;)
+mc_p_23017?
 
-> A fix for LVM to handle symlinks instead of directories is in the LVM
-> CVS tree, but there wasn't a release since August.
+> + * more conventional input circuitry, often using 0x20..0x27 addresses.
+> + */
+> +struct pcf857x {
+> +	struct gpio_chip	chip;
+> +	struct i2c_client	*client;
+> +	unsigned		out;		/* software latch */
+> +};
+> +
+> +/*-------------------------------------------------------------------------*/
+> +
+> +/* Talk to 8-bit I/O expander */
+> +
+> +static int pcf857x_input8(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +
+> +	gpio->out |= (1 << offset);
+> +	return i2c_smbus_write_byte(gpio->client, gpio->out);
+> +}
+> +
+> +static int pcf857x_get8(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	s32		value;
+> +
+> +	value = i2c_smbus_read_byte(gpio->client);
+> +	return (value < 0) ? 0 : (value & (1 << offset));
 
-I seem to recall it was 'nash' rather than LVM that had the indigestion the
-last time around.
+This is no longer a boolean value, is that OK? I guess that it doesn't
+matter but maybe it should be documented (what GPIO drivers are allowed
+to return in these callback functions.)
 
+> +}
+> +
+> +static int pcf857x_output8(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	unsigned	bit = 1 << offset;
+> +
+> +	if (value)
+> +		gpio->out |= bit;
+> +	else
+> +		gpio->out &= ~bit;
+> +	return i2c_smbus_write_byte(gpio->client, gpio->out);
+> +}
+> +
+> +static void pcf857x_set8(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	pcf857x_output8(chip, offset, value);
+> +}
+> +
+> +/*-------------------------------------------------------------------------*/
+> +
+> +/* Talk to 16-bit I/O expander */
+> +
+> +static int i2c_write_le16(struct i2c_client *client, u16 word)
+> +{
+> +	u8 buf[2] = { word & 0xff, word >> 8, };
 
+Stray comma.
 
+> +	int status;
+> +
+> +	status = i2c_master_send(client, buf, 2);
+> +	return (status < 0) ? status : 0;
+> +}
+> +
+> +static int i2c_read_le16(struct i2c_client *client)
+> +{
+> +	u8 buf[2];
+> +	int status;
+> +
+> +	status = i2c_master_recv(client, buf, 2);
+> +	if (status < 0)
+> +		return status;
+> +	return (buf[1] << 8) | buf[0];
+> +}
+> +
+> +static int pcf857x_input16(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +
+> +	gpio->out |= (1 << offset);
+> +	return i2c_write_le16(gpio->client, gpio->out);
+> +}
+> +
+> +static int pcf857x_get16(struct gpio_chip *chip, unsigned offset)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	int		value;
+> +
+> +	value = i2c_read_le16(gpio->client);
+> +	return (value < 0) ? 0 : (value & (1 << offset));
+> +}
+> +
+> +static int pcf857x_output16(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
+> +	unsigned	bit = 1 << offset;
+> +
+> +	if (value)
+> +		gpio->out |= bit;
+> +	else
+> +		gpio->out &= ~bit;
+> +	return i2c_write_le16(gpio->client, gpio->out);
+> +}
+> +
+> +static void pcf857x_set16(struct gpio_chip *chip, unsigned offset, int value)
+> +{
+> +	pcf857x_output16(chip, offset, value);
+> +}
+> +
+> +/*-------------------------------------------------------------------------*/
+> +
+> +static int pcf857x_probe(struct i2c_client *client)
+> +{
+> +	struct pcf857x_platform_data	*pdata;
+> +	struct pcf857x			*gpio;
+> +	int				status;
+> +
+> +	pdata = client->dev.platform_data;
+> +	if (!pdata)
+> +		return -ENODEV;
+> +
+> +	/* Allocate, initialize, and register this gpio_chip. */
+> +	gpio = kzalloc(sizeof *gpio, GFP_KERNEL);
+> +	if (!gpio)
+> +		return -ENOMEM;
+> +
+> +	gpio->chip.base = pdata->gpio_base;
+> +	gpio->chip.can_sleep = 1;
+> +
+> +	/* NOTE:  the OnSemi jlc1562b is also largely compatible with
+> +	 * these parts, notably for output.  It has a low-resolution
+> +	 * DAC instead of pin change IRQs; and its inputs can be the
+> +	 * result of comparators.
+> +	 */
+> +
+> +	/* 8574 addresses are 0x20..0x27; 8574a uses 0x38..0x3f;
+> +	 * 9670, 9672, 9764, and 9764a use quite a variety.
+> +	 *
+> +	 * NOTE: we dont distinguish here between *4 and *4a parts.
 
+Typo: don't.
 
+> +	 */
+> +	if (strcmp(client->name, "pcf8574") == 0
+> +			|| strcmp(client->name, "pca8574") == 0
+> +			|| strcmp(client->name, "pca9670") == 0
+> +			|| strcmp(client->name, "pca9672") == 0
+> +			|| strcmp(client->name, "pca9674") == 0
+> +			) {
+> +		gpio->chip.ngpio = 8;
+> +		gpio->chip.direction_input = pcf857x_input8;
+> +		gpio->chip.get = pcf857x_get8;
+> +		gpio->chip.direction_output = pcf857x_output8;
+> +		gpio->chip.set = pcf857x_set8;
+> +
+> +		if (!i2c_check_functionality(client->adapter,
+> +				I2C_FUNC_SMBUS_BYTE))
+> +			status = -EIO;
+> +
+> +		/* fail if there's no chip present */
+> +		else
+> +			status = i2c_smbus_read_byte(client);
+> +
+> +	/* '75/'75c addresses are 0x20..0x27, just like the '74;
+> +	 * the '75c doesn't have a current source pulling high.
+> +	 * 9671, 9673, and 9765 use quite a variety of addresses.
+> +	 *
+> +	 * NOTE: we dont distinguish here between 8575/8575a parts.
+> +	 */
+> +	} else if (strcmp(client->name, "pcf8575") == 0
+> +			|| strcmp(client->name, "pca8575") == 0
+> +			|| strcmp(client->name, "pca9671") == 0
+> +			|| strcmp(client->name, "pca9673") == 0
+> +			|| strcmp(client->name, "pca9675") == 0
+> +			) {
+> +		gpio->chip.ngpio = 16;
+> +		gpio->chip.direction_input = pcf857x_input16;
+> +		gpio->chip.get = pcf857x_get16;
+> +		gpio->chip.direction_output = pcf857x_output16;
+> +		gpio->chip.set = pcf857x_set16;
+> +
+> +		if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
+> +			status = -EIO;
+> +
+> +		/* fail if there's no chip present */
+> +		else
+> +			status = i2c_read_le16(client);
+> +
+> +	} else
+> +		status = -ENODEV;
+> +
+> +	if (status < 0)
+> +		goto fail;
+> +
+> +	gpio->chip.label = client->name;
+> +
+> +	gpio->client = client;
+> +	i2c_set_clientdata(client, gpio);
+> +
+> +	/* NOTE:  these chips have strange "quasi-bidirectional" I/O pins.
+> +	 * We can't actually know whether a pin is configured (a) as output
+> +	 * and driving the signal low, or (b) as input and reporting a low
+> +	 * value ... without knowing the last value written since the chip
+> +	 * came out of reset (if any).  We can't read the latched output.
+> +	 *
+> +	 * In short, the only reliable solution for setting up pin direction
+> +	 * is to do it explicitly.  The setup() method can do that.
+> +	 *
+> +	 * We use pdata->n_latch to avoid trouble.  In the typical case it's
+> +	 * left initialized to zero; our software copy of the "latch" then
+> +	 * matches the chip's all-ones reset state.  But some systems will
+> +	 * need to drive some pins low, while avoiding transient glitches.
+> +	 * Handle those cases by assigning n_latch to a nonzero value.
+> +	 */
+> +	gpio->out = ~pdata->n_latch;
+> +
+> +	status = gpiochip_add(&gpio->chip);
+> +	if (status < 0)
+> +		goto fail;
+> +
+> +	/* NOTE: these chips can issue "some pin-changed" IRQs, which we
+> +	 * don't yet even try to use.  Among other issues, the relevant
+> +	 * genirq state isn't available to modular drivers; and most irq
+> +	 * methods can't be called from sleeping contexts.
+> +	 */
+> +
+> +	dev_info(&client->dev, "gpios %d..%d on a %s%s\n",
+> +			gpio->chip.base,
+> +			gpio->chip.base + gpio->chip.ngpio - 1,
+> +			client->name,
+> +			client->irq ? " (irq ignored)" : "");
+> +
+> +	/* Let platform code set up the GPIOs and their users.
+> +	 * Now is the first time anyone can use them.
+> +	 */
+> +	if (pdata->setup) {
+> +		status = pdata->setup(client,
+> +				gpio->chip.base, gpio->chip.ngpio,
+> +				pdata->context);
+> +		if (status < 0)
+> +			dev_err(&client->dev, "%s --> %d\n",
+> +					"setup", status);
 
+Shouldn't this be degraded to dev_warn? The probe still succeeds. Or
+keep dev_err but make the probe fail (in which case you'll probably
+want to swap this block of code with the dev_info above.)
 
+> +	}
+> +
+> +	return 0;
+> +
+> +fail:
+> +	dev_dbg(&client->dev, "probe error %d for '%s'\n",
+> +			status, client->name);
+> +	kfree(gpio);
+> +	return status;
+> +}
+> +
+> +static int pcf857x_remove(struct i2c_client *client)
+> +{
+> +	struct pcf857x_platform_data	*pdata = client->dev.platform_data;
+> +	struct pcf857x			*gpio = i2c_get_clientdata(client);
+> +	int				status = 0;
+> +
+> +	if (pdata->teardown) {
+> +		status = pdata->teardown(client,
+> +				gpio->chip.base, gpio->chip.ngpio,
+> +				pdata->context);
+> +		if (status < 0) {
+> +			dev_err(&client->dev, "%s --> %d\n",
+> +					"teardown", status);
+> +			return status;
+> +		}
+> +	}
+> +
+> +	status = gpiochip_remove(&gpio->chip);
+> +	if (status == 0)
+> +		kfree(gpio);
+> +	else
+> +		dev_err(&client->dev, "%s --> %d\n", "remove", status);
+> +	return status;
+> +}
+> +
+> +static struct i2c_driver pcf857x_driver = {
+> +	.driver = {
+> +		.name	= "pcf857x",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe	= pcf857x_probe,
+> +	.remove	= pcf857x_remove,
+> +};
+> +
+> +static int __init pcf857x_init(void)
+> +{
+> +	return i2c_add_driver(&pcf857x_driver);
+> +}
+> +/* we want GPIOs to be ready at device_initcall() time */
+> +subsys_initcall(pcf857x_init);
+> +
+> +static void __exit pcf857x_exit(void)
+> +{
+> +	i2c_del_driver(&pcf857x_driver);
+> +}
+> +module_exit(pcf857x_exit);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("David Brownell");
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/include/linux/i2c/pcf857x.h	2007-12-05 15:14:12.000000000 -0800
+> @@ -0,0 +1,45 @@
+> +#ifndef __LINUX_PCF857X_H
+> +#define __LINUX_PCF857X_H
+> +
+> +/**
+> + * struct pcf857x_platform_data - data to set up pcf857x driver
+> + * @gpio_base: number of the chip's first GPIO
+> + * @n_latch: optional bit-inverse of initial register value; if
+> + *	you leave this initialized to zero the driver will act
+> + *	like the chip was just reset
+> + * @setup: optional callback issued once the GPIOs are valid
+> + * @teardown: optional callback issued before the GPIOs are invalidated
+> + * @context: optional parameter passed to setup() and teardown()
+> + *
+> + * In addition to the I2C_BOARD_INFO() state appropriate to each chip,
+> + * the i2c_board_info used with the pcf875x driver must provide the
+> + * chip "type" ("pcf8574", "pcf8574a", "pcf8575", "pcf8575c") and its
+> + * platform_data (pointer to one of these structures) with at least
+> + * the gpio_base value initialized.
+> + *
+> + * The @setup callback may be used with the kind of board-specific glue
+> + * which hands the (now-valid) GPIOs to other drivers, or which puts
+> + * devices in their initial states using these GPIOs.
+> + *
+> + * These GPIO chips are only "quasi-bidirectional"; read the chip specs
+> + * to understand the behavior.  They don't have separate registers to
+> + * record which pins are used for input or output, record which output
+> + * values are driven, or provide access to input values.  That must be
+> + * inferred by reading the chip's value and knowing the last value written
+> + * to it.  If you leave n_latch initialized to zero, that last written
+> + * value is presumed to be all ones (as if the chip were just reset).
+> + */
+> +struct pcf857x_platform_data {
+> +	unsigned	gpio_base;
+> +	unsigned	n_latch;
+> +
+> +	int		(*setup)(struct i2c_client *client,
+> +					int gpio, unsigned ngpio,
+> +					void *context);
+> +	int		(*teardown)(struct i2c_client *client,
+> +					int gpio, unsigned ngpio,
+> +					void *context);
+> +	void		*context;
+> +};
+> +
+> +#endif /* __LINUX_PCF857X_H */
 
---==_Exmh_1196982750_2767P
-Content-Type: application/pgp-signature
+The rest looks fine to me.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD4DBQFHWIHecC3lWbTT17ARAsxnAJwKiCFyNJqF1edByoMhZ6iLGxrziACUCI8o
-STbDgOfily2LZErBZtepNw==
-=cxO4
------END PGP SIGNATURE-----
-
---==_Exmh_1196982750_2767P--
+-- 
+Jean Delvare
