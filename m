@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbXLFCZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXLFC2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbXLFCZV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXLFCZE
+	id S1755551AbXLFC2O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXLFC15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:25:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46436
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754405AbXLFCZB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:25:01 -0500
-Date: Wed, 05 Dec 2007 18:25:00 -0800 (PST)
-Message-Id: <20071205.182500.166603251.davem@davemloft.net>
-To: stefan@loplof.de
-Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: sockets affected by IPsec always block (2.6.23)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200712051939.08384.stefan@loplof.de>
-References: <20071204.223023.262159049.davem@davemloft.net>
-	<20071205065132.GA11476@gondor.apana.org.au>
-	<200712051939.08384.stefan@loplof.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Dec 2007 21:27:57 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:50011 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751850AbXLFC15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:27:57 -0500
+Message-Id: <20071206022555.150400591@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Wed, 05 Dec 2007 21:25:55 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: [patch-RFC 0/7] LTTng instrumentation (arch independent)
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Rompf <stefan@loplof.de>
-Date: Wed, 5 Dec 2007 19:39:07 +0100
+Hi,
 
-> I'd strongly suggest doing so. AFAIK, behaviour of connect() on nonblocking 
-> sockets is quite well defined in POSIX.
+This is the second RFC post for the LTTng architecture independent
+instrumentation. I have mostly received interesting ideas from the mm group,
+which I have added here.
 
-You are entitled to your opinion.
+It applies on top of 2.6.24-rc4-git3, on top of the Linux Kernel Markers with
+Immediate Values patchset.
 
-POSIX says nothing about the semantics of route resolution.
-Non-blocking doesn't mean "cannot sleep no matter what".
+Mathieu
 
-> If this is changed for some IP sockets, event-driven applications
-> will randomly and subtly break.
-
-If this was such a clear cut case we'd have changed things
-a long time ago, but it isn't so don't pretend this is the
-case.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
