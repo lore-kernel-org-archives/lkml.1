@@ -1,115 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbXLFQWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbXLFQWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbXLFQWH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 11:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXLFQVz
+	id S1753314AbXLFQWW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 11:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXLFQWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 11:21:55 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:40989 "EHLO mail.screens.ru"
+	Thu, 6 Dec 2007 11:22:00 -0500
+Received: from ns.firmix.at ([62.141.48.66]:6128 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752709AbXLFQVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 11:21:54 -0500
-Date: Thu, 6 Dec 2007 19:22:44 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
+	id S1755262AbXLFQV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 11:21:58 -0500
+Subject: Re: kernel source code repository?
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Amogh Hushdar <amoghhooshdar@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] move the related code from exit_notify() to exit_signals()
-Message-ID: <20071206162244.GA9878@tv-sign.ru>
+In-Reply-To: <78c462ad0712060816y63e4dc60r9b87f5030ca2e0d9@mail.gmail.com>
+References: <78c462ad0712060816y63e4dc60r9b87f5030ca2e0d9@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Thu, 06 Dec 2007 17:21:52 +0100
+Message-Id: <1196958112.3827.22.camel@tara.firmix.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.325 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.325 required=5
+X-Spam-Score: -2.325 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The previous bugfix was not optimal, we shouldn't care about group stop when
-we are the only thread or the group stop is in progress. In that case nothing
-special is needed, just set PF_EXITING and return.
+On Don, 2007-12-06 at 21:46 +0530, Amogh Hushdar wrote:
+[...]
+> none of this is available, at least a tarball that I can download
+> using my browser?
 
-Also, take the related "TIF_SIGPENDING re-targeting" code from exit_notify().
+Look at http://www.kernel.org/
 
-So, from the performance POV the only difference is that we don't trust
-!signal_pending() until we take ->siglock. But this in fact fixes another
-___pure___ theoretical minor race. __group_complete_signal() finds the task
-without PF_EXITING and chooses it as the target for signal_wake_up(). But
-nothing prevents this task from exiting in between without noticing the
-pending signal and thus unpredictably delaying the actual delivery.
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- PT/kernel/exit.c~2_unify_signal_exit	2007-12-05 19:50:26.000000000 +0300
-+++ PT/kernel/exit.c	2007-12-06 18:06:09.000000000 +0300
-@@ -743,24 +743,6 @@ static void exit_notify(struct task_stru
- 	struct task_struct *t;
- 	struct pid *pgrp;
- 
--	if (signal_pending(tsk) && !(tsk->signal->flags & SIGNAL_GROUP_EXIT)
--	    && !thread_group_empty(tsk)) {
--		/*
--		 * This occurs when there was a race between our exit
--		 * syscall and a group signal choosing us as the one to
--		 * wake up.  It could be that we are the only thread
--		 * alerted to check for pending signals, but another thread
--		 * should be woken now to take the signal since we will not.
--		 * Now we'll wake all the threads in the group just to make
--		 * sure someone gets all the pending signals.
--		 */
--		spin_lock_irq(&tsk->sighand->siglock);
--		for (t = next_thread(tsk); t != tsk; t = next_thread(t))
--			if (!signal_pending(t) && !(t->flags & PF_EXITING))
--				recalc_sigpending_and_wake(t);
--		spin_unlock_irq(&tsk->sighand->siglock);
--	}
--
- 	/*
- 	 * This does two things:
- 	 *
---- PT/kernel/signal.c~2_unify_signal_exit	2007-12-05 20:17:20.000000000 +0300
-+++ PT/kernel/signal.c	2007-12-06 18:13:31.000000000 +0300
-@@ -1871,19 +1871,36 @@ relock:
- void exit_signals(struct task_struct *tsk)
- {
- 	int group_stop = 0;
-+	struct task_struct *t;
- 
--	spin_lock_irq(&tsk->sighand->siglock);
--	if (unlikely(tsk->signal->group_stop_count) &&
--			!--tsk->signal->group_stop_count) {
--		tsk->signal->flags = SIGNAL_STOP_STOPPED;
--		group_stop = 1;
-+	if (thread_group_empty(tsk) || signal_group_exit(tsk->signal)) {
-+		tsk->flags |= PF_EXITING;
-+		return;
- 	}
- 
-+	spin_lock_irq(&tsk->sighand->siglock);
- 	/*
- 	 * From now this task is not visible for group-wide signals,
- 	 * see wants_signal(), do_signal_stop().
- 	 */
- 	tsk->flags |= PF_EXITING;
-+	if (!signal_pending(tsk))
-+		goto out;
-+
-+	/* It could be that __group_complete_signal() choose us to
-+	 * notify about group-wide signal. Another thread should be
-+	 * woken now to take the signal since we will not.
-+	 */
-+	for (t = tsk; (t = next_thread(t)) != tsk; )
-+		if (!signal_pending(t) && !(t->flags & PF_EXITING))
-+			recalc_sigpending_and_wake(t);
-+
-+	if (unlikely(tsk->signal->group_stop_count) &&
-+			!--tsk->signal->group_stop_count) {
-+		tsk->signal->flags = SIGNAL_STOP_STOPPED;
-+		group_stop = 1;
-+	}
-+out:
- 	spin_unlock_irq(&tsk->sighand->siglock);
- 
- 	if (unlikely(group_stop)) {
 
