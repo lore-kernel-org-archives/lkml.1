@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbXLFRxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbXLFRzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753084AbXLFRxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 12:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXLFRxb
+	id S1753421AbXLFRzO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 12:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbXLFRzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 12:53:31 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:1862 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751658AbXLFRxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 12:53:30 -0500
-Date: Fri, 7 Dec 2007 04:40:52 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: David Miller <davem@davemloft.net>, xiyou.wangcong@gmail.com,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, netdev@vger.kernel.org
-Subject: Re: [Patch] net/xfrm/xfrm_policy.c: Some small improvements
-Message-ID: <20071206174052.GA530@gondor.apana.org.au>
-References: <20071206110123.GB2469@hacking> <20071206.031434.179419183.davem@davemloft.net> <4758093A.7010608@student.ltu.se>
+	Thu, 6 Dec 2007 12:55:01 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53644 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751216AbXLFRzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 12:55:00 -0500
+Subject: Re: [RFC PATCH 0/5] Union Mount: A Directory listing approach with
+	lseek support
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Erez Zadok <ezk@cs.sunysb.edu>,
+       viro@zeniv.linux.org.uk, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20071206100118.GA19903@hasse.suse.de>
+References: <20071205143718.GC2471@in.ibm.com>
+	 <1196875318.18685.24.camel@localhost>
+	 <20071206100118.GA19903@hasse.suse.de>
+Content-Type: text/plain
+Date: Thu, 06 Dec 2007 09:54:43 -0800
+Message-Id: <1196963684.18685.82.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4758093A.7010608@student.ltu.se>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 03:37:46PM +0100, Richard Knutsson wrote:
->
-> Is it not an improvement to distinct booleans from actual values? Do you 
-> use integers for ASCII characters too? It can also avoid some potential 
-> bugs like the 'if (i == TRUE)'...
-> What is wrong with 'size_t' (since it is unsigned, compared to (some) 
-> 'int')?
+On Thu, 2007-12-06 at 11:01 +0100, Jan Blunck wrote:
+> > Rather than give each _dirent_ an offset, could we give each sub-mount
+> > an offset?  Let's say we have three members comprising a union mount
+> > directory.  The first has 100 dirents, the second 200, and the third
+> > 10,000.  When the first readdir is done, we populate the table like
+> > this:
+> > 
+> >       mount_offset[0] = 0;
+> >       mount_offset[1] = 100;
+> >       mount_offset[2] = 300;
+> > 
+> > If someone seeks back to 150, then we subtrack the mount[1]'s offset
+> > (100), and realize that we want the 50th dirent from mount[1].
+> 
+> Yes, that is a nice idea and it is exactly what I have implemented in my patch
+> series. But you forgot one thing: directories are not flat files. The dentry
+> offset in a directory is a random cookie. Therefore it is not possible to have
+> a linear mapping without allocating memory.
 
-I agree with Dave.  There are so many useful things that we can do
-(and need to do) in IPsec that bool/size_t conversions just add
-churn without adding much value.
+Is is truly a random cookie where the fs gets to put anything in there
+that it can fit in a long?  Isn't that an advantage?  Being a random
+cookie, we can encode anything we want in there.  We could encode the
+"mount index" (or whatever you want to call it) in high or low bits and
+have the rest store the fs-specific offset.  The only problem there
+would be running out of storage space in long.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+But, what do people expect when they have huge directories (or huge
+directory offsets)?  Surely, if their fs is already pressing the fs's
+directory data types to the limits, they can't simply union mount a
+couple of those directories together and expect magic.  Union mounts
+also can't be expected to compress these directory positions to fit.
+
+So, I think it's reasonable behavior to readdir() until the sum of the
+highest position seen on each mount would overflow the off_t that we
+have to store it in.  
+
+-- Dave
+
