@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbXLFWjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbXLFWjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbXLFWjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 17:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbXLFWig
+	id S1756321AbXLFWjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 17:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXLFWjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 17:38:36 -0500
-Received: from smtp121.plus.mail.mud.yahoo.com ([209.191.106.152]:21866 "HELO
-	smtp121.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753790AbXLFWif (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 17:38:35 -0500
-X-Greylist: delayed 2746 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Dec 2007 17:38:35 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
-  b=0FNby8JSFxTpzmVTWCks/aTdv2WoHlCmNJ7DuTrz+DkJKBIAabvpJhmdro9aU4OD+rWZKGTwuGK5C41Qk9VnFXawPE6o/QMBL6ThCxnWWrKMrRBf38W9C/ce6hRTaJEwWLhnEtePu9rm5Elz+4Dp8qyiUe2wNOd+kRLJ9Eb7dwE=  ;
-X-YMail-OSG: 36WK0dMVM1ltCT5Xw8l3GzLJWt0fIdbeySl9MDBDObSVAVgrSd6.RYWSZmO1LdzvUmE.ta8xbw--
-Message-ID: <4758589B.7090303@yahoo.fr>
-Date: Thu, 06 Dec 2007 21:16:27 +0100
-From: =?UTF-8?B?UsOpbWkgSMOpcmlsaWVy?= <rherilier@yahoo.fr>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@mail.ru>
-CC: linux-kernel@vger.kernel.org
-Subject: PATCH] adding wistron_btns support for X86_64 systems.
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 6 Dec 2007 17:39:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60635 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755961AbXLFWjH convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 17:39:07 -0500
+Date: Thu, 6 Dec 2007 14:37:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: linux-kernel@vger.kernel.org, Miles Lane <miles.lane@gmail.com>,
+       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc4-mm1: VDSOSYM build error
+Message-Id: <20071206143754.07a67819.akpm@linux-foundation.org>
+In-Reply-To: <47587796.8020705@free.fr>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<47587796.8020705@free.fr>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 06 Dec 2007 23:28:38 +0100
+Laurent Riffard <laurent.riffard@free.fr> wrote:
 
-Hello again.
+> Le 05.12.2007 06:17, Andrew Morton a �crit :
+> > Temporarily at
+> >   http://userweb.kernel.org/~akpm/2.6.24-rc4-mm1/
+> > Will appear later at
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
+> 
+>   LDS     arch/x86/vdso/vdso32/vdso32.lds
+>   AS      arch/x86/vdso/vdso32/note.o
+>   AS      arch/x86/vdso/vdso32/int80.o
+>   VDSO    arch/x86/vdso/vdso32-int80.so.dbg
+>   OBJCOPY arch/x86/vdso/vdso32-int80.so
+>   AS      arch/x86/vdso/vdso32/sysenter.o
+>   VDSO    arch/x86/vdso/vdso32-sysenter.so.dbg
+>   OBJCOPY arch/x86/vdso/vdso32-sysenter.so
+>   AS      arch/x86/vdso/vdso32.o
+>   CC      arch/x86/vdso/vdso32-setup.o
+>   VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
+>   VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
+>   VDSOSYM arch/x86/vdso/vdso32-syms.lds
+> --- -   2007-12-06 23:23:08.785302925 +0100
+> +++ arch/x86/vdso/vdso32-int80-syms.lds 2007-12-06 23:23:08.000000000 +0100
+> @@ -3,4 +3,3 @@
+>  VDSO32_sigreturn = 0x0400;
+>  VDSO32_vsyscall = 0x0414;
+>  VDSO32_vsyscall_eh_frame_size = 0x044;
+> -VDSO32_vsyscall_eh_frame_size = 0x058;
+> make[1]: *** [arch/x86/vdso/vdso32-syms.lds] Error 1
+> make: *** [arch/x86/vdso] Error 2
 
-To use my previous patch (wistron_btns support for fujitsu-siemens amilo pro edition v3505)
-with my laptop, I need to make the wistron module compile for x86_64. It is based on Linux
-2.4.24-rc4 too.
-
-So, here it is:
-
-
-Wistron button support for X86_64 systems.
-
-Signed-off-by: Remi Herilier <rherilier@yahoo.fr>
-
-
-diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-index 8f5c7b9..5bc8ce6 100644
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -64,7 +64,7 @@ config INPUT_COBALT_BTNS
- 
- config INPUT_WISTRON_BTNS
- 	tristate "x86 Wistron laptop button interface"
--	depends on X86 && !X86_64
-+	depends on X86
- 	select INPUT_POLLDEV
- 	select NEW_LEDS
- 	select LEDS_CLASS
-diff --git a/drivers/input/misc/wistron_btns.c b/drivers/input/misc/wistron_btns.c
-index b438d99..9d8069b 100644
---- a/drivers/input/misc/wistron_btns.c
-+++ b/drivers/input/misc/wistron_btns.c
-@@ -74,10 +74,18 @@ static void call_bios(struct regs *regs)
- 
- 	preempt_disable();
- 	local_irq_save(flags);
-+#ifdef CONFIG_X86_64
-+	asm volatile ("pushq %%rbp;"
-+#else
- 	asm volatile ("pushl %%ebp;"
-+#endif
- 		      "movl %7, %%ebp;"
- 		      "call *%6;"
-+#ifdef CONFIG_X86_64
-+		      "popq %%rbp"
-+#else
- 		      "popl %%ebp"
-+#endif 
- 		      : "=a" (regs->eax), "=b" (regs->ebx), "=c" (regs->ecx)
- 		      : "0" (regs->eax), "1" (regs->ebx), "2" (regs->ecx),
- 			"m" (bios_entry_point), "m" (bios_data_map_base)
-
---
-Best regards
-
-Rémi Hérilier
+Dunno.  Maybe Roland's VDSO rework?
