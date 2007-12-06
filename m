@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbXLFVMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbXLFVPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbXLFVMa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 16:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbXLFVMW
+	id S1754600AbXLFVPS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 16:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbXLFVPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 16:12:22 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38378 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751750AbXLFVMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 16:12:22 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18Y0IBNI0AYrI4azrzvRHWpB6V/aV2VHtuHzozfFS
-	T7/1V4KY+8Mgau
-Date: Thu, 6 Dec 2007 22:12:18 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Markus <M4rkusXXL@web.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: programs vanish with 2.6.22+
-In-Reply-To: <200712061927.35976.M4rkusXXL@web.de>
-Message-ID: <Pine.LNX.4.64.0712062207320.25344@axis700.grange>
-References: <200712061906.42070.M4rkusXXL@web.de> <200712061927.35976.M4rkusXXL@web.de>
+	Thu, 6 Dec 2007 16:15:06 -0500
+Received: from smtp106.plus.mail.re1.yahoo.com ([69.147.102.69]:36880 "HELO
+	smtp106.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751137AbXLFVPE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 16:15:04 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
+  b=5e+j+sLRdLGpDJxcLTdr7/uzndn8Vf+gKXVyPHWMGTsux6oso2pRc7GPulWvjtv0Rv5XzjLPgLAIx1VYDjIRWe0r+yOMfQUFhg6G+Ag8dSeI3/S6uZ8YPy381halxWDAFHf+Sdd5vP/chRqpwPfcaSW+DOVO/0DnabH3TwXBzOU=  ;
+X-YMail-OSG: zTKSzmcVM1nGaEXYZvnDPZHcr0jtR.GIuDiNYCC0i35.qu6ldpVk38WlPPnHURxoX5fjJg_7Uw--
+Date: Thu, 6 Dec 2007 22:13:35 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC] swap image signature check upon resume
+Message-ID: <20071206211335.GA4923@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+Mail-Followup-To: bbpetkov@yahoo.de, Pavel Machek <pavel@suse.cz>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2007, Markus wrote:
+Hi Pavel,
+hi Rafael,
 
-> Just forgot to mention:
-> dmesg gives nothing (/var/log/messages)
-> the global X log aswell
-> 
-> and in the users .xsession-errors I have:
-> amarokapp: Fatal IO error: client killed
-> kdesktop: Fatal IO error: client killed
-> konqueror: Fatal IO error: client killed
-> The application 'xchat' lost its connection to the display :0.0;
-> 
-> I dont know what that means, but at least its something ;)
+after a quick search i couldn't find anything dealing with the topic in the
+subject line so here we go:
 
-Hm, no good idea, but some possible hints:
+One sometimes can mix up (and by one i mean me) the
+kernel images one boots after having suspended the machine previously. There can
+be at least two reasons for that:
 
-1. Ask Gentoo folks - if anyone has seen similar problems
-2. RAM test - even if earlier kernels ran stable, the new one might stress 
-your RAM differently
-3. Are you sure nothing else has changed apart from the kernel?
-4. You might try to recompile a vanilla 2.6.23+ kernel and enable as many 
-kernel debugging options as you can...
-5. Are you sure the installed kernel matches your CPU and your user-space 
-64- / 32-bit combination? Don't know whether a wrongly configured kernel 
-could cause such problems though
+1. too many kernels in grub and having forgotten with which i suspended.
+2. compile and install a new kernel and forget about it, suspend in the evening
+and then boot with the new kernel;
 
-Good luck
-Guennadi
+in both cases you end up staring at fsck since they filesystems haven't been unmounted,
+of course. Or at least see the warning message of some journal recovery whisk away.
 
-> 
-> Markus
-> 
-> > Hello!
-> > 
-> > Excuse my bad english, I am no native speaker. And please CC me, as I 
-> am 
-> > not subscribed!
-> > 
-> > I am running an amd64 system with a stable gentoo. Today I upgraded to 
-> > the kernel 2.6.22 and noticed many programs to disappear.
-> > I use a kde desktop (3.5.7) and when amarok or kmail crash, normaly 
-> > a "kde-crash-manager" pops up (but that happend very rarely), but not 
-> > with 2.6.22+. It happens often and without any messagebox.
-> > kdesktop, xchat, kicker, konqueror crashed as well.
-> > It happens more often under heavy load. But it can also happen when 
-> > idle. Also I have the feeling that it happens more often on 2.6.23+ I 
-> > might be wrong.
-> > 
-> > I tried 2.6.23 and the current 2.6.24-rc4, which all show this problem 
-> > aswell!
-> > What has changed in 2.6.21 -> 2.6.22 that could cause such things?
-> > Or who can tell that?
-> > Can I help? How? (I use linux for years and can code, but I never 
-> > debugged anything as big as the kernel...)
-> > 
-> > 
-> > Markus
-> > 
-> > PS: Sorry thats so late, but I normaly stay on the distros stable 
-> kernel 
-> > and only try vanilla when something is wrong ;)
-> > 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+In order to alleviate that, one could probably go, imho, and write in the swsusp_header
+the kernel version which suspended the machine (UTS_RELEASE) alongside
+SWSUSP_SIG and check that against the kernel version of the image just booting.
+If they match then all is well, if not, one could
 
----
-Guennadi Liakhovetski
+a) issue a BIG FAT WARNING and reboot telling the user to select the proper
+image
+b) ask the user what to do:
+	- proceed as if "noresume" has been entered on the kernel command line
+	- reboot after issuing the kernel version which suspended the machine
+	-
+c)...
+
+In case you guys think something like that might be of use i can come up with a
+patch in the next coupla days...
+
+-- 
+Regards/Gruﬂ,
+    Boris.
