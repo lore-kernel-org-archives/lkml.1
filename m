@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbXLFPuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbXLFPx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbXLFPuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 10:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbXLFPuH
+	id S1754419AbXLFPx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 10:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbXLFPxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 10:50:07 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:38893
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753644AbXLFPuG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 10:50:06 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/2] Subject: SCHED - Clean up some old cpuset logic
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, ghaskins@novell.com
-Date: Thu, 06 Dec 2007 10:28:02 -0500
-Message-ID: <20071206152802.7031.80344.stgit@novell1.haskins.net>
-In-Reply-To: <20071206152536.7031.16101.stgit@novell1.haskins.net>
-References: <20071206152536.7031.16101.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 6 Dec 2007 10:53:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44006 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751592AbXLFPxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 10:53:18 -0500
+Date: Thu, 6 Dec 2007 10:52:42 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Message-ID: <20071206105242.3e289a21@cuia.boston.redhat.com>
+In-Reply-To: <20071206035511.83bef995.akpm@linux-foundation.org>
+References: <200712051603.02183.phillips@phunq.net>
+	<200712052221.45409.phillips@phunq.net>
+	<20071205233152.c567fa57.akpm@linux-foundation.org>
+	<200712060148.53805.phillips@phunq.net>
+	<20071206035511.83bef995.akpm@linux-foundation.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We had support for overlapping cpuset based rto logic in early prototypes that
-is no longer used, so clean it up.
+On Thu, 6 Dec 2007 03:55:11 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+> - We a-priori decide to limit a particular stack's peak memory usage to
+>   1MB
+> 
+> - We empirically discover that the maximum amount of memory which is
+>   allocated by that stack on behalf of a single BIO is 16kb.  (ie: that's
+>   the most it has ever used for a single BIO).
+> 
+> - Now, we refuse to feed any more BIOs into the stack when its
+>   instantaneous memory usage exceeds (1MB - 16kb).
+> 
+> Of course, the _average_ memory-per-BIO is much less than 16kb.  So there
+> are a lot of BIOs in flight - probably hundreds, but a minimum of 63.
 
- kernel/sched_rt.c |   32 --------------------------------
- 1 files changed, 0 insertions(+), 32 deletions(-)
+There is only one problem I can see with this.  With network block
+IO, some memory will be consumed upon IO completion.  We need to
+make sure we reserve (number of in flight BIOs * maximum amount of
+memory consumed upon IO completion) memory, in addition to the
+memory you're accounting in your example above.
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 53cd9e8..65cbb78 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -586,37 +586,6 @@ static int pull_rt_task(struct rq *this_rq)
- 			continue;
- 
- 		src_rq = cpu_rq(cpu);
--		if (unlikely(src_rq->rt.rt_nr_running <= 1)) {
--			/*
--			 * It is possible that overlapping cpusets
--			 * will miss clearing a non overloaded runqueue.
--			 * Clear it now.
--			 */
--			if (double_lock_balance(this_rq, src_rq)) {
--				/* unlocked our runqueue lock */
--				struct task_struct *old_next = next;
--
--				next = pick_next_task_rt(this_rq);
--				if (next != old_next)
--					ret = 1;
--			}
--			if (likely(src_rq->rt.rt_nr_running <= 1)) {
--				/*
--				 * Small chance that this_rq->curr changed
--				 * but it's really harmless here.
--				 */
--				rt_clear_overload(this_rq);
--			} else {
--				/*
--				 * Heh, the src_rq is now overloaded, since
--				 * we already have the src_rq lock, go straight
--				 * to pulling tasks from it.
--				 */
--				goto try_pulling;
--			}
--			spin_unlock(&src_rq->lock);
--			continue;
--		}
- 
- 		/*
- 		 * We can potentially drop this_rq's lock in
-@@ -641,7 +610,6 @@ static int pull_rt_task(struct rq *this_rq)
- 			continue;
- 		}
- 
-- try_pulling:
- 		p = pick_next_highest_task_rt(src_rq, this_cpu);
- 
- 		/*
-
+-- 
+All Rights Reversed
