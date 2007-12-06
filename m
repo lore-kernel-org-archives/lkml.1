@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbXLFUhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbXLFUjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbXLFUhX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 15:37:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXLFUhL
+	id S1754108AbXLFUjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 15:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXLFUjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 15:37:11 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:56851 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbXLFUhK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 15:37:10 -0500
-Message-ID: <47585D66.3000404@nortel.com>
-Date: Thu, 06 Dec 2007 14:36:54 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 6 Dec 2007 15:39:10 -0500
+Received: from mail.tmr.com ([64.65.253.246]:43901 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751983AbXLFUjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 15:39:10 -0500
+Message-ID: <475861D4.20909@tmr.com>
+Date: Thu, 06 Dec 2007 15:55:48 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Renzo Davoli <renzo@cs.unibo.it>, linux-kernel@vger.kernel.org
-Subject: Re: New Address Family: Inter Process Networking (IPN)
-References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it> <20071206163538.GC20595@one.firstfloor.org>
-In-Reply-To: <20071206163538.GC20595@one.firstfloor.org>
+To: Brett Warden <brett.warden@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] bw-qcam: adds parameter aggressive to skip passive detection
+ and directly attempt initialization
+References: <20071205173756.0cd80e85@the-village.bc.nu> <a372714f0712051031n31b933bfw6a5f9cb57b8cb5b8@mail.gmail.com>
+In-Reply-To: <a372714f0712051031n31b933bfw6a5f9cb57b8cb5b8@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Dec 2007 20:36:57.0579 (UTC) FILETIME=[BED913B0:01C83847]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>"This document describes Linux Netlink, which is used in Linux both as
->>   an intra-kernel messaging system as well as between kernel and user
->>   space."
+Brett Warden wrote:
+> On Dec 5, 2007 9:37 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
+>> Although I would suggest that "aggressive" may not be the best term - I'm
+>> not such of a good one however - skip_passive ?
 > 
-> It can be used between user space daemons as well. In fact it is.
-> e.g. they often listen to each other's messages.
+> How about force_init?
+> 
+Much more descriptive.
 
-One problem we ran into was that there are only 32 multicast groups per 
-netlink protocol family.
 
-We had a situation where we could have used netlink, but we needed the 
-equivalent of thousands of multicast groups.  Latency was very 
-important, so we ended up doing essentially a multicast unix socket 
-rather than taking the extra penalty for UDP multicast.
-
-Chris
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
