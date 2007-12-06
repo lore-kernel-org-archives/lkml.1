@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbXLFHDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbXLFHG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbXLFHDa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 02:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXLFHDX
+	id S1754775AbXLFHG4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 02:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXLFHGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 02:03:23 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:38626 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbXLFHDW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 02:03:22 -0500
-Message-ID: <47579E89.6080802@cosmosbay.com>
-Date: Thu, 06 Dec 2007 08:02:33 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 6 Dec 2007 02:06:46 -0500
+Received: from tornado.reub.net ([59.167.253.246]:38592 "EHLO tornado.reub.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752735AbXLFHGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 02:06:44 -0500
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Dec 2007 02:06:44 EST
+X-DKIM: Sendmail DKIM Filter v2.3.2 tornado.reub.net 8A763129ACB
+Message-ID: <47579DD9.9030909@reub.net>
+Date: Thu, 06 Dec 2007 17:59:37 +1100
+From: Reuben Farrelly <reuben-linuxkernel@reub.net>
+User-Agent: Thunderbird 2.0.0.11pre (Windows/20071205)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org>
-In-Reply-To: <20071205212646.GP17536@waste.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: 2.6.24-rc4-mm1
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 06 Dec 2007 08:02:41 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall a écrit :
-> On Tue, Dec 04, 2007 at 07:17:58PM +0100, Eric Dumazet wrote:
->> Alan Cox a ?crit :
->>>> No matter what you consider as being better, changing a 12 years old and 
->>>> widely used userspace interface like /dev/urandom is simply not an 
->>>> option.
->>>>    
->>> Fixing it to be more efficient in its use of entropy and also fixing the
->>> fact its not actually a good random number source would be worth looking
->>> at however.
->>>  
->> Yes, since current behavior on network irq is very pessimistic.
+On 5/12/2007 4:17 PM, Andrew Morton wrote:
+> Temporarily at
 > 
-> No, it's very optimistic. The network should not be trusted.
-
-You keep saying that. I am refering to your previous attempts last year to 
-remove net drivers from sources of entropy. No real changes were done.
-
-If the network should not be trusted, then a patch should make sure network 
-interrupts feed /dev/urandom but not /dev/random at all. (ie not calling 
-credit_entropy_store() at all)
-
+>   http://userweb.kernel.org/~akpm/2.6.24-rc4-mm1/
 > 
-> The distinction between /dev/random and /dev/urandom boils down to one
-> word: paranoia. If you are not paranoid enough to mistrust your
-> network, then /dev/random IS NOT FOR YOU. Use /dev/urandom. Do not
-> send patches to make /dev/random less paranoid, kthxbye.
-
-I have many tg3 adapters on my servers, receiving thousand of interrupts per 
-second, and calling add_timer_randomness(). I would like to either :
-
-- Make sure this stuff is doing usefull job.
-- Make improvements to reduce cpu time used.
-
-I do not use /dev/urandom or/and /dev/random, but I know David wont accept a 
-patch to remove IRQF_SAMPLE_RANDOM from tg3.c
-
-Currently, I see that current implementation is suboptimal because it calls 
-credit_entropy_store( nbits=0) forever.
-
+> Will appear later at
 > 
->> If you have some trafic, (ie more than HZ/2  interrupts per second), 
->> then add_timer_randomness() feeds
->> some entropy but gives no credit (calling credit_entropy_store() with 
->> nbits=0)
->>
->> This is because we take into account only the jiffies difference, and 
->> not the get_cycles() that should give
->> us more entropy on most plaforms.
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
 > 
-> If we cannot measure a difference, we should nonetheless assume there
-> is one?
+> 
+> - Lots of device IDs have been removed from the e1000 driver and moved over
+>   to e1000e.  So if your e1000 stops working, you forgot to set CONFIG_E1000E.
 
-There is a big difference on get_cycles() and jiffies. You should try to 
-measure it on a typical x86_64 platform.
+This non fatal oops which I have just noticed may be related to this change then 
+- certainly looks networking related.
 
->  
->> In this patch, I suggest that we feed only one u32 word of entropy, 
->> combination of the previous distinct
->> words (with some of them being constant or so), so that the nbits 
->> estimation is less pessimistic, but also to
->> avoid injecting false entropy.
-> 
-> Umm.. no, that's not how it works at all.
-> 
-> Also, for future reference, patches for /dev/random go through me, not
-> through Dave.
-> 
+WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
+Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
 
-Why ? David is the network maintainer, and he was the one who rejected your 
-previous patches.
+Call Trace:
+  <IRQ>  [<ffffffff8046e038>] tcp_fastretrans_alert+0x229/0xe63
+  [<ffffffff80470975>] tcp_ack+0xa3f/0x127d
+  [<ffffffff804747b7>] tcp_rcv_established+0x55f/0x7f8
+  [<ffffffff8047b1aa>] tcp_v4_do_rcv+0xdb/0x3a7
+  [<ffffffff881148a8>] :nf_conntrack:nf_ct_deliver_cached_events+0x75/0x99
+  [<ffffffff88120179>] :nf_conntrack_ipv4:ipv4_confirm+0x29/0x51
+  [<ffffffff8047db71>] tcp_v4_rcv+0x9be/0xaed
+  [<ffffffff80455eaa>] nf_hook_slow+0x60/0xdf
+  [<ffffffff8045db6b>] ip_local_deliver_finish+0xd3/0x253
+  [<ffffffff8045e146>] ip_local_deliver+0x3b/0x85
+  [<ffffffff8045d7f9>] ip_rcv_finish+0x119/0x3b8
+  [<ffffffff8045e030>] ip_rcv+0x231/0x30c
+  [<ffffffff8043ef39>] netif_receive_skb+0x215/0x299
+  [<ffffffff880b82b9>] :e1000e:e1000_receive_skb+0x4d/0x1db
+  [<ffffffff880bc200>] :e1000e:e1000_clean_rx_irq+0x12c/0x341
+  [<ffffffff880ba31a>] :e1000e:e1000_clean+0x306/0x58f
+  [<ffffffff8022a16a>] rebalance_domains+0xec/0x423
+  [<ffffffff80261332>] handle_edge_irq+0x97/0x13b
+  [<ffffffff804412d3>] net_rx_action+0xb8/0x11d
+  [<ffffffff802344f8>] __do_softirq+0x71/0xdd
+  [<ffffffff8020c8fc>] call_softirq+0x1c/0x30
+  [<ffffffff8020e7a5>] do_softirq+0x3d/0x8d
+  [<ffffffff80234485>] irq_exit+0x84/0x86
+  [<ffffffff8020e89e>] do_IRQ+0x7e/0xe4
+  [<ffffffff8020a908>] mwait_idle+0x0/0x58
+  [<ffffffff8020a7f1>] default_idle+0x0/0x43
+  [<ffffffff8020bc81>] ret_from_intr+0x0/0xa
+  <EOI>  [<ffffffff8020a950>] mwait_idle+0x48/0x58
+  [<ffffffff80209f23>] enter_idle+0x22/0x24
+  [<ffffffff8020a897>] cpu_idle+0x63/0x88
+  [<ffffffff804ada75>] rest_init+0x55/0x60
+  [<ffffffff80627b9a>] start_kernel+0x2a4/0x32a
+  [<ffffffff8062710b>] _sinittext+0x10b/0x120
+
+tornado home #
+
+I have posted a full dmesg up as well as my .config and an lcpci at 
+http://www.reub.net/files/kernel/2.6.24-rc4-mm1/ .
+
+Thanks,
+Reuben
