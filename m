@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXLFOmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbXLFOom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbXLFOmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 09:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXLFOmi
+	id S1754026AbXLFOom (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 09:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXLFOof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 09:42:38 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49054 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbXLFOmi (ORCPT
+	Thu, 6 Dec 2007 09:44:35 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:37897 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbXLFOoe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 09:42:38 -0500
-Date: Thu, 6 Dec 2007 07:42:36 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 2/5] Use macros instead of TASK_ flags
-Message-ID: <20071206144236.GB15868@parisc-linux.org>
-References: <11932286982175-git-send-email-matthew@wil.cx> <1193228698799-git-send-email-matthew@wil.cx> <20071205125622.GA21531@elte.hu>
-MIME-Version: 1.0
+	Thu, 6 Dec 2007 09:44:34 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAAaZV0dMROHU/2dsb2JhbACBWg
+Date: Thu, 6 Dec 2007 09:44:32 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: pageexec@freemail.hu
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch 06/11] Text Edit Lock - Alternative code for x86
+Message-ID: <20071206144431.GA11846@Krystal>
+References: <20071206020441.851817020@polymtl.ca> <475804F5.4781.35D49FA@pageexec.freemail.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071205125622.GA21531@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <475804F5.4781.35D49FA@pageexec.freemail.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:43:46 up 32 days, 19:49,  4 users,  load average: 0.82, 1.63,
+	1.71
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 01:56:22PM +0100, Ingo Molnar wrote:
-> 1) please change 'is' and 'task' around so that it reads nicer:
+* pageexec@freemail.hu (pageexec@freemail.hu) wrote:
+> On 5 Dec 2007 at 21:02, Mathieu Desnoyers wrote:
 > 
->    if (task_is_stopped(t))
+> > Fix a memcpy that should be a text_poke (in apply_alternatives).
+> > 
+> > Use kernel_wp_save/kernel_wp_restore in text_poke to support DEBUG_RODATA
+> > correctly and so the CPU HOTPLUG special case can be removed.
+> > 
+> > Add text_poke_early, for alternatives and paravirt boot-time and module load
+> > time patching.
+> > 
+> > Notes:
+> > - we use a macro for kernel_wp_save/restore to mimic local_irq_save/restore: the
+> >   argument is passed without &.
 > 
-> instead of the tongue-twister:
+> sorry to chime in again, but lately i've been thinking that the
+> cr0 argument is not really needed if one can ensure that calls
+> to the kernel open/close macros won't nest (i checked and even
+> in the PaX case it's easy to ensure, even desirable in fact).
 > 
->    if (is_task_stopped(t))
+> in your case it's also true for now and i can't think of a situation
+> where you'd really want to nest in the future (that'd mean opening
+> up the kernel while some complex piece of code runs, more complex
+> than a mere memset at least ;-). what do you think?
+> 
 
-Sure, no problem.  I vacillated on this order myself.
-
-> 2) please change task_is_loadavg() to something more sensible - i didnt 
-> know what it meant when i first saw it in -mm's sched.c. 
-> task_is_uninterruptible() would be the logical choice ...
-
-It's not obvious to me that "can't be interrupted by a signal" is the
-same thing as "contributes to loadavg".  Indeed, I think we would all
-like to see a day where there's no such thing as an uninterruptible sleep,
-but we'll still want at least some of those tasks contributing to loadavg.
-
-You're right that task_is_loadavg() doesn't make much sense.
-task_contributes_to_load() is a better name, but only marginally.
-
-I've considered task_performing_io(), and name the corresponding bit
-__TASK_PERFORMING_IO (or even just __TASK_DOING_IO or __TASK_IO), but
-it's not just doing IO that makes a task contribute to loadavg.
-
-I have no good suggestions here ;-(
+It is correct to assume that the WP bit will always be activated, in
+every configuration, even though we don't use the DEBUG_RODATA ?
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
