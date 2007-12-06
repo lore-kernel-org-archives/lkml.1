@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbXLFRIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbXLFRIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbXLFRIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 12:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXLFRHI
+	id S1755861AbXLFRIy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 12:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbXLFRHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 12:07:08 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:32912 "EHLO
+	Thu, 6 Dec 2007 12:07:10 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:32913 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbXLFRHE (ORCPT
+	with ESMTP id S1754179AbXLFRHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 6 Dec 2007 12:07:04 -0500
-Date: Thu, 6 Dec 2007 12:06:40 -0500
+Date: Thu, 6 Dec 2007 12:06:42 -0500
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/6] UML - Customize tlb.h
-Message-ID: <20071206170640.GA7420@c2.user-mode-linux.org>
+Subject: [PATCH 5/6] UML - style fixes in file.c
+Message-ID: <20071206170642.GA7430@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,208 +25,557 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Customize the hooks in tlb.h to optimize TLB flushing some more.
-
-Add start and end fields to tlb_gather_mmu, which are used to limit
-the address space range scanned when a region is unmapped.
-
-The interfaces which just free page tables, without actually changing
-mappings, don't need to cause a TLB flush.
+arch/um/os-Linux/file.c needed some style work -
+	updated the copyright
+	cleaned up the includes
+	CodingStyle fixes
+	added some missing CATCH_EINTRs
+	os_set_owner was unused, so it is gone
+	all printks now have severities
+	fcntl(F_GETFL) was being called without checking the return
+	removed an obsolete comment
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/kernel/tlb.c |   28 ++++++++---
- include/asm-um/tlb.h |  121 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 141 insertions(+), 8 deletions(-)
+ arch/um/include/os.h    |    1 
+ arch/um/os-Linux/file.c |  232 ++++++++++++++++++++++++------------------------
+ 2 files changed, 118 insertions(+), 115 deletions(-)
 
-Index: linux-2.6-git/arch/um/kernel/tlb.c
+Index: linux-2.6-git/arch/um/include/os.h
 ===================================================================
---- linux-2.6-git.orig/arch/um/kernel/tlb.c	2007-12-06 10:34:31.000000000 -0500
-+++ linux-2.6-git/arch/um/kernel/tlb.c	2007-12-06 10:34:41.000000000 -0500
-@@ -193,18 +193,18 @@ static inline int update_pte_range(pmd_t
- 		if (!pte_young(*pte)) {
- 			r = 0;
- 			w = 0;
--		} else if (!pte_dirty(*pte)) {
-+		} else if (!pte_dirty(*pte))
- 			w = 0;
--		}
-+
- 		prot = ((r ? UM_PROT_READ : 0) | (w ? UM_PROT_WRITE : 0) |
- 			(x ? UM_PROT_EXEC : 0));
- 		if (hvc->force || pte_newpage(*pte)) {
- 			if (pte_present(*pte))
- 				ret = add_mmap(addr, pte_val(*pte) & PAGE_MASK,
- 					       PAGE_SIZE, prot, hvc);
--			else ret = add_munmap(addr, PAGE_SIZE, hvc);
--		}
--		else if (pte_newprot(*pte))
-+			else
-+				ret = add_munmap(addr, PAGE_SIZE, hvc);
-+		} else if (pte_newprot(*pte))
- 			ret = add_mprotect(addr, PAGE_SIZE, prot, hvc);
- 		*pte = pte_mkuptodate(*pte);
- 	} while (pte++, addr += PAGE_SIZE, ((addr != end) && !ret));
-@@ -500,7 +500,8 @@ void flush_tlb_range(struct vm_area_stru
- 	else fix_range(vma->vm_mm, start, end, 0);
+--- linux-2.6-git.orig/arch/um/include/os.h	2007-12-06 11:00:55.000000000 -0500
++++ linux-2.6-git/arch/um/include/os.h	2007-12-06 11:13:24.000000000 -0500
+@@ -131,7 +131,6 @@ extern int os_set_exec_close(int fd);
+ extern int os_ioctl_generic(int fd, unsigned int cmd, unsigned long arg);
+ extern int os_get_ifname(int fd, char *namebuf);
+ extern int os_set_slip(int fd);
+-extern int os_set_owner(int fd, int pid);
+ extern int os_mode_fd(int fd, int mode);
+ 
+ extern int os_seek_file(int fd, unsigned long long offset);
+Index: linux-2.6-git/arch/um/os-Linux/file.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/file.c	2007-12-06 11:04:58.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/file.c	2007-12-06 11:16:28.000000000 -0500
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
+ 
+@@ -8,13 +8,12 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <signal.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <sys/socket.h>
+-#include <sys/un.h>
+ #include <sys/ioctl.h>
+ #include <sys/mount.h>
+-#include <sys/uio.h>
++#include <sys/socket.h>
++#include <sys/stat.h>
++#include <sys/un.h>
++#include "kern_constants.h"
+ #include "os.h"
+ #include "user.h"
+ 
+@@ -42,10 +41,10 @@ int os_stat_fd(const int fd, struct uml_
+ 	int err;
+ 
+ 	CATCH_EINTR(err = fstat64(fd, &sbuf));
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 
+-	if(ubuf != NULL)
++	if (ubuf != NULL)
+ 		copy_stat(ubuf, &sbuf);
+ 	return err;
+ }
+@@ -55,27 +54,26 @@ int os_stat_file(const char *file_name, 
+ 	struct stat64 sbuf;
+ 	int err;
+ 
+-	do {
+-		err = stat64(file_name, &sbuf);
+-	} while((err < 0) && (errno == EINTR)) ;
+-
+-	if(err < 0)
++	CATCH_EINTR(err = stat64(file_name, &sbuf));
++	if (err < 0)
+ 		return -errno;
+ 
+-	if(ubuf != NULL)
++	if (ubuf != NULL)
+ 		copy_stat(ubuf, &sbuf);
+ 	return err;
  }
  
--void flush_tlb_mm(struct mm_struct *mm)
-+void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
-+			unsigned long end)
+-int os_access(const char* file, int mode)
++int os_access(const char *file, int mode)
  {
- 	/*
- 	 * Don't bother flushing if this address space is about to be
-@@ -509,7 +510,20 @@ void flush_tlb_mm(struct mm_struct *mm)
- 	if (atomic_read(&mm->mm_users) == 0)
- 		return;
+ 	int amode, err;
  
--	fix_range(mm, 0, TASK_SIZE, 0);
-+	fix_range(mm, start, end, 0);
-+}
-+
-+void flush_tlb_mm(struct mm_struct *mm)
-+{
-+	struct vm_area_struct *vma = mm->mmap;
-+
-+	if (atomic_read(&mm->mm_users) == 0)
-+		return;
-+
-+	while (vma != NULL) {
-+		fix_range(mm, vma->vm_start, vma->vm_end, 0);
-+		vma = vma->vm_next;
-+	}
+-	amode=(mode&OS_ACC_R_OK ? R_OK : 0) | (mode&OS_ACC_W_OK ? W_OK : 0) |
+-	      (mode&OS_ACC_X_OK ? X_OK : 0) | (mode&OS_ACC_F_OK ? F_OK : 0) ;
++	amode = (mode & OS_ACC_R_OK ? R_OK : 0) |
++		(mode & OS_ACC_W_OK ? W_OK : 0) |
++		(mode & OS_ACC_X_OK ? X_OK : 0) |
++		(mode & OS_ACC_F_OK ? F_OK : 0);
+ 
+ 	err = access(file, amode);
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 
+ 	return 0;
+@@ -87,7 +85,7 @@ int os_ioctl_generic(int fd, unsigned in
+ 	int err;
+ 
+ 	err = ioctl(fd, cmd, arg);
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 
+ 	return err;
+@@ -96,7 +94,7 @@ int os_ioctl_generic(int fd, unsigned in
+ /* FIXME: ensure namebuf in os_get_if_name is big enough */
+ int os_get_ifname(int fd, char* namebuf)
+ {
+-	if(ioctl(fd, SIOCGIFNAME, namebuf) < 0)
++	if (ioctl(fd, SIOCGIFNAME, namebuf) < 0)
+ 		return -errno;
+ 
+ 	return 0;
+@@ -107,37 +105,22 @@ int os_set_slip(int fd)
+ 	int disc, sencap;
+ 
+ 	disc = N_SLIP;
+-	if(ioctl(fd, TIOCSETD, &disc) < 0)
++	if (ioctl(fd, TIOCSETD, &disc) < 0)
+ 		return -errno;
+ 
+ 	sencap = 0;
+-	if(ioctl(fd, SIOCSIFENCAP, &sencap) < 0)
++	if (ioctl(fd, SIOCSIFENCAP, &sencap) < 0)
+ 		return -errno;
+ 
+ 	return 0;
  }
  
- void force_flush_all(void)
-Index: linux-2.6-git/include/asm-um/tlb.h
-===================================================================
---- linux-2.6-git.orig/include/asm-um/tlb.h	2007-12-06 10:34:31.000000000 -0500
-+++ linux-2.6-git/include/asm-um/tlb.h	2007-12-06 10:58:34.000000000 -0500
-@@ -1,6 +1,125 @@
- #ifndef __UM_TLB_H
- #define __UM_TLB_H
+-int os_set_owner(int fd, int pid)
+-{
+-	if(fcntl(fd, F_SETOWN, pid) < 0){
+-		int save_errno = errno;
+-
+-		if(fcntl(fd, F_GETOWN, 0) != pid)
+-			return -save_errno;
+-	}
+-
+-	return 0;
+-}
+-
+ int os_mode_fd(int fd, int mode)
+ {
+ 	int err;
  
--#include <asm/arch/tlb.h>
-+#include <linux/swap.h>
-+#include <asm/pgalloc.h>
-+#include <asm/tlbflush.h>
-+
-+#define tlb_start_vma(tlb, vma) do { } while (0)
-+#define tlb_end_vma(tlb, vma) do { } while (0)
-+#define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
-+
-+/* struct mmu_gather is an opaque type used by the mm code for passing around
-+ * any data needed by arch specific code for tlb_remove_page.
-+ */
-+struct mmu_gather {
-+	struct mm_struct	*mm;
-+	unsigned int		need_flush; /* Really unmapped some ptes? */
-+	unsigned long		start;
-+	unsigned long		end;
-+	unsigned int		fullmm; /* non-zero means full mm flush */
-+};
-+
-+/* Users of the generic TLB shootdown code must declare this storage space. */
-+DECLARE_PER_CPU(struct mmu_gather, mmu_gathers);
-+
-+static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
-+					  unsigned long address)
-+{
-+	if (tlb->start > address)
-+		tlb->start = address;
-+	if (tlb->end < address + PAGE_SIZE)
-+		tlb->end = address + PAGE_SIZE;
-+}
-+
-+static inline void init_tlb_gather(struct mmu_gather *tlb)
-+{
-+	tlb->need_flush = 0;
-+
-+	tlb->start = TASK_SIZE;
-+	tlb->end = 0;
-+
-+	if (tlb->fullmm) {
-+		tlb->start = 0;
-+		tlb->end = TASK_SIZE;
-+	}
-+}
-+
-+/* tlb_gather_mmu
-+ *	Return a pointer to an initialized struct mmu_gather.
-+ */
-+static inline struct mmu_gather *
-+tlb_gather_mmu(struct mm_struct *mm, unsigned int full_mm_flush)
-+{
-+	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
-+
-+	tlb->mm = mm;
-+	tlb->fullmm = full_mm_flush;
-+
-+	init_tlb_gather(tlb);
-+
-+	return tlb;
-+}
-+
-+extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
-+			       unsigned long end);
-+
-+static inline void
-+tlb_flush_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
-+{
-+	if (!tlb->need_flush)
-+		return;
-+
-+	flush_tlb_mm_range(tlb->mm, tlb->start, tlb->end);
-+	init_tlb_gather(tlb);
-+}
-+
-+/* tlb_finish_mmu
-+ *	Called at the end of the shootdown operation to free up any resources
-+ *	that were required.
-+ */
-+static inline void
-+tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
-+{
-+	tlb_flush_mmu(tlb, start, end);
-+
-+	/* keep the page table cache within bounds */
-+	check_pgt_cache();
-+
-+	put_cpu_var(mmu_gathers);
-+}
-+
-+/* tlb_remove_page
-+ *	Must perform the equivalent to __free_pte(pte_get_and_clear(ptep)),
-+ *	while handling the additional races in SMP caused by other CPUs
-+ *	caching valid mappings in their TLBs.
-+ */
-+static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-+{
-+	tlb->need_flush = 1;
-+	free_page_and_swap_cache(page);
-+	return;
-+}
-+
-+/**
-+ * tlb_remove_tlb_entry - remember a pte unmapping for later tlb invalidation.
-+ *
-+ * Record the fact that pte's were really umapped in ->need_flush, so we can
-+ * later optimise away the tlb invalidate.   This helps when userspace is
-+ * unmapping already-unmapped pages, which happens quite a lot.
-+ */
-+#define tlb_remove_tlb_entry(tlb, ptep, address)		\
-+	do {							\
-+		tlb->need_flush = 1;				\
-+		__tlb_remove_tlb_entry(tlb, ptep, address);	\
-+	} while (0)
-+
-+#define pte_free_tlb(tlb, ptep) __pte_free_tlb(tlb, ptep)
-+
-+#define pud_free_tlb(tlb, pudp) __pud_free_tlb(tlb, pudp)
-+
-+#define pmd_free_tlb(tlb, pmdp) __pmd_free_tlb(tlb, pmdp)
-+
-+#define tlb_migrate_finish(mm) do {} while (0)
+-	do {
+-		err = fchmod(fd, mode);
+-	} while((err < 0) && (errno==EINTR)) ;
+-
+-	if(err < 0)
++	CATCH_EINTR(err = fchmod(fd, mode));
++	if (err < 0)
+ 		return -errno;
  
- #endif
+ 	return 0;
+@@ -149,20 +132,20 @@ int os_file_type(char *file)
+ 	int err;
+ 
+ 	err = os_stat_file(file, &buf);
+-	if(err < 0)
++	if (err < 0)
+ 		return err;
+ 
+-	if(S_ISDIR(buf.ust_mode))
++	if (S_ISDIR(buf.ust_mode))
+ 		return OS_TYPE_DIR;
+-	else if(S_ISLNK(buf.ust_mode))
++	else if (S_ISLNK(buf.ust_mode))
+ 		return OS_TYPE_SYMLINK;
+-	else if(S_ISCHR(buf.ust_mode))
++	else if (S_ISCHR(buf.ust_mode))
+ 		return OS_TYPE_CHARDEV;
+-	else if(S_ISBLK(buf.ust_mode))
++	else if (S_ISBLK(buf.ust_mode))
+ 		return OS_TYPE_BLOCKDEV;
+-	else if(S_ISFIFO(buf.ust_mode))
++	else if (S_ISFIFO(buf.ust_mode))
+ 		return OS_TYPE_FIFO;
+-	else if(S_ISSOCK(buf.ust_mode))
++	else if (S_ISSOCK(buf.ust_mode))
+ 		return OS_TYPE_SOCK;
+ 	else return OS_TYPE_FILE;
+ }
+@@ -174,15 +157,15 @@ int os_file_mode(const char *file, struc
+ 	*mode_out = OPENFLAGS();
+ 
+ 	err = access(file, W_OK);
+-	if(err && (errno != EACCES))
++	if (err && (errno != EACCES))
+ 		return -errno;
+-	else if(!err)
++	else if (!err)
+ 		*mode_out = of_write(*mode_out);
+ 
+ 	err = access(file, R_OK);
+-	if(err && (errno != EACCES))
++	if (err && (errno != EACCES))
+ 		return -errno;
+-	else if(!err)
++	else if (!err)
+ 		*mode_out = of_read(*mode_out);
+ 
+ 	return err;
+@@ -192,21 +175,28 @@ int os_open_file(const char *file, struc
+ {
+ 	int fd, err, f = 0;
+ 
+-	if(flags.r && flags.w) f = O_RDWR;
+-	else if(flags.r) f = O_RDONLY;
+-	else if(flags.w) f = O_WRONLY;
++	if (flags.r && flags.w)
++		f = O_RDWR;
++	else if (flags.r)
++		f = O_RDONLY;
++	else if (flags.w)
++		f = O_WRONLY;
+ 	else f = 0;
+ 
+-	if(flags.s) f |= O_SYNC;
+-	if(flags.c) f |= O_CREAT;
+-	if(flags.t) f |= O_TRUNC;
+-	if(flags.e) f |= O_EXCL;
++	if (flags.s)
++		f |= O_SYNC;
++	if (flags.c)
++		f |= O_CREAT;
++	if (flags.t)
++		f |= O_TRUNC;
++	if (flags.e)
++		f |= O_EXCL;
+ 
+ 	fd = open64(file, f, mode);
+-	if(fd < 0)
++	if (fd < 0)
+ 		return -errno;
+ 
+-	if(flags.cl && fcntl(fd, F_SETFD, 1)){
++	if (flags.cl && fcntl(fd, F_SETFD, 1)) {
+ 		err = -errno;
+ 		close(fd);
+ 		return err;
+@@ -224,13 +214,13 @@ int os_connect_socket(const char *name)
+ 	snprintf(sock.sun_path, sizeof(sock.sun_path), "%s", name);
+ 
+ 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
+-	if(fd < 0) {
++	if (fd < 0) {
+ 		err = -errno;
+ 		goto out;
+ 	}
+ 
+ 	err = connect(fd, (struct sockaddr *) &sock, sizeof(sock));
+-	if(err) {
++	if (err) {
+ 		err = -errno;
+ 		goto out_close;
+ 	}
+@@ -253,7 +243,7 @@ int os_seek_file(int fd, unsigned long l
+ 	unsigned long long actual;
+ 
+ 	actual = lseek64(fd, offset, SEEK_SET);
+-	if(actual != offset)
++	if (actual != offset)
+ 		return -errno;
+ 	return 0;
+ }
+@@ -262,7 +252,7 @@ int os_read_file(int fd, void *buf, int 
+ {
+ 	int n = read(fd, buf, len);
+ 
+-	if(n < 0)
++	if (n < 0)
+ 		return -errno;
+ 	return n;
+ }
+@@ -271,7 +261,7 @@ int os_write_file(int fd, const void *bu
+ {
+ 	int n = write(fd, (void *) buf, len);
+ 
+-	if(n < 0)
++	if (n < 0)
+ 		return -errno;
+ 	return n;
+ }
+@@ -282,26 +272,27 @@ int os_file_size(const char *file, unsig
+ 	int err;
+ 
+ 	err = os_stat_file(file, &buf);
+-	if(err < 0){
+-		printk("Couldn't stat \"%s\" : err = %d\n", file, -err);
++	if (err < 0) {
++		printk(UM_KERN_ERR "Couldn't stat \"%s\" : err = %d\n", file,
++		       -err);
+ 		return err;
+ 	}
+ 
+-	if(S_ISBLK(buf.ust_mode)){
++	if (S_ISBLK(buf.ust_mode)) {
+ 		int fd;
+ 		long blocks;
+ 
+ 		fd = open(file, O_RDONLY, 0);
+-		if(fd < 0) {
++		if (fd < 0) {
+ 			err = -errno;
+-			printk("Couldn't open \"%s\", errno = %d\n", file,
+-			       errno);
++			printk(UM_KERN_ERR "Couldn't open \"%s\", "
++			       "errno = %d\n", file, errno);
+ 			return err;
+ 		}
+-		if(ioctl(fd, BLKGETSIZE, &blocks) < 0){
++		if (ioctl(fd, BLKGETSIZE, &blocks) < 0) {
+ 			err = -errno;
+-			printk("Couldn't get the block size of \"%s\", "
+-			       "errno = %d\n", file, errno);
++			printk(UM_KERN_ERR "Couldn't get the block size of "
++			       "\"%s\", errno = %d\n", file, errno);
+ 			close(fd);
+ 			return err;
+ 		}
+@@ -319,8 +310,9 @@ int os_file_modtime(const char *file, un
+ 	int err;
+ 
+ 	err = os_stat_file(file, &buf);
+-	if(err < 0){
+-		printk("Couldn't stat \"%s\" : err = %d\n", file, -err);
++	if (err < 0) {
++		printk(UM_KERN_ERR "Couldn't stat \"%s\" : err = %d\n", file,
++		       -err);
+ 		return err;
+ 	}
+ 
+@@ -334,7 +326,7 @@ int os_set_exec_close(int fd)
+ 
+ 	CATCH_EINTR(err = fcntl(fd, F_SETFD, FD_CLOEXEC));
+ 
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 	return err;
+ }
+@@ -344,24 +336,25 @@ int os_pipe(int *fds, int stream, int cl
+ 	int err, type = stream ? SOCK_STREAM : SOCK_DGRAM;
+ 
+ 	err = socketpair(AF_UNIX, type, 0, fds);
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 
+-	if(!close_on_exec)
++	if (!close_on_exec)
+ 		return 0;
+ 
+ 	err = os_set_exec_close(fds[0]);
+-	if(err < 0)
++	if (err < 0)
+ 		goto error;
+ 
+ 	err = os_set_exec_close(fds[1]);
+-	if(err < 0)
++	if (err < 0)
+ 		goto error;
+ 
+ 	return 0;
+ 
+  error:
+-	printk("os_pipe : Setting FD_CLOEXEC failed, err = %d\n", -err);
++	printk(UM_KERN_ERR "os_pipe : Setting FD_CLOEXEC failed, err = %d\n",
++	       -err);
+ 	close(fds[1]);
+ 	close(fds[0]);
+ 	return err;
+@@ -378,15 +371,15 @@ int os_set_fd_async(int fd)
+ 	flags |= O_ASYNC | O_NONBLOCK;
+ 	if (fcntl(fd, F_SETFL, flags) < 0) {
+ 		err = -errno;
+-		printk("os_set_fd_async : failed to set O_ASYNC and "
+-		       "O_NONBLOCK on fd # %d, errno = %d\n", fd, errno);
++		printk(UM_KERN_ERR "os_set_fd_async : failed to set O_ASYNC "
++		       "and O_NONBLOCK on fd # %d, errno = %d\n", fd, errno);
+ 		return err;
+ 	}
+ 
+ 	if ((fcntl(fd, F_SETSIG, SIGIO) < 0) ||
+ 	    (fcntl(fd, F_SETOWN, os_getpid()) < 0)) {
+ 		err = -errno;
+-		printk("os_set_fd_async : Failed to fcntl F_SETOWN "
++		printk(UM_KERN_ERR "os_set_fd_async : Failed to fcntl F_SETOWN "
+ 		       "(or F_SETSIG) fd %d, errno = %d\n", fd, errno);
+ 		return err;
+ 	}
+@@ -396,10 +389,14 @@ int os_set_fd_async(int fd)
+ 
+ int os_clear_fd_async(int fd)
+ {
+-	int flags = fcntl(fd, F_GETFL);
++	int flags;
++
++	flags = fcntl(fd, F_GETFL);
++	if (flags < 0)
++		return -errno;
+ 
+ 	flags &= ~(O_ASYNC | O_NONBLOCK);
+-	if(fcntl(fd, F_SETFL, flags) < 0)
++	if (fcntl(fd, F_SETFL, flags) < 0)
+ 		return -errno;
+ 	return 0;
+ }
+@@ -409,11 +406,15 @@ int os_set_fd_block(int fd, int blocking
+ 	int flags;
+ 
+ 	flags = fcntl(fd, F_GETFL);
++	if (flags < 0)
++		return -errno;
+ 
+-	if(blocking) flags &= ~O_NONBLOCK;
+-	else flags |= O_NONBLOCK;
++	if (blocking)
++		flags &= ~O_NONBLOCK;
++	else
++		flags |= O_NONBLOCK;
+ 
+-	if(fcntl(fd, F_SETFL, flags) < 0)
++	if (fcntl(fd, F_SETFL, flags) < 0)
+ 		return -errno;
+ 
+ 	return 0;
+@@ -424,7 +425,7 @@ int os_accept_connection(int fd)
+ 	int new;
+ 
+ 	new = accept(fd, NULL, 0);
+-	if(new < 0)
++	if (new < 0)
+ 		return -errno;
+ 	return new;
+ }
+@@ -445,15 +446,17 @@ int os_shutdown_socket(int fd, int r, in
+ {
+ 	int what, err;
+ 
+-	if(r && w) what = SHUT_RDWR;
+-	else if(r) what = SHUT_RD;
+-	else if(w) what = SHUT_WR;
+-	else {
+-		printk("os_shutdown_socket : neither r or w was set\n");
++	if (r && w)
++		what = SHUT_RDWR;
++	else if (r)
++		what = SHUT_RD;
++	else if (w)
++		what = SHUT_WR;
++	else
+ 		return -EINVAL;
+-	}
++
+ 	err = shutdown(fd, what);
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 	return 0;
+ }
+@@ -477,19 +480,20 @@ int os_rcv_fd(int fd, int *helper_pid_ou
+ 	msg.msg_flags = 0;
+ 
+ 	n = recvmsg(fd, &msg, 0);
+-	if(n < 0)
++	if (n < 0)
+ 		return -errno;
+-	else if(n != iov.iov_len)
++	else if (n != iov.iov_len)
+ 		*helper_pid_out = -1;
+ 
+ 	cmsg = CMSG_FIRSTHDR(&msg);
+-	if(cmsg == NULL){
+-		printk("rcv_fd didn't receive anything, error = %d\n", errno);
++	if (cmsg == NULL) {
++		printk(UM_KERN_ERR "rcv_fd didn't receive anything, "
++		       "error = %d\n", errno);
+ 		return -1;
+ 	}
+-	if((cmsg->cmsg_level != SOL_SOCKET) ||
+-	   (cmsg->cmsg_type != SCM_RIGHTS)){
+-		printk("rcv_fd didn't receive a descriptor\n");
++	if ((cmsg->cmsg_level != SOL_SOCKET) ||
++	    (cmsg->cmsg_type != SCM_RIGHTS)) {
++		printk(UM_KERN_ERR "rcv_fd didn't receive a descriptor\n");
+ 		return -1;
+ 	}
+ 
+@@ -503,23 +507,22 @@ int os_create_unix_socket(const char *fi
+ 	int sock, err;
+ 
+ 	sock = socket(PF_UNIX, SOCK_DGRAM, 0);
+-	if(sock < 0)
++	if (sock < 0)
+ 		return -errno;
+ 
+-	if(close_on_exec) {
++	if (close_on_exec) {
+ 		err = os_set_exec_close(sock);
+-		if(err < 0)
+-			printk("create_unix_socket : close_on_exec failed, "
+-		       "err = %d", -err);
++		if (err < 0)
++			printk(UM_KERN_ERR "create_unix_socket : "
++			       "close_on_exec failed, err = %d", -err);
+ 	}
+ 
+ 	addr.sun_family = AF_UNIX;
+ 
+-	/* XXX Be more careful about overflow */
+ 	snprintf(addr.sun_path, len, "%s", file);
+ 
+ 	err = bind(sock, (struct sockaddr *) &addr, sizeof(addr));
+-	if(err < 0)
++	if (err < 0)
+ 		return -errno;
+ 
+ 	return sock;
+@@ -540,17 +543,18 @@ int os_lock_file(int fd, int excl)
+ 	int err, save;
+ 
+ 	err = fcntl(fd, F_SETLK, &lock);
+-	if(!err)
++	if (!err)
+ 		goto out;
+ 
+ 	save = -errno;
+ 	err = fcntl(fd, F_GETLK, &lock);
+-	if(err){
++	if (err) {
+ 		err = -errno;
+ 		goto out;
+ 	}
+ 
+-	printk("F_SETLK failed, file already locked by pid %d\n", lock.l_pid);
++	printk(UM_KERN_ERR "F_SETLK failed, file already locked by pid %d\n",
++	       lock.l_pid);
+ 	err = save;
+  out:
+ 	return err;
