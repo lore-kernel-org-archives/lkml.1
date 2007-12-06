@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbXLFLtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXLFLzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbXLFLtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 06:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbXLFLtb
+	id S1753280AbXLFLzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 06:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXLFLzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 06:49:31 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57673 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbXLFLta (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 06:49:30 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc4-mm1
-In-Reply-To: Your message of "Tue, 04 Dec 2007 21:17:01 PST."
-             <20071204211701.994dfce6.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	Thu, 6 Dec 2007 06:55:39 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38368 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752106AbXLFLzi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 06:55:38 -0500
+Date: Thu, 6 Dec 2007 03:55:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Message-Id: <20071206035511.83bef995.akpm@linux-foundation.org>
+In-Reply-To: <200712060148.53805.phillips@phunq.net>
+References: <200712051603.02183.phillips@phunq.net>
+	<200712052221.45409.phillips@phunq.net>
+	<20071205233152.c567fa57.akpm@linux-foundation.org>
+	<200712060148.53805.phillips@phunq.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1196941764_2917P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Dec 2007 06:49:24 -0500
-Message-ID: <3941.1196941764@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1196941764_2917P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 6 Dec 2007 01:48:52 -0800 Daniel Phillips <phillips@phunq.net> wrote:
 
-On Tue, 04 Dec 2007 21:17:01 PST, Andrew Morton said:
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
+> On Wednesday 05 December 2007 23:31, Andrew Morton wrote:
+> > > > Rather than asking the stack "how much memory will this request consume"
+> > > > you could instead ask "how much memory are you currently using".
+> > > > 
+> > > > ie: on entry to the stack, do 
+> > > > 
+> > > > 	current->account_block_allocations = 1;
+> > > > 	make_request(...);
+> > > > 	rq->used_memory += current->pages_used_for_block_allocations;
+> > > > 
+> > > > and in the page allocator do
+> > > > 
+> > > > 	if (!in_interrupt() && current->account_block_allocations)
+> > > > 		current->pages_used_for_block_allocations++;
+> > > > 
+> > > > and then somehow handle deallocation too ;)
+> > > 
+> > > Ah, and how do you ensure that you do not deadlock while making this
+> > > inquiry?
+> > 
+> > It isn't an inquiry - it's a plain old submit_bio() and it runs to
+> > completion in the usual fashion.
+> > 
+> > Thing is, we wouldn't have called it at all if this queue was already over 
+> > its allocation limit.  IOW, we know that it's below its allocation limit,
+> > so we know it won't deadlock.  Given, of course, reasonably pessimistc
+> > error margins.
+> 
+> OK, I see what you are suggesting.  Yes, one could set the inflight limit
+> very low and the reserve very high, and run a bio through the stack (what
+> I meant by "inquiry") to discover the actual usage, then shrink the reserve
+> accordingly.  By also running a real bio through the stack we can discover
+> something about the latency.  So we would then know roughly how high
+> the inflight limit should be set and how much the memalloc reserve
+> should be increased to handle that particular driver instance.
+> 
+> The big fly in this ointment is that we cannot possibly know that our bio
+> followed the worst case resource consumption path, whereas it is fairly
+> easy (hopefully) for a programmer to determine this statically.
 
-Something in here broke LVM support - an initrd that has worked fine for
-quite some time suddenly couldn't mount /dev/VolGroup00/root so we get the
-infamous "Kernel panic - not syncing: Attempted to kill init!" when we
-fall off the end of the initrd and haven't pivoted to the real disk.
+nonono...
 
-It finds the disk OK:
+Consider an example.
 
-[   81.202310] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-[   81.214466] sd 0:0:0:0: [sda] Write Protect is off
-[   81.226467] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[   81.238436] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[   81.250780]  sda: sda1 sda2
-[   75.396119] sd 0:0:0:0: [sda] Attached SCSI disk
+- We a-priori decide to limit a particular stack's peak memory usage to
+  1MB
 
-but then the lvm command says it can't find the volume group VolGroup00 (which
-is actually sda2 - sda1 is a small /boot partition, rest of disk is LVM).
+- We empirically discover that the maximum amount of memory which is
+  allocated by that stack on behalf of a single BIO is 16kb.  (ie: that's
+  the most it has ever used for a single BIO).
 
-A quick look at the rc4-mm1 announcement doesn't have any obviously tempting
-patch names to start at, so it looks like it's time to play mm-bisect.  It may
-take me a day or two, as I have some time management issues this week...
+- Now, we refuse to feed any more BIOs into the stack when its
+  instantaneous memory usage exceeds (1MB - 16kb).
 
+Of course, the _average_ memory-per-BIO is much less than 16kb.  So there
+are a lot of BIOs in flight - probably hundreds, but a minimum of 63.
 
-
---==_Exmh_1196941764_2917P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHV+HEcC3lWbTT17ARAlofAJ4gzgbt+6ChWgiDyo/HBqIpGt+EwwCfU8lX
-aUTYCzJmgOLCxw0LZ6BmqtU=
-=qNrK
------END PGP SIGNATURE-----
-
---==_Exmh_1196941764_2917P--
+There is a teeny so-small-it-doesn't-matter chance that the stack will
+exceed the 1MB limit.  If it happens to be at its (1MB-16kb) limit and all
+the memory in the machine is AWOL and then someone throws a
+never-seen-before twirly BIO at it.  Not worth worrying about, surely.
