@@ -1,113 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbXLFDCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbXLFDCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbXLFDCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 22:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbXLFDAS
+	id S1755261AbXLFDCz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 22:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbXLFDAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 22:00:18 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:35407 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 22:00:19 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:35408 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755053AbXLFDAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755200AbXLFDAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Dec 2007 22:00:12 -0500
-Message-Id: <20071206025948.008490249@polymtl.ca>
+Message-Id: <20071206025945.366923886@polymtl.ca>
 References: <20071206025650.451824066@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:56:58 -0500
+Date: Wed, 05 Dec 2007 21:56:51 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch-early-RFC 08/10] LTTng Sparc instrumentation
-Content-Disposition: inline; filename=lttng-instrumentation-sparc.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:59:50 +0000
+Subject: [patch-early-RFC 01/10] LTTng - ARM instrumentation
+Content-Disposition: inline; filename=lttng-instrumentation-arm.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:59:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-syscall trace missing
-traps missing
-
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/sparc/kernel/entry.S     |   10 +++++-----
- arch/sparc/kernel/process.c   |    1 +
- arch/sparc/kernel/sys_sparc.c |    2 ++
- 3 files changed, 8 insertions(+), 5 deletions(-)
+ arch/arm/kernel/entry-common.S |    8 ++++----
+ arch/arm/kernel/process.c      |    6 +++++-
+ arch/arm/kernel/ptrace.c       |    6 ++++++
+ arch/arm/kernel/sys_arm.c      |    2 ++
+ arch/arm/kernel/traps.c        |    7 +++++++
+ 5 files changed, 24 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-lttng/arch/sparc/kernel/entry.S
+Index: linux-2.6-lttng/arch/arm/kernel/entry-common.S
 ===================================================================
---- linux-2.6-lttng.orig/arch/sparc/kernel/entry.S	2007-11-13 09:25:23.000000000 -0500
-+++ linux-2.6-lttng/arch/sparc/kernel/entry.S	2007-11-13 09:50:18.000000000 -0500
-@@ -1231,7 +1231,7 @@ sys_ptrace:
- 	 add	%sp, STACKFRAME_SZ, %o0
+--- linux-2.6-lttng.orig/arch/arm/kernel/entry-common.S	2007-10-11 11:44:13.000000000 -0400
++++ linux-2.6-lttng/arch/arm/kernel/entry-common.S	2007-10-11 11:44:57.000000000 -0400
+@@ -85,8 +85,8 @@ ENTRY(ret_from_fork)
+ 	get_thread_info tsk
+ 	ldr	r1, [tsk, #TI_FLAGS]		@ check for syscall tracing
+ 	mov	why, #1
+-	tst	r1, #_TIF_SYSCALL_TRACE		@ are we tracing syscalls?
+-	beq	ret_slow_syscall
++	tst	r1, #_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE
++	beq	ret_slow_syscall		@ are we tracing syscalls?
+ 	mov	r1, sp
+ 	mov	r0, #1				@ trace exit [IP = 1]
+ 	bl	syscall_trace
+@@ -205,8 +205,8 @@ ENTRY(vector_swi)
+ #endif
  
- 	ld	[%curptr + TI_FLAGS], %l5
--	andcc	%l5, _TIF_SYSCALL_TRACE, %g0
-+	andcc	%l5, (_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE), %g0
- 	be	1f
- 	 nop
+ 	stmdb	sp!, {r4, r5}			@ push fifth and sixth args
+-	tst	ip, #_TIF_SYSCALL_TRACE		@ are we tracing syscalls?
+-	bne	__sys_trace
++	tst	ip, #_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE
++	bne	__sys_trace			@ are we tracing syscalls?
  
-@@ -1280,7 +1280,7 @@ sys_sigreturn:
- 	 add	%sp, STACKFRAME_SZ, %o0
- 
- 	ld	[%curptr + TI_FLAGS], %l5
--	andcc	%l5, _TIF_SYSCALL_TRACE, %g0
-+	andcc	%l5, (_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE), %g0
- 	be	1f
- 	 nop
- 
-@@ -1300,7 +1300,7 @@ sys_rt_sigreturn:
- 	 add	%sp, STACKFRAME_SZ, %o0
- 
- 	ld	[%curptr + TI_FLAGS], %l5
--	andcc	%l5, _TIF_SYSCALL_TRACE, %g0
-+	andcc	%l5, (_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE), %g0
- 	be	1f
- 	 nop
- 
-@@ -1436,7 +1436,7 @@ syscall_is_too_hard:
- 
- 	ld	[%curptr + TI_FLAGS], %l5
- 	mov	%i3, %o3
--	andcc	%l5, _TIF_SYSCALL_TRACE, %g0
-+	andcc	%l5, (_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE), %g0
- 	mov	%i4, %o4
- 	bne	linux_syscall_trace
- 	 mov	%i0, %l5
-@@ -1453,7 +1453,7 @@ ret_sys_call:
- 	ld	[%sp + STACKFRAME_SZ + PT_PSR], %g3
- 	set	PSR_C, %g2
- 	bgeu	1f
--	 andcc	%l6, _TIF_SYSCALL_TRACE, %g0
-+	 andcc	%l6, (_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE), %g0
- 
- 	/* System call success, clear Carry condition code. */
- 	andn	%g3, %g2, %g3
-Index: linux-2.6-lttng/arch/sparc/kernel/sys_sparc.c
+ 	cmp	scno, #NR_syscalls		@ check upper syscall limit
+ 	adr	lr, ret_fast_syscall		@ return address
+Index: linux-2.6-lttng/arch/arm/kernel/process.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/sparc/kernel/sys_sparc.c	2007-11-13 09:25:23.000000000 -0500
-+++ linux-2.6-lttng/arch/sparc/kernel/sys_sparc.c	2007-11-13 09:50:18.000000000 -0500
-@@ -120,6 +120,8 @@ asmlinkage int sys_ipc (uint call, int f
+--- linux-2.6-lttng.orig/arch/arm/kernel/process.c	2007-10-11 11:44:13.000000000 -0400
++++ linux-2.6-lttng/arch/arm/kernel/process.c	2007-10-11 14:46:50.000000000 -0400
+@@ -418,6 +418,7 @@ asm(	".section .text\n"
+ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
+ {
+ 	struct pt_regs regs;
++	long pid;
+ 
+ 	memset(&regs, 0, sizeof(regs));
+ 
+@@ -427,7 +428,10 @@ pid_t kernel_thread(int (*fn)(void *), v
+ 	regs.ARM_pc = (unsigned long)kernel_thread_helper;
+ 	regs.ARM_cpsr = SVC_MODE;
+ 
+-	return do_fork(flags|CLONE_VM|CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
++	pid = do_fork(flags|CLONE_VM|CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
++
++	trace_mark(kernel_arch_kthread_create, "pid %ld fn %p", pid, fn);
++	return pid;
+ }
+ EXPORT_SYMBOL(kernel_thread);
+ 
+Index: linux-2.6-lttng/arch/arm/kernel/ptrace.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/arm/kernel/ptrace.c	2007-10-11 11:44:13.000000000 -0400
++++ linux-2.6-lttng/arch/arm/kernel/ptrace.c	2007-10-11 14:48:21.000000000 -0400
+@@ -789,6 +789,12 @@ asmlinkage int syscall_trace(int why, st
+ {
+ 	unsigned long ip;
+ 
++	if (!why)
++		trace_mark(kernel_arch_syscall_entry, "syscall_id %d ip #p%ld",
++			scno, instruction_pointer(regs));
++	else
++		trace_mark(kernel_arch_syscall_exit, MARK_NOARGS);
++
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+ 		return scno;
+ 	if (!(current->ptrace & PT_PTRACED))
+Index: linux-2.6-lttng/arch/arm/kernel/sys_arm.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/arm/kernel/sys_arm.c	2007-10-11 11:44:13.000000000 -0400
++++ linux-2.6-lttng/arch/arm/kernel/sys_arm.c	2007-10-11 14:47:23.000000000 -0400
+@@ -161,6 +161,8 @@ asmlinkage int sys_ipc(uint call, int fi
  	version = call >> 16; /* hack for backward compatibility */
  	call &= 0xffff;
  
 +	trace_mark(kernel_arch_ipc_call, "call %u first %d", call, first);
 +
- 	if (call <= SEMCTL)
- 		switch (call) {
- 		case SEMOP:
-Index: linux-2.6-lttng/arch/sparc/kernel/process.c
+ 	switch (call) {
+ 	case SEMOP:
+ 		return sys_semtimedop (first, (struct sembuf __user *)ptr, second, NULL);
+Index: linux-2.6-lttng/arch/arm/kernel/traps.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/sparc/kernel/process.c	2007-11-13 09:25:23.000000000 -0500
-+++ linux-2.6-lttng/arch/sparc/kernel/process.c	2007-11-13 09:50:18.000000000 -0500
-@@ -709,6 +709,7 @@ pid_t kernel_thread(int (*fn)(void *), v
- 			     "i" (__NR_clone), "r" (flags | CLONE_VM | CLONE_UNTRACED),
- 			     "i" (__NR_exit),  "r" (fn), "r" (arg) :
- 			     "g1", "g2", "g3", "o0", "o1", "memory", "cc");
-+	trace_mark(kernel_arch_kthread_create, "pid %ld fn %p", retval, fn);
- 	return retval;
- }
+--- linux-2.6-lttng.orig/arch/arm/kernel/traps.c	2007-10-11 11:44:13.000000000 -0400
++++ linux-2.6-lttng/arch/arm/kernel/traps.c	2007-10-11 14:48:11.000000000 -0400
+@@ -269,7 +269,14 @@ void arm_notify_die(const char *str, str
+ 		current->thread.error_code = err;
+ 		current->thread.trap_no = trap;
  
++		trace_mark(kernel_arch_trap_entry, "trap_id %ld ip #p%ld",
++			current->thread.trap_no,
++			instruction_pointer(regs));
++
+ 		force_sig_info(info->si_signo, info, current);
++
++		trace_mark(kernel_arch_trap_exit, MARK_NOARGS);
++
+ 	} else {
+ 		die(str, regs, err);
+ 	}
 
 -- 
 Mathieu Desnoyers
