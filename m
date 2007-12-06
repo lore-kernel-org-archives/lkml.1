@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbXLFFKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXLFFNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbXLFFKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 00:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbXLFFKJ
+	id S1753634AbXLFFNB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 00:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXLFFMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 00:10:09 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:58850 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbXLFFKH (ORCPT
+	Thu, 6 Dec 2007 00:12:52 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45922
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750833AbXLFFMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 00:10:07 -0500
-Date: Wed, 5 Dec 2007 21:07:34 -0800
-From: Brandon Philips <brandon@ifup.org>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Documentation about unaligned memory access
-Message-ID: <20071206050734.GA27132@ifup.org>
-References: <20071203161101.A63469D4ED7@zog.reactivated.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071203161101.A63469D4ED7@zog.reactivated.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 6 Dec 2007 00:12:51 -0500
+Date: Wed, 05 Dec 2007 21:12:51 -0800 (PST)
+Message-Id: <20071205.211251.58003209.davem@davemloft.net>
+To: macro@linux-mips.org
+Cc: James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] esp_scsi: Fix reset cleanup spinlock recursion
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64N.0712051529470.5943@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0712051529470.5943@blysk.ds.pg.gda.pl>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16:11 Mon 03 Dec 2007, Daniel Drake wrote:
-> Here's a document I wrote after figuring out what unaligned memory access
-> is all about. I've tried to cover the information I was looking for when
-> trying to learn about this, without producing a hopelessly detailed/complex
-> spew. I hope it is useful to others.
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Wed, 5 Dec 2007 16:10:54 +0000 (GMT)
+
+>  The esp_reset_cleanup() function is called with the host lock held and 
+> invokes starget_for_each_device() which wants to take it too.  Here is a 
+> fix along the lines of shost_for_each_device()/__shost_for_each_device() 
+> adding a __starget_for_each_device() counterpart which assumes the lock 
+> has already been taken.
 > 
-> Signed-off-by: Daniel Drake <dsd@gentoo.org>
+>  Eventually, I think the driver should get modified so that more work is 
+> done as a softirq rather than in the interrupt context, but for now it 
+> fixes a bug that causes the spinlock debugger to fire.
 > 
-> ---
-<snip>
-> +These macros work work for memory accesses of any length (not just 32 bits as
+>  While at it, it fixes a small number of cosmetic problems with 
+> starget_for_each_device() too.
+> 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 
-Remove a "work" here.
+Acked-by: David S. Miller <davem@davemloft.net>
 
-> +in the examples above). Be aware that when compared to standard access of
-> +aligned memory, using these macros to access unaligned memory can be costly in
-> +terms of performance.
-> +
-> +If use of such macros is not convenient, another option is to use memcpy(),
-> +where the source or destination (or both) are of type u8* or unsigned char*.
-> +Due to the byte-wise nature of this operation, unaligned accesses are avoided.
+Thanks for finding and fixing this bug.
 
-Cheers,
-
-	Brandon
