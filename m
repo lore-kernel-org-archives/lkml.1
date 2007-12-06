@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbXLFVqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbXLFVrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbXLFVqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 16:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXLFVqZ
+	id S1754690AbXLFVrw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 16:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbXLFVrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 16:46:25 -0500
-Received: from iriserv.iradimed.com ([72.242.190.170]:28653 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752073AbXLFVqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 16:46:23 -0500
-Message-ID: <47586DB0.5040706@cfl.rr.com>
-Date: Thu, 06 Dec 2007 16:46:24 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 6 Dec 2007 16:47:45 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:47989 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbXLFVro (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 16:47:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UOFB7nm9wursxEm5jzyD1KFBNEV1zyJ/QzXMFpM3O9q3AMnzKHOnq6SQMEWOWSDhSpXrleu5fbIdFoocTLwE9OMVhjspCrlvmxl2Ivfgz3vpyRyfyzHIFSZ9tZGMW4TUIg0r2GTNHvwltBOHjK/T3IZjChPOIQRMIpdg3p95xCY=
+Message-ID: <b1bc6a000712061337o189b96bal45c0b7b5b7d47568@mail.gmail.com>
+Date: Thu, 6 Dec 2007 13:37:28 -0800
+From: "adam radford" <aradford@gmail.com>
+To: "Gabriele Gorla" <gorlik@yahoo.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: Patch submission question [not in the FAQ]
+In-Reply-To: <602863.12913.qm@web53712.mail.re2.yahoo.com>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Andreas Ericsson <ae@op5.se>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-Subject: Re: git guidance
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712072035.47359.a1426z@gawab.com> <47583E57.9050208@op5.se> <200712072155.04643.a1426z@gawab.com>
-In-Reply-To: <200712072155.04643.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Dec 2007 21:46:37.0474 (UTC) FILETIME=[7A427020:01C83851]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15590.001
-X-TM-AS-Result: No--10.583800-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Disposition: inline
+References: <602863.12913.qm@web53712.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> When you read server, don't read it as localized; a server can be 
-> distributed.  What distinguishes a server from an engine is that it has to 
-> handle a multi-user use-case.  How that is implemented, locally or remotely 
-> or distributed, is another issue.
+On Dec 5, 2007 3:36 AM, Gabriele Gorla <gorlik@yahoo.com> wrote:
+> Hello,
+> I have submitted a patch for the 3x-xxxx driver on
+> alpha several months ago to both the driver maintainer
+> and the linux-scsi mailing list.
+> I have read all the FAQ and I tried to stick to the
+> instructions to the letter.
+> However the patch has been completely ignored. No
+> reply, no comment, no flames, absolutely nothing...
+>
+> the original email submission is at the end of the
+> email.
+>
+> could anyone please explain what I am doing wrong?
+>
+> thanks,
+> GG
 
-And again, git handles both use cases, so what's your point?
+Gabriele,
 
-> As explained before in this thread, replicating the git tree on the client 
-> still doesn't provide the required transparency.
+I ignored your patch because:
 
-It has been pointed out to you that it DOES.  Either that or nobody else 
-understands your nebulous use of "transparency" so maybe you should 
-define it like we've been asking you.  Furthermore, the comment you 
-replied to said nothing about transparency, nor did your comment it was 
-in reply to; rather it was pointing out the fact that your statement 
-that the git can not perform version control on the client is patently 
-false.
+1. I do not believe you have the 3w-xxxx driver running on an
+   alpha SMP system.
 
->> How is that different from what every SCM, including git, is doing today?
->> The user needs to tell the scm when it's time to take a snapshot of the
->> current state. Git is distributed though, so committing is usually not the
->> same as publishing. Is that lack of a single command to commit and publish
->> what's nagging you? If it's not, I completely fail to see what you're
->> getting at, unless you've only ever looked at repositories without a
->> worktree attached, or you think that git should work like an editor's
->> "undo" functionality, which would be quite insane.
-> 
-> You need to re-read the thread.
+2. I removed the bitfields from the 3w-xxxx driver but I have
+   yet to add full big endian support due to lack of demand.  I have
+   such a patch for this driver (which already includes the unpacking
+   of the wait_queue_head_t variable) but I have not submitted it to
+   the main-line kernel.  The in-kernel 3w-xxxx driver is still missing
+   the byte-swaps.
 
-Perhaps you should.  We have been trying to get you to explain how you 
-think git isn't "transparent" while at the same time pointing out how we 
-think it is.  You have failed to demonstrate any evidence to back up 
-your claims, all of which have been shown to be false.
+   The 3w-9xxx (9000 series 3ware driver) has full big endian support.
 
+3. Your patch was garbled.
 
+Is this an official request for big endian support for the 3w-xxxx driver or
+are you looking for anybody who has a packed 'wait_queue_head_t' and
+submitting a patch to fix it?
+
+-Adam
