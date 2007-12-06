@@ -1,105 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbXLFTui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbXLFTwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbXLFTui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXLFTuS
+	id S1754195AbXLFTwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 14:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXLFTwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:50:18 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:40189 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829AbXLFTuQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:50:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=NHwc61XR5JND7vhKcBiH1NUUgc6QdvqnkZb9p6p5rY8HuxvY5A1sxxpdgH31jJ3VGWNtFL8J4aS1AZq30fccbWmEBhrGAygkFy5na6dFeeQCbN7L2DWEDg+R4LWr/R/BOgMkdP9CF+gGgfLu2GAgqyBbjnsd0xorcO5F90c6hkw=
-Message-ID: <ea50169d0712061150h6c732fben99821e4b6222a4b6@mail.gmail.com>
-Date: Thu, 6 Dec 2007 14:50:14 -0500
-From: "Ken Simon" <ninkendo@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: klibc ipconfig misbehavior in a network with DHCP snooping
+	Thu, 6 Dec 2007 14:52:01 -0500
+Received: from mail.tmr.com ([64.65.253.246]:43867 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751487AbXLFTwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 14:52:00 -0500
+Message-ID: <475856BE.4050207@tmr.com>
+Date: Thu, 06 Dec 2007 15:08:30 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matt Mackall <mpm@selenic.com>
+CC: Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <2c0942db0712040854u17a830b9see663742b2716457@mail.gmail.com> <20071204180158.GT19691@waste.org>
+In-Reply-To: <20071204180158.GT19691@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(H. Peter Anvin was CC'd in the original message, but the lkml mailer
-rejected it because of an html subpart... sorry)
+Matt Mackall wrote:
+> On Tue, Dec 04, 2007 at 08:54:52AM -0800, Ray Lee wrote:
+>> (Why hasn't anyone been cc:ing Matt on this?)
+>>
+>> On Dec 4, 2007 8:18 AM, Adrian Bunk <bunk@kernel.org> wrote:
+>>> On Tue, Dec 04, 2007 at 12:41:25PM +0100, Marc Haber wrote:
+>>>
+>>>> While debugging Exim4's GnuTLS interface, I recently found out that
+>>>> reading from /dev/urandom depletes entropy as much as reading from
+>>>> /dev/random would. This has somehow surprised me since I have always
+>>>> believed that /dev/urandom has lower quality entropy than /dev/random,
+>>>> but lots of it.
+>>> man 4 random
+>>>
+>>>> This also means that I can "sabotage" applications reading from
+>>>> /dev/random just by continuously reading from /dev/urandom, even not
+>>>> meaning to do any harm.
+>>>>
+>>>> Before I file a bug on bugzilla,
+>>>> ...
+>>> The bug would be closed as invalid.
+>>>
+>>> No matter what you consider as being better, changing a 12 years old and
+>>> widely used userspace interface like /dev/urandom is simply not an
+>>> option.
+>> You seem to be confused. He's not talking about changing any userspace
+>> interface, merely how the /dev/urandom data is generated.
+>>
+>> For Matt's benefit, part of the original posting:
+>>
+>>> Before I file a bug on bugzilla, can I ask why /dev/urandom wasn't
+>>> implemented as a PRNG which is periodically (say, every 1024 bytes or
+>>> even more) seeded from /dev/random? That way, /dev/random has a much
+>>> higher chance of holding enough entropy for applications that really
+>>> need "good" entropy.
+>> A PRNG is clearly unacceptable. But roughly restated, why not have
+>> /dev/urandom supply merely cryptographically strong random numbers,
+>> rather than a mix between the 'true' random of /dev/random down to the
+>> cryptographically strong stream it'll provide when /dev/random is
+>> tapped? In principle, this'd leave more entropy available for
+>> applications that really need it, especially on platforms that don't
+>> generate a lot of entropy in the first place (servers).
+> 
+> The original /dev/urandom behavior was to use all the entropy that was
+> available, and then degrade into a pure PRNG when it was gone. The
+> intent is for /dev/urandom to be precisely as strong as /dev/random
+> when entropy is readily available.
+> 
+> The current behavior is to deplete the pool when there is a large
+> amount of entropy, but to always leave enough entropy for /dev/random
+> to be read. This means we never completely starve the /dev/random
+> side. The default amount is twice the read wakeup threshold (128
+> bits), settable in /proc/sys/kernel/random/.
+> 
+In another post I suggested having a minimum bound (use not entropy) and 
+a maximum bound (grab some entropy) with the idea that between these 
+values some limited entropy could be used. I have to wonder if the 
+entropy available is at least as unpredictable as the entropy itself.
 
-Bear with me, because I'm no DHCP expert, nor any sort of kernel/networking
-expert in any sense. (This is actually my first post to the lkml or to any
-kernel developer.)
+> But there's really not much point in changing this threshold. If
+> you're reading the /dev/random side at the same rate or more often
+> that entropy is appearing, you'll run out regardless of how big your
+> buffer is.
+> 
+Right, my thought is to throttle user + urandom use such that the total 
+stays below the available entropy. I had forgotten that that was a lower 
+bound, although it's kind of an on-off toggle rather than proportional. 
+Clearly if you care about this a *lot* you will use a hardware RNG.
 
-I found a problem with klibc's "ipconfig" program, or at least, behavior
-that breaks DHCP on my thin clients (LTSP 5.0). It has to do with setting
-the giaddr field on dhcp_send in dhcp_proto.c, line 164.
-
-[snip]
-static int dhcp_send(struct netdev *dev, struct iovec *vec)
-{
- struct bootp_hdr bootp;
-
- memset(&bootp, 0, sizeof(struct bootp_hdr));
-
- bootp.op = BOOTP_REQUEST;
- bootp.htype = dev->hwtype;
- bootp.hlen = dev->hwlen;
- bootp.xid = dev->bootp.xid;
- bootp.ciaddr = dev->ip_addr;
- bootp.giaddr = dev-> bootp.gateway; //<-- HERE
- bootp.secs = htons(time(NULL) - dev->open_time);
- memcpy(bootp.chaddr, dev->hwaddr, 16);
-...
-[/snip]
-
-I'm not sure why the giaddr field should be set on a DHCP request, but it
-causes a Cisco relay agent with DHCP snooping turned on to drop the
-request. I know ipconfig has options to both manually set a gateway and
-configure the interface via dhcp, but IMO it shouldn't be sending it as part
-of the DHCPREQUEST packet.
-
-When I went to Cisco about the issue, this is exactly what they explained:
-
-[QUOTE]
-This looks like the thin client is not following the standards for DHCP
-relay information specified in RFC3046. This RFC states the following:
-
-A DHCP relay agent may receive a client DHCP packet forwarded from a
- BOOTP/DHCP relay agent closer to the client. Such a packet will have
- giaddr as non-zero, and may or may not already have a DHCP Relay
- Agent option in it.
-
- ***Relay agents configured to add a Relay Agent option which receive a
- client DHCP packet with a nonzero giaddr SHALL discard the packet if
- the giaddr spoofs a giaddr address implemented by the local agent
- itself.***
-
- Otherwise, the relay agent SHALL forward any received DHCP packet
- with a valid non-zero giaddr WITHOUT adding any relay agent options.
- Per RFC 2131 <
-;http://www.faqs.org/rfcs /rfc2131.html>, it shall also NOT modify the
-giaddr value.
-
-The part that I highlighted specifies that a relay agent should discard
-the packet if the giaddr address is spoofs a giaddr address implemented
-by the relay agent. This appears to be the case due to the fact that
-the DHCP request packet has a giaddr address of the relay agent
-specified in the DHCP offer.
-[/QUOTE]
-
-Now, when I changed the noted line above to:
-
-bootp.giaddr = INADDR_ANY;
-
-then recompile, and rebuild my initrd, the relay agent forwards the DHCP
-request just fine.
-
-Can anyone comment on why giaddr needs to be set on a DHCP request? Is this
-a simple bug, or is there something deeper going on here?
+Thanks for the reminder on read_wakeup.
 
 -- 
-Ken
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
