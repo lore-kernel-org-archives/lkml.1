@@ -1,72 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXLFGLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXLFGTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbXLFGLR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 01:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXLFGLG
+	id S1754222AbXLFGTb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 01:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXLFGTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 01:11:06 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59602 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbXLFGLF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 01:11:05 -0500
-Date: Thu, 06 Dec 2007 15:09:38 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, miltonm@bga.com,
-       clameter@sgi.com, apw@shadowen.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47573806.8000808@am.sony.com>
-References: <20071205151147.9db4640b.akpm@linux-foundation.org> <47573806.8000808@am.sony.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071206142552.694B.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 6 Dec 2007 01:19:24 -0500
+Received: from smtpoutm.mac.com ([17.148.16.67]:61376 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752539AbXLFGTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 01:19:23 -0500
+In-Reply-To: <20071206053016.GA1464@cs.unibo.it>
+References: <20071205164055.GA2082@cs.unibo.it> <p73bq94k8yd.fsf@bingen.suse.de> <20071206053016.GA1464@cs.unibo.it>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2BD0AF2A-959D-4744-9D2A-3AE84CF96CBB@mac.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: New Address Family: Inter Process Networking (IPN)
+Date: Thu, 6 Dec 2007 01:19:13 -0500
+To: renzo@cs.unibo.it (Renzo Davoli)
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Dec 06, 2007, at 00:30:16, Renzo Davoli wrote:
+> AF_IPN is different.  AF_IPN is the broadcast and peer-to-peer  
+> extension of AF_UNIX. It supports communication among *user*  
+> processes.
 
-> I'll try Milton's suggestion to pre-allocate the memory early.  It seems
-> that should work as long as nothing else before the hot-plug mem is added
-> needs a large chunk.
-
-Hello. Geoff-san. Sorry for late response.
-
-Could you tell me the value of the following page_size calculation
-in vmemmap_populate()? I think this page_size may be too big value. 
-
-------
-int __meminit vmemmap_populate(struct page *start_page,
-                                       unsigned long nr_pages, int node)
-                           :
-                           :
-        unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
-                           :
--------
+Ok, you say it's different, but then you describe how IP unicast and  
+broadcast work.  Both are frequently used for communication among  
+"*user* processes".  Please provide significantly more details about  
+exactly *how* it's different.
 
 
-In addition, I remember that current add_memory() is designed for
-only 1 section's addition. (See: memory_probe_store() and
-sparse_mem_map_populate().
-they require only for 1 section's mem_map by specifing
-PAGES_PER_SECTION.)
-The 1 section size for normal powerpc box is only 16MB.
-(IA64 -> 1GB, x86-64 -> 128MB).
+> Example:
+>
+> Qemu, User-Mode Linux, Kvm, our umview machines can use IPN as an  
+> Ethernet Hub and communicate among themselves with the hosting  
+> computer and the world by a tap like interface.
 
-But, if my understanding is correct, PS3's add_memory() requires all
-of total memory. I'm afraid something other problems might be hidden
-in this issue yet.
+You say "tap like" interface, but people do this already with  
+existing infrastructure.  You can connect Qemu, UML, and KVM to a  
+standard linus "tap" interface, and then use the standard Linux  
+bridging code to connect the "tap" interface to your existing network  
+interfaces.  Alternatively you could use the standard and well-tested  
+IP routing/firewalling/NAT code to move your packets around.  None of  
+this requires new network infrastructure in the slightest.  If you  
+have problems with the existing code, please improve it instead of  
+creating a slightly incompatible replacement which has different bugs  
+and workarounds.
 
-(However, I think Milton-san's suggestion is very desirable. 
- If preallocation of hotadd works on ia64 too, I'm very glad.)
 
-Thanks.
+> You can also grab an interface (say eth1) and use eth0 for your  
+> hosting computer and eth1 for the IPN network of virtual machines.
 
--- 
-Yasunori Goto 
+You can do that already with the bridging code.
 
+
+> If you load the kvde_switch submodule IPN can be a virtual Ethernet  
+> switch.
+
+As I described above, this can be done with the existing bridging and  
+tun/tap code.
+
+
+> Another Example:
+>
+> You have a continuous stream of data packets generated by a  
+> process, and you want to send this data to many processes.  Maybe  
+> the set of processes is not known in advance, you want to send the  
+> data to any interested process. Some kind of publish&subscribe  
+> communication service (among unix processes not on TCP-IP). Without  
+> IPN you need a server. With IPN the sender creates the socket  
+> connects to it and feed it with data packets. All the interested  
+> receivers connects to it and start reading. That's all.
+
+This is already done frequently in userspace.  Just register a port  
+number with IANA on which to implement a "registration" server and  
+write a little daemon to listen on 127.0.0.1:${YOUR_PORT}.  Your  
+interconnecting programs then use either unicast or multicast sockets  
+to bind, then report to the registration server what service you are  
+offering and what port it's on.  Your "receivers" then connect to the  
+registration server, ask what port a given service is on, and then  
+multicast-listen or unicast-connect to access that service.  The best  
+part is that all of the performance implications are already  
+thoroughly understood.  Furthermore, if you want to extend your  
+communication protocol to other hosts as well, you just have to  
+replace the 127.0.0.1 bind with a global bind.  This is exactly how  
+the standard-specified multiple-participant "SIP" protocol works, for  
+example.
+
+
+So if you really think this is something that belongs in the kernel  
+you need to provide much more detailed descriptions and use-cases for  
+why it cannot be implemented in user-space or with small  
+modifications to existing UDP/TCP networking.
+
+Cheers,
+Kyle Moffett
 
