@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbXLFWjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbXLFWkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbXLFWjj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 17:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXLFWjK
+	id S1756121AbXLFWkc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 17:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXLFWkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 17:39:10 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60635 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755961AbXLFWjH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 17:39:07 -0500
-Date: Thu, 6 Dec 2007 14:37:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: linux-kernel@vger.kernel.org, Miles Lane <miles.lane@gmail.com>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc4-mm1: VDSOSYM build error
-Message-Id: <20071206143754.07a67819.akpm@linux-foundation.org>
-In-Reply-To: <47587796.8020705@free.fr>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<47587796.8020705@free.fr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 6 Dec 2007 17:40:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44060 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbXLFWkN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 17:40:13 -0500
+Date: Thu, 6 Dec 2007 23:40:11 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Dave Anderson <anderson@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [NEW-PATCH] exec: allow > 2GB executables to run on 64-bit systems
+Message-ID: <20071206224011.GI20595@one.firstfloor.org>
+References: <4756C590.9080301@redhat.com> <p73fxyhj5f7.fsf@bingen.suse.de> <475702E7.1000607@redhat.com> <20071205195637.GA20595@one.firstfloor.org> <47570B0A.6040404@redhat.com> <20071206221520.GG20595@one.firstfloor.org> <47587995.4000403@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47587995.4000403@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Dec 2007 23:28:38 +0100
-Laurent Riffard <laurent.riffard@free.fr> wrote:
+> Thanks Andi -- I just tested open_exec() w/O_LARGEFILE on an
+> i386 with a 2.5GB+ binary (mostly debuginfo), and it works as
+> expected.  Interesting to note that the test binary couldn't
+> be compiled with i386 gcc, but it could be built with x86_64
+> gcc -m32.
 
-> Le 05.12.2007 06:17, Andrew Morton a écrit :
-> > Temporarily at
-> >   http://userweb.kernel.org/~akpm/2.6.24-rc4-mm1/
-> > Will appear later at
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
+I guess the i386 binutils or gcc don't use O_LARGEFILE. They probably
+just need to be rebuilt with -D_FILE_OFFSET_BITS=64
+
+-Andi
+
 > 
->   LDS     arch/x86/vdso/vdso32/vdso32.lds
->   AS      arch/x86/vdso/vdso32/note.o
->   AS      arch/x86/vdso/vdso32/int80.o
->   VDSO    arch/x86/vdso/vdso32-int80.so.dbg
->   OBJCOPY arch/x86/vdso/vdso32-int80.so
->   AS      arch/x86/vdso/vdso32/sysenter.o
->   VDSO    arch/x86/vdso/vdso32-sysenter.so.dbg
->   OBJCOPY arch/x86/vdso/vdso32-sysenter.so
->   AS      arch/x86/vdso/vdso32.o
->   CC      arch/x86/vdso/vdso32-setup.o
->   VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
->   VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
->   VDSOSYM arch/x86/vdso/vdso32-syms.lds
-> --- -   2007-12-06 23:23:08.785302925 +0100
-> +++ arch/x86/vdso/vdso32-int80-syms.lds 2007-12-06 23:23:08.000000000 +0100
-> @@ -3,4 +3,3 @@
->  VDSO32_sigreturn = 0x0400;
->  VDSO32_vsyscall = 0x0414;
->  VDSO32_vsyscall_eh_frame_size = 0x044;
-> -VDSO32_vsyscall_eh_frame_size = 0x058;
-> make[1]: *** [arch/x86/vdso/vdso32-syms.lds] Error 1
-> make: *** [arch/x86/vdso] Error 2
-
-Dunno.  Maybe Roland's VDSO rework?
