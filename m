@@ -1,76 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbXLFCWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbXLFCWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbXLFCWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbXLFCWB
+	id S1756425AbXLFCWj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXLFCWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:22:01 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:36771 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:22:13 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:36805 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754489AbXLFCV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:21:59 -0500
-Message-Id: <20071206022039.748299422@polymtl.ca>
+	id S1755860AbXLFCWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:22:11 -0500
+Message-Id: <20071206022039.405544747@polymtl.ca>
 References: <20071206021559.040218929@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:16:01 -0500
+Date: Wed, 05 Dec 2007 21:16:00 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@muc.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: [patch 2/6] Add __discard section to x86
-Content-Disposition: inline; filename=add-discard-section-to-x86.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:20:44 +0000
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 1/6] Immediate Values - Move Kprobes x86 restore_interrupt to kdebug.h
+Content-Disposition: inline; filename=immediate-values-move-kprobes-x86-restore-interrupt-to-kdebug-h.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:20:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a __discard sectionto the linker script. Code produced in this section will
-not be put in the vmlinux file. This is useful when we have to calculate the
-size of an instruction before actually declaring it (for alignment purposes for
-instance). This is used by the immediate values.
+Since the breakpoint handler is useful both to kprobes and immediate values, it
+makes sense to make the required restore_interrupt() available through
+asm-i386/kdebug.h.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-CC: Andi Kleen <ak@muc.de>
-CC: Chuck Ebbert <cebbert@redhat.com>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 CC: Christoph Hellwig <hch@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: prasanna@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/kernel/vmlinux_32.lds.S |    1 +
- arch/x86/kernel/vmlinux_64.lds.S |    1 +
- 2 files changed, 2 insertions(+)
+ include/asm-x86/kdebug.h     |   12 ++++++++++++
+ include/asm-x86/kprobes_32.h |    9 ---------
+ include/asm-x86/kprobes_64.h |    9 ---------
+ 3 files changed, 12 insertions(+), 18 deletions(-)
 
-Index: linux-2.6-lttng/arch/x86/kernel/vmlinux_32.lds.S
+Index: linux-2.6-lttng/include/asm-x86/kdebug.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/vmlinux_32.lds.S	2007-11-14 14:10:43.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/vmlinux_32.lds.S	2007-11-14 14:11:32.000000000 -0500
-@@ -205,6 +205,7 @@ SECTIONS
-   /* Sections to be discarded */
-   /DISCARD/ : {
- 	*(.exitcall.exit)
-+	*(__discard)
- 	}
+--- linux-2.6-lttng.orig/include/asm-x86/kdebug.h	2007-11-02 15:01:53.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86/kdebug.h	2007-11-02 15:02:00.000000000 -0400
+@@ -3,6 +3,9 @@
  
-   STABS_DEBUG
-Index: linux-2.6-lttng/arch/x86/kernel/vmlinux_64.lds.S
+ #include <linux/notifier.h>
+ 
++#include <linux/ptrace.h>
++#include <asm/system.h>
++
+ struct pt_regs;
+ 
+ /* Grossly misnamed. */
+@@ -30,4 +33,13 @@ extern void dump_pagetable(unsigned long
+ extern unsigned long oops_begin(void);
+ extern void oops_end(unsigned long);
+ 
++/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
++ * if necessary, before executing the original int3/1 (trap) handler.
++ */
++static inline void restore_interrupts(struct pt_regs *regs)
++{
++	if (regs->eflags & IF_MASK)
++		local_irq_enable();
++}
++
+ #endif
+Index: linux-2.6-lttng/include/asm-x86/kprobes_32.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/vmlinux_64.lds.S	2007-11-14 14:10:46.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/vmlinux_64.lds.S	2007-11-14 14:11:48.000000000 -0500
-@@ -227,6 +227,7 @@ SECTIONS
-   /DISCARD/ : {
- 	*(.exitcall.exit)
- 	*(.eh_frame)
-+	*(__discard)
- 	}
+--- linux-2.6-lttng.orig/include/asm-x86/kprobes_32.h	2007-11-02 15:01:53.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86/kprobes_32.h	2007-11-02 15:02:00.000000000 -0400
+@@ -79,15 +79,6 @@ struct kprobe_ctlblk {
+ 	struct prev_kprobe prev_kprobe;
+ };
  
-   STABS_DEBUG
+-/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
+- * if necessary, before executing the original int3/1 (trap) handler.
+- */
+-static inline void restore_interrupts(struct pt_regs *regs)
+-{
+-	if (regs->eflags & IF_MASK)
+-		local_irq_enable();
+-}
+-
+ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ 				    unsigned long val, void *data);
+ extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+Index: linux-2.6-lttng/include/asm-x86/kprobes_64.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86/kprobes_64.h	2007-11-02 15:02:10.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86/kprobes_64.h	2007-11-02 15:02:22.000000000 -0400
+@@ -72,15 +72,6 @@ struct kprobe_ctlblk {
+ 	struct prev_kprobe prev_kprobe;
+ };
+ 
+-/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
+- * if necessary, before executing the original int3/1 (trap) handler.
+- */
+-static inline void restore_interrupts(struct pt_regs *regs)
+-{
+-	if (regs->eflags & IF_MASK)
+-		local_irq_enable();
+-}
+-
+ extern int post_kprobe_handler(struct pt_regs *regs);
+ extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+ extern int kprobe_handler(struct pt_regs *regs);
 
 -- 
 Mathieu Desnoyers
