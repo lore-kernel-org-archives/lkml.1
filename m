@@ -1,158 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbXLFTUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbXLFTWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbXLFTUR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:20:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXLFTT7
+	id S1755430AbXLFTWO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 14:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXLFTV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:19:59 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:63053 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752973AbXLFTT5 (ORCPT
+	Thu, 6 Dec 2007 14:21:59 -0500
+Received: from shadow.wildlava.net ([67.40.138.81]:45444 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbXLFTV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:19:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=feyPbAA9mww9TGoQCsWZGCBj3hW4wPNqWYQ1C4DpmDFJdzyxEEYquGnhxXMgleWc3mCqzTa2kY+b+5mROqz26WAbYAjNp8MK+zm+7F3tXBacsDJWe0wpTDcuRHPiJPtYStM9xJc4f7lFVWQsoCa0D8ijh6Ys61+65M/aZhn83m4=
-Date: Thu, 6 Dec 2007 22:19:50 +0300
-To: Hannes Reinecke <hare@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc4-mm1: hostbyte=0x01 driverbyte=0x00 (now bisected)
-Message-ID: <20071206191950.GA1951@martell.zuzino.mipt.ru>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <20071205234154.GA4041@martell.zuzino.mipt.ru> <4757AA3D.4060003@suse.de>
+	Thu, 6 Dec 2007 14:21:58 -0500
+Message-ID: <47584BD3.8080306@skyrush.com>
+Date: Thu, 06 Dec 2007 12:21:55 -0700
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071127)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4757AA3D.4060003@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org, alan@redhat.com
+Subject: [PATCH] Enabling the echo of ctrl-C (and the like)
+X-Enigmail-Version: 0.95.5
+Content-Type: multipart/mixed;
+ boundary="------------020602060601040708030900"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 08:52:29AM +0100, Hannes Reinecke wrote:
-> Alexey Dobriyan wrote:
-> >>  git-scsi-misc.patch
-> > 
-> > Apologies for not looking into the problem earlier. See
-> > http://marc.info/?t=119628022300005&r=1&w=2
-> > "2.6.24-rc3-mm2: Result: hostbyte=0x01 driverbyte=0x00\nend_request: I/O error"
-> > for previous installment.
-> > 
-> > I've bisected it to the following patch in git-scsi-misc branch.
-> > Revert on top of 2.6.24-rc4-mm1 also helps.
-> > 
-> > commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
-> > Author: Hannes Reinecke <hare@suse.de>
-> > Date:   Tue Nov 6 09:23:40 2007 +0100
-> > 
-> >     [SCSI] Do not requeue requests if REQ_FAILFAST is set
-> >     
-> >     Any requests with the REQ_FAILFAST flag set should not be requeued
-> >     to the requeust queue, but rather terminated directly.
-> >     Otherwise the multipath failover will stall until the command
-> >     timeout triggers.
-> >     
-> >     Signed-off-by: Hannes Reinecke <hare@suse.de>
-> >     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > 
-> > diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> > index 0f44bdb..0da0dd0 100644
-> > --- a/drivers/scsi/scsi_lib.c
-> > +++ b/drivers/scsi/scsi_lib.c
-> > @@ -1286,6 +1286,11 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
-> >  			 */
-> >  			if (!(req->cmd_flags & REQ_PREEMPT))
-> >  				ret = BLKPREP_DEFER;
-> > +			/*
-> > +			 * Return failfast requests immediately
-> > +			 */
-> > +			if (req->cmd_flags & REQ_FAILFAST)
-> > +				ret = BLKPREP_KILL;
-> >  			break;
-> >  		default:
-> >  			/*
-> > @@ -1414,6 +1419,17 @@ static inline int scsi_host_queue_ready(struct request_queue *q,
-> >  	return 1;
-> >  }
-> >  
-> > +static void __scsi_kill_request(struct request *req)
-> > +{
-> > +	struct scsi_cmnd *cmd = req->special;
-> > +	struct scsi_device *sdev = cmd->device;
-> > +
-> > +	cmd->result = DID_NO_CONNECT << 16;
-> > +	atomic_inc(&cmd->device->iorequest_cnt);
-> > +	sdev->device_busy--;
-> > +	__scsi_done(cmd);
-> > +}
-> > +
-> >  /*
-> >   * Kill a request for a dead device
-> >   */
-> > @@ -1527,8 +1543,16 @@ static void scsi_request_fn(struct request_queue *q)
-> >  		 * accept it.
-> >  		 */
-> >  		req = elv_next_request(q);
-> > -		if (!req || !scsi_dev_queue_ready(q, sdev))
-> > +		if (!req)
-> > +			break;
-> > +
-> > +		if (!scsi_dev_queue_ready(q, sdev)) {
-> > +			if (req->cmd_flags & REQ_FAILFAST) {
-> > +				scsi_kill_request(req, q);
-> > +				continue;
-> > +			}
-> >  			break;
-> > +		}
-> >  
-> >  		if (unlikely(!scsi_device_online(sdev))) {
-> >  			sdev_printk(KERN_ERR, sdev,
-> > @@ -1609,8 +1633,12 @@ static void scsi_request_fn(struct request_queue *q)
-> >  	 * later time.
-> >  	 */
-> >  	spin_lock_irq(q->queue_lock);
-> > -	blk_requeue_request(q, req);
-> > -	sdev->device_busy--;
-> > +	if (unlikely(req->cmd_flags & REQ_FAILFAST))
-> > +		__scsi_kill_request(req);
-> > +	else {
-> > +		blk_requeue_request(q, req);
-> > +		sdev->device_busy--;
-> > +	}
-> >  	if(sdev->device_busy == 0)
-> >  		blk_plug_device(q);
-> >   out:
-> Yeah, sorry. That patch was bad. Please use the attached one instead.
-> Andrew, can you replace them?
+This is a multi-part message in MIME format.
+--------------020602060601040708030900
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Instead? It won't apply. And it doesn't help on top of git-scsi.
-It helps if 3 hunks involving __scsi_kill_request() are ducked.
+Attached is a patch that turns on INTR/QUIT/SUSP echoing in the N_TTY
+line discipline (e.g. ctrl-C will appear as "^C" if stty echoctl is set
+and ctrl-C is set as INTR).
 
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -1284,13 +1284,15 @@ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req)
->  			/*
->  			 * If the devices is blocked we defer normal commands.
->  			 */
-> -			if (!(req->cmd_flags & REQ_PREEMPT))
-> -				ret = BLKPREP_DEFER;
-> -			/*
-> -			 * Return failfast requests immediately
-> -			 */
-> -			if (req->cmd_flags & REQ_FAILFAST)
-> -				ret = BLKPREP_KILL;
-> +			if (!(req->cmd_flags & REQ_PREEMPT)) {
-> +				/*
-> +				 * Return failfast requests immediately
-> +				 */
-> +				if (req->cmd_flags & REQ_FAILFAST)
-> +					ret = BLKPREP_KILL;
-> +				else
-> +					ret = BLKPREP_DEFER;
-> +			}
->  			break;
->  		default:
->  			/*
+Linux seems to be the only unix-like OS (recently I've verified this on
+Solaris, BSD, and Mac OS X) that does *not* behave this way, and I
+really miss this as a good visual confirmation of the interrupt of a
+program in the console or xterm.  I remember this fondly from many Unixs
+I've used over the years as well.  Bringing this to Linux also seems
+like a good way to make it yet more compliant with standard unix-like
+behavior.
 
+The fix is pretty trivial.  Let me know if you think this is a candidate
+for inclusion in the kernel.
+
+					Thanks, Joe
+
+--------------020602060601040708030900
+Content-Type: text/plain;
+ name="echo-ctrl-c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="echo-ctrl-c.patch"
+
+--- linux-2.6.22-gentoo-r9/drivers/char/n_tty.c	2007-07-08 17:32:17.000000000 -0600
++++ linux-2.6.22-gentoo-r9.new/drivers/char/n_tty.c	2007-12-06 07:16:56.000000000 -0700
+@@ -760,7 +760,22 @@
+ 		signal = SIGTSTP;
+ 		if (c == SUSP_CHAR(tty)) {
+ send_signal:
+-			isig(signal, tty, 0);
++			/*
++			 * Echo character, and then send the signal.
++			 * Note that we do not use isig() here because we want
++			 * the order to be:
++			 * 1) flush, 2) echo, 3) signal
++			 */
++			if (!L_NOFLSH(tty)) {
++				n_tty_flush_buffer(tty);
++				if (tty->driver->flush_buffer)
++					tty->driver->flush_buffer(tty);
++			}
++			if (L_ECHO(tty)) {
++				echo_char(c, tty);
++			}
++			if (tty->pgrp)
++				kill_pgrp(tty->pgrp, signal, 1);
+ 			return;
+ 		}
+ 	}
+
+--------------020602060601040708030900--
