@@ -1,221 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbXLFThh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbXLFTo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753084AbXLFThh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 14:37:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbXLFTha
+	id S1753538AbXLFTo5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 14:44:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXLFTou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 14:37:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:12659 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbXLFTh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 14:37:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tilObMKHpdxqbtAOVv8y+J1jm+EgenPU57fppbu3ZsOqx/gGHuzO1iiUbm4Skd+5QdIiu8YsOzwVbfuGZGsLLf0hCza6N1yFPvWFxNb0J6UR+bbDom/qtntdL6inB7oADjYKKiG2tkJlqqDZZqmq1d3KHRNfLHZUHt3L23yrvcU=
-Message-ID: <5d6222a80712061137h74f9db55l7a8473f739549794@mail.gmail.com>
-Date: Thu, 6 Dec 2007 17:37:27 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH 1/19] unify desc_struct
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com
-In-Reply-To: <47584C56.3070804@goop.org>
+	Thu, 6 Dec 2007 14:44:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48436 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752106AbXLFTot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 14:44:49 -0500
+Message-ID: <4758512E.1060306@redhat.com>
+Date: Thu, 06 Dec 2007 14:44:46 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Andi Kleen <ak@suse.de>
+Subject: 2.6.23: x86_64 oops caused by hotplug running before vdso initialized
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1196957800568-git-send-email-gcosta@redhat.com>
-	 <11969578092869-git-send-email-gcosta@redhat.com>
-	 <47584C56.3070804@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 6, 2007 5:24 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
-> Glauber de Oliveira Costa wrote:
-> > This patch aims to make the access of struct desc_struct variables
-> > equal across architectures. In this patch, I unify the i386 and x86_64
-> > versions under an anonymous union, keeping the way they are accessed
-> > untouched (a and b for 32-bit code, individual bit-fields for 64-bit).
-> >
-> > This solution is not beautiful, but will allow us to integrate common
-> > code that differed by the way descriptors were used. This is to be viewed
-> > incrementally. There's simply too much code to be fixed at once.
-> >
-> > In the future, goal is to set up in a single way of acessing
-> > the desc_struct fields.
-> >
-> > Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-> > ---
-> >  arch/x86/kernel/apm_32.c       |    2 +-
-> >  arch/x86/kernel/cpu/common.c   |   28 ++++++++++++++--------------
-> >  arch/x86/kernel/process_64.c   |    2 +-
-> >  arch/x86/kernel/traps_32.c     |    2 +-
-> >  include/asm-x86/desc_defs.h    |   28 ++++++++++++++++++++--------
-> >  include/asm-x86/processor_32.h |    5 +----
-> >  6 files changed, 38 insertions(+), 29 deletions(-)
-> >
-> > diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-> > index 8cd9778..b8b9339 100644
-> > --- a/arch/x86/kernel/apm_32.c
-> > +++ b/arch/x86/kernel/apm_32.c
-> > @@ -405,7 +405,7 @@ static DECLARE_WAIT_QUEUE_HEAD(apm_waitqueue);
-> >  static DECLARE_WAIT_QUEUE_HEAD(apm_suspend_waitqueue);
-> >  static struct apm_user *     user_list;
-> >  static DEFINE_SPINLOCK(user_list_lock);
-> > -static const struct desc_struct      bad_bios_desc = { 0, 0x00409200 };
-> > +static const struct desc_struct      bad_bios_desc = {{{ 0, 0x00409200 }}};
-> >
-> >  static const char            driver_version[] = "1.16ac";    /* no spaces */
-> >
-> > diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> > index 235cd61..0fe1c1d 100644
-> > --- a/arch/x86/kernel/cpu/common.c
-> > +++ b/arch/x86/kernel/cpu/common.c
-> > @@ -22,31 +22,31 @@
-> >  #include "cpu.h"
-> >
-> >  DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
-> > -     [GDT_ENTRY_KERNEL_CS] = { 0x0000ffff, 0x00cf9a00 },
-> > -     [GDT_ENTRY_KERNEL_DS] = { 0x0000ffff, 0x00cf9200 },
-> > -     [GDT_ENTRY_DEFAULT_USER_CS] = { 0x0000ffff, 0x00cffa00 },
-> > -     [GDT_ENTRY_DEFAULT_USER_DS] = { 0x0000ffff, 0x00cff200 },
-> > +     [GDT_ENTRY_KERNEL_CS] = {{{ 0x0000ffff, 0x00cf9a00 }}},
-> > +     [GDT_ENTRY_KERNEL_DS] = {{{ 0x0000ffff, 0x00cf9200 }}},
-> > +     [GDT_ENTRY_DEFAULT_USER_CS] = {{{ 0x0000ffff, 0x00cffa00 }}},
-> > +     [GDT_ENTRY_DEFAULT_USER_DS] = {{{ 0x0000ffff, 0x00cff200 }}},
-> >
->
-> I don't suppose there's some way to make all this more symbolic?
-
-There may be, but it's not the problem I'm trying to address in this
-series. It's probably not too hard
-to come up with a macro that receives the relevant parts of the
-descriptors and create the initializers.
-
-but it's deferred work.
-
->
->
-> >       /*
-> >        * Segments used for calling PnP BIOS have byte granularity.
-> >        * They code segments and data segments have fixed 64k limits,
-> >        * the transfer segment sizes are set at run time.
-> >        */
-> > -     [GDT_ENTRY_PNPBIOS_CS32] = { 0x0000ffff, 0x00409a00 },/* 32-bit code */
-> > -     [GDT_ENTRY_PNPBIOS_CS16] = { 0x0000ffff, 0x00009a00 },/* 16-bit code */
-> > -     [GDT_ENTRY_PNPBIOS_DS] = { 0x0000ffff, 0x00009200 }, /* 16-bit data */
-> > -     [GDT_ENTRY_PNPBIOS_TS1] = { 0x00000000, 0x00009200 },/* 16-bit data */
-> > -     [GDT_ENTRY_PNPBIOS_TS2] = { 0x00000000, 0x00009200 },/* 16-bit data */
-> > +     [GDT_ENTRY_PNPBIOS_CS32] = {{{ 0x0000ffff, 0x00409a00 }}},/* 32-bit code */
-> > +     [GDT_ENTRY_PNPBIOS_CS16] = {{{ 0x0000ffff, 0x00009a00 }}},/* 16-bit code */
-> > +     [GDT_ENTRY_PNPBIOS_DS] = {{{ 0x0000ffff, 0x00009200 }}}, /* 16-bit data */
-> > +     [GDT_ENTRY_PNPBIOS_TS1] = {{{ 0x00000000, 0x00009200 }}},/* 16-bit data */
-> > +     [GDT_ENTRY_PNPBIOS_TS2] = {{{ 0x00000000, 0x00009200 }}},/* 16-bit data */
-> >       /*
-> >        * The APM segments have byte granularity and their bases
-> >        * are set at run time.  All have 64k limits.
-> >        */
-> > -     [GDT_ENTRY_APMBIOS_BASE] = { 0x0000ffff, 0x00409a00 },/* 32-bit code */
-> > +     [GDT_ENTRY_APMBIOS_BASE] = {{{ 0x0000ffff, 0x00409a00 }}},/* 32-bit code */
-> >       /* 16-bit code */
-> > -     [GDT_ENTRY_APMBIOS_BASE+1] = { 0x0000ffff, 0x00009a00 },
-> > -     [GDT_ENTRY_APMBIOS_BASE+2] = { 0x0000ffff, 0x00409200 }, /* data */
-> > +     [GDT_ENTRY_APMBIOS_BASE+1] = {{{ 0x0000ffff, 0x00009a00 }}},
-> > +     [GDT_ENTRY_APMBIOS_BASE+2] = {{{ 0x0000ffff, 0x00409200 }}}, /* data */
-> >
-> > -     [GDT_ENTRY_ESPFIX_SS] = { 0x00000000, 0x00c09200 },
-> > -     [GDT_ENTRY_PERCPU] = { 0x00000000, 0x00000000 },
-> > +     [GDT_ENTRY_ESPFIX_SS] = {{{ 0x00000000, 0x00c09200 }}},
-> > +     [GDT_ENTRY_PERCPU] = {{{ 0x00000000, 0x00000000 }}},
-> >  } };
-> >  EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
-> >
-> > diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-> > index 6724840..9e99cb7 100644
-> > --- a/arch/x86/kernel/process_64.c
-> > +++ b/arch/x86/kernel/process_64.c
-> > @@ -437,7 +437,7 @@ static inline void set_32bit_tls(struct task_struct *t, int tls, u32 addr)
-> >               .limit_in_pages = 1,
-> >               .useable = 1,
-> >       };
-> > -     struct n_desc_struct *desc = (void *)t->thread.tls_array;
-> > +     struct desc_struct *desc = (void *)t->thread.tls_array;
-> >       desc += tls;
-> >       desc->a = LDT_entry_a(&ud);
-> >       desc->b = LDT_entry_b(&ud);
-> > diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-> > index e15014e..94c5aea 100644
-> > --- a/arch/x86/kernel/traps_32.c
-> > +++ b/arch/x86/kernel/traps_32.c
-> > @@ -76,7 +76,7 @@ char ignore_fpu_irq = 0;
-> >   * F0 0F bug workaround.. We have a special link segment
-> >   * for this.
-> >   */
-> > -struct desc_struct idt_table[256] __attribute__((__section__(".data.idt"))) = { {0, 0}, };
-> > +struct desc_struct idt_table[256] __attribute__((__section__(".data.idt"))) = { {{{ 0, 0 }}}, };
-> >
-> >  asmlinkage void divide_error(void);
-> >  asmlinkage void debug(void);
-> > diff --git a/include/asm-x86/desc_defs.h b/include/asm-x86/desc_defs.h
-> > index 0890040..b3db064 100644
-> > --- a/include/asm-x86/desc_defs.h
-> > +++ b/include/asm-x86/desc_defs.h
-> > @@ -11,18 +11,30 @@
-> >
-> >  #include <linux/types.h>
-> >
-> > +/*
-> > + * FIXME: Acessing the desc_struct through its fields is more elegant,
-> > + * and should be the one valid thing to do. However, a lot of open code
-> > + * still touches the a and b acessors, and doing this allow us to do it
-> > + * incrementally. We keep the signature as a struct, rather than an union,
-> > + * so we can get rid of it transparently in the future -- glommer
-> > + */
-> > +#define raw_desc_struct struct { unsigned int a, b; }
-> > +#define detailed_desc_struct                                   \
-> > +  struct {                                                       \
-> > +     u16 limit0;                                             \
-> > +     u16 base0;                                              \
-> > +     unsigned base1 : 8, type : 4, s : 1, dpl : 2, p : 1;    \
-> > +     unsigned limit : 4, avl : 1, l : 1, d : 1, g : 1, base2 :8;\
-> > +  }
-> > +
-> >  // 8 byte segment descriptor
-> >  struct desc_struct {
-> > -     u16 limit0;
-> > -     u16 base0;
-> > -     unsigned base1 : 8, type : 4, s : 1, dpl : 2, p : 1;
-> > -     unsigned limit : 4, avl : 1, l : 1, d : 1, g : 1, base2 : 8;
-> > +     union {
-> > +             raw_desc_struct;
-> > +             detailed_desc_struct;
-> > +     };
-> >  } __attribute__((packed));
-> >
->
-> Is it really necessary to use #defines?  Couldn't you just define the
-> structures inline, or give them names?
-
-No, it's not necessary. It's just the less ugly way I found.
-As I intend to switch all uses to the field accesses, instead of a and
-b, I don't think it's a big deal. When it's done, the struct will be
-clean and simple, with no need for
-these defines.
+pages is NULL here, implying vma->vm_private_data was NULL. This is apparently
+because init_vdso_vars() is __initcall and runs after the rootfs gets populated.
+An experimental initrd containing an /sbin/hotplug binary caused this. Normally
+we don't have that file in the initrd. Should vdso init be done earlier to prevent
+this problem?
 
 
+static struct page *special_mapping_nopage(struct vm_area_struct *vma,
+                                           unsigned long address, int *type)
+{
+        struct page **pages;
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+        BUG_ON(address < vma->vm_start || address >= vma->vm_end);
 
-"The less confident you are, the more serious you have to act."
+        address -= vma->vm_start;
+        for (pages = vma->vm_private_data; address > 0 && *pages; ++pages)
+                address -= PAGE_SIZE;
+
+===>    if (*pages) {
+                struct page *page = *pages;
+                get_page(page);
+                return page;
+        }
+
+        return NOPAGE_SIGBUS;
+}
+
+
+Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP: 
+ [<ffffffff810838e9>] special_mapping_nopage+0x3c/0x63
+PGD 7f568067 PUD 7f571067 PMD 0 
+Oops: 0000 [1] SMP 
+CPU 1 
+Modules linked in:
+Pid: 219, comm: hotplug Not tainted 2.6.23.9-77.fc8 #1
+RIP: 0010:[<ffffffff810838e9>]  [<ffffffff810838e9>]
+special_mapping_nopage+0x3c/0x63
+RSP: 0000:ffff810037f41d50  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff81007f4faff8 RCX: ffffffff8137e240
+RDX: 0000000000000000 RSI: 00007fffeebfe000 RDI: ffff81007f4d8420
+RBP: ffff81007f4d8420 R08: 00000007fffeebfe R09: 0000000000000000
+R10: 000000006ffffdff R11: 000000006ffffe34 R12: 0000000000000000
+R13: ffff81007f4da000 R14: 00007fffeebfe020 R15: ffff81007f4d8420
+FS:  0000000000000000(0000) GS:ffff810002c3f300(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 000000007f4ae000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process hotplug (pid: 219, threadinfo ffff810037f40000, task ffff81007f4bc820)
+Stack:  ffffffff8107e42c 00000010000284d0 ffff81007f569ba8 00ff81000000f2a8
+ 0000000000000000 ffff810000000000 00000007fffeebfe 00007fffeebfe000
+ 0000000000000000 0000000000000004 0000000000400040 ffff81007f4d80b0
+Call Trace:
+ [<ffffffff8107e42c>] __do_fault+0x89/0x489
+ [<ffffffff81081bd7>] handle_mm_fault+0x4ed/0x976
+ [<ffffffff81084a46>] vma_link+0x70/0xfd
+ [<ffffffff8125f037>] do_page_fault+0x45b/0x7e4
+ [<ffffffff810115ef>] arch_get_unmapped_area+0x184/0x1f9
+ [<ffffffff8108598c>] do_mmap_pgoff+0x2eb/0x350
+ [<ffffffff81120cec>] __up_write+0x27/0xf3
+ [<ffffffff8125d51d>] error_exit+0x0/0x84
