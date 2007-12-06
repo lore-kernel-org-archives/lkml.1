@@ -1,278 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbXLFC3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbXLFCaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbXLFC3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbXLFC2K
+	id S1755253AbXLFCaJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:30:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbXLFC2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:28:10 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:50064 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:28:12 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:50066 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755284AbXLFC2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:28:08 -0500
-Message-Id: <20071206022742.457488105@polymtl.ca>
+	id S1755390AbXLFC2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:28:10 -0500
+Message-Id: <20071206022741.353211884@polymtl.ca>
 References: <20071206022555.150400591@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:26:00 -0500
+Date: Wed, 05 Dec 2007 21:25:57 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-mm@kvack.org,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: [patch-RFC 5/7] LTTng instrumentation mm
-Content-Disposition: inline; filename=lttng-instrumentation-mm.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:44 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [patch-RFC 2/7] LTTng instrumentation fs
+Content-Disposition: inline; filename=lttng-instrumentation-fs.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Memory management core events.
-
-Changelog:
-- Use page_to_pfn for swap out instrumentation, wait_on_page_bit, do_swap_page,
-  page alloc/free.
-- add missing free_hot_cold_page instrumentation.
-- add hugetlb page_alloc page_free instrumentation.
-- Add write_access to mm fault.
-- Add page bit_nr waited for by wait_on_page_bit.
-- Move page alloc instrumentation to __aloc_pages so we cover the alloc zeroed
-  page path.
-- Add swap file used for swap in and swap out events.
-- Dump the swap files, instrument swapon and swapoff.
+Core filesystem events markers.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: linux-mm@kvack.org
-CC: Dave Hansen <haveblue@us.ibm.com>
+CC: Alexander Viro <viro@zeniv.linux.org.uk>
 ---
- include/linux/swapops.h |    8 ++++++++
- mm/filemap.c            |    6 ++++++
- mm/hugetlb.c            |    2 ++
- mm/memory.c             |   38 +++++++++++++++++++++++++++++---------
- mm/page_alloc.c         |    6 ++++++
- mm/page_io.c            |    5 +++++
- mm/swapfile.c           |   22 ++++++++++++++++++++++
- 7 files changed, 78 insertions(+), 9 deletions(-)
+ fs/buffer.c     |    2 ++
+ fs/compat.c     |    1 +
+ fs/exec.c       |    1 +
+ fs/ioctl.c      |    2 ++
+ fs/open.c       |    2 ++
+ fs/read_write.c |   22 ++++++++++++++++++++--
+ fs/select.c     |    4 ++++
+ 7 files changed, 32 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/mm/filemap.c
+Index: linux-2.6-lttng/fs/buffer.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/filemap.c	2007-12-05 20:50:32.000000000 -0500
-+++ linux-2.6-lttng/mm/filemap.c	2007-12-05 20:54:04.000000000 -0500
-@@ -514,9 +514,15 @@ void fastcall wait_on_page_bit(struct pa
+--- linux-2.6-lttng.orig/fs/buffer.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/buffer.c	2007-12-05 20:53:59.000000000 -0500
+@@ -89,7 +89,9 @@ void fastcall unlock_buffer(struct buffe
+  */
+ void __wait_on_buffer(struct buffer_head * bh)
  {
- 	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
- 
-+	trace_mark(mm_filemap_wait_start, "pfn %lu bit_nr %d",
-+		page_to_pfn(page), bit_nr);
-+
- 	if (test_bit(bit_nr, &page->flags))
- 		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
- 							TASK_UNINTERRUPTIBLE);
-+
-+	trace_mark(mm_filemap_wait_end, "pfn %lu bit_nr %d",
-+		page_to_pfn(page), bit_nr);
++	trace_mark(fs_buffer_wait_start, "bh %p", bh);
+ 	wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
++	trace_mark(fs_buffer_wait_end, "bh %p", bh);
  }
- EXPORT_SYMBOL(wait_on_page_bit);
  
-Index: linux-2.6-lttng/mm/memory.c
+ static void
+Index: linux-2.6-lttng/fs/compat.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/memory.c	2007-12-05 20:53:30.000000000 -0500
-+++ linux-2.6-lttng/mm/memory.c	2007-12-05 20:54:04.000000000 -0500
-@@ -2090,6 +2090,10 @@ static int do_swap_page(struct mm_struct
- 		/* Had to read the page from swap area: Major fault */
- 		ret = VM_FAULT_MAJOR;
- 		count_vm_event(PGMAJFAULT);
-+		trace_mark(mm_swap_in, "pfn %lu filp %p offset %lu",
-+			page_to_pfn(page),
-+			get_swap_info_struct(swp_type(entry))->swap_file,
-+			swp_offset(entry));
+--- linux-2.6-lttng.orig/fs/compat.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/compat.c	2007-12-05 20:53:59.000000000 -0500
+@@ -1408,6 +1408,7 @@ int compat_do_execve(char * filename,
+ 
+ 	retval = search_binary_handler(bprm, regs);
+ 	if (retval >= 0) {
++		trace_mark(fs_exec, "filename %s", filename);
+ 		/* execve success */
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+Index: linux-2.6-lttng/fs/ioctl.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/ioctl.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/ioctl.c	2007-12-05 20:53:59.000000000 -0500
+@@ -164,6 +164,8 @@ asmlinkage long sys_ioctl(unsigned int f
+ 	if (!filp)
+ 		goto out;
+ 
++	trace_mark(fs_ioctl, "fd %u cmd %u arg %lu", fd, cmd, arg);
++
+ 	error = security_file_ioctl(filp, cmd, arg);
+ 	if (error)
+ 		goto out_fput;
+Index: linux-2.6-lttng/fs/open.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/open.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/open.c	2007-12-05 20:53:59.000000000 -0500
+@@ -1043,6 +1043,7 @@ long do_sys_open(int dfd, const char __u
+ 				fsnotify_open(f->f_path.dentry);
+ 				fd_install(fd, f);
+ 			}
++			trace_mark(fs_open, "fd %d filename %s", fd, tmp);
+ 		}
+ 		putname(tmp);
+ 	}
+@@ -1133,6 +1134,7 @@ asmlinkage long sys_close(unsigned int f
+ 	filp = fdt->fd[fd];
+ 	if (!filp)
+ 		goto out_unlock;
++	trace_mark(fs_close, "fd %u", fd);
+ 	rcu_assign_pointer(fdt->fd[fd], NULL);
+ 	FD_CLR(fd, fdt->close_on_exec);
+ 	__put_unused_fd(files, fd);
+Index: linux-2.6-lttng/fs/read_write.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/read_write.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/read_write.c	2007-12-05 20:58:35.000000000 -0500
+@@ -146,6 +146,9 @@ asmlinkage off_t sys_lseek(unsigned int 
+ 		if (res != (loff_t)retval)
+ 			retval = -EOVERFLOW;	/* LFS: should only happen on 32 bit platforms */
+ 	}
++
++	trace_mark(fs_lseek, "fd %u offset %ld origin %u", fd, offset, origin);
++
+ 	fput_light(file, fput_needed);
+ bad:
+ 	return retval;
+@@ -173,6 +176,10 @@ asmlinkage long sys_llseek(unsigned int 
+ 	offset = vfs_llseek(file, ((loff_t) offset_high << 32) | offset_low,
+ 			origin);
+ 
++	trace_mark(fs_llseek, "fd %u offset %llu origin %u", fd,
++			(unsigned long long)offset,
++			origin);
++
+ 	retval = (int)offset;
+ 	if (offset >= 0) {
+ 		retval = -EFAULT;
+@@ -363,6 +370,7 @@ asmlinkage ssize_t sys_read(unsigned int
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_read, "fd %u count %zu", fd, count);
+ 		ret = vfs_read(file, buf, count, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+@@ -381,6 +389,7 @@ asmlinkage ssize_t sys_write(unsigned in
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_write, "fd %u count %zu", fd, count);
+ 		ret = vfs_write(file, buf, count, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+@@ -402,8 +411,12 @@ asmlinkage ssize_t sys_pread64(unsigned 
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		ret = -ESPIPE;
+-		if (file->f_mode & FMODE_PREAD)
++		if (file->f_mode & FMODE_PREAD) {
++			trace_mark(fs_pread64, "fd %u count %zu pos %llu",
++				fd, count, (unsigned long long)pos);
+ 			ret = vfs_read(file, buf, count, &pos);
++		}
++
+ 		fput_light(file, fput_needed);
  	}
  
- 	mark_page_accessed(page);
-@@ -2526,30 +2530,46 @@ unlock:
- int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long address, int write_access)
- {
-+	int res;
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
- 
-+	trace_mark(mm_handle_fault_entry,
-+		"address %lu ip #p%ld write_access %d",
-+		address, KSTK_EIP(current), write_access);
-+
- 	__set_current_state(TASK_RUNNING);
- 
- 	count_vm_event(PGFAULT);
- 
--	if (unlikely(is_vm_hugetlb_page(vma)))
--		return hugetlb_fault(mm, vma, address, write_access);
-+	if (unlikely(is_vm_hugetlb_page(vma))) {
-+		res = hugetlb_fault(mm, vma, address, write_access);
-+		goto end;
-+	}
- 
- 	pgd = pgd_offset(mm, address);
- 	pud = pud_alloc(mm, pgd, address);
--	if (!pud)
--		return VM_FAULT_OOM;
-+	if (!pud) {
-+		res = VM_FAULT_OOM;
-+		goto end;
-+	}
- 	pmd = pmd_alloc(mm, pud, address);
--	if (!pmd)
--		return VM_FAULT_OOM;
-+	if (!pmd) {
-+		res = VM_FAULT_OOM;
-+		goto end;
-+	}
- 	pte = pte_alloc_map(mm, pmd, address);
--	if (!pte)
--		return VM_FAULT_OOM;
-+	if (!pte) {
-+		res = VM_FAULT_OOM;
-+		goto end;
-+	}
- 
--	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+	res = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+end:
-+	trace_mark(mm_handle_fault_exit, MARK_NOARGS);
-+	return res;
- }
- 
- #ifndef __PAGETABLE_PUD_FOLDED
-Index: linux-2.6-lttng/mm/page_alloc.c
-===================================================================
---- linux-2.6-lttng.orig/mm/page_alloc.c	2007-12-05 20:50:32.000000000 -0500
-+++ linux-2.6-lttng/mm/page_alloc.c	2007-12-05 20:54:04.000000000 -0500
-@@ -518,6 +518,9 @@ static void __free_pages_ok(struct page 
- 	int i;
- 	int reserved = 0;
- 
-+	trace_mark(mm_page_free, "order %u pfn %lu",
-+		order, page_to_pfn(page));
-+
- 	for (i = 0 ; i < (1 << order) ; ++i)
- 		reserved += free_pages_check(page + i);
- 	if (reserved)
-@@ -980,6 +983,8 @@ static void fastcall free_hot_cold_page(
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
- 
-+	trace_mark(mm_page_free, "order %u pfn %lu", 0, page_to_pfn(page));
-+
- 	if (PageAnon(page))
- 		page->mapping = NULL;
- 	if (free_pages_check(page))
-@@ -1624,6 +1629,7 @@ nopage:
- 		show_mem();
+@@ -423,8 +436,11 @@ asmlinkage ssize_t sys_pwrite64(unsigned
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		ret = -ESPIPE;
+-		if (file->f_mode & FMODE_PWRITE)  
++		if (file->f_mode & FMODE_PWRITE) {
++			trace_mark(fs_pwrite64, "fd %u count %zu pos %llu",
++				fd, count, (unsigned long long)pos);
+ 			ret = vfs_write(file, buf, count, &pos);
++		}
+ 		fput_light(file, fput_needed);
  	}
- got_pg:
-+	trace_mark(mm_page_alloc, "order %u pfn %lu", order, page_to_pfn(page));
- 	return page;
- }
  
-Index: linux-2.6-lttng/mm/page_io.c
+@@ -670,6 +686,7 @@ sys_readv(unsigned long fd, const struct
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_readv, "fd %lu vlen %lu", fd, vlen);
+ 		ret = vfs_readv(file, vec, vlen, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+@@ -691,6 +708,7 @@ sys_writev(unsigned long fd, const struc
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
++		trace_mark(fs_writev, "fd %lu vlen %lu", fd, vlen);
+ 		ret = vfs_writev(file, vec, vlen, &pos);
+ 		file_pos_write(file, pos);
+ 		fput_light(file, fput_needed);
+Index: linux-2.6-lttng/fs/select.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/page_io.c	2007-12-05 20:50:32.000000000 -0500
-+++ linux-2.6-lttng/mm/page_io.c	2007-12-05 20:54:04.000000000 -0500
-@@ -114,6 +114,11 @@ int swap_writepage(struct page *page, st
- 		rw |= (1 << BIO_RW_SYNC);
- 	count_vm_event(PSWPOUT);
- 	set_page_writeback(page);
-+	trace_mark(mm_swap_out, "pfn %lu filp %p offset %lu",
-+			page_to_pfn(page),
-+			get_swap_info_struct(swp_type(
-+				page_swp_entry(page)))->swap_file,
-+			swp_offset(page_swp_entry(page)));
- 	unlock_page(page);
- 	submit_bio(rw, bio);
- out:
-Index: linux-2.6-lttng/mm/hugetlb.c
+--- linux-2.6-lttng.orig/fs/select.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/select.c	2007-12-05 20:59:19.000000000 -0500
+@@ -231,6 +231,9 @@ int do_select(int n, fd_set_bits *fds, s
+ 				file = fget_light(i, &fput_needed);
+ 				if (file) {
+ 					f_op = file->f_op;
++					trace_mark(fs_select,
++							"fd %d timeout #8d%lld",
++							i, (long long)*timeout);
+ 					mask = DEFAULT_POLLMASK;
+ 					if (f_op && f_op->poll)
+ 						mask = (*f_op->poll)(file, retval ? NULL : wait);
+@@ -559,6 +562,7 @@ static inline unsigned int do_pollfd(str
+ 		file = fget_light(fd, &fput_needed);
+ 		mask = POLLNVAL;
+ 		if (file != NULL) {
++			trace_mark(fs_pollfd, "fd %d", fd);
+ 			mask = DEFAULT_POLLMASK;
+ 			if (file->f_op && file->f_op->poll)
+ 				mask = file->f_op->poll(file, pwait);
+Index: linux-2.6-lttng/fs/exec.c
 ===================================================================
---- linux-2.6-lttng.orig/mm/hugetlb.c	2007-12-05 20:50:32.000000000 -0500
-+++ linux-2.6-lttng/mm/hugetlb.c	2007-12-05 20:54:04.000000000 -0500
-@@ -118,6 +118,7 @@ static void free_huge_page(struct page *
- 	int nid = page_to_nid(page);
- 	struct address_space *mapping;
+--- linux-2.6-lttng.orig/fs/exec.c	2007-12-05 20:50:32.000000000 -0500
++++ linux-2.6-lttng/fs/exec.c	2007-12-05 20:53:59.000000000 -0500
+@@ -1351,6 +1351,7 @@ int do_execve(char * filename,
  
-+	trace_mark(mm_huge_page_free, "pfn %lu", page_to_pfn(page));
- 	mapping = (struct address_space *) page_private(page);
- 	BUG_ON(page_count(page));
- 	INIT_LIST_HEAD(&page->lru);
-@@ -401,6 +402,7 @@ static struct page *alloc_huge_page(stru
- 	if (!IS_ERR(page)) {
- 		set_page_refcounted(page);
- 		set_page_private(page, (unsigned long) mapping);
-+		trace_mark(mm_huge_page_alloc, "pfn %lu", page_to_pfn(page));
- 	}
- 	return page;
- }
-Index: linux-2.6-lttng/include/linux/swapops.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/swapops.h	2007-12-05 20:50:32.000000000 -0500
-+++ linux-2.6-lttng/include/linux/swapops.h	2007-12-05 20:54:04.000000000 -0500
-@@ -68,6 +68,14 @@ static inline pte_t swp_entry_to_pte(swp
- 	return __swp_entry_to_pte(arch_entry);
- }
- 
-+static inline swp_entry_t page_swp_entry(struct page *page)
-+{
-+	swp_entry_t entry;
-+	VM_BUG_ON(!PageSwapCache(page));
-+	entry.val = page_private(page);
-+	return entry;
-+}
-+
- #ifdef CONFIG_MIGRATION
- static inline swp_entry_t make_migration_entry(struct page *page, int write)
- {
-Index: linux-2.6-lttng/mm/swapfile.c
-===================================================================
---- linux-2.6-lttng.orig/mm/swapfile.c	2007-12-05 20:50:32.000000000 -0500
-+++ linux-2.6-lttng/mm/swapfile.c	2007-12-05 20:54:04.000000000 -0500
-@@ -1279,6 +1279,7 @@ asmlinkage long sys_swapoff(const char _
- 	swap_map = p->swap_map;
- 	p->swap_map = NULL;
- 	p->flags = 0;
-+	trace_mark(mm_swap_file_close, "filp %p", swap_file);
- 	spin_unlock(&swap_lock);
- 	mutex_unlock(&swapon_mutex);
- 	vfree(swap_map);
-@@ -1660,6 +1661,8 @@ asmlinkage long sys_swapon(const char __
- 	} else {
- 		swap_info[prev].next = p - swap_info;
- 	}
-+	trace_mark(mm_swap_file_open, "filp %p filename %s",
-+		swap_file, name);
- 	spin_unlock(&swap_lock);
- 	mutex_unlock(&swapon_mutex);
- 	error = 0;
-@@ -1796,3 +1799,22 @@ int valid_swaphandles(swp_entry_t entry,
- 	spin_unlock(&swap_lock);
- 	return ret;
- }
-+
-+void ltt_dump_swap_files(void *call_data)
-+{
-+	int type;
-+	struct swap_info_struct * p = NULL;
-+
-+	mutex_lock(&swapon_mutex);
-+	for (type = swap_list.head; type >= 0; type = swap_info[type].next) {
-+		p = swap_info + type;
-+		if ((p->flags & SWP_ACTIVE) != SWP_ACTIVE)
-+			continue;
-+		__trace_mark(0, statedump_swap_files, call_data,
-+			"filp %p vfsmount %p dname %s",
-+			p->swap_file, p->swap_file->f_vfsmnt,
-+			p->swap_file->f_dentry->d_name.name);
-+	}
-+	mutex_unlock(&swapon_mutex);
-+}
-+EXPORT_SYMBOL_GPL(ltt_dump_swap_files);
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
++		trace_mark(fs_exec, "filename %s", filename);
+ 		/* execve success */
+ 		free_arg_pages(bprm);
+ 		security_bprm_free(bprm);
 
 -- 
 Mathieu Desnoyers
