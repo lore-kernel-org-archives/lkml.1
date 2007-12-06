@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbXLFHJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbXLFHJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbXLFHJV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 02:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXLFHJM
+	id S1755169AbXLFHJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 02:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbXLFHJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 02:09:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43097 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753040AbXLFHJL (ORCPT
+	Thu, 6 Dec 2007 02:09:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45554
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752831AbXLFHJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 02:09:11 -0500
-Date: Wed, 5 Dec 2007 23:08:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: anders.henke@1und1.de, matthew@wil.cx, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, jens.axboe@oracle.com,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in
- directory)
-Message-Id: <20071205230833.546a1da9.akpm@linux-foundation.org>
-In-Reply-To: <20071206144937T.fujita.tomonori@lab.ntt.co.jp>
-References: <20071205103054B.fujita.tomonori@lab.ntt.co.jp>
-	<20071204185152.880af2cf.akpm@linux-foundation.org>
-	<20071205101441.GO7697@1und1.de>
-	<20071206144937T.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 6 Dec 2007 02:09:27 -0500
+Date: Wed, 05 Dec 2007 23:09:25 -0800 (PST)
+Message-Id: <20071205.230925.99250129.davem@davemloft.net>
+To: reuben-linuxkernel@reub.net
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, auke-jan.h.kok@intel.com,
+       ilpo.jarvinen@helsinki.fi
+Subject: Re: 2.6.24-rc4-mm1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47579DD9.9030909@reub.net>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<47579DD9.9030909@reub.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Dec 2007 14:49:37 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+From: Reuben Farrelly <reuben-linuxkernel@reub.net>
+Date: Thu, 06 Dec 2007 17:59:37 +1100
 
-> > >  drivers/scsi/dpt_i2o.c |  132 ++++++++++++++++++---------------------
-> > >  drivers/scsi/dpti.h    |    9 ++
-> > >  2 files changed, 68 insertions(+), 73 deletions(-)
-> > 
-> > I've done the following:
-> > 
-> > -untared a clean 2.6.24-rc4 and compiled it with my 2.6.23.1-settings in order
-> >  to verify that the driver is still broken: checked, the box still won't 
-> >  boot.
-> > 
-> > -patched the just compiled kernel source with your patch, "make dist-clean"
-> >  (by means of "make-kpkg clean") and recompile: box boots fine.
-> >
-> > I've put the captured console logs to
-> > http://w.sysiphus.de/dpt_i2o/bootlog.2624-rc4-pristine
-> > http://w.sysiphus.de/dpt_i2o/bootlog.2624-rc4-patched
-> > ... and the kernelconfig (which shouldn't matter) to
-> > http://w.sysiphus.de/dpt_i2o/kernelconfig.2624-rc4
+> On 5/12/2007 4:17 PM, Andrew Morton wrote:
+> > - Lots of device IDs have been removed from the e1000 driver and moved over
+> >   to e1000e.  So if your e1000 stops working, you forgot to set CONFIG_E1000E.
 > 
-> Thanks for testing. So reverting Matthew's hotplug patch fixes the
-> problem though I have no idea how the patch leads to this. Seems that
-> nobody has any clue on that. We need to revert that patch for the
-> moment.
+> This non fatal oops which I have just noticed may be related to this change then 
+> - certainly looks networking related.
+> 
+> WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
+> Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
+> 
+> Call Trace:
+>   <IRQ>  [<ffffffff8046e038>] tcp_fastretrans_alert+0x229/0xe63
+>   [<ffffffff80470975>] tcp_ack+0xa3f/0x127d
+>   [<ffffffff804747b7>] tcp_rcv_established+0x55f/0x7f8
+>   [<ffffffff8047b1aa>] tcp_v4_do_rcv+0xdb/0x3a7
+>   [<ffffffff881148a8>] :nf_conntrack:nf_ct_deliver_cached_events+0x75/0x99
 
-OK, thanks.  Let's leave it a couple of days for people to register objections,
-have bright ideas, etc.
-
+No, it's from TCP assertions and changes added by Ilpo to the
+net-2.6.25 tree recently.
