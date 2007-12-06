@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbXLFNqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXLFNz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbXLFNqS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 08:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXLFNqF
+	id S1753875AbXLFNz2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 08:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbXLFNzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 08:46:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58053 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbXLFNqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 08:46:03 -0500
-To: linux-kernel@vger.kernel.org
-Cc: virtualization@lists.linux-foundation.org,
-       Gerd Hoffmann <kraxel@redhat.com>
-Subject: [PATCH] xen: Make xen-blkfront write its protocol ABI to xenstore
-From: Markus Armbruster <armbru@redhat.com>
-Date: Thu, 06 Dec 2007 14:45:53 +0100
-Message-ID: <87hciwlywe.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Dec 2007 08:55:18 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54505
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752671AbXLFNzQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 08:55:16 -0500
+Date: Thu, 06 Dec 2007 05:55:15 -0800 (PST)
+Message-Id: <20071206.055515.180308628.davem@davemloft.net>
+To: stefan@loplof.de
+Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200712061330.20586.stefan@loplof.de>
+References: <200712061235.06025.stefan@loplof.de>
+	<20071206.033909.76192198.davem@davemloft.net>
+	<200712061330.20586.stefan@loplof.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frontends are expected to write their protocol ABI to xenstore.  Since
-the protocol ABI defaults to the backend's native ABI, things work
-fine without that as long as the frontend's native ABI is identical to
-the backend's native ABI.  This is not the case for xen-blkfront
-running 32-on-64, because its ABI differs between 32 and 64 bit, and
-thus needs this fix.
+From: Stefan Rompf <stefan@loplof.de>
+Date: Thu, 6 Dec 2007 13:30:20 +0100
 
-Based on http://xenbits.xensource.com/xen-unstable.hg?rev/c545932a18f3
-and http://xenbits.xensource.com/xen-unstable.hg?rev/ffe52263b430 by
-Gerd Hoffmann <kraxel@suse.de>
+> IMHO this is what developers expect, and is also consistent with the
+> fact that POSIX does not define O_NONBLOCK behaviour for local
+> files.
 
-Signed-off-by: Markus Armbruster <armbru@redhat.com>
----
- drivers/block/xen-blkfront.c         |    7 +++++++
- include/xen/interface/io/protocols.h |   21 +++++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
- create mode 100644 include/xen/interface/io/protocols.h
+You keep ignoring the fact that, as Herbert and I discussed, not
+blocking for IPSEC resolution will make some connect() cases fail that
+would otherwise not fail.
 
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-index 2bdebcb..70ddb8c 100644
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -46,6 +46,7 @@
- 
- #include <xen/interface/grant_table.h>
- #include <xen/interface/io/blkif.h>
-+#include <xen/interface/io/protocols.h>
- 
- #include <asm/xen/hypervisor.h>
- 
-@@ -599,6 +600,12 @@ again:
- 		message = "writing event-channel";
- 		goto abort_transaction;
- 	}
-+	err = xenbus_printf(xbt, dev->nodename, "protocol", "%s",
-+			    XEN_IO_PROTO_ABI_NATIVE);
-+	if (err) {
-+		message = "writing protocol";
-+		goto abort_transaction;
-+	}
- 
- 	err = xenbus_transaction_end(xbt, 0);
- 	if (err) {
-diff --git a/include/xen/interface/io/protocols.h b/include/xen/interface/io/protocols.h
-new file mode 100644
-index 0000000..01fc8ae
---- /dev/null
-+++ b/include/xen/interface/io/protocols.h
-@@ -0,0 +1,21 @@
-+#ifndef __XEN_PROTOCOLS_H__
-+#define __XEN_PROTOCOLS_H__
-+
-+#define XEN_IO_PROTO_ABI_X86_32     "x86_32-abi"
-+#define XEN_IO_PROTO_ABI_X86_64     "x86_64-abi"
-+#define XEN_IO_PROTO_ABI_IA64       "ia64-abi"
-+#define XEN_IO_PROTO_ABI_POWERPC64  "powerpc64-abi"
-+
-+#if defined(__i386__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_X86_32
-+#elif defined(__x86_64__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_X86_64
-+#elif defined(__ia64__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_IA64
-+#elif defined(__powerpc64__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_POWERPC64
-+#else
-+# error arch fixup needed here
-+#endif
-+
-+#endif
--- 
-1.5.3.3
+There are two sides to this issue, and we need to consider them
+both.
 
+Long term a resolution-packet-queue provides a solution that handles
+both angles correctly, but we don't have that code yet.
