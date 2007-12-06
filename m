@@ -1,122 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbXLFC3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbXLFC3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbXLFC3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Dec 2007 21:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbXLFC2G
+	id S1756639AbXLFC3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Dec 2007 21:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbXLFC2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Dec 2007 21:28:06 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:50035 "EHLO smtp.polymtl.ca"
+	Wed, 5 Dec 2007 21:28:08 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:50059 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754945AbXLFC2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Dec 2007 21:28:01 -0500
-Message-Id: <20071206022743.237509864@polymtl.ca>
+	id S1755248AbXLFC2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Dec 2007 21:28:07 -0500
+Message-Id: <20071206022741.721541688@polymtl.ca>
 References: <20071206022555.150400591@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Dec 2007 21:26:02 -0500
+Date: Wed, 05 Dec 2007 21:25:58 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mike Mason <mmlnx@us.ibm.com>, David Wilder <dwilder@us.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch-RFC 7/7] Add Markers Into Semaphore Primitives
-Content-Disposition: inline; filename=add-markers-into-semaphore-primitives.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:45 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch-RFC 3/7] LTTng instrumentation ipc
+Content-Disposition: inline; filename=lttng-instrumentation-ipc.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Dec 2007 02:27:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds several markers around semaphore primitives.
-Along with a tracing application this patch can be useful for measuring
-kernel semaphore usage and contention.
+Interprocess communication, core events.
 
-Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- lib/semaphore-sleepers.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ ipc/msg.c |    5 ++++-
+ ipc/sem.c |    5 ++++-
+ ipc/shm.c |    5 ++++-
+ 3 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/lib/semaphore-sleepers.c b/lib/semaphore-sleepers.c
-index 1281805..5343a96 100644
---- a/lib/semaphore-sleepers.c
-+++ b/lib/semaphore-sleepers.c
-@@ -15,6 +15,7 @@
- #include <linux/sched.h>
- #include <linux/err.h>
- #include <linux/init.h>
-+#include <linux/marker.h>
- #include <asm/semaphore.h>
+Index: linux-2.6-lttng/ipc/msg.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/msg.c	2007-11-13 09:49:27.000000000 -0500
++++ linux-2.6-lttng/ipc/msg.c	2007-11-13 09:49:31.000000000 -0500
+@@ -315,6 +315,7 @@ asmlinkage long sys_msgget(key_t key, in
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops msg_ops;
+ 	struct ipc_params msg_params;
++	long ret;
  
- /*
-@@ -50,6 +51,7 @@
+ 	ns = current->nsproxy->ipc_ns;
  
- fastcall void __up(struct semaphore *sem)
- {
-+	trace_mark(sem_up, "%p", sem);
- 	wake_up(&sem->wait);
+@@ -325,7 +326,9 @@ asmlinkage long sys_msgget(key_t key, in
+ 	msg_params.key = key;
+ 	msg_params.flg = msgflg;
+ 
+-	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
++	ret = ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
++	trace_mark(ipc_msg_create, "id %ld flags %d", ret, msgflg);
++	return ret;
  }
  
-@@ -59,6 +61,7 @@ fastcall void __sched __down(struct semaphore * sem)
- 	DECLARE_WAITQUEUE(wait, tsk);
- 	unsigned long flags;
+ static inline unsigned long
+Index: linux-2.6-lttng/ipc/sem.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/sem.c	2007-11-13 09:49:27.000000000 -0500
++++ linux-2.6-lttng/ipc/sem.c	2007-11-13 09:49:31.000000000 -0500
+@@ -334,6 +334,7 @@ asmlinkage long sys_semget(key_t key, in
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops sem_ops;
+ 	struct ipc_params sem_params;
++	long err;
  
-+	trace_mark(sem_down, "%p", sem);
- 	tsk->state = TASK_UNINTERRUPTIBLE;
- 	spin_lock_irqsave(&sem->wait.lock, flags);
- 	add_wait_queue_exclusive_locked(&sem->wait, &wait);
-@@ -73,12 +76,14 @@ fastcall void __sched __down(struct semaphore * sem)
- 		 * the wait_queue_head.
- 		 */
- 		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
-+			trace_mark(sem_down_resume, "%p", sem);
- 			sem->sleepers = 0;
- 			break;
- 		}
- 		sem->sleepers = 1;	/* us - see -1 above */
- 		spin_unlock_irqrestore(&sem->wait.lock, flags);
+ 	ns = current->nsproxy->ipc_ns;
  
-+		trace_mark(sem_down_sched, "%p", sem);
- 		schedule();
+@@ -348,7 +349,9 @@ asmlinkage long sys_semget(key_t key, in
+ 	sem_params.flg = semflg;
+ 	sem_params.u.nsems = nsems;
  
- 		spin_lock_irqsave(&sem->wait.lock, flags);
-@@ -97,6 +102,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
- 	DECLARE_WAITQUEUE(wait, tsk);
- 	unsigned long flags;
+-	return ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
++	err = ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
++	trace_mark(ipc_sem_create, "id %ld flags %d", err, semflg);
++	return err;
+ }
  
-+	trace_mark(sem_down_intr, "%p", sem);
- 	tsk->state = TASK_INTERRUPTIBLE;
- 	spin_lock_irqsave(&sem->wait.lock, flags);
- 	add_wait_queue_exclusive_locked(&sem->wait, &wait);
-@@ -113,6 +119,7 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
- 		 * and exit.
- 		 */
- 		if (signal_pending(current)) {
-+			trace_mark(sem_down_intr_fail, "%p", sem);
- 			retval = -EINTR;
- 			sem->sleepers = 0;
- 			atomic_add(sleepers, &sem->count);
-@@ -126,12 +133,14 @@ fastcall int __sched __down_interruptible(struct semaphore * sem)
- 		 * still hoping to get the semaphore.
- 		 */
- 		if (!atomic_add_negative(sleepers - 1, &sem->count)) {
-+			trace_mark(sem_down_intr_resume, "%p", sem);
- 			sem->sleepers = 0;
- 			break;
- 		}
- 		sem->sleepers = 1;	/* us - see -1 above */
- 		spin_unlock_irqrestore(&sem->wait.lock, flags);
+ /* Manage the doubly linked list sma->sem_pending as a FIFO:
+Index: linux-2.6-lttng/ipc/shm.c
+===================================================================
+--- linux-2.6-lttng.orig/ipc/shm.c	2007-11-13 09:49:27.000000000 -0500
++++ linux-2.6-lttng/ipc/shm.c	2007-11-13 09:49:31.000000000 -0500
+@@ -497,6 +497,7 @@ asmlinkage long sys_shmget (key_t key, s
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops shm_ops;
+ 	struct ipc_params shm_params;
++	long err;
  
-+		trace_mark(sem_down_intr_sched, "%p", sem);
- 		schedule();
+ 	ns = current->nsproxy->ipc_ns;
  
- 		spin_lock_irqsave(&sem->wait.lock, flags);
-
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+@@ -508,7 +509,9 @@ asmlinkage long sys_shmget (key_t key, s
+ 	shm_params.flg = shmflg;
+ 	shm_params.u.size = size;
+ 
+-	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
++	err = ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
++	trace_mark(ipc_shm_create, "id %ld flags %d", err, shmflg);
++	return err;
+ }
+ 
+ static inline unsigned long copy_shmid_to_user(void __user *buf, struct shmid64_ds *in, int version)
 
 -- 
 Mathieu Desnoyers
