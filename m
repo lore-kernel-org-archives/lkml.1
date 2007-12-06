@@ -1,64 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbXLFWiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbXLFWik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbXLFWiX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 17:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXLFWiN
+	id S1751907AbXLFWik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 17:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXLFWiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 17:38:13 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:62793 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752959AbXLFWiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 17:38:15 -0500
+Received: from lucidpixels.com ([75.144.35.66]:39170 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbXLFWiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 6 Dec 2007 17:38:10 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 207.47.95.62
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18SVlpRcRTlb/XdfpmzmnA2
-Message-ID: <475879CD.9080006@reed.com>
-Date: Thu, 06 Dec 2007 17:38:05 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+Date: Thu, 6 Dec 2007 17:38:08 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org, apiszcz@solarrain.com
+Subject: Re: Kernel 2.6.23.9 / P35 Chipset + WD 750GB Drives (reset port)
+In-Reply-To: <20071206140038.f06e18ad.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0712061737500.8523@p34.internal.lan>
+References: <Pine.LNX.4.64.0712010619150.25643@p34.internal.lan>
+ <20071206140038.f06e18ad.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with
- MCP51 laptops
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After much, much testing (months, off and on, pursuing hypotheses), I've 
-discovered that the use of "outb al,0x80" instructions to "delay" after 
-inb and outb instructions causes solid freezes on my HP dv9000z laptop, 
-when ACPI is enabled.
 
-It takes a fair number of out's to 0x80, but the hard freeze is reliably 
-reproducible by writing a driver that solely does a loop of 50 outb's to 
-0x80 and calling it in a loop 1000 times from user space.  !!!
 
-The serious impact is that the /dev/rtc and /dev/nvram devices are very 
-unreliable - thus "hwclock" freezes very reliably while looping waiting 
-for a new second value and calling "cat /dev/nvram" in a loop freezes 
-the machine if done a few times in a row.
+On Thu, 6 Dec 2007, Andrew Morton wrote:
 
-This is reproducible, but requires a fair number of outb's to the 0x80 
-diagnostic port, and seems to require ACPI to be on.
+> On Sat, 1 Dec 2007 06:26:08 -0500 (EST)
+> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>
+>> I am putting a new machine together and I have dual raptor raid 1 for the
+>> root, which works just fine under all stress tests.
+>>
+>> Then I have the WD 750 GiB drive (not RE2, desktop ones for ~150-160 on
+>> sale now adays):
+>>
+>> I ran the following:
+>>
+>> dd if=/dev/zero of=/dev/sdc
+>> dd if=/dev/zero of=/dev/sdd
+>> dd if=/dev/zero of=/dev/sde
+>>
+>> (as it is always a very good idea to do this with any new disk)
+>>
+>> And sometime along the way(?) (i had gone to sleep and let it run), this
+>> occurred:
+>>
+>> [42880.680144] ata3.00: exception Emask 0x10 SAct 0x0 SErr 0x4010000
+>> action 0x2 frozen
+>
+> Gee we're seeing a lot of these lately.
+>
+>> [42880.680231] ata3.00: irq_stat 0x00400040, connection status changed
+>> [42880.680290] ata3.00: cmd ec/00:00:00:00:00/00:00:00:00:00/00 tag 0 cdb
+>> 0x0 data 512 in
+>> [42880.680292]          res 40/00:ac:d8:64:54/00:00:57:00:00/40 Emask 0x10
+>> (ATA bus error)
+>> [42881.841899] ata3: soft resetting port
+>> [42885.966320] ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>> [42915.919042] ata3.00: qc timeout (cmd 0xec)
+>> [42915.919094] ata3.00: failed to IDENTIFY (I/O error, err_mask=0x5)
+>> [42915.919149] ata3.00: revalidation failed (errno=-5)
+>> [42915.919206] ata3: failed to recover some devices, retrying in 5 secs
+>> [42920.912458] ata3: hard resetting port
+>> [42926.411363] ata3: port is slow to respond, please be patient (Status
+>> 0x80)
+>> [42930.943080] ata3: COMRESET failed (errno=-16)
+>> [42930.943130] ata3: hard resetting port
+>> [42931.399628] ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>> [42931.413523] ata3.00: configured for UDMA/133
+>> [42931.413586] ata3: EH pending after completion, repeating EH (cnt=4)
+>> [42931.413655] ata3: EH complete
+>> [42931.413719] sd 2:0:0:0: [sdc] 1465149168 512-byte hardware sectors
+>> (750156 MB)
+>> [42931.413809] sd 2:0:0:0: [sdc] Write Protect is off
+>> [42931.413856] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+>> [42931.413867] sd 2:0:0:0: [sdc] Write cache: enabled, read cache:
+>> enabled, doesn't support DPO or FUA
+>>
+>> Usually when I see this sort of thing with another box I have full of
+>> raptors, it was due to a bad raptor and I never saw it again after I
+>> replaced the disk that it happened on, but that was using the Intel P965
+>> chipset.
+>>
+>> For this board, it is a Gigabyte GSP-P35-DS4 (Rev 2.0) and I have all of
+>> the drives (2 raptors, 3 750s connected to the Intel ICH9 Southbridge).
+>>
+>> I am going to do some further testing but does this indicate a bad drive?
+>> Bad cable?  Bad connector?
+>>
+>> As you can see above, /dev/sdc stopped responding for a little bit and
+>> then the kernel reset the port.
+>>
+>> Why is this though?  What is the likely root cause?  Should I replace the
+>> drive?  Obviously this is not normal and cannot be good at all, the idea
+>> is to put these drives in a RAID5 and if one is going to timeout that is
+>> going to cause the array to go degraded and thus be worthless in a raid5
+>> configuration.
+>>
+>> Can anyone offer any insight here?
+>
+> It would be interesting to try 2.6.21 or 2.6.22.
+>
 
-io_64.h is the source of these particular instructions, via the 
-CMOS_READ and CMOS_WRITE macros, which are defined in mc146818_64.h.  (I 
-wonder if the same problem occurs in 32-bit mode).
+This was due to NCQ issues (disabling it fixed the problem).
 
-I'm happy to complete and test a patch, but I'm curious what the right 
-approach ought to be.  I have to say I have no clue as to what ACPI is 
-doing on this chipset  (nvidia MCP51) that would make port 80 do this.  
-A raw random guess is that something is logging POST codes, but if so, 
-not clear what is problematic in ACPI mode.
-
-ANy help/suggestions?
-
-Changing the delay instruction sequence from the outb to short jumps 
-might be the safe thing.  But Linus, et al. may have experience with 
-that on other architectures like older Pentiums etc.
+Justin.
