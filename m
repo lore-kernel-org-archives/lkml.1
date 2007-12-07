@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbXLFRfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXLFRhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752786AbXLFRfg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 12:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXLFRf3
+	id S1753199AbXLFRhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 12:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXLFRg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 12:35:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35001 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751216AbXLFRf2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 12:35:28 -0500
-Date: Thu, 6 Dec 2007 09:34:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
-Message-Id: <20071206093432.096213fe.akpm@linux-foundation.org>
-In-Reply-To: <20071206105242.3e289a21@cuia.boston.redhat.com>
-References: <200712051603.02183.phillips@phunq.net>
-	<200712052221.45409.phillips@phunq.net>
-	<20071205233152.c567fa57.akpm@linux-foundation.org>
-	<200712060148.53805.phillips@phunq.net>
-	<20071206035511.83bef995.akpm@linux-foundation.org>
-	<20071206105242.3e289a21@cuia.boston.redhat.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 6 Dec 2007 12:36:58 -0500
+Received: from [212.12.190.133] ([212.12.190.133]:49234 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751378AbXLFRg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 12:36:57 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Phillip Susi <psusi@cfl.rr.com>
+Subject: Re: git guidance
+Date: Fri, 7 Dec 2007 20:35:47 +0300
+User-Agent: KMail/1.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712010950.15628.a1426z@gawab.com> <4755D2E8.5050402@cfl.rr.com>
+In-Reply-To: <4755D2E8.5050402@cfl.rr.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200712072035.47359.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2007 10:52:42 -0500 Rik van Riel <riel@redhat.com> wrote:
+Phillip Susi wrote:
+> Al Boldi wrote:
+> > IOW, git currently only implements the server-side use-case, but fails
+> > to deliver on the client-side.  By introducing a git-client manager that
+> > handles the transparency needs of a single user, it should be possible
+> > to clearly isolate update semantics for both the client and the server,
+> > each handling their specific use-case.
+>
+> Any talk of client or server makes no sense since git does not use a
+> client/server model.
 
-> On Thu, 6 Dec 2007 03:55:11 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > - We a-priori decide to limit a particular stack's peak memory usage to
-> >   1MB
-> > 
-> > - We empirically discover that the maximum amount of memory which is
-> >   allocated by that stack on behalf of a single BIO is 16kb.  (ie: that's
-> >   the most it has ever used for a single BIO).
-> > 
-> > - Now, we refuse to feed any more BIOs into the stack when its
-> >   instantaneous memory usage exceeds (1MB - 16kb).
-> > 
-> > Of course, the _average_ memory-per-BIO is much less than 16kb.  So there
-> > are a lot of BIOs in flight - probably hundreds, but a minimum of 63.
-> 
-> There is only one problem I can see with this.  With network block
-> IO, some memory will be consumed upon IO completion.  We need to
-> make sure we reserve (number of in flight BIOs * maximum amount of
-> memory consumed upon IO completion) memory, in addition to the
-> memory you're accounting in your example above.
-> 
+Whether git uses the client/server model or not does not matter; what matters 
+is that there are two distinct use-cases at work here:  one on the 
+server/repository, and the other on the client.  
 
-hm, yeah, drat.
+> If you wish to use a centralized repository, then
+> git can be set up to transparently push/pull to/from said repository if
+> you wish via hooks or cron jobs.
 
-What we could do is
+Again, this only handles the interface to/from the server/repository, but 
+once you pulled the sources, it leaves you without Version Control on the 
+client.
 
-- in do_IRQ(): set up a per-cpu pointer to some counter which
-  corresponds to this IRQ.
+By pulling the sources into a git-client manager mounted on some dir, it 
+should be possible to let the developer work naturally/transparently in a 
+readable/writeable manner, and only require his input when reverting locally 
+or committing to the server/repository.
 
-- in the page allocator, if in_irq(), retrieve that per-cpu pointer and
-  increment the counter.
 
-- in the network block-io stack we can now look at the number of
-  interrupts, number of packets, size of packets and amount of memory
-  allocated and work out the max amount of memory which needs to be
-  allocated for each frame.
+Thanks!
 
-That's all rather handwavy and misses a lot of details and might be
-inaccurate too.  Probably sufficient to just work out by hand the amount of
-memory which the network stack will need to allocate.  I expect it'll be
-two pages..
+--
+Al
+
