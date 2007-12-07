@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbXLGHZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXLGHaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbXLGHZG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 02:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbXLGHYz
+	id S1753501AbXLGHaq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 02:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbXLGHaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 02:24:55 -0500
-Received: from echo836.server4you.de ([85.25.140.112]:55237 "EHLO
-	mail.pianoinflames.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbXLGHYy (ORCPT
+	Fri, 7 Dec 2007 02:30:35 -0500
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:33817 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751389AbXLGHae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 02:24:54 -0500
-Message-ID: <4758F53E.6010505@pianoinflames.de>
-Date: Fri, 07 Dec 2007 08:24:46 +0100
-From: Marco Gatti <marco@pianoinflames.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 7 Dec 2007 02:30:34 -0500
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, apiszcz@solarrain.com
+Subject: Re: Kernel 2.6.23.9 + mdadm 2.6.2-2 + Auto rebuild RAID1?
+References: <Pine.LNX.4.64.0712010614070.25643@p34.internal.lan>
+	<Pine.LNX.4.64.0712011305250.30316@fbirervta.pbzchgretzou.qr>
+	<87tzmxym73.fsf@hades.wkstn.nix>
+	<Pine.LNX.4.64.0712061607420.19266@fbirervta.pbzchgretzou.qr>
+From: Nix <nix@esperi.org.uk>
+Emacs: the definitive fritterware.
+Date: Fri, 07 Dec 2007 07:30:08 +0000
+In-Reply-To: <Pine.LNX.4.64.0712061607420.19266@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "6 Dec 2007 15:09:15 -0000")
+Message-ID: <877ijrynb3.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Bug: get EXT3-fs error Allocating block in system zone
-References: <4755BEA1.4090604@pianoinflames.de> <20071206162500.1f76a234.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712061631510.13796@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712061631510.13796@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-DCC-INFN-TO-Metrics: hades 1233; Body=5 Fuz1=5 Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds schrieb:
-> 
-> But the disk errors are something else, doesn't ring a bell. Sounds like 
-> IO corruption on the group descriptor block or something like that. Might 
-> be worth testing to see if the problem goes away with less than 4GB of 
-> RAM..
-> 
+On 6 Dec 2007, Jan Engelhardt verbalised:
+> On Dec 5 2007 19:29, Nix wrote:
+>>>
+>>> On Dec 1 2007 06:19, Justin Piszcz wrote:
+>>>
+>>>> RAID1, 0.90.03 superblocks (in order to be compatible with LILO, if
+>>>> you use 1.x superblocks with LILO you can't boot)
+>>>
+>>> Says who? (Don't use LILO ;-)
+>>
+>>Well, your kernels must be on a 0.90-superblocked RAID-0 or RAID-1
+>>device. It can't handle booting off 1.x superblocks nor RAID-[56]
+>>(not that I could really hope for the latter).
+>
+> If the superblock is at the end (which is the case for 0.90 and 1.0),
+> then the offsets for a specific block on /dev/mdX match the ones for /dev/sda,
+> so it should be "easy" to use lilo on 1.0 too, no?
 
-Thanks, I'll try this, to see if there's a dependency on that. But it's 
-not a really solution for a virtualization system to work with less 
-memory ;-). I also read that there's maybe a problem with intel graphics 
-media accelerator driver in conjunction with more than 4GB RAM and 
-kernel will hang on boot, but I think this is fixed, I can boot. So 
-securly, I put out i915 series drivers and frame buffer support in 
-kernel config. The grahpics adapter onboard works with shared memory 
-technology. I configured 128M in BIOS...
+Sure, but you may have to hack /sbin/lilo to convince it to create the
+superblock there at all. It's likely to recognise that this is an md
+device without a v0.90 superblock and refuse to continue. (But I haven't
+tested it.)
+
+-- 
+`The rest is a tale of post and counter-post.' --- Ian Rawlings
+                                                   describes USENET
