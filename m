@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbXLGQEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbXLGQKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbXLGQEZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 11:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXLGQEQ
+	id S1753874AbXLGQKp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 11:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXLGQKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 11:04:16 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35693 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751938AbXLGQEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 11:04:15 -0500
-Date: Fri, 7 Dec 2007 17:06:03 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [PATCH] SCSI: make pcmcia directory use obj-y|m instead of subdir-y|m
-Message-ID: <20071207160603.GB31641@uranus.ravnborg.org>
-References: <47594C57.4070006@gmail.com>
+	Fri, 7 Dec 2007 11:10:37 -0500
+Received: from [81.2.110.250] ([81.2.110.250]:51731 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751883AbXLGQKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 11:10:36 -0500
+Date: Fri, 7 Dec 2007 16:04:39 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+Message-ID: <20071207160439.71b7f46a@the-village.bc.nu>
+In-Reply-To: <p733auekcly.fsf@bingen.suse.de>
+References: <475879CD.9080006@reed.com>
+	<p733auekcly.fsf@bingen.suse.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47594C57.4070006@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 10:36:23PM +0900, Tejun Heo wrote:
-> subdir-y|m isn't supposed to contain modules or built-in components.
-> Change subdir-$(CONFIG_PCMCIA) to obj-$(CONFIG_PCMCIA).
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: James Bottomley <James.Bottomley@SteelEye.com>
-Ack-by: Sam Ravnborg <sam@ravnborg.org>
+> modern CPU compared to the bus. But the delay really needs to be something
+> that is about IO port speed. Ok in theory you could try to measure
+> a outb using RDTSC and then use udelay, but first you would need
 
-> ---
->  drivers/scsi/Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
-> index 2e6129f..72c8d2e 100644
-> --- a/drivers/scsi/Makefile
-> +++ b/drivers/scsi/Makefile
-> @@ -18,7 +18,7 @@ CFLAGS_aha152x.o =   -DAHA152X_STAT -DAUTOCONF
->  CFLAGS_gdth.o    = # -DDEBUG_GDTH=2 -D__SERIAL__ -D__COM2__ -DGDTH_STATISTICS
->  CFLAGS_seagate.o =   -DARBITRATE -DPARITY -DSEAGATE_USE_ASM
->  
-> -subdir-$(CONFIG_PCMCIA)		+= pcmcia
-> +obj-$(CONFIG_PCMCIA)		+= pcmcia/
->  
->  obj-$(CONFIG_SCSI)		+= scsi_mod.o
->  obj-$(CONFIG_SCSI_TGT)		+= scsi_tgt.o
+You don't need to. Port 0x80 historically is about 8uS so just udelay(8)
+and make sure the initial default delay is conservative enough before the
+CPU speed is computed.
+
+0x80 should be fine for anything PC compatible anyway, its specifically
+reserved as a debug port and supported for *exactly* that purpose by
+many chipsets.
+
+The afflicted laptop should really be taken up with the vendor. If its
+got port 0x80 wrong gods knows what else it might have problems with.
+
+Alan
