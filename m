@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbXLGQ3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbXLGQaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbXLGQ3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 11:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXLGQ3R
+	id S1756000AbXLGQaZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 11:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXLGQaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 11:29:17 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:36580 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752990AbXLGQ3Q (ORCPT
+	Fri, 7 Dec 2007 11:30:13 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:49977 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750864AbXLGQaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 11:29:16 -0500
-Message-ID: <4759749E.5070401@keyaccess.nl>
-Date: Fri, 07 Dec 2007 17:28:14 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
+	Fri, 7 Dec 2007 11:30:11 -0500
+Message-ID: <475974F8.9040603@linux.vnet.ibm.com>
+Date: Fri, 07 Dec 2007 17:29:44 +0100
+From: Holger Wolf <wolf@linux.vnet.ibm.com>
+Reply-To: Holger.Wolf@de.ibm.com
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <47595DB2.5080302@reed.com> <20071207145430.GA5992@one.firstfloor.org> <47596A2E.4060602@keyaccess.nl>
-In-Reply-To: <47596A2E.4060602@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Holger.Wolf@de.ibm.com, mingo@elte.hu, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Scheduler behaviour
+References: <475706E2.50805@linux.vnet.ibm.com> <20071205132631.79940bd5@laptopd505.fenrus.org>
+In-Reply-To: <20071205132631.79940bd5@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07-12-07 16:43, Rene Herman wrote:
-
-> On 07-12-07 15:54, Andi Kleen wrote:
-> 
->>> My machine in question, for example, needs no waiting within 
->>> CMOS_READs at all.   And I doubt any other chip/device needs waiting 
->>> that isn't 
+Arjan van de Ven wrote:
+> On Wed, 05 Dec 2007 21:15:30 +0100
+> Holger Wolf <wolf@linux.vnet.ibm.com> wrote:
+>
+>   
+>> We discovered performance degradation with dbench when using kernel
+>> 2.6.23 compared to kernel 2.6.22.
 >>
->> I don't know about CMOS, but there were definitely some not too ancient
->> systems (let's say not more than 10 years) who required IO delays in the
->> floppy driver and the 8253/8259. But on those the jumps are already
->> far too fast.
-> 
-> Also see Alan's replies in the thread I posted a link to:
-> 
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/5700.html
-> 
-> Also 8254 (PIT) at least it seems.
+>> In our case we booted a Linux in a IBM System z9 LPAR with 256MB of
+>> ram with 4 CPU's. This system uses a striped LV with 16 disks on a
+>> Storage Server connected via 8 4GBit links.
+>> A dbench was started on that system performing I/O operations on the
+>> striped LV. dbench runs were performed with 1 to 62 processes.
+>> Measurements with a 2.6.22 kernel were compared to measurements with
+>> a 2.6.23 kernel. We saw a throughput degradation from 7.2 to 23.4
+>>     
+>
+> this is good news!
+> dbench rewards unfair behavior... so higher dbench usually means a
+> worse kernel ;)
+>
+>
+>   
+tests with 2.6.22 including CFS  show the same results.
+This means the pressure on page cache is much higher when all processes 
+run in parallel.
+We see this behavior as well with iozone when writing on many disks with 
+many threads and just 256 MB memory.
 
-By the way, David, it would be interesting if you could test 0xed. If your 
-problem is some piece of hardware getting upset at LPC bus aborts it's not 
-going to matter and we'd know an outb delay is just not an option on your 
-system at least. You said you could quickly reproduce the problem with port 
-0x80?
+This means the scheduler schedules as it should - fair.
 
-Rene.
+regards Holger
+
