@@ -1,137 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbXLFXxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbXLGAEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbXLFXxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 18:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXLFXxD
+	id S1753617AbXLGAEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 19:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbXLGAEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 18:53:03 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:34019 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbXLFXxB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 18:53:01 -0500
-Subject: Re: 2.6.24-rc4-mm1 kobject changes broken with hvcs driver on
-	powerpc
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, rsa@us.ibm.com, apw@shadowen.org,
-       balbir@in.ibm.com
-In-Reply-To: <20071206203118.GA28618@kroah.com>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	 <20071205141202.GB13189@linux.vnet.ibm.com>
-	 <47583D4F.2050707@linux.vnet.ibm.com> <20071206185006.GA21641@kroah.com>
-	 <47584672.8040201@linux.vnet.ibm.com>  <20071206203118.GA28618@kroah.com>
-Content-Type: text/plain
-Date: Thu, 06 Dec 2007 15:54:51 -0800
-Message-Id: <1196985291.18388.19.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Thu, 6 Dec 2007 19:04:48 -0500
+Received: from phunq.net ([64.81.85.152]:41538 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751549AbXLGAEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 19:04:47 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Date: Thu, 6 Dec 2007 16:04:41 -0800
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <200712052221.45409.phillips@phunq.net> <47586F59.5090507@tmr.com>
+In-Reply-To: <47586F59.5090507@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712061604.41490.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-06 at 12:31 -0800, Greg KH wrote:
-> On Fri, Dec 07, 2007 at 12:28:58AM +0530, Balbir Singh wrote:
-> > Greg KH wrote:
-> > 
-> > >> Why release the spinlock here? It's done after the count is incremented.
-> > >> This patch does not seem correct.
-> > > 
-> > > Doh, you are correct, I'll make sure that I fix this up before applying
-> > > it.
-> > > 
-> > > thanks,
-> > > 
-> > > greg k-h
-> > 
-> > Hi, Greg,
-> > 
-> > I ran some tests with the fixed up version of this patch and the system
-> > fails to come up.
-> > 
-> > I see the WARN_ON in lib/kref.c:33 and the system fails to boot beyond
-> > that point. I have not yet found time to debug it though.
-> 
-> That's not good, that warning means that someone has tried to use this
-> kref _before_ it was initialized, so there is a logic error in the code
-> that was previously being papered over with the lack of this message in
-> the kobject code.
-> 
-> I do have this same message availble as a patch for the kobject core, it
-> would be interesting if you could just run 2.6.24-rc4 with just this
-> patch:
-> 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/kobject-warn.patch
-> 
-> it might take some fuzz to fit properly, but all you really want to do
-> is add:
-> 	WARN_ON(atomic_read(&kobj->kref.refcount));
-> before the kref_init() call in kobject_init().
-> 
-> thanks,
-> 
-> greg k-h
+On Thursday 06 December 2007 13:53, Bill Davidsen wrote:
+> Daniel Phillips wrote:
+> The problem is that you (a) may or may not know just how bad a worst
+> case can be, and (b) may block unnecessarily by being pessimistic.
 
-2.6.24-rc4 with above patch booted fine without any warnings. 
-But 2.6.24-rc4-mm1 doesn't boot, it hangs after following messages.
+True, but after a quick introspect I realized that that issue (it's 
+really a single issue) is not any worse than the way I planned to wave 
+my hands at the issue of programmers constructing their metrics wrongly 
+and thereby breaking the throttling assumptions.
 
+Which is to say that I am now entirely convince by Andrew's argument and 
+am prepardc to reroll the patch along the lines he suggests.  The 
+result will be somewhat bigger.  Only a minor change is required to the 
+main mechanism: we will now account things entirely in units of pages 
+instead of abstract units, eliminating a whole class of things to go 
+wrong.  I like that.  Accounting variables get shifted to a new home, 
+maybe.  Must try a few ideas and see what works.
 
-e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-ipr: IBM Power RAID SCSI Device Driver version: 2.4.1 (April 24, 2007)
-ipr 0000:d0:01.0: Found IOA with IRQ: 119
-ipr 0000:d0:01.0: Starting IOA initialization sequence.
-ipr 0000:d0:01.0: Adapter firmware version: 020A005E
-ipr 0000:d0:01.0: IOA initialized.
-scsi0 : IBM 570B Storage Adapter
-scsi 0:0:3:0: Direct-Access     IBM   H0 HUS103014FL3800  RPQF PQ: 0 ANSI: 4
-scsi 0:0:5:0: Direct-Access     IBM   H0 HUS103014FL3800  RPQF PQ: 0 ANSI: 4
-scsi 0:0:8:0: Direct-Access     IBM   H0 HUS103014FL3800  RPQF PQ: 0 ANSI: 4
-scsi 0:0:15:0: Enclosure         IBM      VSBPD4E2  U4SCSI 7134 PQ: 0 ANSI: 2
-------------[ cut here ]------------
-Badness at lib/kref.c:33
-NIP: c0000000002e1254 LR: c0000000002dfbd8 CTR: c0000000002e60f0
-REGS: c00000003f0db050 TRAP: 0700   Not tainted  (2.6.24-rc4-mm1)
-MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 28002042  XER: 0000000f
-TASK = c00000003f0d78d0[1] 'swapper' THREAD: c00000003f0d8000 CPU: 0
-GPR00: 0000000000000000 c00000003f0db2d0 c000000000724098 c00000003f131620
-GPR04: fffffffffffffff1 fffffffffffffffe 000000000000000a ffffffffffffffff
-GPR08: c00000003d4d9000 c00000003f0cbfe0 c000000000556591 0000000000000073
-GPR12: 0000000024002084 c000000000651980 0000000000000000 0000000000000000
-GPR16: 0000000000000000 d000080080080000 c00000000064d6f0 c00000003d4d9570
-GPR20: c00000003d4d94b8 0000000000000002 c00000003d4d9170 c00000003d4d9170
-GPR24: c00000003d4d9000 0000000000000001 c00000003d570d58 c00000003d570d18
-GPR28: 0000000000000000 c00000003d4d9260 c0000000006b5400 c00000003f131618
-NIP [c0000000002e1254] .kref_get+0x10/0x2c
-LR [c0000000002dfbd8] .kobject_get+0x24/0x40
-Call Trace:
-[c00000003f0db2d0] [c00000003f0db360] 0xc00000003f0db360 (unreliable)
-[c00000003f0db350] [c0000000002e00e8] .kobject_add+0x8c/0x21c
-[c00000003f0db3e0] [c000000000344b00] .device_add+0xd4/0x680
-[c00000003f0db4a0] [c0000000003a1c4c] .scsi_alloc_target+0x218/0x404
-[c00000003f0db570] [c0000000003a1fb4] .__scsi_scan_target+0xa8/0x640
-[c00000003f0db6b0] [c0000000003a25c4] .scsi_scan_channel+0x78/0xdc
-[c00000003f0db750] [c0000000003a26f8] .scsi_scan_host_selected+0xd0/0x140
-[c00000003f0db7f0] [c0000000003c3ff4] .ipr_probe+0x1270/0x1348
-[c00000003f0db960] [c0000000002f4808] .pci_device_probe+0x124/0x194
-[c00000003f0dba10] [c000000000347e8c] .driver_probe_device+0x110/0x1f0
-[c00000003f0dbaa0] [c000000000348014] .__driver_attach+0xa8/0x134
-[c00000003f0dbb30] [c0000000003472ac] .bus_for_each_dev+0x80/0xd0
-[c00000003f0dbbe0] [c000000000347c14] .driver_attach+0x28/0x40
-[c00000003f0dbc60] [c000000000346788] .bus_add_driver+0xfc/0x2d0
-[c00000003f0dbd10] [c0000000003482cc] .driver_register+0x80/0x9c
-[c00000003f0dbd90] [c0000000002f4bb0] .__pci_register_driver+0x5c/0xcc
-[c00000003f0dbe20] [c000000000604b38] .ipr_init+0x38/0x50
-[c00000003f0dbea0] [c0000000005d6428] .kernel_init+0x214/0x3ec
-[c00000003f0dbf90] [c000000000026734] .kernel_thread+0x4c/0x68
-Instruction dump:
-e8410028 39200001 38210080 7d234b78 e8010010 ebc1fff0 7c0803a6 4e800020
-80030000 7c0007b4 2f800000 409e0008 <0fe00000> 7c001828 30000001
+Anyway, the key idea is that task struct will gain a field pointing at a 
+handle for the "block device stack", whatever that is (this is sure to 
+evolve over time) and alloc_pages will know how to account pages to 
+that object.  The submit_bio and bio->endio bits change hardly at all.
 
+The runner up key idea is that we will gain a notion of "block device 
+stack" (or block stack for short, so that we may implement block 
+stackers) which for the time being will simply be Device Mapper's 
+notion of device stack, however many warts that may have.  It's there 
+now and we use it for ddsnap.
 
-Thanks,
-Badari
+The other player in this is Peterz's swap over network use case, which 
+does not involve a device mapper device.  Maybe it should?  Otherwise 
+we will need a variant notion of block device stack, and the two 
+threads of work should merge eventually.  There is little harm in 
+starting this effort in two different places, quite the contrary.
 
+In the meantime we do have a strategy that works, posted at the head of 
+this thread, for anybody who needs it now.
+
+> The dummy transaction would be nice, but it would be perfect if you
+> could send the real transaction down with a max memory limit and a
+> flag, have each level check and decrement the max by what's actually
+> needed, and then return some pass/fail status for that particular
+> transaction. Clearly every level in the stack would have to know how
+> to do that. It would seem that once excess memory use was detected
+> the transaction could be failed without deadlock.
+
+The function of the dummy transaction will be to establish roughly what 
+kind of footprint for a single transaction we see on that block IO 
+path.  Then we will make the reservation _hugely_ greater than that, to 
+accommodate 1000 or so of those.  A transaction blocks if it actually 
+tries to use more than that.  We close the "many partial submissions 
+all deadlock together" hole by ... <insert handwaving here>.  Can't go 
+wrong, right?
+
+Agreed that drivers should pay special attention to our dummy 
+transaction and try to use the maximum possible resources when they see 
+one.  More handwaving, but this is progress.
+
+Regards,
+
+Daniel
