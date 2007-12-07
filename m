@@ -1,80 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbXLGKyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbXLGKzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbXLGKyd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 05:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXLGKyX
+	id S1752987AbXLGKzO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXLGKy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 05:54:23 -0500
-Received: from [212.12.190.195] ([212.12.190.195]:60321 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751841AbXLGKyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 05:54:21 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Andreas Ericsson <ae@op5.se>
-Subject: Re: git guidance
-Date: Fri, 7 Dec 2007 13:53:11 +0300
-User-Agent: KMail/1.5
-Cc: Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712070737.18519.a1426z@gawab.com> <475906F7.5010309@op5.se>
-In-Reply-To: <475906F7.5010309@op5.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712071353.11654.a1426z@gawab.com>
+	Fri, 7 Dec 2007 05:54:57 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:56032 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbXLGKy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 05:54:56 -0500
+Date: Fri, 7 Dec 2007 11:54:38 +0100 (MET)
+Message-Id: <200712071054.lB7AscVW002471@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: Re: NFSv2/3 broken exporting/mounting (permission denied) in 2.6.24-rc4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Ericsson wrote:
-> So, to get to the bottom of this, which of the following workflows is it
-> you want git to support?
->
-> ### WORKFLOW A ###
-> edit, edit, edit
-> edit, edit, edit
-> edit, edit, edit
-> Oops I made a mistake and need to hop back to "current - 12".
-> edit, edit, edit
-> edit, edit, edit
-> publish everything, similar to just tarring up your workdir and sending
-> out ### END WORKFLOW A ###
->
-> ### WORKFLOW B ###
-> edit, edit, edit
-> ok this looks good, I want to save a checkpoint here
-> edit, edit, edit
-> looks good again. next checkpoint
-> edit, edit, edit
-> oh crap, back to checkpoint 2
-> edit, edit, edit
-> ooh, that's better. save a checkpoint and publish those checkpoints
-> ### END WORKFLOW B ###
+On Thu, 6 Dec 2007 21:20:41 -0500, Erez Zadok wrote:
+> I get a "permission denied" when trying to mount a localhost nfsv2/3
+> exported volume, on v2.6.24-rc4-124-gf194d13.  It works w/ nfsv4 mounting.
+> It worked fine in 2.6.24-rc3.  Here's a sequence of ops I tried:
+> 
+> # mount -t ext2 /dev/hdb1 /n/lower/b0
+> # exportfs -o no_root_squash,rw localhost:/n/lower/b0
+> # mount -t nfs -o nfsvers=3 localhost:/n/lower/b0 /mnt
 
-### WORKFLOW C ###
-for every save on a gitfs mounted dir, do an implied checkpoint, commit, or 
-publish (should be adjustable), on its privately created on-the-fly 
-repository.
-### END WORKFLOW C ###
+I'm seeing something similar too. NFSv3 export of an ext3 partition
+to another machine in my lan fails (client gets permission denied)
+when the server runs 2.6.24-rc4. It worked fine in 2.6.24-rc3.
 
-For example:
-
-  echo "// last comment on this file" >> /gitfs.mounted/file
-
-should do an implied checkpoint, and make these checkpoints immediately 
-visible under some checkpoint branch of the gitfs mounted dir.
-
-Note, this way the developer gets version control without even noticing, and 
-works completely transparent to any kind of application.
-
-
-Thanks!
-
---
-Al
-
+There's no NFSv4 of any kind on either client or server.
