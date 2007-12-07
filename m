@@ -1,68 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbXLGShk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbXLGSoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbXLGShk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:37:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbXLGShY
+	id S1755841AbXLGSoo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXLGSof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:37:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35667 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756720AbXLGShX (ORCPT
+	Fri, 7 Dec 2007 13:44:35 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:57329 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbXLGSof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:37:23 -0500
-Date: Fri, 7 Dec 2007 10:36:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: Major regression on hackbench with SLUB
-In-Reply-To: <alpine.LFD.0.9999.0712070957070.7274@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0712071021510.12046@woody.linux-foundation.org>
-References: <1197049846.1645.68.camel@localhost.localdomain> <alpine.LFD.0.9999.0712070957070.7274@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Dec 2007 13:44:35 -0500
+Subject: Re: [dm-devel] Re: 2.6.24-rc4-mm1
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <6593.1197051630@turing-police.cc.vt.edu>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	 <3941.1196941764@turing-police.cc.vt.edu>
+	 <20071206040420.6c89c675.akpm@linux-foundation.org>
+	 <4374.1196968688@turing-police.cc.vt.edu>
+	 <20071206193843.GA25125@kroah.com>
+	 <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com>
+	 <2955.1196982750@turing-police.cc.vt.edu>
+	 <1196983444.2829.38.camel@lov.site>
+	 <6593.1197051630@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Fri, 07 Dec 2007 19:44:29 +0100
+Message-Id: <1197053069.5483.8.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19ZKj0anaE7XrqUHf/jwG42xkh28guy4Z63NOj
+ 9p/S7bWRwu2f/sC4i3wwHYBEMzeUNtyvYhYf9ZMBGKBA8Lkn/g
+ snXH5pA6VqZMX/oljhMXdcHrkaZKCGN
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 7 Dec 2007, Linus Torvalds wrote:
+On Fri, 2007-12-07 at 13:20 -0500, Valdis.Kletnieks@vt.edu wrote: 
+> On Fri, 07 Dec 2007 00:24:04 +0100, Kay Sievers said:
+> > On Thu, 2007-12-06 at 18:12 -0500, Valdis.Kletnieks@vt.edu wrote:
+> > > On Thu, 06 Dec 2007 23:04:12 +0100, Kay Sievers said:
+> > > 
+> > > > What's the value of SYSFS_DEPRECATED? Care to set it to yes, if it isn't,
+> > > > and try again?
+> > > 
+> > > I *knew* there was a D'Oh! error in here. ;)
+> > > 
+> > > Bisection is fast closing in on gregkh-driver-block-device.patch, which broke
+> > > my LVM almost the exact same way the *last* time it showed up in -mm ;)
+> > 
+> > Oh, it must not, if SYSFS_DEPRECATED=y is set. I hope we fixed all
+> > issues. Please let us know if it does not work, then we will need to
+> > look into it.
 > 
-> Can you do one run with oprofile, and see exactly where the cost is? It 
-> should hopefully be pretty darn obvious, considering your timing.
+> I changed SYSFS_DEPRECATED to y, and it was able to boot with the same old
+> initrd I've been using for a while.
 
-So I checked hackbench on my machine with oprofile, and while I'm not 
-seeing anything that says "ten times slower", I do see it hitting the slow 
-path all the time, and __slab_alloc() is 15% of the profile.
+Great!
 
-With __slab_free() being another 8-9%.
+> Note that I had it set to 'n' for at least the last 4-5 -mm kernels, so it
+> *was* working fine without it..
 
-I assume that with many CPU's, those get horrendously worse, with cache 
-trashing.
+Yeah, but the raw block kobjects got converted to devices, which are
+symlinks with SYSFS_DEPRECATED=n.
 
-The biggest cost of __slab_alloc() in my profile is the "slab_lock()", but 
-that may not be the one that causes problems in a 64-cpu setup, so it 
-would be good to have that verified.
+> > > > A fix for LVM to handle symlinks instead of directories is in the LVM
+> > > > CVS tree, but there wasn't a release since August.
+> > > 
+> > > I seem to recall it was 'nash' rather than LVM that had the indigestion the
+> > > last time around.
+> > 
+> > I think that a recent nash should work, even with SYSFS_DEPRECATED=n.
+> > Anyway, nothing should change when SYSFS_DEPRECATED set, nash works fine
+> > here, with that.
+> 
+> It was working fine with =n here until -rc4-mm1 as well, that's why it's a bit
+> of a surprise.  What got added to the 'deprecated' list in this iteration?
 
-Anyway, it's unclear whether the reason it goes into the slow-path because 
-the freelist is just always empty, or whether it hits the
+Block devices got integrated in the driver model.
 
-	... || !node_match(c, node)
+> Now for the truly odd part - I just tried with a rebuilt initrd that included
+> the lvm.static from last night's Rawhide (lvm2-2.02.29-1.fc9).  And that didn't
+> work any better.
+> 
+> So to summarize: (old lvm == 2.02.24)
+> 
+> release	SYSFS_DEPRECATED	lvm2		works
+> -rc3-mm2		N	old	yes
+> -rc4-mm1		N	old	no
+> -rc4-mm1		Y	old	yes
+> -rc4-mm1		N	new	no
+> 
+> (I'm sure looking at that, everybody is now going 'WTF??!?' ;)
+> 
+> gregkh-driver-driver-core-fix-class-glue-dir-cleanup-logic.patch and
+> gregkh-driver-block-device.patch are the only patches left in the (very small)
+> bisect window that reference SYSFS_DEPRECATED at all (according to grep)
+> 
+> Anybody got any brilliant ideas? :)
 
-case which can trigger on NUMA. That's another potential explanation of 
-why you'd see such a *huge* slowdown (ie if the whole node-match thing 
-doesn't work out, slub just never gets the fast-case at all). That said, 
-the number of places that actually pass a specific node to slub is very 
-limited, so I suspect it's not the node matching. But just disabling that 
-test in slab_alloc() might be one thing to test.
+I guess it's nash again, which version is it?
 
-[ The whole node match thing is likely totally bogus. I suspect we pay 
-  *more* in trying to match nodes than we'd ever likely pay in just 
-  returning the wrong node for an allocation, but that's neither here nor 
-  there ]
+You probably need to wait for Red Hat to catch up, and don't disable
+SYSFS_DEPRECATED for now, they don't support that.
 
-But yeah, I'm not entirely sure SLUB is working out.
+Kay
 
-		Linus
