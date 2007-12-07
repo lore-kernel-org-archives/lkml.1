@@ -1,103 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbXLGUHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbXLGUJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757929AbXLGUHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 15:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755662AbXLGUHG
+	id S1757923AbXLGUJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 15:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbXLGUJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 15:07:06 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:57491 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbXLGUHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 15:07:04 -0500
-Date: Fri, 7 Dec 2007 15:06:55 -0500
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [NFS] NFSv2/3 broken exporting/mounting (permission denied) in
-	2.6.24-rc4
-Message-ID: <20071207200655.GD2204@fieldses.org>
-References: <20071207025504.GA3070@fieldses.org> <200712072000.lB7K0DZ5013256@agora.fsl.cs.sunysb.edu>
+	Fri, 7 Dec 2007 15:09:34 -0500
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46744
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755482AbXLGUJc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 15:09:32 -0500
+Date: Fri, 7 Dec 2007 13:17:38 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Al Boldi <a1426z@gawab.com>
+cc: Andreas Ericsson <ae@op5.se>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: git guidance
+In-Reply-To: <200712071353.11654.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.64.0712071259020.12607@asgard.lang.hm>
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com>
+ <200712070737.18519.a1426z@gawab.com> <475906F7.5010309@op5.se>
+ <200712071353.11654.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712072000.lB7K0DZ5013256@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 03:00:13PM -0500, Erez Zadok wrote:
-> In message <20071207025504.GA3070@fieldses.org>, "J. Bruce Fields" writes:
-> > On Thu, Dec 06, 2007 at 09:20:41PM -0500, Erez Zadok wrote:
-> > > I get a "permission denied" when trying to mount a localhost nfsv2/3
-> > > exported volume, on v2.6.24-rc4-124-gf194d13.  It works w/ nfsv4 mounting.
-> > > It worked fine in 2.6.24-rc3.  Here's a sequence of ops I tried:
-> > > 
-> > > # mount -t ext2 /dev/hdb1 /n/lower/b0
-> > > # exportfs -o no_root_squash,rw localhost:/n/lower/b0
-> > > # mount -t nfs -o nfsvers=3 localhost:/n/lower/b0 /mnt
-> > 
-> > What do you see if you watch the network traffic in ethereal?
-> > 
-> > --b.
-> 
-> Bruce, I'm using nfs-utils-1.0.10-14.fc6 on an FC6 system with all latest
-> FC6 patches.  Using git-bisect I was able to find the patch which broke it:
+On Fri, 7 Dec 2007, Al Boldi wrote:
 
-Wow, thanks for your work finding that.
+> Andreas Ericsson wrote:
+>> So, to get to the bottom of this, which of the following workflows is it
+>> you want git to support?
+>>
+>> ### WORKFLOW A ###
+>> edit, edit, edit
+>> edit, edit, edit
+>> edit, edit, edit
+>> Oops I made a mistake and need to hop back to "current - 12".
+>> edit, edit, edit
+>> edit, edit, edit
+>> publish everything, similar to just tarring up your workdir and sending
+>> out ### END WORKFLOW A ###
+>>
+>> ### WORKFLOW B ###
+>> edit, edit, edit
+>> ok this looks good, I want to save a checkpoint here
+>> edit, edit, edit
+>> looks good again. next checkpoint
+>> edit, edit, edit
+>> oh crap, back to checkpoint 2
+>> edit, edit, edit
+>> ooh, that's better. save a checkpoint and publish those checkpoints
+>> ### END WORKFLOW B ###
+>
+> ### WORKFLOW C ###
+> for every save on a gitfs mounted dir, do an implied checkpoint, commit, or
+> publish (should be adjustable), on its privately created on-the-fly
+> repository.
+> ### END WORKFLOW C ###
+>
+> For example:
+>
+>  echo "// last comment on this file" >> /gitfs.mounted/file
+>
+> should do an implied checkpoint, and make these checkpoints immediately
+> visible under some checkpoint branch of the gitfs mounted dir.
+>
+> Note, this way the developer gets version control without even noticing, and
+> works completely transparent to any kind of application.
 
-> 
-> commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
-> Author: Eric W. Biederman <ebiederm@xmission.com>
-> Date:   Sun Dec 2 00:33:17 2007 +1100
-> 
->     [NETNS]: Fix /proc/net breakage
->     
->     Well I clearly goofed when I added the initial network namespace support
->     for /proc/net.  Currently things work but there are odd details visible to
->     user space, even when we have a single network namespace.
->     
->     Since we do not cache proc_dir_entry dentries at the moment we can just
->     modify ->lookup to return a different directory inode depending on the
->     network namespace of the process looking at /proc/net, replacing the
->     current technique of using a magic and fragile follow_link method.
->     
->     To accomplish that this patch:
->     - introduces a shadow_proc method to allow different dentries to
->       be returned from proc_lookup.
->     - Removes the old /proc/net follow_link magic
->     - Fixes a weakness in our not caching of proc generic dentries.
->     
->     As shadow_proc uses a task struct to decided which dentry to return we can
->     go back later and fix the proc generic caching without modifying any code
->     that uses the shadow_proc method.
->     
->     Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->     Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->     Cc: Pavel Machek <pavel@ucw.cz>
->     Cc: Pavel Emelyanov <xemul@openvz.org>
->     Cc: "David S. Miller" <davem@davemloft.net>
->     Cc: Ingo Molnar <mingo@elte.hu>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-> 
-> With the above patch, rpc.mountd is unable to open /proc/fs/nfsd/filehandle.
-> Strace shows:
-> 
-> open("/proc/fs/nfsd/filehandle", O_RDWR|O_LARGEFILE) = -1 ENOENT (No such file or directory)
-> 
-> Without the above patch, /proc/fs/nfsd is populated with a number of files,
-> including "filehandle".
+so if you have a script that does
 
-Those files are actually in a separate filesystem (of type "nfsd") which
-is supposed to be mounted on /proc/fs/nfsd/.   So that mount must have
-failed in the bad case?  It's not immediately obvious to me what this
-patch has to do with that.  Hm.
+echo "mail header" >tmpfile
+echo "subject: >>tmpfile
+echo >>tmpfile
+echo "body" >>tmpfile
 
---b.
+you want to have four seperate commits
+
+what if you have a perl script
+
+open outfile ">tmpfile";
+print outfile "mail header\n";
+print outfile "subject:\n\n";
+print outfile "body\n";
+close ourfile;
+
+how many seperate commits do you think should take place?
+
+what if $|=1 (unbuffered output, so that each print statement becomes 
+visable to other programs immediatly)?
+
+what if the file is changed via mmap? should each byte/word written to 
+memory be a commit? or when the mmap is closed? or when the kernel happens 
+to flush the page to disk?
+
+'recording every change to a filesystem' is a very incomplete definition 
+of a goal.
+
+David Lang
