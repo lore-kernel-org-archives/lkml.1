@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbXLGHMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbXLGHN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751901AbXLGHMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 02:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXLGHMA
+	id S1752187AbXLGHN5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 02:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXLGHNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 02:12:00 -0500
-Received: from echo836.server4you.de ([85.25.140.112]:43948 "EHLO
-	mail.pianoinflames.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbXLGHL7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 02:11:59 -0500
-Message-ID: <4758F237.9060201@pianoinflames.de>
-Date: Fri, 07 Dec 2007 08:11:51 +0100
-From: Marco Gatti <marco@pianoinflames.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
+	Fri, 7 Dec 2007 02:13:49 -0500
+Received: from phunq.net ([64.81.85.152]:55259 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751224AbXLGHNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 02:13:49 -0500
+From: Daniel Phillips <phillips@phunq.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Bug: get EXT3-fs error Allocating block in system zone
-References: <4755BEA1.4090604@pianoinflames.de> <20071206162500.1f76a234.akpm@linux-foundation.org>
-In-Reply-To: <20071206162500.1f76a234.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Date: Thu, 6 Dec 2007 23:13:42 -0800
+User-Agent: KMail/1.9.5
+Cc: davidsen@tmr.com, linux-kernel@vger.kernel.org, peterz@infradead.org
+References: <200712051603.02183.phillips@phunq.net> <200712061604.41490.phillips@phunq.net> <20071206162915.a3917d1c.akpm@linux-foundation.org>
+In-Reply-To: <20071206162915.a3917d1c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712062313.43383.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton schrieb:
->> But the effect is under every circumstances described above that I got 
->> after an unspecific time EXT3-fs errors. I tried to use different 
->> partitions, one for root and data, got errors on both.
->>
->> Dec  3 15:05:34 adira EXT3-fs error (device sdb4): ext3_new_block: 
->> Allocating block in system zone - blocks from 74907667, length 1
->>
->> I tried different hard disks, different sizes of partitions, always the 
->> same issue. I always saw that mem is fully cached (I have 8GB RAM!). 
->> After that, the ext3 has severe faults fsck.ext3 repaired them, but an 
->> amount of data was lost.
->>
->> I also tried with different file systems (reiserfs3, xfs), also kernel 
->> trace errors, so I got back to ext3.
->>
->> Can't believe that it's a pure fs-error. Is it an ahci.c issue? Or a 
->> problem with acpi and memory management?
-> 
-> At a guess I'd say the disk system is being bad.  it might be a hardware
-> failure too - it's a new system.
-> 
+On Thursday 06 December 2007 16:29, Andrew Morton wrote:
+> On Thu, 6 Dec 2007 16:04:41 -0800
+>
+> Daniel Phillips <phillips@phunq.net> wrote:
+> > The runner up key idea is that we will gain a notion of "block
+> > device stack" (or block stack for short, so that we may implement
+> > block stackers) which for the time being will simply be Device
+> > Mapper's notion of device stack, however many warts that may have. 
+> > It's there now and we use it for ddsnap.
+>
+> Perhaps all we need to track is the outermost point?
+>
+> submit_bio(...)
+> {
+> 	bool remove_the_rq = false;
+>
+> 	...
+> 	if (current->the_rq == NULL) {
+> 		current->the_rq = rq;
+> 		remove_the_rq = true;
+> 	}
+> 	...
+> 	if (remove_the_rq)
+> 		current->the_rq = NULL;
+> }
+>
+> ?
 
-I thought that first, too. I forgot to mention that I did a badblocks on 
-the partitions and the two whole disks. No issues reported. I formated 
-the disks several times and reinstalled the whole gentoo and compiled 
-the kernel again more than one time (I tried 2.6.24-rc3 too) 'cause of 
-the ext3 / other fs issues. I did dd if=/dev/zero of=... on the 
-partitions and the whole disks. No issues of bad blocks. The strange 
-thing is everything works fine under Windows XP x64 Prof. But I don't 
-wanted to use that OS really... So I can't believe that's a hardware 
-issue of the disks.
+The parent patch already has that crucial property in a simple say, see
+
+       if (q && q->metric && !bio->bi_queue) {
+               bio->bi_queue = q;
+
+Regards,
+
+Daniel
