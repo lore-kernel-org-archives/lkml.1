@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXLGUcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbXLGUdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbXLGUcP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 15:32:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbXLGUb6
+	id S1758221AbXLGUdG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 15:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbXLGUcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 15:31:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42429 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758052AbXLGUb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 15:31:56 -0500
-Date: Fri, 7 Dec 2007 21:31:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       protasnb@gmail.com, ak@suse.de, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
-Message-ID: <20071207203129.GA21879@elte.hu>
-References: <200711280121.18376.lenb@kernel.org> <20071204163946.63ac73ce.akpm@linux-foundation.org> <20071205094837.GB17911@elte.hu> <200712062141.05195.lenb@kernel.org> <m1mysmqprt.fsf@ebiederm.dsl.xmission.com> <20071207202613.GA18700@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071207202613.GA18700@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 7 Dec 2007 15:32:54 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36157 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756343AbXLGUcy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 15:32:54 -0500
+Date: Fri, 7 Dec 2007 15:32:42 -0500
+Message-Id: <200712072032.lB7KWgTr015620@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [NFS] NFSv2/3 broken exporting/mounting (permission denied) in 2.6.24-rc4 
+In-reply-to: Your message of "Fri, 07 Dec 2007 15:06:55 EST."
+             <20071207200655.GD2204@fieldses.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In message <20071207200655.GD2204@fieldses.org>, "J. Bruce Fields" writes:
+> On Fri, Dec 07, 2007 at 03:00:13PM -0500, Erez Zadok wrote:
+[...]
+> Those files are actually in a separate filesystem (of type "nfsd") which
+> is supposed to be mounted on /proc/fs/nfsd/.   So that mount must have
+> failed in the bad case?  It's not immediately obvious to me what this
+> patch has to do with that.  Hm.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Yes, it is indeed a separate mount in both cases, but in the broken case,
+/proc/fs/nfsd is empty.
 
-> 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> 
-> > Attached below is my patch from last time I was looking at this 
-> > problem, it doesn't quite apply but it is gives a good idea of where I 
-> > think we should go.
-> 
-> merged it up to x86.git - see below. Alan, have no tried to build, let 
-> alone boot it. Does it look good to you?
+The patch in question introduces a proc ->d_revalidate method which does
+this:
 
-s/Alan/Alas
+static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata *nd)
+{
+	d_drop(dentry);
+	return 0;
+}
 
-	Ingo
+I'm not sure why it drops the dentry and then returns OK to the VFS; is it
+to force the VFS to revalidate the dentry?  In that case, I think it should
+return -ESTALE.  I also don't know why /proc needs a ->d_revalidate in the
+first place (it was fine up until now).  Perhaps what proc does now is
+correct, but its behavior has changed such that nfsd's /proc/fs/nfsd needs
+to do something different (like grab an extra dentry ref?).
+
+Anyway, if I comment out the d_drop line in proc_revalidate_dentry, or
+remove proc's ->d_revalidate method, nfs exporting works again.
+
+Someone more familiar with this patch and /proc should investigate.  Until
+then, nfsv2/3 exporting are broken in 2.6.24-rc4.
+
+> --b.
+
+Cheers,
+Erez.
