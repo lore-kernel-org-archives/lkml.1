@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbXLGRDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbXLGRDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbXLGRDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 12:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXLGRCt
+	id S1756659AbXLGRDc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 12:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbXLGRDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 12:02:49 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:45638 "EHLO mail.screens.ru"
+	Fri, 7 Dec 2007 12:03:01 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:45646 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753501AbXLGRCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 12:02:47 -0500
-Date: Fri, 7 Dec 2007 20:03:33 +0300
+	id S1756328AbXLGRC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 12:02:59 -0500
+Date: Fri, 7 Dec 2007 20:03:36 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] uglify kill_pid_info() to fix kill() vs exec() race
-Message-ID: <20071207170333.GA13829@tv-sign.ru>
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ITIMER_REAL: convert to use struct pid
+Message-ID: <20071207170336.GA13835@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,46 +26,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kill_pid_info()->pid_task() could be the old leader of the execing process.
-In that case it is possible that the leader will be released before we take
-siglock. This means that kill_pid_info() (and thus sys_kill()) can return a
-false -ESRCH.
+signal_struct->tsk points to the ->group_leader and thus we have the nasty code
+in de_thread() which has to change it and restart ->real_timer if the leader is
+changed.
 
-Change the code to retry when lock_task_sighand() fails. The endless loop is
-not possible, __exit_signal() both clears ->sighand and does detach_pid().
+Use "struct pid *leader_pid" instead. This also allows us to kill now unneeded
+send_group_sig_info().
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- PT/kernel/signal.c~1_kill_exec_race	2007-12-06 18:13:31.000000000 +0300
-+++ PT/kernel/signal.c	2007-12-07 17:20:27.000000000 +0300
-@@ -1049,17 +1049,26 @@ int kill_pgrp_info(int sig, struct sigin
+ include/linux/sched.h |    3 +--
+ kernel/fork.c         |    2 +-
+ kernel/itimer.c       |    2 +-
+ fs/exec.c             |   22 ++--------------------
+ kernel/signal.c       |   14 --------------
+ 5 files changed, 5 insertions(+), 38 deletions(-)
+
+--- PT/include/linux/sched.h~3_itimer_tsk_pid	2007-12-02 14:53:29.000000000 +0300
++++ PT/include/linux/sched.h	2007-12-07 19:24:44.000000000 +0300
+@@ -444,7 +444,7 @@ struct signal_struct {
  
- int kill_pid_info(int sig, struct siginfo *info, struct pid *pid)
+ 	/* ITIMER_REAL timer for the process */
+ 	struct hrtimer real_timer;
+-	struct task_struct *tsk;
++	struct pid *leader_pid;
+ 	ktime_t it_real_incr;
+ 
+ 	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
+@@ -1630,7 +1630,6 @@ extern void block_all_signals(int (*noti
+ extern void unblock_all_signals(void);
+ extern void release_task(struct task_struct * p);
+ extern int send_sig_info(int, struct siginfo *, struct task_struct *);
+-extern int send_group_sig_info(int, struct siginfo *, struct task_struct *);
+ extern int force_sigsegv(int, struct task_struct *);
+ extern int force_sig_info(int, struct siginfo *, struct task_struct *);
+ extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp);
+--- PT/kernel/fork.c~3_itimer_tsk_pid	2007-12-07 19:03:34.000000000 +0300
++++ PT/kernel/fork.c	2007-12-07 19:08:57.000000000 +0300
+@@ -882,7 +882,6 @@ static int copy_signal(unsigned long clo
+ 	hrtimer_init(&sig->real_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	sig->it_real_incr.tv64 = 0;
+ 	sig->real_timer.function = it_real_fn;
+-	sig->tsk = tsk;
+ 
+ 	sig->it_virt_expires = cputime_zero;
+ 	sig->it_virt_incr = cputime_zero;
+@@ -1300,6 +1299,7 @@ static struct task_struct *copy_process(
+ 			if (clone_flags & CLONE_NEWPID)
+ 				p->nsproxy->pid_ns->child_reaper = p;
+ 
++			p->signal->leader_pid = pid;
+ 			p->signal->tty = current->signal->tty;
+ 			set_task_pgrp(p, task_pgrp_nr(current));
+ 			set_task_session(p, task_session_nr(current));
+--- PT/kernel/itimer.c~3_itimer_tsk_pid	2007-10-25 16:22:12.000000000 +0400
++++ PT/kernel/itimer.c	2007-12-07 19:15:27.000000000 +0300
+@@ -132,7 +132,7 @@ enum hrtimer_restart it_real_fn(struct h
+ 	struct signal_struct *sig =
+ 		container_of(timer, struct signal_struct, real_timer);
+ 
+-	send_group_sig_info(SIGALRM, SEND_SIG_PRIV, sig->tsk);
++	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
+ 
+ 	return HRTIMER_NORESTART;
+ }
+--- PT/fs/exec.c~3_itimer_tsk_pid	2007-12-02 16:07:22.000000000 +0300
++++ PT/fs/exec.c	2007-12-07 19:18:48.000000000 +0300
+@@ -781,26 +781,8 @@ static int de_thread(struct task_struct 
+ 	zap_other_threads(tsk);
+ 	read_unlock(&tasklist_lock);
+ 
+-	/*
+-	 * Account for the thread group leader hanging around:
+-	 */
+-	count = 1;
+-	if (!thread_group_leader(tsk)) {
+-		count = 2;
+-		/*
+-		 * The SIGALRM timer survives the exec, but needs to point
+-		 * at us as the new group leader now.  We have a race with
+-		 * a timer firing now getting the old leader, so we need to
+-		 * synchronize with any firing (by calling del_timer_sync)
+-		 * before we can safely let the old group leader die.
+-		 */
+-		sig->tsk = tsk;
+-		spin_unlock_irq(lock);
+-		if (hrtimer_cancel(&sig->real_timer))
+-			hrtimer_restart(&sig->real_timer);
+-		spin_lock_irq(lock);
+-	}
+-
++	/* Account for the thread group leader hanging around: */
++	count = thread_group_leader(tsk) ? 1 : 2;
+ 	sig->notify_count = count;
+ 	while (atomic_read(&sig->count) > count) {
+ 		__set_current_state(TASK_UNINTERRUPTIBLE);
+--- PT/kernel/signal.c~3_itimer_tsk_pid	2007-12-07 17:20:27.000000000 +0300
++++ PT/kernel/signal.c	2007-12-07 19:23:40.000000000 +0300
+@@ -1204,20 +1204,6 @@ send_sig(int sig, struct task_struct *p,
+ 	return send_sig_info(sig, __si_special(priv), p);
+ }
+ 
+-/*
+- * This is the entry point for "process-wide" signals.
+- * They will go to an appropriate thread in the thread group.
+- */
+-int
+-send_group_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+-{
+-	int ret;
+-	read_lock(&tasklist_lock);
+-	ret = group_send_sig_info(sig, info, p);
+-	read_unlock(&tasklist_lock);
+-	return ret;
+-}
+-
+ void
+ force_sig(int sig, struct task_struct *p)
  {
--	int error;
-+	int error = -ESRCH;
- 	struct task_struct *p;
- 
- 	rcu_read_lock();
- 	if (unlikely(sig_needs_tasklist(sig)))
- 		read_lock(&tasklist_lock);
- 
-+retry:
- 	p = pid_task(pid, PIDTYPE_PID);
--	error = -ESRCH;
--	if (p)
-+	if (p) {
- 		error = group_send_sig_info(sig, info, p);
-+		if (unlikely(error == -ESRCH))
-+			/*
-+			 * The task was unhashed in between, try again.
-+			 * If it is dead, pid_task() will return NULL,
-+			 * if we race with de_thread() it will find the
-+			 * new leader.
-+			 */
-+			goto retry;
-+	}
- 
- 	if (unlikely(sig_needs_tasklist(sig)))
- 		read_unlock(&tasklist_lock);
 
