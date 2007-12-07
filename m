@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbXLGQKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbXLGQZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbXLGQKp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 11:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXLGQKh
+	id S1754201AbXLGQZh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 11:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbXLGQZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 11:10:37 -0500
-Received: from [81.2.110.250] ([81.2.110.250]:51731 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751883AbXLGQKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 11:10:36 -0500
-Date: Fri, 7 Dec 2007 16:04:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071207160439.71b7f46a@the-village.bc.nu>
-In-Reply-To: <p733auekcly.fsf@bingen.suse.de>
-References: <475879CD.9080006@reed.com>
-	<p733auekcly.fsf@bingen.suse.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Dec 2007 11:25:29 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:1602 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788AbXLGQZ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 11:25:28 -0500
+In-Reply-To: <ada7ijrd6gy.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Raisch <raisch@de.ibm.com>,
+       "OF-EWG" <ewg@lists.openfabrics.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Marcus Eder <meder@de.ibm.com>, Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF85E31FAA.DADA6039-ONC12573AA.005439C8-C12573AA.005A137A@de.ibm.com>
+Date: Fri, 7 Dec 2007 17:25:23 +0100
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 07/12/2007 17:25:26,
+	Serialize complete at 07/12/2007 17:25:26
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> modern CPU compared to the bus. But the delay really needs to be something
-> that is about IO port speed. Ok in theory you could try to measure
-> a outb using RDTSC and then use udelay, but first you would need
+Roland Dreier <rdreier@cisco.com> wrote on 06.12.2007 19:27:09:
 
-You don't need to. Port 0x80 historically is about 8uS so just udelay(8)
-and make sure the initial default delay is conservative enough before the
-CPU speed is computed.
+>  > > +               ehca_lock_hcalls = 
+!(cur_cpu_spec->cpu_user_features
+>  > > +                                    & PPC_FEATURE_ARCH_2_05);
+> 
+>  > We already talked about this yesterday, but I still feel that 
+checking the
+>  > instruction set of the CPU should not be used to determine whether a
+>  > specific device driver implementation is used int hypervisor.
+> 
+> I had the same reaction... is testing cpu_user_features really the
+> best way to detect this issue?
 
-0x80 should be fine for anything PC compatible anyway, its specifically
-reserved as a debug port and supported for *exactly* that purpose by
-many chipsets.
+I concur it's not nice, but it was the only feasible method we could find 
+without adding a "bug fixed" feature flag to the partition<->firmware 
+interface. The firmware version reported in the OFDT is not a reliable 
+enough source, and even if it were, it would require a lot of string 
+parsing and matching against tables.
 
-The afflicted laptop should really be taken up with the vendor. If its
-got port 0x80 wrong gods knows what else it might have problems with.
+We're taking this to the firmware architects at the moment, but they're 
+not very fond of the idea of reporting the absence of bugs through 
+capability flags, as this could quickly lead to the exhaustion of flag 
+bits. We'll let the discussion stew for a bit, but if we don't get this 
+flag, we'll have to resort to the CPU features.
+ 
+> I'll hold off applying this for a few days so you guys can decide the
+> best thing to do.  We'll definitely get some fix into 2.6.24 but we
+> have time to make a good decision.
 
-Alan
+Right.
+ 
+>  > Regarding the performance problem, have you checked whether 
+converting all
+>  > your spin_lock_irqsave to spin_lock/spin_lock_irq improves your 
+performance
+>  > on the older machines? Maybe it's already fast enough that way.
+> 
+> It does seem that the only places that the hcall_lock is taken also
+> use msleep, so they must always be in process context.  So you can
+> safely just use spin_lock(), right?
+
+As Arnd said, there are hCalls that will never return H_LONG_BUSY_*, such 
+as H_QUERY_PORT and chums, so they will never sleep. The surrounding 
+functions, though, are not prepared to be called from interrupt context 
+(GFP_KERNEL comes to mind), so I agree that a simple spin_lock() will 
+suffice. Thanks, Arnd, for pointing this out.
+
+We'll keep you guys posted on the feature flag discussion. Until then, 
+have a nice weekend!
+
+Joachim
