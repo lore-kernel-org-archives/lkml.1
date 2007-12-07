@@ -1,382 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbXLGKNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXLGKQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbXLGKNu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 05:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbXLGKNl
+	id S1754504AbXLGKQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbXLGKQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 05:13:41 -0500
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:59429 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750952AbXLGKNk (ORCPT
+	Fri, 7 Dec 2007 05:16:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55545 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751041AbXLGKQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 05:13:40 -0500
-X-Greylist: delayed 43391 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Dec 2007 05:13:39 EST
-From: Byron Bradley <byron.bbradley@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: p_gortmaker@yahoo.com, timtimred@foonas.org,
-       Byron Bradley <byron.bbradley@gmail.com>
-Subject: [PATCH] Add support for the S-35390A RTC chip.
-Date: Thu,  6 Dec 2007 22:10:27 +0000
-Message-Id: <1196979027-2589-1-git-send-email-byron.bbradley@gmail.com>
-X-Mailer: git-send-email 1.5.3.5
+	Fri, 7 Dec 2007 05:16:03 -0500
+Date: Fri, 7 Dec 2007 02:15:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc4-mm1 -- boot process hangs -- tty4 main process
+ (2988) terminated with status 1
+Message-Id: <20071207021556.ce08dfa6.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0712061956i1bd8f354rbfcffdbafad2e5d8@mail.gmail.com>
+References: <a44ae5cd0712061956i1bd8f354rbfcffdbafad2e5d8@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds basic get/set time support for the Seiko Instruments
-S-35390A. This chip communicates using I2C and is used on the
-QNAP TS-109/TS-209 NAS devices.
+On Thu, 6 Dec 2007 22:56:53 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
 
-Signed-off-by: Byron Bradley <byron.bbradley@gmail.com>
-Tested-by: Tim Ellis <timtimred@foonas.org>
----
- drivers/rtc/Kconfig       |    9 ++
- drivers/rtc/Makefile      |    1 +
- drivers/rtc/rtc-s35390a.c |  302 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 312 insertions(+), 0 deletions(-)
- create mode 100644 drivers/rtc/rtc-s35390a.c
+> The machine is:  http://www.gateway.com/retail/mt6821.php
+> Gnu C                  4.2.3
+> Gnu make               3.81
+> binutils               2.18.20071027
+> util-linux             2.13.1-rc1
+> mount                  2.13.1-rc1
+> module-init-tools      3.3-pre11
+> e2fsprogs              1.40.2
+> reiserfsprogs          3.6.19
+> pcmciautils            014
+> PPP                    2.4.4
+> Linux C Library        2.6.1
+> Dynamic linker (ldd)   2.6.1
+> Procps                 3.2.7
+> Net-tools              1.60
+> Console-tools          0.2.3
+> Sh-utils               5.97
+> udev                   113
+> wireless-tools         29
+> 
+> Dec  6 21:24:09 erratic-orbits kernel: Inspecting
+> /boot/System.map-2.6.24-rc4-mm1
+> Dec  6 21:24:09 erratic-orbits kernel: Loaded 32575 symbols from
+> /boot/System.map-2.6.24-rc4-mm1.
+> Dec  6 21:24:09 erratic-orbits kernel: Symbols match kernel version 2.6.24.
+> Dec  6 21:24:09 erratic-orbits kernel: Loaded 2594 symbols from 18 modules.
+> Dec  6 21:24:09 erratic-orbits kernel: Initializing cgroup subsys cpuset
+> Dec  6 21:24:09 erratic-orbits kernel: Linux version 2.6.24-rc4-mm1
+> (root@erratic-orbits) (gcc version 4.2.3 20071123 (prerelease) (Ubuntu
+>
+> ...
+>
+> Dec  6 21:24:28 erratic-orbits init: tty5 main process ended, respawning
+> Dec  6 21:24:28 erratic-orbits init: tty2 main process (2990)
+> terminated with status 1
+> Dec  6 21:24:28 erratic-orbits init: tty2 main process ended, respawning
+> Dec  6 21:24:28 erratic-orbits init: tty3 main process (2991)
+> terminated with status 1
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 1e6715e..6c0fdf9 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -246,6 +246,15 @@ config RTC_DRV_TWL92330
- 	  platforms.  The support is integrated with the rest of
- 	  the Menelaus driver; it's not separate module.
- 
-+config RTC_DRV_S35390A
-+	tristate "Seiko Instruments S-35390A"
-+	help
-+	  If you say yes here you will get support for the Seiko
-+	  Instruments S-35390A.
-+
-+	  This driver can also be built as a module. If so the module
-+	  will be called rtc-s35390a.
-+
- endif # I2C
- 
- comment "SPI RTC drivers"
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 465db4d..8d6218f 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
- obj-$(CONFIG_RTC_DRV_RS5C313)	+= rtc-rs5c313.o
- obj-$(CONFIG_RTC_DRV_RS5C348)	+= rtc-rs5c348.o
- obj-$(CONFIG_RTC_DRV_RS5C372)	+= rtc-rs5c372.o
-+obj-$(CONFIG_RTC_DRV_S35390A)	+= rtc-s35390a.o
- obj-$(CONFIG_RTC_DRV_S3C)	+= rtc-s3c.o
- obj-$(CONFIG_RTC_DRV_SA1100)	+= rtc-sa1100.o
- obj-$(CONFIG_RTC_DRV_SH)	+= rtc-sh.o
-diff --git a/drivers/rtc/rtc-s35390a.c b/drivers/rtc/rtc-s35390a.c
-new file mode 100644
-index 0000000..29a95b6
---- /dev/null
-+++ b/drivers/rtc/rtc-s35390a.c
-@@ -0,0 +1,302 @@
-+/*
-+ * Seiko Instruments S-35390A RTC Driver
-+ *
-+ * Copyright (c) 2007 Byron Bradley
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/rtc.h>
-+#include <linux/i2c.h>
-+#include <linux/bcd.h>
-+
-+#define S35390A_CMD_STATUS1	0
-+#define S35390A_CMD_STATUS2	1
-+#define S35390A_CMD_TIME1	2
-+
-+#define S35390A_BYTE_YEAR	0
-+#define S35390A_BYTE_MONTH	1
-+#define S35390A_BYTE_DAY	2
-+#define S35390A_BYTE_WDAY	3
-+#define S35390A_BYTE_HOURS	4
-+#define S35390A_BYTE_MINS	5
-+#define S35390A_BYTE_SECS	6
-+
-+#define S35390A_FLAG_POC	0x01
-+#define S35390A_FLAG_BLD	0x02
-+#define S35390A_FLAG_24H	0x40
-+#define S35390A_FLAG_RESET	0x80
-+#define S35390A_FLAG_TEST	0x01
-+
-+struct s35390a {
-+	struct i2c_client *client;
-+	struct rtc_device *rtc;
-+	int twentyfourhour;
-+};
-+
-+static int s35390a_set_reg(struct s35390a *s35390a, int reg, char *buf, int len)
-+{
-+	struct i2c_client *client = s35390a->client;
-+	struct i2c_msg msg[] = {
-+		{ client->addr | reg, 0, len, buf },
-+	};
-+
-+	/* Only write to the writable bits in the status1 register */
-+	if (reg == S35390A_CMD_STATUS1)
-+		buf[0] &= 0xf;
-+
-+	if ((i2c_transfer(client->adapter, msg, 1)) != 1)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
-+static int s35390a_get_reg(struct s35390a *s35390a, int reg, char *buf, int len)
-+{
-+	struct i2c_client *client = s35390a->client;
-+	struct i2c_msg msg[] = {
-+		{ client->addr | reg, I2C_M_RD, len, buf },
-+	};
-+
-+	if ((i2c_transfer(client->adapter, msg, 1)) != 1)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
-+static int s35390a_reset(struct s35390a *s35390a)
-+{
-+	char buf[1];
-+
-+	if (s35390a_get_reg(s35390a, S35390A_CMD_STATUS1, buf, sizeof(buf)) < 0)
-+		return -EIO;
-+
-+	if (!(buf[0] & (S35390A_FLAG_POC | S35390A_FLAG_BLD)))
-+		return 0;
-+
-+	buf[0] |= S35390A_FLAG_RESET;
-+	return s35390a_set_reg(s35390a, S35390A_CMD_STATUS1, buf, sizeof(buf));
-+}
-+
-+static int s35390a_disable_test_mode(struct s35390a *s35390a)
-+{
-+	char buf[1];
-+
-+	if (s35390a_get_reg(s35390a, S35390A_CMD_STATUS2, buf, sizeof(buf)) < 0)
-+		return -EIO;
-+
-+	if (!(buf[0] & S35390A_FLAG_TEST))
-+		return 0;
-+
-+	buf[0] &= ~S35390A_FLAG_TEST;
-+	return s35390a_set_reg(s35390a, S35390A_CMD_STATUS2, buf, sizeof(buf));
-+}
-+
-+static char s35390a_hr2reg(struct s35390a *s35390a, int hour)
-+{
-+	if (s35390a->twentyfourhour)
-+		return BIN2BCD(hour);
-+
-+	if (hour < 12)
-+		return BIN2BCD(hour);
-+
-+	return 0x40 | BIN2BCD(hour - 12);
-+}
-+
-+static int s35390a_reg2hr(struct s35390a *s35390a, char reg)
-+{
-+	unsigned hour;
-+
-+	if (s35390a->twentyfourhour)
-+		return BCD2BIN(reg & 0x3f);
-+
-+	hour = BCD2BIN(reg & 0x3f);
-+	if (reg & 0x40)
-+		hour += 12;
-+
-+	return hour;
-+}
-+
-+static inline char reverse(char x)
-+{
-+	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
-+	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
-+	return (x >> 4) | (x << 4);
-+}
-+
-+static int s35390a_set_datetime(struct i2c_client *client, struct rtc_time *tm)
-+{
-+	struct s35390a	*s35390a = i2c_get_clientdata(client);
-+	int i, err;
-+	char buf[7];
-+
-+	dev_dbg(&client->dev, "%s: tm is secs=%d, mins=%d, hours=%d mday=%d, "
-+		"mon=%d, year=%d, wday=%d\n", __FUNCTION__, tm->tm_sec,
-+		tm->tm_min, tm->tm_hour, tm->tm_mday, tm->tm_mon, tm->tm_year,
-+		tm->tm_wday);
-+
-+	buf[S35390A_BYTE_YEAR] = BIN2BCD(tm->tm_year - 100);
-+	buf[S35390A_BYTE_MONTH] = BIN2BCD(tm->tm_mon + 1);
-+	buf[S35390A_BYTE_DAY] = BIN2BCD(tm->tm_mday);
-+	buf[S35390A_BYTE_WDAY] = BIN2BCD(tm->tm_wday);
-+	buf[S35390A_BYTE_HOURS] = s35390a_hr2reg(s35390a, tm->tm_hour);
-+	buf[S35390A_BYTE_MINS] = BIN2BCD(tm->tm_min);
-+	buf[S35390A_BYTE_SECS] = BIN2BCD(tm->tm_sec);
-+
-+	/* This chip expects the bits of each byte to be in reverse order */
-+	for (i = 0; i < 7; ++i)
-+		buf[i] = reverse(buf[i]);
-+
-+	err = s35390a_set_reg(s35390a, S35390A_CMD_TIME1, buf, sizeof(buf));
-+
-+	return err;
-+}
-+
-+static int s35390a_get_datetime(struct i2c_client *client, struct rtc_time *tm)
-+{
-+	struct s35390a *s35390a = i2c_get_clientdata(client);
-+	char buf[7];
-+	int i, err;
-+
-+	err = s35390a_get_reg(s35390a, S35390A_CMD_TIME1, buf, sizeof(buf));
-+	if (err < 0)
-+		return err;
-+
-+	/* This chip returns the bits of each byte in reverse order */
-+	for (i = 0; i < 7; ++i)
-+		buf[i] = reverse(buf[i]);
-+
-+	tm->tm_sec = BCD2BIN(buf[S35390A_BYTE_SECS]);
-+	tm->tm_min = BCD2BIN(buf[S35390A_BYTE_MINS]);
-+	tm->tm_hour = s35390a_reg2hr(s35390a, buf[S35390A_BYTE_HOURS]);
-+	tm->tm_wday = BCD2BIN(buf[S35390A_BYTE_WDAY]);
-+	tm->tm_mday = BCD2BIN(buf[S35390A_BYTE_DAY]);
-+	tm->tm_mon = BCD2BIN(buf[S35390A_BYTE_MONTH]) - 1;
-+	tm->tm_year = BCD2BIN(buf[S35390A_BYTE_YEAR]) + 100;
-+
-+	dev_dbg(&client->dev, "%s: tm is secs=%d, mins=%d, hours=%d, mday=%d, "
-+		"mon=%d, year=%d, wday=%d\n", __FUNCTION__, tm->tm_sec,
-+		tm->tm_min, tm->tm_hour, tm->tm_mday, tm->tm_mon, tm->tm_year,
-+		tm->tm_wday);
-+
-+	return rtc_valid_tm(tm);
-+}
-+
-+static int s35390a_rtc_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return s35390a_get_datetime(to_i2c_client(dev), tm);
-+}
-+
-+static int s35390a_rtc_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return s35390a_set_datetime(to_i2c_client(dev), tm);
-+}
-+
-+static const struct rtc_class_ops s35390a_rtc_ops = {
-+	.read_time	= s35390a_rtc_read_time,
-+	.set_time	= s35390a_rtc_set_time,
-+};
-+
-+static struct i2c_driver s35390a_driver;
-+
-+static int s35390a_probe(struct i2c_client *client)
-+{
-+	int err = 0;
-+	struct s35390a *s35390a;
-+	struct rtc_time tm;
-+	char buf[1];
-+
-+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
-+		err = -ENODEV;
-+		goto exit;
-+	}
-+
-+	s35390a = kzalloc(sizeof(struct s35390a), GFP_KERNEL);
-+	if (!s35390a) {
-+		err = -ENOMEM;
-+		goto exit;
-+	}
-+
-+	s35390a->client = client;
-+	i2c_set_clientdata(client, s35390a);
-+
-+	err = s35390a_disable_test_mode(s35390a);
-+	if (err < 0) {
-+		dev_err(&client->dev, "error disabling test mode\n");
-+		goto exit_kfree;
-+	}
-+
-+	err = s35390a_reset(s35390a);
-+	if (err < 0) {
-+		dev_err(&client->dev, "error resetting chip\n");
-+		goto exit_kfree;
-+	}
-+
-+	err = s35390a_get_reg(s35390a, S35390A_CMD_STATUS1, buf, sizeof(buf));
-+	if (err < 0) {
-+		dev_err(&client->dev, "error checking 12/24 hour mode\n");
-+		goto exit_kfree;
-+	}
-+	if (buf[0] & S35390A_FLAG_24H)
-+		s35390a->twentyfourhour = 1;
-+	else
-+		s35390a->twentyfourhour = 0;
-+
-+	if (s35390a_get_datetime(client, &tm) < 0)
-+		dev_warn(&client->dev, "clock needs to be set\n");
-+
-+	dev_info(&client->dev, "S35390A found\n");
-+
-+	s35390a->rtc = rtc_device_register(s35390a_driver.driver.name,
-+				&client->dev, &s35390a_rtc_ops, THIS_MODULE);
-+
-+	if (IS_ERR(s35390a->rtc)) {
-+		err = PTR_ERR(s35390a->rtc);
-+		goto exit_kfree;
-+	}
-+	return 0;
-+
-+exit_kfree:
-+	kfree(s35390a);
-+
-+exit:
-+	return err;
-+}
-+
-+static int s35390a_remove(struct i2c_client *client)
-+{
-+	struct s35390a *s35390a = i2c_get_clientdata(client);
-+
-+	rtc_device_unregister(s35390a->rtc);
-+	kfree(s35390a);
-+	return 0;
-+}
-+
-+static struct i2c_driver s35390a_driver = {
-+	.driver		= {
-+		.name	= "rtc-s35390a",
-+	},
-+	.probe		= s35390a_probe,
-+	.remove		= s35390a_remove,
-+};
-+
-+static int __init s35390a_rtc_init(void)
-+{
-+	return i2c_add_driver(&s35390a_driver);
-+}
-+
-+static void __exit s35390a_rtc_exit(void)
-+{
-+	i2c_del_driver(&s35390a_driver);
-+}
-+
-+MODULE_AUTHOR("Byron Bradley <byron.bbradley@gmail.com>");
-+MODULE_DESCRIPTION("S35390A RTC driver");
-+MODULE_LICENSE("GPL");
-+
-+module_init(s35390a_rtc_init);
-+module_exit(s35390a_rtc_exit);
--- 
-1.5.3.5
+Boggle.  We broke the vt driver?
 
-
+config, please...
