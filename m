@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXLGPju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbXLGPox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbXLGPju (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 10:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXLGPjk
+	id S1755473AbXLGPox (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 10:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXLGPoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 10:39:40 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:36282 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbXLGPjj (ORCPT
+	Fri, 7 Dec 2007 10:44:46 -0500
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:36703 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbXLGPop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 10:39:39 -0500
-Message-ID: <475969AB.6040907@student.ltu.se>
-Date: Fri, 07 Dec 2007 16:41:31 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 7 Dec 2007 10:44:45 -0500
+Message-ID: <47596A2E.4060602@keyaccess.nl>
+Date: Fri, 07 Dec 2007 16:43:42 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org,
-       herbert@gondor.apana.org.au, akpm@osdl.org, netdev@vger.kernel.org
-Subject: Re: [Patch] net/xfrm/xfrm_policy.c: Some small improvements
-References: <20071206110123.GB2469@hacking>	<20071206.031434.179419183.davem@davemloft.net>	<4758093A.7010608@student.ltu.se> <20071206.192249.193354742.davem@davemloft.net>
-In-Reply-To: <20071206.192249.193354742.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <47595DB2.5080302@reed.com> <20071207145430.GA5992@one.firstfloor.org>
+In-Reply-To: <20071207145430.GA5992@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Richard Knutsson <ricknu-0@student.ltu.se>
-> Date: Thu, 06 Dec 2007 15:37:46 +0100
->
->   
->> David Miller wrote:
->>     
->>> But this time I'll just let you know up front that I
->>> don't see much value in this patch.  It is not a clear
->>> improvement to replace int's with bool's in my mind and
->>> the other changes are just whitespace changes.
->>>   
->>>       
->> Is it not an improvement to distinct booleans from actual values? Do you 
->> use integers for ASCII characters too? It can also avoid some potential 
->> bugs like the 'if (i == TRUE)'...
->> What is wrong with 'size_t' (since it is unsigned, compared to (some) 
->> 'int')?
->>     
->
-> When you say "int found;" is there any doubt in your mind that
-> this integer is going to hold a 1 or a 0 depending upon whether
-> we "found" something?
->
-> That's the problem I have with these kinds of patches, they do
-> not increase clarity, it's just pure mindless edits.
->   
-But is there not a good thing if also the compiler knows + names are 
-sometime not as clear as that one?
-> In new code, fine, use booleans if you want.
->
-> I would even accept that it helps to change to boolean for
-> arguments to functions that are global in scope.
->
-> But not for function local variables in cases like this.
->   
-Oh, I see your point now. Believed it to be yet another 'booleans is not 
-C idiom'.
+On 07-12-07 15:54, Andi Kleen wrote:
 
-Sorry about the noise
-Richard Knutsson
+>> My machine in question, for example, needs no waiting within CMOS_READs 
+>> at all.   And I doubt any other chip/device needs waiting that isn't 
+> 
+> I don't know about CMOS, but there were definitely some not too ancient
+> systems (let's say not more than 10 years) who required IO delays in the
+> floppy driver and the 8253/8259. But on those the jumps are already
+> far too fast.
 
+Also see Alan's replies in the thread I posted a link to:
+
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/5700.html
+
+Also 8254 (PIT) at least it seems.
+
+Rene.
