@@ -1,60 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXLGV6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbXLGWAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbXLGV6k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 16:58:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXLGV6b
+	id S1757757AbXLGWAn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXLGWAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 16:58:31 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:64405 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753899AbXLGV6a convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 16:58:30 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org, balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-Date: Fri, 7 Dec 2007 22:58:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20071207211425.10223.91240.sendpatchset@balbir-laptop> <4759BCBA.7060800@linux.vnet.ibm.com> <4759BE88.3020702@linux.vnet.ibm.com>
-In-Reply-To: <4759BE88.3020702@linux.vnet.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 7 Dec 2007 17:00:31 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40762 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755393AbXLGWAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:00:30 -0500
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX19bAroJ1vxbem0kwvT+ZwvmNL1Wj/tEOoJdJwpD6q
+	VZXVq09H+xjF56
+Date: Fri, 7 Dec 2007 23:00:25 +0100
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Andreas Ericsson <ae@op5.se>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: git guidance
+Message-ID: <20071207220025.GD2001@atjola.homenet>
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712070737.18519.a1426z@gawab.com> <475906F7.5010309@op5.se> <200712071353.11654.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary="2oS5YaxWCcQjTEyO"
 Content-Disposition: inline
-Message-Id: <200712072258.19331.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+6oO9O92vpDts4pGcX3clSV5y4MgdQ6nTZ1TW
- dXEP+6YCaNrSdePY8YV5mMsb97yGzP5mG5eAAcDzYJVBPF47io
- bmt+yBRTwpFXibfQDHNgQ==
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200712071353.11654.a1426z@gawab.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 December 2007, Balbir Singh wrote:
-> Balbir Singh wrote:
-> > Geert Uytterhoeven wrote:
-> >> On Sat, 8 Dec 2007, Balbir Singh wrote:
-> >>> +   if (strstr(p, "fake="))
-> >>> +           cmdline = p + 5;        /* 5 is faster than strlen("fake=") */
-> >> Really? My gcc is smart enough to replace the `strlen("fake=")' by 5, even
-> >> without -O.
-> >>
-> > 
-> > Thanks for pointing that out, but I am surprised that a compiler would
-> > interpret library routines like strlen.
-> > 
-> 
-> I just tested it and it turns out that you are right. I'll go hunt to
-> see where gcc gets its magic powers from.
-> 
 
-Even if it wasn't: Why the heck would you want to optimize this? The function
-is run _once_ at boot time and the object code gets thrown away afterwards!
+--2oS5YaxWCcQjTEyO
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-	Arnd <><
+On 2007.12.07 13:53:11 +0300, Al Boldi wrote:
+> Andreas Ericsson wrote:
+> > So, to get to the bottom of this, which of the following workflows is it
+> > you want git to support?
+> >
+> > ### WORKFLOW A ###
+> > edit, edit, edit
+> > edit, edit, edit
+> > edit, edit, edit
+> > Oops I made a mistake and need to hop back to "current - 12".
+> > edit, edit, edit
+> > edit, edit, edit
+> > publish everything, similar to just tarring up your workdir and sending
+> > out ### END WORKFLOW A ###
+> >
+> > ### WORKFLOW B ###
+> > edit, edit, edit
+> > ok this looks good, I want to save a checkpoint here
+> > edit, edit, edit
+> > looks good again. next checkpoint
+> > edit, edit, edit
+> > oh crap, back to checkpoint 2
+> > edit, edit, edit
+> > ooh, that's better. save a checkpoint and publish those checkpoints
+> > ### END WORKFLOW B ###
+> 
+> ### WORKFLOW C ###
+> for every save on a gitfs mounted dir, do an implied checkpoint, commit, or 
+> publish (should be adjustable), on its privately created on-the-fly 
+> repository.
+> ### END WORKFLOW C ###
+> 
+> For example:
+> 
+>   echo "// last comment on this file" >> /gitfs.mounted/file
+> 
+> should do an implied checkpoint, and make these checkpoints immediately 
+> visible under some checkpoint branch of the gitfs mounted dir.
+> 
+> Note, this way the developer gets version control without even noticing, and 
+> works completely transparent to any kind of application.
+
+Ouch... That looks worse than "plain" per-file versioning. Not only do
+you per definition get "broken" commits if there's a change that affects
+two dependent files, you also get an insane amount of commits just for
+testing stuff, or fixing bugs.
+
+And unless you use some kind of union-fs on top (or keep ignored files
+in special unversioned area in your gitfs, which seems somewhat ugly),
+you'll probably also have to track lots of files in the working
+directory that are generated, unless you want to re-generate them after
+each reboot. And that leads to even more absolutely useless revisions.
+
+Just thinking of my vim .swp files (which I definitely don't want to
+loose on a crash/power outtage/pkill -9 .<ENTER> dammit) makes me scream
+because of the gazillion of commits they will produce (and no, I don't
+want them in some special out of tree directory).
+
+Plus, I have vim setup to _replace_ files on write, so that I can more
+easily use hard-linked copies with changing all copies at once _unless_
+I explicitly want to, meaning that I'd get full remove/add commits,
+which are absolutely useless. And trying to detect such patterns
+(rename, then write the changed file with the old name and then delete
+the renamed file) is probably not worth the trouble, because you
+coincidently might _want_ to have just these three steps recorded when
+you happen to perform them manually. And if you go for heuristics,
+you'll complain each time you get a false-positive/negative.
+
+
+That said, out of pure curiousness I came up with the attached script
+which just uses inotifywait to watch a directory and issue git commands
+on certain events. It is extremely stupid, but seems to work. And at
+least it hasn't got the drawbacks of a real gitfs regarding the need to
+have a "separate" non-versioned storage area for the working directory,
+because it simply uses the existing working directory wherever that
+might be stored. It doesn't use GIT_DIR/WORK_DIR yet, but hey, should be
+easy to add...
+
+Feel free to mess with that thing, hey, maybe you even like it and
+extend it to match your proposed workflow even more. I for sure won't
+use or even extend it, so you're likely on your own there.
+
+Side-note: Writing that script probably took less time than writing this
+email and probably less time than was wasted on this topic. Makes me
+want to use today's preferred "Code talks, b...s... walks" statement,
+but I'll refrain from that... Just because I lack the credibility to say
+that, and the script attached is quite crappy ;-)
+
+Björn
+
+--2oS5YaxWCcQjTEyO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=git-watch
+
+#!/bin/bash
+inotifywait -m -r --exclude ^\./\.git/.* -e close_write -e move -e create -e delete . 2>/dev/null |
+while read FILE_PATH EVENT FILE_NAME
+do
+	FILE_NAME="$FILE_PATH$FILE_NAME"
+	FILE_NAME=${FILE_NAME#./}
+
+	# git doesn't care about directories
+	if [ -d "$FILE_NAME" ]
+	then
+		continue
+	fi
+
+	case "$EVENT" in
+		*CLOSE_WRITE*)
+		ACTION=change
+		;;
+		*MOVED_TO*)
+		ACTION=create
+		;;
+		*MODIFY*)
+		ACTION=change
+		;;
+		*DELETE*)
+		ACTION=delete
+		;;
+		*MOVED_FROM*)
+		ACTION=delete
+		;;
+		*CREATE*)
+		ACTION=create
+		;;
+		*)
+		continue
+		;;
+	esac
+
+	case $ACTION in
+		create)
+		git add "$FILE_NAME"
+		git commit -m "$FILE_NAME created"
+		;;
+		delete)
+		git rm --cached "$FILE_NAME"
+		git commit -m "$FILE_NAME removed"
+		;;
+		change)
+		git add "$FILE_NAME"
+		git commit -m "$FILE_NAME changed"
+		;;
+	esac
+done
+
+--2oS5YaxWCcQjTEyO--
