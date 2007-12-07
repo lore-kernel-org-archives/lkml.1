@@ -1,210 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbXLGSEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXLGSGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbXLGSEf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbXLGSE1
+	id S1756705AbXLGSGu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbXLGSGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:04:27 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:2076 "EHLO ra.tuxdriver.com"
+	Fri, 7 Dec 2007 13:06:41 -0500
+Received: from mail.tmr.com ([64.65.253.246]:44476 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbXLGSE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:04:26 -0500
-Date: Fri, 7 Dec 2007 12:58:32 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Neil Horman <nhorman@redhat.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ben Woodard <woodard@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       Andi Kleen <andi@firstfloor.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>, nhorman@tuxdriver.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
-	boot cpu
-Message-ID: <20071207175832.GA18485@hmsreliant.think-freely.org>
-References: <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com>
+	id S1753811AbXLGSGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 13:06:40 -0500
+Message-ID: <47598F94.6090305@tmr.com>
+Date: Fri, 07 Dec 2007 13:23:16 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071207142144.GA10389@hmsendeavour.rdu.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, apiszcz@solarrain.com
+Subject: Re: 2.6.23.9: x86_64: floppy not working: p35 chipset
+References: <Pine.LNX.4.64.0712060435500.6948@p34.internal.lan> <47598CAD.40100@tmr.com> <Pine.LNX.4.64.0712071254580.26042@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0712071254580.26042@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 09:21:44AM -0500, Neil Horman wrote:
-> On Fri, Dec 07, 2007 at 01:22:04AM -0800, Yinghai Lu wrote:
-> > On Dec 7, 2007 12:50 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > >
-> > > On Dec 6, 2007 4:33 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> > ...
-> > > >
-> > > > My feel is that if it is for legacy interrupts only it should not be a problem.
-> > > > Let's investigate and see if we can unconditionally enable this quirk
-> > > > for all opteron systems.
-> > >
-> > > i checked that bit
-> > >
-> > > http://www.openbios.org/viewvc/trunk/LinuxBIOSv2/src/northbridge/amd/amdk8/coherent_ht.c?revision=2596&view=markup
-<snip>
-> > 
-> > it should be bit 18 (HTTC_APIC_EXT_ID)
-> > 
-> > 
-> > YH
-> 
-> this seems reasonable, I can reroll the patch for this.  As I think about it I'm
-> also going to update the patch to make this check occur for any pci class 0600
-> device from vendor AMD, since its possible that more than just nvidia chipsets
-> can be affected.
-> 
-> I'll repost as soon as I've tested, thanks!
-> Neil
+Justin Piszcz wrote:
+>
+>
+> On Fri, 7 Dec 2007, Bill Davidsen wrote:
+>
+>> Justin Piszcz wrote:
+>>> Trying to format a floppy (2-3 of them) on a GA-P35-DS4 2.0 with a 
+>>> regular Sony floppy on Debian x86_64 with kernel 2.6.23.9:
+>>>
+>>> # fdformat /dev/fd0
+>>> Could not determine current format type: No such device
+>>> # mformat a:
+>>> mformat: Could not get geometry of device (No such device)
+>>> #
+>>>
+>>> # cat /proc/interrupts |grep floppy
+>>>   6:         38         37         39         41   IO-APIC-edge      
+>>> floppy
+>>>
+>>> # dmesg|grep -A1 fd0
+>>> [   52.689487] Floppy drive(s): fd0 is 1.44M
+>>> [   52.704661] FDC 0 is a post-1991 82077
+>>>
+>>> During the 'attempted format'
+>>>
+>>
+>>>
+>>> I've tried a few different floppies, the result is the same.  The 
+>>> system is 64-bit only, no 32-bit emulation is enabled using a strict 
+>>> 64-bit-only userland.  Has anyone else gotten their floppy drive to 
+>>> work under 64-bit?
+>>>
+>>> Is this just a case of a DOA floppy drive or is something else wrong?
+>>>
+>> Maybe booting from a 32 bit live CD would help determine that. It 
+>> certainly was seen at boot time. Didn't get hooked to some SCSI 
+>> device name by udev, did it?
+>>
+>>
+>> -- 
+>> Bill Davidsen <davidsen@tmr.com>
+>>  "We have more to fear from the bungling of the incompetent than from
+>> the machinations of the wicked."  - from Slashdot
+>>
+>
+> Retried with some other floppies and later tried the original, 
+> everything seems to be working now, must have been a bad floppy/some 
+> transient issue.
+
+Great! I did test that FC8 with a Fedora kernel will see and use the 
+floppy. Even found a floppy to use. Now I have to figure out why I have 
+a floppy with a gzipped ext2 filesystem on it. :-(
+Doesn't appear to be bootable, I thought it might be SYSLINUX for an old 
+system which couldn't boot from CD or USB, but that doesn't seem to be 
+the case.
+
+Anyway, glad the problem went away.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
 
-Ok, New patch attached.  It preforms the same function as previously described,
-but is more restricted in its application.  As Yinghai pointed out, the
-broadcast mask bit (bit 17 in the htcfg register) should only be enabled, if the
-extened apic id bit (bit 18 in the same register) is also set.  So this patch
-now check for that bit to be turned on first.  Also, this patch now adds an
-independent quirk check for all AMD hypertransport host controllers, since its
-possible for this misconfiguration to be present in systems other than nvidias.
-The net effect of these changes is, that its now applicable to all AMD systems
-containing hypertransport busses, and is only activated if extended apic ids are
-in use, meaning that this quirk guarantees that all processors in a system are
-elligible to receive interrupts from the ioapic, even if their apicid extends
-beyond the nominal 4 bit limitation.  Tested successfully by me.
-
-Thanks & Regards
-Neil
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-
-
- early-quirks.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 76 insertions(+), 7 deletions(-)
-
-
-
-diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
-index 88bb83e..d5a7b30 100644
---- a/arch/x86/kernel/early-quirks.c
-+++ b/arch/x86/kernel/early-quirks.c
-@@ -44,6 +44,50 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
- #endif /* CONFIG_X86_IO_APIC */
- #endif /* CONFIG_ACPI */
- 
-+static void __init fix_hypertransport_config(int num, int slot, int func)
-+{
-+	u32 htcfg;
-+	/*
-+	 *we found a hypertransport bus
-+	 *make sure that are broadcasting
-+	 *interrupts to all cpus on the ht bus
-+	 *if we're using extended apic ids
-+	 */
-+	htcfg = read_pci_config(num, slot, func, 0x68);
-+	if ((htcfg & (1 << 18)) == 1) {	
-+		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
-+		if ((htcfg & (1 << 17)) == 0) {
-+			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
-+			htcfg |= (1 << 17);
-+			write_pci_config(num, slot, func, 0x68, htcfg);
-+		}
-+	}
-+	
-+}
-+
-+static void __init check_hypertransport_config()
-+{
-+	int num, slot, func;
-+	u32 device, vendor;
-+	func = 0;
-+	for (num = 0; num < 32; num++) {
-+		for (slot = 0; slot < 32; slot++) {
-+			vendor = read_pci_config(num,slot,func,
-+						PCI_VENDOR_ID); 
-+			device = read_pci_config(num,slot,func,
-+						PCI_DEVICE_ID);
-+			vendor &= 0x0000ffff;
-+			device >>= 16;
-+			if ((vendor == PCI_VENDOR_ID_AMD) &&
-+			    (device == PCI_DEVICE_ID_AMD_K8_NB))
-+				fix_hypertransport_config(num,slot,func);
-+		}
-+	}
-+
-+	return;
-+
-+}
-+
- static void __init nvidia_bugs(void)
- {
- #ifdef CONFIG_ACPI
-@@ -83,6 +127,12 @@ static void __init ati_bugs(void)
- #endif
- }
- 
-+static void __init amd_host_bugs(void)
-+{
-+	printk(KERN_CRIT "IN AMD_HOST_BUGS\n");
-+	check_hypertransport_config();
-+}
-+
- struct chipset {
- 	u16 vendor;
- 	void (*f)(void);
-@@ -95,9 +145,16 @@ static struct chipset early_qrk[] __initdata = {
- 	{}
- };
- 
-+static struct chipset early_host_qrk[] __initdata = {
-+	{ PCI_VENDOR_ID_AMD, amd_host_bugs},
-+	{}
-+};
-+
- void __init early_quirks(void)
- {
- 	int num, slot, func;
-+	u8 found_bridge = 0;
-+	u8 found_host = 0;
- 
- 	if (!early_pci_allowed())
- 		return;
-@@ -115,18 +172,30 @@ void __init early_quirks(void)
- 				if (class == 0xffffffff)
- 					break;
- 
--				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
-+				class >>= 16;
-+				if ((class != PCI_CLASS_BRIDGE_PCI) &&
-+				    (class != PCI_CLASS_BRIDGE_HOST))
- 					continue;
- 
- 				vendor = read_pci_config(num, slot, func,
- 							 PCI_VENDOR_ID);
- 				vendor &= 0xffff;
--
--				for (i = 0; early_qrk[i].f; i++)
--					if (early_qrk[i].vendor == vendor) {
--						early_qrk[i].f();
--						return;
--					}
-+				if ((class == PCI_CLASS_BRIDGE_PCI) && (!found_bridge)) {
-+					for (i = 0; early_qrk[i].f; i++)
-+						if (early_qrk[i].vendor == vendor) {
-+							early_qrk[i].f();
-+							found_bridge = 1;;
-+						}
-+				} else if (!found_host) {
-+					for (i = 0; early_host_qrk[i].f; i++)
-+						if (early_host_qrk[i].vendor == vendor) {
-+							early_host_qrk[i].f();
-+							found_host = 1;
-+						}
-+				}
-+
-+				if (found_bridge && found_host)
-+					return;
- 
- 				type = read_pci_config_byte(num, slot, func,
- 							    PCI_HEADER_TYPE);
