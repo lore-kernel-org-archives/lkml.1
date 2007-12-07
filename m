@@ -1,98 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbXLGAfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbXLGAiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbXLGAfV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 19:35:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbXLGAfG
+	id S1755596AbXLGAiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 19:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXLGAhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 19:35:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44867 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752807AbXLGAfD (ORCPT
+	Thu, 6 Dec 2007 19:37:52 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35046 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbXLGAhv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 19:35:03 -0500
-Date: Thu, 6 Dec 2007 16:33:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: rct@frus.com (Bob Tracy)
-Cc: mingo@elte.hu, mcree@orcon.net.nz, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-scsi@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Message-Id: <20071206163305.c3587675.akpm@linux-foundation.org>
-In-Reply-To: <20071207001612.39E36DBA2@gherkin.frus.com>
-References: <20071204121618.GA26132@elte.hu>
-	<20071207001612.39E36DBA2@gherkin.frus.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Dec 2007 19:37:51 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Neil Horman <nhorman@tuxdriver.com>, Neil Horman <nhorman@redhat.com>,
+       Ben Woodard <woodard@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071127200011.GA3703@redhat.com>
+	<20071127222408.GH24223@one.firstfloor.org>
+	<474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com>
+	<20071128160206.GA21286@hmsendeavour.rdu.redhat.com>
+	<20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com>
+	<20071130144250.GC23810@redhat.com>
+	<20071130145131.GB5822@hmsendeavour.rdu.redhat.com>
+	<20071206213951.GB28898@hmsreliant.think-freely.org>
+	<20071206221143.GC2863@redhat.com>
+Date: Thu, 06 Dec 2007 17:33:31 -0700
+In-Reply-To: <20071206221143.GC2863@redhat.com> (Vivek Goyal's message of
+	"Thu, 6 Dec 2007 17:11:43 -0500")
+Message-ID: <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2007 18:16:12 -0600 (CST)
-rct@frus.com (Bob Tracy) wrote:
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-> OK.  Finally have this thing painted into a corner: git has identified
-> 6f37ac793d6ba7b35d338f791974166f67fdd9ba as the first bad commit.
-> 
-> >From "git bisect log", this corresponds to 
-> 
-> # bad: [6f37ac793d6ba7b35d338f791974166f67fdd9ba] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-> 
-> Here's the full log:
-> 
-> git-bisect start
-> # good: [9aae299f7fd1888ea3a195cfe0edef17bb647415] Linux 2.6.24-rc2
-> git-bisect good 9aae299f7fd1888ea3a195cfe0edef17bb647415
-> # bad: [f05092637dc0d9a3f2249c9b283b973e6e96b7d2] Linux 2.6.24-rc3
-> git-bisect bad f05092637dc0d9a3f2249c9b283b973e6e96b7d2
-> # good: [e6a5c27f3b0fef72e528fc35e343af4b2db790ff] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm
-> git-bisect good e6a5c27f3b0fef72e528fc35e343af4b2db790ff
-> # good: [42614fcde7bfdcbe43a7b17035c167dfebc354dd] vmstat: fix section mismatch warning
-> git-bisect good 42614fcde7bfdcbe43a7b17035c167dfebc354dd
-> # bad: [a052f4473603765eb6b4c19754689977601dc1d1] Merge git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86
-> git-bisect bad a052f4473603765eb6b4c19754689977601dc1d1
-> # good: [d8e5219f9f5ca7518eb820db9f3d287a1d46fcf5] CRISv10 improve and bugfix fasttimer
-> git-bisect good d8e5219f9f5ca7518eb820db9f3d287a1d46fcf5
-> # good: [d90bf5a976793edfa88d3bb2393f0231eb8ce1e5] [NET]: rt_check_expire() can take a long time, add a cond_resched()
-> git-bisect good d90bf5a976793edfa88d3bb2393f0231eb8ce1e5
-> # good: [2a113281f5cd2febbab21a93c8943f8d3eece4d3] kconfig: use $K64BIT to set 64BIT with all*config targets
-> git-bisect good 2a113281f5cd2febbab21a93c8943f8d3eece4d3
-> # good: [2e2cd8bad6e03ceea73495ee6d557044213d95de] CRISv10 memset library add lineendings to asm
-> git-bisect good 2e2cd8bad6e03ceea73495ee6d557044213d95de
-> # bad: [6f37ac793d6ba7b35d338f791974166f67fdd9ba] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-> git-bisect bad 6f37ac793d6ba7b35d338f791974166f67fdd9ba
-> # good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
-> git-bisect good 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3
+> On Thu, Dec 06, 2007 at 04:39:51PM -0500, Neil Horman wrote:
+>> On Fri, Nov 30, 2007 at 09:51:31AM -0500, Neil Horman wrote:
+>> > On Fri, Nov 30, 2007 at 09:42:50AM -0500, Vivek Goyal wrote:
+>> <snip>
+>> > 
+>> > Thats what I'm doing at the moment.  I'm working on a RHEL5 patch at the
+> moment
+>> > (since thats whats on the production system thats failing), and will forward
+>> > port it once its working
+>> > 
+>> > And not to split hairs, but techically thats not our _only_ choice.  We
+> could
+>> > force kdump boots on cpu0 as well ;)
+>> > 
+>> > Thanks
+>> > Neil
+>> > 
+>> > > Thanks
+>> > > Vivek
+>> > 
+>> 
+>> 
+>> Sorry to have been quiet on this issue for a few days. Interesting news to
+>> report, though.  So I was working on a patch to do early apic enabling on
+>> x86_64, and had something working for the old 2.6.18 kernel that we were
+>> origionally testing on.  Unfortunately while it worked on 2.6.18 it failed
+>> miserably on 2.6.24-rc3-mm2, causing check_timer to consistently report that
+> the
+>> timer interrupt wasn't getting received (even though we could successfully run
+>> calibrate_delay).  Vivek and I were digging into this, when I ran accross the
+>> description of the hypertransport configuration register in the opteron
+>> specification.  It contains a bit that, suprise, configures the ht bus to
+> either
+>> unicast interrupts delivered accross the ht bus to a single cpu, or to
+> broadcast
+>> it to all cpus.  Since it seemed more likely that the 8259 in the nvidia
+>> southbridge was transporting legacy mode interrupts over the ht bus than
+>> directly to cpu0 via an actual wire, I wrote the attached patch to add a quirk
+>> for nvidia chipsets, which scanned for hypertransport controllers, and ensured
+>> that that broadcast bit was set.  Test results indicate that this solves the
+>> problem, and kdump kernels boot just fine on the affected system.
+>> 
+>
+> Hi Neil,
+>
+> Should we disable this broadcasting feature once we are through? Otherwise
+> in normal systems it might mean extra traffic on hypertransport. There
+> is no need for every interrupt to be broadcasted in normal systems?
 
-commit 6f37ac793d6ba7b35d338f791974166f67fdd9ba
-Merge: 2f1f53b... d90bf5a...
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Wed Nov 14 18:51:48 2007 -0800
+My feel is that if it is for legacy interrupts only it should not be a problem.
+Let's investigate and see if we can unconditionally enable this quirk
+for all opteron systems.
 
-    Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/n
-    
-    * 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6:
-      [NET]: rt_check_expire() can take a long time, add a cond_resched()
-      [ISDN] sc: Really, really fix warning
-      [ISDN] sc: Fix sndpkt to have the correct number of arguments
-      [TCP] FRTO: Clear frto_highmark only after process_frto that uses it
-      [NET]: Remove notifier block from chain when register_netdevice_notifier f
-      [FS_ENET]: Fix module build.
-      [TCP]: Make sure write_queue_from does not begin with NULL ptr
-      [TCP]: Fix size calculation in sk_stream_alloc_pskb
-      [S2IO]: Fixed memory leak when MSI-X vector allocation fails
-      [BONDING]: Fix resource use after free
-      [SYSCTL]: Fix warning for token-ring from sysctl checker
-      [NET] random : secure_tcp_sequence_number should not assume CONFIG_KTIME_S
-      [IWLWIFI]: Not correctly dealing with hotunplug.
-      [TCP] FRTO: Plug potential LOST-bit leak
-      [TCP] FRTO: Limit snd_cwnd if TCP was application limited
-      [E1000]: Fix schedule while atomic when called from mii-tool.
-      [NETX]: Fix build failure added by 2.6.24 statistics cleanup.
-      [EP93xx_ETH]: Build fix after 2.6.24 NAPI changes.
-      [PKT_SCHED]: Check subqueue status before calling hard_start_xmit
-
-I'm struggling to see how any of those could have broken block device
-mounting on alpha.  Are you sure you bisected right?
-
+Eric
