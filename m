@@ -1,159 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXLGCMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXLGCNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbXLGCMq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 21:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbXLGCMh
+	id S1753199AbXLGCNH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 21:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbXLGCMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 21:12:37 -0500
-Received: from mu-out-0910.google.com ([209.85.134.187]:41154 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbXLGCMg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 21:12:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=HGO/vBPiXUC+UauGpDlyHqmV4IWIRT469CmiFM4gWh7x0t414r6u8wAqCwIm6+fmFxVfMTxn7k4eKGYqzaC8CXMX6NSOHJkSIMIJ5Wmzmwf/sr1YlmjzpT78VN5nJChC6aZ0nk/w2eKL9AcUft955UGF3YY3O0Rk/yDRnILTIaA=
-Date: Fri, 7 Dec 2007 10:12:58 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com, mickflemm@gmail.com,
-       mcgrof@gmail.com, linux-wireless@vger.kernel.org,
-       ath5k-devel@lists.ath5k.org
-Subject: Re: 2.6.24-rc4-mm1
-Message-ID: <20071207021258.GA12624@darkstar.lan>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	Thu, 6 Dec 2007 21:12:54 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:35775 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754393AbXLGCMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 21:12:53 -0500
+Message-ID: <4758AC23.2080107@garzik.org>
+Date: Thu, 06 Dec 2007 21:12:51 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Tom Lanyon <tomlanyon@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Failure with SATA DVD-RW
+References: <cd32a0620712041608o7733db74xf4975dec44925730@mail.gmail.com>
+In-Reply-To: <cd32a0620712041608o7733db74xf4975dec44925730@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tom Lanyon wrote:
+> Hi list,
+> 
+> Just built a new machine with a Pioneer SATA DVD drive and linux
+> distro install CDs are not recognising it. The drive is connected to
+> the ICH9R southbridge of an Intel P35 chipset motherboard.
+> 
+> I can boot from the CD/DVD so the drive itself is working, but the
+> kernel reports the following:
+> 
+> scsi4: ahci
+> ata5: SATA link up at 1.5 Gbps (SStatus 113 SControl 300)
+> ata5.00: ATAPI, max UDMA/66
+> ata5.00: qc timeout (cmd 0xef)
+> ata5.00: failed to set xfermode (err_mask=0x104)
+> ata5.00: limiting speed to UDMA/44
+> ata5: failed to recover some devices, retrying in 5 secs
+> ata5: port is slow to respond, please be patient (Status 0x80)
+> ata5: port failed to respond (30 secs, status 0x80)
+> ata5: COMRESET failed (device not ready)
+> ata5: hardreset failed, retrying in 5 secs
+> ata5: SATA link up at 1.5 Gbps (SStatus 113 SControl 300)
+> ata5.00: ATAPI, max UDMA/66
+> ata5.00: qc timeout (cmd 0xef)
+> ata5.00: failed to set xfermode (err_mask=0x104)
+> ata5.00: limiting speed to PIO0
+> ata5: failed to recover some devices, retrying in 5 secs
+> ata5: port is slow to respond, please be patient (Status 0x80)
+> ata5: port failed to respond (30 secs, status 0x80)
+> ata5: COMRESET failed (device not ready)
+> ata5: hardreset failed, retrying in 5 secs
+> ata5.00: ATAPI, max UDMA/66
+> ata5.00: qc timeout (cmd 0xef)
+> ata5.00: failed to set xfermode (err_mask=0x104)
+> ata5.00: disabled
+> 
+> This is 2.6.19 (probably with a few distribution patches) on an
+> install CD. I also tried setting the SATA controller to a 'compatible
+> IDE' mode and the hard drives and DVD drive are detected and work
+> properly.
+> 
+> Any ideas what to try to get it working under AHCI?
 
-2.6.24-rc4-mm1 build failed at drivers/net/wireless/ath5k/base.c for some inline functions like this:
-drivers/net/wireless/ath5k/base.c:292: sorry, unimplemented: inlining failed in call to 'ath5k_extend_tsf': function body not available
+How does a remotely recent kernel behave?  :)
 
-fix it with adjust the order of inline function body.
+There have been a metric ton^2 of fixes in this specific area, in the 12 
+months since 2.6.19 came out.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+	Jeff
 
----
-drivers/net/wireless/ath5k/base.c |   67 ++++++++++++++++----------------------
-1 file changed, 29 insertions(+), 38 deletions(-)
 
-diff -upr linux/drivers/net/wireless/ath5k/base.c linux.new/drivers/net/wireless/ath5k/base.c
---- linux/drivers/net/wireless/ath5k/base.c	2007-12-07 10:01:42.000000000 +0800
-+++ linux.new/drivers/net/wireless/ath5k/base.c	2007-12-07 10:01:49.000000000 +0800
-@@ -250,8 +250,19 @@ static int 	ath5k_rxbuf_setup(struct ath
- static int 	ath5k_txbuf_setup(struct ath5k_softc *sc,
- 				struct ath5k_buf *bf,
- 				struct ieee80211_tx_control *ctl);
-+
- static inline void ath5k_txbuf_free(struct ath5k_softc *sc,
--				struct ath5k_buf *bf);
-+				struct ath5k_buf *bf)
-+{
-+	BUG_ON(!bf);
-+	if (!bf->skb)
-+		return;
-+	pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
-+			PCI_DMA_TODEVICE);
-+	dev_kfree_skb(bf->skb);
-+	bf->skb = NULL;
-+}
-+
- /* Queues setup */
- static struct 	ath5k_txq *ath5k_txq_setup(struct ath5k_softc *sc,
- 				int qtype, int subtype);
-@@ -278,14 +289,29 @@ static int 	ath5k_beacon_setup(struct at
- 				struct ieee80211_tx_control *ctl);
- static void 	ath5k_beacon_send(struct ath5k_softc *sc);
- static void 	ath5k_beacon_config(struct ath5k_softc *sc);
--static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp);
-+
-+static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
-+{
-+	u64 tsf = ath5k_hw_get_tsf64(ah);
-+
-+	if ((tsf & 0x7fff) < rstamp)
-+		tsf -= 0x8000;
-+
-+	return (tsf & ~0x7fff) | rstamp;
-+}
-+
- /* Interrupt handling */
- static int 	ath5k_init(struct ath5k_softc *sc);
- static int 	ath5k_stop_locked(struct ath5k_softc *sc);
- static int 	ath5k_stop_hw(struct ath5k_softc *sc);
- static irqreturn_t ath5k_intr(int irq, void *dev_id);
- static void 	ath5k_tasklet_reset(unsigned long data);
--static inline void ath5k_update_txpow(struct ath5k_softc *sc);
-+
-+static inline void ath5k_update_txpow(struct ath5k_softc *sc)
-+{
-+	ath5k_hw_set_txpower_limit(sc->ah, 0);
-+}
-+
- static void 	ath5k_calibrate(unsigned long data);
- /* LED functions */
- static void 	ath5k_led_off(unsigned long data);
-@@ -1341,21 +1367,6 @@ err_unmap:
- 	return ret;
- }
- 
--static inline void
--ath5k_txbuf_free(struct ath5k_softc *sc, struct ath5k_buf *bf)
--{
--	BUG_ON(!bf);
--	if (!bf->skb)
--		return;
--	pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
--			PCI_DMA_TODEVICE);
--	dev_kfree_skb(bf->skb);
--	bf->skb = NULL;
--}
--
--
--
--
- /**************\
- * Queues setup *
- \**************/
-@@ -2046,20 +2057,6 @@ ath5k_beacon_config(struct ath5k_softc *
- #undef TSF_TO_TU
- }
- 
--static inline
--u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
--{
--	u64 tsf = ath5k_hw_get_tsf64(ah);
--
--	if ((tsf & 0x7fff) < rstamp)
--		tsf -= 0x8000;
--
--	return (tsf & ~0x7fff) | rstamp;
--}
--
--
--
--
- /********************\
- * Interrupt handling *
- \********************/
-@@ -2295,12 +2292,6 @@ ath5k_tasklet_reset(unsigned long data)
- 	ath5k_reset(sc->hw);
- }
- 
--static inline void
--ath5k_update_txpow(struct ath5k_softc *sc)
--{
--	ath5k_hw_set_txpower_limit(sc->ah, 0);
--}
--
- /*
-  * Periodically recalibrate the PHY to account
-  * for temperature/environment changes.
