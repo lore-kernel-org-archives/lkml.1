@@ -1,83 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXLHDIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbXLHDIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbXLHDIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 22:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXLHDIN
+	id S1757676AbXLHDIu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 22:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbXLHDIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 22:08:13 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7814 "EHLO
+	Fri, 7 Dec 2007 22:08:14 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:7816 "EHLO
 	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753115AbXLHDIL (ORCPT
+	with ESMTP id S1753297AbXLHDIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Dec 2007 22:08:11 -0500
-Message-Id: <20071208025620.470633411@mvista.com>
+Message-Id: <20071208025623.282441997@mvista.com>
+References: <20071208025620.470633411@mvista.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 07 Dec 2007 00:00:01 -0800
-Subject: [PATCH 1/4] media: video: usbvision: remove ctrlUrbLock
-Message-Id: <20071208025608.631609481@mvista.com>
+Date: Fri, 07 Dec 2007 00:00:04 -0800
+Subject: [PATCH 4/4] md: dm driver: suspend_lock semaphore to mutex
+References: <20071208025608.631609481@mvista.com>
 User-Agent: quilt/0.46-1
 From: Daniel Walker <dwalker@mvista.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, linux@bohmer.net,
        jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
        kjwinchester@gmail.com
-Content-Disposition: inline; filename=usbvision-video-remove-CtrlUrbLock.patch
+Content-Disposition: inline; filename=md-suspend_lock-semaphore-to-mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ctrlUrbLock has all it's users commented out, and so it's unused.
-This patch removes it.
-
 Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
 ---
- drivers/media/video/usbvision/usbvision-core.c  |    3 ---
- drivers/media/video/usbvision/usbvision-video.c |    1 -
- drivers/media/video/usbvision/usbvision.h       |    1 -
- 3 files changed, 5 deletions(-)
+ drivers/md/dm.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.23/drivers/media/video/usbvision/usbvision-core.c
+Index: linux-2.6.23/drivers/md/dm.c
 ===================================================================
---- linux-2.6.23.orig/drivers/media/video/usbvision/usbvision-core.c
-+++ linux-2.6.23/drivers/media/video/usbvision/usbvision-core.c
-@@ -1561,13 +1561,10 @@ static int usbvision_write_reg_irq(struc
- 	if (len > 8) {
- 		return -EFAULT;
- 	}
--//	down(&usbvision->ctrlUrbLock);
- 	if (usbvision->ctrlUrbBusy) {
--//		up(&usbvision->ctrlUrbLock);
- 		return -EBUSY;
- 	}
- 	usbvision->ctrlUrbBusy = 1;
--//	up(&usbvision->ctrlUrbLock);
+--- linux-2.6.23.orig/drivers/md/dm.c
++++ linux-2.6.23/drivers/md/dm.c
+@@ -73,7 +73,7 @@ union map_info *dm_get_mapinfo(struct bi
  
- 	usbvision->ctrlUrbSetup.bRequestType = USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT;
- 	usbvision->ctrlUrbSetup.bRequest     = USBVISION_OP_CODE;
-Index: linux-2.6.23/drivers/media/video/usbvision/usbvision-video.c
-===================================================================
---- linux-2.6.23.orig/drivers/media/video/usbvision/usbvision-video.c
-+++ linux-2.6.23/drivers/media/video/usbvision/usbvision-video.c
-@@ -1650,7 +1650,6 @@ static struct usb_usbvision *usbvision_a
- 		goto err_exit;
- 	}
- 	init_waitqueue_head(&usbvision->ctrlUrb_wq);
--	init_MUTEX(&usbvision->ctrlUrbLock);	/* to 1 == available */
+ struct mapped_device {
+ 	struct rw_semaphore io_lock;
+-	struct semaphore suspend_lock;
++	struct mutex suspend_lock;
+ 	spinlock_t pushback_lock;
+ 	rwlock_t map_lock;
+ 	atomic_t holders;
+@@ -982,7 +982,7 @@ static struct mapped_device *alloc_dev(i
  
- 	usbvision_init_powerOffTimer(usbvision);
+ 	memset(md, 0, sizeof(*md));
+ 	init_rwsem(&md->io_lock);
+-	init_MUTEX(&md->suspend_lock);
++	mutex_init(&md->suspend_lock);
+ 	spin_lock_init(&md->pushback_lock);
+ 	rwlock_init(&md->map_lock);
+ 	atomic_set(&md->holders, 1);
+@@ -1270,7 +1270,7 @@ int dm_swap_table(struct mapped_device *
+ {
+ 	int r = -EINVAL;
  
-Index: linux-2.6.23/drivers/media/video/usbvision/usbvision.h
-===================================================================
---- linux-2.6.23.orig/drivers/media/video/usbvision/usbvision.h
-+++ linux-2.6.23/drivers/media/video/usbvision/usbvision.h
-@@ -374,7 +374,6 @@ struct usb_usbvision {
- 	int ctrlUrbBusy;
- 	struct usb_ctrlrequest ctrlUrbSetup;
- 	wait_queue_head_t ctrlUrb_wq;					// Processes waiting
--	struct semaphore ctrlUrbLock;
+-	down(&md->suspend_lock);
++	mutex_lock(&md->suspend_lock);
  
- 	/* configuration part */
- 	int have_tuner;
+ 	/* device must be suspended */
+ 	if (!dm_suspended(md))
+@@ -1285,7 +1285,7 @@ int dm_swap_table(struct mapped_device *
+ 	r = __bind(md, table);
+ 
+ out:
+-	up(&md->suspend_lock);
++	mutex_unlock(&md->suspend_lock);
+ 	return r;
+ }
+ 
+@@ -1341,7 +1341,7 @@ int dm_suspend(struct mapped_device *md,
+ 	int do_lockfs = suspend_flags & DM_SUSPEND_LOCKFS_FLAG ? 1 : 0;
+ 	int noflush = suspend_flags & DM_SUSPEND_NOFLUSH_FLAG ? 1 : 0;
+ 
+-	down(&md->suspend_lock);
++	mutex_lock(&md->suspend_lock);
+ 
+ 	if (dm_suspended(md))
+ 		goto out_unlock;
+@@ -1462,7 +1462,7 @@ out:
+ 	dm_table_put(map);
+ 
+ out_unlock:
+-	up(&md->suspend_lock);
++	mutex_unlock(&md->suspend_lock);
+ 	return r;
+ }
+ 
+@@ -1472,7 +1472,7 @@ int dm_resume(struct mapped_device *md)
+ 	struct bio *def;
+ 	struct dm_table *map = NULL;
+ 
+-	down(&md->suspend_lock);
++	mutex_lock(&md->suspend_lock);
+ 	if (!dm_suspended(md))
+ 		goto out;
+ 
+@@ -1508,7 +1508,7 @@ int dm_resume(struct mapped_device *md)
+ 
+ out:
+ 	dm_table_put(map);
+-	up(&md->suspend_lock);
++	mutex_unlock(&md->suspend_lock);
+ 
+ 	return r;
+ }
 
 -- 
