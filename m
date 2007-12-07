@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbXLGElB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXLGEmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbXLGElB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 23:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbXLGEkv
+	id S1754059AbXLGEmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 23:42:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbXLGEmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 23:40:51 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:27640 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbXLGEku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 23:40:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WJGsRB3L/nyV1spazA1pgvPfBxrOhkIHOWHYBO8JyWtoUNX2tvQVEfY4BTk2WtKaoCnhHJPR0Gdttw4RNeDmj2YfqbOk+tBP5KU0prmT1i7v8ocOeBA43NDVAQqHuN7dWHAEu4dJRoXmsvYFE9rbI3i+T+gDDJitl6OVvMkW88c=
-Message-ID: <6934efce0712062040j22805c86t678a0d3c78be9305@mail.gmail.com>
-Date: Thu, 6 Dec 2007 20:40:49 -0800
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Rob Landley" <rob@landley.net>
-Subject: Re: [patch] ext2: xip check fix
-Cc: carsteno@de.ibm.com, "Nick Piggin" <npiggin@suse.de>,
-       "Christian Borntraeger" <borntraeger@de.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jens Axboe" <axboe@kernel.dk>
-In-Reply-To: <200712062217.40355.rob@landley.net>
+	Thu, 6 Dec 2007 23:42:32 -0500
+Received: from [212.12.190.105] ([212.12.190.105]:40442 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752973AbXLGEmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 23:42:31 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Subject: Re: git guidance
+Date: Fri, 7 Dec 2007 07:37:18 +0300
+User-Agent: KMail/1.5
+Cc: Andreas Ericsson <ae@op5.se>, Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712072155.04643.a1426z@gawab.com> <Pine.LNX.4.64.0712062119090.21625@wbgn129.biozentrum.uni-wuerzburg.de>
+In-Reply-To: <Pine.LNX.4.64.0712062119090.21625@wbgn129.biozentrum.uni-wuerzburg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071204042628.GA26636@wotan.suse.de>
-	 <200712061211.49443.rob@landley.net>
-	 <6934efce0712061922j682cee55pc1d5d079465f4849@mail.gmail.com>
-	 <200712062217.40355.rob@landley.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712070737.18519.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Um, trying to clarify:  S390.  Also known as zSeries, big iron machine, uses
-> its own weird processor design rather than x86, x86-64, arm, or mips
-> processors.
+Johannes Schindelin wrote:
+> Hi,
 
-Right.  filemap_xip.c allows for an XIP filesystem.  The only
-filesystem that is supported is ext2.  Even that requires a block
-device driver thingy, which I don't understand, that's specific to the
-s390.
+Hi
 
-> How does "struct page" enter into this?
+> On Fri, 7 Dec 2007, Al Boldi wrote:
+> > You need to re-read the thread.
+>
+> I don't know why you write that, and then say thanks.  Clearly, what you
+> wrote originally, and what Andreas pointed out, were quite obvious
+> indicators that git already does what you suggest.
+>
+> You _do_ work "transparently" (whatever you understand by that overused
+> term) in the working directory, unimpeded by git.
 
-Don't sweat it, it has to do with the way filemap_xip.c works.
+If you go back in the thread, you may find a link to a gitfs client that 
+somebody kindly posted.  This client pretty much defines the transparency 
+I'm talking about.  The only problem is that it's read-only.
 
-> What I want to know is, are you saying execute in place doesn't work on things
-> like arm and mips?  (I so, I was unaware of this.  I heard about somebody
-> getting it to work on a Nintendo DS:
-> http://forums.maxconsole.net/showthread.php?t=18668 )
+To make it really useful, it has to support versioning locally, disconnected 
+from the server repository.  One way to implement this, could be by 
+committing every update unconditionally to an on-the-fly created git 
+repository private to the gitfs client.
 
-XIP works fine on things like arm and mips.  However there is mixed
-support in the mainline kernel for it.  For example, you can build an
-XiP kernel image for arm since like 2.6.10 or 12.  Also MTD has an XiP
-aware mode that protects XiP objects in flash from get screwed up
-during programs and erases.  But there is no mainlined solution for
-XiP of applications from the filesystem.  However there have been
-patches for cramfs to do this for years.  They are kind of messy and
-keep getting rejected.  I do have a solution in the works for this
-part of it - http://axfs.sf.net.
+With this transparently created private scratch repository it should then be 
+possible for the same gitfs to re-expose the locally created commits, all 
+without any direct user-intervention.
+
+Later, this same scratch repository could then be managed by the normal 
+git-management tools/commands to ultimately update the backend git 
+repositories.
+
+BTW:  Sorry for my previous posts that contained the wrong date; it seems 
+that hibernation sometimes advances the date by a full 24h.  Has anybody 
+noticed this as well?
+
+
+Thanks!
+
+--
+Al
+
