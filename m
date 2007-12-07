@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbXLGMgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbXLGMle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbXLGMgS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 07:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXLGMfw
+	id S1755346AbXLGMle (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 07:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbXLGMl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 07:35:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40432 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Dec 2007 07:41:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57981 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753926AbXLGMfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 07:35:50 -0500
-Date: Fri, 7 Dec 2007 13:35:09 +0100
+	id S1751882AbXLGMlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 07:41:25 -0500
+Date: Fri, 7 Dec 2007 13:40:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: stefano.brivio@polimi.it
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Robert Love <rml@tech9.net>,
@@ -19,12 +19,12 @@ Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Robert Love <rml@tech9.net>,
        Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
        Guillaume Chazarain <guichaz@yahoo.fr>
 Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
-Message-ID: <20071207123509.GA28676@elte.hu>
-References: <20071207021952.6f0ac922@morte> <20071207084559.GA11162@elte.hu> <200712072213.06530.nickpiggin@yahoo.com.au> <20071207122310.maqkoxlb4gsg4ggc@webmail.polimi.it> <20071207122516.GA25115@elte.hu>
+Message-ID: <20071207124034.GA30052@elte.hu>
+References: <20071207021952.6f0ac922@morte> <20071207084559.GA11162@elte.hu> <200712072213.06530.nickpiggin@yahoo.com.au> <20071207122310.maqkoxlb4gsg4ggc@webmail.polimi.it> <20071207122516.GA25115@elte.hu> <20071207123509.GA28676@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071207122516.GA25115@elte.hu>
+In-Reply-To: <20071207123509.GA28676@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,18 +41,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Ingo Molnar <mingo@elte.hu> wrote:
 
-> ok, here's a rollup of 11 patches that relate to this. I hoped we 
-> could wait with this for 2.6.25, but it seems more urgent as per 
-> Stefano's testing, as udelay() and drivers are affected as well.
+> > Stefano, could you try this ontop of a recent-ish Linus tree - does 
+> > this resolve all issues? (without introducing new ones ;-)
 > 
-> Stefano, could you try this ontop of a recent-ish Linus tree - does 
-> this resolve all issues? (without introducing new ones ;-)
+> updated version attached below.
 
-updated version attached below.
-
-> +DEFINE_PER_CPU(struct cyc2ns_params, cyc2ns) __read_mostly;
-
-__read_mostly is not a good idea for PER_CPU variables.
+third update. the cpufreq callbacks are not quite OK yet.
 
 	Ingo
 
@@ -143,99 +137,6 @@ Index: linux/arch/x86/kernel/process_32.c
  		current_thread_info()->status |= TS_POLLING;
  	} else {
  		/* loop is done by the caller */
-Index: linux/arch/x86/kernel/tsc_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/tsc_32.c
-+++ linux/arch/x86/kernel/tsc_32.c
-@@ -5,6 +5,7 @@
- #include <linux/jiffies.h>
- #include <linux/init.h>
- #include <linux/dmi.h>
-+#include <linux/percpu.h>
- 
- #include <asm/delay.h>
- #include <asm/tsc.h>
-@@ -78,15 +79,32 @@ EXPORT_SYMBOL_GPL(check_tsc_unstable);
-  *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
-  *  (mathieu.desnoyers@polymtl.ca)
-  *
-+ *  ns += offset to avoid sched_clock jumps with cpufreq
-+ *
-  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
-  */
--unsigned long cyc2ns_scale __read_mostly;
- 
- #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
- 
--static inline void set_cyc2ns_scale(unsigned long cpu_khz)
-+DEFINE_PER_CPU(struct cyc2ns_params, cyc2ns);
-+
-+static void set_cyc2ns_scale(unsigned long cpu_khz)
- {
--	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
-+	struct cyc2ns_params *params;
-+	unsigned long flags;
-+	unsigned long long tsc_now, ns_now;
-+
-+	rdtscll(tsc_now);
-+	params = &get_cpu_var(cyc2ns);
-+
-+	local_irq_save(flags);
-+	ns_now = __cycles_2_ns(params, tsc_now);
-+
-+	params->scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
-+	params->offset += ns_now - __cycles_2_ns(params, tsc_now);
-+	local_irq_restore(flags);
-+
-+	put_cpu_var(cyc2ns);
- }
- 
- /*
-Index: linux/arch/x86/kernel/tsc_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/tsc_64.c
-+++ linux/arch/x86/kernel/tsc_64.c
-@@ -10,6 +10,7 @@
- 
- #include <asm/hpet.h>
- #include <asm/timex.h>
-+#include <asm/timer.h>
- 
- static int notsc __initdata = 0;
- 
-@@ -18,16 +19,25 @@ EXPORT_SYMBOL(cpu_khz);
- unsigned int tsc_khz;
- EXPORT_SYMBOL(tsc_khz);
- 
--static unsigned int cyc2ns_scale __read_mostly;
-+DEFINE_PER_CPU(struct cyc2ns_params, cyc2ns) __read_mostly;
- 
--static inline void set_cyc2ns_scale(unsigned long khz)
-+static void set_cyc2ns_scale(unsigned long cpu_khz)
- {
--	cyc2ns_scale = (NSEC_PER_MSEC << NS_SCALE) / khz;
--}
-+	struct cyc2ns_params *params;
-+	unsigned long flags;
-+	unsigned long long tsc_now, ns_now;
- 
--static unsigned long long cycles_2_ns(unsigned long long cyc)
--{
--	return (cyc * cyc2ns_scale) >> NS_SCALE;
-+	rdtscll(tsc_now);
-+	params = &get_cpu_var(cyc2ns);
-+
-+	local_irq_save(flags);
-+	ns_now = __cycles_2_ns(params, tsc_now);
-+
-+	params->scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
-+	params->offset += ns_now - __cycles_2_ns(params, tsc_now);
-+	local_irq_restore(flags);
-+
-+	put_cpu_var(cyc2ns);
- }
- 
- unsigned long long sched_clock(void)
 Index: linux/arch/x86/lib/delay_32.c
 ===================================================================
 --- linux.orig/arch/x86/lib/delay_32.c
@@ -369,76 +270,6 @@ Index: linux/drivers/acpi/processor_idle.c
  	acpi_idle_do_entry(cx);
  	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
  
-Index: linux/include/asm-x86/timer.h
-===================================================================
---- linux.orig/include/asm-x86/timer.h
-+++ linux/include/asm-x86/timer.h
-@@ -2,6 +2,7 @@
- #define _ASMi386_TIMER_H
- #include <linux/init.h>
- #include <linux/pm.h>
-+#include <linux/percpu.h>
- 
- #define TICK_SIZE (tick_nsec / 1000)
- 
-@@ -16,7 +17,7 @@ extern int recalibrate_cpu_khz(void);
- #define calculate_cpu_khz() native_calculate_cpu_khz()
- #endif
- 
--/* Accellerators for sched_clock()
-+/* Accelerators for sched_clock()
-  * convert from cycles(64bits) => nanoseconds (64bits)
-  *  basic equation:
-  *		ns = cycles / (freq / ns_per_sec)
-@@ -31,20 +32,44 @@ extern int recalibrate_cpu_khz(void);
-  *	And since SC is a constant power of two, we can convert the div
-  *  into a shift.
-  *
-- *  We can use khz divisor instead of mhz to keep a better percision, since
-+ *  We can use khz divisor instead of mhz to keep a better precision, since
-  *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
-  *  (mathieu.desnoyers@polymtl.ca)
-  *
-+ *  ns += offset to avoid sched_clock jumps with cpufreq
-+ *
-  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
-  */
--extern unsigned long cyc2ns_scale __read_mostly;
-+
-+struct cyc2ns_params {
-+	unsigned long scale;
-+	unsigned long long offset;
-+};
-+
-+DECLARE_PER_CPU(struct cyc2ns_params, cyc2ns);
- 
- #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
- 
--static inline unsigned long long cycles_2_ns(unsigned long long cyc)
-+static inline unsigned long long __cycles_2_ns(struct cyc2ns_params *params,
-+					       unsigned long long cyc)
- {
--	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
-+	return ((cyc * params->scale) >> CYC2NS_SCALE_FACTOR) + params->offset;
- }
- 
-+static inline unsigned long long cycles_2_ns(unsigned long long cyc)
-+{
-+	struct cyc2ns_params *params;
-+	unsigned long flags;
-+	unsigned long long ns;
-+
-+	params = &get_cpu_var(cyc2ns);
-+
-+	local_irq_save(flags);
-+	ns = __cycles_2_ns(params, cyc);
-+	local_irq_restore(flags);
-+
-+	put_cpu_var(cyc2ns);
-+	return ns;
-+}
- 
- #endif
 Index: linux/kernel/hrtimer.c
 ===================================================================
 --- linux.orig/kernel/hrtimer.c
