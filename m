@@ -1,101 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbXLGXeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbXLGXh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbXLGXeU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 18:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXLGXeK
+	id S1754855AbXLGXh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 18:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXLGXhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 18:34:10 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:38851 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbXLGXeI (ORCPT
+	Fri, 7 Dec 2007 18:37:21 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60261 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbXLGXhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 18:34:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=Zym1acWqH/JIIbcIVSNdvF3/KBLpS6Kby2ktChoWJq7w+sfJJhKbk4xMjeNb143uizUdiw+/g80n2avDvvpX5E40UZH22oqd2K2xtZ9oCU4SQEY3mSm3PxlD9OP5KPUVJ5N6uDr9zdHLYVyBqoYvukgBVf2WNEEsh5mUJPpO22s=
-Date: Sat, 8 Dec 2007 02:33:59 +0300
+	Fri, 7 Dec 2007 18:37:19 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Zan Lynx <zlynx@acm.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: Re: 2.6.24-rc4-mm1 and excessive block IO errors
-Message-ID: <20071207233359.GB1951@martell.zuzino.mipt.ru>
-References: <1197060285.15428.20.camel@localhost> <20071207150537.2ccdd53e.akpm@linux-foundation.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org, rjw@sisk.pl,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	<20071207040219.e231cbc7.akpm@linux-foundation.org>
+	<fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
+	<1197053179.7532.23.camel@heimdal.trondhjem.org>
+	<fa4052ef0712071055r2fe33f2ep34fed2537970c8ef@mail.gmail.com>
+	<fa4052ef0712071116x2b727faau190ec14e4b2a2d47@mail.gmail.com>
+	<fa4052ef0712071139x30ada982r570513c5a0fb2657@mail.gmail.com>
+	<1197067918.10831.13.camel@heimdal.trondhjem.org>
+	<20071207151444.af5d8e11.akpm@linux-foundation.org>
+Date: Fri, 07 Dec 2007 16:35:04 -0700
+In-Reply-To: <20071207151444.af5d8e11.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 7 Dec 2007 15:14:44 -0800")
+Message-ID: <m14peuqdsn.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071207150537.2ccdd53e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 03:05:37PM -0800, Andrew Morton wrote:
-> On Fri, 07 Dec 2007 20:44:45 +0000
-> Zan Lynx <zlynx@acm.org> wrote:
-> 
-> > I am not sure if this problem has been addressed already.  I read some
-> > about the fast-fail issues and this may be related?
-> > 
-> > On nearly all my USB block devices, I have been getting zillions of I/O
-> > errors.  But they aren't real, they don't appear with 2.6.23 kernels.
-> > 
-> > I can often read and write data to the device, but these IO errors cause
-> > error aborts in user space applications in many cases, making it a
-> > chancy thing to run backup software, for example.
-> > 
-> > Here is a bit of dmesg from plugging in a perfectly good USB-2 flash
-> > drive.
-> > 
-> > hub 3-0:1.0: state 7 ports 6 chg 0000 evt 0004
-> > ehci_hcd 0000:00:02.2: GetStatus port 2 status 001803 POWER sig=j CSC CONNECT
-> > hub 3-0:1.0: port 2, status 0501, change 0001, 480 Mb/s
-> > hub 3-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x501
-> > ehci_hcd 0000:00:02.2: port 2 high speed
-> > ehci_hcd 0000:00:02.2: GetStatus port 2 status 001005 POWER sig=se0 PE CONNECT
-> > usb 3-2: new high speed USB device using ehci_hcd and address 9
-> > ehci_hcd 0000:00:02.2: port 2 high speed
-> > ehci_hcd 0000:00:02.2: GetStatus port 2 status 001005 POWER sig=se0 PE CONNECT
-> > usb 3-2: default language 0x0409
-> > usb 3-2: uevent
-> > usb 3-2: usb_probe_device
-> > usb 3-2: configuration #1 chosen from 1 choice
-> > usb 3-2: adding 3-2:1.0 (config #1, interface 0)
-> > usb 3-2:1.0: uevent
-> > libusual 3-2:1.0: usb_probe_interface
-> > libusual 3-2:1.0: usb_probe_interface - got id
-> > usb-storage 3-2:1.0: usb_probe_interface
-> > usb-storage 3-2:1.0: usb_probe_interface - got id
-> > scsi4 : SCSI emulation for USB Mass Storage devices
-> > drivers/usb/core/inode.c: creating file '009'
-> > usb 3-2: New USB device found, idVendor=05dc, idProduct=a400
-> > usb 3-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> > usb 3-2: Product: JUMPDRIVE
-> > usb 3-2: Manufacturer: LEXAR MEDIA
-> > usb 3-2: SerialNumber: 0A4EEC05201219080904
-> > usb-storage: device found at 9
-> > usb-storage: waiting for device to settle before scanning
-> > usb-storage: device scan complete
-> > scsi 4:0:0:0: Direct-Access     LEXAR    JUMPDRIVE        1000 PQ: 0 ANSI: 0 CCS
-> > sd 4:0:0:0: [sdg] 2026592 512-byte hardware sectors (1038 MB)
-> > sd 4:0:0:0: [sdg] Write Protect is off
-> > sd 4:0:0:0: [sdg] Mode Sense: 43 00 00 00
-> > sd 4:0:0:0: [sdg] Assuming drive cache: write through
-> > sd 4:0:0:0: [sdg] 2026592 512-byte hardware sectors (1038 MB)
-> > sd 4:0:0:0: [sdg] Write Protect is off
-> > sd 4:0:0:0: [sdg] Mode Sense: 43 00 00 00
-> > sd 4:0:0:0: [sdg] Assuming drive cache: write through
-> >  sdg: sdg1
-> > sd 4:0:0:0: [sdg] Attached SCSI removable disk
-> > sd 4:0:0:0: Attached scsi generic sg7 type 0
-> > sd 4:0:0:0: [sdg] Result: hostbyte=0x01 driverbyte=0x00
-> > end_request: I/O error, dev sdg, sector 3984
-> 
-> Yes, this is breakage in the scsi tree.  I believe that the offending patch
-> has been found and I have a nasty fix somewhere in my inbox - it involves
-> reverting a patch which doesn't revert properly.  I haven't got onto
-> looking at it yet, sorry.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Zan, check this thread http://marc.info/?t=119689824100001&r=1&w=2
-for unholy details.
+> On Fri, 07 Dec 2007 17:51:58 -0500
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+>
+>> 
+>> On Fri, 2007-12-07 at 14:39 -0500, Shane wrote:
+>> > On Dec 7, 2007 2:16 PM, Shane <gnome42@gmail.com> wrote:
+>> > ...
+>> > > Confirmed working in rc4-git5.  I'll deploy this kernel in a few more
+>> > > spots and check for other regressions.
+>> > 
+>> > Hmm, I installed a new kernel built from the same sources on the NFS
+>> > server. And now I don't see anything at all in the crossmnt dirs.
+>> > 
+>> > ls /dirA/dirB/dirC  --> zero output (empty dir)
+>> > 
+>> > Are there any other pending fixes?
+>> > 
+>> > Shane
+>> 
+>> You've probably fallen afoul of 
+>> 
+>>    http://bugzilla.kernel.org/show_bug.cgi?id=9504
+>> 
+>
+> Yeah.
+>
+> I have a tentative fix below but I can't seem to get Eric and Denis to get
+> a suitable fix nailed down.  It's urgent!
+
+Andrew, if it is truly urgent please grab either fix, as they will sort
+out the worst of the symptoms.
+
+Mine is a little more thorough, and possibly a little less performant.
+However since mounts don't appear to be residing under /proc/net it
+isn't a significant issue.
+
+> From: "Denis V. Lunev" <den@openvz.org>
+>
+> /proc/sys/fs/binfmt_misc dentry disappeared during d_revalidate. 
+> d_revalidate only dentries from shadowed one and below. 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9504
+>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Marcus Better <marcus@better.se>
+> Signed-off-by: Denis V. Lunev <den@openvz.org>
+> Cc: Marcus Better <marcus@better.se>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  fs/proc/generic.c |   14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+>
+> diff -puN fs/proc/generic.c~lost-content-of-proc-sys-fs-binfmt_misc
+> fs/proc/generic.c
+> --- a/fs/proc/generic.c~lost-content-of-proc-sys-fs-binfmt_misc
+> +++ a/fs/proc/generic.c
+> @@ -380,12 +380,17 @@ static int proc_revalidate_dentry(struct
+>  	return 0;
+>  }
+>  
+> -static struct dentry_operations proc_dentry_operations =
+> +static struct dentry_operations proc_dentry_shadow_operations =
+>  {
+>  	.d_delete	= proc_delete_dentry,
+>  	.d_revalidate	= proc_revalidate_dentry,
+>  };
+>  
+> +static struct dentry_operations proc_dentry_operations =
+> +{
+> +	.d_delete	= proc_delete_dentry,
+> +};
+> +
+>  /*
+>   * Don't create negative dentries here, return -ENOENT by hand
+>   * instead.
+> @@ -394,6 +399,7 @@ struct dentry *proc_lookup(struct inode 
+>  {
+>  	struct inode *inode = NULL;
+>  	struct proc_dir_entry * de;
+> +	int use_shadow = 0;
+>  	int error = -ENOENT;
+>  
+>  	lock_kernel();
+> @@ -406,8 +412,10 @@ struct dentry *proc_lookup(struct inode 
+>  			if (!memcmp(dentry->d_name.name, de->name, de->namelen))
+> {
+>  				unsigned int ino;
+>  
+> -				if (de->shadow_proc)
+> +				if (de->shadow_proc) {
+>  					de = de->shadow_proc(current, de);
+> +					use_shadow = 1;
+> +				}
+>  				ino = de->low_ino;
+>  				de_get(de);
+>  				spin_unlock(&proc_subdir_lock);
+> @@ -423,6 +431,8 @@ struct dentry *proc_lookup(struct inode 
+>  
+>  	if (inode) {
+>  		dentry->d_op = &proc_dentry_operations;
+> +		dentry->d_op = use_shadow ?
+> + &proc_dentry_shadow_operations : dentry->d_parent->d_op;
+>  		d_add(dentry, inode);
+>  		return NULL;
+>  	}
+> _
