@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbXLGJ7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbXLGKAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbXLGJ7H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 04:59:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbXLGJ6x
+	id S1754382AbXLGKAW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXLGKAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 04:58:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:58548 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbXLGJ6v convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 04:58:51 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
-Date: Fri, 7 Dec 2007 10:58:37 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Roland Dreier <rdreier@cisco.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-       OF-General <general@lists.openfabrics.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200712061607.20004.fenkes@de.ibm.com> <200712061648.24806.arnd@arndb.de> <ada7ijrd6gy.fsf@cisco.com>
-In-Reply-To: <ada7ijrd6gy.fsf@cisco.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 7 Dec 2007 05:00:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35235 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751127AbXLGKAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 05:00:07 -0500
+Date: Fri, 7 Dec 2007 10:59:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-ID: <20071207095931.GA27307@elte.hu>
+References: <20071207021952.6f0ac922@morte> <alpine.LFD.0.99999.0712070646210.3221@localhost.localdomain> <3d8471ca0712062318j483f8be6h256778752a13639a@mail.gmail.com> <20071207090252.1caf1509@inria.fr> <20071207085121.GA12625@elte.hu> <20071207102938.5ca48859@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712071058.38416.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18zno4gW4PYlDFl8G1tpJQdWZxbsUSoG+6Go4E
- SuDuvuhgON6K27DCtlPmnDt9tGn9yLMkFUuYQuIQWsPU5CFWtZ
- WPPN8DRFpxZV2mCJugBgw==
+In-Reply-To: <20071207102938.5ca48859@inria.fr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 December 2007, Roland Dreier wrote:
->  > Regarding the performance problem, have you checked whether converting all
->  > your spin_lock_irqsave to spin_lock/spin_lock_irq improves your performance
->  > on the older machines? Maybe it's already fast enough that way.
-> 
-> It does seem that the only places that the hcall_lock is taken also
-> use msleep, so they must always be in process context.  So you can
-> safely just use spin_lock(), right?
 
-I think it needs some more inspection. The msleep in there is only called
-for hcalls that return H_IS_LONG_BUSY(). In theory, you can call
-ehca_plpar_hcall_norets() from inside an interrupt handler if the
-hcall in question never returns long busy.
+* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-	Arnd <><
+> I'll clean it up and resend it later. As I don't have the necessary 
+> knowledge to do the tsc_{32,64}.c unification, should I copy paste 
+> common functions into tsc_32.c and tsc_64.c to ease later unification 
+> or should I start a common .c file?
+
+note that there are a couple of existing patches in this area. One is 
+the fix below. There's also older frequency-scaling TSC patches - i'll 
+try to dig them out.
+
+	Ingo
+
+---------------->
+Subject: x86: idle wakeup event in the HLT loop
+From: Ingo Molnar <mingo@elte.hu>
+
+do a proper idle-wakeup event on HLT as well - some CPUs stop the TSC
+in HLT too, not just when going through the ACPI methods.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/process_32.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+Index: linux/arch/x86/kernel/process_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/process_32.c
++++ linux/arch/x86/kernel/process_32.c
+@@ -113,10 +113,19 @@ void default_idle(void)
+ 		smp_mb();
+ 
+ 		local_irq_disable();
+-		if (!need_resched())
++		if (!need_resched()) {
++			ktime_t t0, t1;
++			u64 t0n, t1n;
++
++			t0 = ktime_get();
++			t0n = ktime_to_ns(t0);
+ 			safe_halt();	/* enables interrupts racelessly */
+-		else
+-			local_irq_enable();
++			local_irq_disable();
++			t1 = ktime_get();
++			t1n = ktime_to_ns(t1);
++			sched_clock_idle_wakeup_event(t1n - t0n);
++		}
++		local_irq_enable();
+ 		current_thread_info()->status |= TS_POLLING;
+ 	} else {
+ 		/* loop is done by the caller */
