@@ -1,556 +1,727 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXLGGJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbXLGGOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbXLGGJu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 01:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXLGGJk
+	id S1753344AbXLGGOY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 01:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbXLGGOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 01:09:40 -0500
-Received: from ozlabs.org ([203.10.76.45]:40990 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbXLGGJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 01:09:38 -0500
+	Fri, 7 Dec 2007 01:14:14 -0500
+Received: from mail.arctic.org ([208.69.40.137]:51859 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751219AbXLGGOL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 01:14:11 -0500
+Message-ID: <4758E4AA.7070000@kernel.org>
+Date: Thu, 06 Dec 2007 22:14:02 -0800
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: KaiGai Kohei <kaigai@ak.jp.nec.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] capabilities: introduce per-process capability bounding
+ set (v10)
+References: <20071126200908.GA13287@sergelap.austin.ibm.com> <4754D76B.8080406@ak.jp.nec.com> <4754F053.8060303@kernel.org> <4755701C.7070407@ak.jp.nec.com> <4756C436.706@kernel.org> <47575AB1.5090501@ak.jp.nec.com> <47578AFC.7040702@kernel.org> <4757B4AA.7000003@ak.jp.nec.com> <475898F5.80609@ak.jp.nec.com>
+In-Reply-To: <475898F5.80609@ak.jp.nec.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Message-ID: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
-Date: Fri, 7 Dec 2007 17:09:27 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [RFC][POWERPC] Provide a way to protect 4k subpages when
-   using 64k pages
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using 64k pages on 64-bit PowerPC systems makes life difficult for
-emulators that are trying to emulate an ISA, such as x86, which use a
-smaller page size, since the emulator can no longer use the MMU and
-the normal system calls for controlling page protections.  Of course,
-the emulator can emulate the MMU by checking and possibly remapping
-the address for each memory access in software, but that is pretty
-slow.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This patch provides a facility for such programs to control the access
-permissions on individual 4k sub-pages of a 64k page.  The idea is
-that the emulator supplies an array of protection masks to apply to a
-specified range of virtual addresses.  These masks are applied at the
-level where hardware PTEs are inserted into the hardware page table
-based on the Linux PTEs, so the Linux PTEs are not affected.  Note
-that this new mechanism does not allow any access that would otherwise
-be prohibited; it can only prohibit accesses that would otherwise be
-allowed.  This new facility is only available on 64-bit PowerPC and
-only when the kernel is configured for 64k pages.
+I've pushed it to a pamcap-enhancements branch and I'll will try to
+review it quickly.
 
-The masks are supplied using a new subpage_prot system call, which
-takes a starting virtual address and length, and a pointer to an array
-of protection masks in memory.  The array has a 32-bit word per 64k
-page to be protected; each 32-bit word consists of 16 2-bit fields,
-for which 0 allows any access (that is otherwise allowed), 1 prevents
-write accesses, and 2 or 3 prevent any access.
+Thanks
 
-Implicit in this is that the regions of the address space that are
-protected are switched to use 4k hardware pages rather than 64k
-hardware pages (on machines with hardware 64k page support).  In fact
-the whole process is switched to use 4k hardware pages when the
-subpage_prot system call is used, but this could be improved in future
-to switch only the affected segments.
+Andrew
 
-I have re-purposed the ioperm system call for this.  The old ioperm
-system call never did anything (except return an ENOSYS error) and in
-fact never could have actually been useful for anything on the PowerPC
-architecture, so nothing ever used it.
+KaiGai Kohei wrote:
+> Sorry, any TABs are replaced by MUA.
+> I'll send the patch again.
+> 
+>> The attached patch provides several improvement for pam_cap module.
+>> 1. It enables pam_cap to drop capabilities from process'es capability
+>>    bounding set.
+>> 2. It enables to specify allowing inheritable capability set or dropping
+>>    bounding capability set for groups, not only users.
+>> 3. It provide pam_sm_session() method, not only pam_sm_authenticate()
+>>    and pam_sm_setcred(). A system administrator can select more
+>>    appropriate mode for his purpose.
+>> 4. In the auth/cred mode, it enables to cache the configuration file,
+>>    to avoid read and analyze it twice.
+>> (Therefore, most of the part in the original one got replaced....)
+>>
+>> The default configuration file is "/etc/security/capability.conf".
+>> You can describe as follows:
+>> --------
+>> # kaigai get cap_net_raw and cap_kill, tak get cap_sys_pacct pI.
+>> # We can omit "i:" in the head of each line.
+>> i:cap_net_raw,cap_kill         kaigai
+>> cap_sys_pacct                  tak
+>>
+>> # ymj and tak lost cap_sys_chroot from cap_bset
+>> b:cap_sys_chroot               ymj  tak
+>>
+>> # Any user within webadm group get cap_net_bind_service pI.
+>> i:cap_net_bind_service         @webadm
+>>
+>> # Any user within users group lost cap_sys_module from cap_bset
+>> b:cap_sys_module               @users
+>> --------
+>>
+>> When a user or groups he belongs is on several lines, all configurations
+>> are simplly compounded.
+>>
+>> In the above example, if tak belongs to webadm and users group,
+>> he will get cap_sys_pacct and cap_net_bind_service pI, and lost
+>> cap_sys_chroot and cap_sys_module from his cap_bset.
+>>
+>> Thanks,
+> 
+> Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+> --
+>  pam_cap/capability.conf |    6 +
+>  pam_cap/pam_cap.c       |  495 ++++++++++++++++++++++++++++-------------------
+>  2 files changed, 305 insertions(+), 196 deletions(-)
+> 
+> diff --git a/pam_cap/capability.conf b/pam_cap/capability.conf
+> index b543142..707cdc3 100644
+> --- a/pam_cap/capability.conf
+> +++ b/pam_cap/capability.conf
+> @@ -24,6 +24,12 @@ cap_setfcap		morgan
+>  ## 'everyone else' gets no inheritable capabilities
+>  none  *
+> 
+> +# user 'kaigai' lost CAP_NET_RAW capability from bounding set
+> +b:cap_net_raw                   kaigai
+> +
+> +# group 'acctadm' get CAP_SYS_PACCT inheritable capability
+> +i:cap_sys_pacct                 @acctadm
+> +
+>  ## if there is no '*' entry, all users not explicitly mentioned will
+>  ## get all available capabilities. This is a permissive default, and
+>  ## probably not what you want...
+> diff --git a/pam_cap/pam_cap.c b/pam_cap/pam_cap.c
+> index 94c5ebc..a917d5c 100644
+> --- a/pam_cap/pam_cap.c
+> +++ b/pam_cap/pam_cap.c
+> @@ -1,5 +1,6 @@
+>  /*
+>   * Copyright (c) 1999,2007 Andrew G. Morgan <morgan@kernel.org>
+> + * Copyright (c) 2007      KaiGai Kohei <kaigai@ak.jp.nec.com>
+>   *
+>   * The purpose of this module is to enforce inheritable capability sets
+>   * for a specified user.
+> @@ -13,298 +14,400 @@
+>  #include <stdarg.h>
+>  #include <stdlib.h>
+>  #include <syslog.h>
+> +#include <pwd.h>
+> +#include <grp.h>
+> 
+>  #include <sys/capability.h>
+> +#include <sys/prctl.h>
+> 
+>  #include <security/pam_modules.h>
+>  #include <security/_pam_macros.h>
+> 
+> +#define MODULE_NAME		"pam_cap"
+>  #define USER_CAP_FILE           "/etc/security/capability.conf"
+>  #define CAP_FILE_BUFFER_SIZE    4096
+>  #define CAP_FILE_DELIMITERS     " \t\n"
+> -#define CAP_COMBINED_FORMAT     "%s all-i %s+i"
+> -#define CAP_DROP_ALL            "%s all-i"
+> +
+> +#ifndef PR_CAPBSET_DROP
+> +#define PR_CAPBSET_DROP		24
+> +#endif
+> +
+> +extern char const *_cap_names[];
+> 
+>  struct pam_cap_s {
+>      int debug;
+>      const char *user;
+>      const char *conf_filename;
+> +    /* set in read_capabilities_for_user() */
+> +    cap_t result;
+> +    int do_set_inh : 1;
+> +    int do_set_bset : 1;
+>  };
+> 
+> -/* obtain the inheritable capabilities for the current user */
+> -
+> -static char *read_capabilities_for_user(const char *user, const char *source)
+> +/* obtain the inheritable/bounding capabilities for the current user */
+> +static int read_capabilities_for_user(struct pam_cap_s *pcs)
+>  {
+> -    char *cap_string = NULL;
+> -    char buffer[CAP_FILE_BUFFER_SIZE], *line;
+> +    char buffer[CAP_FILE_BUFFER_SIZE];
+>      FILE *cap_file;
+> +    struct passwd *pwd;
+> +    int line_num = 0;
+> +    int rc = -1;	/* PAM_(AUTH|CRED|SESSION)_ERR */
+> +
+> +    pwd = getpwnam(pcs->user);
+> +    if (!pwd) {
+> +	syslog(LOG_ERR, "user %s not in passwd entries", pcs->user);
+> +	return PAM_AUTH_ERR;
+> +    }
+> 
+> -    cap_file = fopen(source, "r");
+> -    if (cap_file == NULL) {
+> -	D(("failed to open capability file"));
+> -	return NULL;
+> +    cap_file = fopen(pcs->conf_filename, "r");
+> +    if (!cap_file) {
+> +	if (errno == ENOENT) {
+> +	    syslog(LOG_NOTICE, "%s is not found",
+> +		   pcs->conf_filename);
+> +	    return PAM_IGNORE;
+> +	} else {
+> +	    syslog(LOG_ERR, "unable to open '%s' (%s)",
+> +		   pcs->conf_filename, strerror(errno));
+> +	    return rc;
+> +	}
+>      }
+> 
+> -    while ((line = fgets(buffer, CAP_FILE_BUFFER_SIZE, cap_file))) {
+> -	int found_one = 0;
+> -	const char *cap_text;
+> +    pcs->result = NULL;
+> +    while (fgets(buffer, CAP_FILE_BUFFER_SIZE, cap_file) != NULL) {
+> +	char *pos, *cap_text;
+> +	int matched = 0;
+> +	int line_ops = CAP_INHERITABLE;
+> 
+> -	cap_text = strtok(line, CAP_FILE_DELIMITERS);
+> +	line_num++;
+> 
+> -	if (cap_text == NULL) {
+> -	    D(("empty line"));
+> -	    continue;
+> -	}
+> -	if (*cap_text == '#') {
+> -	    D(("comment line"));
+> +	/* remove comment */
+> +	pos = strchr(buffer, '#');
+> +	if (pos)
+> +	    *pos = '\0';
+> +
+> +	cap_text = strtok(buffer, CAP_FILE_DELIMITERS);
+> +	/* empty line */
+> +	if (!cap_text)
+>  	    continue;
+> +
+> +	if (!strncmp(cap_text, "b:", 2)) {
+> +	    /* permitted field is used to store bounding set */
+> +	    line_ops = CAP_PERMITTED;
+> +	    cap_text += 2;
+> +	} else if (!strncmp(cap_text, "i:", 2)) {
+> +	    cap_text += 2;
+>  	}
+> 
+> -	while ((line = strtok(NULL, CAP_FILE_DELIMITERS))) {
+> +	/* check members */
+> +	while ((pos = strtok(NULL, CAP_FILE_DELIMITERS)) != NULL) {
+> +	    /* wildcard */
+> +	    if (!strcmp("*", pos)) {
+> +		matched = 1;
+> +		break;
+> +	    }
+> 
+> -	    if (strcmp("*", line) == 0) {
+> -		D(("wildcard matched"));
+> -		found_one = 1;
+> -		cap_string = strdup(cap_text);
+> +	    /* It it group name? */
+> +	    if (*pos == '@') {
+> +		struct group *grp;
+> +		int i;
+> +
+> +		pos++;
+> +		grp = getgrnam(pos);
+> +		if (!grp) {
+> +		    if (pcs->debug)
+> +			syslog(LOG_DEBUG, "group '%s' not found at line:%d",
+> +			       pos, line_num);
+> +		    continue;
+> +		}
+> +
+> +		if (pwd->pw_gid == grp->gr_gid) {
+> +		    if (pcs->debug)
+> +			syslog(LOG_DEBUG, "user %s matched with group %s at line:%d",
+> +			       pcs->user, pos, line_num);
+> +		    matched = 1;
+> +		    break;
+> +		}
+> +
+> +		for (i=0; grp->gr_mem[i]; i++) {
+> +		    if (!strcmp(pcs->user, grp->gr_mem[i])) {
+> +			if (pcs->debug)
+> +			    syslog(LOG_DEBUG, "user %s matched with group %s at line:%d",
+> +				   pcs->user, pos, line_num);
+> +			matched = 1;
+> +			break;
+> +		    }
+> +		}
+> +		syslog(LOG_ERR, "no matching %s", pos);
+> +	    } else if (!strcmp(pcs->user, pos)) {
+> +		if (pcs->debug)
+> +		    syslog(LOG_DEBUG, "user '%s' matched at line:%d",
+> +			   pos, line_num);
+> +		matched = 1;
+>  		break;
+>  	    }
+> +	}
+> +
+> +	if (matched) {
+> +	    char tmpbuf[CAP_FILE_BUFFER_SIZE];
+> +	    cap_t tmp;
+> +	    cap_value_t value;
+> +	    cap_flag_value_t code;
+> +
+> +	    if (!pcs->result) {
+> +		pcs->result = cap_init();
+> +		if (!pcs->result) {
+> +		    syslog(LOG_ERR, "unable to allocate cap_t object (%s)",
+> +			   strerror(errno));
+> +		    goto out;
+> +		}
+> +	    }
+> 
+> -	    if (strcmp(user, line) == 0) {
+> -		D(("exact match for user"));
+> -		found_one = 1;
+> -		cap_string = strdup(cap_text);
+> +	    switch (line_ops) {
+> +	    case CAP_INHERITABLE:
+> +		pcs->do_set_inh = 1;
+> +		break;
+> +	    case CAP_PERMITTED:
+> +		pcs->do_set_bset = 1;
+>  		break;
+>  	    }
+> 
+> -	    D(("user is not [%s] - skipping", line));
+> +	    if (!strcmp(cap_text, "none"))
+> +		continue;
+> +
+> +	    snprintf(tmpbuf, sizeof(tmpbuf), "%s=p", cap_text);
+> +	    tmp = cap_from_text(tmpbuf);
+> +	    if (!tmp) {
+> +		syslog(LOG_ERR, "unable to convert '%s' (%s)",
+> +		       tmpbuf, strerror(errno));
+> +		cap_free(pcs->result);
+> +		pcs->result = NULL;
+> +		goto out;
+> +	    }
+> +
+> +	    for (value=0; ;value++) {
+> +		if (cap_get_flag(tmp, value, CAP_PERMITTED, &code) < 0)
+> +		    break;	/* If value == __CAP_BITS, we get EINVAL */
+> +		if (code == CAP_SET)
+> +		    cap_set_flag(pcs->result, line_ops, 1, &value, CAP_SET);
+> +	    }
+> +	    cap_free(tmp);
+>  	}
+> +    }
+> 
+> -	cap_text = NULL;
+> -	line = NULL;
+> +    if (pcs->debug) {
+> +	char *tmp = cap_to_text(pcs->result, NULL);
+> 
+> -	if (found_one) {
+> -	    D(("user [%s] matched - caps are [%s]", user, cap_string));
+> -	    break;
+> -	}
+> +	syslog(LOG_DEBUG, "configuration for user %s is %s",
+> +	       pcs->user, tmp);
+> +	cap_free(tmp);
+>      }
+> +    rc = PAM_SUCCESS;
+> 
+> +  out:
+>      fclose(cap_file);
+> 
+> -    memset(buffer, 0, CAP_FILE_BUFFER_SIZE);
+> -
+> -    return cap_string;
+> +    return rc;
+>  }
+> 
+>  /*
+>   * Set capabilities for current process to match the current
+>   * permitted+executable sets combined with the configured inheritable
+> - * set.
+> + * and bounding set.
+>   */
+> 
+> -static int set_capabilities(struct pam_cap_s *cs)
+> +static int set_capabilities(struct pam_cap_s *pcs)
+>  {
+> -    cap_t cap_s;
+> -    ssize_t length = 0;
+> -    char *conf_icaps;
+> -    char *proc_epcaps;
+> -    char *combined_caps;
+> -    int ok = 0;
+> -
+> -    cap_s = cap_get_proc();
+> -    if (cap_s == NULL) {
+> -	D(("your kernel is capability challenged - upgrade: %s",
+> -	   strerror(errno)));
+> -	return 0;
+> -    }
+> -
+> -    conf_icaps =
+> -	read_capabilities_for_user(cs->user,
+> -				   cs->conf_filename
+> -				   ? cs->conf_filename:USER_CAP_FILE );
+> -    if (conf_icaps == NULL) {
+> -	D(("no capabilities found for user [%s]", cs->user));
+> -	goto cleanup_cap_s;
+> -    }
+> -
+> -    proc_epcaps = cap_to_text(cap_s, &length);
+> -    if (proc_epcaps == NULL) {
+> -	D(("unable to convert process capabilities to text"));
+> -	goto cleanup_icaps;
+> -    }
+> -
+> -    /*
+> -     * This is a pretty inefficient way to combine
+> -     * capabilities. However, it seems to be the most straightforward
+> -     * one, given the limitations of the POSIX.1e draft spec. The spec
+> -     * is optimized for applications that know the capabilities they
+> -     * want to manipulate at compile time.
+> -     */
+> -
+> -    combined_caps = malloc(1+strlen(CAP_COMBINED_FORMAT)
+> -			   +strlen(proc_epcaps)+strlen(conf_icaps));
+> -    if (combined_caps == NULL) {
+> -	D(("unable to combine capabilities into one string - no memory"));
+> -	goto cleanup_epcaps;
+> -    }
+> -
+> -    if (!strcmp(conf_icaps, "none")) {
+> -	sprintf(combined_caps, CAP_DROP_ALL, proc_epcaps);
+> -    } else if (!strcmp(conf_icaps, "all")) {
+> -	/* no change */
+> -	sprintf(combined_caps, "%s", proc_epcaps);
+> -    } else {
+> -	sprintf(combined_caps, CAP_COMBINED_FORMAT, proc_epcaps, conf_icaps);
+> -    }
+> -    D(("combined_caps=[%s]", combined_caps));
+> -
+> -    cap_free(cap_s);
+> -    cap_s = cap_from_text(combined_caps);
+> -    _pam_overwrite(combined_caps);
+> -    _pam_drop(combined_caps);
+> -
+> -#ifdef DEBUG
+> -    {
+> -        char *temp = cap_to_text(cap_s, NULL);
+> -	D(("abbreviated caps for process will be [%s]", temp));
+> -	cap_free(temp);
+> -    }
+> -#endif /* DEBUG */
+> -
+> -    if (cap_s == NULL) {
+> -	D(("no capabilies to set"));
+> -    } else if (cap_set_proc(cap_s) == 0) {
+> -	D(("capabilities were set correctly"));
+> -	ok = 1;
+> -    } else {
+> -	D(("failed to set specified capabilities: %s", strerror(errno)));
+> -    }
+> -
+> -cleanup_epcaps:
+> -    cap_free(proc_epcaps);
+> -
+> -cleanup_icaps:
+> -    _pam_overwrite(conf_icaps);
+> -    _pam_drop(conf_icaps);
+> +    cap_value_t value;
+> +    cap_flag_value_t code;
+> +    int rc = -1;	/* PAM_(AUTH|CRED|SESSION)_ERR */
+> +
+> +    /* set inheritable capability set */
+> +    if (pcs->do_set_inh) {
+> +	cap_t cap_s = cap_get_proc();
+> +	if (!cap_s) {
+> +	    syslog(LOG_ERR, "your kernel is capability challenged - upgrade: %s",
+> +		   strerror(errno));
+> +	    goto out;
+> +	}
+> +	for (value=0; ;value++) {
+> +	    if (cap_get_flag(pcs->result, value, CAP_INHERITABLE, &code))
+> +		break;
+> +	    cap_set_flag(cap_s, CAP_INHERITABLE, 1, &value, code);
+> +	}
+> +	if (cap_set_proc(cap_s) < 0) {
+> +	    if (errno == EPERM)
+> +		rc = PAM_PERM_DENIED;
+> +	    syslog(LOG_ERR, "unable to set inheritable capabilities (%s)",
+> +		   strerror(errno));
+> +	    cap_free(cap_s);
+> +	    goto out;
+> +	}
+> +	if (pcs->debug) {
+> +	    char *tmp = cap_to_text(cap_s, NULL);
+> 
+> -cleanup_cap_s:
+> -    if (cap_s) {
+> +	    syslog(LOG_DEBUG, "user %s new capabilities: %s",
+> +		   pcs->user, tmp);
+> +	    cap_free(tmp);
+> +	}
+>  	cap_free(cap_s);
+> -	cap_s = NULL;
+>      }
+> +    /* drop capability bounding set */
+> +    if (pcs->do_set_bset) {
+> +	for (value=0; ;value++) {
+> +	    if (cap_get_flag(pcs->result, value, CAP_PERMITTED, &code))
+> +		break;
+> +	    if (code == CAP_SET) {
+> +		if (prctl(PR_CAPBSET_DROP, value) < 0) {
+> +		    syslog(LOG_ERR, "unable to drop capability b-set %u (%s)",
+> +			   value, strerror(errno));
+> +		    goto out;
+> +		}
+> +		if (pcs->debug)
+> +		    syslog(LOG_DEBUG, "%s drops capability %s from bounding set",
+> +			   pcs->user, _cap_names[value]);
+> +	    }
+> +	}
+> +    }
+> +    rc = PAM_SUCCESS;
+> 
+> -    return ok;
+> -}
+> -
+> -/* log errors */
+> -
+> -static void _pam_log(int err, const char *format, ...)
+> -{
+> -    va_list args;
+> +  out:
+> +    cap_free(pcs->result);
+> 
+> -    va_start(args, format);
+> -    openlog("pam_cap", LOG_CONS|LOG_PID, LOG_AUTH);
+> -    vsyslog(err, format, args);
+> -    va_end(args);
+> -    closelog();
+> +    return rc;
+>  }
+> 
+> -static void parse_args(int argc, const char **argv, struct pam_cap_s *pcs)
+> +static int init_pam_cap(pam_handle_t *pamh, int argc, const char **argv,
+> +			struct pam_cap_s *pcs)
+>  {
+> -    int ctrl=0;
+> +    int ctrl, rc;
+> +
+> +    /* Initialization */
+> +    memset(pcs, 0, sizeof(struct pam_cap_s));
+> +    pcs->conf_filename = USER_CAP_FILE;
+> +    rc = pam_get_user(pamh, &pcs->user, NULL);
+> +    if (rc == PAM_CONV_AGAIN) {
+> +	syslog(LOG_INFO, "user conversation is not available yet");
+> +	return PAM_INCOMPLETE;
+> +    }
+> +    if (rc != PAM_SUCCESS) {
+> +	syslog(LOG_INFO, "pam_get_user failed: %s", pam_strerror(pamh, rc));
+> +	return -1;
+> +    }
+> 
+>      /* step through arguments */
+>      for (ctrl=0; argc-- > 0; ++argv) {
+> -
+>  	if (!strcmp(*argv, "debug")) {
+>  	    pcs->debug = 1;
+>  	} else if (!strcmp(*argv, "config=")) {
+>  	    pcs->conf_filename = strlen("config=") + *argv;
+>  	} else {
+> -	    _pam_log(LOG_ERR, "unknown option; %s", *argv);
+> +	    syslog(LOG_ERR, "unknown option: %s", *argv);
+> +	    return -1;
+>  	}
+> +    }
+> +    return PAM_SUCCESS;
+> +}
+> 
+> +static void cleanup_pam_cap(pam_handle_t *pamh, void *data, int error_status)
+> +{
+> +    struct pam_cap_s *pcs = (struct pam_cap_s *) data;
+> +
+> +    if (pcs) {
+> +	if (pcs->result)
+> +	    cap_free(pcs->result);
+> +	free(pcs);
+>      }
+>  }
+> 
+>  int pam_sm_authenticate(pam_handle_t *pamh, int flags,
+>  			int argc, const char **argv)
+>  {
+> -    int retval;
+> -    struct pam_cap_s pcs;
+> -    char *conf_icaps;
+> +    struct pam_cap_s *pcs = NULL;
+> +    int rc = PAM_BUF_ERR;
+> 
+> -    memset(&pcs, 0, sizeof(pcs));
+> +    openlog(MODULE_NAME, LOG_CONS|LOG_PID, LOG_AUTHPRIV);
+> 
+> -    parse_args(argc, argv, &pcs);
+> +    pcs = malloc(sizeof(struct pam_cap_s));
+> +    if (!pcs)
+> +	goto error;
+> 
+> -    retval = pam_get_user(pamh, &pcs.user, NULL);
+> +    rc = init_pam_cap(pamh, argc, argv, pcs);
+> +    if (rc != PAM_SUCCESS)
+> +	goto error;
+> 
+> -    if (retval == PAM_CONV_AGAIN) {
+> -	D(("user conversation is not available yet"));
+> -	memset(&pcs, 0, sizeof(pcs));
+> -	return PAM_INCOMPLETE;
+> -    }
+> +    rc = read_capabilities_for_user(pcs);
+> +    if (rc != PAM_SUCCESS)
+> +	goto error;
+> 
+> -    if (retval != PAM_SUCCESS) {
+> -	D(("pam_get_user failed: %s", pam_strerror(pamh, retval)));
+> -	memset(&pcs, 0, sizeof(pcs));
+> -	return PAM_AUTH_ERR;
+> +    rc = pam_set_data(pamh, MODULE_NAME, pcs, cleanup_pam_cap);
+> +    if (rc == PAM_SUCCESS) {
+> +	/* OK, pam_sm_setcred() will be called next */
+> +	closelog();
+> +	return rc;
+>      }
+> 
+> -    conf_icaps =
+> -	read_capabilities_for_user(pcs.user,
+> -				   pcs.conf_filename
+> -				   ? pcs.conf_filename:USER_CAP_FILE );
+> -
+> -    memset(&pcs, 0, sizeof(pcs));
+> -
+> -    if (conf_icaps) {
+> -	D(("it appears that there are capabilities for this user [%s]",
+> -	   conf_icaps));
+> +  error:
+> +    cleanup_pam_cap(pamh, pcs, rc);
+> +    closelog();
+> +    return rc < 0 ? PAM_AUTH_ERR : rc;
+> +}
+> 
+> -	/* We could also store this as a pam_[gs]et_data item for use
+> -	   by the setcred call to follow. As it is, there is a small
+> -	   race associated with a redundant read. Oh well, if you
+> -	   care, send me a patch.. */
+> +int pam_sm_setcred(pam_handle_t *pamh, int flags,
+> +		   int argc, const char **argv)
+> +{
+> +    struct pam_cap_s *pcs = NULL;
+> +    int rc = PAM_IGNORE;
+> 
+> -	_pam_overwrite(conf_icaps);
+> -	_pam_drop(conf_icaps);
+> +    openlog(MODULE_NAME, LOG_CONS|LOG_PID, LOG_AUTHPRIV);
+> 
+> -	return PAM_SUCCESS;
+> +    if (!(flags & PAM_ESTABLISH_CRED))
+> +	goto out;
+> 
+> -    } else {
+> +    rc = pam_get_data(pamh, MODULE_NAME, (void *)&pcs);
+> +    if (rc != PAM_SUCCESS)
+> +	return rc;
+> 
+> -	D(("there are no capabilities restrctions on this user"));
+> -	return PAM_IGNORE;
+> +    rc = set_capabilities(pcs);
+> 
+> -    }
+> +  out:
+> +    closelog();
+> +    return rc < 0 ? PAM_CRED_ERR : rc;
+>  }
+> 
+> -int pam_sm_setcred(pam_handle_t *pamh, int flags,
+> -		   int argc, const char **argv)
+> +int pam_sm_open_session(pam_handle_t *pamh, int flags,
+> +			int argc, const char **argv)
+>  {
+> -    int retval;
+>      struct pam_cap_s pcs;
+> +    int rc;
+> 
+> -    if (!(flags & PAM_ESTABLISH_CRED)) {
+> -	D(("we don't handle much in the way of credentials"));
+> -	return PAM_IGNORE;
+> -    }
+> +    openlog(MODULE_NAME, LOG_CONS|LOG_PID, LOG_AUTHPRIV);
+> 
+> -    memset(&pcs, 0, sizeof(pcs));
+> +    rc = init_pam_cap(pamh, argc, argv, &pcs);
+> +    if (rc != PAM_SUCCESS)
+> +	goto out;
+> 
+> -    parse_args(argc, argv, &pcs);
+> +    rc = read_capabilities_for_user(&pcs);
+> +    if (rc != PAM_SUCCESS)
+> +	goto out;
+> 
+> -    retval = pam_get_item(pamh, PAM_USER, (const void **)&pcs.user);
+> -    if ((retval != PAM_SUCCESS) || (pcs.user == NULL) || !(pcs.user[0])) {
+> +    rc = set_capabilities(&pcs);
+> 
+> -	D(("user's name is not set"));
+> -	return PAM_AUTH_ERR;
+> +    if (rc == PAM_SUCCESS) {
+> +	rc = set_capabilities(&pcs);
+> +	if (pcs.result)
+> +	    cap_free(pcs.result);
+>      }
+> 
+> -    retval = set_capabilities(&pcs);
+> +  out:
+> +    if (pcs.result)
+> +	cap_free(pcs.result);
+> +    closelog();
+> 
+> -    memset(&pcs, 0, sizeof(pcs));
+> +    return rc < 0 ? PAM_SESSION_ERR : rc;
+> +}
+> 
+> -    return (retval ? PAM_SUCCESS:PAM_IGNORE );
+> +int pam_sm_close_session(pam_handle_t *pamh, int flags,
+> +			 int argc, const char **argv)
+> +{
+> +    return PAM_SUCCESS; /* do nothing */
+>  }
+> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 232c298..0f5b968 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -340,6 +340,14 @@ config PPC_64K_PAGES
- 	  while on hardware with such support, it will be used to map
- 	  normal application pages.
- 
-+config PPC_SUBPAGE_PROT
-+	bool "Support setting protections for 4k subpages"
-+	depends on PPC_64K_PAGES
-+	help
-+	  This option adds support for a system call to allow user programs
-+	  to set access permissions (read/write, readonly, or no access)
-+	  on the 4k subpages of each 64k page.
-+
- config SCHED_SMT
- 	bool "SMT (Hyperthreading) scheduler support"
- 	depends on PPC64 && SMP
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index c349868..11b4f6d 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -903,6 +903,7 @@ handle_page_fault:
-  * the PTE insertion
-  */
- 12:	bl	.save_nvgprs
-+	mr	r5,r3
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	ld	r4,_DAR(r1)
- 	bl	.low_hash_fault
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index 3b1d5dd..5aabf48 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -36,12 +36,14 @@
- #include <linux/file.h>
- #include <linux/init.h>
- #include <linux/personality.h>
-+#include <linux/hugetlb.h>
- 
- #include <asm/uaccess.h>
- #include <asm/semaphore.h>
- #include <asm/syscalls.h>
- #include <asm/time.h>
- #include <asm/unistd.h>
-+#include <asm/tlbflush.h>
- 
- /*
-  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-@@ -328,3 +330,174 @@ void do_show_syscall_exit(unsigned long r3)
- {
- 	printk(" -> %lx, current=%p cpu=%d\n", r3, current, smp_processor_id());
- }
-+
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+/*
-+ * Clear the subpage protection map for an address range, allowing
-+ * all accesses that are allowed by the pte permissions.
-+ */
-+static void subpage_prot_clear(unsigned long addr, unsigned long len)
-+{
-+	struct mm_struct *mm = current->mm;
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd, *spm;
-+	pte_t *pte;
-+	u32 *spp;
-+	spinlock_t *ptl;
-+	int i, nw;
-+	unsigned long next, limit;
-+
-+	down_write(&mm->mmap_sem);
-+	for (limit = addr + len; addr < limit; addr = next) {
-+		next = pmd_addr_end(addr, limit);
-+		pgd = pgd_offset(mm, addr);
-+		if (pgd_none(*pgd))
-+			continue;	/* can't happen with 3-level tables */
-+		pud = pud_offset(pgd, addr);
-+		if (pud_none(*pud))
-+			continue;
-+		pmd = pmd_offset(pud, addr);
-+		if (!pmd)
-+			continue;
-+		for (; addr < next; ++pmd) {
-+			spm = pmd + PTRS_PER_PMD;
-+			spp = (u32 *) pmd_val(*spm);
-+			i = (addr >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
-+			nw = PTRS_PER_PTE - i;
-+			if (addr + (nw << PAGE_SHIFT) > next)
-+				nw = (next - addr) >> PAGE_SHIFT;
-+			if (!spp) {
-+				addr += nw * PAGE_SIZE;
-+				continue;
-+			}
-+
-+			/* See if we can dispose of the whole array here */
-+			if (nw == PTRS_PER_PTE) {
-+				spin_lock(&mm->page_table_lock);
-+				pmd_val(*spm) = 0;
-+				spin_unlock(&mm->page_table_lock);
-+				kfree(spp);
-+			} else
-+				memset(spp + i, 0, nw * sizeof(u32));
-+
-+			/* now flush any existing HPTEs for the range */
-+			pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-+			arch_enter_lazy_mmu_mode();
-+			for (; nw > 0; --nw) {
-+				pte_update(mm, addr, pte, 0, 0);
-+				addr += PAGE_SIZE;
-+				++pte;
-+			}
-+			arch_leave_lazy_mmu_mode();
-+			pte_unmap_unlock(pte - 1, ptl);
-+		}
-+	}
-+	up_write(&mm->mmap_sem);
-+}
-+
-+/*
-+ * Copy in a subpage protection map for an address range.
-+ * The map has 2 bits per 4k subpage, so 32 bits per 64k page.
-+ * Each 2-bit field is 0 to allow any access, 1 to prevent writes,
-+ * 2 or 3 to prevent all accesses.
-+ * Note that the normal page protections also apply; the subpage
-+ * protection mechanism is an additional constraint, so putting 0
-+ * in a 2-bit field won't allow writes to a page that is otherwise
-+ * write-protected.
-+ */
-+long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
-+{
-+	struct mm_struct *mm = current->mm;
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd, *spm;
-+	pte_t *pte;
-+	u32 *spp;
-+	spinlock_t *ptl;
-+	int i, nw;
-+	unsigned long next, limit;
-+	int err;
-+
-+	/* Check parameters */
-+	if ((addr & ~PAGE_MASK) || (len & ~PAGE_MASK) ||
-+	    addr >= TASK_SIZE || len >= TASK_SIZE || addr + len > TASK_SIZE)
-+		return -EINVAL;
-+
-+	if (is_hugepage_only_range(mm, addr, len))
-+		return -EINVAL;
-+
-+	if (!map) {
-+		/* Clear out the protection map for the address range */
-+		subpage_prot_clear(addr, len);
-+		return 0;
-+	}
-+
-+	if (!access_ok(VERIFY_READ, map, (len >> PAGE_SHIFT) * sizeof(u32)))
-+		return -EFAULT;
-+
-+	down_write(&mm->mmap_sem);
-+	for (limit = addr + len; addr < limit; ) {
-+		pgd = pgd_offset(mm, addr);
-+		pud = pud_alloc(mm, pgd, addr);
-+		err = -ENOMEM;
-+		if (!pud)
-+			goto out;	/* can't happen with 3-level tables */
-+		pmd = pmd_alloc(mm, pud, addr);
-+		if (!pmd)
-+			goto out;
-+		next = pmd_addr_end(addr, limit);
-+		while (addr < next) {
-+			local_irq_disable();
-+			demote_segment_4k(mm, addr);
-+			slb_flush_and_rebolt();
-+			local_irq_enable();
-+
-+			spm = pmd + PTRS_PER_PMD;
-+			spp = (u32 *) pmd_val(*spm);
-+			if (!spp) {
-+				spp = kzalloc(PTRS_PER_PTE * sizeof(u32),
-+					      GFP_KERNEL);
-+				err = -ENOMEM;
-+				if (!spp)
-+					goto out;
-+				spin_lock(&mm->page_table_lock);
-+				if (!pmd_val(*spm))
-+					pmd_val(*spm) = (unsigned long) spp;
-+				else {
-+					kfree(spp);
-+					spp = (u32 *) pmd_val(*spm);
-+				}
-+				spin_unlock(&mm->page_table_lock);
-+			}
-+			i = (addr >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
-+			spp += i;
-+			nw = PTRS_PER_PTE - i;
-+			if (addr + (nw << PAGE_SHIFT) > next)
-+				nw = (next - addr) >> PAGE_SHIFT;
-+			err = -EFAULT;
-+			if (__copy_from_user(spp, map, nw * sizeof(u32)))
-+				goto out;
-+			map += nw;
-+
-+			/* now flush any existing HPTEs for the range */
-+			pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-+			arch_enter_lazy_mmu_mode();
-+			for (; nw > 0; --nw) {
-+				pte_update(mm, addr, pte, 0, 0);
-+				addr += PAGE_SIZE;
-+				++pte;
-+			}
-+			arch_leave_lazy_mmu_mode();
-+			pte_unmap_unlock(pte - 1, ptl);
-+			++pmd;
-+		}
-+	}
-+	err = 0;
-+ out:
-+	up_write(&mm->mmap_sem);
-+	return err;
-+}
-+#else
-+cond_syscall(subpage_prot);
-+#endif
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index e935edd..21d2484 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -331,7 +331,8 @@ htab_pte_insert_failure:
-  *****************************************************************************/
- 
- /* _hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
-- *		 pte_t *ptep, unsigned long trap, int local, int ssize)
-+ *		 pte_t *ptep, unsigned long trap, int local, int ssize,
-+ *		 int subpg_prot)
-  */
- 
- /*
-@@ -429,12 +430,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_1T_SEGMENT)
- 	xor	r28,r28,r0		/* hash */
- 
- 	/* Convert linux PTE bits into HW equivalents */
--4:	andi.	r3,r30,0x1fe		/* Get basic set of flags */
--	xori	r3,r3,HPTE_R_N		/* _PAGE_EXEC -> NOEXEC */
-+4:
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+	andc	r10,r30,r10
-+	andi.	r3,r10,0x1fe		/* Get basic set of flags */
-+	rlwinm	r0,r10,32-9+1,30,30	/* _PAGE_RW -> _PAGE_USER (r0) */
-+#else
-+	andi.	r3,r30,0x1fe		/* Get basic set of flags */
- 	rlwinm	r0,r30,32-9+1,30,30	/* _PAGE_RW -> _PAGE_USER (r0) */
-+#endif
-+	xori	r3,r3,HPTE_R_N		/* _PAGE_EXEC -> NOEXEC */
- 	rlwinm	r4,r30,32-7+1,30,30	/* _PAGE_DIRTY -> _PAGE_USER (r4) */
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
--	andc	r0,r30,r0		/* r0 = pte & ~r0 */
-+	andc	r0,r3,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
- 	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
- 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index f09730b..7b62359 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -643,7 +643,7 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
-  * For now this makes the whole process use 4k pages.
-  */
- #ifdef CONFIG_PPC_64K_PAGES
--static void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
-+void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
- {
- 	if (mm->context.user_psize == MMU_PAGE_4K)
- 		return;
-@@ -654,10 +654,59 @@ static void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
- }
- #endif /* CONFIG_PPC_64K_PAGES */
- 
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+/*
-+ * This looks up a 2-bit protection code for a 4k subpage of a 64k page.
-+ * Userspace sets the subpage permissions using the subpage_prot system call.
-+ *
-+ * Result is 0: full permissions, _PAGE_RW: read-only,
-+ * _PAGE_USER or _PAGE_USER|_PAGE_RW: no access.
-+ */
-+static int subpage_protection(pgd_t *pgdir, unsigned long ea)
-+{
-+	u32 spp = 0;
-+	pgd_t *pg;
-+	pud_t *pu;
-+	pmd_t *pm;
-+	u32 *p;
-+
-+	if (is_kernel_addr(ea))
-+		return 0;
-+	pg = pgdir + pgd_index(ea);
-+	if (pgd_none(*pg))
-+		return 0;	/* can't happen with 3-level tables */
-+	pu = pud_offset(pg, ea);
-+	if (pud_none(*pu))
-+		return 0;
-+	pm = pmd_offset(pu, ea);
-+	pm += PTRS_PER_PMD;
-+	if (!pmd_val(*pm))
-+		return 0;
-+
-+	/* pick up 32 bits of permissions for this 64k page */
-+	p = ((u32 *)pmd_val(*pm)) + ((ea >> PAGE_SHIFT) & (PTRS_PER_PTE - 1));
-+	spp = *p;
-+
-+	/* extract 2-bit bitfield for this 4k subpage */
-+	spp >>= 30 - 2 * ((ea >> 12) & 0xf);
-+
-+	/* turn 0,1,2,3 into combination of _PAGE_USER and _PAGE_RW */
-+	spp = ((spp & 2) ? _PAGE_USER : 0) | ((spp & 1) ? _PAGE_RW : 0);
-+	return spp;
-+}
-+
-+#else /* CONFIG_PPC_SUBPAGE_PROT */
-+static inline int subpage_protection(pgd_t *pgdir, unsigned long ea)
-+{
-+	return 0;
-+}
-+#endif
-+
- /* Result code is:
-  *  0 - handled
-  *  1 - normal page fault
-  * -1 - critical hash insertion error
-+ * -2 - access not permitted by subpage protection mechanism
-  */
- int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
- {
-@@ -808,7 +857,14 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
- 		rc = __hash_page_64K(ea, access, vsid, ptep, trap, local, ssize);
- 	else
- #endif /* CONFIG_PPC_HAS_HASH_64K */
--		rc = __hash_page_4K(ea, access, vsid, ptep, trap, local, ssize);
-+	{
-+		int spp = subpage_protection(pgdir, ea);
-+		if (access & spp)
-+			rc = -2;
-+		else
-+			rc = __hash_page_4K(ea, access, vsid, ptep, trap,
-+					    local, ssize, spp);
-+	}
- 
- #ifndef CONFIG_PPC_64K_PAGES
- 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
-@@ -880,7 +936,8 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- 		__hash_page_64K(ea, access, vsid, ptep, trap, local, ssize);
- 	else
- #endif /* CONFIG_PPC_HAS_HASH_64K */
--		__hash_page_4K(ea, access, vsid, ptep, trap, local, ssize);
-+		__hash_page_4K(ea, access, vsid, ptep, trap, local, ssize,
-+			       subpage_protection(pgdir, ea));
- 
- 	local_irq_restore(flags);
- }
-@@ -925,19 +982,17 @@ void flush_hash_range(unsigned long number, int local)
-  * low_hash_fault is called when we the low level hash code failed
-  * to instert a PTE due to an hypervisor error
-  */
--void low_hash_fault(struct pt_regs *regs, unsigned long address)
-+void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
- {
- 	if (user_mode(regs)) {
--		siginfo_t info;
--
--		info.si_signo = SIGBUS;
--		info.si_errno = 0;
--		info.si_code = BUS_ADRERR;
--		info.si_addr = (void __user *)address;
--		force_sig_info(SIGBUS, &info, current);
--		return;
--	}
--	bad_page_fault(regs, address, SIGBUS);
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+		if (rc == -2)
-+			_exception(SIGSEGV, regs, SEGV_ACCERR, address);
-+		else
-+#endif
-+			_exception(SIGBUS, regs, BUS_ADRERR, address);
-+	} else
-+		bad_page_fault(regs, address, SIGBUS);
- }
- 
- #ifdef CONFIG_DEBUG_PAGEALLOC
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 3ef0ad2..88940a3 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -232,3 +232,14 @@ EXPORT_SYMBOL(__ioremap_at);
- EXPORT_SYMBOL(iounmap);
- EXPORT_SYMBOL(__iounmap);
- EXPORT_SYMBOL(__iounmap_at);
-+
-+#ifdef CONFIG_PPC_SUBPAGE_PROT
-+void pmd_clear(pmd_t *pmd)
-+{
-+	pmd_val(*pmd) = 0;
-+	if (pmd_val(pmd[PTRS_PER_PMD])) {
-+		kfree((void *)pmd_val(pmd[PTRS_PER_PMD]));
-+		pmd_val(pmd[PTRS_PER_PMD]) = 0;
-+	}
-+}
-+#endif /* CONFIG_PPC_SUBPAGE_PROT */
-diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
-index 82328de..351e6e8 100644
---- a/include/asm-powerpc/mmu-hash64.h
-+++ b/include/asm-powerpc/mmu-hash64.h
-@@ -264,7 +264,7 @@ static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
- 
- extern int __hash_page_4K(unsigned long ea, unsigned long access,
- 			  unsigned long vsid, pte_t *ptep, unsigned long trap,
--			  unsigned int local, int ssize);
-+			  unsigned int local, int ssize, int subpage_prot);
- extern int __hash_page_64K(unsigned long ea, unsigned long access,
- 			   unsigned long vsid, pte_t *ptep, unsigned long trap,
- 			   unsigned int local, int ssize);
-@@ -277,6 +277,7 @@ extern int hash_huge_page(struct mm_struct *mm, unsigned long access,
- extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 			     unsigned long pstart, unsigned long mode,
- 			     int psize, int ssize);
-+extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
- 
- extern void htab_initialize(void);
- extern void htab_initialize_secondary(void);
-diff --git a/include/asm-powerpc/pgtable-64k.h b/include/asm-powerpc/pgtable-64k.h
-index bd54b77..57430da 100644
---- a/include/asm-powerpc/pgtable-64k.h
-+++ b/include/asm-powerpc/pgtable-64k.h
-@@ -11,7 +11,11 @@
- 
- #ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
--#define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
-+#ifndef CONFIG_PPC_SUBPAGE_PROT
-+# define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
-+#else
-+# define PMD_TABLE_SIZE	((sizeof(pmd_t) << PMD_INDEX_SIZE) * 2)
-+#endif
- #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
- #endif	/* __ASSEMBLY__ */
- 
-diff --git a/include/asm-powerpc/pgtable-ppc64.h b/include/asm-powerpc/pgtable-ppc64.h
-index dd4c26d..a5546e8 100644
---- a/include/asm-powerpc/pgtable-ppc64.h
-+++ b/include/asm-powerpc/pgtable-ppc64.h
-@@ -192,7 +192,11 @@ static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
- #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
- 				 || (pmd_val(pmd) & PMD_BAD_BITS))
- #define	pmd_present(pmd)	(pmd_val(pmd) != 0)
--#define	pmd_clear(pmdp)		(pmd_val(*(pmdp)) = 0)
-+#ifndef CONFIG_PPC_SUBPAGE_PROT
-+# define pmd_clear(pmdp)	(pmd_val(*(pmdp)) = 0)
-+#else
-+extern void pmd_clear(pmd_t *pmdp);
-+#endif
- #define pmd_page_vaddr(pmd)	(pmd_val(pmd) & ~PMD_MASKED_BITS)
- #define pmd_page(pmd)		virt_to_page(pmd_page_vaddr(pmd))
- 
-diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
-index 11d5383..73f9ab5 100644
---- a/include/asm-powerpc/systbl.h
-+++ b/include/asm-powerpc/systbl.h
-@@ -104,7 +104,7 @@ COMPAT_SYS_SPU(setpriority)
- SYSCALL(ni_syscall)
- COMPAT_SYS(statfs)
- COMPAT_SYS(fstatfs)
--SYSCALL(ni_syscall)
-+SYSCALL(subpage_prot)
- COMPAT_SYS_SPU(socketcall)
- COMPAT_SYS_SPU(syslog)
- COMPAT_SYS_SPU(setitimer)
-diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
-index 97d82b6..bc7eebc 100644
---- a/include/asm-powerpc/unistd.h
-+++ b/include/asm-powerpc/unistd.h
-@@ -111,7 +111,7 @@
- #define __NR_profil		 98
- #define __NR_statfs		 99
- #define __NR_fstatfs		100
--#define __NR_ioperm		101
-+#define __NR_subpage_prot	101
- #define __NR_socketcall		102
- #define __NR_syslog		103
- #define __NR_setitimer		104
+iD8DBQFHWOSqmwytjiwfWMwRAnSIAJ0ea1HisHTLBfeApmdoHx+aSRbQ9wCbBC9C
+I8mLshEVleoPG9OkJVUHTo0=
+=WZO6
+-----END PGP SIGNATURE-----
