@@ -1,146 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbXLGXh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbXLGXjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbXLGXh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 18:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXLGXhV
+	id S1755868AbXLGXjR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 18:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXLGXjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 18:37:21 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60261 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751406AbXLGXhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 18:37:19 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
+	Fri, 7 Dec 2007 18:39:08 -0500
+Received: from threatwall.zlynx.org ([199.45.143.218]:34578 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751825AbXLGXjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 18:39:07 -0500
+Subject: Re: 2.6.24-rc4-mm1 and Very Slow PCMCIA Compact Flash
+From: Zan Lynx <zlynx@acm.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org, rjw@sisk.pl,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	<20071207040219.e231cbc7.akpm@linux-foundation.org>
-	<fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
-	<1197053179.7532.23.camel@heimdal.trondhjem.org>
-	<fa4052ef0712071055r2fe33f2ep34fed2537970c8ef@mail.gmail.com>
-	<fa4052ef0712071116x2b727faau190ec14e4b2a2d47@mail.gmail.com>
-	<fa4052ef0712071139x30ada982r570513c5a0fb2657@mail.gmail.com>
-	<1197067918.10831.13.camel@heimdal.trondhjem.org>
-	<20071207151444.af5d8e11.akpm@linux-foundation.org>
-Date: Fri, 07 Dec 2007 16:35:04 -0700
-In-Reply-To: <20071207151444.af5d8e11.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 7 Dec 2007 15:14:44 -0800")
-Message-ID: <m14peuqdsn.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <20071207152249.360af326.akpm@linux-foundation.org>
+References: <1197059904.15428.15.camel@localhost>
+	 <20071207150251.a0dbae23.akpm@linux-foundation.org>
+	 <1197068983.15428.29.camel@localhost>
+	 <20071207152249.360af326.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DqAwPAeW7Gfhi+oYS+Kg"
+Date: Fri, 07 Dec 2007 23:39:04 +0000
+Message-Id: <1197070744.15428.33.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20071207/1J0mmf-0001l1-AJ-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Fri, 07 Dec 2007 17:51:58 -0500
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
->
->> 
->> On Fri, 2007-12-07 at 14:39 -0500, Shane wrote:
->> > On Dec 7, 2007 2:16 PM, Shane <gnome42@gmail.com> wrote:
->> > ...
->> > > Confirmed working in rc4-git5.  I'll deploy this kernel in a few more
->> > > spots and check for other regressions.
->> > 
->> > Hmm, I installed a new kernel built from the same sources on the NFS
->> > server. And now I don't see anything at all in the crossmnt dirs.
->> > 
->> > ls /dirA/dirB/dirC  --> zero output (empty dir)
->> > 
->> > Are there any other pending fixes?
->> > 
->> > Shane
->> 
->> You've probably fallen afoul of 
->> 
->>    http://bugzilla.kernel.org/show_bug.cgi?id=9504
->> 
->
-> Yeah.
->
-> I have a tentative fix below but I can't seem to get Eric and Denis to get
-> a suitable fix nailed down.  It's urgent!
+--=-DqAwPAeW7Gfhi+oYS+Kg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Andrew, if it is truly urgent please grab either fix, as they will sort
-out the worst of the symptoms.
 
-Mine is a little more thorough, and possibly a little less performant.
-However since mounts don't appear to be residing under /proc/net it
-isn't a significant issue.
+On Fri, 2007-12-07 at 15:22 -0800, Andrew Morton wrote:
+> On Fri, 07 Dec 2007 23:09:43 +0000
+> Zan Lynx <zlynx@acm.org> wrote:
+>=20
+> >=20
+> > On Fri, 2007-12-07 at 15:02 -0800, Andrew Morton wrote:
+> > > On Fri, 07 Dec 2007 20:38:24 +0000
+> > > Zan Lynx <zlynx@acm.org> wrote:
+> > >=20
+> > > > While I'm reporting problems I'll get this one out there.
+> > > >=20
+> > > > I normally use a USB-2 memory card reader but I also have a PCMCIA
+> > > > CompactFlash adapter that I use occasionally.  During the MM series
+> > > > kernels 2.6.22 and 23 (I am pretty sure) this didn't work at all.  =
+I
+> > > > don't know about vanilla since I don't run that.
+> > > >=20
+> > > > Now with MM kernels 2.6.24 rc1-4 the PCMCIA adapter works again, bu=
+t I
+> > > > only get read rates of 1.6 MB/s.  When it used to work in 2.6.20 I =
+got
+> > > > at least 16 MB/s.  The card itself is capable of 30+ in the USB-2
+> > > > reader.
+> > > >
+> >=20
+[cut]
+> Oh, OK.  Hopefully the ata guys can help out with this.
+>=20
+> I don't know if it actually strictly a regression?  Did libata ever suppo=
+rt
+> that device in any earlier kernels?
 
-> From: "Denis V. Lunev" <den@openvz.org>
->
-> /proc/sys/fs/binfmt_misc dentry disappeared during d_revalidate. 
-> d_revalidate only dentries from shadowed one and below. 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9504
->
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Marcus Better <marcus@better.se>
-> Signed-off-by: Denis V. Lunev <den@openvz.org>
-> Cc: Marcus Better <marcus@better.se>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  fs/proc/generic.c |   14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
->
-> diff -puN fs/proc/generic.c~lost-content-of-proc-sys-fs-binfmt_misc
-> fs/proc/generic.c
-> --- a/fs/proc/generic.c~lost-content-of-proc-sys-fs-binfmt_misc
-> +++ a/fs/proc/generic.c
-> @@ -380,12 +380,17 @@ static int proc_revalidate_dentry(struct
->  	return 0;
->  }
->  
-> -static struct dentry_operations proc_dentry_operations =
-> +static struct dentry_operations proc_dentry_shadow_operations =
->  {
->  	.d_delete	= proc_delete_dentry,
->  	.d_revalidate	= proc_revalidate_dentry,
->  };
->  
-> +static struct dentry_operations proc_dentry_operations =
-> +{
-> +	.d_delete	= proc_delete_dentry,
-> +};
-> +
->  /*
->   * Don't create negative dentries here, return -ENOENT by hand
->   * instead.
-> @@ -394,6 +399,7 @@ struct dentry *proc_lookup(struct inode 
->  {
->  	struct inode *inode = NULL;
->  	struct proc_dir_entry * de;
-> +	int use_shadow = 0;
->  	int error = -ENOENT;
->  
->  	lock_kernel();
-> @@ -406,8 +412,10 @@ struct dentry *proc_lookup(struct inode 
->  			if (!memcmp(dentry->d_name.name, de->name, de->namelen))
-> {
->  				unsigned int ino;
->  
-> -				if (de->shadow_proc)
-> +				if (de->shadow_proc) {
->  					de = de->shadow_proc(current, de);
-> +					use_shadow = 1;
-> +				}
->  				ino = de->low_ino;
->  				de_get(de);
->  				spin_unlock(&proc_subdir_lock);
-> @@ -423,6 +431,8 @@ struct dentry *proc_lookup(struct inode 
->  
->  	if (inode) {
->  		dentry->d_op = &proc_dentry_operations;
-> +		dentry->d_op = use_shadow ?
-> + &proc_dentry_shadow_operations : dentry->d_parent->d_op;
->  		d_add(dentry, inode);
->  		return NULL;
->  	}
-> _
+That could be why it didn't work for a few kernel versions.  I
+reconfigured for a libata-only system a while back.  And, since I
+usually use the USB-2 flash reader I didn't care much about the PCMCIA.
+
+I will try reverting that patch later tonight, in a few hours.
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-DqAwPAeW7Gfhi+oYS+Kg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHWdmYG8fHaOLTWwgRAm8vAKCY1iRViJwnnqs4Q1gu6gR/LZT5awCdHab7
+VKBRbOgE/uAmzSeUsngtHU8=
+=a9VD
+-----END PGP SIGNATURE-----
+
+--=-DqAwPAeW7Gfhi+oYS+Kg--
+
