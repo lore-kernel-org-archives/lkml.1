@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbXLGAnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbXLGAqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbXLGAnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 19:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbXLGAnO
+	id S1755586AbXLGAqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 19:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXLGAqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 19:43:14 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33632 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752068AbXLGAnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 19:43:14 -0500
-Date: Thu, 6 Dec 2007 16:42:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Marco Gatti <marco@pianoinflames.de>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Bug: get EXT3-fs error Allocating block in system zone
-In-Reply-To: <20071206162500.1f76a234.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0712061631510.13796@woody.linux-foundation.org>
-References: <4755BEA1.4090604@pianoinflames.de> <20071206162500.1f76a234.akpm@linux-foundation.org>
+	Thu, 6 Dec 2007 19:46:40 -0500
+Received: from nic2.axis.se ([193.13.178.10]:51358 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752979AbXLGAqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 19:46:39 -0500
+Date: Fri, 7 Dec 2007 01:46:26 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, mikael.starvik@axis.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 27/47] Update CRISv10 rescue head.s
+Message-ID: <20071207004626.GA17538@axis.com>
+References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com> <e3e8c6a368f3085b7ecfcb0d8b05cb84d7641fc7.1196848533.git.jesper.nilsson@axis.com> <20071206.055804.30607435.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071206.055804.30607435.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 6 Dec 2007, Andrew Morton wrote:
+On Thu, Dec 06, 2007 at 05:58:04AM -0800, David Miller wrote:
+> From: Jesper Nilsson <jesper.nilsson@axis.com>
+> Date: Fri, 30 Nov 2007 16:13:29 +0100
+>            ^^^^^^^^^^^
 > 
-> http://bugs.gentoo.org/attachment.cgi?id=135761&action=view
-> 
-> It disables PCI BARs during sizing.  ISTR Linus opining that this was the
-> wrong thing to do?
+> Any particular reason for the 6 day long delay in these mails going
+> out or is your clock simply wrong?
+> As co-postmaster, I am noticing that your postings are bouncing at a
+> lot of sites because of this.  There are several that impose things
+> like 96-hour-old limits on date fields in received mails.
 
-It looks ok now that it doesn't do it for host controllers. I guess we 
-could just apply it.
+Sorry, this is not intended. I have no idea why the date was set to
+a random value, but it was certainly not my intention.
+I did run a script to send the mails, but it's not
+clear to me why the date would be screwed up.
+Another lesson to be learned I guess, back to manual submission.
 
-> ISTR him having opinions on mmconfig too ;)
-
-That piece of unbelievable crap? Have I ever said anything negative about 
-something that shitty? I can't imagine having ever badmouthed such a 
-mindless and totally broken piece of sh*t hardware/firmware interface.
-
-> We should not require people to use obscure boot options to get their
-> machines working.
-
-Arjan swears he'll have a patch for me to only use mmconfig when actually 
-appropriate by 2.6.25. In the meantime, the BAR disable is probably worth 
-trying.
-
-But the disk errors are something else, doesn't ring a bell. Sounds like 
-IO corruption on the group descriptor block or something like that. Might 
-be worth testing to see if the problem goes away with less than 4GB of 
-RAM..
-
-		Linus
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
