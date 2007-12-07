@@ -1,208 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbXLGVLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbXLGVOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbXLGVLT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 16:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXLGVLJ
+	id S1754829AbXLGVOk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 16:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbXLGVOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 16:11:09 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40239 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752883AbXLGVLH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 16:11:07 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       protasnb@gmail.com, ak@suse.de, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 IOAPIC: de-fang IRQ compression
-References: <200711280121.18376.lenb@kernel.org>
-	<20071204163946.63ac73ce.akpm@linux-foundation.org>
-	<20071205094837.GB17911@elte.hu> <200712062141.05195.lenb@kernel.org>
-	<m1mysmqprt.fsf@ebiederm.dsl.xmission.com>
-	<20071207202613.GA18700@elte.hu>
-Date: Fri, 07 Dec 2007 14:09:08 -0700
-In-Reply-To: <20071207202613.GA18700@elte.hu> (Ingo Molnar's message of "Fri,
-	7 Dec 2007 21:26:13 +0100")
-Message-ID: <m1ejdyqkjv.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Dec 2007 16:14:32 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:51845 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751984AbXLGVOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 16:14:31 -0500
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Sat, 08 Dec 2007 02:44:25 +0530
+Message-Id: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+Subject: [PATCH] Fake NUMA emulation for PowerPC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
-
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> Attached below is my patch from last time I was looking at this 
->> problem, it doesn't quite apply but it is gives a good idea of where I 
->> think we should go.
->
-> merged it up to x86.git - see below. Alas, have no tried to build, let 
-> alone boot it. Does it look good to you?
-
-Well the forward port looks good.  Assuming nothing has changed in
-this area since February we should be good.
-
-We have one now unnecessary definition of IRQ_VECTORS in irqs-64.h
-
-Nothing actually changes with the patch below until we actually
-disable the irq compression.
 
 
-> ----------------->
-> Subject: x83: i386 IOAPIC: de-fang IRQ compression
-> From: ebiederm@xmission.com (Eric W. Biederman)
->
-> Due to hardware and software implementation limits the i386 kernel
-> can only use 224 or so different IRQs at one time.  However except
-> for actually having the irqs delivered there are no limits except
-> the arbitrary number NR_IRQS on how many irqs we can talk about
-> and deal with.
->
-> Frequently not all io_apics inputs are connected to interrupt traces
-> going to real devices, and since even when they are devices don't
->  always use all of interrupt traces routed to them.  So it makes
-> sense to be able to talk about many more irq sources then we can
-> actually use.
->
-> So this patch consolidates NR_IRQS and NR_IRQ_VECTORS into just
-> NR_IRQS and raises NR_IRQS where appropriate above the number of
-> irqs we can use at one time.
->
-> Allowing the kernel to work on big machines without complicated
-> and error prone irq remapping logic.
->
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  arch/x86/kernel/acpi/boot.c                       |    4 ++--
->  arch/x86/kernel/io_apic_32.c                      |    4 ++--
->  include/asm-x86/mach-default/irq_vectors_limits.h |    8 +++-----
->  include/asm-x86/mach-generic/irq_vectors_limits.h |    3 +--
->  include/asm-x86/mach-summit/irq_vectors_limits.h  |    3 +--
->  include/asm-x86/mach-visws/irq_vectors.h          |    1 -
->  include/asm-x86/mach-voyager/irq_vectors.h        |    1 -
->  7 files changed, 9 insertions(+), 15 deletions(-)
->
-> Index: linux-x86.q/arch/x86/kernel/acpi/boot.c
-> ===================================================================
-> --- linux-x86.q.orig/arch/x86/kernel/acpi/boot.c
-> +++ linux-x86.q/arch/x86/kernel/acpi/boot.c
-> @@ -855,7 +855,7 @@ static int __init acpi_parse_madt_ioapic
->  
->  	count =
->  	    acpi_table_parse_madt(ACPI_MADT_TYPE_INTERRUPT_OVERRIDE,
-> acpi_parse_int_src_ovr,
-> -				  NR_IRQ_VECTORS);
-> +				  NR_IRQS);
->  	if (count < 0) {
->  		printk(KERN_ERR PREFIX
->  		       "Error parsing interrupt source overrides entry\n");
-> @@ -875,7 +875,7 @@ static int __init acpi_parse_madt_ioapic
->  
->  	count =
->  	    acpi_table_parse_madt(ACPI_MADT_TYPE_NMI_SOURCE, acpi_parse_nmi_src,
-> -				  NR_IRQ_VECTORS);
-> +				  NR_IRQS);
->  	if (count < 0) {
->  		printk(KERN_ERR PREFIX "Error parsing NMI SRC entry\n");
->  		/* TBD: Cleanup to allow fallback to MPS */
-> Index: linux-x86.q/arch/x86/kernel/io_apic_32.c
-> ===================================================================
-> --- linux-x86.q.orig/arch/x86/kernel/io_apic_32.c
-> +++ linux-x86.q/arch/x86/kernel/io_apic_32.c
-> @@ -1191,14 +1191,14 @@ static inline int IO_APIC_irq_trigger(in
->  }
->  
->  /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
-> -static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = { FIRST_DEVICE_VECTOR , 0
-> };
-> +static u8 irq_vector[NR_IRQS] __read_mostly = { FIRST_DEVICE_VECTOR , 0 };
->  
->  static int __assign_irq_vector(int irq)
->  {
->  	static int current_vector = FIRST_DEVICE_VECTOR, current_offset = 0;
->  	int vector, offset;
->  
-> -	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
-> +	BUG_ON((unsigned)irq >= NR_IRQS);
->  
->  	if (irq_vector[irq] > 0)
->  		return irq_vector[irq];
-> Index: linux-x86.q/include/asm-x86/mach-default/irq_vectors_limits.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/mach-default/irq_vectors_limits.h
-> +++ linux-x86.q/include/asm-x86/mach-default/irq_vectors_limits.h
-> @@ -2,15 +2,13 @@
->  #define _ASM_IRQ_VECTORS_LIMITS_H
->  
->  #if defined(CONFIG_X86_IO_APIC) || defined(CONFIG_PARAVIRT)
-> -#define NR_IRQS 224
-> -# if (224 >= 32 * NR_CPUS)
-> -# define NR_IRQ_VECTORS NR_IRQS
-> +# if (200 >= 32 * NR_CPUS)
-> +#  define NR_IRQS 200
->  # else
-> -# define NR_IRQ_VECTORS (32 * NR_CPUS)
-> +#  define NR_IRQS (32 * NR_CPUS)
->  # endif
->  #else
->  #define NR_IRQS 16
-> -#define NR_IRQ_VECTORS NR_IRQS
->  #endif
->  
->  #endif /* _ASM_IRQ_VECTORS_LIMITS_H */
-> Index: linux-x86.q/include/asm-x86/mach-generic/irq_vectors_limits.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/mach-generic/irq_vectors_limits.h
-> +++ linux-x86.q/include/asm-x86/mach-generic/irq_vectors_limits.h
-> @@ -8,7 +8,6 @@
->   * This value should be the same in both the generic and summit subarches.
->   * Change one, change 'em both.
->   */
-> -#define NR_IRQS	224
-> -#define NR_IRQ_VECTORS	1024
-> +#define NR_IRQS	1024
->  
->  #endif /* _ASM_IRQ_VECTORS_LIMITS_H */
-> Index: linux-x86.q/include/asm-x86/mach-summit/irq_vectors_limits.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/mach-summit/irq_vectors_limits.h
-> +++ linux-x86.q/include/asm-x86/mach-summit/irq_vectors_limits.h
-> @@ -8,7 +8,6 @@
->   * This value should be the same in both the generic and summit subarches.
->   * Change one, change 'em both.
->   */
-> -#define NR_IRQS	224
-> -#define NR_IRQ_VECTORS	1024
-> +#define NR_IRQS	1024
->  
->  #endif /* _ASM_IRQ_VECTORS_LIMITS_H */
-> Index: linux-x86.q/include/asm-x86/mach-visws/irq_vectors.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/mach-visws/irq_vectors.h
-> +++ linux-x86.q/include/asm-x86/mach-visws/irq_vectors.h
-> @@ -51,7 +51,6 @@
->   */
->  #define NR_VECTORS 256
->  #define NR_IRQS 224
-> -#define NR_IRQ_VECTORS NR_IRQS
->  
->  #define FPU_IRQ			13
->  
-> Index: linux-x86.q/include/asm-x86/mach-voyager/irq_vectors.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/mach-voyager/irq_vectors.h
-> +++ linux-x86.q/include/asm-x86/mach-voyager/irq_vectors.h
-> @@ -57,7 +57,6 @@
->  
->  #define NR_VECTORS 256
->  #define NR_IRQS 224
-> -#define NR_IRQ_VECTORS NR_IRQS
->  
->  #define FPU_IRQ				13
->  
+Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+NUMA nodes can be specified using the following command line option
+
+numa=fake=<node range>
+
+node range is of the format <range1>,<range2>,...<rangeN>
+
+Each of the rangeX parameters is passed using memparse(). I find the patch
+useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
+on a non-numa box with the following arguments
+
+numa=fake=1G
+numa=fake=1G,2G
+name=fake=1G,512M,2G
+numa=fake=1500M,2800M mem=3500M
+numa=fake=1G mem=512M
+numa=fake=1G mem=1G
+
+This patch applies on top of 2.6.24-rc4.
+
+All though I've tried my best to handle some of the architecture specific
+details of PowerPC, I might have overlooked something obvious, like the usage
+of an API or some architecture tweaks. The patch depends on CONFIG_NUMA and
+I decided against creating a separate config option for fake NUMA to keep
+the code simple.
+
+Comments are as always welcome!
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/mm/numa.c |   55 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 50 insertions(+), 5 deletions(-)
+
+diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
+--- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
++++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 02:36:02.000000000 +0530
+@@ -24,6 +24,8 @@
+ 
+ static int numa_enabled = 1;
+ 
++char *cmdline __initdata;
++
+ static int numa_debug;
+ #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
+ 
+@@ -39,6 +41,40 @@ static bootmem_data_t __initdata plat_no
+ static int min_common_depth;
+ static int n_mem_addr_cells, n_mem_size_cells;
+ 
++static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
++						unsigned int *nid)
++{
++	unsigned long long mem;
++	char *p = cmdline;
++	static unsigned int fake_nid = 0;
++	static unsigned long long curr_boundary = 0;
++
++	*nid = fake_nid;
++	mem = memparse(p, &p);
++	if (!mem)
++		return 0;
++
++	if (mem < curr_boundary)
++		return 0;
++
++	curr_boundary = mem;
++
++	if ((end_pfn << PAGE_SHIFT) > mem) {
++		/*
++		 * Skip commas and spaces
++		 */
++		while (*p == ',' || *p == ' ' || *p == '\t')
++			p++;
++
++		cmdline = p;
++		fake_nid++;
++		*nid = fake_nid;
++		dbg("created new fake_node with id %d\n", fake_nid);
++		return 1;
++	}
++	return 0;
++}
++
+ static void __cpuinit map_cpu_to_node(int cpu, int node)
+ {
+ 	numa_cpu_lookup_table[cpu] = node;
+@@ -344,12 +380,14 @@ static void __init parse_drconf_memory(s
+ 			if (nid == 0xffff || nid >= MAX_NUMNODES)
+ 				nid = default_nid;
+ 		}
+-		node_set_online(nid);
+ 
+ 		size = numa_enforce_memory_limit(start, lmb_size);
+ 		if (!size)
+ 			continue;
+ 
++		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
++		node_set_online(nid);
++
+ 		add_active_range(nid, start >> PAGE_SHIFT,
+ 				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
+ 	}
+@@ -429,7 +467,6 @@ new_range:
+ 		nid = of_node_to_nid_single(memory);
+ 		if (nid < 0)
+ 			nid = default_nid;
+-		node_set_online(nid);
+ 
+ 		if (!(size = numa_enforce_memory_limit(start, size))) {
+ 			if (--ranges)
+@@ -438,6 +475,9 @@ new_range:
+ 				continue;
+ 		}
+ 
++		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
++		node_set_online(nid);
++
+ 		add_active_range(nid, start >> PAGE_SHIFT,
+ 				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
+ 
+@@ -461,7 +501,7 @@ static void __init setup_nonnuma(void)
+ 	unsigned long top_of_ram = lmb_end_of_DRAM();
+ 	unsigned long total_ram = lmb_phys_mem_size();
+ 	unsigned long start_pfn, end_pfn;
+-	unsigned int i;
++	unsigned int i, nid = 0;
+ 
+ 	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+ 	       top_of_ram, total_ram);
+@@ -471,9 +511,11 @@ static void __init setup_nonnuma(void)
+ 	for (i = 0; i < lmb.memory.cnt; ++i) {
+ 		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
+ 		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
+-		add_active_range(0, start_pfn, end_pfn);
++
++		fake_numa_create_new_node(end_pfn, &nid);
++		add_active_range(nid, start_pfn, end_pfn);
++		node_set_online(nid);
+ 	}
+-	node_set_online(0);
+ }
+ 
+ void __init dump_numa_cpu_topology(void)
+@@ -702,6 +744,9 @@ static int __init early_numa(char *p)
+ 	if (strstr(p, "debug"))
+ 		numa_debug = 1;
+ 
++	if (strstr(p, "fake="))
++		cmdline = p + 5;	/* 5 is faster than strlen("fake=") */
++
+ 	return 0;
+ }
+ early_param("numa", early_numa);
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
