@@ -1,97 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbXLGWxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbXLGWx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757269AbXLGWxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXLGWw5
+	id S1757751AbXLGWx6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbXLGWxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:52:57 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:12005 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754466AbXLGWw4 (ORCPT
+	Fri, 7 Dec 2007 17:53:50 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:49031 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753578AbXLGWxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:52:56 -0500
-Message-ID: <4759CD92.2070604@chelsio.com>
-Date: Fri, 07 Dec 2007 14:47:46 -0800
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 7 Dec 2007 17:53:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=GI+GTaqd6Zl7rpO+IWCwR0zoltBaiT6wR4mBmWlB0KNV6s9O9YsJGSD0hAYpJwm+2C1umhXrTFykfQKEx17lxFg6K7F5ZjXH2Bqajug1WHryOtspEVBYbptCqfP/pW99PkeilxmnnbyuBT3/3Q6lItP0jSHszLAXxqkE0a5XYW4=
+Message-ID: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com>
+Date: Fri, 7 Dec 2007 17:53:47 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: BUG: soft lockup - CPU#1 stuck for 15s! [swapper:0]
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, venkatesh.pallipadi@intel.com,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, wenxiong@us.ibm.com
-Subject: Re: [PATCH 2/2] cxgb3 - Parity initialization for T3C adapters
-References: <20071205181527.22106.73134.stgit@speedy5> <4759A6EA.1050106@garzik.org>
-In-Reply-To: <4759A6EA.1050106@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Dec 2007 22:46:27.0625 (UTC) FILETIME=[0091C190:01C83923]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Divy Le Ray wrote:
->> From: Divy Le Ray <divy@chelsio.com>
->>
->> Add parity initialization for T3C adapters.
->>
->> Signed-off-by: Divy Le Ray <divy@chelsio.com>
->> ---
->>
->>  drivers/net/cxgb3/adapter.h       |    1 
->>  drivers/net/cxgb3/cxgb3_main.c    |   82 ++++++++++++
->>  drivers/net/cxgb3/cxgb3_offload.c |   15 ++
->>  drivers/net/cxgb3/regs.h          |  248 
->> +++++++++++++++++++++++++++++++++++++
->>  drivers/net/cxgb3/sge.c           |   24 +++-
->>  drivers/net/cxgb3/t3_hw.c         |  131 +++++++++++++++++---
->>  6 files changed, 472 insertions(+), 29 deletions(-)
->
-> dropped patches 2-3, did not apply
->
->
+Got this on today's git (2.6.24-rc4) while compiling  stuff - Looks
+like it is related to CpuIdle stuff.
+I chose CONFIG_CPU_IDLE for the first time so I don't know when this
+was introduced.
 
-Hi Jeff,
+This is on x86_32, SMP.
 
-I noticed that you applied the first one of this 3 patches series to the 
-#upstream-fixes branch.
-These patches are intended to the #upstream (2.6.25) branch, as they are 
-built on top of the
-last 10 patches committed - 9 from me, and the white space clean up 
-(thanks!).
-May be this is the reason why they did not apply.
+BUG: soft lockup - CPU#1 stuck for 15s! [swapper:0]
 
-On this topic, I have a question: how do I get to see all the netdev-2.6 
-branches ?
-After cloning a free  netdev-2.6 tree, 'git branch' shows only the 
-master branch:
-
-bash-3.1$ git --version
-git version 1.5.3.rc4.29.g74276-dirty
--bash-3.1$ stg clone 
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
-netdev-2.6-fresh
-Cloning 
-"git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git" 
-into "netdev-2.6-fresh"...
-Initialized empty Git repository in /opt/sources/netdev-2.6-fresh/.git/
-remote: Generating pack...
-remote: Counting objects: 620879
-Done counting 633562 objects.
-remote: Deltifying 633562 objects...
-remote:  100% (633562/633562) done
-Indexing 633562 objects...
-remote: Total 633562 (delta 517968), reused 594305 (delta 478716)
- 100% (633562/633562) done
-Resolving 517968 deltas...
- 100% (517968/517968) done
-Checking 23058 files out...
- 100% (23058/23058) done
-done
--bash-3.1$ cd netdev-2.6-fresh/
--bash-3.1$ git branch
-* master
-
-Cheers,
-Divy
-
-
+Pid: 0, comm: swapper Not tainted (2.6.24-rc4 #3)
+EIP: 0060:[<c0603e22>] EFLAGS: 00000202 CPU: 1
+EIP is at _spin_lock_irqsave+0x16/0x27
+EAX: c06b4110 EBX: 00000001 ECX: f7873808 EDX: 00000293
+ESI: 00000005 EDI: f7873808 EBP: 00000000 ESP: f7829f10
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+CR0: 8005003b CR2: 004f5960 CR3: 372c5000 CR4: 000006d0
+DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+DR6: ffff0ff0 DR7: 00000400
+ [<c0438233>] tick_broadcast_oneshot_control+0x10/0xda
+ [<c0437c82>] tick_notify+0x1d4/0x2eb
+ [<c04281b4>] get_next_timer_interrupt+0x143/0x1b4
+ [<c0605819>] notifier_call_chain+0x2a/0x47
+ [<c04345a0>] raw_notifier_call_chain+0x17/0x1a
+ [<c04378b7>] clockevents_notify+0x19/0x4f
+ [<c0533cc3>] acpi_idle_enter_simple+0x183/0x1d0
+ [<c058cea3>] cpuidle_idle_call+0x53/0x78
+ [<c058ce50>] cpuidle_idle_call+0x0/0x78
+ [<c0402575>] cpu_idle+0x97/0xb8
