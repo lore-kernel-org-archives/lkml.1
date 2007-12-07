@@ -1,110 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXLGCGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXLGCMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbXLGCGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 21:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbXLGCGM
+	id S1753931AbXLGCMq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 21:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbXLGCMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 21:06:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47464 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752226AbXLGCGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 21:06:11 -0500
-Date: Thu, 6 Dec 2007 21:04:00 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071207020400.GA7650@hmsendeavour.rdu.redhat.com>
-References: <474CA733.9050908@redhat.com> <20071128153649.GC3192@redhat.com> <20071128160206.GA21286@hmsendeavour.rdu.redhat.com> <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com>
+	Thu, 6 Dec 2007 21:12:37 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:41154 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752683AbXLGCMg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 21:12:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=HGO/vBPiXUC+UauGpDlyHqmV4IWIRT469CmiFM4gWh7x0t414r6u8wAqCwIm6+fmFxVfMTxn7k4eKGYqzaC8CXMX6NSOHJkSIMIJ5Wmzmwf/sr1YlmjzpT78VN5nJChC6aZ0nk/w2eKL9AcUft955UGF3YY3O0Rk/yDRnILTIaA=
+Date: Fri, 7 Dec 2007 10:12:58 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com, mickflemm@gmail.com,
+       mcgrof@gmail.com, linux-wireless@vger.kernel.org,
+       ath5k-devel@lists.ath5k.org
+Subject: Re: 2.6.24-rc4-mm1
+Message-ID: <20071207021258.GA12624@darkstar.lan>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06, 2007 at 05:33:31PM -0700, Eric W. Biederman wrote:
-> Vivek Goyal <vgoyal@redhat.com> writes:
-> 
-> > On Thu, Dec 06, 2007 at 04:39:51PM -0500, Neil Horman wrote:
-> >> On Fri, Nov 30, 2007 at 09:51:31AM -0500, Neil Horman wrote:
-> >> > On Fri, Nov 30, 2007 at 09:42:50AM -0500, Vivek Goyal wrote:
-> >> <snip>
-> >> > 
-> >> > Thats what I'm doing at the moment.  I'm working on a RHEL5 patch at the
-> > moment
-> >> > (since thats whats on the production system thats failing), and will forward
-> >> > port it once its working
-> >> > 
-> >> > And not to split hairs, but techically thats not our _only_ choice.  We
-> > could
-> >> > force kdump boots on cpu0 as well ;)
-> >> > 
-> >> > Thanks
-> >> > Neil
-> >> > 
-> >> > > Thanks
-> >> > > Vivek
-> >> > 
-> >> 
-> >> 
-> >> Sorry to have been quiet on this issue for a few days. Interesting news to
-> >> report, though.  So I was working on a patch to do early apic enabling on
-> >> x86_64, and had something working for the old 2.6.18 kernel that we were
-> >> origionally testing on.  Unfortunately while it worked on 2.6.18 it failed
-> >> miserably on 2.6.24-rc3-mm2, causing check_timer to consistently report that
-> > the
-> >> timer interrupt wasn't getting received (even though we could successfully run
-> >> calibrate_delay).  Vivek and I were digging into this, when I ran accross the
-> >> description of the hypertransport configuration register in the opteron
-> >> specification.  It contains a bit that, suprise, configures the ht bus to
-> > either
-> >> unicast interrupts delivered accross the ht bus to a single cpu, or to
-> > broadcast
-> >> it to all cpus.  Since it seemed more likely that the 8259 in the nvidia
-> >> southbridge was transporting legacy mode interrupts over the ht bus than
-> >> directly to cpu0 via an actual wire, I wrote the attached patch to add a quirk
-> >> for nvidia chipsets, which scanned for hypertransport controllers, and ensured
-> >> that that broadcast bit was set.  Test results indicate that this solves the
-> >> problem, and kdump kernels boot just fine on the affected system.
-> >> 
-> >
-> > Hi Neil,
-> >
-> > Should we disable this broadcasting feature once we are through? Otherwise
-> > in normal systems it might mean extra traffic on hypertransport. There
-> > is no need for every interrupt to be broadcasted in normal systems?
-> 
-> My feel is that if it is for legacy interrupts only it should not be a problem.
-> Let's investigate and see if we can unconditionally enable this quirk
-> for all opteron systems.
-> 
-> Eric
+Hi,
 
-Copy that.  Thus far, I've tested it on a pure AMD engineering sample, an intel
-x86_64 box, and the affected system, a quad socket dual core AMD system with an
-nvidia chipset.  That last system is currently the only system that this patch
-will check/enable the broadcast flag on.  I did try a variant of the patch on
-the AMD engineering sample where it enabled the bit unconditionally.
-Interestingly enough, the bit was already turned on on that system.  I'm
-wondering if most systems don't already have this bit turned on.  You should be
-able to universally enable this bit, by moving the call to
-check_hypertransport_config to the top of early_quirks()
+2.6.24-rc4-mm1 build failed at drivers/net/wireless/ath5k/base.c for some inline functions like this:
+drivers/net/wireless/ath5k/base.c:292: sorry, unimplemented: inlining failed in call to 'ath5k_extend_tsf': function body not available
 
-Regards
-Neil
+fix it with adjust the order of inline function body.
 
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+
+---
+drivers/net/wireless/ath5k/base.c |   67 ++++++++++++++++----------------------
+1 file changed, 29 insertions(+), 38 deletions(-)
+
+diff -upr linux/drivers/net/wireless/ath5k/base.c linux.new/drivers/net/wireless/ath5k/base.c
+--- linux/drivers/net/wireless/ath5k/base.c	2007-12-07 10:01:42.000000000 +0800
++++ linux.new/drivers/net/wireless/ath5k/base.c	2007-12-07 10:01:49.000000000 +0800
+@@ -250,8 +250,19 @@ static int 	ath5k_rxbuf_setup(struct ath
+ static int 	ath5k_txbuf_setup(struct ath5k_softc *sc,
+ 				struct ath5k_buf *bf,
+ 				struct ieee80211_tx_control *ctl);
++
+ static inline void ath5k_txbuf_free(struct ath5k_softc *sc,
+-				struct ath5k_buf *bf);
++				struct ath5k_buf *bf)
++{
++	BUG_ON(!bf);
++	if (!bf->skb)
++		return;
++	pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
++			PCI_DMA_TODEVICE);
++	dev_kfree_skb(bf->skb);
++	bf->skb = NULL;
++}
++
+ /* Queues setup */
+ static struct 	ath5k_txq *ath5k_txq_setup(struct ath5k_softc *sc,
+ 				int qtype, int subtype);
+@@ -278,14 +289,29 @@ static int 	ath5k_beacon_setup(struct at
+ 				struct ieee80211_tx_control *ctl);
+ static void 	ath5k_beacon_send(struct ath5k_softc *sc);
+ static void 	ath5k_beacon_config(struct ath5k_softc *sc);
+-static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp);
++
++static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
++{
++	u64 tsf = ath5k_hw_get_tsf64(ah);
++
++	if ((tsf & 0x7fff) < rstamp)
++		tsf -= 0x8000;
++
++	return (tsf & ~0x7fff) | rstamp;
++}
++
+ /* Interrupt handling */
+ static int 	ath5k_init(struct ath5k_softc *sc);
+ static int 	ath5k_stop_locked(struct ath5k_softc *sc);
+ static int 	ath5k_stop_hw(struct ath5k_softc *sc);
+ static irqreturn_t ath5k_intr(int irq, void *dev_id);
+ static void 	ath5k_tasklet_reset(unsigned long data);
+-static inline void ath5k_update_txpow(struct ath5k_softc *sc);
++
++static inline void ath5k_update_txpow(struct ath5k_softc *sc)
++{
++	ath5k_hw_set_txpower_limit(sc->ah, 0);
++}
++
+ static void 	ath5k_calibrate(unsigned long data);
+ /* LED functions */
+ static void 	ath5k_led_off(unsigned long data);
+@@ -1341,21 +1367,6 @@ err_unmap:
+ 	return ret;
+ }
+ 
+-static inline void
+-ath5k_txbuf_free(struct ath5k_softc *sc, struct ath5k_buf *bf)
+-{
+-	BUG_ON(!bf);
+-	if (!bf->skb)
+-		return;
+-	pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
+-			PCI_DMA_TODEVICE);
+-	dev_kfree_skb(bf->skb);
+-	bf->skb = NULL;
+-}
+-
+-
+-
+-
+ /**************\
+ * Queues setup *
+ \**************/
+@@ -2046,20 +2057,6 @@ ath5k_beacon_config(struct ath5k_softc *
+ #undef TSF_TO_TU
+ }
+ 
+-static inline
+-u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
+-{
+-	u64 tsf = ath5k_hw_get_tsf64(ah);
+-
+-	if ((tsf & 0x7fff) < rstamp)
+-		tsf -= 0x8000;
+-
+-	return (tsf & ~0x7fff) | rstamp;
+-}
+-
+-
+-
+-
+ /********************\
+ * Interrupt handling *
+ \********************/
+@@ -2295,12 +2292,6 @@ ath5k_tasklet_reset(unsigned long data)
+ 	ath5k_reset(sc->hw);
+ }
+ 
+-static inline void
+-ath5k_update_txpow(struct ath5k_softc *sc)
+-{
+-	ath5k_hw_set_txpower_limit(sc->ah, 0);
+-}
+-
+ /*
+  * Periodically recalibrate the PHY to account
+  * for temperature/environment changes.
