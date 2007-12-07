@@ -1,128 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbXLGUno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXLGUo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758114AbXLGUno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 15:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbXLGUnf
+	id S1758185AbXLGUo6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 15:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbXLGUou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 15:43:35 -0500
-Received: from loadbalancer2.orcon.net.nz ([219.88.242.4]:48797 "EHLO
-	mx5.orcon.net.nz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753060AbXLGUnd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 15:43:33 -0500
-Message-ID: <4759B06F.60108@orcon.net.nz>
-Date: Sat, 08 Dec 2007 09:43:27 +1300
-From: Michael Cree <mcree@orcon.net.nz>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
-MIME-Version: 1.0
-To: Bob Tracy <rct@frus.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
-       kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-References: <20071207145526.B561CDBA2@gherkin.frus.com>
-In-Reply-To: <20071207145526.B561CDBA2@gherkin.frus.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-DSPAM-Check: by mx5.orcon.net.nz on Sat, 08 Dec 2007 09:43:29 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Sat Dec  8 09:43:31 2007
-X-DSPAM-Confidence: 0.8509
-X-DSPAM-Improbability: 1 in 572 chance of being spam
-X-DSPAM-Probability: 0.0000
+	Fri, 7 Dec 2007 15:44:50 -0500
+Received: from threatwall.zlynx.org ([199.45.143.218]:34511 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754111AbXLGUou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 15:44:50 -0500
+Subject: 2.6.24-rc4-mm1 and excessive block IO errors
+From: Zan Lynx <zlynx@acm.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NoBLaUe96eM9W5cB5XRq"
+Date: Fri, 07 Dec 2007 20:44:45 +0000
+Message-Id: <1197060285.15428.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20071207/1J0k3y-0000Xy-Js-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob Tracy wrote:
-> That was quick :-).  Backing out the sysctl_check.c diff gives me a
-> working kernel.  Beats the #$%@! out of me how/why, though.
-> 
-> Michael Cree: could you try backing out the diff below from your
-> 2.6.24-rc3 tree and see if things are now working for you?
 
-Yes (conference is now over).  I backed out the sysctl_check patch from 
-2.6.24-rc3 and, indeed, got a working kernel.
+--=-NoBLaUe96eM9W5cB5XRq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The working kernel (was probably 2.6.24-rc3 less sysctl_check patch, but 
-might have been a 2.6.23 variant) has the following in /sys/block
+I am not sure if this problem has been addressed already.  I read some
+about the fast-fail issues and this may be related?
 
-alpha:~# ls -l /sys/block/
-total 0
-drwxr-xr-x  5 root root 0 2007-12-08 08:55 fd0
-drwxr-xr-x  6 root root 0 2007-12-08 08:55 hde
-drwxr-xr-x  5 root root 0 2007-12-08 08:55 hdf
-drwxr-xr-x 10 root root 0 2007-12-08 08:55 sda
-drwxr-xr-x  9 root root 0 2007-12-08 08:55 sdb
-alpha:~# ls -l /sys/block/sda
-total 0
--r--r--r-- 1 root root 8192 2007-12-08 08:55 capability
--r--r--r-- 1 root root 8192 2007-12-08 08:55 dev
-lrwxrwxrwx 1 root root    0 2007-12-08 08:55 device -> 
-../../devices/pci0001:01/0001:01:06.0/host0/target0:0:1/0:0:1:0
-drwxr-xr-x 2 root root    0 2007-12-08 08:55 holders
-drwxr-xr-x 3 root root    0 2007-12-08 08:55 queue
--r--r--r-- 1 root root 8192 2007-12-08 08:55 range
--r--r--r-- 1 root root 8192 2007-12-08 08:55 removable
-drwxr-xr-x 3 root root    0 2007-12-08 08:55 sda1
-drwxr-xr-x 3 root root    0 2007-12-08 08:55 sda2
-drwxr-xr-x 3 root root    0 2007-12-08 08:55 sda3
-drwxr-xr-x 3 root root    0 2007-12-08 08:55 sda4
-drwxr-xr-x 3 root root    0 2007-12-08 08:55 sda5
--r--r--r-- 1 root root 8192 2007-12-08 08:55 size
-drwxr-xr-x 2 root root    0 2007-12-08 08:55 slaves
--r--r--r-- 1 root root 8192 2007-12-08 08:55 stat
-lrwxrwxrwx 1 root root    0 2007-12-08 08:55 subsystem -> ../../block
---w------- 1 root root 8192 2007-12-08 08:55 uevent
-alpha:~# grep . /sys/block/sda/*/dev
-/sys/block/sda/sda1/dev:8:1
-/sys/block/sda/sda2/dev:8:2
-/sys/block/sda/sda3/dev:8:3
-/sys/block/sda/sda4/dev:8:4
-/sys/block/sda/sda5/dev:8:5
+On nearly all my USB block devices, I have been getting zillions of I/O
+errors.  But they aren't real, they don't appear with 2.6.23 kernels.
 
+I can often read and write data to the device, but these IO errors cause
+error aborts in user space applications in many cases, making it a
+chancy thing to run backup software, for example.
 
+Here is a bit of dmesg from plugging in a perfectly good USB-2 flash
+drive.
 
-The broken kernel (2.6.24-rc3) has the following in /sys/block
+hub 3-0:1.0: state 7 ports 6 chg 0000 evt 0004
+ehci_hcd 0000:00:02.2: GetStatus port 2 status 001803 POWER sig=3Dj CSC CON=
+NECT
+hub 3-0:1.0: port 2, status 0501, change 0001, 480 Mb/s
+hub 3-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x501
+ehci_hcd 0000:00:02.2: port 2 high speed
+ehci_hcd 0000:00:02.2: GetStatus port 2 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 3-2: new high speed USB device using ehci_hcd and address 9
+ehci_hcd 0000:00:02.2: port 2 high speed
+ehci_hcd 0000:00:02.2: GetStatus port 2 status 001005 POWER sig=3Dse0 PE CO=
+NNECT
+usb 3-2: default language 0x0409
+usb 3-2: uevent
+usb 3-2: usb_probe_device
+usb 3-2: configuration #1 chosen from 1 choice
+usb 3-2: adding 3-2:1.0 (config #1, interface 0)
+usb 3-2:1.0: uevent
+libusual 3-2:1.0: usb_probe_interface
+libusual 3-2:1.0: usb_probe_interface - got id
+usb-storage 3-2:1.0: usb_probe_interface
+usb-storage 3-2:1.0: usb_probe_interface - got id
+scsi4 : SCSI emulation for USB Mass Storage devices
+drivers/usb/core/inode.c: creating file '009'
+usb 3-2: New USB device found, idVendor=3D05dc, idProduct=3Da400
+usb 3-2: New USB device strings: Mfr=3D1, Product=3D2, SerialNumber=3D3
+usb 3-2: Product: JUMPDRIVE
+usb 3-2: Manufacturer: LEXAR MEDIA
+usb 3-2: SerialNumber: 0A4EEC05201219080904
+usb-storage: device found at 9
+usb-storage: waiting for device to settle before scanning
+usb-storage: device scan complete
+scsi 4:0:0:0: Direct-Access     LEXAR    JUMPDRIVE        1000 PQ: 0 ANSI: =
+0 CCS
+sd 4:0:0:0: [sdg] 2026592 512-byte hardware sectors (1038 MB)
+sd 4:0:0:0: [sdg] Write Protect is off
+sd 4:0:0:0: [sdg] Mode Sense: 43 00 00 00
+sd 4:0:0:0: [sdg] Assuming drive cache: write through
+sd 4:0:0:0: [sdg] 2026592 512-byte hardware sectors (1038 MB)
+sd 4:0:0:0: [sdg] Write Protect is off
+sd 4:0:0:0: [sdg] Mode Sense: 43 00 00 00
+sd 4:0:0:0: [sdg] Assuming drive cache: write through
+ sdg: sdg1
+sd 4:0:0:0: [sdg] Attached SCSI removable disk
+sd 4:0:0:0: Attached scsi generic sg7 type 0
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 3984
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 162
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 290
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 418
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 546
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 674
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 802
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 930
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1058
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1186
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1314
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1442
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1570
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1698
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1826
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 1954
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 528288
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 528672
+sd 4:0:0:0: [sdg] Result: hostbyte=3D0x01 driverbyte=3D0x00
+end_request: I/O error, dev sdg, sector 546392
 
-alpha:~# ls -l /sys/block/
-total 0
-drwxr-xr-x  5 root root 0 Dec  8 09:22 fd0
-drwxr-xr-x  6 root root 0 Dec  8 09:22 hde
-drwxr-xr-x  5 root root 0 Dec  8 09:23 hdf
-drwxr-xr-x 10 root root 0 Dec  8 09:22 sda
-drwxr-xr-x  9 root root 0 Dec  8 09:23 sdb
-alpha:~# ls -l /sys/block/sda
-total 0
--r--r--r-- 1 root root 8192 Dec  8 09:22 capability
--r--r--r-- 1 root root 8192 Dec  8 09:22 dev
-lrwxrwxrwx 1 root root    0 Dec  8 09:23 device -> 
-../../devices/pci0001:01/0001:01:06.0/host0/target0:0:1/0:0:1:0
-drwxr-xr-x 2 root root    0 Dec  8 09:22 holders
-drwxr-xr-x 3 root root    0 Dec  8 09:22 queue
--r--r--r-- 1 root root 8192 Dec  8 09:22 range
--r--r--r-- 1 root root 8192 Dec  8 09:22 removable
-drwxr-xr-x 3 root root    0 Dec  8 09:22 sda1
-drwxr-xr-x 3 root root    0 Dec  8 09:22 sda2
-drwxr-xr-x 3 root root    0 Dec  8 09:22 sda3
-drwxr-xr-x 3 root root    0 Dec  8 09:22 sda4
-drwxr-xr-x 3 root root    0 Dec  8 09:22 sda5
--r--r--r-- 1 root root 8192 Dec  8 09:22 size
-drwxr-xr-x 2 root root    0 Dec  8 09:22 slaves
--r--r--r-- 1 root root 8192 Dec  8 09:22 stat
-lrwxrwxrwx 1 root root    0 Dec  8 09:22 subsystem -> ../../block
---w------- 1 root root 8192 Dec  8 09:22 uevent
-alpha:~# grep . /sys/block/sda/*/dev
-/sys/block/sda/sda1/dev:8:1
-/sys/block/sda/sda2/dev:8:2
-/sys/block/sda/sda3/dev:8:3
-/sys/block/sda/sda4/dev:8:4
-/sys/block/sda/sda5/dev:8:5
+--=20
+Zan Lynx <zlynx@acm.org>
 
-I failed to spot any difference (other than the formatting of the dates) 
-between the two!
+--=-NoBLaUe96eM9W5cB5XRq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Cheers
-Michael.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHWbC9G8fHaOLTWwgRAg1JAJ9OzPuX6GjKcEuHggoz5mKz5AMnzACeMyOK
+IevkIVzrO47HIffm9pnO3Ls=
+=knoR
+-----END PGP SIGNATURE-----
+
+--=-NoBLaUe96eM9W5cB5XRq--
 
