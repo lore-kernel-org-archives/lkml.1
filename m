@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbXLGWWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbXLGWXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbXLGWWg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbXLGWW2
+	id S1757446AbXLGWXP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbXLGWW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:22:28 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:5341 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbXLGWW0 (ORCPT
+	Fri, 7 Dec 2007 17:22:58 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54726 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753020AbXLGWW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:22:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=aXKEIwPnRZpuwJGvlwJgDIfJcyfwzfN7hFuqdpQOHihdduDhDFB/GFtgT6uDoyK1wPfzC5cntMkqymxSFOIq8cHPcBIen6/dvCcgz3WrZ1EITFXKa/F/6rdVkNv4ulVdcyYw+E+EcLMcAs9otS2S8/WRxeB6uQW/dMzFGVOqpqk=
-Message-ID: <43e72e890712071422j34ca2338xf98fda661f3c22fc@mail.gmail.com>
-Date: Fri, 7 Dec 2007 17:22:24 -0500
-From: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Subject: Re: 2.6.24-rc4-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, mickflemm@gmail.com,
-       linux-wireless@vger.kernel.org, ath5k-devel@lists.ath5k.org
-In-Reply-To: <20071207021258.GA12624@darkstar.lan>
+	Fri, 7 Dec 2007 17:22:57 -0500
+Message-ID: <4759C7BD.5060803@linux.vnet.ibm.com>
+Date: Sat, 08 Dec 2007 03:52:53 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
+References: <20071207211425.10223.91240.sendpatchset@balbir-laptop> <200712072301.38723.arnd@arndb.de>
+In-Reply-To: <200712072301.38723.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	 <20071207021258.GA12624@darkstar.lan>
-X-Google-Sender-Auth: 4ef89c208b38a3f7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 6, 2007 9:12 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> Hi,
->
-> 2.6.24-rc4-mm1 build failed at drivers/net/wireless/ath5k/base.c for some inline functions like this:
-> drivers/net/wireless/ath5k/base.c:292: sorry, unimplemented: inlining failed in call to 'ath5k_extend_tsf': function body not available
->
-> fix it with adjust the order of inline function body.
->
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+Arnd Bergmann wrote:
+> On Friday 07 December 2007, Balbir Singh wrote:
+>> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+>> NUMA nodes can be specified using the following command line option
+>>
+>> numa=fake=<node range>
+>>
+>> node range is of the format <range1>,<range2>,...<rangeN>
+> 
+> Excellent idea! I'd love to have this in RHEL5u1, because that would make
+> that distro boot on certain machines that have more memory than is supported
+> without an iommu driver. The problem we have is that when you simply
+> say mem=1G but all of the first gigabyte is on the first node, you end
+> up with a memoryless node, which is not supported.
+> 
+> Unfortunately, it comes too late for me now, as all new distros already boot
+> on Cell machines that need an IOMMU.
 
-Acked-by: Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
+Very interesting use case! I am sure there are others were fake NUMA
+nodes can be applied. I just listed one other in another email, apart
+from using it for playing around with NUMA like machines.
 
-Thanks Dave. What version of gcc were you using? I haven't run into this.
-
-BTW, nothing new was added in this patch, things were just shifted,
-but even that may be copyrightable. Is it fair to assume you are
-licensing these changes under the same license the file is in?
-
-For this file we'd usually use:
-
-Changes-licensed-under: 3-clause-BSD
-
-For future reference:
-
-http://linuxwireless.org/en/developers/Documentation/SubmittingPatches#Changes-licensed-undertag
-
-  Luis
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
