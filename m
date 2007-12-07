@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXLGNjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbXLGNoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbXLGNjT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 08:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbXLGNjJ
+	id S1755847AbXLGNoh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 08:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXLGNo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 08:39:09 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:49411 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753891AbXLGNjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 08:39:08 -0500
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-In-Reply-To: <20071207022646.373c92f5.akpm@linux-foundation.org>
- "from Andrew Morton at Dec 7, 2007 02:26:46 am"
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 7 Dec 2007 07:39:03 -0600 (CST)
-CC: Bob Tracy <rct@frus.com>, mingo@elte.hu, mcree@orcon.net.nz,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
-       kay.sievers@vrfy.org, greg@kroah.com
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
+	Fri, 7 Dec 2007 08:44:29 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:42505 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753325AbXLGNo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 08:44:28 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FACvdWEdMROHU/2dsb2JhbACBWo9P
+Date: Fri, 7 Dec 2007 08:44:26 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch-RFC 00/26] LTTng Kernel Trace Thread Flag
+Message-ID: <20071207134426.GA916@Krystal>
+References: <20071206024243.397994403@polymtl.ca> <y0mmysnzf2q.fsf@ton.toronto.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20071207133904.346FDDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Disposition: inline
+In-Reply-To: <y0mmysnzf2q.fsf@ton.toronto.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:38:35 up 33 days, 18:44,  3 users,  load average: 0.46, 0.38,
+	0.33
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 6 Dec 2007 23:07:08 -0600 (CST) rct@frus.com (Bob Tracy) wrote:
-> > Andrew Morton wrote:
-> > > commit 6f37ac793d6ba7b35d338f791974166f67fdd9ba
-> > > Merge: 2f1f53b... d90bf5a...
-> > > Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-> > > Date:   Wed Nov 14 18:51:48 2007 -0800
-> > > 
-> > >     Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/n
-> > >     
-> > >     * 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6:
-> > >       (omitted for brevity)
-> > > 
-> > > I'm struggling to see how any of those could have broken block device
-> > > mounting on alpha.  Are you sure you bisected right?
-> > 
-> > Based on what's in that commit, it *does* appear something went wrong
-> > with bisection.  If the implicated commit is the next one in time
-> > sequence relative to
-> > 
-> > # good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
-> > 
-> > then the test of whether I bisected correctly is as simple as applying
-> > the commit and seeing if things break, because I'm running on the
-> > kernel corresponding to 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 right
-> > now.  Let me give that a try and I'll report back.  Worst case, I'll
-> > have to start over and write off the past four days...
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 > 
-> Gad.  I trust the second time will be faster.
+> > This is an RFC for addition of a new thread flag, TIF_KERNEL_TRACE, to each
+> > architecture to activate system-wide system call tracing.
+> > [...]
 > 
-> git-bisect _is_ very error prone.  I find one of the problems is that each
-> step is so far apart in time that you forget what you were doing.  Did I
-> remember to test that iteration?  Did I install the right kernel?  etc.
+> Instead of creating a new flag, could you overload TIF_SYSCALL_TRACE,
+> putting the marker into syscall_trace(), and letting !PT_TRACED cause
+> a skip over the ptrace notification logic?
 > 
-> > Sorry about this...
-> 
-> Not appropriate ;)   Thanks for helping out.
+> - FChE
 
-Thanks for the kind words...  The above-mentioned test verified that the
-bisection was/is correct: 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 works,
-and 6f37ac793d6ba7b35d338f791974166f67fdd9ba doesn't.  Now I've got to
-figure out why.
+I don't see any PT_TRACED flag in current kernel HEAD ?
 
-"git diff 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 6f37ac793d6ba7b35d338f791974166f67fdd9ba"
-produced a relatively short patch (18,437 bytes).  The list of involved
-files:
+Hrm, let's see. If we share TIF_SYSCALL_TRACE with ptrace, we would then
+have to figure out how to get this working :
 
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-diff --git a/drivers/isdn/sc/card.h b/drivers/isdn/sc/card.h
-diff --git a/drivers/isdn/sc/packet.c b/drivers/isdn/sc/packet.c
-diff --git a/drivers/isdn/sc/shmem.c b/drivers/isdn/sc/shmem.c
-diff --git a/drivers/net/arm/ep93xx_eth.c b/drivers/net/arm/ep93xx_eth.c
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
-diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-diff --git a/drivers/net/netx-eth.c b/drivers/net/netx-eth.c
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-diff --git a/include/net/sock.h b/include/net/sock.h
-diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-diff --git a/net/core/dev.c b/net/core/dev.c
-diff --git a/net/ipv4/route.c b/net/ipv4/route.c
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+- kernel tracing activated
+- ptracing some random processes
+- kernel tracing deactivated
+- stop ptracing those processes
 
-Current state of the source tree is the 6f37ac... version, so I'll start
-backing out the above diffs in related groups and continue until I've got
-a working kernel.  For lack of an obvious target, I'll start with the
-seemingly innocuous change to sysctl_check.c.  I'll report back when I've
-got something.
+It means that we would have to keep some state information about the
+ptrace status of each process. This is currently kept by
+TIF_SYSCALL_TRACE, but since we would be overloading it, it would be
+lost when we deactivate kernel tracing. Adding a supplementary field to
+the thread_info structure is out of question here : we have to keep it
+as small as possible. So where do you propose to keep this information
+other than... another thread flag ?
+
+Mathieu
+
 
 -- 
-------------------------------------------------------------------------
-Bob Tracy          |  "They couldn't hit an elephant at this dist- "
-rct@frus.com       |   - Last words of Union General John Sedgwick,
-                   |  Battle of Spotsylvania Court House, U.S. Civil War
-------------------------------------------------------------------------
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
