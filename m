@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbXLGHN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbXLGHSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbXLGHN5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 02:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXLGHNt
+	id S1752510AbXLGHSS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 02:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXLGHSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 02:13:49 -0500
-Received: from phunq.net ([64.81.85.152]:55259 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751224AbXLGHNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 02:13:49 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
-Date: Thu, 6 Dec 2007 23:13:42 -0800
-User-Agent: KMail/1.9.5
-Cc: davidsen@tmr.com, linux-kernel@vger.kernel.org, peterz@infradead.org
-References: <200712051603.02183.phillips@phunq.net> <200712061604.41490.phillips@phunq.net> <20071206162915.a3917d1c.akpm@linux-foundation.org>
-In-Reply-To: <20071206162915.a3917d1c.akpm@linux-foundation.org>
+	Fri, 7 Dec 2007 02:18:08 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:45299 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbXLGHSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 02:18:07 -0500
+Message-ID: <4758F373.6020901@keyaccess.nl>
+Date: Fri, 07 Dec 2007 08:17:07 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "David P. Reed" <dpreed@reed.com>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <fa./27SNSh+L5T3iqFNPdHClEu+yT0@ifi.uio.no> <4758927F.50500@shaw.ca> <4758D584.90105@keyaccess.nl> <4758E014.7040108@reed.com>
+In-Reply-To: <4758E014.7040108@reed.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712062313.43383.phillips@phunq.net>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 December 2007 16:29, Andrew Morton wrote:
-> On Thu, 6 Dec 2007 16:04:41 -0800
->
-> Daniel Phillips <phillips@phunq.net> wrote:
-> > The runner up key idea is that we will gain a notion of "block
-> > device stack" (or block stack for short, so that we may implement
-> > block stackers) which for the time being will simply be Device
-> > Mapper's notion of device stack, however many warts that may have. 
-> > It's there now and we use it for ddsnap.
->
-> Perhaps all we need to track is the outermost point?
->
-> submit_bio(...)
-> {
-> 	bool remove_the_rq = false;
->
-> 	...
-> 	if (current->the_rq == NULL) {
-> 		current->the_rq = rq;
-> 		remove_the_rq = true;
-> 	}
-> 	...
-> 	if (remove_the_rq)
-> 		current->the_rq = NULL;
-> }
->
-> ?
+On 07-12-07 06:54, David P. Reed wrote:
 
-The parent patch already has that crucial property in a simple say, see
+> Pardon my ignorance, but is port 0xed really safe to push an out cycle 
+> at across the entire x86_64 family?
 
-       if (q && q->metric && !bio->bi_queue) {
-               bio->bi_queue = q;
+Please do not top-post. Who knows, probably not. You just experienced that 
+0x80 is apparently not safe for you and that one's the conventional choice 
+so it's likely that someone somewhere will have problems with 0xed as well.
 
-Regards,
+That's why I adviced you'd test and see what blows up and suggested that in 
+the absence of better fixes a 0x80/0xed port choice might be able to hang 
+off machine types as retrievable from DMI or something.
 
-Daniel
+The better fix would probably be to simply udelay(1) but you need calibrated 
+timers before you can do that and some googling leads me to believe that's 
+why it's not today. There's also a possible issue in that an I/O access 
+might serve as a method of flushing forwarding buffers on a PCI bridge but I 
+have no idea if that's a real issue (and if it is, an inb() should suffice 
+as well).
+
+> How long must real _p pauses be in reality?
+
+8 ISA bus cycles is the intended delay it seems which at a typical ISA bus 
+speed of 8 MHz amounts to 1 us.
+
+> (and who cares about what the code calls "really slow i/o").
+
+Paranoid programmers and those that need to delay for 4 us.
+
+> Why are we waiting at all?  I read the comments in io_64.h, and am a bit 
+> mystified.  Does Windoze or DOS do this magical mystery wait?
+
+The CMOS example at hand is the standard example. It's accessed through an 
+index/data register pair. You need to be sure that the RTC has switched the 
+  correct internal register to the data register before you poke at it or 
+you may read/write the wrong one.
+
+Now, as said, I can't say I've ever in fact caught _any_ piece of hardware 
+with its pants down like that and needing this for actual RTC/CMOS could as 
+far as I'm aware be more of a left-over from The Olden Days with a bus more 
+or less directly tied to the 8086 than sensible for anything on which Linux 
+could run. Hard to test though and certainly for generic outb_p use.
+
+Yes, DOS or at least many programs that ran under it did very similar things 
+but DOS ofcourse originated on those first PCs.
+
+> Anyway, the virtualization hooks in 32-bit x86 almost make it possible 
+> to isolate this simply - maybe - after the merge of 32/64 being 
+> contemplated.
+> 
+> And anyone who knows what the chipset might be doing with the 80 port 
+> rather than POST codes, perhaps could contribute.  Any nvidia folks who 
+> know what's happening under NDA?  Any Phoenix BIOS types?
+
+It's fairly surprising that 0x80 is given you trouble. It's a very well 
+known legacy port. Even though it may not be all that sensible a thing today 
+I'd say that if your machine put anything other than an actual integrated 
+POST monitor on port 0x80 it in fact fucked up.
+
+> I think the worst of the problems would be fixed by changing just the 
+> CMOS_READ/CMOS_WRITE macros.   But the danger lingers in the *_p code.
+
+Rene.
+
