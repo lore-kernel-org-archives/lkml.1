@@ -1,91 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbXLGNh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXLGNjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbXLGNh0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 08:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbXLGNhM
+	id S1755893AbXLGNjT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 08:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbXLGNjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 08:37:12 -0500
-Received: from mga02.intel.com ([134.134.136.20]:23770 "EHLO mga02.intel.com"
+	Fri, 7 Dec 2007 08:39:09 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:49411 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbXLGNhK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 08:37:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,267,1194249600"; 
-   d="scan'208";a="239043480"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1753891AbXLGNjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 08:39:08 -0500
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+In-Reply-To: <20071207022646.373c92f5.akpm@linux-foundation.org>
+ "from Andrew Morton at Dec 7, 2007 02:26:46 am"
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 7 Dec 2007 07:39:03 -0600 (CST)
+CC: Bob Tracy <rct@frus.com>, mingo@elte.hu, mcree@orcon.net.nz,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
+       kay.sievers@vrfy.org, greg@kroah.com
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Subject: RE: ptrace API extensions for BTS
-Date: Fri, 7 Dec 2007 13:36:18 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF55444010F91A7@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <200712071404.06594.ak@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: ptrace API extensions for BTS
-thread-index: Acg40a0OAWzBSa+uS26knDP1xoz0ZgAAg41A
-References: <029E5BE7F699594398CA44E3DDF55444010F8D7C@swsmsx413.ger.corp.intel.com> <200712071218.17914.ak@suse.de> <029E5BE7F699594398CA44E3DDF55444010F9074@swsmsx413.ger.corp.intel.com> <200712071404.06594.ak@suse.de>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <roland@redhat.com>, <markus.t.metzger@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
-       <mingo@elte.hu>, "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 07 Dec 2007 13:37:06.0739 (UTC) FILETIME=[4259B030:01C838D6]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20071207133904.346FDDBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Andi Kleen [mailto:ak@suse.de] 
->Sent: Freitag, 7. Dezember 2007 14:04
+Andrew Morton wrote:
+> On Thu, 6 Dec 2007 23:07:08 -0600 (CST) rct@frus.com (Bob Tracy) wrote:
+> > Andrew Morton wrote:
+> > > commit 6f37ac793d6ba7b35d338f791974166f67fdd9ba
+> > > Merge: 2f1f53b... d90bf5a...
+> > > Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+> > > Date:   Wed Nov 14 18:51:48 2007 -0800
+> > > 
+> > >     Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/n
+> > >     
+> > >     * 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6:
+> > >       (omitted for brevity)
+> > > 
+> > > I'm struggling to see how any of those could have broken block device
+> > > mounting on alpha.  Are you sure you bisected right?
+> > 
+> > Based on what's in that commit, it *does* appear something went wrong
+> > with bisection.  If the implicated commit is the next one in time
+> > sequence relative to
+> > 
+> > # good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
+> > 
+> > then the test of whether I bisected correctly is as simple as applying
+> > the commit and seeing if things break, because I'm running on the
+> > kernel corresponding to 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 right
+> > now.  Let me give that a try and I'll report back.  Worst case, I'll
+> > have to start over and write off the past four days...
+> 
+> Gad.  I trust the second time will be faster.
+> 
+> git-bisect _is_ very error prone.  I find one of the problems is that each
+> step is so far apart in time that you forget what you were doing.  Did I
+> remember to test that iteration?  Did I install the right kernel?  etc.
+> 
+> > Sorry about this...
+> 
+> Not appropriate ;)   Thanks for helping out.
 
->With Out-of-order CPUs exact global metrics are pretty difficult.
->At which point of the instruction execution would you measure? 
+Thanks for the kind words...  The above-mentioned test verified that the
+bisection was/is correct: 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 works,
+and 6f37ac793d6ba7b35d338f791974166f67fdd9ba doesn't.  Now I've got to
+figure out why.
 
-All I want to do is order the execution chunks of different 
-threads. Taking two snapshots somewhere near the beginning and 
-the end of context switching should be good enough.
+"git diff 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 6f37ac793d6ba7b35d338f791974166f67fdd9ba"
+produced a relatively short patch (18,437 bytes).  The list of involved
+files:
 
-There's all the scheduler code in between (or at least the context
-switch code). I don't think I need to worry about the exact point
-during instruction execution.
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+diff --git a/drivers/isdn/sc/card.h b/drivers/isdn/sc/card.h
+diff --git a/drivers/isdn/sc/packet.c b/drivers/isdn/sc/packet.c
+diff --git a/drivers/isdn/sc/shmem.c b/drivers/isdn/sc/shmem.c
+diff --git a/drivers/net/arm/ep93xx_eth.c b/drivers/net/arm/ep93xx_eth.c
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
+diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
+diff --git a/drivers/net/netx-eth.c b/drivers/net/netx-eth.c
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+diff --git a/include/net/sock.h b/include/net/sock.h
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+diff --git a/net/core/dev.c b/net/core/dev.c
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
 
-I don't think it makes sense to try to correlate instructions
-from different threads. It would be a wonderful feature to show
-a synchronous trace across multiple threads. But that would require
-you to measure time for each instruction. I don't think that's
-feasible without reducing performance to single stepping;-)
+Current state of the source tree is the 6f37ac... version, so I'll start
+backing out the above diffs in related groups and continue until I've got
+a working kernel.  For lack of an obvious target, I'll start with the
+seemingly innocuous change to sysctl_check.c.  I'll report back when I've
+got something.
 
-
->Anyways if RDTSC doesn't work the only global alternatives are 
->much slower
->(like southbridge timers) or very inaccurate (jiffies) 
-
-Would jiffies be a metric that works across cpu's?
-At the granularity that I want to measure, I guess that accuracy
-is not important at all.
-
-
->I would just drop it since it'll likely always be somewhat misleading.
-
-I guess I will (have to) drop it if it cannot be used for what I
-intended.
-
-
-thanks and regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "They couldn't hit an elephant at this dist- "
+rct@frus.com       |   - Last words of Union General John Sedgwick,
+                   |  Battle of Spotsylvania Court House, U.S. Civil War
+------------------------------------------------------------------------
