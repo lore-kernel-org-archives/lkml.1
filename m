@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXLGRZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbXLGRgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbXLGRZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 12:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXLGRZu
+	id S1755122AbXLGRgw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 12:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbXLGRgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 12:25:50 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58696 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753389AbXLGRZt (ORCPT
+	Fri, 7 Dec 2007 12:36:42 -0500
+Received: from msg.vodafone.pt ([212.18.167.162]:41860 "EHLO msg.vodafone.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751890AbXLGRgm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 12:25:49 -0500
-Date: Fri, 7 Dec 2007 17:19:57 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>, "David P. Reed" <dpreed@reed.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071207171957.73b619b1@the-village.bc.nu>
-In-Reply-To: <20071207163116.GB5992@one.firstfloor.org>
-References: <475879CD.9080006@reed.com>
-	<p733auekcly.fsf@bingen.suse.de>
-	<20071207160439.71b7f46a@the-village.bc.nu>
-	<20071207163116.GB5992@one.firstfloor.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Dec 2007 12:36:42 -0500
+X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Dec 2007 12:36:41 EST
+From: =?iso-8859-1?q?Lu=EDs_Mendes?= <luis.mendes@ist.utl.pt>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.23.9 001/001] parport: Added support for the Quatech SPPXP-100 Parallel port PCI ExpressCard
+Date: Fri, 7 Dec 2007 17:31:02 +0000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712071731.02799.luis.mendes@ist.utl.pt>
+X-OriginalArrivalTime: 07 Dec 2007 17:30:05.0093 (UTC) FILETIME=[CE193D50:01C838F6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Dec 2007 17:31:16 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+From: Luís P Mendes <luis.p.mendes@gmail.com>
 
-> > You don't need to. Port 0x80 historically is about 8uS so just udelay(8)
-> > and make sure the initial default delay is conservative enough before the
-> 
-> How would you make it conservative enough handling let's say a 6Ghz CPU
-> that can execute multiple jumps per cycle?
-
-Pick a sane worst case and go with it at boot. We don't have to be
-accurate before we tune udelay - over long in uSecs isnt going to hurt,
-and most post boot _p's can be replaced by udelay(8) now
-
-Alan
+Added pci device id for the Quatech SPPXP-100 ExpressCard - 0x278 - in include/linux/pci_ids.h
+Modified drivers/parport/parport_pc.c to support the Quatech SPPXP-100 Parallel port PCI ExpressCard
+Sucessfully compiled kernel modules against 2.6.23.9 vanilla kernel and tested the parport_pc module
+Signed-off-by: Luís P Mendes <luis.p.mendes@gmail.com>
+---
+This is a corrected version of the patch, the previous version had a problem, I didn't notice that the Quatech PCI vendor id
+was already present in the pci_ids.h file, and that caused a lot of warnings.
+I'm not affiliated in any way with Quatech or DPAC Technologies.
+This card is a ECP+EPP PCI Parallel port with standard registers but at a different offset like many other PCI parallel ports, as such
+the addition of this card required a small amount of modifications/code to get it to work under Linux.
+diff -uprN -X linux-2.6.23.9-vanilla/Documentation/dontdiff linux-2.6.23.9-vanilla/drivers/parport/parport_pc.c linux-2.6.23.9_mod/drivers/parport/parport_pc.c
+--- linux-2.6.23.9-vanilla/drivers/parport/parport_pc.c	2007-11-26 17:51:43.000000000 +0000
++++ linux-2.6.23.9_mod/drivers/parport/parport_pc.c	2007-12-06 00:16:54.000000000 +0000
+@@ -2774,6 +2774,7 @@ enum parport_pc_pci_cards {
+ 	netmos_9755,
+ 	netmos_9805,
+ 	netmos_9815,
++	quatech_sppxp100,
+ };
+ 
+ 
+@@ -2850,6 +2851,7 @@ static struct parport_pc_pci {
+         /* netmos_9755 */               { 2, { { 0, 1 }, { 2, 3 },} }, /* untested */
+ 	/* netmos_9805 */               { 1, { { 0, -1 }, } }, /* untested */
+ 	/* netmos_9815 */               { 2, { { 0, -1 }, { 2, -1 }, } }, /* untested */
++	/* quatech_sppxp100 */		{ 1, { { 0, 1 }, } },
+ };
+ 
+ static const struct pci_device_id parport_pc_pci_tbl[] = {
+@@ -2933,6 +2935,9 @@ static const struct pci_device_id parpor
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9805 },
+ 	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9815,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9815 },
++	/* Quatech SPPXP-100 Parallel port PCI ExpressCard */
++	{ PCI_VENDOR_ID_QUATECH, PCI_DEVICE_ID_QUATECH_SPPXP100,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, quatech_sppxp100 },
+ 	{ 0, } /* terminate list */
+ };
+ MODULE_DEVICE_TABLE(pci,parport_pc_pci_tbl);
+diff -uprN -X linux-2.6.23.9-vanilla/Documentation/dontdiff linux-2.6.23.9-vanilla/include/linux/pci_ids.h linux-2.6.23.9_mod/include/linux/pci_ids.h
+--- linux-2.6.23.9-vanilla/include/linux/pci_ids.h	2007-11-26 17:51:43.000000000 +0000
++++ linux-2.6.23.9_mod/include/linux/pci_ids.h	2007-12-06 00:16:27.000000000 +0000
+@@ -1751,6 +1751,7 @@
+ #define PCI_DEVICE_ID_QUATECH_DSC100	0x0020
+ #define PCI_DEVICE_ID_QUATECH_ESC100D	0x0050
+ #define PCI_DEVICE_ID_QUATECH_ESC100M	0x0060
++#define PCI_DEVICE_ID_QUATECH_SPPXP100  0x0278
+ 
+ #define PCI_VENDOR_ID_SEALEVEL		0x135e
+ #define PCI_DEVICE_ID_SEALEVEL_U530	0x7101
