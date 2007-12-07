@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbXLGSYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXLGScX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbXLGSYl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbXLGSYc
+	id S1756576AbXLGScX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXLGScO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:24:32 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:41031 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbXLGSYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:24:31 -0500
-Message-ID: <47598FD5.3060200@oracle.com>
-Date: Fri, 07 Dec 2007 10:24:21 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Fri, 7 Dec 2007 13:32:14 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:63253 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbXLGScM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 13:32:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=afbpLJ+U4tG39gfEvknaFF0FF532yI1QTSijjQstcWt5/skt2HKxj7Lejxl7kIQGLXKm+XK/6HoU9D0KcN9PyqidKh9SChosibIvKISyuYo7sE+18VhrsDY9Xi6bY0TVCs7e0FM8zLfdmgC3XSPD5slvZR9ETi7oAu4gMExcDCE=
+Message-ID: <d120d5000712071032r35f7c837paa513e20a9029ab4@mail.gmail.com>
+Date: Fri, 7 Dec 2007 13:32:10 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: 2.6.24: false double-clicks from USB mouse
+Cc: "Jiri Kosina" <jkosina@suse.cz>, "Mark Lord" <lkml@rtr.ca>,
+       rubini@vision.unipv.it, linux-input@vger.kernel.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <2c0942db0712070959v400901ax59f7b445ec701c27@mail.gmail.com>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
-References: <1196983219534-git-send-email-zach.brown@oracle.com> <11969832193635-git-send-email-zach.brown@oracle.com> <1196983219225-git-send-email-zach.brown@oracle.com> <11969832192868-git-send-email-zach.brown@oracle.com> <1196983219370-git-send-email-zach.brown@oracle.com> <11969832192130-git-send-email-zach.brown@oracle.com> <20071207115505.GA18013@2ka.mipt.ru>
-In-Reply-To: <20071207115505.GA18013@2ka.mipt.ru>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4752DB8C.50608@rtr.ca>
+	 <Pine.LNX.4.64.0712021918500.13260@jikos.suse.cz>
+	 <4752FE11.2050200@rtr.ca> <4752FEFE.3000600@rtr.ca>
+	 <Pine.LNX.4.64.0712022007360.13260@jikos.suse.cz>
+	 <47530680.6020206@rtr.ca>
+	 <Pine.LNX.4.64.0712022025250.13260@jikos.suse.cz>
+	 <47530B32.7080502@rtr.ca>
+	 <Pine.LNX.4.64.0712022300490.13260@jikos.suse.cz>
+	 <2c0942db0712070959v400901ax59f7b445ec701c27@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
->> +/*
->> + * syslet_ring doesn't have any kernel-side storage.  Userspace allocates them
->> + * in their address space and initializes their fields and then passes them to
->> + * the kernel.
->> + *
->> + * These hashes provide the kernel-side storage for the wait queues which
->> + * sys_syslet_ring_wait() uses and the mutex which completion uses to serialize
->> + * the (possible blocking) ordered writes of the completion and kernel head
->> + * index into the ring.
->> + *
->> + * We chose the bucket that supports a given ring by hashing a u32 that
->> + * userspace sets in the ring.
->> + */
->> +#define SYSLET_HASH_BITS (CONFIG_BASE_SMALL ? 4 : 8)
->> +#define SYSLET_HASH_NR (1 << SYSLET_HASH_BITS)
->> +#define SYSLET_HASH_MASK (SYSLET_HASH_NR - 1)
->> +static wait_queue_head_t syslet_waitqs[SYSLET_HASH_NR];
->> +static struct mutex syslet_muts[SYSLET_HASH_NR];
-> 
-> Why do you care about hashed tables scalability and not using trees?
+On Dec 7, 2007 12:59 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
+> On Dec 2, 2007 2:07 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> > Thanks. To sum up this longish thread:
+> >
+> > - Mark seems to be able to reproduce the problem quite easily; I was not
+> >   successful reproducing this no matter how hard I tried, and I also
+> >   didn't receive any similar bugreports from anyone else
+> > - we are currently waiting for Mark to provide HID_DEBUG (and preferably
+> >   also usbmon) output from the situation where multiple clicks are
+> >   being generated incorrectly
+>
+> Okay, I'm having a problem with 2.6.24-rc4 that I didn't with 2.6.23-rc6.
+>
+> When the problem hits, my mouse (synaptics touchpad) is randomly
+> moving about and clicking things whenever I have my finger on the
+> trackpad. This behavior will persists for five to ten minutes (is
+> happening now), and seems to be triggered by load (watching online
+> videos in flash player, for example -- this matches Mark's experience
+> with a make -j4).
+>
+> I *think* the touchpad is connected via ps2, which looks like it'd
+> clear usb of any blame. It's /dev/input/event6 at any rate.
+>
+> This has been happening about once a day, and seems to start because
+> of high CPU usage. ONce the CPU is idle, it still happens though, so
+> I'm not sure why it clears up.
+>
+> Any clues for where I should hunt from here?
+>
 
-Well, this notion of letting tasks safely complete to any ring they can
-address is just a possibility.  We might decide that it's not worth it.
- This implementation was an easy example that borrows from the way
-futexes do similar work.
+Can you try replacing drivers/input/ and include/linux/input.h from
+2.6.23-rc6 and see if it works or not? That should give us idea if
+input locking changes are to blame.
 
-I like it because you could have, say, different processes completing
-into a ring in shared memory.
+Thanks.
 
-If we do allow this kind of flexible ring specification, it's not at all
-clear that trees would be the best way to address the scalability
-limits.  There are lots of possibilities, including locking the page
-lock of the page which holds the head index.
-
-- z
+-- 
+Dmitry
