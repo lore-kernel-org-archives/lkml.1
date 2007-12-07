@@ -1,91 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbXLGPMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXLGPUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbXLGPMc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 10:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbXLGPMY
+	id S1754680AbXLGPUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 10:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXLGPUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 10:12:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42521 "EHLO mx2.mail.elte.hu"
+	Fri, 7 Dec 2007 10:20:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34239 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbXLGPMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 10:12:23 -0500
-Date: Fri, 7 Dec 2007 16:11:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-Message-ID: <20071207151150.GB24254@elte.hu>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47595A0A.5000502@gmail.com>
+	id S1750759AbXLGPUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 10:20:37 -0500
+Date: Fri, 7 Dec 2007 10:16:23 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Neil Horman <nhorman@tuxdriver.com>, Ben Woodard <woodard@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071207151623.GG2863@redhat.com>
+References: <20071128160206.GA21286@hmsendeavour.rdu.redhat.com> <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <20071207001023.GA7312@hmsendeavour.rdu.redhat.com> <20071207143944.GF2863@redhat.com> <20071207145315.GB10389@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47595A0A.5000502@gmail.com>
+In-Reply-To: <20071207145315.GB10389@hmsendeavour.rdu.redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 12/05/2007 06:17 AM, Andrew Morton wrote:
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
+On Fri, Dec 07, 2007 at 09:53:15AM -0500, Neil Horman wrote:
+> On Fri, Dec 07, 2007 at 09:39:44AM -0500, Vivek Goyal wrote:
+> > On Thu, Dec 06, 2007 at 07:10:23PM -0500, Neil Horman wrote:
+> > > On Thu, Dec 06, 2007 at 05:11:43PM -0500, Vivek Goyal wrote:
+> > > > On Thu, Dec 06, 2007 at 04:39:51PM -0500, Neil Horman wrote:
+> > > > > On Fri, Nov 30, 2007 at 09:51:31AM -0500, Neil Horman wrote:
+> > > > > > On Fri, Nov 30, 2007 at 09:42:50AM -0500, Vivek Goyal wrote:
+> > > > > <snip>
+> > > > > > 
+> > > > > > Thats what I'm doing at the moment.  I'm working on a RHEL5 patch at the moment
+> > > > > > (since thats whats on the production system thats failing), and will forward
+> > > > > > port it once its working
+> > > > > > 
+> > > > > > And not to split hairs, but techically thats not our _only_ choice.  We could
+> > > > > > force kdump boots on cpu0 as well ;)
+> > > > > > 
+> > > > > > Thanks
+> > > > > > Neil
+> > > > > > 
+> > > > > > > Thanks
+> > > > > > > Vivek
+> > > > > > 
+> > > > > 
+> > > > > 
+> > > > > Sorry to have been quiet on this issue for a few days. Interesting news to
+> > > > > report, though.  So I was working on a patch to do early apic enabling on
+> > > > > x86_64, and had something working for the old 2.6.18 kernel that we were
+> > > > > origionally testing on.  Unfortunately while it worked on 2.6.18 it failed
+> > > > > miserably on 2.6.24-rc3-mm2, causing check_timer to consistently report that the
+> > > > > timer interrupt wasn't getting received (even though we could successfully run
+> > > > > calibrate_delay).  Vivek and I were digging into this, when I ran accross the
+> > > > > description of the hypertransport configuration register in the opteron
+> > > > > specification.  It contains a bit that, suprise, configures the ht bus to either
+> > > > > unicast interrupts delivered accross the ht bus to a single cpu, or to broadcast
+> > > > > it to all cpus.  Since it seemed more likely that the 8259 in the nvidia
+> > > > > southbridge was transporting legacy mode interrupts over the ht bus than
+> > > > > directly to cpu0 via an actual wire, I wrote the attached patch to add a quirk
+> > > > > for nvidia chipsets, which scanned for hypertransport controllers, and ensured
+> > > > > that that broadcast bit was set.  Test results indicate that this solves the
+> > > > > problem, and kdump kernels boot just fine on the affected system.
+> > > > > 
+> > > > 
+> > > > Hi Neil,
+> > > > 
+> > > > Should we disable this broadcasting feature once we are through? Otherwise
+> > > > in normal systems it might mean extra traffic on hypertransport. There
+> > > > is no need for every interrupt to be broadcasted in normal systems?
+> > > > 
+> > > > Thanks
+> > > > Vivek
+> > > 
+> > > No, I don't think thats necessecary.  Once the apics are enabled, interrupts
+> > > shouldn't travel accross the hypertransport bus anyway, opting instead to use
+> > > the dedicated apic bus (at least thats my understanding).
+> > 
+> > I think all interrupt message travel on hypertransport. Even after APICS
+> > have been enabled.
+> > 
+> > Look at the following document.
+> > 
+> > http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24674.pdf
+> > 
+> > Have a look at figure 1, figure 2 and section 3.4.2.2 and 3.4.2.3
+> > 
+> > That's a different thing that once IOAPIC has formed the vectored message,
+> > Hypertransport might not touch the destination field.
+> >  
+> Ok, that might be the case then.
 > 
-> >  git-sched.patch
+> > Having said that, I am wondering what will happen if a system continues
+> > to operate the timer through IOAPIC in ExtInt mode. Will hypertransport
+> > keep on broadcasting that interrupt to every cpu? And every cpu will 
+> > process that interrupt.
+> > 
+> I don't think so.  IIRC once the other cpus are started they all disable the
+> timer interrupt, except for one cpu, opting instead to get the timer tick via
+> ipi, So while they all might see the interrupt packet on the ht bus, only one
+> cpu will process it.
 > 
-> breaks suspend here since -rc3-mm2. More precisely, this one:
-> softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
-> 
-> 2.6.24-rc4-mm1 minus this one works just fine. Otherwise disks stop, graphics
-> stops and then it hangs not powering down.
-> 
-> Core 2 Duo, SMP kernel, voluntary preempt, 250 HZ, SLUB, 64 bit.
-> 
-> Ideas?
 
-thanks for tracking it down. Does the patch below help?
+Does LAPIC allow to disable a specific vector and not accept interrupts? I
+don't think so. If a timer interrupt is broadcasted to every cpu I think
+everybody will accept it (like broadcast IPI). That's why intelligence
+is built into IOAPIC and direct interrupts to a cpu or group of cpu.
 
-	Ingo
+I am just trying to understand the functionality better. Can somebody help me
+understand how do we make sure that same timer interrupt is not processed by
+all cpus (assuming hypertransport is broadcasting it)?
 
----
- kernel/softlockup.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+> > Hence, I feel it is safe to restore the broadcast bit back to BIOS value once
+> > we are through calibrate_delay().
+> > 
+> I disagree.  Looking at what Yinghai said, the default setting for the broadcast
+> bit isn't actually to unicast the interrupt, its just to set the broadcast mask
+> to 0xF, or to 0xFF.  Its use is actually to allow cpus with an extended 8 bit
+> apic id see interrupts.  So its not so much to direct interrupts to cpu0, but
+> rather to the first 16 cpus rather than to all 255 available cpus.  From what
+> I've seen in my testing, systems that 'work' already have this bit set by bios,
+> and my quirk patch above does nothing to them.  Disabling this bit after
+> calibrate_dealy is going to introduce more uncertainty in systems that have been
+> proven to work.
 
-Index: linux/kernel/softlockup.c
-===================================================================
---- linux.orig/kernel/softlockup.c
-+++ linux/kernel/softlockup.c
-@@ -101,7 +101,11 @@ void softlockup_tick(void)
- 
- 	now = get_timestamp(this_cpu);
- 
--	/* Warn about unreasonable delays: */
-+	/* Wake up the high-prio watchdog task every second: */
-+	if (now > (touch_timestamp + 1))
-+		wake_up_process(per_cpu(watchdog_task, this_cpu));
-+
-+	/* Warn about unreasonable 10+ seconds delays: */
- 	if (now <= (touch_timestamp + softlockup_thresh))
- 		return;
- 
-@@ -214,7 +218,7 @@ static int watchdog(void *__bind_cpu)
- 	 */
- 	while (!kthread_should_stop()) {
- 		touch_softlockup_watchdog();
--		msleep_interruptible(10000);
-+		schedule();
- 
- 		/*
- 		 * Only do the hung-tasks check on one CPU:
+Again for my understanding, I got few questions.
+
+- Why does nvidia choose not to broadcast the interrupts and still works
+  fine? Does that mean nvidia chipse will not work the extended cpu apic
+  ids?
+
+- IOW, why do other chipsets choose to broadcast the interrupts and 
+  nvidia chooses not to and still works well.
+
+- Why do I need to broadcast the interrupts and not target specific cpus?
+
+- If I am broadcasting interrupts, how do I make sure only one cpu
+  picks it up.
+
+
+Thanks
+Vivek
