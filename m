@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbXLGTgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbXLGThK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757685AbXLGTgt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 14:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbXLGTgh
+	id S1757928AbXLGThK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 14:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbXLGTgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 7 Dec 2007 14:36:40 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:39091 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753147AbXLGTgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Dec 2007 14:36:37 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51500 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756874AbXLGTgg (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 14:36:36 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Al Boldi <a1426z@gawab.com>
-Cc: Jakub Narebski <jnareb@gmail.com>, Andreas Ericsson <ae@op5.se>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-Subject: Re: git guidance
-In-Reply-To: Your message of "Fri, 07 Dec 2007 22:04:48 +0300."
-             <200712072204.48410.a1426z@gawab.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712071353.11654.a1426z@gawab.com> <m3prxiu3oo.fsf@roke.D-201>
-            <200712072204.48410.a1426z@gawab.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1197056185_3013P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+In-Reply-To: <1197051572.3599.10.camel@lov.site> "from Kay Sievers at Dec 7,
+ 2007 07:19:32 pm"
+To: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 7 Dec 2007 13:36:30 -0600 (CST)
+CC: Ingo Molnar <mingo@elte.hu>, Bob Tracy <rct@frus.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mcree@orcon.net.nz,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org, greg@kroah.com
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Date: Fri, 07 Dec 2007 14:36:25 -0500
-Message-ID: <11272.1197056185@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20071207193630.A3145DBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1197056185_3013P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 07 Dec 2007 22:04:48 +0300, Al Boldi said:
-
-> Because WORKFLOW C is transparent, it won't affect other workflows.  So you 
-> could still use your normal WORKFLOW B in addition to WORKFLOW C, gaining an 
-> additional level of version control detail at no extra cost other than the 
-> git-engine scratch repository overhead.
+Kay Sievers wrote:
+> On Fri, 2007-12-07 at 19:06 +0100, Ingo Molnar wrote:
+> > i'm not sure how to do direct debugging on udev, so i can only guess 
+> > about what effect on the kernel side could have caused this. One bad 
+> > hack would be to "probe" udevd's behavior by changing the NET_TR entry 
+> > in various ways:
+> > 
+> >   "tr" -> "token-ring"         # breaks
+> >   "tr" -> "tr"                 # works
+> >   "tr" -> "token-rin0"         # ?            (1)
+> >   "tr" -> "TR"                 # ?            (2)
+> > 
+> > the question is, does tweak (1) and tweak (2) work or break?
+> > 
+> > but it would be a lot more effective i guess to get some udevd expert's 
+> > attention on this ...
 > 
-> BTW, is git efficient enough to handle WORKFLOW C?
+> Could we get the output of:
+>   ls -l /sys/block/sda/
+> and:
+>   grep . /sys/block/sda/*/dev
+> ?
 
-Imagine the number of commits a 'make clean; make' will do in a kernel tree, as
-it commits all those .o files... :)
+Here are the requested items for the 2.6.24-rc2-g6f37ac79-dirty kernel
+(the working one with the sysctl_check.c patch reverted):
 
+smirkin:/# ls -l /sys/block/sda
+total 0
+-r--r--r-- 1 root root 8192 Dec  7 08:36 capability
+-r--r--r-- 1 root root 8192 Dec  7 08:36 dev
+lrwxrwxrwx 1 root root    0 Dec  7 08:36 device -> ../../devices/pci0000:00/0000:00:14.0/0000:01:09.0/host0/target0:0:0/0:0:0:0
+drwxr-xr-x 2 root root    0 Dec  7 08:36 holders
+drwxr-xr-x 3 root root    0 Dec  7 08:36 queue
+-r--r--r-- 1 root root 8192 Dec  7 08:36 range
+-r--r--r-- 1 root root 8192 Dec  7 08:36 removable
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda1
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda2
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda3
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda4
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda5
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda6
+drwxr-xr-x 3 root root    0 Dec  7 08:36 sda7
+-r--r--r-- 1 root root 8192 Dec  7 08:36 size
+drwxr-xr-x 2 root root    0 Dec  7 08:36 slaves
+-r--r--r-- 1 root root 8192 Dec  7 08:36 stat
+lrwxrwxrwx 1 root root    0 Dec  7 08:36 subsystem -> ../../block
+--w------- 1 root root 8192 Dec  7 08:36 uevent
+smirkin:/# grep . /sys/block/sda/*/dev
+/sys/block/sda/sda1/dev:8:1
+/sys/block/sda/sda2/dev:8:2
+/sys/block/sda/sda3/dev:8:3
+/sys/block/sda/sda4/dev:8:4
+/sys/block/sda/sda5/dev:8:5
+/sys/block/sda/sda6/dev:8:6
+/sys/block/sda/sda7/dev:8:7
 
---==_Exmh_1197056185_3013P
-Content-Type: application/pgp-signature
+Assuming /sys/block even exists for the non-working case, I'll forward
+that info in a few hours when I can get home to reboot the machine.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHWaC5cC3lWbTT17ARAqJ5AKCatWQmDqbqcBGr/xUrB5a4nlNhsACg277z
-4cy3yUcj5tOMBQgmvY7hQQo=
-=uvAi
------END PGP SIGNATURE-----
-
---==_Exmh_1197056185_3013P--
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "They couldn't hit an elephant at this dist- "
+rct@frus.com       |   - Last words of Union General John Sedgwick,
+                   |  Battle of Spotsylvania Court House, U.S. Civil War
+------------------------------------------------------------------------
