@@ -1,323 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbXLGH4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXLGIJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbXLGH4z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 02:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXLGH4p
+	id S1753589AbXLGIJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 03:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbXLGIJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 02:56:45 -0500
-Received: from mga02.intel.com ([134.134.136.20]:55926 "EHLO mga02.intel.com"
+	Fri, 7 Dec 2007 03:09:38 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:39621 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbXLGH4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 02:56:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,265,1194249600"; 
-   d="scan'208";a="289848864"
-Subject: [PATCH 4/4 -mm] kexec based hibernation -v7 : kimgcore
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 07 Dec 2007 15:53:44 +0000
-Message-Id: <1197042824.24045.64.camel@caritas-dev.intel.com>
+	id S1750883AbXLGIJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 03:09:37 -0500
+Date: Fri, 7 Dec 2007 09:02:52 +0100
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Guillaume Chazarain" <guichaz@yahoo.fr>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Stefano Brivio" <stefano.brivio@polimi.it>,
+       "Ingo Molnar" <mingo@elte.hu>, "Robert Love" <rml@tech9.net>,
+       linux-kernel@vger.kernel.org, "Dave Jones" <davej@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Michael Buesch" <mb@bu3sch.de>,
+       "Andrew Morton"@pimp.vs19.net
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-ID: <20071207090252.1caf1509@inria.fr>
+In-Reply-To: <3d8471ca0712062318j483f8be6h256778752a13639a@mail.gmail.com>
+References: <20071207021952.6f0ac922@morte>
+ <alpine.LFD.0.99999.0712070646210.3221@localhost.localdomain>
+ <3d8471ca0712062318j483f8be6h256778752a13639a@mail.gmail.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 07 Dec 2007 07:54:11.0326 (UTC) FILETIME=[5A72D1E0:01C838A6]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a file in proc file system to access the loaded
-kexec_image, which may contains the memory image of kexeced
-system. This can be used by kexec based hibernation to create a file
-image of hibernating kernel, so that a kernel booting process is not
-needed for each hibernating.
+"Guillaume Chazarain" <guichaz@yahoo.fr> wrote:
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+> On Dec 7, 2007 6:51 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > Hmrpf. sched_clock() is used for the time stamp of the printks. We
+> > need to find some better solution other than killing off the tsc
+> > access completely.
+> 
+> Something like http://lkml.org/lkml/2007/3/16/291 that would need some refresh?
 
----
- fs/proc/Makefile      |    1 
- fs/proc/kimgcore.c    |  204 ++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/proc/proc_misc.c   |    5 +
- include/linux/kexec.h |    7 +
- kernel/kexec.c        |    5 -
- 5 files changed, 217 insertions(+), 5 deletions(-)
+And here is a refreshed one just for testing with 2.6-git. The 64 bit
+part is a shamelessly untested copy/paste as I cannot test it.
 
---- /dev/null
-+++ b/fs/proc/kimgcore.c
-@@ -0,0 +1,204 @@
-+/*
-+ * fs/proc/kimgcore.c - Interface for accessing the loaded
-+ * kexec_image, which may contains the memory image of kexeced system.
-+ * Heavily borrowed from fs/proc/kcore.c
+diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
+index 9ebc0da..d561b2f 100644
+--- a/arch/x86/kernel/tsc_32.c
++++ b/arch/x86/kernel/tsc_32.c
+@@ -5,6 +5,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/init.h>
+ #include <linux/dmi.h>
++#include <linux/percpu.h>
+ 
+ #include <asm/delay.h>
+ #include <asm/tsc.h>
+@@ -78,15 +79,32 @@ EXPORT_SYMBOL_GPL(check_tsc_unstable);
+  *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
+  *  (mathieu.desnoyers@polymtl.ca)
+  *
++ *  ns += offset to avoid sched_clock jumps with cpufreq
 + *
-+ * Copyright (C) 2007, Intel Corp.
-+ *      Huang Ying <ying.huang@intel.com>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/proc_fs.h>
-+#include <linux/user.h>
-+#include <linux/elf.h>
-+#include <linux/init.h>
-+#include <linux/kexec.h>
-+#include <linux/io.h>
-+#include <linux/highmem.h>
-+#include <asm/uaccess.h>
-+
-+struct proc_dir_entry *proc_root_kimgcore;
-+
-+static u32 kimgcore_size;
-+
-+static char *elfcorebuf;
-+static size_t elfcorebuf_sz;
-+
-+static void *buf_page;
-+
-+static ssize_t kimage_copy_to_user(struct kimage *image, char __user *buf,
-+				  unsigned long offset, size_t count)
-+{
-+	kimage_entry_t *ptr, entry;
-+	unsigned long off = 0, offinp, trunk;
-+	struct page *page;
-+	void *vaddr;
-+
-+	for_each_kimage_entry(image, ptr, entry) {
-+		if (!(entry & IND_SOURCE))
-+			continue;
-+		if (off + PAGE_SIZE > offset) {
-+			offinp = offset - off;
-+			if (count > PAGE_SIZE - offinp)
-+				trunk = PAGE_SIZE - offinp;
-+			else
-+				trunk = count;
-+			page = pfn_to_page(entry >> PAGE_SHIFT);
-+			if (PageHighMem(page)) {
-+				vaddr = kmap(page);
-+				memcpy(buf_page, vaddr+offinp, trunk);
-+				kunmap(page);
-+				vaddr = buf_page;
-+			} else
-+				vaddr = __va(entry & PAGE_MASK) + offinp;
-+			if (copy_to_user(buf, vaddr, trunk))
-+				return -EFAULT;
-+			buf += trunk;
-+			offset += trunk;
-+			count -= trunk;
-+			if (!count)
-+				break;
-+		}
-+		off += PAGE_SIZE;
-+	}
-+	return count;
-+}
-+
-+static ssize_t read_kimgcore(struct file *file, char __user *buffer,
-+			     size_t buflen, loff_t *fpos)
-+{
-+	size_t acc = 0;
-+	size_t tsz;
-+	ssize_t ssz;
-+
-+	if (buflen == 0 || *fpos >= kimgcore_size)
-+		return 0;
-+
-+	/* trim buflen to not go beyond EOF */
-+	if (buflen > kimgcore_size - *fpos)
-+		buflen = kimgcore_size - *fpos;
-+	/* Read ELF core header */
-+	if (*fpos < elfcorebuf_sz) {
-+		tsz = elfcorebuf_sz - *fpos;
-+		if (buflen < tsz)
-+			tsz = buflen;
-+		if (copy_to_user(buffer, elfcorebuf + *fpos, tsz))
-+			return -EFAULT;
-+		buflen -= tsz;
-+		*fpos += tsz;
-+		buffer += tsz;
-+		acc += tsz;
-+
-+		/* leave now if filled buffer already */
-+		if (buflen == 0)
-+			return acc;
-+	}
-+
-+	ssz = kimage_copy_to_user(kexec_image, buffer,
-+				  *fpos - elfcorebuf_sz, buflen);
-+	if (ssz < 0)
-+		return ssz;
-+
-+	*fpos += (buflen - ssz);
-+	acc += (buflen - ssz);
-+
-+	return acc;
-+}
-+
-+static int init_kimgcore(void)
-+{
-+	Elf64_Ehdr *ehdr;
-+	Elf64_Phdr *phdr;
-+	struct kexec_segment *seg;
-+	Elf64_Off off;
-+	unsigned long i;
-+
-+	elfcorebuf_sz = sizeof(Elf64_Ehdr) +
-+		kexec_image->nr_segments * sizeof(Elf64_Phdr);
-+	elfcorebuf = kzalloc(elfcorebuf_sz, GFP_KERNEL);
-+	if (!elfcorebuf)
-+		return -ENOMEM;
-+	ehdr = (Elf64_Ehdr *)elfcorebuf;
-+	memcpy(ehdr->e_ident, ELFMAG, SELFMAG);
-+	ehdr->e_ident[EI_CLASS] = ELFCLASS64;
-+	ehdr->e_ident[EI_DATA]	= ELFDATA2LSB;
-+	ehdr->e_ident[EI_VERSION] = EV_CURRENT;
-+	ehdr->e_ident[EI_OSABI] = ELFOSABI_NONE;
-+	memset(ehdr->e_ident+EI_PAD, 0, EI_NIDENT-EI_PAD);
-+	ehdr->e_type = ET_CORE;
-+	ehdr->e_machine = ELF_ARCH;
-+	ehdr->e_version = EV_CURRENT;
-+	ehdr->e_entry = kexec_image->start;
-+	ehdr->e_phoff = sizeof(Elf64_Ehdr);
-+	ehdr->e_shoff = 0;
-+	ehdr->e_flags = 0;
-+	ehdr->e_ehsize = sizeof(Elf64_Ehdr);
-+	ehdr->e_phentsize = sizeof(Elf64_Phdr);
-+	ehdr->e_phnum = kexec_image->nr_segments;
-+	ehdr->e_shentsize = 0;
-+	ehdr->e_shnum = 0;
-+	ehdr->e_shstrndx = 0;
-+
-+	off = elfcorebuf_sz;
-+	phdr = (Elf64_Phdr *)(elfcorebuf + sizeof(Elf64_Ehdr));
-+	seg = kexec_image->segment;
-+	for (i = 0; i < kexec_image->nr_segments; i++, phdr++, seg++) {
-+		phdr->p_type = PT_LOAD;
-+		phdr->p_flags = PF_R|PF_W|PF_X;
-+		phdr->p_offset = off;
-+		phdr->p_paddr = seg->mem;
-+		phdr->p_filesz = seg->memsz;
-+		phdr->p_memsz = seg->memsz;
-+		phdr->p_align = PAGE_SIZE;
-+		off += seg->memsz;
-+	}
-+	kimgcore_size = off;
-+
-+	buf_page = (void *)__get_free_page(GFP_KERNEL);
-+	if (!buf_page) {
-+		kfree(elfcorebuf);
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static void destroy_kimgcore(void)
-+{
-+	kfree(elfcorebuf);
-+	free_page((unsigned long)buf_page);
-+	elfcorebuf_sz = 0;
-+	kimgcore_size = 0;
-+}
-+
-+static int open_kimgcore(struct inode *inode, struct file *filp)
-+{
-+	int ret;
-+	if (xchg(&kexec_lock, 1))
-+		return -EBUSY;
-+	if (!kexec_image) {
-+		ret = -ENOENT;
-+		goto unlock;
-+	}
-+	ret = init_kimgcore();
-+	if (ret)
-+		goto unlock;
-+	return 0;
-+unlock:
-+	xchg(&kexec_lock, 0);
-+	return ret;
-+}
-+
-+static int release_kimgcore(struct inode *inode, struct file *filp)
-+{
-+	destroy_kimgcore();
-+	xchg(&kexec_lock, 0);
-+	return 0;
-+}
-+
-+const struct file_operations proc_kimgcore_operations = {
-+	.read = read_kimgcore,
-+	.open = open_kimgcore,
-+	.release = release_kimgcore,
-+};
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -10,6 +10,7 @@
- #include <linux/elfcore.h>
- #include <linux/elf.h>
- #include <linux/notifier.h>
-+#include <linux/proc_fs.h>
- #include <asm/kexec.h>
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+-unsigned long cyc2ns_scale __read_mostly;
  
- /* Verify architecture specific macros are defined */
-@@ -108,6 +109,10 @@ struct kimage {
- };
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
  
- 
-+#define for_each_kimage_entry(image, ptr, entry) \
-+	for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE); \
-+		ptr = (entry & IND_INDIRECTION)? \
-+			phys_to_virt((entry & PAGE_MASK)): ptr + 1)
- 
- /* kexec interface functions */
- extern void machine_kexec(struct kimage *image);
-@@ -228,6 +233,8 @@ extern size_t vmcoreinfo_max_size;
- int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
- 		unsigned long long *crash_size, unsigned long long *crash_base);
- 
-+extern const struct file_operations proc_kimgcore_operations;
-+extern struct proc_dir_entry *proc_root_kimgcore;
- #else /* !CONFIG_KEXEC */
- struct pt_regs;
- struct task_struct;
---- a/fs/proc/Makefile
-+++ b/fs/proc/Makefile
-@@ -14,5 +14,6 @@ proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysct
- proc-$(CONFIG_NET)		+= proc_net.o
- proc-$(CONFIG_PROC_KCORE)	+= kcore.o
- proc-$(CONFIG_PROC_VMCORE)	+= vmcore.o
-+proc-$(CONFIG_KEXEC)		+= kimgcore.o
- proc-$(CONFIG_PROC_DEVICETREE)	+= proc_devtree.o
- proc-$(CONFIG_PRINTK)	+= kmsg.o
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -1034,6 +1034,11 @@ void __init proc_misc_init(void)
- 	if (proc_vmcore)
- 		proc_vmcore->proc_fops = &proc_vmcore_operations;
- #endif
-+#ifdef CONFIG_KEXEC
-+	proc_root_kimgcore = create_proc_entry("kimgcore", S_IRUSR, NULL);
-+	if (proc_root_kimgcore)
-+		proc_root_kimgcore->proc_fops = &proc_kimgcore_operations;
-+#endif
- #ifdef CONFIG_MAGIC_SYSRQ
- 	{
- 		struct proc_dir_entry *entry;
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -614,11 +614,6 @@ static int kimage_terminate(struct kimag
- 	return 0;
+-static inline void set_cyc2ns_scale(unsigned long cpu_khz)
++DEFINE_PER_CPU(struct cyc2ns_params, cyc2ns) __read_mostly;
++
++static void set_cyc2ns_scale(unsigned long cpu_khz)
+ {
+-	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	struct cyc2ns_params *params;
++	unsigned long flags;
++	unsigned long long tsc_now, ns_now;
++
++	rdtscll(tsc_now);
++	params = &get_cpu_var(cyc2ns);
++
++	local_irq_save(flags);
++	ns_now = __cycles_2_ns(params, tsc_now);
++
++	params->scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	params->offset += ns_now - __cycles_2_ns(params, tsc_now);
++	local_irq_restore(flags);
++
++	put_cpu_var(cyc2ns);
  }
  
--#define for_each_kimage_entry(image, ptr, entry) \
--	for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE); \
--		ptr = (entry & IND_INDIRECTION)? \
--			phys_to_virt((entry & PAGE_MASK)): ptr +1)
--
- static void kimage_free_entry(kimage_entry_t entry)
+ /*
+diff --git a/arch/x86/kernel/tsc_64.c b/arch/x86/kernel/tsc_64.c
+index 9c70af4..93e7a06 100644
+--- a/arch/x86/kernel/tsc_64.c
++++ b/arch/x86/kernel/tsc_64.c
+@@ -10,6 +10,7 @@
+ 
+ #include <asm/hpet.h>
+ #include <asm/timex.h>
++#include <asm/timer.h>
+ 
+ static int notsc __initdata = 0;
+ 
+@@ -18,16 +19,25 @@ EXPORT_SYMBOL(cpu_khz);
+ unsigned int tsc_khz;
+ EXPORT_SYMBOL(tsc_khz);
+ 
+-static unsigned int cyc2ns_scale __read_mostly;
++DEFINE_PER_CPU(struct cyc2ns_params, cyc2ns) __read_mostly;
+ 
+-static inline void set_cyc2ns_scale(unsigned long khz)
++static void set_cyc2ns_scale(unsigned long cpu_khz)
  {
- 	struct page *page;
+-	cyc2ns_scale = (NSEC_PER_MSEC << NS_SCALE) / khz;
+-}
++	struct cyc2ns_params *params;
++	unsigned long flags;
++	unsigned long long tsc_now, ns_now;
+ 
+-static unsigned long long cycles_2_ns(unsigned long long cyc)
+-{
+-	return (cyc * cyc2ns_scale) >> NS_SCALE;
++	rdtscll(tsc_now);
++	params = &get_cpu_var(cyc2ns);
++
++	local_irq_save(flags);
++	ns_now = __cycles_2_ns(params, tsc_now);
++
++	params->scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	params->offset += ns_now - __cycles_2_ns(params, tsc_now);
++	local_irq_restore(flags);
++
++	put_cpu_var(cyc2ns);
+ }
+ 
+ unsigned long long sched_clock(void)
+diff --git a/include/asm-x86/timer.h b/include/asm-x86/timer.h
+index 0db7e99..ff4f2a3 100644
+--- a/include/asm-x86/timer.h
++++ b/include/asm-x86/timer.h
+@@ -2,6 +2,7 @@
+ #define _ASMi386_TIMER_H
+ #include <linux/init.h>
+ #include <linux/pm.h>
++#include <linux/percpu.h>
+ 
+ #define TICK_SIZE (tick_nsec / 1000)
+ 
+@@ -16,7 +17,7 @@ extern int recalibrate_cpu_khz(void);
+ #define calculate_cpu_khz() native_calculate_cpu_khz()
+ #endif
+ 
+-/* Accellerators for sched_clock()
++/* Accelerators for sched_clock()
+  * convert from cycles(64bits) => nanoseconds (64bits)
+  *  basic equation:
+  *		ns = cycles / (freq / ns_per_sec)
+@@ -31,20 +32,44 @@ extern int recalibrate_cpu_khz(void);
+  *	And since SC is a constant power of two, we can convert the div
+  *  into a shift.
+  *
+- *  We can use khz divisor instead of mhz to keep a better percision, since
++ *  We can use khz divisor instead of mhz to keep a better precision, since
+  *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
+  *  (mathieu.desnoyers@polymtl.ca)
+  *
++ *  ns += offset to avoid sched_clock jumps with cpufreq
++ *
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+-extern unsigned long cyc2ns_scale __read_mostly;
++
++struct cyc2ns_params {
++	unsigned long scale;
++	unsigned long long offset;
++};
++
++DECLARE_PER_CPU(struct cyc2ns_params, cyc2ns) __read_mostly;
+ 
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+ 
+-static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++static inline unsigned long long __cycles_2_ns(struct cyc2ns_params *params,
++					       unsigned long long cyc)
+ {
+-	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	return ((cyc * params->scale) >> CYC2NS_SCALE_FACTOR) + params->offset;
+ }
+ 
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++{
++	struct cyc2ns_params *params;
++	unsigned long flags;
++	unsigned long long ns;
++
++	params = &get_cpu_var(cyc2ns);
++
++	local_irq_save(flags);
++	ns = __cycles_2_ns(params, cyc);
++	local_irq_restore(flags);
++
++	put_cpu_var(cyc2ns);
++	return ns;
++}
+ 
+ #endif
+
+
+-- 
+Guillaume
