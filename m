@@ -1,36 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXLGPGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbXLGPMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbXLGPGd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 10:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXLGPGY
+	id S1755398AbXLGPMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 10:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbXLGPMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 10:06:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34493 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Dec 2007 10:12:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42521 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbXLGPGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 10:06:22 -0500
-Date: Fri, 7 Dec 2007 16:05:49 +0100
+	id S1750759AbXLGPMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 10:12:23 -0500
+Date: Fri, 7 Dec 2007 16:11:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Bob Tracy <rct@frus.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mcree@orcon.net.nz,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
-       kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Message-ID: <20071207150549.GA24254@elte.hu>
-References: <20071207022646.373c92f5.akpm@linux-foundation.org> <20071207145526.B561CDBA2@gherkin.frus.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
+Message-ID: <20071207151150.GB24254@elte.hu>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47595A0A.5000502@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071207145526.B561CDBA2@gherkin.frus.com>
+In-Reply-To: <47595A0A.5000502@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
+X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,43 +38,54 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Bob Tracy <rct@frus.com> wrote:
+* Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> > Current state of the source tree is the 6f37ac... version, so I'll 
-> > start backing out the above diffs in related groups and continue 
-> > until I've got a working kernel.  For lack of an obvious target, 
-> > I'll start with the seemingly innocuous change to sysctl_check.c.  
-> > I'll report back when I've got something.
+> On 12/05/2007 06:17 AM, Andrew Morton wrote:
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
 > 
-> That was quick :-).  Backing out the sysctl_check.c diff gives me a 
-> working kernel.  Beats the #$%@! out of me how/why, though.
+> >  git-sched.patch
 > 
-> Michael Cree: could you try backing out the diff below from your 
-> 2.6.24-rc3 tree and see if things are now working for you?
+> breaks suspend here since -rc3-mm2. More precisely, this one:
+> softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
 > 
-> Here's "uname -a", just to confirm (maybe) I'm running on what I say 
-> works:
+> 2.6.24-rc4-mm1 minus this one works just fine. Otherwise disks stop, graphics
+> stops and then it hangs not powering down.
 > 
-> Linux smirkin 2.6.24-rc2-g6f37ac79-dirty #2 Fri Dec 7 08:03:12 CST 2007 alpha
+> Core 2 Duo, SMP kernel, voluntary preempt, 250 HZ, SLUB, 64 bit.
 > 
-> Here's the diff I backed out (patch -R).  It's short...
-> 
-> diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-> index 5a2f2b2..4abc6d2 100644
-> --- a/kernel/sysctl_check.c
-> +++ b/kernel/sysctl_check.c
-> @@ -738,7 +738,7 @@ static struct trans_ctl_table trans_net_table[] = {
->  	{ NET_ROSE,		"rose",		trans_net_rose_table },
->  	{ NET_IPV6,		"ipv6",		trans_net_ipv6_table },
->  	{ NET_X25,		"x25",		trans_net_x25_table },
-> -	{ NET_TR,		"tr",		trans_net_tr_table },
-> +	{ NET_TR,		"token-ring",	trans_net_tr_table },
->  	{ NET_DECNET,		"decnet",	trans_net_decnet_table },
->  	/*  NET_ECONET not used */
->  	{ NET_SCTP,		"sctp",		trans_net_sctp_table },
+> Ideas?
 
-reverting this makes the kernel image shorter by 8 bytes - so perhaps 
-some alignment issue somewhere? Or something gets overflown? Does any of 
-this get actually used by your bootup?
+thanks for tracking it down. Does the patch below help?
 
 	Ingo
+
+---
+ kernel/softlockup.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux/kernel/softlockup.c
+===================================================================
+--- linux.orig/kernel/softlockup.c
++++ linux/kernel/softlockup.c
+@@ -101,7 +101,11 @@ void softlockup_tick(void)
+ 
+ 	now = get_timestamp(this_cpu);
+ 
+-	/* Warn about unreasonable delays: */
++	/* Wake up the high-prio watchdog task every second: */
++	if (now > (touch_timestamp + 1))
++		wake_up_process(per_cpu(watchdog_task, this_cpu));
++
++	/* Warn about unreasonable 10+ seconds delays: */
+ 	if (now <= (touch_timestamp + softlockup_thresh))
+ 		return;
+ 
+@@ -214,7 +218,7 @@ static int watchdog(void *__bind_cpu)
+ 	 */
+ 	while (!kthread_should_stop()) {
+ 		touch_softlockup_watchdog();
+-		msleep_interruptible(10000);
++		schedule();
+ 
+ 		/*
+ 		 * Only do the hung-tasks check on one CPU:
