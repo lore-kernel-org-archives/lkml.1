@@ -1,92 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbXLGTEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756313AbXLGTG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbXLGTEP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 14:04:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbXLGTEA
+	id S1756313AbXLGTG5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 14:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXLGTGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 14:04:00 -0500
-Received: from picton.eecg.toronto.edu ([128.100.10.141]:53785 "EHLO
-	picton.eecg.toronto.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbXLGTEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 14:04:00 -0500
-X-Greylist: delayed 2730 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Dec 2007 14:03:59 EST
-Date: Fri, 7 Dec 2007 13:18:17 -0500
-From: Livio Soares <livio@eecg.toronto.edu>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Mark rwsem functions as __sched for wchan/profiling
-Message-ID: <20071207181817.GA16367@eecg.toronto.edu>
-Mail-Followup-To: Livio Soares <livio@eecg.toronto.edu>,
-	linux-kernel@vger.kernel.org
+	Fri, 7 Dec 2007 14:06:45 -0500
+Received: from [212.12.190.22] ([212.12.190.22]:43159 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752165AbXLGTGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 14:06:44 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Jakub Narebski <jnareb@gmail.com>
+Subject: Re: git guidance
+Date: Fri, 7 Dec 2007 22:04:48 +0300
+User-Agent: KMail/1.5
+Cc: Andreas Ericsson <ae@op5.se>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712071353.11654.a1426z@gawab.com> <m3prxiu3oo.fsf@roke.D-201>
+In-Reply-To: <m3prxiu3oo.fsf@roke.D-201>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712072204.48410.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Jakub Narebski wrote:
+> Al Boldi <a1426z@gawab.com> writes:
+> > For example:
+> >
+> >   echo "// last comment on this file" >> /gitfs.mounted/file
+> >
+> > should do an implied checkpoint, and make these checkpoints immediately
+> > visible under some checkpoint branch of the gitfs mounted dir.
+> >
+> > Note, this way the developer gets version control without even noticing,
+> > and works completely transparent to any kind of application.
+>
+> Why not use versioning filesystem for that, for example ext3cow
+> (which looks suprisingly git-like, when you take into account that
+> for ext3cow history is linear and centralized, so one can use date
+> or sequential number to name commits).
+>
+> See GitLinks page on Git Wiki, "Other links" section:
+>   http://www.ext3cow.com/
 
-  This following commit
+Sure, Linus mentioned the cow idea before in this thread, but you would still 
+need a few hacks to get some basic Version Control features.  
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fdf8cb0909b531f9ae8f9b9d7e4eb35ba3505f07
+> Version control system is all about WORKFLOW B, where programmer
+> controls when it is time to commit (and in private repository he/she
+> can then rewrite history to arrive at "Perfect patch series"[*1*]);
+> something that for example CVS failed at, requiring programmer to do
+> a merge if upstream has any changes when trying to commit.
 
-  un-inlined  a  low-level   rwsem  function,  but  did  not   mark  it  as
-__sched. The  result is that  it now shows  up as thread wchan  (which also
-affects  /proc/profile stats).  The  following simple  patch fixes  this by
-properly marking rwsem_down_failed_common() as a __sched function.
+Because WORKFLOW C is transparent, it won't affect other workflows.  So you 
+could still use your normal WORKFLOW B in addition to WORKFLOW C, gaining an 
+additional level of version control detail at no extra cost other than the 
+git-engine scratch repository overhead.
 
-  Also in  this patch,  which is up  for discussion, marks  down_read() and
-down_write() proper as __sched. For profiling, it is pretty much useless to
-know  that a  semaphore is  beig help  - it  is necessary  to  know _which_
-one. By going  up another frame on the stack,  the information becomes much
-more useful.
+BTW, is git efficient enough to handle WORKFLOW C?
 
-  In  summary, the  below  change  to lib/rwsem.c  should  be applied;  the
-changes to  kernel/rwsem.c could be  applied if other kernel  hackers agree
-with  my  proposal that  down_read()/down_write()  in  the  profile is  not
-enough.
 
-  Cheers,
+Thanks!
 
-			Livio
-
-Signed-off-by: Livio Soares <livio@eecg.toronto.edu>
-
- kernel/rwsem.c |    4 ++--
- lib/rwsem.c    |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
---- linux-2.6.24-rc2.orig/lib/rwsem.c	2007-11-06 16:57:46.000000000 -0500
-+++ linux-2.6.24-rc2/lib/rwsem.c	2007-12-05 20:03:43.000000000 -0500
-@@ -146,7 +146,7 @@ __rwsem_do_wake(struct rw_semaphore *sem
- /*
-  * wait for a lock to be granted
-  */
--static struct rw_semaphore *
-+static struct rw_semaphore __sched *
- rwsem_down_failed_common(struct rw_semaphore *sem,
- 			struct rwsem_waiter *waiter, signed long adjustment)
- {
---- linux-2.6.24-rc2.orig/kernel/rwsem.c	2007-11-06 16:57:46.000000000 -0500
-+++ linux-2.6.24-rc2/kernel/rwsem.c	2007-12-05 21:09:55.000000000 -0500
-@@ -15,7 +15,7 @@
- /*
-  * lock for reading
-  */
--void down_read(struct rw_semaphore *sem)
-+void __sched down_read(struct rw_semaphore *sem)
- {
- 	might_sleep();
- 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
-@@ -42,7 +42,7 @@ EXPORT_SYMBOL(down_read_trylock);
- /*
-  * lock for writing
-  */
--void down_write(struct rw_semaphore *sem)
-+void __sched down_write(struct rw_semaphore *sem)
- {
- 	might_sleep();
- 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
+--
+Al
 
