@@ -1,110 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbXLGSoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXLGSqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbXLGSoo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXLGSof
+	id S1756095AbXLGSqh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXLGSq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:44:35 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:57329 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbXLGSof (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:44:35 -0500
-Subject: Re: [dm-devel] Re: 2.6.24-rc4-mm1
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <6593.1197051630@turing-police.cc.vt.edu>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	 <3941.1196941764@turing-police.cc.vt.edu>
-	 <20071206040420.6c89c675.akpm@linux-foundation.org>
-	 <4374.1196968688@turing-police.cc.vt.edu>
-	 <20071206193843.GA25125@kroah.com>
-	 <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com>
-	 <2955.1196982750@turing-police.cc.vt.edu>
-	 <1196983444.2829.38.camel@lov.site>
-	 <6593.1197051630@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Fri, 07 Dec 2007 19:44:29 +0100
-Message-Id: <1197053069.5483.8.camel@lov.site>
+	Fri, 7 Dec 2007 13:46:28 -0500
+Received: from pat.uio.no ([129.240.10.15]:59385 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752954AbXLGSq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 13:46:27 -0500
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Shane <gnome42@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	 <20071207040219.e231cbc7.akpm@linux-foundation.org>
+	 <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-IBupBxkFjx7YOD4mPYpk"
+Date: Fri, 07 Dec 2007 13:46:19 -0500
+Message-Id: <1197053179.7532.23.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19ZKj0anaE7XrqUHf/jwG42xkh28guy4Z63NOj
- 9p/S7bWRwu2f/sC4i3wwHYBEMzeUNtyvYhYf9ZMBGKBA8Lkn/g
- snXH5pA6VqZMX/oljhMXdcHrkaZKCGN
+X-Mailer: Evolution 2.12.1 
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.4, required=5.0, autolearn=disabled, AWL=-0.376)
+X-UiO-Scanned: 9B054B7B141D9B0B4A1601B1B4BFDEBB3291D1F2
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -3 maxlevel 200 minaction 2 bait 0 mail/h: 278 total 5635043 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-12-07 at 13:20 -0500, Valdis.Kletnieks@vt.edu wrote: 
-> On Fri, 07 Dec 2007 00:24:04 +0100, Kay Sievers said:
-> > On Thu, 2007-12-06 at 18:12 -0500, Valdis.Kletnieks@vt.edu wrote:
-> > > On Thu, 06 Dec 2007 23:04:12 +0100, Kay Sievers said:
-> > > 
-> > > > What's the value of SYSFS_DEPRECATED? Care to set it to yes, if it isn't,
-> > > > and try again?
-> > > 
-> > > I *knew* there was a D'Oh! error in here. ;)
-> > > 
-> > > Bisection is fast closing in on gregkh-driver-block-device.patch, which broke
-> > > my LVM almost the exact same way the *last* time it showed up in -mm ;)
-> > 
-> > Oh, it must not, if SYSFS_DEPRECATED=y is set. I hope we fixed all
-> > issues. Please let us know if it does not work, then we will need to
-> > look into it.
+
+--=-IBupBxkFjx7YOD4mPYpk
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+
+On Fri, 2007-12-07 at 13:14 -0500, Shane wrote:
+> On Dec 7, 2007 7:02 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> ...
+> > > 2.6.24-rc3-git1 is last known good kernel. The problem also exists
+> > > with the latest snap 2.6.24-rc4-git4. NFS server is 2.6.23-rc9 and
+> > > is unchanged.
+> >
+> > hm, there have been no nfs changes since 2.6.24-rc4.
 > 
-> I changed SYSFS_DEPRECATED to y, and it was able to boot with the same old
-> initrd I've been using for a while.
-
-Great!
-
-> Note that I had it set to 'n' for at least the last 4-5 -mm kernels, so it
-> *was* working fine without it..
-
-Yeah, but the raw block kobjects got converted to devices, which are
-symlinks with SYSFS_DEPRECATED=n.
-
-> > > > A fix for LVM to handle symlinks instead of directories is in the LVM
-> > > > CVS tree, but there wasn't a release since August.
-> > > 
-> > > I seem to recall it was 'nash' rather than LVM that had the indigestion the
-> > > last time around.
-> > 
-> > I think that a recent nash should work, even with SYSFS_DEPRECATED=n.
-> > Anyway, nothing should change when SYSFS_DEPRECATED set, nash works fine
-> > here, with that.
+> Ok, but the problem seems to have appeared before 2.6.24-rc4.
 > 
-> It was working fine with =n here until -rc4-mm1 as well, that's why it's a bit
-> of a surprise.  What got added to the 'deprecated' list in this iteration?
-
-Block devices got integrated in the driver model.
-
-> Now for the truly odd part - I just tried with a rebuilt initrd that included
-> the lvm.static from last night's Rawhide (lvm2-2.02.29-1.fc9).  And that didn't
-> work any better.
+> > > It is easily reproducible here, hopefully for the person who
+> > > knows how to debug it too :)
+> > >
+> >
+> > I guess a full set of the commands which you typed to reproduce this would
+> > help.
 > 
-> So to summarize: (old lvm == 2.02.24)
+> Server is 2.6.23-rc9 and is exporting:
 > 
-> release	SYSFS_DEPRECATED	lvm2		works
-> -rc3-mm2		N	old	yes
-> -rc4-mm1		N	old	no
-> -rc4-mm1		Y	old	yes
-> -rc4-mm1		N	new	no
+> /dirA/dirB
+> 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure,crossmnt)
+> /dirA/dirB/dirC
+> 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
+> /dirA/dirB/dirD
+> 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
 > 
-> (I'm sure looking at that, everybody is now going 'WTF??!?' ;)
+> The NFS client (Core2 SMP) 2.6.24-rc3-git4:
 > 
-> gregkh-driver-driver-core-fix-class-glue-dir-cleanup-logic.patch and
-> gregkh-driver-block-device.patch are the only patches left in the (very small)
-> bisect window that reference SYSFS_DEPRECATED at all (according to grep)
+> NFS-server:/dirA/dirB     /dirA/dirB    nfs
+> auto,rsize=16384,wsize=16384,hard,intr,users,exec,nfsvers=3,tcp,nolock,actimeo=0
 > 
-> Anybody got any brilliant ideas? :)
+> Then on the client when the new kernel has booted:
+> 
+> ls /dirA/dirB      --> normal listing
+> ls /dirA/dirB/dirC   -->  Stale NFS file handle
+> ls /dirA/dirB/dirD   -->  Stale NFS file handle
+> 
+> I will do a few more builds/boots and check -rc3-git2 and -rc3-git3.
 
-I guess it's nash again, which version is it?
+This problem has already been reported. The fix (which I'm planning on
+sending to Linus soon) is appended.
 
-You probably need to wait for Red Hat to catch up, and don't disable
-SYSFS_DEPRECATED for now, they don't support that.
+Cheers
+  Trond
 
-Kay
+--=-IBupBxkFjx7YOD4mPYpk
+Content-Disposition: inline; filename=linux-2.6.24-001-fix_submounts.dif
+Content-Type: message/rfc822; name=linux-2.6.24-001-fix_submounts.dif
+
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: 
+Subject: NFS: Fix NFS mountpoint crossing...
+Message-Id: <1197053179.7532.24.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+The check that was added to nfs_xdev_get_sb() to work around broken
+servers, works fine for NFSv2, but causes mountpoint crossing on NFSv3 to
+always return ESTALE.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/super.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 2426e71..ea92920 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1475,7 +1475,7 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
+ 		error = PTR_ERR(mntroot);
+ 		goto error_splat_super;
+ 	}
+-	if (mntroot->d_inode->i_op != &nfs_dir_inode_operations) {
++	if (mntroot->d_inode->i_op != server->nfs_client->rpc_ops->dir_inode_ops) {
+ 		dput(mntroot);
+ 		error = -ESTALE;
+ 		goto error_splat_super;
+
+--=-IBupBxkFjx7YOD4mPYpk--
 
