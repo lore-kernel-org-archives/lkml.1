@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbXLGRCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbXLGRDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbXLGRCz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 12:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbXLGRCs
+	id S1756525AbXLGRDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 12:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXLGRCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 12:02:48 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:45641 "EHLO mail.screens.ru"
+	Fri, 7 Dec 2007 12:02:49 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:45638 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753485AbXLGRCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753501AbXLGRCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Dec 2007 12:02:47 -0500
-Date: Fri, 7 Dec 2007 20:03:34 +0300
+Date: Fri, 7 Dec 2007 20:03:33 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] uglify while_each_pid_task() to make sure we don't count the execing pricess twice
-Message-ID: <20071207170334.GA13832@tv-sign.ru>
+Subject: [PATCH 1/2] uglify kill_pid_info() to fix kill() vs exec() race
+Message-ID: <20071207170333.GA13829@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,29 +26,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a window when de_thread() switches the leader and drops tasklist_lock.
-In that window do_each_pid_task(PIDTYPE_PID) finds both new and old leaders.
+kill_pid_info()->pid_task() could be the old leader of the execing process.
+In that case it is possible that the leader will be released before we take
+siglock. This means that kill_pid_info() (and thus sys_kill()) can return a
+false -ESRCH.
 
-The problem is pretty much theoretical and probably can be ignored. Currently
-the only users of do_each_pid_task(PIDTYPE_PID) are send_sigio/send_sigurg, so
-they can send the signal to the same process twice.
+Change the code to retry when lock_task_sighand() fails. The endless loop is
+not possible, __exit_signal() both clears ->sighand and does detach_pid().
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- PT/include/linux/pid.h~2_do_each_pid_task	2007-10-25 16:22:12.000000000 +0400
-+++ PT/include/linux/pid.h	2007-12-07 18:24:21.000000000 +0300
-@@ -160,7 +160,13 @@ static inline pid_t pid_vnr(struct pid *
- 			hlist_for_each_entry_rcu((task), pos___,	\
- 				&pid->tasks[type], pids[type].node) {
+--- PT/kernel/signal.c~1_kill_exec_race	2007-12-06 18:13:31.000000000 +0300
++++ PT/kernel/signal.c	2007-12-07 17:20:27.000000000 +0300
+@@ -1049,17 +1049,26 @@ int kill_pgrp_info(int sig, struct sigin
  
+ int kill_pid_info(int sig, struct siginfo *info, struct pid *pid)
+ {
+-	int error;
++	int error = -ESRCH;
+ 	struct task_struct *p;
+ 
+ 	rcu_read_lock();
+ 	if (unlikely(sig_needs_tasklist(sig)))
+ 		read_lock(&tasklist_lock);
+ 
++retry:
+ 	p = pid_task(pid, PIDTYPE_PID);
+-	error = -ESRCH;
+-	if (p)
++	if (p) {
+ 		error = group_send_sig_info(sig, info, p);
++		if (unlikely(error == -ESRCH))
 +			/*
-+			 * Both old and new leaders may be attached to
-+			 * the same pid in the middle of de_thread().
++			 * The task was unhashed in between, try again.
++			 * If it is dead, pid_task() will return NULL,
++			 * if we race with de_thread() it will find the
++			 * new leader.
 +			 */
- #define while_each_pid_task(pid, type, task)				\
-+				if (type == PIDTYPE_PID)		\
-+					break;				\
- 			}						\
- 	} while (0)
++			goto retry;
++	}
  
+ 	if (unlikely(sig_needs_tasklist(sig)))
+ 		read_unlock(&tasklist_lock);
 
