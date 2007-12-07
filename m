@@ -1,51 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbXLGXby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbXLGXeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbXLGXby (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 18:31:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXLGXbp
+	id S1754272AbXLGXeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 18:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXLGXeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 18:31:45 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:35880 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbXLGXbo (ORCPT
+	Fri, 7 Dec 2007 18:34:10 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:38851 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbXLGXeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 18:31:44 -0500
+	Fri, 7 Dec 2007 18:34:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PZpC/UrtNJYkZOKZO+f56LpviLERb0dDtOroiemQe7uH0JrPYz5oOR2T7KzWaOUm/cAm3T3BW6VUmLyIuaBryRQEIDQwAkSocHx1G7XcOR0P9J5KPdKOOMdX6EAk4foY2hj0ujE4C3ot4gXJIGCtXAa1vAvUci/LRj4nL1Tc1Pc=
-Message-ID: <82e4877d0712071531h53dc7e3cncd7ab5ff090cada1@mail.gmail.com>
-Date: Fri, 7 Dec 2007 18:31:43 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=Zym1acWqH/JIIbcIVSNdvF3/KBLpS6Kby2ktChoWJq7w+sfJJhKbk4xMjeNb143uizUdiw+/g80n2avDvvpX5E40UZH22oqd2K2xtZ9oCU4SQEY3mSm3PxlD9OP5KPUVJ5N6uDr9zdHLYVyBqoYvukgBVf2WNEEsh5mUJPpO22s=
+Date: Sat, 8 Dec 2007 02:33:59 +0300
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zan Lynx <zlynx@acm.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+Subject: Re: 2.6.24-rc4-mm1 and excessive block IO errors
+Message-ID: <20071207233359.GB1951@martell.zuzino.mipt.ru>
+References: <1197060285.15428.20.camel@localhost> <20071207150537.2ccdd53e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com>
-	 <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <20071207150537.2ccdd53e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 7, 2007 6:12 PM, Pallipadi, Venkatesh
-<venkatesh.pallipadi@intel.com> wrote:
+On Fri, Dec 07, 2007 at 03:05:37PM -0800, Andrew Morton wrote:
+> On Fri, 07 Dec 2007 20:44:45 +0000
+> Zan Lynx <zlynx@acm.org> wrote:
+> 
+> > I am not sure if this problem has been addressed already.  I read some
+> > about the fast-fail issues and this may be related?
+> > 
+> > On nearly all my USB block devices, I have been getting zillions of I/O
+> > errors.  But they aren't real, they don't appear with 2.6.23 kernels.
+> > 
+> > I can often read and write data to the device, but these IO errors cause
+> > error aborts in user space applications in many cases, making it a
+> > chancy thing to run backup software, for example.
+> > 
+> > Here is a bit of dmesg from plugging in a perfectly good USB-2 flash
+> > drive.
+> > 
+> > hub 3-0:1.0: state 7 ports 6 chg 0000 evt 0004
+> > ehci_hcd 0000:00:02.2: GetStatus port 2 status 001803 POWER sig=j CSC CONNECT
+> > hub 3-0:1.0: port 2, status 0501, change 0001, 480 Mb/s
+> > hub 3-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x501
+> > ehci_hcd 0000:00:02.2: port 2 high speed
+> > ehci_hcd 0000:00:02.2: GetStatus port 2 status 001005 POWER sig=se0 PE CONNECT
+> > usb 3-2: new high speed USB device using ehci_hcd and address 9
+> > ehci_hcd 0000:00:02.2: port 2 high speed
+> > ehci_hcd 0000:00:02.2: GetStatus port 2 status 001005 POWER sig=se0 PE CONNECT
+> > usb 3-2: default language 0x0409
+> > usb 3-2: uevent
+> > usb 3-2: usb_probe_device
+> > usb 3-2: configuration #1 chosen from 1 choice
+> > usb 3-2: adding 3-2:1.0 (config #1, interface 0)
+> > usb 3-2:1.0: uevent
+> > libusual 3-2:1.0: usb_probe_interface
+> > libusual 3-2:1.0: usb_probe_interface - got id
+> > usb-storage 3-2:1.0: usb_probe_interface
+> > usb-storage 3-2:1.0: usb_probe_interface - got id
+> > scsi4 : SCSI emulation for USB Mass Storage devices
+> > drivers/usb/core/inode.c: creating file '009'
+> > usb 3-2: New USB device found, idVendor=05dc, idProduct=a400
+> > usb 3-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+> > usb 3-2: Product: JUMPDRIVE
+> > usb 3-2: Manufacturer: LEXAR MEDIA
+> > usb 3-2: SerialNumber: 0A4EEC05201219080904
+> > usb-storage: device found at 9
+> > usb-storage: waiting for device to settle before scanning
+> > usb-storage: device scan complete
+> > scsi 4:0:0:0: Direct-Access     LEXAR    JUMPDRIVE        1000 PQ: 0 ANSI: 0 CCS
+> > sd 4:0:0:0: [sdg] 2026592 512-byte hardware sectors (1038 MB)
+> > sd 4:0:0:0: [sdg] Write Protect is off
+> > sd 4:0:0:0: [sdg] Mode Sense: 43 00 00 00
+> > sd 4:0:0:0: [sdg] Assuming drive cache: write through
+> > sd 4:0:0:0: [sdg] 2026592 512-byte hardware sectors (1038 MB)
+> > sd 4:0:0:0: [sdg] Write Protect is off
+> > sd 4:0:0:0: [sdg] Mode Sense: 43 00 00 00
+> > sd 4:0:0:0: [sdg] Assuming drive cache: write through
+> >  sdg: sdg1
+> > sd 4:0:0:0: [sdg] Attached SCSI removable disk
+> > sd 4:0:0:0: Attached scsi generic sg7 type 0
+> > sd 4:0:0:0: [sdg] Result: hostbyte=0x01 driverbyte=0x00
+> > end_request: I/O error, dev sdg, sector 3984
+> 
+> Yes, this is breakage in the scsi tree.  I believe that the offending patch
+> has been found and I have a nasty fix somewhere in my inbox - it involves
+> reverting a patch which doesn't revert properly.  I haven't got onto
+> looking at it yet, sorry.
 
-> Looks like tick_broadcast_lock did not get freed in some path.
-> You do not see this when you CPU_IDLE is not configured?
->
-> Thanks,
-> Venki
->
-
-No, I did not see this prior to enabling CPU_IDLE.
-
-All previous kernels without CPU_IDLE also had soft lockup detection enabled.
-
-Parag
+Zan, check this thread http://marc.info/?t=119689824100001&r=1&w=2
+for unholy details.
