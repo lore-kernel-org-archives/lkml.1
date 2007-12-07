@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXLGWjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbXLGWwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbXLGWjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbXLGWjQ
+	id S1756194AbXLGWwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXLGWwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:39:16 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:39295 "EHLO gherkin.frus.com"
+	Fri, 7 Dec 2007 17:52:04 -0500
+Received: from pat.uio.no ([129.240.10.15]:54982 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754149AbXLGWjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:39:14 -0500
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-In-Reply-To: <1197062383.5483.46.camel@lov.site> "from Kay Sievers at Dec 7,
- 2007 10:19:43 pm"
-To: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 7 Dec 2007 16:39:08 -0600 (CST)
-CC: Michael Cree <mcree@orcon.net.nz>, Bob Tracy <rct@frus.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org, greg@kroah.com
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
+	id S1754149AbXLGWwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:52:03 -0500
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Shane <gnome42@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <fa4052ef0712071139x30ada982r570513c5a0fb2657@mail.gmail.com>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	 <20071207040219.e231cbc7.akpm@linux-foundation.org>
+	 <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
+	 <1197053179.7532.23.camel@heimdal.trondhjem.org>
+	 <fa4052ef0712071055r2fe33f2ep34fed2537970c8ef@mail.gmail.com>
+	 <fa4052ef0712071116x2b727faau190ec14e4b2a2d47@mail.gmail.com>
+	 <fa4052ef0712071139x30ada982r570513c5a0fb2657@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 07 Dec 2007 17:51:58 -0500
+Message-Id: <1197067918.10831.13.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20071207223908.4D1F9DBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=5.0, autolearn=disabled, AWL=-0.180)
+X-UiO-Scanned: FE5A52FD8DDDFD0D02E748A39E0C1B0765A99D7D
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 177 total 5636261 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> Yeah, that looks all fine.
+
+On Fri, 2007-12-07 at 14:39 -0500, Shane wrote:
+> On Dec 7, 2007 2:16 PM, Shane <gnome42@gmail.com> wrote:
+> ...
+> > Confirmed working in rc4-git5.  I'll deploy this kernel in a few more
+> > spots and check for other regressions.
 > 
-> What distro is that, and what's the udev version?
-
-Mine is Debian Etch, normally with the latest released or -rcX kernel
-from kernel.org.  Updates current as of about 18 hours ago.  Udev
-package version is 0.105-4.  The RELEASE-NOTES file in /usr/share/doc/udev
-says "udev 105".
-
-> You are booting your kernel with an initramfs?
-
-Not in my case: everything I need at boot time is built-in.
-
-> Is the udev daemon (still) running while it fails?
+> Hmm, I installed a new kernel built from the same sources on the NFS
+> server. And now I don't see anything at all in the crossmnt dirs.
 > 
-> If you run /sbin/udevtrigger, do the nodes appear?
+> ls /dirA/dirB/dirC  --> zero output (empty dir)
+> 
+> Are there any other pending fixes?
+> 
+> Shane
 
-I can answer the above later when I'm back in front of the machine, but
-even in the "not good" case, I still see the following messages from
-the /etc/rcS.d/S03udev file:
+You've probably fallen afoul of 
 
-	Starting the hotplug events dispatcher udevd.
-	Synthesizing the initial hotplug events.
+   http://bugzilla.kernel.org/show_bug.cgi?id=9504
 
-This is where udevtrigger gets called, followed by the load_input_modules
-and create_dev_makedev functions, then...
+Cheers
+  Trond
 
-	Waiting for /dev to be fully populated.
-
-which is where udevsettle gets called.
-
-None of the above appear to be exiting abnormally for the bad case, but
-I'll definitely take a closer look at what MAKEDEV (/dev/MAKEDEV -->
-/sbin/MAKEDEV) is doing.  In particular, Debian MAKEDEV is looking at
-/proc/devices to decide what to do, so maybe "cat /proc/devices" would
-be useful to look at for the broken case.
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "They couldn't hit an elephant at this dist- "
-rct@frus.com       |   - Last words of Union General John Sedgwick,
-                   |  Battle of Spotsylvania Court House, U.S. Civil War
-------------------------------------------------------------------------
