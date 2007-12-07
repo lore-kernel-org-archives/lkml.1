@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbXLGB3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbXLGBaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbXLGB3o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 20:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXLGB3h
+	id S1754480AbXLGBaV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 20:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXLGBaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 20:29:37 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:60495 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbXLGB3g (ORCPT
+	Thu, 6 Dec 2007 20:30:06 -0500
+Received: from simmts12-qfe0.srvr.bell.ca ([206.47.199.141]:40117 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752177AbXLGBaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 20:29:36 -0500
-Message-ID: <4758A1E7.9010201@linux.vnet.ibm.com>
-Date: Fri, 07 Dec 2007 06:59:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
+	Thu, 6 Dec 2007 20:30:04 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAOYwWEecIvVD/2dsb2JhbAAI
+Message-ID: <4758A216.3030401@gmail.com>
+Date: Thu, 06 Dec 2007 21:29:58 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@gmail.com>
-CC: Greg KH <greg@kroah.com>, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, rsa@us.ibm.com, apw@shadowen.org,
-       balbir@in.ibm.com
-Subject: Re: 2.6.24-rc4-mm1 kobject changes broken with hvcs driver on powerpc
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <20071205141202.GB13189@linux.vnet.ibm.com> <47583D4F.2050707@linux.vnet.ibm.com> <20071206185006.GA21641@kroah.com> <47584672.8040201@linux.vnet.ibm.com> <1196968880.18388.5.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1196968880.18388.5.camel@dyn9047017100.beaverton.ibm.com>
+To: Daniel Walker <dwalker@mvista.com>
+CC: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
+       matthias.kaehlcke@gmail.com
+Subject: Possible locking issue in viotape.c
+References: <20071206021857.826386004@mvista.com>	 <20071206021909.131993721@mvista.com>  <20071206102334.GE17299@elte.hu>	 <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>	 <47588610.5010804@gmail.com> <1196989515.1568.131.camel@jnielson-xp.ddns.mvista.com>
+In-Reply-To: <1196989515.1568.131.camel@jnielson-xp.ddns.mvista.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty wrote:
-> On Fri, 2007-12-07 at 00:28 +0530, Balbir Singh wrote:
->> Greg KH wrote:
->>
->>>> Why release the spinlock here? It's done after the count is incremented.
->>>> This patch does not seem correct.
->>> Doh, you are correct, I'll make sure that I fix this up before applying
->>> it.
->>>
->>> thanks,
->>>
->>> greg k-h
->> Hi, Greg,
->>
->> I ran some tests with the fixed up version of this patch and the system
->> fails to come up.
->>
->> I see the WARN_ON in lib/kref.c:33 and the system fails to boot beyond
->> that point. I have not yet found time to debug it though.
+Daniel Walker wrote:
 > 
+> I've posted all the ones I've done so far ..
 > 
-> Are you running into same issue, I am getting on my machine ? Are you
-> using IPR driver ?
+> ftp://source.mvista.com/pub/dwalker/sem2mutex-2.6.24-rc4/
+> 
+> Feel free to review or test them.. I've found it pretty easy to simply
+> grep for certain class of semaphore usage, check if it's conforming to
+> the mutex requirements, then convert it or not.. Checking them is
+> getting to be a habit, so I don't think a list would help me.. However,
+> someone else might be able to use it..
 > 
 
-Badari,
+Thanks, that helps me not duplicate anything.  One of the first ones I
+was looking at (before your post) was viotape.c, which is in your patch
+set.  However, looking at the uses of the semaphore, I see that on line
+409-410 the following code:
 
-I am unable to get past lib/kref.c:33 and cut here. The machine just
-stalls, I see no output at the console. I don't get a backtrace like you
-do, even with xmon enabled :(
+        if (noblock)
+                return count;
 
-> Thanks,
-> Badari
-> 
-> 
+which seems to ignore the fact that the semaphore has been downed (not
+to mention the dma buffer and op struct allocations.  I think it should be:
 
+	if (noblock)
+		ret = count;
+		goto free_dma;
+
+instead.  Do you want to make sure I'm right about that and fold it into
+your patch?  Or have you already submitted your patch (or should it be
+in a separate patch?  Alternatively, I can submit the patch if you don't
+want to bother with it.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Kevin Winchester
