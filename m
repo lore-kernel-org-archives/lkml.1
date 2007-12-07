@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXLGK1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbXLGKel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbXLGK1k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 05:27:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXLGK1b
+	id S1754081AbXLGKel (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbXLGKec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 05:27:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36135 "EHLO
+	Fri, 7 Dec 2007 05:34:32 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51668 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752018AbXLGK1a (ORCPT
+	by vger.kernel.org with ESMTP id S1751385AbXLGKeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 05:27:30 -0500
-Date: Fri, 7 Dec 2007 02:26:46 -0800
+	Fri, 7 Dec 2007 05:34:31 -0500
+Date: Fri, 7 Dec 2007 02:32:41 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: rct@frus.com (Bob Tracy)
-Cc: mingo@elte.hu, mcree@orcon.net.nz, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-scsi@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Message-Id: <20071207022646.373c92f5.akpm@linux-foundation.org>
-In-Reply-To: <20071207050709.110D2DBA2@gherkin.frus.com>
-References: <20071206163305.c3587675.akpm@linux-foundation.org>
-	<20071207050709.110D2DBA2@gherkin.frus.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-Id: <20071207023241.15274ef6.akpm@linux-foundation.org>
+In-Reply-To: <20071207084559.GA11162@elte.hu>
+References: <20071207021952.6f0ac922@morte>
+	<20071207084559.GA11162@elte.hu>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,58 +30,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2007 23:07:08 -0600 (CST) rct@frus.com (Bob Tracy) wrote:
+On Fri, 7 Dec 2007 09:45:59 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-> Andrew Morton wrote:
-> > commit 6f37ac793d6ba7b35d338f791974166f67fdd9ba
-> > Merge: 2f1f53b... d90bf5a...
-> > Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-> > Date:   Wed Nov 14 18:51:48 2007 -0800
+> 
+> * Stefano Brivio <stefano.brivio@polimi.it> wrote:
+> 
+> > This patch fixes a regression introduced by:
 > > 
-> >     Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/n
-> >     
-> >     * 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6:
-> >       [NET]: rt_check_expire() can take a long time, add a cond_resched()
-> >       [ISDN] sc: Really, really fix warning
-> >       [ISDN] sc: Fix sndpkt to have the correct number of arguments
-> >       [TCP] FRTO: Clear frto_highmark only after process_frto that uses it
-> >       [NET]: Remove notifier block from chain when register_netdevice_notifier f
-> >       [FS_ENET]: Fix module build.
-> >       [TCP]: Make sure write_queue_from does not begin with NULL ptr
-> >       [TCP]: Fix size calculation in sk_stream_alloc_pskb
-> >       [S2IO]: Fixed memory leak when MSI-X vector allocation fails
-> >       [BONDING]: Fix resource use after free
-> >       [SYSCTL]: Fix warning for token-ring from sysctl checker
-> >       [NET] random : secure_tcp_sequence_number should not assume CONFIG_KTIME_S
-> >       [IWLWIFI]: Not correctly dealing with hotunplug.
-> >       [TCP] FRTO: Plug potential LOST-bit leak
-> >       [TCP] FRTO: Limit snd_cwnd if TCP was application limited
-> >       [E1000]: Fix schedule while atomic when called from mii-tool.
-> >       [NETX]: Fix build failure added by 2.6.24 statistics cleanup.
-> >       [EP93xx_ETH]: Build fix after 2.6.24 NAPI changes.
-> >       [PKT_SCHED]: Check subqueue status before calling hard_start_xmit
+> > commit bb29ab26863c022743143f27956cc0ca362f258c
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Mon Jul 9 18:51:59 2007 +0200
 > > 
-> > I'm struggling to see how any of those could have broken block device
-> > mounting on alpha.  Are you sure you bisected right?
+> > This caused the jiffies counter to leap back and forth on cpufreq 
+> > changes on my x86 box. I'd say that we can't always assume that TSC 
+> > does "small errors" only, when marked unstable. On cpufreq changes 
+> > these errors can be huge.
 > 
-> Based on what's in that commit, it *does* appear something went wrong
-> with bisection.  If the implicated commit is the next one in time
-> sequence relative to
+> ah, printk_clock() still uses sched_clock(), not jiffies. So it's not 
+> the jiffies counter that goes back and forth, it's sched_clock() - so 
+> this is a printk timestamps anomaly, not related to jiffies. I thought 
+> we have fixed this bug in the printk code already: sched_clock() is a 
+> 'raw' interface that should not be used directly - the proper interface 
+> is cpu_clock(cpu). Does the patch below help?
 > 
-> # good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
+> 	Ingo
 > 
-> then the test of whether I bisected correctly is as simple as applying
-> the commit and seeing if things break, because I'm running on the
-> kernel corresponding to 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 right
-> now.  Let me give that a try and I'll report back.  Worst case, I'll
-> have to start over and write off the past four days...
+> ----------------------->
+> Subject: sched: fix CONFIG_PRINT_TIME's reliance on sched_clock()
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> Stefano Brivio reported weird printk timestamp behavior during
+> CPU frequency changes:
+> 
+>   http://bugzilla.kernel.org/show_bug.cgi?id=9475
+> 
+> fix CONFIG_PRINT_TIME's reliance on sched_clock() and use cpu_clock()
+> instead.
+> 
+> Reported-and-bisected-by: Stefano Brivio <stefano.brivio@polimi.it>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/printk.c |    2 +-
+>  kernel/sched.c  |    7 ++++++-
+>  2 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> Index: linux/kernel/printk.c
+> ===================================================================
+> --- linux.orig/kernel/printk.c
+> +++ linux/kernel/printk.c
+> @@ -680,7 +680,7 @@ asmlinkage int vprintk(const char *fmt, 
+>  					loglev_char = default_message_loglevel
+>  						+ '0';
+>  				}
+> -				t = printk_clock();
+> +				t = cpu_clock(printk_cpu);
+>  				nanosec_rem = do_div(t, 1000000000);
+>  				tlen = sprintf(tbuf,
+>  						"<%c>[%5lu.%06lu] ",
 
-Gad.  I trust the second time will be faster.
+A bit risky - it's quite an expansion of code which no longer can call printk.
 
-git-bisect _is_ very error prone.  I find one of the problems is that each
-step is so far apart in time that you forget what you were doing.  Did I
-remember to test that iteration?  Did I install the right kernel?  etc.
+You might want to take that WARN_ON out of __update_rq_clock() ;)
 
-> Sorry about this...
-
-Not appropriate ;)   Thanks for helping out.
