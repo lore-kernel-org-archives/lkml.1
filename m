@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXLGXRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbXLGXVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbXLGXRj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 18:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXLGXR3
+	id S1758043AbXLGXVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 18:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXLGXU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 18:17:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39886 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753963AbXLGXR2 (ORCPT
+	Fri, 7 Dec 2007 18:20:58 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:25121 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbXLGXU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 18:17:28 -0500
-Date: Fri, 7 Dec 2007 15:17:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Parag Warudkar" <parag.warudkar@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       torvalds@linux-foundation.org, linux-acpi@vger.kernel.org
-Subject: Re: BUG: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-Message-Id: <20071207151714.51b80234.akpm@linux-foundation.org>
-In-Reply-To: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com>
-References: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 7 Dec 2007 18:20:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ep8kxd60duXvdMjceVj1xo7LLQzAd9R5e1A/WFoHdjMv/tUJVEmM11gsVOsUKlytgDpiXQRiTIn8ZrAaGputhFpHs4yefe/cFKlFQAZkQ7CoLjT41H/UcRAy+mSZaDmTHuK77w0Huy0T/n4sbT7tVwaUUI7SaFMQ+SHLrILFmYo=
+Message-ID: <4759D54F.1080304@gmail.com>
+Date: Sat, 08 Dec 2007 08:20:47 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: question about sata-error on boot.
+References: <200711021934.21123.volker.armin.hemmann@tu-clausthal.de> <20071106221556.55c3cd0b.akpm@linux-foundation.org> <200712071432.08699.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200712071432.08699.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Dec 2007 17:53:47 -0500
-"Parag Warudkar" <parag.warudkar@gmail.com> wrote:
+Hemmann, Volker Armin wrote:
+> this is gone with 2.6.22.13 an 2.6.23.9:
 
-> Got this on today's git (2.6.24-rc4) while compiling  stuff - Looks
-> like it is related to CpuIdle stuff.
-> I chose CONFIG_CPU_IDLE for the first time so I don't know when this
-> was introduced.
-> 
-> This is on x86_32, SMP.
-> 
-> BUG: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-> 
-> Pid: 0, comm: swapper Not tainted (2.6.24-rc4 #3)
-> EIP: 0060:[<c0603e22>] EFLAGS: 00000202 CPU: 1
-> EIP is at _spin_lock_irqsave+0x16/0x27
-> EAX: c06b4110 EBX: 00000001 ECX: f7873808 EDX: 00000293
-> ESI: 00000005 EDI: f7873808 EBP: 00000000 ESP: f7829f10
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> CR0: 8005003b CR2: 004f5960 CR3: 372c5000 CR4: 000006d0
-> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> DR6: ffff0ff0 DR7: 00000400
->  [<c0438233>] tick_broadcast_oneshot_control+0x10/0xda
->  [<c0437c82>] tick_notify+0x1d4/0x2eb
->  [<c04281b4>] get_next_timer_interrupt+0x143/0x1b4
->  [<c0605819>] notifier_call_chain+0x2a/0x47
->  [<c04345a0>] raw_notifier_call_chain+0x17/0x1a
->  [<c04378b7>] clockevents_notify+0x19/0x4f
->  [<c0533cc3>] acpi_idle_enter_simple+0x183/0x1d0
->  [<c058cea3>] cpuidle_idle_call+0x53/0x78
->  [<c058ce50>] cpuidle_idle_call+0x0/0x78
->  [<c0402575>] cpu_idle+0x97/0xb8
+Thanks for letting us know.  Probably CLO related problem which got
+updated recently.
 
-OK, thanks.  Another one for the regression list, please.
+-- 
+tejun
