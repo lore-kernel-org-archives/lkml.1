@@ -1,48 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXLGSzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbXLGS4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbXLGSzp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:55:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXLGSzh
+	id S1757246AbXLGS4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbXLGS4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:55:37 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:17222 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753888AbXLGSzg (ORCPT
+	Fri, 7 Dec 2007 13:56:00 -0500
+Received: from ns1.primeinteractive.net ([195.95.205.253]:43423 "EHLO
+	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755122AbXLGSz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:55:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=J5NvdMYkMx4ZIa2vNTs/HL9FFubp7gLaAlXEiiF+QwBUuZxpWHTSO/Ii6bf7iXLzRDi7eUBWgT+pK/RTHVY5AyvjjzS1hD9O4QAQzvhw4sqgYClMZo/WrRQ6Mamz+toGAIy+zntYbXvr6ovRQ26F6/VEpRTp60cTXpiE7C13D0k=
-Message-ID: <fa4052ef0712071055r2fe33f2ep34fed2537970c8ef@mail.gmail.com>
-Date: Fri, 7 Dec 2007 13:55:35 -0500
-From: Shane <gnome42@gmail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <1197053179.7532.23.camel@heimdal.trondhjem.org>
+	Fri, 7 Dec 2007 13:55:59 -0500
+X-Quarantine-ID: <MtYgvmogDV5M>
+Message-ID: <47599734.1030505@primeinteractive.net>
+Date: Fri, 07 Dec 2007 19:55:48 +0100
+From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bill Davidsen <davidsen@tmr.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ICH9 & Core2 Duo - kernel crash
+References: <200712041331.24678.pavol.cvengros@primeinteractive.net> <47585879.7010305@tmr.com> <200712070701.55283.pavol.cvengros@primeinteractive.net> <47598E1B.7010907@tmr.com>
+In-Reply-To: <47598E1B.7010907@tmr.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	 <20071207040219.e231cbc7.akpm@linux-foundation.org>
-	 <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
-	 <1197053179.7532.23.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 7, 2007 1:46 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-...
-> This problem has already been reported. The fix (which I'm planning on
-> sending to Linus soon) is appended.
+Bill Davidsen wrote:
+> Pavol Cvengros wrote:
+>> On Thursday 06 December 2007 21:15:53 Bill Davidsen wrote:
+>>  
+>>> Pavol Cvengros wrote:
+>>>    
+>>>> Hello,
+>>>>
+>>>> I am trying LKML to get some help on one linux kernel related problem.
+>>>> Lately we got a machine with new HW from Intel. CPU is Intel Core2 Duo
+>>>> E6850 3GHz with 2GB of RAM. Motherboard is Intel DG33BU with G33 
+>>>> chipset.
+>>>>
+>>>> After long fight with kernel crashes on different things, we 
+>>>> figured out
+>>>> that if the multicore is disabled in bios, everything is ok and 
+>>>> machine
+>>>> is running good. No kernel crashes no problems, but with one core 
+>>>> only.
+>>>>
+>>>> This small table will maybe explain:
+>>>>
+>>>> Cores   -     kernel   -   state
+>>>>    2  -   nonsmp or smp  - crash
+>>>>    1  -  smp or nonsmp  - ok
+>>>>
+>>>> All crashes have been different (swaper, rcu, irq, init.....) or we 
+>>>> just
+>>>> got internal gcc compiler error while compiling kernel/glibc/.... 
+>>>> and the
+>>>> machine was frozen.
+>>>>
+>>>> Please can somebody advise what to do to identify that problem more
+>>>> precisely. (debug kernel options?)
+>>>>
+>>>> Our immpresion - ICH9 & ICH9R support in kernel is bad... sorry to 
+>>>> say..
+>>>>       
+>>> I have seen unusual memory behavior under heavy load, in the cases I 
+>>> saw
+>>> it was heavy DMA load from multiple SCSI controllers, and one case with
+>>> FFT on the CPU and heavy network load with gigE. Have you run 
+>>> memtest on
+>>> this hardware? Just a thought, but I see people running Linux on that
+>>> chipset, if not that particular board.
+>>>
+>>> A cheap test even if it shows nothing. Of course it could be a CPU 
+>>> cache
+>>> issue in that one CPU, although that's unlikely.
+>>>     
+>>
+>> yes, memtest was running all his tests without problems. The wierd 
+>> thing is that all kernel crashes we have seen were different (as 
+>> stated in original mail)....
+>>
+>>   
+> The problem with memtest, unless I underestimate it, is that it 
+> doesn't use all core and siblings, so it doesn't quite load the memory 
+> system the way regular usage would. Needless to say, if this does turn 
+> out to be a memory loading issue I don't know of any tools to really 
+> test it. I fall back on part swapping, but that only helps if it's the 
+> memory DIMM itself.
+>
 
-Thanks Trond. Sorry for the duplicate report, I did actually do some
-searching...
-
-I will confirm the fix.
-
-Shane
+right now that machine has 2 x 1GB DDR2 - 800MHz.... do you think I 
+should test the machine with only one DDR? (I hope to put there 4GB all 
+together)
