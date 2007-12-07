@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXLGWBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbXLGWB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbXLGWBj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXLGWBb
+	id S1758063AbXLGWB7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXLGWBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:01:31 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59777 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752457AbXLGWBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:01:30 -0500
-Message-ID: <4759C2B2.9020906@linux.vnet.ibm.com>
-Date: Sat, 08 Dec 2007 03:31:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 7 Dec 2007 17:01:48 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:62634 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbXLGWBr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:01:47 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
+Date: Fri, 7 Dec 2007 23:01:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+In-Reply-To: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, rsa@us.ibm.com, apw@shadowen.org,
-       balbir@in.ibm.com
-Subject: Re: 2.6.24-rc4-mm1 kobject changes broken with hvcs driver on powerpc
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <20071205141202.GB13189@linux.vnet.ibm.com> <47583D4F.2050707@linux.vnet.ibm.com> <20071206185006.GA21641@kroah.com> <47584672.8040201@linux.vnet.ibm.com> <20071206203118.GA28618@kroah.com> <1196985291.18388.19.camel@dyn9047017100.beaverton.ibm.com> <20071207003204.GA11947@kroah.com> <4758B7C2.8080806@linux.vnet.ibm.com> <20071207051459.GC496@kroah.com>
-In-Reply-To: <20071207051459.GC496@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712072301.38723.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX196dOdGiuUETWURcAQm5PThS2MLFUM2iiH6Z5f
+ DJrAarFETrDZUkNzoCWy08jqsNfDrq9gto08iWX46zAJB6m//U
+ DyFCWBz3LH5OtX5p/UBoA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> How about running 2.6.24-rc4 with _only_ the patch to this driver to
-> convert it to krefs?  Does that combination cause problems?
+On Friday 07 December 2007, Balbir Singh wrote:
+> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+> NUMA nodes can be specified using the following command line option
 > 
-> The patch is at:
-> 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/kobject-convert-hvcs-to-use-kref-not-kobject.patch
+> numa=fake=<node range>
+> 
+> node range is of the format <range1>,<range2>,...<rangeN>
 
-This patch works fine with _changes_ on 2.6.24-rc4. I can confirm that
-it's not a kref problem in that case. This patch still assumes that
-kref_get() returns a value. This is no longer true. The kref_get() call
-site needs to be changed.
+Excellent idea! I'd love to have this in RHEL5u1, because that would make
+that distro boot on certain machines that have more memory than is supported
+without an iommu driver. The problem we have is that when you simply
+say mem=1G but all of the first gigabyte is on the first node, you end
+up with a memoryless node, which is not supported.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Unfortunately, it comes too late for me now, as all new distros already boot
+on Cell machines that need an IOMMU.
+
+	Arnd <><
