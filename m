@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbXLGDWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbXLGDXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbXLGDWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 22:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXLGDW1
+	id S1755223AbXLGDXE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 22:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXLGDWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 22:22:27 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:65501 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbXLGDW0 (ORCPT
+	Thu, 6 Dec 2007 22:22:51 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48410
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752975AbXLGDWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 22:22:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=C83U3yJBmOxkxgd2MLHcTbsW0CQtildHngqQf02KKiiUfKVD8sB/FHjJtoTQ0jih/S999bWB7Jw2Oh6gp+ktmJcOx0eLbkESoIEJLYvlrpIqgHc0Lp8nNsyAOCJfSnx63OW8jiTN374ZDSrrOJcE/eB1QogH+WkwCQykGqcSYY8=
-Message-ID: <6934efce0712061922j682cee55pc1d5d079465f4849@mail.gmail.com>
-Date: Thu, 6 Dec 2007 19:22:25 -0800
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Rob Landley" <rob@landley.net>
-Subject: Re: [patch] ext2: xip check fix
-Cc: carsteno@de.ibm.com, "Nick Piggin" <npiggin@suse.de>,
-       "Christian Borntraeger" <borntraeger@de.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jens Axboe" <axboe@kernel.dk>
-In-Reply-To: <200712061211.49443.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 6 Dec 2007 22:22:50 -0500
+Date: Thu, 06 Dec 2007 19:22:49 -0800 (PST)
+Message-Id: <20071206.192249.193354742.davem@davemloft.net>
+To: ricknu-0@student.ltu.se
+Cc: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au, akpm@osdl.org, netdev@vger.kernel.org
+Subject: Re: [Patch] net/xfrm/xfrm_policy.c: Some small improvements
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4758093A.7010608@student.ltu.se>
+References: <20071206110123.GB2469@hacking>
+	<20071206.031434.179419183.davem@davemloft.net>
+	<4758093A.7010608@student.ltu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071204042628.GA26636@wotan.suse.de>
-	 <20071206101848.GC25202@wotan.suse.de> <4757CDD4.5090606@de.ibm.com>
-	 <200712061211.49443.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I have'nt looked at it yet. I do appreciate it, I think it might
-> > broaden the user-base of this feature which is up to now s390 only due
-> > to the fact that the flash memory extensions have not been implemented
-> > (yet?). And it enables testing xip on other platforms. The patch is on
-> > my must-read list.
->
-> query: which feature is currently s390 only?  (Execute In Place?)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+Date: Thu, 06 Dec 2007 15:37:46 +0100
 
-I think so.  The filemap_xip.c functionality doesn't work for Flash
-memory yet.  Flash memory doesn't have struct pages to back it up with
-which this stuff depends on.
+> David Miller wrote:
+> > But this time I'll just let you know up front that I
+> > don't see much value in this patch.  It is not a clear
+> > improvement to replace int's with bool's in my mind and
+> > the other changes are just whitespace changes.
+> >   
+> Is it not an improvement to distinct booleans from actual values? Do you 
+> use integers for ASCII characters too? It can also avoid some potential 
+> bugs like the 'if (i == TRUE)'...
+> What is wrong with 'size_t' (since it is unsigned, compared to (some) 
+> 'int')?
+
+When you say "int found;" is there any doubt in your mind that
+this integer is going to hold a 1 or a 0 depending upon whether
+we "found" something?
+
+That's the problem I have with these kinds of patches, they do
+not increase clarity, it's just pure mindless edits.
+
+In new code, fine, use booleans if you want.
+
+I would even accept that it helps to change to boolean for
+arguments to functions that are global in scope.
+
+But not for function local variables in cases like this.
