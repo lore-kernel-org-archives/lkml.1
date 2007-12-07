@@ -1,141 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXLGPBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXLGPGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbXLGPBn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 10:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbXLGPBf
+	id S1755974AbXLGPGd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 10:06:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXLGPGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 10:01:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54359 "EHLO mx1.redhat.com"
+	Fri, 7 Dec 2007 10:06:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34493 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753159AbXLGPBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 10:01:34 -0500
-Date: Fri, 7 Dec 2007 09:53:15 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       Ben Woodard <woodard@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071207145315.GB10389@hmsendeavour.rdu.redhat.com>
-References: <20071128153649.GC3192@redhat.com> <20071128160206.GA21286@hmsendeavour.rdu.redhat.com> <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <20071207001023.GA7312@hmsendeavour.rdu.redhat.com> <20071207143944.GF2863@redhat.com>
+	id S1751219AbXLGPGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 10:06:22 -0500
+Date: Fri, 7 Dec 2007 16:05:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Bob Tracy <rct@frus.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mcree@orcon.net.nz,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
+       kay.sievers@vrfy.org, greg@kroah.com
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+Message-ID: <20071207150549.GA24254@elte.hu>
+References: <20071207022646.373c92f5.akpm@linux-foundation.org> <20071207145526.B561CDBA2@gherkin.frus.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071207143944.GF2863@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20071207145526.B561CDBA2@gherkin.frus.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
+	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 09:39:44AM -0500, Vivek Goyal wrote:
-> On Thu, Dec 06, 2007 at 07:10:23PM -0500, Neil Horman wrote:
-> > On Thu, Dec 06, 2007 at 05:11:43PM -0500, Vivek Goyal wrote:
-> > > On Thu, Dec 06, 2007 at 04:39:51PM -0500, Neil Horman wrote:
-> > > > On Fri, Nov 30, 2007 at 09:51:31AM -0500, Neil Horman wrote:
-> > > > > On Fri, Nov 30, 2007 at 09:42:50AM -0500, Vivek Goyal wrote:
-> > > > <snip>
-> > > > > 
-> > > > > Thats what I'm doing at the moment.  I'm working on a RHEL5 patch at the moment
-> > > > > (since thats whats on the production system thats failing), and will forward
-> > > > > port it once its working
-> > > > > 
-> > > > > And not to split hairs, but techically thats not our _only_ choice.  We could
-> > > > > force kdump boots on cpu0 as well ;)
-> > > > > 
-> > > > > Thanks
-> > > > > Neil
-> > > > > 
-> > > > > > Thanks
-> > > > > > Vivek
-> > > > > 
-> > > > 
-> > > > 
-> > > > Sorry to have been quiet on this issue for a few days. Interesting news to
-> > > > report, though.  So I was working on a patch to do early apic enabling on
-> > > > x86_64, and had something working for the old 2.6.18 kernel that we were
-> > > > origionally testing on.  Unfortunately while it worked on 2.6.18 it failed
-> > > > miserably on 2.6.24-rc3-mm2, causing check_timer to consistently report that the
-> > > > timer interrupt wasn't getting received (even though we could successfully run
-> > > > calibrate_delay).  Vivek and I were digging into this, when I ran accross the
-> > > > description of the hypertransport configuration register in the opteron
-> > > > specification.  It contains a bit that, suprise, configures the ht bus to either
-> > > > unicast interrupts delivered accross the ht bus to a single cpu, or to broadcast
-> > > > it to all cpus.  Since it seemed more likely that the 8259 in the nvidia
-> > > > southbridge was transporting legacy mode interrupts over the ht bus than
-> > > > directly to cpu0 via an actual wire, I wrote the attached patch to add a quirk
-> > > > for nvidia chipsets, which scanned for hypertransport controllers, and ensured
-> > > > that that broadcast bit was set.  Test results indicate that this solves the
-> > > > problem, and kdump kernels boot just fine on the affected system.
-> > > > 
-> > > 
-> > > Hi Neil,
-> > > 
-> > > Should we disable this broadcasting feature once we are through? Otherwise
-> > > in normal systems it might mean extra traffic on hypertransport. There
-> > > is no need for every interrupt to be broadcasted in normal systems?
-> > > 
-> > > Thanks
-> > > Vivek
-> > 
-> > No, I don't think thats necessecary.  Once the apics are enabled, interrupts
-> > shouldn't travel accross the hypertransport bus anyway, opting instead to use
-> > the dedicated apic bus (at least thats my understanding).
-> 
-> I think all interrupt message travel on hypertransport. Even after APICS
-> have been enabled.
-> 
-> Look at the following document.
-> 
-> http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24674.pdf
-> 
-> Have a look at figure 1, figure 2 and section 3.4.2.2 and 3.4.2.3
-> 
-> That's a different thing that once IOAPIC has formed the vectored message,
-> Hypertransport might not touch the destination field.
->  
-Ok, that might be the case then.
 
-> Having said that, I am wondering what will happen if a system continues
-> to operate the timer through IOAPIC in ExtInt mode. Will hypertransport
-> keep on broadcasting that interrupt to every cpu? And every cpu will 
-> process that interrupt.
+* Bob Tracy <rct@frus.com> wrote:
+
+> > Current state of the source tree is the 6f37ac... version, so I'll 
+> > start backing out the above diffs in related groups and continue 
+> > until I've got a working kernel.  For lack of an obvious target, 
+> > I'll start with the seemingly innocuous change to sysctl_check.c.  
+> > I'll report back when I've got something.
 > 
-I don't think so.  IIRC once the other cpus are started they all disable the
-timer interrupt, except for one cpu, opting instead to get the timer tick via
-ipi, So while they all might see the interrupt packet on the ht bus, only one
-cpu will process it.
-
-> Hence, I feel it is safe to restore the broadcast bit back to BIOS value once
-> we are through calibrate_delay().
+> That was quick :-).  Backing out the sysctl_check.c diff gives me a 
+> working kernel.  Beats the #$%@! out of me how/why, though.
 > 
-I disagree.  Looking at what Yinghai said, the default setting for the broadcast
-bit isn't actually to unicast the interrupt, its just to set the broadcast mask
-to 0xF, or to 0xFF.  Its use is actually to allow cpus with an extended 8 bit
-apic id see interrupts.  So its not so much to direct interrupts to cpu0, but
-rather to the first 16 cpus rather than to all 255 available cpus.  From what
-I've seen in my testing, systems that 'work' already have this bit set by bios,
-and my quirk patch above does nothing to them.  Disabling this bit after
-calibrate_dealy is going to introduce more uncertainty in systems that have been
-proven to work.  We should leave well enough alone, and just enable the bit if
-its off, and we see that we are using extended apic ids via bit 18 of the same
-register, as Yinghai pointed out.  By enabling the quirk that way, all we are
-really doing is bringing into alignment two bits that should arguably be
-set/cleared in unison anyway.
+> Michael Cree: could you try backing out the diff below from your 
+> 2.6.24-rc3 tree and see if things are now working for you?
+> 
+> Here's "uname -a", just to confirm (maybe) I'm running on what I say 
+> works:
+> 
+> Linux smirkin 2.6.24-rc2-g6f37ac79-dirty #2 Fri Dec 7 08:03:12 CST 2007 alpha
+> 
+> Here's the diff I backed out (patch -R).  It's short...
+> 
+> diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+> index 5a2f2b2..4abc6d2 100644
+> --- a/kernel/sysctl_check.c
+> +++ b/kernel/sysctl_check.c
+> @@ -738,7 +738,7 @@ static struct trans_ctl_table trans_net_table[] = {
+>  	{ NET_ROSE,		"rose",		trans_net_rose_table },
+>  	{ NET_IPV6,		"ipv6",		trans_net_ipv6_table },
+>  	{ NET_X25,		"x25",		trans_net_x25_table },
+> -	{ NET_TR,		"tr",		trans_net_tr_table },
+> +	{ NET_TR,		"token-ring",	trans_net_tr_table },
+>  	{ NET_DECNET,		"decnet",	trans_net_decnet_table },
+>  	/*  NET_ECONET not used */
+>  	{ NET_SCTP,		"sctp",		trans_net_sctp_table },
 
-Regards
-Neil
+reverting this makes the kernel image shorter by 8 bytes - so perhaps 
+some alignment issue somewhere? Or something gets overflown? Does any of 
+this get actually used by your bootup?
 
-> Thanks
-> Vivek
-
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+	Ingo
