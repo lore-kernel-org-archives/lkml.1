@@ -1,18 +1,18 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbXLGC6L (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 6 Dec 2007 21:58:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXLGC54
+	id S1755296AbXLGEAd (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 6 Dec 2007 23:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbXLGEAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 21:57:56 -0500
-Received: from bloggoo.com ([210.1.31.59]:23279 "EHLO blog.jo.com"
+	Thu, 6 Dec 2007 23:00:24 -0500
+Received: from bloggoo.com ([210.1.31.59]:29012 "EHLO blog.jo.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753030AbXLGC54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 21:57:56 -0500
+	id S1752545AbXLGEAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 23:00:23 -0500
 To: linux-kernel@vger.kernel.org
 Subject: =?UTF-8?B?QmxvZ2dvby5jb20g4Liq4Lij4LmJ4Liy4LiH4LmA4Lin4LmH4Lia4Lia4Lil?=  =?UTF-8?B?4LmH4Lit4LiB4LmB4Lia4LiaIOC5gOC4o+C5h+C4pyDguJ/guKPguLUg4LiH?=  =?UTF-8?B?4LmI4Liy4LiiIOC4l+C4seC4meC4l+C4teC4leC4reC4meC4meC4teC5ieC5?=  =?UTF-8?B?gOC4peC4og==?=
-Date: Fri, 7 Dec 2007 09:29:58 +0700
+Date: Fri, 7 Dec 2007 10:33:49 +0700
 From: "Bloggoo.com" <info@bloggoo.com>
-Message-ID: <27c8bda6eb64047452984e06b1af8048@info.bloggoo.com>
+Message-ID: <b712c7a2903afe2b710fb2d922eb999f@info.bloggoo.com>
 X-Priority: 3
 MIME-Version: 1.0
 MIME-Version: 1.0
@@ -21,7 +21,7 @@ Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755183AbXLGC6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755296AbXLGEAd@vger.kernel.org>
 
 Dear  linux-kernel@vger.kernel.org,
 
