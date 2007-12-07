@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbXLGVSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbXLGVU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112AbXLGVSS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 16:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXLGVSJ
+	id S1755400AbXLGVU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 16:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbXLGVUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 16:18:09 -0500
-Received: from lec.cs.unibo.it ([130.136.1.103]:40012 "EHLO lec.cs.unibo.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbXLGVSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 16:18:06 -0500
-Date: Fri, 7 Dec 2007 22:18:05 +0100
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Miller <davem@davemloft.net>, cfriesen@nortel.com,
-       linux-kernel@vger.kernel.org
-Subject: AF_IPN: Inter Process Networking, try these...
-Message-ID: <20071207211804.GA8293@cs.unibo.it>
-References: <47585D66.3000404@nortel.com> <20071206.194131.79623068.davem@davemloft.net> <4758CA53.7000407@nortel.com> <20071206.224005.42816421.davem@davemloft.net> <20071207100322.GM20595@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071207100322.GM20595@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: renzo@cs.unibo.it (Renzo Davoli)
+	Fri, 7 Dec 2007 16:20:16 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:59861 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753463AbXLGVUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 16:20:14 -0500
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Michael Cree <mcree@orcon.net.nz>
+Cc: Bob Tracy <rct@frus.com>, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       rth@twiddle.net, ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
+       greg@kroah.com
+In-Reply-To: <4759B06F.60108@orcon.net.nz>
+References: <20071207145526.B561CDBA2@gherkin.frus.com>
+	 <4759B06F.60108@orcon.net.nz>
+Content-Type: text/plain
+Date: Fri, 07 Dec 2007 22:19:43 +0100
+Message-Id: <1197062383.5483.46.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/6U00xXuKAB8YCBihtOWU4nILt9ZfR2XM5oSk
+ 04kx5D9vKn7yhoh1cJEvoDOyNv4ogv0Qg4oCfwBWIcDKtVY90d
+ BKOCDZHQ6zS+AYEFIpt9+1URNA8m45O
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi, David,
+On Sat, 2007-12-08 at 09:43 +1300, Michael Cree wrote:
+> Bob Tracy wrote:
+> > That was quick :-).  Backing out the sysctl_check.c diff gives me a
+> > working kernel.  Beats the #$%@! out of me how/why, though.
+> > 
+> > Michael Cree: could you try backing out the diff below from your
+> > 2.6.24-rc3 tree and see if things are now working for you?
+> 
+> Yes (conference is now over).  I backed out the sysctl_check patch from 
+> 2.6.24-rc3 and, indeed, got a working kernel.
+> 
+> The working kernel (was probably 2.6.24-rc3 less sysctl_check patch, but 
+> might have been a 2.6.23 variant) has the following in /sys/block
 
-I disagree. If you suspect we would be better using IP multicast, I think
-your suspects are not supported.
-Try the following exercises, please.... Can you provide better solutions
-without IPN?
+> alpha:~# grep . /sys/block/sda/*/dev
+> /sys/block/sda/sda1/dev:8:1
+> /sys/block/sda/sda2/dev:8:2
+> /sys/block/sda/sda3/dev:8:3
+> /sys/block/sda/sda4/dev:8:4
+> /sys/block/sda/sda5/dev:8:5
+> 
+> I failed to spot any difference (other than the formatting of the dates) 
+> between the two!
 
-	renzo
+Yeah, that looks all fine.
 
-Exercise #1.
-I am a user (NOT ROOT), I like kvm, qemu etc. I want an efficient network
-between my VM.
+What distro is that, and what's the udev version?
 
-My solution:
-I Create a IPN socket, with protocol IPN_VDESWITCH and all the VM can
-communicate.
+You are booting your kernel with an initramfs?
 
-Your solution:
-- I am condamned by two kernel developers to run the switch in the userland 
-- I beg the sysadm to give me some pre-allocated taps connected together
-by a kernel bridge.
-- I create a multicast socket limited to this host (TTL=0) and I use it
-like a hub. It cannot switch the packets.                               
+Is the udev daemon (still) running while it fails?
 
-Exercise #2.
-I am a sysadm (maybe a lab administrator). I want my users (not root)
-of the group "vmenabled" to run their VM connected to a network. 
-I have hundreds of users in vmenabled(say students).
+If you run /sbin/udevtrigger, do the nodes appear?
 
-My Solution:
-I create a IPN socket, with protocol IPN_VDESWITCH, connected to a virtual
-interface say ipn0. I give to the socket permission 760 owner
-root:vmenabled.
+Kay
 
-Your solution:
-- I am condamned by two kernel developers to run the switch in the userland
-- I create a multicast socket connected to a tap and then I define iptables
-filters to avoid unauthorized users to join the net.
-- I create hundreds of preallocated tap interfaces, at least one per user.
-
-Exercise #3.
-I am a user (NOT ROOT) and I have a heavy stream of *very private data* 
-generated by some processes that must be received by several processes.
-I am looking for an efficient solution.
-Data can be ASCII strings, or a binary stream.
-It is not a "networking" issue, it is just IPC.
-
-My solution.
-I Create a IPN socket with permission 700, IPN_BROADCAST protocol. All 
-the processes connect to the socket either for writing or for reading (or both).
-
-Your solution:
-- I am condamned by two kernel developers to use userland inefficient
-solutions like named pipes, tee, or a user daemon among AF_UNIX sockets.
-- If I use multicast, others can read the stream.
-(security by obscurity? the attacker do not know the address?)
-- I use a multicast socket with SSL (it sounds funny to use encryption
-  to talk with myself, exposing the stream to crypto attack).
