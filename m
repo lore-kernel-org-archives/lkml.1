@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbXLGUjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXLGUmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbXLGUjh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 15:39:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXLGUj3
+	id S1757870AbXLGUmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 15:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbXLGUmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 15:39:29 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48390 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753867AbXLGUj3 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 15:39:29 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [NFS] NFSv2/3 broken exporting/mounting (permission denied) in 2.6.24-rc4
-In-Reply-To: Your message of "Fri, 07 Dec 2007 15:06:55 EST."
-             <20071207200655.GD2204@fieldses.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20071207025504.GA3070@fieldses.org> <200712072000.lB7K0DZ5013256@agora.fsl.cs.sunysb.edu>
-            <20071207200655.GD2204@fieldses.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1197059924_2992P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 07 Dec 2007 15:38:44 -0500
-Message-ID: <4734.1197059924@turing-police.cc.vt.edu>
+	Fri, 7 Dec 2007 15:42:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33963 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753350AbXLGUmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 15:42:07 -0500
+Date: Fri, 7 Dec 2007 21:41:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com
+Subject: Re: [PATCH 0/3] Unify segment headers
+Message-ID: <20071207204102.GA25424@elte.hu>
+References: <119704456265-git-send-email-gcosta@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <119704456265-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1197059924_2992P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <4728.1197059924.1@turing-police.cc.vt.edu>
 
-On Fri, 07 Dec 2007 15:06:55 EST, "J. Bruce Fields" said:
-> On Fri, Dec 07, 2007 at 03:00:13PM -0500, Erez Zadok wrote:
+* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
 
-> > commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
-> > Author: Eric W. Biederman <ebiederm@xmission.com>
-> > Date:   Sun Dec 2 00:33:17 2007 +1100
+> Hi,
+> 
+> In this patch, I unify segment_32.h and segment_64.h into segment.h 
+> They have some common parts, but a considerable ammount of code still 
+> has to be around ifdefs.
+> 
+> The only patch that is really important to paravirt is the first one, 
+> that moves a paravirt definition into the common header. The other two 
+> are just normal integration, and pretty much independent
 
-> Those files are actually in a separate filesystem (of type "nfsd") which
-> is supposed to be mounted on /proc/fs/nfsd/.   So that mount must have
-> failed in the bad case?  It's not immediately obvious to me what this
-> patch has to do with that.  Hm.
+thanks, i've picked them up for x86.git.
 
-For what it's worth, the startup scripts for 'wine' and 'jexec' fail as well,
-and at shutdown, I get complaints about being unable to dismount 
-/proc/sys/fs/binfmt_misc. 'strace' says:
-
-open("/proc/sys/fs/binfmt_misc/windows", O_WRONLY|O_CREAT|O_TRUNC, 0666) = -1 EN
-OENT (No such file or directory)
-
-# grep binfmt /proc/mounts
-none /proc/sys/fs/binfmt_misc binfmt_misc rw 0 0
-none /proc/sys/fs/binfmt_misc binfmt_misc rw 0 0
-
-I have to wonder if the fact there's 2 of them mounted is related to the
-fact that 2 startup scripts tried to touch files under fs/binfmt_misc/ ?
-
-
---==_Exmh_1197059924_2992P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHWa9UcC3lWbTT17ARAjjLAJ0ZJ9G1fu8JZl8pBUtGi20lb1YGnQCeNVV6
-zrGR7CdbouAlqBPVylThcRs=
-=b2cP
------END PGP SIGNATURE-----
-
---==_Exmh_1197059924_2992P--
+	Ingo
