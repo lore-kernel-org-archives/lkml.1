@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbXLGWHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbXLGWMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbXLGWHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXLGWHk
+	id S1756619AbXLGWMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:12:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbXLGWMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:07:40 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:7999 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbXLGWHj (ORCPT
+	Fri, 7 Dec 2007 17:12:30 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44830 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbXLGWM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:07:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:from:subject:date:to:x-mailer:sender;
-        b=orQ42Kr30Ju9mmsyTSJDj+gKhjv12ML5oh3JsP2IHEO0aoP6ezfmF0iL8Krt9m8ZVUXef/tWCJBKAMe824y/1Be4c23H8WYT1JOxyUTF2CduePyhsbYmfCIRfnKoafb4Vtjayl+6kI85Nh41pN0Apw1NVPx5oMU6slmzywA89PY=
-In-Reply-To: <11272.1197056185@turing-police.cc.vt.edu>
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712071353.11654.a1426z@gawab.com> <m3prxiu3oo.fsf@roke.D-201> <200712072204.48410.a1426z@gawab.com> <11272.1197056185@turing-police.cc.vt.edu>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1D40FF54-64FD-4507-8E5D-02A01F2DD8EB@vicaya.com>
-Cc: Al Boldi <a1426z@gawab.com>, Jakub Narebski <jnareb@gmail.com>,
-       Andreas Ericsson <ae@op5.se>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
+	Fri, 7 Dec 2007 17:12:29 -0500
+Message-ID: <4759C548.6030304@linux.vnet.ibm.com>
+Date: Sat, 08 Dec 2007 03:42:24 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
+References: <20071207211425.10223.91240.sendpatchset@balbir-laptop> <20071207212817.GA391@lixom.net> <4759BCA2.1020809@linux.vnet.ibm.com> <975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
+In-Reply-To: <975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Luke Lu <git@vicaya.com>
-Subject: Re: git guidance
-Date: Fri, 7 Dec 2007 14:07:29 -0800
-To: Valdis.Kletnieks@vt.edu
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 7, 2007, at 11:36 AM, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 07 Dec 2007 22:04:48 +0300, Al Boldi said:
->
->> Because WORKFLOW C is transparent, it won't affect other  
->> workflows.  So you
->> could still use your normal WORKFLOW B in addition to WORKFLOW C,  
->> gaining an
->> additional level of version control detail at no extra cost other  
->> than the
->> git-engine scratch repository overhead.
+Kumar Gala wrote:
+> 
+> On Dec 7, 2007, at 3:35 PM, Balbir Singh wrote:
+> 
+>> Olof Johansson wrote:
+>>> Hi,
+>>>
+>>> On Sat, Dec 08, 2007 at 02:44:25AM +0530, Balbir Singh wrote:
+>>>
+>>>> Comments are as always welcome!
+>>>
+>>> Care to explain what this is useful for? (Not saying it's a stupid idea,
+>>> just wondering what the reason for doing it is).
+>>>
 >>
->> BTW, is git efficient enough to handle WORKFLOW C?
->
-> Imagine the number of commits a 'make clean; make' will do in a  
-> kernel tree, as
-> it commits all those .o files... :)
+>> In my case, I use it to test parts of my memory controller patches on an
+>> emulated NUMA machine. I plan to use it to test out page migration
+>> across nodes.
+> 
+> Can you explain that further.  I'm still not clear on why this is useful.
+> 
+> - k
 
-My guess is that Al is not really a developer (product management/ 
-marketing?), what he has in mind is probably not an SCM but a backup  
-system a la Mac's time machine or Netapp's snapshots that also  
-support disconnected commits. I think that git could be a suitable  
-engine for such systems, after a few tweaks to avoid compressing  
-already compressed blobs like jpeg, mp3 and mpeg etc.
+Sure. In my case I need to emulate NUMA nodes to do some NUMA specific
+testing. The memory controller I've written has some interesting data
+structures like per node, per zone LRU lists. To be able to test those
+features on a non-numa box is a problem, since we get just the default node.
 
-__Luke
+To be able to test the memory controller under NUMA, I use fake NUMA
+nodes. x86-64 has a similar feature, the code I have here is the
+simplest I could come up with for PowerPC.
+
+I just thought of another very interesting use case, it can be used to
+split up the zone's lru lock which is highly contended.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
