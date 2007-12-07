@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbXLGLiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbXLGLky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbXLGLiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 06:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXLGLiF
+	id S1754424AbXLGLky (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 06:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbXLGLkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 06:38:05 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34167 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbXLGLiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 06:38:03 -0500
-Date: Fri, 7 Dec 2007 12:37:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bob Tracy <rct@frus.com>, mcree@orcon.net.nz, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-scsi@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Message-ID: <20071207113734.GA14598@elte.hu>
-References: <20071206163305.c3587675.akpm@linux-foundation.org> <20071207050709.110D2DBA2@gherkin.frus.com> <20071207022646.373c92f5.akpm@linux-foundation.org>
+	Fri, 7 Dec 2007 06:40:47 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:60084 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbXLGLkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 06:40:46 -0500
+From: Markus <M4rkusXXL@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: programs vanish with 2.6.22+
+Date: Fri, 7 Dec 2007 12:40:27 +0100
+User-Agent: KMail/1.9.7
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+References: <200712061906.42070.M4rkusXXL@web.de> <200712061927.35976.M4rkusXXL@web.de> <Pine.LNX.4.64.0712062207320.25344@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.0712062207320.25344@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071207022646.373c92f5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200712071240.27838.M4rkusXXL@web.de>
+X-Provags-ID: V01U2FsdGVkX187RbWnpxeQx4nGdfC25f+ESNv4hHJ89xxKIUqo
+	zm6XJN6kG4E1PHKt3Lri3kNFaOAG+iel4mMrfl9ZWjjTzLGzZw
+	sWIvZCnOM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi again!
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+The memtest ran 14 passes (~10h) without an error.
 
-> > then the test of whether I bisected correctly is as simple as 
-> > applying the commit and seeing if things break, because I'm running 
-> > on the kernel corresponding to 
-> > 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 right now.  Let me give 
-> > that a try and I'll report back.  Worst case, I'll have to start 
-> > over and write off the past four days...
-> 
-> Gad.  I trust the second time will be faster.
-> 
-> git-bisect _is_ very error prone.  I find one of the problems is that 
-> each step is so far apart in time that you forget what you were doing.  
-> Did I remember to test that iteration?  Did I install the right 
-> kernel?  etc.
+I now have a 2.6.24-rc4 with some debug-options turned on, waiting for 
+something to happen... can I just leave it untill a window disappears 
+or do I need to manually enable something or run some user-space app?!
 
-i have a fully automated bootup-hang bisection script. It is based on 
-"git-bisect run". I run the script, it builds and boots kernels fully 
-automatically, and when the bootup fails (the script notices that via 
-the serial log, which it continuously watches - or via a timeout, if the 
-system does not come up within 10 minutes it's a "bad" kernel), the 
-script raises my attention via a beep and i power cycle the test box. 
-(yeah, i should make use of a managed power outlet to 100% automate it) 
 
-So i dont have to a single manual decision anytime during the bisection. 
-But the scripts are very much tied to my ad-hoc test environment so it 
-would not be of much general use.
-
-	Ingo
+Markus
