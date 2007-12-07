@@ -1,92 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXLGSGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbXLGSHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbXLGSGu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbXLGSGl
+	id S1757152AbXLGSHZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbXLGSHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:06:41 -0500
-Received: from mail.tmr.com ([64.65.253.246]:44476 "EHLO gaimboi.tmr.com"
+	Fri, 7 Dec 2007 13:07:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49189 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753811AbXLGSGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:06:40 -0500
-Message-ID: <47598F94.6090305@tmr.com>
-Date: Fri, 07 Dec 2007 13:23:16 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1754044AbXLGSHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 13:07:01 -0500
+Date: Fri, 7 Dec 2007 19:06:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Bob Tracy <rct@frus.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mcree@orcon.net.nz,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
+       kay.sievers@vrfy.org, greg@kroah.com
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+Message-ID: <20071207180615.GC19173@elte.hu>
+References: <20071207150549.GA24254@elte.hu> <20071207165902.3686FDBA2@gherkin.frus.com>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, apiszcz@solarrain.com
-Subject: Re: 2.6.23.9: x86_64: floppy not working: p35 chipset
-References: <Pine.LNX.4.64.0712060435500.6948@p34.internal.lan> <47598CAD.40100@tmr.com> <Pine.LNX.4.64.0712071254580.26042@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0712071254580.26042@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071207165902.3686FDBA2@gherkin.frus.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
+	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
->
->
-> On Fri, 7 Dec 2007, Bill Davidsen wrote:
->
->> Justin Piszcz wrote:
->>> Trying to format a floppy (2-3 of them) on a GA-P35-DS4 2.0 with a 
->>> regular Sony floppy on Debian x86_64 with kernel 2.6.23.9:
->>>
->>> # fdformat /dev/fd0
->>> Could not determine current format type: No such device
->>> # mformat a:
->>> mformat: Could not get geometry of device (No such device)
->>> #
->>>
->>> # cat /proc/interrupts |grep floppy
->>>   6:         38         37         39         41   IO-APIC-edge      
->>> floppy
->>>
->>> # dmesg|grep -A1 fd0
->>> [   52.689487] Floppy drive(s): fd0 is 1.44M
->>> [   52.704661] FDC 0 is a post-1991 82077
->>>
->>> During the 'attempted format'
->>>
->>
->>>
->>> I've tried a few different floppies, the result is the same.  The 
->>> system is 64-bit only, no 32-bit emulation is enabled using a strict 
->>> 64-bit-only userland.  Has anyone else gotten their floppy drive to 
->>> work under 64-bit?
->>>
->>> Is this just a case of a DOA floppy drive or is something else wrong?
->>>
->> Maybe booting from a 32 bit live CD would help determine that. It 
->> certainly was seen at boot time. Didn't get hooked to some SCSI 
->> device name by udev, did it?
->>
->>
->> -- 
->> Bill Davidsen <davidsen@tmr.com>
->>  "We have more to fear from the bungling of the incompetent than from
->> the machinations of the wicked."  - from Slashdot
->>
->
-> Retried with some other floppies and later tried the original, 
-> everything seems to be working now, must have been a bad floppy/some 
-> transient issue.
 
-Great! I did test that FC8 with a Fedora kernel will see and use the 
-floppy. Even found a floppy to use. Now I have to figure out why I have 
-a floppy with a gzipped ext2 filesystem on it. :-(
-Doesn't appear to be bootable, I thought it might be SYSLINUX for an old 
-system which couldn't boot from CD or USB, but that doesn't seem to be 
-the case.
+* Bob Tracy <rct@frus.com> wrote:
 
-Anyway, glad the problem went away.
+> Ingo Molnar wrote:
+> > 
+> > * Bob Tracy <rct@frus.com> wrote:
+> > 
+> > > > Current state of the source tree is the 6f37ac... version, so I'll 
+> > > > start backing out the above diffs in related groups and continue 
+> > > > until I've got a working kernel.  For lack of an obvious target, 
+> > > > I'll start with the seemingly innocuous change to sysctl_check.c.  
+> > > > I'll report back when I've got something.
+> > > 
+> > > That was quick :-).  Backing out the sysctl_check.c diff gives me a 
+> > > working kernel.  Beats the #$%@! out of me how/why, though.
+> > > 
+> > > Michael Cree: could you try backing out the diff below from your 
+> > > 2.6.24-rc3 tree and see if things are now working for you?
+> > > 
+> > > Here's "uname -a", just to confirm (maybe) I'm running on what I say 
+> > > works:
+> > > 
+> > > Linux smirkin 2.6.24-rc2-g6f37ac79-dirty #2 Fri Dec 7 08:03:12 CST 2007 alpha
+> > > 
+> > > Here's the diff I backed out (patch -R).  It's short...
+> > > 
+> > > diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+> > > index 5a2f2b2..4abc6d2 100644
+> > > --- a/kernel/sysctl_check.c
+> > > +++ b/kernel/sysctl_check.c
+> > > @@ -738,7 +738,7 @@ static struct trans_ctl_table trans_net_table[] = {
+> > >  	{ NET_ROSE,		"rose",		trans_net_rose_table },
+> > >  	{ NET_IPV6,		"ipv6",		trans_net_ipv6_table },
+> > >  	{ NET_X25,		"x25",		trans_net_x25_table },
+> > > -	{ NET_TR,		"tr",		trans_net_tr_table },
+> > > +	{ NET_TR,		"token-ring",	trans_net_tr_table },
+> > >  	{ NET_DECNET,		"decnet",	trans_net_decnet_table },
+> > >  	/*  NET_ECONET not used */
+> > >  	{ NET_SCTP,		"sctp",		trans_net_sctp_table },
+> > 
+> > reverting this makes the kernel image shorter by 8 bytes - so 
+> > perhaps some alignment issue somewhere? Or something gets overflown? 
+> > Does any of this get actually used by your bootup?
+> 
+> Dunno...  The dmesg output is not terribly useful here, because most 
+> of the "interesting" stuff concerning udev startup that appears on the 
+> console never makes it into a log.  Note that, for the bad cases, I 
+> don't see the same console output that Michael reported, although the 
+> net effect is the same: the partitions don't get found, so I'm offered 
+> the chance to enter my root password and do some poking around, and 
+> when I do, none of the block devices are present under /dev.
+> 
+> I'm open to suggestions on how to take this analysis further.  Michael 
+> indicated he's running a conference this week, so I don't know when 
+> he'll be able to come up for air.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
+i'm not sure how to do direct debugging on udev, so i can only guess 
+about what effect on the kernel side could have caused this. One bad 
+hack would be to "probe" udevd's behavior by changing the NET_TR entry 
+in various ways:
 
+  "tr" -> "token-ring"         # breaks
+  "tr" -> "tr"                 # works
+  "tr" -> "token-rin0"         # ?            (1)
+  "tr" -> "TR"                 # ?            (2)
 
+the question is, does tweak (1) and tweak (2) work or break?
+
+but it would be a lot more effective i guess to get some udevd expert's 
+attention on this ...
+
+	Ingo
