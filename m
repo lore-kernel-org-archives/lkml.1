@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbXLGW0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbXLGWeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbXLGW0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXLGW0m
+	id S1757245AbXLGWeh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXLGWe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:26:42 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:45790 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753490AbXLGW0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:26:41 -0500
-Message-ID: <4759C89B.9000709@linux.vnet.ibm.com>
-Date: Sat, 08 Dec 2007 03:56:35 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-CC: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-References: <20071207211425.10223.91240.sendpatchset@balbir-laptop> <20071207221106.GH16824@localdomain>
-In-Reply-To: <20071207221106.GH16824@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Dec 2007 17:34:28 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55092 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752282AbXLGWe1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:34:27 -0500
+Date: Fri, 7 Dec 2007 14:33:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: gnome42@gmail.com, linux-kernel@vger.kernel.org, bfields@fieldses.org,
+       rjw@sisk.pl
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+Message-Id: <20071207143319.ee048955.akpm@linux-foundation.org>
+In-Reply-To: <1197053179.7532.23.camel@heimdal.trondhjem.org>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	<20071207040219.e231cbc7.akpm@linux-foundation.org>
+	<fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
+	<1197053179.7532.23.camel@heimdal.trondhjem.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan Lynch wrote:
-> Hi Balbir-
+On Fri, 07 Dec 2007 13:46:19 -0500
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+
 > 
-> Balbir Singh wrote:
->>
->> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
->> NUMA nodes can be specified using the following command line option
->>
->> numa=fake=<node range>
->>
->> node range is of the format <range1>,<range2>,...<rangeN>
->>
->> Each of the rangeX parameters is passed using memparse(). I find the patch
->> useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
->> on a non-numa box with the following arguments
->>
->> numa=fake=1G
->> numa=fake=1G,2G
->> name=fake=1G,512M,2G
->> numa=fake=1500M,2800M mem=3500M
->> numa=fake=1G mem=512M
->> numa=fake=1G mem=1G
+> On Fri, 2007-12-07 at 13:14 -0500, Shane wrote:
+> > On Dec 7, 2007 7:02 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > ...
+> > > > 2.6.24-rc3-git1 is last known good kernel. The problem also exists
+> > > > with the latest snap 2.6.24-rc4-git4. NFS server is 2.6.23-rc9 and
+> > > > is unchanged.
+> > >
+> > > hm, there have been no nfs changes since 2.6.24-rc4.
+> > 
+> > Ok, but the problem seems to have appeared before 2.6.24-rc4.
+> > 
+> > > > It is easily reproducible here, hopefully for the person who
+> > > > knows how to debug it too :)
+> > > >
+> > >
+> > > I guess a full set of the commands which you typed to reproduce this would
+> > > help.
+> > 
+> > Server is 2.6.23-rc9 and is exporting:
+> > 
+> > /dirA/dirB
+> > 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure,crossmnt)
+> > /dirA/dirB/dirC
+> > 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
+> > /dirA/dirB/dirD
+> > 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
+> > 
+> > The NFS client (Core2 SMP) 2.6.24-rc3-git4:
+> > 
+> > NFS-server:/dirA/dirB     /dirA/dirB    nfs
+> > auto,rsize=16384,wsize=16384,hard,intr,users,exec,nfsvers=3,tcp,nolock,actimeo=0
+> > 
+> > Then on the client when the new kernel has booted:
+> > 
+> > ls /dirA/dirB      --> normal listing
+> > ls /dirA/dirB/dirC   -->  Stale NFS file handle
+> > ls /dirA/dirB/dirD   -->  Stale NFS file handle
+> > 
+> > I will do a few more builds/boots and check -rc3-git2 and -rc3-git3.
 > 
-> So this doesn't appear to allow one to assign cpus to fake nodes?  Do
-> all cpus just get assigned to node 0 with numa=fake?
+> This problem has already been reported. The fix (which I'm planning on
+> sending to Linus soon) is appended.
 > 
 
-Yes, they all appear on node 0. We could have tweaks to distribute CPU's
-as well.
+That patch isn't in git://git.linux-nfs.org/pub/linux/nfs-2.6.git.  In fact
+that tree is empty.
 
-> A different approach that occurs to me is to use kexec with a doctored
-> device tree (i.e. with the ibm,associativity properties modified to
-> reflect your desired topology).  Perhaps a little bit obscure, but it
-> seems more flexible.
-> 
-
-That would be interesting, but it always means that we need to run
-kexec, which might involve two boots.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Has something gone wrong here?
