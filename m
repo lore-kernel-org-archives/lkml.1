@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXLGWDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbXLGWHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbXLGWDZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXLGWDP
+	id S1756385AbXLGWHw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXLGWHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:03:15 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48856 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752754AbXLGWDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:03:14 -0500
-Message-ID: <4759C31D.30003@linux.vnet.ibm.com>
-Date: Sat, 08 Dec 2007 03:33:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linuxppc-dev@ozlabs.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-References: <20071207211425.10223.91240.sendpatchset@balbir-laptop> <4759BCBA.7060800@linux.vnet.ibm.com> <4759BE88.3020702@linux.vnet.ibm.com> <200712072258.19331.arnd@arndb.de>
-In-Reply-To: <200712072258.19331.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Dec 2007 17:07:40 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:7999 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbXLGWHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:07:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:from:subject:date:to:x-mailer:sender;
+        b=orQ42Kr30Ju9mmsyTSJDj+gKhjv12ML5oh3JsP2IHEO0aoP6ezfmF0iL8Krt9m8ZVUXef/tWCJBKAMe824y/1Be4c23H8WYT1JOxyUTF2CduePyhsbYmfCIRfnKoafb4Vtjayl+6kI85Nh41pN0Apw1NVPx5oMU6slmzywA89PY=
+In-Reply-To: <11272.1197056185@turing-police.cc.vt.edu>
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712071353.11654.a1426z@gawab.com> <m3prxiu3oo.fsf@roke.D-201> <200712072204.48410.a1426z@gawab.com> <11272.1197056185@turing-police.cc.vt.edu>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1D40FF54-64FD-4507-8E5D-02A01F2DD8EB@vicaya.com>
+Cc: Al Boldi <a1426z@gawab.com>, Jakub Narebski <jnareb@gmail.com>,
+       Andreas Ericsson <ae@op5.se>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Luke Lu <git@vicaya.com>
+Subject: Re: git guidance
+Date: Fri, 7 Dec 2007 14:07:29 -0800
+To: Valdis.Kletnieks@vt.edu
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Friday 07 December 2007, Balbir Singh wrote:
->> Balbir Singh wrote:
->>> Geert Uytterhoeven wrote:
->>>> On Sat, 8 Dec 2007, Balbir Singh wrote:
->>>>> +   if (strstr(p, "fake="))
->>>>> +           cmdline = p + 5;        /* 5 is faster than strlen("fake=") */
->>>> Really? My gcc is smart enough to replace the `strlen("fake=")' by 5, even
->>>> without -O.
->>>>
->>> Thanks for pointing that out, but I am surprised that a compiler would
->>> interpret library routines like strlen.
->>>
->> I just tested it and it turns out that you are right. I'll go hunt to
->> see where gcc gets its magic powers from.
+On Dec 7, 2007, at 11:36 AM, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 07 Dec 2007 22:04:48 +0300, Al Boldi said:
+>
+>> Because WORKFLOW C is transparent, it won't affect other  
+>> workflows.  So you
+>> could still use your normal WORKFLOW B in addition to WORKFLOW C,  
+>> gaining an
+>> additional level of version control detail at no extra cost other  
+>> than the
+>> git-engine scratch repository overhead.
 >>
-> 
-> Even if it wasn't: Why the heck would you want to optimize this? The function
-> is run _once_ at boot time and the object code gets thrown away afterwards!
-> 
-> 	Arnd <><
+>> BTW, is git efficient enough to handle WORKFLOW C?
+>
+> Imagine the number of commits a 'make clean; make' will do in a  
+> kernel tree, as
+> it commits all those .o files... :)
 
-Cause, I see no downside of doing it. The strlen of fake= is fixed.
-But having said that, I am not a purist about the approach, I just want
-cmdline to point after "fake="
+My guess is that Al is not really a developer (product management/ 
+marketing?), what he has in mind is probably not an SCM but a backup  
+system a la Mac's time machine or Netapp's snapshots that also  
+support disconnected commits. I think that git could be a suitable  
+engine for such systems, after a few tweaks to avoid compressing  
+already compressed blobs like jpeg, mp3 and mpeg etc.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+__Luke
