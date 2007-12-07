@@ -1,115 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXLGSUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbXLGSVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251AbXLGSUv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXLGSUk
+	id S1756921AbXLGSVd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbXLGSVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:20:40 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:53462 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753874AbXLGSUi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:20:38 -0500
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Bob Tracy <rct@frus.com>, Andrew Morton <akpm@linux-foundation.org>,
-       mcree@orcon.net.nz, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       rth@twiddle.net, ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
-       greg@kroah.com
-In-Reply-To: <20071207180615.GC19173@elte.hu>
-References: <20071207150549.GA24254@elte.hu>
-	 <20071207165902.3686FDBA2@gherkin.frus.com>
-	 <20071207180615.GC19173@elte.hu>
-Content-Type: text/plain
-Date: Fri, 07 Dec 2007 19:19:32 +0100
-Message-Id: <1197051572.3599.10.camel@lov.site>
+	Fri, 7 Dec 2007 13:21:25 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59214 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754014AbXLGSVY (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 13:21:24 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: 2.6.24-rc4-mm1
+In-Reply-To: Your message of "Fri, 07 Dec 2007 00:24:04 +0100."
+             <1196983444.2829.38.camel@lov.site>
+From: Valdis.Kletnieks@vt.edu
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <3941.1196941764@turing-police.cc.vt.edu> <20071206040420.6c89c675.akpm@linux-foundation.org> <4374.1196968688@turing-police.cc.vt.edu> <20071206193843.GA25125@kroah.com> <3ae72650712061404w170fc434nb1172e048216e139@mail.gmail.com> <2955.1196982750@turing-police.cc.vt.edu>
+            <1196983444.2829.38.camel@lov.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: multipart/signed; boundary="==_Exmh_1197051630_3013P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/H3wWRnrRzl2Zi9qeztAWpkuQj3URjt4cmsvt
- byJG7PzW0RYGteN+HJt9vaPOl6il/L99pYHULYSK+7AJf4XXJN
- ktUXX0CMKnib1BIv/RuGX//ttdWrsmb
+Date: Fri, 07 Dec 2007 13:20:30 -0500
+Message-ID: <6593.1197051630@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-12-07 at 19:06 +0100, Ingo Molnar wrote:
-> * Bob Tracy <rct@frus.com> wrote:
-> 
-> > Ingo Molnar wrote:
-> > > 
-> > > * Bob Tracy <rct@frus.com> wrote:
-> > > 
-> > > > > Current state of the source tree is the 6f37ac... version, so I'll 
-> > > > > start backing out the above diffs in related groups and continue 
-> > > > > until I've got a working kernel.  For lack of an obvious target, 
-> > > > > I'll start with the seemingly innocuous change to sysctl_check.c.  
-> > > > > I'll report back when I've got something.
-> > > > 
-> > > > That was quick :-).  Backing out the sysctl_check.c diff gives me a 
-> > > > working kernel.  Beats the #$%@! out of me how/why, though.
-> > > > 
-> > > > Michael Cree: could you try backing out the diff below from your 
-> > > > 2.6.24-rc3 tree and see if things are now working for you?
-> > > > 
-> > > > Here's "uname -a", just to confirm (maybe) I'm running on what I say 
-> > > > works:
-> > > > 
-> > > > Linux smirkin 2.6.24-rc2-g6f37ac79-dirty #2 Fri Dec 7 08:03:12 CST 2007 alpha
-> > > > 
-> > > > Here's the diff I backed out (patch -R).  It's short...
-> > > > 
-> > > > diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-> > > > index 5a2f2b2..4abc6d2 100644
-> > > > --- a/kernel/sysctl_check.c
-> > > > +++ b/kernel/sysctl_check.c
-> > > > @@ -738,7 +738,7 @@ static struct trans_ctl_table trans_net_table[] = {
-> > > >  	{ NET_ROSE,		"rose",		trans_net_rose_table },
-> > > >  	{ NET_IPV6,		"ipv6",		trans_net_ipv6_table },
-> > > >  	{ NET_X25,		"x25",		trans_net_x25_table },
-> > > > -	{ NET_TR,		"tr",		trans_net_tr_table },
-> > > > +	{ NET_TR,		"token-ring",	trans_net_tr_table },
-> > > >  	{ NET_DECNET,		"decnet",	trans_net_decnet_table },
-> > > >  	/*  NET_ECONET not used */
-> > > >  	{ NET_SCTP,		"sctp",		trans_net_sctp_table },
-> > > 
-> > > reverting this makes the kernel image shorter by 8 bytes - so 
-> > > perhaps some alignment issue somewhere? Or something gets overflown? 
-> > > Does any of this get actually used by your bootup?
+--==_Exmh_1197051630_3013P
+Content-Type: text/plain; charset=us-ascii
+
+On Fri, 07 Dec 2007 00:24:04 +0100, Kay Sievers said:
+> On Thu, 2007-12-06 at 18:12 -0500, Valdis.Kletnieks@vt.edu wrote:
+> > On Thu, 06 Dec 2007 23:04:12 +0100, Kay Sievers said:
 > > 
-> > Dunno...  The dmesg output is not terribly useful here, because most 
-> > of the "interesting" stuff concerning udev startup that appears on the 
-> > console never makes it into a log.  Note that, for the bad cases, I 
-> > don't see the same console output that Michael reported, although the 
-> > net effect is the same: the partitions don't get found, so I'm offered 
-> > the chance to enter my root password and do some poking around, and 
-> > when I do, none of the block devices are present under /dev.
+> > > What's the value of SYSFS_DEPRECATED? Care to set it to yes, if it isn't,
+> > > and try again?
 > > 
-> > I'm open to suggestions on how to take this analysis further.  Michael 
-> > indicated he's running a conference this week, so I don't know when 
-> > he'll be able to come up for air.
+> > I *knew* there was a D'Oh! error in here. ;)
+> > 
+> > Bisection is fast closing in on gregkh-driver-block-device.patch, which broke
+> > my LVM almost the exact same way the *last* time it showed up in -mm ;)
 > 
-> i'm not sure how to do direct debugging on udev, so i can only guess 
-> about what effect on the kernel side could have caused this. One bad 
-> hack would be to "probe" udevd's behavior by changing the NET_TR entry 
-> in various ways:
-> 
->   "tr" -> "token-ring"         # breaks
->   "tr" -> "tr"                 # works
->   "tr" -> "token-rin0"         # ?            (1)
->   "tr" -> "TR"                 # ?            (2)
-> 
-> the question is, does tweak (1) and tweak (2) work or break?
-> 
-> but it would be a lot more effective i guess to get some udevd expert's 
-> attention on this ...
+> Oh, it must not, if SYSFS_DEPRECATED=y is set. I hope we fixed all
+> issues. Please let us know if it does not work, then we will need to
+> look into it.
 
-Could we get the output of:
-  ls -l /sys/block/sda/
-and:
-  grep . /sys/block/sda/*/dev
-?
+I changed SYSFS_DEPRECATED to y, and it was able to boot with the same old
+initrd I've been using for a while.
 
-Kay
+Note that I had it set to 'n' for at least the last 4-5 -mm kernels, so it
+*was* working fine without it..
 
+> > > A fix for LVM to handle symlinks instead of directories is in the LVM
+> > > CVS tree, but there wasn't a release since August.
+> > 
+> > I seem to recall it was 'nash' rather than LVM that had the indigestion the
+> > last time around.
+> 
+> I think that a recent nash should work, even with SYSFS_DEPRECATED=n.
+> Anyway, nothing should change when SYSFS_DEPRECATED set, nash works fine
+> here, with that.
+
+It was working fine with =n here until -rc4-mm1 as well, that's why it's a bit
+of a surprise.  What got added to the 'deprecated' list in this iteration?
+
+Now for the truly odd part - I just tried with a rebuilt initrd that included
+the lvm.static from last night's Rawhide (lvm2-2.02.29-1.fc9).  And that didn't
+work any better.
+
+So to summarize: (old lvm == 2.02.24)
+
+release	SYSFS_DEPRECATED	lvm2		works
+-rc3-mm2		N	old	yes
+-rc4-mm1		N	old	no
+-rc4-mm1		Y	old	yes
+-rc4-mm1		N	new	no
+
+(I'm sure looking at that, everybody is now going 'WTF??!?' ;)
+
+gregkh-driver-driver-core-fix-class-glue-dir-cleanup-logic.patch and
+gregkh-driver-block-device.patch are the only patches left in the (very small)
+bisect window that reference SYSFS_DEPRECATED at all (according to grep)
+
+Anybody got any brilliant ideas? :)
+
+
+
+
+
+--==_Exmh_1197051630_3013P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHWY7ucC3lWbTT17ARAqaWAKDuUACTkOjPdhc/8MsYUYCmmIW2zACgihYh
+1LDyFqmjT6mLdHldes8KUP4=
+=mXXh
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1197051630_3013P--
