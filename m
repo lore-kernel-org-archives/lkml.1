@@ -1,59 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXLGSsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXLGStc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368AbXLGSsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXLGSsZ
+	id S1756886AbXLGStc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbXLGStZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:48:25 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56260 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753474AbXLGSsY (ORCPT
+	Fri, 7 Dec 2007 13:49:25 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59721 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753800AbXLGStY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:48:24 -0500
-Date: Fri, 7 Dec 2007 18:42:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Andi Kleen <andi@firstfloor.org>, "David P. Reed" <dpreed@reed.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071207184237.04174f42@the-village.bc.nu>
-In-Reply-To: <475994C5.7090307@keyaccess.nl>
-References: <475879CD.9080006@reed.com>
-	<p733auekcly.fsf@bingen.suse.de>
-	<20071207160439.71b7f46a@the-village.bc.nu>
-	<20071207163116.GB5992@one.firstfloor.org>
-	<20071207171957.73b619b1@the-village.bc.nu>
-	<475994C5.7090307@keyaccess.nl>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Dec 2007 13:49:24 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Neil Horman <nhorman@redhat.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
+       Ben Woodard <woodard@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com>
+	<20071130144250.GC23810@redhat.com>
+	<20071130145131.GB5822@hmsendeavour.rdu.redhat.com>
+	<20071206213951.GB28898@hmsreliant.think-freely.org>
+	<20071206221143.GC2863@redhat.com>
+	<20071207001023.GA7312@hmsendeavour.rdu.redhat.com>
+	<20071207143944.GF2863@redhat.com>
+	<20071207145315.GB10389@hmsendeavour.rdu.redhat.com>
+	<20071207151623.GG2863@redhat.com>
+	<20071207155331.GC10389@hmsendeavour.rdu.redhat.com>
+Date: Fri, 07 Dec 2007 11:46:21 -0700
+In-Reply-To: <20071207155331.GC10389@hmsendeavour.rdu.redhat.com> (Neil
+	Horman's message of "Fri, 7 Dec 2007 10:53:31 -0500")
+Message-ID: <m1tzmuqr5u.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Dec 2007 19:45:25 +0100
-Rene Herman <rene.herman@keyaccess.nl> wrote:
+Neil Horman <nhorman@redhat.com> writes:
 
-> On 07-12-07 18:19, Alan Cox wrote:
-> 
-> > On Fri, 7 Dec 2007 17:31:16 +0100
-> > Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> >>> You don't need to. Port 0x80 historically is about 8uS so just udelay(8)
-> >>> and make sure the initial default delay is conservative enough before the
-> >> How would you make it conservative enough handling let's say a 6Ghz CPU
-> >> that can execute multiple jumps per cycle?
-> > 
-> > Pick a sane worst case and go with it at boot. We don't have to be
-> > accurate before we tune udelay - over long in uSecs isnt going to hurt,
-> > and most post boot _p's can be replaced by udelay(8) now
-> 
-> Isn't 8 generally a bit overly long? I believe the norm is 1?
+>> Does LAPIC allow to disable a specific vector and not accept interrupts? I
+>> don't think so. If a timer interrupt is broadcasted to every cpu I think
+>> everybody will accept it (like broadcast IPI). That's why intelligence
+>> is built into IOAPIC and direct interrupts to a cpu or group of cpu.
+>> 
+> See disable_APIC_timer().  It seems to set the mask bit in the APIC_LVTT entry.
 
-8uS is an ISA bus transaction.
+Yes.  The local allows us to choose to accept ExtInt interrupts or not.
+We can't do it per vector but we can do by interrupt delivery path.
+External Interrupt.
+External NMI.
+Logical Apic Bus (Although I don't know if we can disable this one).
+
+>
+>> I am just trying to understand the functionality better. Can somebody help me
+>> understand how do we make sure that same timer interrupt is not processed by
+>> all cpus (assuming hypertransport is broadcasting it)?
+>> 
+> I understand your desire, but clearly, something prevents it.  Note our earlier
+> conversation, this bit doesn't actually force a unicast of an interrupt packet,
+> but simply masks the destination field.  When set to zero, it simply means that
+> the ht interrupt packet destination field is restricted to 4 bits rather than 8.
+> So its not like when its set to zero we are guaranteed that it is forced to a
+> single processor anyway.  All setting this bit does is ensure that if any apics
+> out on a system are addresed using an extended apic id, that interrupts can
+> reach them.  Thats why it was suggested that this bit only be forcibly set if
+> bit 18 is also set.
+
+We should only have a single cpus local apic configured to accept the
+interrupt.  Further it would not surprise me if there was some first
+come first served logic with accepting the interrupt in there
+somewhere.
+
+
+>> Again for my understanding, I got few questions.
+>> 
+>> - Why does nvidia choose not to broadcast the interrupts and still works
+>>   fine? Does that mean nvidia chipse will not work the extended cpu apic
+>>   ids?
+>> 
+> It doesn't! When booting normally getting interrupts to apics that use 4 bit
+> apic ids is sufficient since cpu0 is in that set, but if we crash on a cpu with
+> an extended id, we hang.
+
+Yes.  This sounds like a BIOS bug at present.  A chipset feature
+residing in the CPUs was not enabled properly.
+
+>> - Why do I need to broadcast the interrupts and not target specific cpus?
+>> 
+> Its not a forced broadcast, its a mask on the apic id.  The IOAPIC still
+> addresses specific cpus.
+
+This is a broadcast for legacy mode interrupts which don't have a cpu
+destination field.  Once we are running the timer through the ioapic
+we have a destination field and the broadcast logic should not matter.
+
+>> - If I am broadcasting interrupts, how do I make sure only one cpu
+>>   picks it up.
+>> 
+> The IOAPIC handles that.
+
+Well the local apics.   If you are in ioapic mode and give the
+cpus a choice of which cpu to deliver to it is a hardware anycast irq
+transmission.  That is the hardware magically picks one cpu of the
+set of allow cpus to deliver the irq to.  How that happens is
+implementation specific.
+
+Eric
