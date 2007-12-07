@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbXLGMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbXLGMES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbXLGMDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 07:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbXLGMDI
+	id S1755239AbXLGMES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 07:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXLGMEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 07:03:08 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42403 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751246AbXLGMDH (ORCPT
+	Fri, 7 Dec 2007 07:04:06 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:62519 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbXLGMEF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 07:03:07 -0500
-Date: Fri, 7 Dec 2007 04:02:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Shane <gnome42@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-Message-Id: <20071207040219.e231cbc7.akpm@linux-foundation.org>
-In-Reply-To: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Dec 2007 07:04:05 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC][POWERPC] Provide a way to protect 4k subpages when using 64k pages
+Date: Fri, 7 Dec 2007 13:03:41 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+References: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
+In-Reply-To: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712071303.42413.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19byRNl0qQQtlcmWO5xKO9o/IpwbIM6PZ14/7O
+ MhGSzZi8/ywDCbjaCdXoG1wm3FgCHgeYdW11tP006kv1eXDOTs
+ uInE2bUAlWzOrvDTx0uxA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2007 23:45:58 -0500 Shane <gnome42@gmail.com> wrote:
+On Friday 07 December 2007, Paul Mackerras wrote:
+> I have re-purposed the ioperm system call for this.  The old ioperm
+> system call never did anything (except return an ENOSYS error) and in
+> fact never could have actually been useful for anything on the PowerPC
+> architecture, so nothing ever used it.
 
-> Hi,
-> 
-> The NFS crossmnt/nohide feature has been working beautifully
-> in 2.6.23. NFS in general has been really good in 2.6.23. Thanks!
-> 
-> However, starting in  2.6.24-rc3-git4, I immediately get 'NFS Stale
-> file handle' messages for any accesses to the NFS crossmnt'ed
-> volumes. Regular NFS mounts are fine but the crossmnt'ed
-> subdirs return only that error message.
-> 
-> 2.6.24-rc3-git1 is last known good kernel. The problem also exists
-> with the latest snap 2.6.24-rc4-git4. NFS server is 2.6.23-rc9 and
-> is unchanged.
+Couldn't there be a program that relies on ioperm to return -ENOSYS on
+powerpc in order to fall back on some other method of I/O access?
 
-hm, there have been no nfs changes since 2.6.24-rc4.
+The risk of actually breaking something is certainly low, but I think
+you can never be sure here, so why not use a new syscall number?
 
-> It is easily reproducible here, hopefully for the person who
-> knows how to debug it too :)
-> 
-
-I guess a full set of the commands which you typed to reproduce this would
-help.
-
-Rafael, please add to the post-2.6.23 regression list?  (If there's any
-room left).
-
-Thanks.
+	Arnd <><
