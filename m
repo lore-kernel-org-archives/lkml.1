@@ -1,468 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbXLGMle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbXLGMml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbXLGMle (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 07:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbXLGMl0
+	id S1755806AbXLGMml (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 07:42:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbXLGMmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 07:41:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57981 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbXLGMlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 07:41:25 -0500
-Date: Fri, 7 Dec 2007 13:40:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: stefano.brivio@polimi.it
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Robert Love <rml@tech9.net>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
-Message-ID: <20071207124034.GA30052@elte.hu>
-References: <20071207021952.6f0ac922@morte> <20071207084559.GA11162@elte.hu> <200712072213.06530.nickpiggin@yahoo.com.au> <20071207122310.maqkoxlb4gsg4ggc@webmail.polimi.it> <20071207122516.GA25115@elte.hu> <20071207123509.GA28676@elte.hu>
+	Fri, 7 Dec 2007 07:42:33 -0500
+Received: from smtp113.plus.mail.mud.yahoo.com ([209.191.106.144]:24938 "HELO
+	smtp113.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751246AbXLGMmc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 07:42:32 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=MsPDoTwmqMpxZjD5q4E65righ4o6U/1BqD2c5YW61+7mnqBTJKv4NTwMCKS4jdo251pLMI4mQVgwZIuYBCTlaLfjuh7uZmysQpEj1C/GXZ6YLTJJ1EAFdmA2EqrBsJgRFMhGzSQUJn3wqJLPiqjQq+md7oZSiQNnxG5WlkSQGLA=  ;
+X-YMail-OSG: yUXaUcEVM1kHKJxVW3QvybkyPESweFx1sd3kW8kwx_6r_JsO
+Date: Fri, 7 Dec 2007 08:12:36 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] swap image signature check upon resume
+Message-ID: <20071207071236.GB4923@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+Mail-Followup-To: bbpetkov@yahoo.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+References: <20071206211335.GA4923@gollum.tnic> <200712062246.49422.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071207123509.GA28676@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200712062246.49422.rjw@sisk.pl>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Stefano, could you try this ontop of a recent-ish Linus tree - does 
-> > this resolve all issues? (without introducing new ones ;-)
+On Thu, Dec 06, 2007 at 10:46:48PM +0100, Rafael J. Wysocki wrote:
+> On Thursday, 6 of December 2007, Borislav Petkov wrote:
+> > Hi Pavel,
+> > hi Rafael,
+> > 
+> > after a quick search i couldn't find anything dealing with the topic in the
+> > subject line so here we go:
+> > 
+> > One sometimes can mix up (and by one i mean me) the
+> > kernel images one boots after having suspended the machine previously. There can
+> > be at least two reasons for that:
+> > 
+> > 1. too many kernels in grub and having forgotten with which i suspended.
+> > 2. compile and install a new kernel and forget about it, suspend in the evening
+> > and then boot with the new kernel;
+> > 
+> > in both cases you end up staring at fsck since they filesystems haven't been unmounted,
+> > of course. Or at least see the warning message of some journal recovery whisk away.
+> > 
+> > In order to alleviate that, one could probably go, imho, and write in the swsusp_header
+> > the kernel version which suspended the machine (UTS_RELEASE) alongside
+> > SWSUSP_SIG and check that against the kernel version of the image just booting.
+> > If they match then all is well, if not, one could
+> > 
+> > a) issue a BIG FAT WARNING and reboot telling the user to select the proper
+> > image
+> > b) ask the user what to do:
+> > 	- proceed as if "noresume" has been entered on the kernel command line
+> > 	- reboot after issuing the kernel version which suspended the machine
+> > 	-
+> > c)...
+> > 
+> > In case you guys think something like that might be of use i can come up with a
+> > patch in the next coupla days...
 > 
-> updated version attached below.
+> Well, there's a patchset in the current mainline that allows you to use
+> arbitrary (sufficiently new) kernel to load the image and then restore the
+> image kernel.  So, you can hibernate 2.6.24-rc3 and use 2.6.24-rc2 to restore
+> it, for example.
+> 
+> I'm going to do that for i386 too.
+right, this is d307c4a8e826c44f9633bd3f7e60d0491e7d885a (Hibernation: Arbitrary
+boot kernel support - generic code), i should've seen that. What's the status of
+those bits, from a quick scan it seems they need some rewiring (Kconfig, e.g.
+CONFIG_ARCH_HIBERNATION_HEADER etc..) and arch-specific save and restore
+functions?
 
-third update. the cpufreq callbacks are not quite OK yet.
-
-	Ingo
-
-Index: linux/arch/arm/kernel/time.c
-===================================================================
---- linux.orig/arch/arm/kernel/time.c
-+++ linux/arch/arm/kernel/time.c
-@@ -79,17 +79,6 @@ static unsigned long dummy_gettimeoffset
- }
- #endif
- 
--/*
-- * An implementation of printk_clock() independent from
-- * sched_clock().  This avoids non-bootable kernels when
-- * printk_clock is enabled.
-- */
--unsigned long long printk_clock(void)
--{
--	return (unsigned long long)(jiffies - INITIAL_JIFFIES) *
--			(1000000000 / HZ);
--}
--
- static unsigned long next_rtc_update;
- 
- /*
-Index: linux/arch/ia64/kernel/time.c
-===================================================================
---- linux.orig/arch/ia64/kernel/time.c
-+++ linux/arch/ia64/kernel/time.c
-@@ -344,33 +344,6 @@ udelay (unsigned long usecs)
- }
- EXPORT_SYMBOL(udelay);
- 
--static unsigned long long ia64_itc_printk_clock(void)
--{
--	if (ia64_get_kr(IA64_KR_PER_CPU_DATA))
--		return sched_clock();
--	return 0;
--}
--
--static unsigned long long ia64_default_printk_clock(void)
--{
--	return (unsigned long long)(jiffies_64 - INITIAL_JIFFIES) *
--		(1000000000/HZ);
--}
--
--unsigned long long (*ia64_printk_clock)(void) = &ia64_default_printk_clock;
--
--unsigned long long printk_clock(void)
--{
--	return ia64_printk_clock();
--}
--
--void __init
--ia64_setup_printk_clock(void)
--{
--	if (!(sal_platform_features & IA64_SAL_PLATFORM_FEATURE_ITC_DRIFT))
--		ia64_printk_clock = ia64_itc_printk_clock;
--}
--
- /* IA64 doesn't cache the timezone */
- void update_vsyscall_tz(void)
- {
-Index: linux/arch/x86/kernel/process_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/process_32.c
-+++ linux/arch/x86/kernel/process_32.c
-@@ -113,10 +113,19 @@ void default_idle(void)
- 		smp_mb();
- 
- 		local_irq_disable();
--		if (!need_resched())
-+		if (!need_resched()) {
-+			ktime_t t0, t1;
-+			u64 t0n, t1n;
-+
-+			t0 = ktime_get();
-+			t0n = ktime_to_ns(t0);
- 			safe_halt();	/* enables interrupts racelessly */
--		else
--			local_irq_enable();
-+			local_irq_disable();
-+			t1 = ktime_get();
-+			t1n = ktime_to_ns(t1);
-+			sched_clock_idle_wakeup_event(t1n - t0n);
-+		}
-+		local_irq_enable();
- 		current_thread_info()->status |= TS_POLLING;
- 	} else {
- 		/* loop is done by the caller */
-Index: linux/arch/x86/lib/delay_32.c
-===================================================================
---- linux.orig/arch/x86/lib/delay_32.c
-+++ linux/arch/x86/lib/delay_32.c
-@@ -38,17 +38,21 @@ static void delay_loop(unsigned long loo
- 		:"0" (loops));
- }
- 
--/* TSC based delay: */
-+/* cpu_clock() [TSC] based delay: */
- static void delay_tsc(unsigned long loops)
- {
--	unsigned long bclock, now;
-+	unsigned long long start, stop, now;
-+	int this_cpu;
-+
-+	preempt_disable();
-+
-+	this_cpu = smp_processor_id();
-+	start = now = cpu_clock(this_cpu);
-+	stop = start + loops;
-+
-+	while ((long long)(stop - now) > 0)
-+		now = cpu_clock(this_cpu);
- 
--	preempt_disable();		/* TSC's are per-cpu */
--	rdtscl(bclock);
--	do {
--		rep_nop();
--		rdtscl(now);
--	} while ((now-bclock) < loops);
- 	preempt_enable();
- }
- 
-Index: linux/arch/x86/lib/delay_64.c
-===================================================================
---- linux.orig/arch/x86/lib/delay_64.c
-+++ linux/arch/x86/lib/delay_64.c
-@@ -26,19 +26,28 @@ int read_current_timer(unsigned long *ti
- 	return 0;
- }
- 
--void __delay(unsigned long loops)
-+/* cpu_clock() [TSC] based delay: */
-+static void delay_tsc(unsigned long loops)
- {
--	unsigned bclock, now;
-+	unsigned long long start, stop, now;
-+	int this_cpu;
-+
-+	preempt_disable();
-+
-+	this_cpu = smp_processor_id();
-+	start = now = cpu_clock(this_cpu);
-+	stop = start + loops;
-+
-+	while ((long long)(stop - now) > 0)
-+		now = cpu_clock(this_cpu);
- 
--	preempt_disable();		/* TSC's are pre-cpu */
--	rdtscl(bclock);
--	do {
--		rep_nop(); 
--		rdtscl(now);
--	}
--	while ((now-bclock) < loops);
- 	preempt_enable();
- }
-+
-+void __delay(unsigned long loops)
-+{
-+	delay_tsc(loops);
-+}
- EXPORT_SYMBOL(__delay);
- 
- inline void __const_udelay(unsigned long xloops)
-Index: linux/drivers/acpi/processor_idle.c
-===================================================================
---- linux.orig/drivers/acpi/processor_idle.c
-+++ linux/drivers/acpi/processor_idle.c
-@@ -531,6 +531,11 @@ static void acpi_processor_idle(void)
- 
- 	case ACPI_STATE_C3:
- 		/*
-+		 * Must be done before busmaster disable as we might
-+		 * need to access HPET !
-+		 */
-+		acpi_state_timer_broadcast(pr, cx, 1);
-+		/*
- 		 * disable bus master
- 		 * bm_check implies we need ARB_DIS
- 		 * !bm_check implies we need cache flush
-@@ -557,7 +562,6 @@ static void acpi_processor_idle(void)
- 		/* Get start time (ticks) */
- 		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 		/* Invoke C3 */
--		acpi_state_timer_broadcast(pr, cx, 1);
- 		/* Tell the scheduler that we are going deep-idle: */
- 		sched_clock_idle_sleep_event();
- 		acpi_cstate_enter(cx);
-@@ -1401,9 +1405,6 @@ static int acpi_idle_enter_simple(struct
- 	if (acpi_idle_suspend)
- 		return(acpi_idle_enter_c1(dev, state));
- 
--	if (pr->flags.bm_check)
--		acpi_idle_update_bm_rld(pr, cx);
--
- 	local_irq_disable();
- 	current_thread_info()->status &= ~TS_POLLING;
- 	/*
-@@ -1418,13 +1419,21 @@ static int acpi_idle_enter_simple(struct
- 		return 0;
- 	}
- 
-+	/*
-+	 * Must be done before busmaster disable as we might need to
-+	 * access HPET !
-+	 */
-+	acpi_state_timer_broadcast(pr, cx, 1);
-+
-+	if (pr->flags.bm_check)
-+		acpi_idle_update_bm_rld(pr, cx);
-+
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
- 
- 	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 	/* Tell the scheduler that we are going deep-idle: */
- 	sched_clock_idle_sleep_event();
--	acpi_state_timer_broadcast(pr, cx, 1);
- 	acpi_idle_do_entry(cx);
- 	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 
-Index: linux/kernel/hrtimer.c
-===================================================================
---- linux.orig/kernel/hrtimer.c
-+++ linux/kernel/hrtimer.c
-@@ -850,6 +850,14 @@ hrtimer_start(struct hrtimer *timer, kti
- #ifdef CONFIG_TIME_LOW_RES
- 		tim = ktime_add(tim, base->resolution);
- #endif
-+		/*
-+		 * Careful here: User space might have asked for a
-+		 * very long sleep, so the add above might result in a
-+		 * negative number, which enqueues the timer in front
-+		 * of the queue.
-+		 */
-+		if (tim.tv64 < 0)
-+			tim.tv64 = KTIME_MAX;
- 	}
- 	timer->expires = tim;
- 
-Index: linux/kernel/lockdep.c
-===================================================================
---- linux.orig/kernel/lockdep.c
-+++ linux/kernel/lockdep.c
-@@ -2654,10 +2654,15 @@ static void check_flags(unsigned long fl
- 	if (!debug_locks)
- 		return;
- 
--	if (irqs_disabled_flags(flags))
--		DEBUG_LOCKS_WARN_ON(current->hardirqs_enabled);
--	else
--		DEBUG_LOCKS_WARN_ON(!current->hardirqs_enabled);
-+	if (irqs_disabled_flags(flags)) {
-+		if (DEBUG_LOCKS_WARN_ON(current->hardirqs_enabled)) {
-+			printk("possible reason: unannotated irqs-off.\n");
-+		}
-+	} else {
-+		if (DEBUG_LOCKS_WARN_ON(!current->hardirqs_enabled)) {
-+			printk("possible reason: unannotated irqs-on.\n");
-+		}
-+	}
- 
- 	/*
- 	 * We dont accurately track softirq state in e.g.
-Index: linux/kernel/printk.c
-===================================================================
---- linux.orig/kernel/printk.c
-+++ linux/kernel/printk.c
-@@ -573,11 +573,6 @@ static int __init printk_time_setup(char
- 
- __setup("time", printk_time_setup);
- 
--__attribute__((weak)) unsigned long long printk_clock(void)
--{
--	return sched_clock();
--}
--
- /* Check if we have any console registered that can be called early in boot. */
- static int have_callable_console(void)
- {
-@@ -628,30 +623,57 @@ asmlinkage int printk(const char *fmt, .
- /* cpu currently holding logbuf_lock */
- static volatile unsigned int printk_cpu = UINT_MAX;
- 
-+const char printk_recursion_bug_msg [] =
-+			KERN_CRIT "BUG: recent printk recursion!\n";
-+static int printk_recursion_bug;
-+
- asmlinkage int vprintk(const char *fmt, va_list args)
- {
-+	static int log_level_unknown = 1;
-+	static char printk_buf[1024];
-+
- 	unsigned long flags;
--	int printed_len;
-+	int printed_len = 0;
-+	int this_cpu;
- 	char *p;
--	static char printk_buf[1024];
--	static int log_level_unknown = 1;
- 
- 	boot_delay_msec();
- 
- 	preempt_disable();
--	if (unlikely(oops_in_progress) && printk_cpu == smp_processor_id())
--		/* If a crash is occurring during printk() on this CPU,
--		 * make sure we can't deadlock */
--		zap_locks();
--
- 	/* This stops the holder of console_sem just where we want him */
- 	raw_local_irq_save(flags);
-+	this_cpu = smp_processor_id();
-+
-+	/*
-+	 * Ouch, printk recursed into itself!
-+	 */
-+	if (unlikely(printk_cpu == this_cpu)) {
-+		/*
-+		 * If a crash is occurring during printk() on this CPU,
-+		 * then try to get the crash message out but make sure
-+		 * we can't deadlock. Otherwise just return to avoid the
-+		 * recursion and return - but flag the recursion so that
-+		 * it can be printed at the next appropriate moment:
-+		 */
-+		if (!oops_in_progress) {
-+			printk_recursion_bug = 1;
-+			goto out_restore_irqs;
-+		}
-+		zap_locks();
-+	}
-+
- 	lockdep_off();
- 	spin_lock(&logbuf_lock);
--	printk_cpu = smp_processor_id();
-+	printk_cpu = this_cpu;
- 
-+	if (printk_recursion_bug) {
-+		printk_recursion_bug = 0;
-+		strcpy(printk_buf, printk_recursion_bug_msg);
-+		printed_len = sizeof(printk_recursion_bug_msg);
-+	}
- 	/* Emit the output into the temporary buffer */
--	printed_len = vscnprintf(printk_buf, sizeof(printk_buf), fmt, args);
-+	printed_len += vscnprintf(printk_buf + printed_len,
-+				  sizeof(printk_buf), fmt, args);
- 
- 	/*
- 	 * Copy the output into log_buf.  If the caller didn't provide
-@@ -680,7 +702,11 @@ asmlinkage int vprintk(const char *fmt, 
- 					loglev_char = default_message_loglevel
- 						+ '0';
- 				}
--				t = printk_clock();
-+				if (panic_timeout) {
-+					panic_timeout = 0;
-+					printk("recurse!\n");
-+				}
-+				t = cpu_clock(printk_cpu);
- 				nanosec_rem = do_div(t, 1000000000);
- 				tlen = sprintf(tbuf,
- 						"<%c>[%5lu.%06lu] ",
-@@ -744,6 +770,7 @@ asmlinkage int vprintk(const char *fmt, 
- 		printk_cpu = UINT_MAX;
- 		spin_unlock(&logbuf_lock);
- 		lockdep_on();
-+out_restore_irqs:
- 		raw_local_irq_restore(flags);
- 	}
- 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -488,7 +488,12 @@ unsigned long long cpu_clock(int cpu)
- 
- 	local_irq_save(flags);
- 	rq = cpu_rq(cpu);
--	update_rq_clock(rq);
-+	/*
-+	 * Only call sched_clock() if the scheduler has already been
-+	 * initialized (some code might call cpu_clock() very early):
-+	 */
-+	if (rq->idle)
-+		update_rq_clock(rq);
- 	now = rq->clock;
- 	local_irq_restore(flags);
- 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -511,8 +511,7 @@ place_entity(struct cfs_rq *cfs_rq, stru
- 
- 	if (!initial) {
- 		/* sleeps upto a single latency don't count. */
--		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se) &&
--				task_of(se)->policy != SCHED_BATCH)
-+		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
- 			vruntime -= sysctl_sched_latency;
- 
- 		/* ensure we never gain time by being placed backwards. */
-Index: linux/kernel/time/clockevents.c
-===================================================================
---- linux.orig/kernel/time/clockevents.c
-+++ linux/kernel/time/clockevents.c
-@@ -78,6 +78,11 @@ int clockevents_program_event(struct clo
- 	unsigned long long clc;
- 	int64_t delta;
- 
-+	if (unlikely(expires.tv64 < 0)) {
-+		WARN_ON_ONCE(1);
-+		return -ETIME;
-+	}
-+
- 	delta = ktime_to_ns(ktime_sub(expires, now));
- 
- 	if (delta <= 0)
+-- 
+Regards/Gruß,
+    Boris.
