@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXLGPcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXLGPju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbXLGPcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 10:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXLGPcj
+	id S1754822AbXLGPju (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 10:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXLGPjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 10:32:39 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:60411 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751139AbXLGPci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 10:32:38 -0500
-Date: Fri, 7 Dec 2007 10:32:31 -0500
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: NFSv2/3 broken exporting/mounting (permission denied) in
-	2.6.24-rc4
-Message-ID: <20071207153230.GA20872@fieldses.org>
-References: <200712071054.lB7AscVW002471@harpo.it.uu.se>
+	Fri, 7 Dec 2007 10:39:40 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:36282 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbXLGPjj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 10:39:39 -0500
+Message-ID: <475969AB.6040907@student.ltu.se>
+Date: Fri, 07 Dec 2007 16:41:31 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712071054.lB7AscVW002471@harpo.it.uu.se>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: David Miller <davem@davemloft.net>
+CC: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au, akpm@osdl.org, netdev@vger.kernel.org
+Subject: Re: [Patch] net/xfrm/xfrm_policy.c: Some small improvements
+References: <20071206110123.GB2469@hacking>	<20071206.031434.179419183.davem@davemloft.net>	<4758093A.7010608@student.ltu.se> <20071206.192249.193354742.davem@davemloft.net>
+In-Reply-To: <20071206.192249.193354742.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 11:54:38AM +0100, Mikael Pettersson wrote:
-> On Thu, 6 Dec 2007 21:20:41 -0500, Erez Zadok wrote:
-> > I get a "permission denied" when trying to mount a localhost nfsv2/3
-> > exported volume, on v2.6.24-rc4-124-gf194d13.  It works w/ nfsv4 mounting.
-> > It worked fine in 2.6.24-rc3.  Here's a sequence of ops I tried:
-> > 
-> > # mount -t ext2 /dev/hdb1 /n/lower/b0
-> > # exportfs -o no_root_squash,rw localhost:/n/lower/b0
-> > # mount -t nfs -o nfsvers=3 localhost:/n/lower/b0 /mnt
-> 
-> I'm seeing something similar too. NFSv3 export of an ext3 partition
-> to another machine in my lan fails (client gets permission denied)
-> when the server runs 2.6.24-rc4. It worked fine in 2.6.24-rc3.
-> 
-> There's no NFSv4 of any kind on either client or server.
+David Miller wrote:
+> From: Richard Knutsson <ricknu-0@student.ltu.se>
+> Date: Thu, 06 Dec 2007 15:37:46 +0100
+>
+>   
+>> David Miller wrote:
+>>     
+>>> But this time I'll just let you know up front that I
+>>> don't see much value in this patch.  It is not a clear
+>>> improvement to replace int's with bool's in my mind and
+>>> the other changes are just whitespace changes.
+>>>   
+>>>       
+>> Is it not an improvement to distinct booleans from actual values? Do you 
+>> use integers for ASCII characters too? It can also avoid some potential 
+>> bugs like the 'if (i == TRUE)'...
+>> What is wrong with 'size_t' (since it is unsigned, compared to (some) 
+>> 'int')?
+>>     
+>
+> When you say "int found;" is there any doubt in your mind that
+> this integer is going to hold a 1 or a 0 depending upon whether
+> we "found" something?
+>
+> That's the problem I have with these kinds of patches, they do
+> not increase clarity, it's just pure mindless edits.
+>   
+But is there not a good thing if also the compiler knows + names are 
+sometime not as clear as that one?
+> In new code, fine, use booleans if you want.
+>
+> I would even accept that it helps to change to boolean for
+> arguments to functions that are global in scope.
+>
+> But not for function local variables in cases like this.
+>   
+Oh, I see your point now. Believed it to be yet another 'booleans is not 
+C idiom'.
 
-And you're not varying the client at all, you're only changing the
-kernel version on the server?
+Sorry about the noise
+Richard Knutsson
 
-There are literally no commits between v2.6.24-rc3 and v2.6.24-rc4 which
-touch fs/nfsd/.  What filesystem are you exporting?  Are the nfs-utils
-versions the same in both cases?
-
-Also, could you get a network trace showing the failure?
-
---b.
