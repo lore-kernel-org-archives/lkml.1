@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbXLGLLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbXLGLLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbXLGLLK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 06:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXLGLKy
+	id S1754342AbXLGLLo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 06:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXLGLLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 06:10:54 -0500
-Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:50299 "EHLO iris"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751109AbXLGLKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 06:10:53 -0500
-Message-ID: <47592A49.8010107@sw.ru>
-Date: Fri, 07 Dec 2007 14:11:05 +0300
-From: "Denis V. Lunev" <den@sw.ru>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-References: <20071119191000.GA1560@elf.ucw.cz>	<200711192304.25087.rjw@sisk.pl>	<4743026B.2020907@openvz.org>	<m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com>	<1197003097.13978.557.camel@pmac.infradead.org> <20071207022342.806ee4ee.akpm@linux-foundation.org>
-In-Reply-To: <20071207022342.806ee4ee.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Dec 2007 06:11:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45892 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751303AbXLGLLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 06:11:33 -0500
+Date: Fri, 7 Dec 2007 03:09:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-Id: <20071207030954.8c1fedc5.akpm@linux-foundation.org>
+In-Reply-To: <20071207104013.GC27307@elte.hu>
+References: <20071207021952.6f0ac922@morte>
+	<20071207084559.GA11162@elte.hu>
+	<20071207023241.15274ef6.akpm@linux-foundation.org>
+	<20071207104013.GC27307@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 07 Dec 2007 04:51:37 +0000 David Woodhouse <dwmw2@infradead.org> wrote:
+On Fri, 7 Dec 2007 11:40:13 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
->> On Mon, 2007-11-26 at 15:17 -0700, Eric W. Biederman wrote:
->>> Well I clearly goofed when I added the initial network namespace support
->>> for /proc/net.  Currently things work but there are odd details visible
->>> to user space, even when we have a single network namespace.
->>>
->>> Since we do not cache proc_dir_entry dentries at the moment we can
->>> just modify ->lookup to return a different directory inode depending
->>> on the network namespace of the process looking at /proc/net, replacing
->>> the current technique of using a magic and fragile follow_link method.
->>>
->>> To accomplish that this patch:
->>> - introduces a shadow_proc method to allow different dentries to
->>>   be returned from proc_lookup.
->>> - Removes the old /proc/net follow_link magic
->>> - Fixes a weakness in our not caching of proc generic dentries.
->>>
->>> As shadow_proc uses a task struct to decided which dentry to return we
->>> can go back later and fix the proc generic caching without modifying any code that
->>> uses the shadow_proc method.
->>>
->>> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->>> ---
->>>  fs/proc/generic.c       |   12 ++++++-
->>>  fs/proc/proc_net.c      |   86 +++--------------------------------------------
->>>  include/linux/proc_fs.h |    3 ++
->>>  3 files changed, 19 insertions(+), 82 deletions(-)
->> (commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416)
->>
->> This seems to have broken the use of /proc/bus/usb as a mountpoint. It
->> always appears empty now, whatever's supposed to be mounted there.
->>
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Yes.  Denis and Eric are tossing around competing patches but afaik nobody
-> is happy with any of them.  Guys, could we get this sorted soonish please?
+> > > -				t = printk_clock();
+> > > +				t = cpu_clock(printk_cpu);
+> > >  				nanosec_rem = do_div(t, 1000000000);
+> > >  				tlen = sprintf(tbuf,
+> > >  						"<%c>[%5lu.%06lu] ",
+> > 
+> > A bit risky - it's quite an expansion of code which no longer can call 
+> > printk.
+> > 
+> > You might want to take that WARN_ON out of __update_rq_clock() ;)
+> 
+> hm, dont we already detect printk recursions and turn them into a silent 
+> return instead of a hang/crash?
 > 
 
-Andrew, I become too relaxed after receiving
-"Tested-by: Giacomo Catenazzi <cate@debian.org>"
-
-Eric, I believe that reverting an original behavior is better than your
-new one as
-- you introduce search into the depth by calling have_submounts(dentry)
-during revalidation for all(!) /proc dentries
-- your shadowing behavior will be broken if you'll mount something in
-the depth of shadowed tree (this can be done as a DoS attempt)
-
-As a last minute call, may be it will be better to pin network namespace
-like a pid namespace during mount to avoid this crap at all?
-
-Regards,
-	Den
+We'll pop the locks and will proceed to do the nested printk.  So
+__update_rq_clock() will need rather a lot of stack ;)
