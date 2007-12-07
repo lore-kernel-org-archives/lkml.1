@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXLGOYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbXLGOeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXLGOYj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 09:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXLGOYb
+	id S1755362AbXLGOeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 09:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXLGOe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 09:24:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35767 "EHLO mx1.redhat.com"
+	Fri, 7 Dec 2007 09:34:27 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:54683 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752356AbXLGOYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 09:24:30 -0500
-Date: Fri, 7 Dec 2007 09:21:44 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071207142144.GA10389@hmsendeavour.rdu.redhat.com>
-References: <20071128160206.GA21286@hmsendeavour.rdu.redhat.com> <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	id S1753050AbXLGOe1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 09:34:27 -0500
+Date: Fri, 7 Dec 2007 15:27:41 +0100
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] x86: scale cyc_2_nsec according to CPU frequency
+Message-ID: <20071207152741.3408aeef@inria.fr>
+In-Reply-To: <20071207135525.GA5588@elte.hu>
+References: <20071207021952.6f0ac922@morte>
+	<alpine.LFD.0.99999.0712070646210.3221@localhost.localdomain>
+	<3d8471ca0712062318j483f8be6h256778752a13639a@mail.gmail.com>
+	<20071207090252.1caf1509@inria.fr>
+	<20071207135525.GA5588@elte.hu>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 01:22:04AM -0800, Yinghai Lu wrote:
-> On Dec 7, 2007 12:50 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> > On Dec 6, 2007 4:33 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> ...
-> > >
-> > > My feel is that if it is for legacy interrupts only it should not be a problem.
-> > > Let's investigate and see if we can unconditionally enable this quirk
-> > > for all opteron systems.
-> >
-> > i checked that bit
-> >
-> > http://www.openbios.org/viewvc/trunk/LinuxBIOSv2/src/northbridge/amd/amdk8/coherent_ht.c?revision=2596&view=markup
-> >
-> > static void enable_apic_ext_id(u8 node)
-> > {
-> > #if ENABLE_APIC_EXT_ID==1
-> > #warning "FIXME Is the right place to enable apic ext id here?"
-> >
-> >       u32 val;
-> >
-> >         val = pci_read_config32(NODE_HT(node), 0x68);
-> >         val |= (HTTC_APIC_EXT_SPUR | HTTC_APIC_EXT_ID | HTTC_APIC_EXT_BRD_CST);
-> >         pci_write_config32(NODE_HT(node), 0x68, val);
-> > #endif
-> > }
-> >
-> > that bit only be should be set when apic id is lifted and cpu apid is
-> > using 8 bits and that mean broadcast is 0xff instead 0x0f.
-> > for example 8 socket dual core system or 4 socket quad core
-> > system,that you should make BSP start from 0x04, so cpus apic id will
-> > be [0x04, 0x13)
-> >
-> >
-> > So if you want to enable that in early_quirk, you need to
-> > make sure apic id is using 8 bits by check if the bit 16 (HTTC_APIC_ID) is set.
-> 
-> it should be bit 18 (HTTC_APIC_EXT_ID)
-> 
-> 
-> YH
+Le Fri, 7 Dec 2007 14:55:25 +0100,
+Ingo Molnar <mingo@elte.hu> a écrit :
 
-this seems reasonable, I can reroll the patch for this.  As I think about it I'm
-also going to update the patch to make this check occur for any pci class 0600
-device from vendor AMD, since its possible that more than just nvidia chipsets
-can be affected.
+> Firstly, we dont need the 'offset' anymore because cpu_clock() maintains 
+> offsets itself.
 
-I'll repost as soon as I've tested, thanks!
-Neil
+Yes, but a lower quality one. __update_rq_clock tries to compensate
+large jumping clocks with a jiffy resolution, while my offset arranges
+for a very smooth frequency transition.
+
+I agree with keeping a single offset, but I liked the fact that with my
+patch on frequency change, the clock had no jump at all.
+
+> + *  ns += offset to avoid sched_clock jumps with cpufreq
+
+I guess this needs to go away if I don't make my point :-(
+
+> +	printk("CPU#%d: changed cyc2ns scale from %ld to %ld\n",
+> +		cpu, prev_scale, *scale);
+
+Pointing it out just to be sure it does not end in the final version ;-)
+
+Thanks for cleaning up my mess ;-)
 
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Guillaume
