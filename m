@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXLGR4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbXLGR6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbXLGR4Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 12:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbXLGRzy
+	id S1756874AbXLGR6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 12:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXLGR6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 12:55:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58228 "EHLO mx2.mail.elte.hu"
+	Fri, 7 Dec 2007 12:58:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32899 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757485AbXLGRzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 12:55:53 -0500
-Date: Fri, 7 Dec 2007 18:55:27 +0100
+	id S1753468AbXLGR6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 12:58:31 -0500
+Date: Fri, 7 Dec 2007 18:57:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: Major regression on hackbench with SLUB
-Message-ID: <20071207175527.GA19173@elte.hu>
-References: <1197049846.1645.68.camel@localhost.localdomain>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: stefano.brivio@polimi.it, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Robert Love <rml@tech9.net>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Michael Buesch <mb@bu3sch.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-ID: <20071207175754.GB19173@elte.hu>
+References: <20071207021952.6f0ac922@morte> <20071207084559.GA11162@elte.hu> <200712072213.06530.nickpiggin@yahoo.com.au> <20071207122310.maqkoxlb4gsg4ggc@webmail.polimi.it> <20071207122516.GA25115@elte.hu> <20071207123509.GA28676@elte.hu> <20071207124034.GA30052@elte.hu> <20071207145418.GA22277@elte.hu> <20071207174649.39c9198d@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1197049846.1645.68.camel@localhost.localdomain>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071207174649.39c9198d@inria.fr>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -31,22 +33,37 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0007]
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-> The regression is that hackbench slows down tremendously. It goes from 
-> running just under 2 seconds to running around 14 seconds.
+> Le Fri, 7 Dec 2007 15:54:18 +0100,
+> Ingo Molnar <mingo@elte.hu> a écrit :
+> 
+> > This is a version that 
+> > is supposed fix all known aspects of TSC and frequency-change 
+> > weirdnesses.
+> 
+> Tested it with frequency changes, the clock is as smooth as I like it
+> :-)
 
-ouch ...
+ok, great :-)
 
-it might make sense to check the SLUB patches from -mm ontop of vanilla 
-as well - while that might be of little comfort as far as 2.6.24 goes, 
-it at least gives us the info whether this is something that has been 
-fixed in the latest SLUB code.
+> The only remaining sched_clock user in need of conversion seems to be 
+> lockdep.
+
+yeah - for CONFIG_LOCKSTAT - but that needs to be done even more 
+carefully, due to rq->lock being lockdep-checked. We can perhaps try a 
+lock-less cpu_clock() version - other CPUs are not supposed to update 
+rq->clock.
+
+> Great work.
+
+thanks. I do get the impression that most of this can/should wait until 
+2.6.25. The patches look quite dangerous.
 
 	Ingo
