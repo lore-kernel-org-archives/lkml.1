@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXLGBta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbXLGBxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbXLGBta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 20:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbXLGBtX
+	id S1754186AbXLGBxt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 20:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXLGBxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 20:49:23 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:47581 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbXLGBtW (ORCPT
+	Thu, 6 Dec 2007 20:53:42 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:56497 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbXLGBxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 20:49:22 -0500
-Date: Thu, 6 Dec 2007 18:49:20 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Bob Bell <b_lkml@thebellsplace.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       trond@netapp.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TASK_KILLABLE version 2
-Message-ID: <20071207014920.GB28595@parisc-linux.org>
-References: <20070902024348.GJ14130@parisc-linux.org> <20070924201648.GA6850@newbie.thebellsplace.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070924201648.GA6850@newbie.thebellsplace.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 6 Dec 2007 20:53:41 -0500
+Subject: Re: Possible locking issue in viotape.c
+From: Daniel Walker <dwalker@mvista.com>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
+       matthias.kaehlcke@gmail.com
+In-Reply-To: <4758A216.3030401@gmail.com>
+References: <20071206021857.826386004@mvista.com>
+	 <20071206021909.131993721@mvista.com>  <20071206102334.GE17299@elte.hu>
+	 <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>
+	 <47588610.5010804@gmail.com>
+	 <1196989515.1568.131.camel@jnielson-xp.ddns.mvista.com>
+	 <4758A216.3030401@gmail.com>
+Content-Type: text/plain
+Date: Thu, 06 Dec 2007 17:40:36 -0800
+Message-Id: <1196991637.1568.140.camel@jnielson-xp.ddns.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 04:16:48PM -0400, Bob Bell wrote:
-> I've been testing this patch on my systems.  It's working for me when
-> I read() a file.  Asynchronous write()s seem okay, too.  However,
-> synchronous writes (caused by either calling fsync() or fcntl() to
-> release a lock) prevent the process from being killed when the NFS
-> server goes down.
+On Thu, 2007-12-06 at 21:29 -0400, Kevin Winchester wrote:
+> Daniel Walker wrote:
+> > 
+> > I've posted all the ones I've done so far ..
+> > 
+> > ftp://source.mvista.com/pub/dwalker/sem2mutex-2.6.24-rc4/
+> > 
+> > Feel free to review or test them.. I've found it pretty easy to simply
+> > grep for certain class of semaphore usage, check if it's conforming to
+> > the mutex requirements, then convert it or not.. Checking them is
+> > getting to be a habit, so I don't think a list would help me.. However,
+> > someone else might be able to use it..
+> > 
 > 
-> When the process is sent SIGKILL, it's waiting with the following call
-> tree:
->    do_fsync
->    nfs_fsync
->    nfs_wb_all
->    nfs_sync_mapping_wait
->    nfs_wait_on_requests_locks (I believe)
->    nfs_wait_on_request
->    out_of_line_wait_on_bit
->    __wait_on_bit
->    nfs_wait_bit_interruptible
->    schedule
+> Thanks, that helps me not duplicate anything.  One of the first ones I
+> was looking at (before your post) was viotape.c, which is in your patch
+> set.  However, looking at the uses of the semaphore, I see that on line
+> 409-410 the following code:
 > 
-> When the process is later viewed after being deemed "stuck", it's
-> waiting with the following call tree:
->    do_fsync
->    filemap_fdatawait
->    wait_on_page_writeback_range
->    wait_on_page_writeback
->    wait_on_page_bit
->    __wait_on_bit
->    sync_page
->    io_schedule
->    schedule
+>         if (noblock)
+>                 return count;
 > 
-> If I hazard a guess as to what might be wrong here, I believe that when
-> the processes catches SIGKILL, nfs_wait_bit_interruptible is returning
-> -ERESTARTSYS.  That error bubbles back up to nfs_fsync.  However,
-> nfs_fsync returns ctx->error, not -ERESTARTSYS, and ctx->error is 0.
-> do_fsync proceeds to call filemap_fdatawait.  I question whether 
-> nfs_sync should return an error, and if do_fsync should skip 
-> filemap_fdatawait if the fsync op returned an error.
+> which seems to ignore the fact that the semaphore has been downed (not
+> to mention the dma buffer and op struct allocations.  I think it should be:
 > 
-> I did try replacing the call to sync_page in __wait_on_bit with 
-> sync_page_killable and replacing TASK_UNINTERRUPTIBLE with 
-> TASK_KILLABLE.  That seemed to work once, but then really screwed things 
-> up on subsequent attempts.
+> 	if (noblock)
+> 		ret = count;
+> 		goto free_dma;
+> 
+> instead.  Do you want to make sure I'm right about that and fold it into
+> your patch?  Or have you already submitted your patch (or should it be
+> in a separate patch?  Alternatively, I can submit the patch if you don't
+> want to bother with it.
 
-Hi Bob,
+viotape was one of the first I started converting, but later I noticed
+the same thing you found above. I have it commented out of my series for
+that reason ..
 
-The patch I posted earlier today (a somewhat cleaned-up version of a
-patch originally from Liam Howlett) converts NFS to use TASK_KILLABLE.
-Could you have another shot at breaking it?  You can find it here:
+I think this noblock path is actually doing what the author intended..
+There are a few stray up() calls related to event handling and ioctls ,
+and I think those are used to release the semaphore..
 
-http://marc.info/?l=linux-fsdevel&m=119698206729969&w=2
+Daniel
 
-(It has some prerequisites that are in the git tree, so probably the
-easiest thing is just to pull that git tree).
 
-Liam notes that there's still problems with programs that call *stat*(),
-but I haven't looked into that issue yet.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
