@@ -1,155 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbXLGO6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbXLGO7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbXLGO6y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 09:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbXLGO5n
+	id S1756522AbXLGO7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 09:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbXLGO6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 09:57:43 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:53678 "EHLO mo11.iij4u.or.jp"
+	Fri, 7 Dec 2007 09:58:51 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:53805 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756316AbXLGO5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 09:57:40 -0500
-Date: Fri, 7 Dec 2007 23:56:39 +0900
+	id S1755924AbXLGO6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 09:58:49 -0500
+Date: Fri, 7 Dec 2007 23:56:44 +0900
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       muli@il.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
-       olof@lixom.net, anton@samba.org
+       muli@il.ibm.com
 Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH -mm 1/6] add IOMMU helper functions for the free area
- management
+Subject: [PATCH -mm 6/6] kill __clear_bit_string and find_next_zero_string
 From: FUJITA Tomonori <tomof@acm.org>
 In-Reply-To: <21710c4b9cd6848e70e29949dfb54894e9aabbe6.tomof@acm.org>
 References: <21710c4b9cd6848e70e29949dfb54894e9aabbe6.tomof@acm.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071207235649E.tomof@acm.org>
+Message-Id: <20071207235728V.tomof@acm.org>
 X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds IOMMU helper functions for the free area management. These
-functions take care of LLD's segment boundary limit for IOMMUs. They
-would be useful for IOMMUs that use bitmap for the free area
-management.
+This kills unused __clear_bit_string and find_next_zero_string (they
+were used by only gart and calgary IOMMUs).
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- include/linux/iommu-helper.h |    7 ++++
- lib/Makefile                 |    1 +
- lib/iommu-helper.c           |   76 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 84 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/iommu-helper.h
- create mode 100644 lib/iommu-helper.c
+ arch/x86/lib/Makefile_64    |    2 +-
+ arch/x86/lib/bitstr_64.c    |   28 ----------------------------
+ include/asm-x86/bitops_64.h |   16 ----------------
+ 3 files changed, 1 insertions(+), 45 deletions(-)
+ delete mode 100644 arch/x86/lib/bitstr_64.c
 
-diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-new file mode 100644
-index 0000000..4dd4c04
---- /dev/null
-+++ b/include/linux/iommu-helper.h
-@@ -0,0 +1,7 @@
-+extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-+				      unsigned long start, unsigned int nr,
-+				      unsigned long shift,
-+				      unsigned long boundary_size,
-+				      unsigned long align_mask);
-+extern void iommu_area_free(unsigned long *map, unsigned long start,
-+			    unsigned int nr);
-diff --git a/lib/Makefile b/lib/Makefile
-index b862b90..17fb758 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -65,6 +65,7 @@ obj-$(CONFIG_SMP) += pcounter.o
- obj-$(CONFIG_AUDIT_GENERIC) += audit.o
+diff --git a/arch/x86/lib/Makefile_64 b/arch/x86/lib/Makefile_64
+index bbabad3..1b72bda 100644
+--- a/arch/x86/lib/Makefile_64
++++ b/arch/x86/lib/Makefile_64
+@@ -9,5 +9,5 @@ obj-$(CONFIG_SMP)	+= msr-on-cpu.o
  
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
-+obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
+ lib-y := csum-partial_64.o csum-copy_64.o csum-wrappers_64.o delay_64.o \
+ 	usercopy_64.o getuser_64.o putuser_64.o  \
+-	thunk_64.o clear_page_64.o copy_page_64.o bitstr_64.o bitops_64.o
++	thunk_64.o clear_page_64.o copy_page_64.o bitops_64.o
+ lib-y += memcpy_64.o memmove_64.o memset_64.o copy_user_64.o rwlock_64.o copy_user_nocache_64.o
+diff --git a/arch/x86/lib/bitstr_64.c b/arch/x86/lib/bitstr_64.c
+deleted file mode 100644
+index 7445caf..0000000
+--- a/arch/x86/lib/bitstr_64.c
++++ /dev/null
+@@ -1,28 +0,0 @@
+-#include <linux/module.h>
+-#include <linux/bitops.h>
+-
+-/* Find string of zero bits in a bitmap */ 
+-unsigned long 
+-find_next_zero_string(unsigned long *bitmap, long start, long nbits, int len)
+-{ 
+-	unsigned long n, end, i; 	
+-
+- again:
+-	n = find_next_zero_bit(bitmap, nbits, start);
+-	if (n == -1) 
+-		return -1;
+-	
+-	/* could test bitsliced, but it's hardly worth it */
+-	end = n+len;
+-	if (end > nbits)
+-		return -1; 
+-	for (i = n+1; i < end; i++) { 
+-		if (test_bit(i, bitmap)) {  
+-			start = i+1; 
+-			goto again; 
+-		} 
+-	}
+-	return n;
+-}
+-
+-EXPORT_SYMBOL(find_next_zero_string);
+diff --git a/include/asm-x86/bitops_64.h b/include/asm-x86/bitops_64.h
+index 48adbf5..aaf1519 100644
+--- a/include/asm-x86/bitops_64.h
++++ b/include/asm-x86/bitops_64.h
+@@ -37,12 +37,6 @@ static inline long __scanbit(unsigned long val, unsigned long max)
+   ((off)+(__scanbit(~(((*(unsigned long *)addr)) >> (off)),(size)-(off)))) : \
+ 	find_next_zero_bit(addr,size,off)))
  
- lib-$(CONFIG_GENERIC_BUG) += bug.o
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-new file mode 100644
-index 0000000..e7d8544
---- /dev/null
-+++ b/lib/iommu-helper.c
-@@ -0,0 +1,76 @@
-+/*
-+ * IOMMU helper functions for the free area management
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/bitops.h>
-+
-+static unsigned long find_next_zero_area(unsigned long *map,
-+					 unsigned long size,
-+					 unsigned long start,
-+					 unsigned int nr)
-+{
-+	unsigned long index, end, i;
-+again:
-+	index = find_next_zero_bit(map, size, start);
-+	end = index + nr;
-+	if (end > size)
-+		return -1;
-+	for (i = index + 1; i < end; i++) {
-+		if (test_bit(i, map)) {
-+			start = i+1;
-+			goto again;
-+		}
-+	}
-+	return index;
-+}
-+
-+static inline void set_bit_area(unsigned long *map, unsigned long i,
-+				int len)
-+{
-+	unsigned long end = i + len;
-+	while (i < end) {
-+		__set_bit(i, map);
-+		i++;
-+	}
-+}
-+
-+static inline int is_span_boundary(unsigned int index, unsigned int nr,
-+				   unsigned long shift,
-+				   unsigned long boundary_size)
-+{
-+	shift = (shift + index) & (boundary_size - 1);
-+	return shift + nr > boundary_size;
-+}
-+
-+unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-+			       unsigned long start, unsigned int nr,
-+			       unsigned long shift, unsigned long boundary_size,
-+			       unsigned long align_mask)
-+{
-+	unsigned long index;
-+again:
-+	index = find_next_zero_area(map, size, start, nr);
-+	if (index != -1) {
-+		index = (index + align_mask) & ~align_mask;
-+		if (is_span_boundary(index, nr, shift, boundary_size)) {
-+			/* we could do more effectively */
-+			start = index + 1;
-+			goto again;
-+		}
-+		set_bit_area(map, index, nr);
-+	}
-+	return index;
-+}
-+EXPORT_SYMBOL(iommu_area_alloc);
-+
-+void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
-+{
-+	unsigned long end = start + nr;
-+
-+	while (start < end) {
-+		__clear_bit(start, map);
-+		start++;
-+	}
-+}
-+EXPORT_SYMBOL(iommu_area_free);
+-/* 
+- * Find string of zero bits in a bitmap. -1 when not found.
+- */ 
+-extern unsigned long 
+-find_next_zero_string(unsigned long *bitmap, long start, long nbits, int len);
+-
+ static inline void set_bit_string(unsigned long *bitmap, unsigned long i, 
+ 				  int len) 
+ { 
+@@ -53,16 +47,6 @@ static inline void set_bit_string(unsigned long *bitmap, unsigned long i,
+ 	}
+ } 
+ 
+-static inline void __clear_bit_string(unsigned long *bitmap, unsigned long i, 
+-				    int len) 
+-{ 
+-	unsigned long end = i + len; 
+-	while (i < end) {
+-		__clear_bit(i, bitmap); 
+-		i++;
+-	}
+-} 
+-
+ /**
+  * ffz - find first zero in word.
+  * @word: The word to search
 -- 
 1.5.3.4
 
