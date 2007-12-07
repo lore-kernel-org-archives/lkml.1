@@ -1,194 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbXLGOUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXLGOYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbXLGOUk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 09:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbXLGOU1
+	id S1755467AbXLGOYj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 09:24:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXLGOYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 09:20:27 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:43687 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1755169AbXLGOUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 09:20:25 -0500
-Message-ID: <397037229.08913@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 7 Dec 2007 16:35:14 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH BUGFIX] hid: the `bit' in hidinput_mapping_quirks() is an
-	out parameter
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	Fri, 7 Dec 2007 09:24:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35767 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752356AbXLGOYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 09:24:30 -0500
+Date: Fri, 7 Dec 2007 09:21:44 -0500
+From: Neil Horman <nhorman@redhat.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
+       Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+Message-ID: <20071207142144.GA10389@hmsendeavour.rdu.redhat.com>
+References: <20071128160206.GA21286@hmsendeavour.rdu.redhat.com> <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071204211701.994dfce6.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.17 (2007-11-01)
-Message-Id: <E1J0Yfy-0001V7-Rr@localhost>
+In-Reply-To: <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a panic, by changing 
-	hidinput_mapping_quirks(,, unsigned long *bit,)
-to 
-	hidinput_mapping_quirks(,, unsigned long **bit,)
+On Fri, Dec 07, 2007 at 01:22:04AM -0800, Yinghai Lu wrote:
+> On Dec 7, 2007 12:50 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >
+> > On Dec 6, 2007 4:33 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> ...
+> > >
+> > > My feel is that if it is for legacy interrupts only it should not be a problem.
+> > > Let's investigate and see if we can unconditionally enable this quirk
+> > > for all opteron systems.
+> >
+> > i checked that bit
+> >
+> > http://www.openbios.org/viewvc/trunk/LinuxBIOSv2/src/northbridge/amd/amdk8/coherent_ht.c?revision=2596&view=markup
+> >
+> > static void enable_apic_ext_id(u8 node)
+> > {
+> > #if ENABLE_APIC_EXT_ID==1
+> > #warning "FIXME Is the right place to enable apic ext id here?"
+> >
+> >       u32 val;
+> >
+> >         val = pci_read_config32(NODE_HT(node), 0x68);
+> >         val |= (HTTC_APIC_EXT_SPUR | HTTC_APIC_EXT_ID | HTTC_APIC_EXT_BRD_CST);
+> >         pci_write_config32(NODE_HT(node), 0x68, val);
+> > #endif
+> > }
+> >
+> > that bit only be should be set when apic id is lifted and cpu apid is
+> > using 8 bits and that mean broadcast is 0xff instead 0x0f.
+> > for example 8 socket dual core system or 4 socket quad core
+> > system,that you should make BSP start from 0x04, so cpus apic id will
+> > be [0x04, 0x13)
+> >
+> >
+> > So if you want to enable that in early_quirk, you need to
+> > make sure apic id is using 8 bits by check if the bit 16 (HTTC_APIC_ID) is set.
+> 
+> it should be bit 18 (HTTC_APIC_EXT_ID)
+> 
+> 
+> YH
 
-The `bit' in this function is an out parameter.
+this seems reasonable, I can reroll the patch for this.  As I think about it I'm
+also going to update the patch to make this check occur for any pci class 0600
+device from vendor AMD, since its possible that more than just nvidia chipsets
+can be affected.
 
-Cc: Jiri Kosina <jkosina@suse.cz>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- drivers/hid/hid-input-quirks.c |   36 +++++++++++++++----------------
- drivers/hid/hid-input.c        |    2 -
- include/linux/hid.h            |    2 -
- 3 files changed, 20 insertions(+), 20 deletions(-)
+I'll repost as soon as I've tested, thanks!
+Neil
 
---- linux-2.6.24-rc4-mm1.orig/include/linux/hid.h
-+++ linux-2.6.24-rc4-mm1/include/linux/hid.h
-@@ -526,7 +526,7 @@ extern void hidinput_disconnect(struct h
- int hid_set_field(struct hid_field *, unsigned, __s32);
- int hid_input_report(struct hid_device *, int type, u8 *, int, int);
- int hidinput_find_field(struct hid_device *hid, unsigned int type, unsigned int code, struct hid_field **field);
--int hidinput_mapping_quirks(struct hid_usage *, struct input_dev *, unsigned long *, int *);
-+int hidinput_mapping_quirks(struct hid_usage *, struct input_dev *, unsigned long **, int *);
- void hidinput_event_quirks(struct hid_device *, struct hid_field *, struct hid_usage *, __s32);
- int hidinput_apple_event(struct hid_device *, struct input_dev *, struct hid_usage *, __s32);
- void hid_input_field(struct hid_device *hid, struct hid_field *field, __u8 *data, int interrupt);
---- linux-2.6.24-rc4-mm1.orig/drivers/hid/hid-input.c
-+++ linux-2.6.24-rc4-mm1/drivers/hid/hid-input.c
-@@ -382,7 +382,7 @@ static void hidinput_configure_usage(str
- 	}
- 
- 	/* handle input mappings for quirky devices */
--	ret = hidinput_mapping_quirks(usage, input, bit, &max);
-+	ret = hidinput_mapping_quirks(usage, input, &bit, &max);
- 	if (ret)
- 		goto mapped;
- 
---- linux-2.6.24-rc4-mm1.orig/drivers/hid/hid-input-quirks.c
-+++ linux-2.6.24-rc4-mm1/drivers/hid/hid-input-quirks.c
-@@ -16,16 +16,16 @@
- #include <linux/input.h>
- #include <linux/hid.h>
- 
--#define map_abs(c)      do { usage->code = c; usage->type = EV_ABS; bit = input->absbit; *max = ABS_MAX; } while (0)
--#define map_rel(c)      do { usage->code = c; usage->type = EV_REL; bit = input->relbit; *max = REL_MAX; } while (0)
--#define map_key(c)      do { usage->code = c; usage->type = EV_KEY; bit = input->keybit; *max = KEY_MAX; } while (0)
--#define map_led(c)      do { usage->code = c; usage->type = EV_LED; bit = input->ledbit; *max = LED_MAX; } while (0)
-+#define map_abs(c)      do { usage->code = c; usage->type = EV_ABS; *bit = input->absbit; *max = ABS_MAX; } while (0)
-+#define map_rel(c)      do { usage->code = c; usage->type = EV_REL; *bit = input->relbit; *max = REL_MAX; } while (0)
-+#define map_key(c)      do { usage->code = c; usage->type = EV_KEY; *bit = input->keybit; *max = KEY_MAX; } while (0)
-+#define map_led(c)      do { usage->code = c; usage->type = EV_LED; *bit = input->ledbit; *max = LED_MAX; } while (0)
- 
--#define map_abs_clear(c)        do { map_abs(c); clear_bit(c, bit); } while (0)
--#define map_key_clear(c)        do { map_key(c); clear_bit(c, bit); } while (0)
-+#define map_abs_clear(c)        do { map_abs(c); clear_bit(c, *bit); } while (0)
-+#define map_key_clear(c)        do { map_key(c); clear_bit(c, *bit); } while (0)
- 
- static int quirk_belkin_wkbd(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_CONSUMER)
- 		return 0;
-@@ -41,7 +41,7 @@ static int quirk_belkin_wkbd(struct hid_
- }
- 
- static int quirk_cherry_cymotion(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_CONSUMER)
- 		return 0;
-@@ -57,7 +57,7 @@ static int quirk_cherry_cymotion(struct 
- }
- 
- static int quirk_logitech_ultrax_remote(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_LOGIVENDOR)
- 		return 0;
-@@ -90,7 +90,7 @@ static int quirk_logitech_ultrax_remote(
- }
- 
- static int quirk_chicony_tactical_pad(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_MSVENDOR)
- 		return 0;
-@@ -115,7 +115,7 @@ static int quirk_chicony_tactical_pad(st
- }
- 
- static int quirk_microsoft_ergonomy_kb(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_MSVENDOR)
- 		return 0;
-@@ -138,7 +138,7 @@ static int quirk_microsoft_ergonomy_kb(s
- }
- 
- static int quirk_microsoft_presenter_8k(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_MSVENDOR)
- 		return 0;
-@@ -156,7 +156,7 @@ static int quirk_microsoft_presenter_8k(
- }
- 
- static int quirk_petalynx_remote(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if (((usage->hid & HID_USAGE_PAGE) != HID_UP_LOGIVENDOR) &&
- 			((usage->hid & HID_USAGE_PAGE) != HID_UP_CONSUMER))
-@@ -184,7 +184,7 @@ static int quirk_petalynx_remote(struct 
- }
- 
- static int quirk_logitech_wireless(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_CONSUMER)
- 		return 0;
-@@ -236,7 +236,7 @@ static int quirk_logitech_wireless(struc
- }
- 
- static int quirk_cherry_genius_29e(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_CONSUMER)
- 		return 0;
-@@ -254,7 +254,7 @@ static int quirk_cherry_genius_29e(struc
- }
- 
- static int quirk_btc_8193(struct hid_usage *usage, struct input_dev *input,
--			      unsigned long *bit, int *max)
-+			      unsigned long **bit, int *max)
- {
- 	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_CONSUMER)
- 		return 0;
-@@ -307,7 +307,7 @@ static int quirk_btc_8193(struct hid_usa
- static const struct hid_input_blacklist {
- 	__u16 idVendor;
- 	__u16 idProduct;
--	int (*quirk)(struct hid_usage *, struct input_dev *, unsigned long *, int *);
-+	int (*quirk)(struct hid_usage *, struct input_dev *, unsigned long **, int *);
- } hid_input_blacklist[] = {
- 	{ VENDOR_ID_BELKIN, DEVICE_ID_BELKIN_WIRELESS_KEYBOARD, quirk_belkin_wkbd },
- 
-@@ -335,7 +335,7 @@ static const struct hid_input_blacklist 
- 
- int hidinput_mapping_quirks(struct hid_usage *usage, 
- 				   struct input_dev *input, 
--				   unsigned long *bit, int *max)
-+				   unsigned long **bit, int *max)
- {
- 	struct hid_device *device = input_get_drvdata(input);
- 	int i = 0;
-
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
