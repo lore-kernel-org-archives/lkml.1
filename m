@@ -1,63 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbXLGQaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXLGQb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbXLGQaZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 11:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXLGQaN
+	id S1756181AbXLGQb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 11:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXLGQbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 11:30:13 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:49977 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbXLGQaL (ORCPT
+	Fri, 7 Dec 2007 11:31:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58561 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbXLGQbT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 11:30:11 -0500
-Message-ID: <475974F8.9040603@linux.vnet.ibm.com>
-Date: Fri, 07 Dec 2007 17:29:44 +0100
-From: Holger Wolf <wolf@linux.vnet.ibm.com>
-Reply-To: Holger.Wolf@de.ibm.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Holger.Wolf@de.ibm.com, mingo@elte.hu, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Scheduler behaviour
-References: <475706E2.50805@linux.vnet.ibm.com> <20071205132631.79940bd5@laptopd505.fenrus.org>
-In-Reply-To: <20071205132631.79940bd5@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Dec 2007 11:31:19 -0500
+Date: Fri, 7 Dec 2007 17:31:16 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, "David P. Reed" <dpreed@reed.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
+Message-ID: <20071207163116.GB5992@one.firstfloor.org>
+References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <20071207160439.71b7f46a@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071207160439.71b7f46a@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 05 Dec 2007 21:15:30 +0100
-> Holger Wolf <wolf@linux.vnet.ibm.com> wrote:
->
->   
->> We discovered performance degradation with dbench when using kernel
->> 2.6.23 compared to kernel 2.6.22.
->>
->> In our case we booted a Linux in a IBM System z9 LPAR with 256MB of
->> ram with 4 CPU's. This system uses a striped LV with 16 disks on a
->> Storage Server connected via 8 4GBit links.
->> A dbench was started on that system performing I/O operations on the
->> striped LV. dbench runs were performed with 1 to 62 processes.
->> Measurements with a 2.6.22 kernel were compared to measurements with
->> a 2.6.23 kernel. We saw a throughput degradation from 7.2 to 23.4
->>     
->
-> this is good news!
-> dbench rewards unfair behavior... so higher dbench usually means a
-> worse kernel ;)
->
->
->   
-tests with 2.6.22 including CFS  show the same results.
-This means the pressure on page cache is much higher when all processes 
-run in parallel.
-We see this behavior as well with iozone when writing on many disks with 
-many threads and just 256 MB memory.
+> You don't need to. Port 0x80 historically is about 8uS so just udelay(8)
+> and make sure the initial default delay is conservative enough before the
 
-This means the scheduler schedules as it should - fair.
+How would you make it conservative enough handling let's say a 6Ghz CPU
+that can execute multiple jumps per cycle?
 
-regards Holger
-
+-Andi
