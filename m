@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbXLGA4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbXLGA6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbXLGA4z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 19:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbXLGA4s
+	id S1755808AbXLGA6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 19:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXLGA6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 19:56:48 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:50570 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbXLGA4r (ORCPT
+	Thu, 6 Dec 2007 19:58:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48831 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752973AbXLGA6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 19:56:47 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 6 Dec 2007 16:56:45 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] move the related code from exit_notify() to exit_signals()
-In-Reply-To: <20071206162244.GA9878@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0712061651480.6399@alien.or.mcafeemobile.com>
-References: <20071206162244.GA9878@tv-sign.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 6 Dec 2007 19:58:09 -0500
+Date: Thu, 6 Dec 2007 17:00:01 -0800
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
+Message-ID: <20071207010001.GA23575@kroah.com>
+References: <20071205064116.D849BDE10A@ozlabs.org> <1196911347.7033.15.camel@pasglop> <20071206063940.GA16474@kroah.com> <1196927934.7033.39.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196927934.7033.39.camel@pasglop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2007, Oleg Nesterov wrote:
-
-> The previous bugfix was not optimal, we shouldn't care about group stop when
-> we are the only thread or the group stop is in progress. In that case nothing
-> special is needed, just set PF_EXITING and return.
+On Thu, Dec 06, 2007 at 06:58:54PM +1100, Benjamin Herrenschmidt wrote:
 > 
-> Also, take the related "TIF_SIGPENDING re-targeting" code from exit_notify().
+> On Wed, 2007-12-05 at 22:39 -0800, Greg KH wrote:
+> > > that is  it can be either unsigned int, unsigned long or unsigned
+> > long
+> > > long... and we have no way to reliably printk that.
+> > 
+> > We do this already just fine.  Take a look in the kernel, I think we
+> > just always cast it to long long to be uniform.
 > 
-> So, from the performance POV the only difference is that we don't trust
-> !signal_pending() until we take ->siglock. But this in fact fixes another
-> ___pure___ theoretical minor race. __group_complete_signal() finds the task
-> without PF_EXITING and chooses it as the target for signal_wake_up(). But
-> nothing prevents this task from exiting in between without noticing the
-> pending signal and thus unpredictably delaying the actual delivery.
+> I wanted to avoid that for two reasons:
+> 
+>  - casts are fugly
+>  - it adds support code to cast & handle 64 bits to 32 bits platforms
+>    that wouldn't normally need it
 
-For a second there, you got me confused, since it wasn't clear to me this 
-patch was going over the previous one. When posting patches that are not 
-in any tree, it may be wise to include the set they nest onto ;)
+But that is how we already handle this today, in numerous places in the
+kernel for this very type.
 
+So, you can disagree that this is what we need to do, and if so, feel
+free to fix up a whole lot of files in the tree :)
 
-> +	if (!signal_pending(tsk))
-> +		goto out;
-> +
-> +	/* It could be that __group_complete_signal() choose us to
-> +	 * notify about group-wide signal. Another thread should be
-> +	 * woken now to take the signal since we will not.
-> +	 */
-> +	for (t = tsk; (t = next_thread(t)) != tsk; )
-> +		if (!signal_pending(t) && !(t->flags & PF_EXITING))
-> +			recalc_sigpending_and_wake(t);
-> +
-> +	if (unlikely(tsk->signal->group_stop_count) &&
-> +			!--tsk->signal->group_stop_count) {
-> +		tsk->signal->flags = SIGNAL_STOP_STOPPED;
-> +		group_stop = 1;
-> +	}
-> +out:
+thanks,
 
-Looks fine to me, even though the one above could simply be an:
-
-if (signal_pending(tsk)) {
-	...
-}
-
-(since the "out" label is used by that "if" only).
-
-
-
-- Davide
-
-
+greg k-h
